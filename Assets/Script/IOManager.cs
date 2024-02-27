@@ -49,6 +49,13 @@ public class IOManager : MonoBehaviour
             Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
             useDummy = true;
        }
+        if (!displayDebug)
+        {
+            for (int i = 0; i < 34; i++)
+            {
+                Destroy(touchDisplays[i]);
+            }
+        }
     }
 
     private void RawInput_OnKeyUp(RawKey key)

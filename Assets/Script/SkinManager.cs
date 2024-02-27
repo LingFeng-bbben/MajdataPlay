@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SettingManager : MonoBehaviour
+public class Skin : MonoBehaviour
 {
-    public static SettingManager Instance;
+    public static Skin Instance;
     private void Awake()
     {
         Instance = this;

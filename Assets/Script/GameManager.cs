@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SettingManager : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
-    public static SettingManager Instance;
+    public static GameManager Instance;
+    // Start is called before the first frame update
     private void Awake()
     {
         Instance = this;
     }
-    // Start is called before the first frame update
     void Start()
     {
         
