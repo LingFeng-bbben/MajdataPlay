@@ -9,6 +9,7 @@ using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine.EventSystems;
 using Unity.VisualScripting;
+using UnityRawInput;
 
 public class IOManager : MonoBehaviour
 {
@@ -31,8 +32,9 @@ public class IOManager : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(this);
-        
-
+        UnityRawInput.RawInput.Start();
+        UnityRawInput.RawInput.OnKeyDown += RawInput_OnKeyDown;
+        UnityRawInput.RawInput.OnKeyUp += RawInput_OnKeyUp;
        try 
        {
             sensorStates = new bool[35];
@@ -49,6 +51,29 @@ public class IOManager : MonoBehaviour
        }
     }
 
+    private void RawInput_OnKeyUp(UnityRawInput.RawKey key)
+    {
+        for (int i = 0; i < IndexToKeyButton.Length; i++)
+        {
+            if (IndexToKeyButton[i] == key.ToString())
+            {
+                if(OnButtonUp!=null)
+                    OnButtonUp(this, new ButtonEventArgs(i));
+            }
+        }
+    }
+
+    private void RawInput_OnKeyDown(UnityRawInput.RawKey key)
+    {
+        for (int i = 0; i < IndexToKeyButton.Length; i++)
+        {
+            if (IndexToKeyButton[i] == key.ToString())
+            {
+                if (OnButtonDown != null)
+                    OnButtonDown(this, new ButtonEventArgs(i));
+            }
+        }
+    }
 
     void recvLoop()
     {
@@ -84,8 +109,9 @@ public class IOManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         if (serial!= null & serial.IsOpen) { serial.Close(); }
+        UnityRawInput.RawInput.Stop();
     }
-    
+
     void Update()
     {
         if (useDummy)
@@ -290,24 +316,6 @@ public class IOManager : MonoBehaviour
             }
             lastSensorStates[i] = sensorStates[i];
         }
-        for(int i = 0; i < IndexToKeyButton.Length; i++)
-        {
-            if (Input.GetKeyDown(IndexToKeyButton[i]))
-            {
-                if(OnButtonDown != null)
-                {
-                    OnButtonDown(this,new ButtonEventArgs(i));
-                }
-            }
-            if (Input.GetKeyUp(IndexToKeyButton[i]))
-            {
-                if (OnButtonUp != null)
-                {
-                    OnButtonUp(this, new ButtonEventArgs(i));
-                }
-            }
-        }
-        
     }
 
     bool isInRange(float input, float angle,float range = 11.25f)
@@ -361,7 +369,7 @@ public class IOManager : MonoBehaviour
     };
     readonly string[] IndexToKeyButton = new string[]
     {
-        "s","w","e","d","c","x","z","a","q","1","2","3","4"
+        "S","W","E","D","C","X","Z","A","Q","N3","N7","Multiply","N9"
     };
 
     public bool GetTouchAreaState(string area)
@@ -381,7 +389,7 @@ public class IOManager : MonoBehaviour
     {
         try
         {
-            return Input.GetKey(IndexToKeyButton[button]);
+            return UnityRawInput.RawInput.IsKeyDown((RawKey)Enum.Parse(typeof(RawKey), IndexToKeyButton[button]));
         }
         catch
         {

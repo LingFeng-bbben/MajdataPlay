@@ -13,32 +13,70 @@ using UnityEngine.UIElements;
 public class AudioManager : MonoBehaviour
 {
     readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
-    PauseSoundSampleProvider AudioFile;
-    AsioOut asioOut;
-    MixingSampleProvider mixer;
+    readonly string[] SFXFileNames = new string[]
+    {
+        "all_perfect.wav",
+        "answer.wav",
+        "break.wav",
+        "break_slide.wav",
+        "break_slide_start.wav",
+        "clock.wav",
+        "hanabi.wav",
+        "judge.wav",
+        "judge_break.wav",
+        "judge_break_slide.wav",
+        "judge_ex.wav",
+        "slide.wav",
+        "touch.wav",
+        "touchHold_riser.wav",
+        "track_start.wav",
+    };
+    private Dictionary<string, PauseSoundSampleProvider> SFXSamples = new Dictionary<string, PauseSoundSampleProvider>();
+    private AsioOut asioOut;
+    private MixingSampleProvider mixer;
+    public bool PlayDebug;
     // Start is called before the first frame update
     void Start()
     {
-        AudioFile = new PauseSoundSampleProvider(new CachedSound( SFXFilePath + "answer.wav"));
-        mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
+        DontDestroyOnLoad(this);
+        mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
         mixer.ReadFully = true;
+        foreach(var file in SFXFileNames)
+        {
+            var path = SFXFilePath + file;
+            if (File.Exists(path))
+            {
+                var provider =  new PauseSoundSampleProvider(new CachedSound(path));
+                SFXSamples.Add(file, provider);
+                mixer.AddMixerInput(provider);
+            }
+            else
+            {
+                Debug.LogWarning(path + " dos not exists");
+            }
+        }
+        
         var devices = AsioOut.GetDriverNames();
         asioOut = new AsioOut(devices.FirstOrDefault());
         
-        mixer.AddMixerInput(AudioFile);
+        
         asioOut.Init(mixer);
         asioOut.Play();
-        IOManager.Instance.OnTouchAreaDown += OnTouchDown;
-        IOManager.Instance.OnButtonDown += OnButtonDown;
+        if(PlayDebug) {
+            IOManager.Instance.OnTouchAreaDown += OnTouchDown;
+            IOManager.Instance.OnButtonDown += OnButtonDown;
+        }
+        
     }
 
     void OnTouchDown(object sender, TouchAreaEventArgs e)
     {
-       AudioFile.PlayOneShot();
+        SFXSamples["touch.wav"].PlayOneShot();
     }
     void OnButtonDown(object sender, ButtonEventArgs e)
     {
-        AudioFile.PlayOneShot();
+        //SFXSamples["answer.wav"].SetVolume(e.ButtonIndex / 8f);
+        SFXSamples["answer.wav"].PlayOneShot();
     }
 
     private void OnApplicationQuit()
@@ -49,7 +87,7 @@ public class AudioManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //print(AudioFile.GetCurrentTime());
     }
 }
 
@@ -57,16 +95,17 @@ class CachedSound
 {
     public float[] AudioData { get; private set; }
     public WaveFormat WaveFormat { get; private set; }
+    //this might take time
     public CachedSound(string audioFileName)
     {
         using (var audioFileReader = new AudioFileReader(audioFileName))
         {
-            // TODO: could add resampling in here if required
-            WaveFormat = audioFileReader.WaveFormat;
-            var wholeFile = new List<float>((int)(audioFileReader.Length / 4));
-            var readBuffer = new float[audioFileReader.WaveFormat.SampleRate * audioFileReader.WaveFormat.Channels];
+            var resampler = new WdlResamplingSampleProvider(audioFileReader, 44100);
+            WaveFormat = resampler.WaveFormat;
+            var wholeFile = new List<float>();
+            var readBuffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];
             int samplesRead;
-            while ((samplesRead = audioFileReader.Read(readBuffer, 0, readBuffer.Length)) > 0)
+            while ((samplesRead = resampler.Read(readBuffer, 0, readBuffer.Length)) > 0)
             {
                 wholeFile.AddRange(readBuffer.Take(samplesRead));
             }
@@ -79,6 +118,7 @@ class CachedSoundSampleProvider : ISampleProvider
 {
     private readonly CachedSound cachedSound;
     public long position;
+    public float volume = 1f;
     public CachedSoundSampleProvider(CachedSound cachedSound)
     {
         this.cachedSound = cachedSound;
@@ -91,6 +131,13 @@ class CachedSoundSampleProvider : ISampleProvider
 
         Console.WriteLine(samplesToCopy);
         Array.Copy(cachedSound.AudioData, position, buffer, offset, samplesToCopy);
+        if (volume != 1f)
+        {
+            for(int i = 0; i<buffer.Length; i++)
+            {
+                buffer[i] = volume * buffer[i];
+            }
+        }
         position += samplesToCopy;
         return (int)samplesToCopy;
     }
@@ -101,6 +148,7 @@ class PauseSoundSampleProvider : ISampleProvider
 {
     private readonly CachedSoundSampleProvider cachedSound;
     public long position => cachedSound.position;
+    public float volume => cachedSound.volume;
     public bool isPlaying = false;
     public PauseSoundSampleProvider(CachedSoundSampleProvider cachedSound) {
         this.cachedSound = cachedSound;
@@ -114,7 +162,7 @@ class PauseSoundSampleProvider : ISampleProvider
         if(isPlaying)
         {
             var ret = cachedSound.Read(buffer, offset, count);
-            if (ret < 256)
+            if (ret < buffer.Length)
             {
                 isPlaying = false;
                 cachedSound.position = 0;
@@ -135,6 +183,14 @@ class PauseSoundSampleProvider : ISampleProvider
     {
         isPlaying = true;
         cachedSound.position = 0;
+    }
+    public double GetCurrentTime()
+    {
+        return cachedSound.position / (double)WaveFormat.SampleRate / 2d;
+    }
+    public void SetVolume(float volume)
+    {
+        cachedSound.volume = volume;
     }
     public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
 }
