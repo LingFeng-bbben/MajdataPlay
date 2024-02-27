@@ -24,11 +24,14 @@ public class IOManager : MonoBehaviour
     //public Text debugtext;
     public bool displayDebug = false;
     public bool useDummy = false;
-    // Start is called before the first frame update
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         DontDestroyOnLoad(this);
-        Instance = this;
+        
 
        try 
        {

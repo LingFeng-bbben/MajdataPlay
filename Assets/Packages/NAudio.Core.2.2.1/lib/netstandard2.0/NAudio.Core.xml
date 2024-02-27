@@ -1,0 +1,7683 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NAudio.Core</name>
+    </assembly>
+    <members>
+        <member name="T:NAudio.Codecs.ALawDecoder">
+            <summary>
+            a-law decoder
+            based on code from:
+            http://hazelware.luggle.com/tutorials/mulawcompression.html
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.ALawDecoder.ALawDecompressTable">
+            <summary>
+            only 512 bytes required, so just use a lookup
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.ALawDecoder.ALawToLinearSample(System.Byte)">
+            <summary>
+            Converts an a-law encoded byte to a 16 bit linear sample
+            </summary>
+            <param name="aLaw">a-law encoded byte</param>
+            <returns>Linear sample</returns>
+        </member>
+        <member name="T:NAudio.Codecs.ALawEncoder">
+            <summary>
+            A-law encoder
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.ALawEncoder.LinearToALawSample(System.Int16)">
+            <summary>
+            Encodes a single 16 bit sample to a-law
+            </summary>
+            <param name="sample">16 bit PCM sample</param>
+            <returns>a-law encoded byte</returns>
+        </member>
+        <member name="T:NAudio.Codecs.G722Codec">
+            <summary>
+            SpanDSP - a series of DSP components for telephony
+            
+            g722_decode.c - The ITU G.722 codec, decode part.
+            
+            Written by Steve Underwood &lt;steveu@coppice.org&gt;
+            
+            Copyright (C) 2005 Steve Underwood
+            Ported to C# by Mark Heath 2011
+            
+            Despite my general liking of the GPL, I place my own contributions 
+            to this code in the public domain for the benefit of all mankind -
+            even the slimy ones who might try to proprietize my work and use it
+            to my detriment.
+             
+            Based in part on a single channel G.722 codec which is:
+            Copyright (c) CMU 1993
+            Computer Science, Speech Group
+            Chengxiang Lu and Alex Hauptmann
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.G722Codec.Saturate(System.Int32)">
+            <summary>
+            hard limits to 16 bit samples
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.G722Codec.Decode(NAudio.Codecs.G722CodecState,System.Int16[],System.Byte[],System.Int32)">
+            <summary>
+            Decodes a buffer of G722
+            </summary>
+            <param name="state">Codec state</param>
+            <param name="outputBuffer">Output buffer (to contain decompressed PCM samples)</param>
+            <param name="inputG722Data"></param>
+            <param name="inputLength">Number of bytes in input G722 data to decode</param>
+            <returns>Number of samples written into output buffer</returns>
+        </member>
+        <member name="M:NAudio.Codecs.G722Codec.Encode(NAudio.Codecs.G722CodecState,System.Byte[],System.Int16[],System.Int32)">
+            <summary>
+            Encodes a buffer of G722
+            </summary>
+            <param name="state">Codec state</param>
+            <param name="outputBuffer">Output buffer (to contain encoded G722)</param>
+            <param name="inputBuffer">PCM 16 bit samples to encode</param>
+            <param name="inputBufferCount">Number of samples in the input buffer to encode</param>
+            <returns>Number of encoded bytes written into output buffer</returns>
+        </member>
+        <member name="T:NAudio.Codecs.G722CodecState">
+            <summary>
+            Stores state to be used between calls to Encode or Decode
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.ItuTestMode">
+            <summary>
+            ITU Test Mode
+            TRUE if the operating in the special ITU test mode, with the band split filters disabled.
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.Packed">
+            <summary>
+            TRUE if the G.722 data is packed
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.EncodeFrom8000Hz">
+            <summary>
+            8kHz Sampling
+            TRUE if encode from 8k samples/second
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.BitsPerSample">
+            <summary>
+            Bits Per Sample
+            6 for 48000kbps, 7 for 56000kbps, or 8 for 64000kbps.
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.QmfSignalHistory">
+            <summary>
+            Signal history for the QMF (x)
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.Band">
+            <summary>
+            Band
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.InBuffer">
+            <summary>
+            In bit buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.InBits">
+            <summary>
+            Number of bits in InBuffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.OutBuffer">
+            <summary>
+            Out bit buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Codecs.G722CodecState.OutBits">
+            <summary>
+            Number of bits in OutBuffer
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.G722CodecState.#ctor(System.Int32,NAudio.Codecs.G722Flags)">
+            <summary>
+            Creates a new instance of G722 Codec State for a 
+            new encode or decode session
+            </summary>
+            <param name="rate">Bitrate (typically 64000)</param>
+            <param name="options">Special options</param>
+        </member>
+        <member name="T:NAudio.Codecs.Band">
+            <summary>
+            Band data for G722 Codec
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.s">
+            <summary>s</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.sp">
+            <summary>sp</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.sz">
+            <summary>sz</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.r">
+            <summary>r</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.a">
+            <summary>a</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.ap">
+            <summary>ap</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.p">
+            <summary>p</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.d">
+            <summary>d</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.b">
+            <summary>b</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.bp">
+            <summary>bp</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.sg">
+            <summary>sg</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.nb">
+            <summary>nb</summary>
+        </member>
+        <member name="F:NAudio.Codecs.Band.det">
+            <summary>det</summary>
+        </member>
+        <member name="T:NAudio.Codecs.G722Flags">
+            <summary>
+            G722 Flags
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.G722Flags.None">
+            <summary>
+            None
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.G722Flags.SampleRate8000">
+            <summary>
+            Using a G722 sample rate of 8000
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.G722Flags.Packed">
+            <summary>
+            Packed
+            </summary>
+        </member>
+        <member name="T:NAudio.Codecs.MuLawDecoder">
+            <summary>
+            mu-law decoder
+            based on code from:
+            http://hazelware.luggle.com/tutorials/mulawcompression.html
+            </summary>
+        </member>
+        <member name="F:NAudio.Codecs.MuLawDecoder.MuLawDecompressTable">
+            <summary>
+            only 512 bytes required, so just use a lookup
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.MuLawDecoder.MuLawToLinearSample(System.Byte)">
+            <summary>
+            Converts a mu-law encoded byte to a 16 bit linear sample
+            </summary>
+            <param name="muLaw">mu-law encoded byte</param>
+            <returns>Linear sample</returns>
+        </member>
+        <member name="T:NAudio.Codecs.MuLawEncoder">
+            <summary>
+            mu-law encoder
+            based on code from:
+            http://hazelware.luggle.com/tutorials/mulawcompression.html
+            </summary>
+        </member>
+        <member name="M:NAudio.Codecs.MuLawEncoder.LinearToMuLawSample(System.Int16)">
+            <summary>
+            Encodes a single 16 bit sample to mu-law
+            </summary>
+            <param name="sample">16 bit PCM sample</param>
+            <returns>mu-law encoded byte</returns>
+        </member>
+        <member name="T:NAudio.Dsp.BiQuadFilter">
+            <summary>
+            BiQuad filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.Transform(System.Single)">
+            <summary>
+            Passes a single sample through the filter
+            </summary>
+            <param name="inSample">Input sample</param>
+            <returns>Output sample</returns>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.SetLowPassFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Set this up as a low pass filter
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="cutoffFrequency">Cut-off Frequency</param>
+            <param name="q">Bandwidth</param>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.SetPeakingEq(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Set this up as a peaking EQ
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="centreFrequency">Centre Frequency</param>
+            <param name="q">Bandwidth (Q)</param>
+            <param name="dbGain">Gain in decibels</param>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.SetHighPassFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Set this as a high pass filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.LowPassFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Create a low pass filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.HighPassFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Create a High pass filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.BandPassFilterConstantSkirtGain(System.Single,System.Single,System.Single)">
+            <summary>
+            Create a bandpass filter with constant skirt gain
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.BandPassFilterConstantPeakGain(System.Single,System.Single,System.Single)">
+            <summary>
+            Create a bandpass filter with constant peak gain
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.NotchFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a notch filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.AllPassFilter(System.Single,System.Single,System.Single)">
+            <summary>
+            Creaes an all pass filter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.PeakingEQ(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Create a Peaking EQ
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.LowShelf(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            H(s) = A * (s^2 + (sqrt(A)/Q)*s + A)/(A*s^2 + (sqrt(A)/Q)*s + 1)
+            </summary>
+            <param name="sampleRate"></param>
+            <param name="cutoffFrequency"></param>
+            <param name="shelfSlope">a "shelf slope" parameter (for shelving EQ only).  
+            When S = 1, the shelf slope is as steep as it can be and remain monotonically
+            increasing or decreasing gain with frequency.  The shelf slope, in dB/octave, 
+            remains proportional to S for all other values for a fixed f0/Fs and dBgain.</param>
+            <param name="dbGain">Gain in decibels</param>
+        </member>
+        <member name="M:NAudio.Dsp.BiQuadFilter.HighShelf(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            H(s) = A * (A*s^2 + (sqrt(A)/Q)*s + 1)/(s^2 + (sqrt(A)/Q)*s + A)
+            </summary>
+            <param name="sampleRate"></param>
+            <param name="cutoffFrequency"></param>
+            <param name="shelfSlope"></param>
+            <param name="dbGain"></param>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.Dsp.Complex">
+            <summary>
+            Type to represent complex number
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.Complex.X">
+            <summary>
+            Real Part
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.Complex.Y">
+            <summary>
+            Imaginary Part
+            </summary>
+        </member>
+        <member name="T:NAudio.Dsp.EnvelopeGenerator">
+            <summary>
+            Envelope generator (ADSR)
+            </summary>
+        </member>
+        <member name="T:NAudio.Dsp.EnvelopeGenerator.EnvelopeState">
+            <summary>
+            Envelope State
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.EnvelopeGenerator.EnvelopeState.Idle">
+            <summary>
+            Idle
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.EnvelopeGenerator.EnvelopeState.Attack">
+            <summary>
+            Attack
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.EnvelopeGenerator.EnvelopeState.Decay">
+            <summary>
+            Decay
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.EnvelopeGenerator.EnvelopeState.Sustain">
+            <summary>
+            Sustain
+            </summary>
+        </member>
+        <member name="F:NAudio.Dsp.EnvelopeGenerator.EnvelopeState.Release">
+            <summary>
+            Release
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.#ctor">
+            <summary>
+            Creates and Initializes an Envelope Generator
+            </summary>
+        </member>
+        <member name="P:NAudio.Dsp.EnvelopeGenerator.AttackRate">
+            <summary>
+            Attack Rate (seconds * SamplesPerSecond)
+            </summary>
+        </member>
+        <member name="P:NAudio.Dsp.EnvelopeGenerator.DecayRate">
+            <summary>
+            Decay Rate (seconds * SamplesPerSecond)
+            </summary>
+        </member>
+        <member name="P:NAudio.Dsp.EnvelopeGenerator.ReleaseRate">
+            <summary>
+            Release Rate (seconds * SamplesPerSecond)
+            </summary>
+        </member>
+        <member name="P:NAudio.Dsp.EnvelopeGenerator.SustainLevel">
+            <summary>
+            Sustain Level (1 = 100%)
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.SetTargetRatioAttack(System.Single)">
+            <summary>
+            Sets the attack curve
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.SetTargetRatioDecayRelease(System.Single)">
+            <summary>
+            Sets the decay release curve
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.Process">
+            <summary>
+            Read the next volume multiplier from the envelope generator
+            </summary>
+            <returns>A volume multiplier</returns>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.Gate(System.Boolean)">
+            <summary>
+            Trigger the gate
+            </summary>
+            <param name="gate">If true, enter attack phase, if false enter release phase (unless already idle)</param>
+        </member>
+        <member name="P:NAudio.Dsp.EnvelopeGenerator.State">
+            <summary>
+            Current envelope state
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.Reset">
+            <summary>
+            Reset to idle state
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.EnvelopeGenerator.GetOutput">
+            <summary>
+            Get the current output level
+            </summary>
+        </member>
+        <member name="T:NAudio.Dsp.FastFourierTransform">
+            <summary>
+            Summary description for FastFourierTransform.
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.FastFourierTransform.FFT(System.Boolean,System.Int32,NAudio.Dsp.Complex[])">
+            <summary>
+            This computes an in-place complex-to-complex FFT 
+            x and y are the real and imaginary arrays of 2^m points.
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.FastFourierTransform.HammingWindow(System.Int32,System.Int32)">
+            <summary>
+            Applies a Hamming Window
+            </summary>
+            <param name="n">Index into frame</param>
+            <param name="frameSize">Frame size (e.g. 1024)</param>
+            <returns>Multiplier for Hamming window</returns>
+        </member>
+        <member name="M:NAudio.Dsp.FastFourierTransform.HannWindow(System.Int32,System.Int32)">
+            <summary>
+            Applies a Hann Window
+            </summary>
+            <param name="n">Index into frame</param>
+            <param name="frameSize">Frame size (e.g. 1024)</param>
+            <returns>Multiplier for Hann window</returns>
+        </member>
+        <member name="M:NAudio.Dsp.FastFourierTransform.BlackmannHarrisWindow(System.Int32,System.Int32)">
+            <summary>
+            Applies a Blackman-Harris Window
+            </summary>
+            <param name="n">Index into frame</param>
+            <param name="frameSize">Frame size (e.g. 1024)</param>
+            <returns>Multiplier for Blackmann-Harris window</returns>
+        </member>
+        <member name="T:NAudio.Dsp.ImpulseResponseConvolution">
+            <summary>
+            Summary description for ImpulseResponseConvolution.
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.ImpulseResponseConvolution.Convolve(System.Single[],System.Single[])">
+            <summary>
+            A very simple mono convolution algorithm
+            </summary>
+            <remarks>
+            This will be very slow
+            </remarks>
+        </member>
+        <member name="M:NAudio.Dsp.ImpulseResponseConvolution.Normalize(System.Single[])">
+            <summary>
+            This is actually a downwards normalize for data that will clip
+            </summary>
+        </member>
+        <member name="T:NAudio.Dsp.SmbPitchShifter">
+            <summary>
+            SMB Pitch Shifter
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.SmbPitchShifter.PitchShift(System.Single,System.Int64,System.Single,System.Single[])">
+            <summary>
+            Pitch Shift 
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.SmbPitchShifter.PitchShift(System.Single,System.Int64,System.Int64,System.Int64,System.Single,System.Single[])">
+            <summary>
+            Pitch Shift 
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.SmbPitchShifter.ShortTimeFourierTransform(System.Single[],System.Int64,System.Int64)">
+            <summary>
+            Short Time Fourier Transform
+            </summary>
+        </member>
+        <member name="T:NAudio.Dsp.WdlResampler">
+            <summary>
+            Fully managed resampler, based on Cockos WDL Resampler
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.#ctor">
+            <summary>
+            Creates a new Resampler
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.SetMode(System.Boolean,System.Int32,System.Boolean,System.Int32,System.Int32)">
+            <summary>
+            sets the mode
+            if sinc set, it overrides interp or filtercnt
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.SetFilterParms(System.Single,System.Single)">
+            <summary>
+            Sets the filter parameters
+            used for filtercnt>0 but not sinc
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.SetFeedMode(System.Boolean)">
+            <summary>
+            Set feed mode
+            </summary>
+            <param name="wantInputDriven">if true, that means the first parameter to ResamplePrepare will specify however much input you have, not how much you want</param>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.Reset(System.Double)">
+            <summary>
+            Reset
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.SetRates(System.Double,System.Double)">
+            <summary>
+            Set input and output rates
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.GetCurrentLatency">
+            <summary>
+            amount of input that has been received but not yet converted to output, in seconds
+            </summary>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.ResamplePrepare(System.Int32,System.Int32,System.Single[]@,System.Int32@)">
+            <summary>
+            Prepare
+            note that it is safe to call ResamplePrepare without calling ResampleOut (the next call of ResamplePrepare will function as normal)
+            nb inbuffer was WDL_ResampleSample **, returning a place to put the in buffer, so we return a buffer and offset
+            </summary>
+            <param name="out_samples">req_samples is output samples desired if !wantInputDriven, or if wantInputDriven is input samples that we have</param>
+            <param name="nch"></param>
+            <param name="inbuffer"></param>
+            <param name="inbufferOffset"></param>
+            <returns>returns number of samples desired (put these into *inbuffer)</returns>
+        </member>
+        <member name="M:NAudio.Dsp.WdlResampler.ResampleOut(System.Single[],System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            if numsamples_in &lt; the value return by ResamplePrepare(), then it will be flushed to produce all remaining valid samples
+            do NOT call with nsamples_in greater than the value returned from resamplerprpare()! the extra samples will be ignored.
+            returns number of samples successfully outputted to out
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.ChannelMode">
+            <summary>
+            Channel Mode
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.ChannelMode.Stereo">
+            <summary>
+            Stereo
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.ChannelMode.JointStereo">
+            <summary>
+            Joint Stereo
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.ChannelMode.DualChannel">
+            <summary>
+            Dual Channel
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.ChannelMode.Mono">
+            <summary>
+            Mono
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Id3v2Tag">
+            <summary>
+            An ID3v2 Tag
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.ReadTag(System.IO.Stream)">
+            <summary>
+            Reads an ID3v2 tag from a stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.Create(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Creates a new ID3v2 tag from a collection of key-value pairs.
+            </summary>
+            <param name="tags">A collection of key-value pairs containing the tags to include in the ID3v2 tag.</param>
+            <returns>A new ID3v2 tag</returns>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.FrameSizeToBytes(System.Int32)">
+            <summary>
+            Convert the frame size to a byte array.
+            </summary>
+            <param name="n">The frame body size.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.CreateId3v2Frame(System.String,System.String)">
+            <summary>
+            Creates an ID3v2 frame for the given key-value pair.
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.GetId3TagHeaderSize(System.Int32)">
+            <summary>
+            Gets the Id3v2 Header size. The size is encoded so that only 7 bits per byte are actually used.
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.CreateId3v2TagHeader(System.Collections.Generic.IEnumerable{System.Byte[]})">
+            <summary>
+            Creates the Id3v2 tag header and returns is as a byte array.
+            </summary>
+            <param name="frames">The Id3v2 frames that will be included in the file. This is used to calculate the ID3v2 tag size.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.Id3v2Tag.CreateId3v2TagStream(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Creates the Id3v2 tag for the given key-value pairs and returns it in the a stream.
+            </summary>
+            <param name="tags"></param>
+            <returns></returns>
+        </member>
+        <member name="P:NAudio.Wave.Id3v2Tag.RawData">
+            <summary>
+            Raw data from this tag
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.IMp3FrameDecompressor">
+            <summary>
+            Interface for MP3 frame by frame decoder
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IMp3FrameDecompressor.DecompressFrame(NAudio.Wave.Mp3Frame,System.Byte[],System.Int32)">
+            <summary>
+            Decompress a single MP3 frame
+            </summary>
+            <param name="frame">Frame to decompress</param>
+            <param name="dest">Output buffer</param>
+            <param name="destOffset">Offset within output buffer</param>
+            <returns>Bytes written to output buffer</returns>
+        </member>
+        <member name="M:NAudio.Wave.IMp3FrameDecompressor.Reset">
+            <summary>
+            Tell the decoder that we have repositioned
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IMp3FrameDecompressor.OutputFormat">
+            <summary>
+            PCM format that we are converting into
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Mp3Frame">
+            <summary>
+            Represents an MP3 Frame
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3Frame.LoadFromStream(System.IO.Stream)">
+            <summary>
+            Reads an MP3 frame from a stream
+            </summary>
+            <param name="input">input stream</param>
+            <returns>A valid MP3 frame, or null if none found</returns>
+        </member>
+        <member name="M:NAudio.Wave.Mp3Frame.LoadFromStream(System.IO.Stream,System.Boolean)">
+            <summary>Reads an MP3Frame from a stream</summary>
+            <remarks>http://mpgedit.org/mpgedit/mpeg_format/mpeghdr.htm has some good info
+            also see http://www.codeproject.com/KB/audio-video/mpegaudioinfo.aspx
+            </remarks>
+            <returns>A valid MP3 frame, or null if none found</returns>
+        </member>
+        <member name="M:NAudio.Wave.Mp3Frame.#ctor">
+            <summary>
+            Constructs an MP3 frame
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3Frame.IsValidHeader(System.Byte[],NAudio.Wave.Mp3Frame)">
+            <summary>
+            checks if the four bytes represent a valid header,
+            if they are, will parse the values into Mp3Frame
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.SampleRate">
+            <summary>
+            Sample rate of this frame
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.FrameLength">
+            <summary>
+            Frame length in bytes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.BitRate">
+            <summary>
+            Bit Rate
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.RawData">
+            <summary>
+            Raw frame data (includes header bytes)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.MpegVersion">
+            <summary>
+            MPEG Version
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.MpegLayer">
+            <summary>
+            MPEG Layer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.ChannelMode">
+            <summary>
+            Channel Mode
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.SampleCount">
+            <summary>
+            The number of samples in this frame
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.ChannelExtension">
+            <summary>
+            The channel extension bits
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.BitRateIndex">
+            <summary>
+            The bitrate index (directly from the header)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.Copyright">
+            <summary>
+            Whether the Copyright bit is set
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.CrcPresent">
+            <summary>
+            Whether a CRC is present
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3Frame.FileOffset">
+            <summary>
+            Not part of the MP3 frame itself - indicates where in the stream we found this header
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.MpegLayer">
+            <summary>
+            MPEG Layer flags
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegLayer.Reserved">
+            <summary>
+            Reserved
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegLayer.Layer3">
+            <summary>
+            Layer 3
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegLayer.Layer2">
+            <summary>
+            Layer 2
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegLayer.Layer1">
+            <summary>
+            Layer 1
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.MpegVersion">
+            <summary>
+            MPEG Version Flags
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegVersion.Version25">
+            <summary>
+            Version 2.5
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegVersion.Reserved">
+            <summary>
+            Reserved
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegVersion.Version2">
+            <summary>
+            Version 2
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.MpegVersion.Version1">
+            <summary>
+            Version 1
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.XingHeader">
+            <summary>
+            Represents a Xing VBR header
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.XingHeader.LoadXingHeader(NAudio.Wave.Mp3Frame)">
+            <summary>
+            Load Xing Header
+            </summary>
+            <param name="frame">Frame</param>
+            <returns>Xing Header</returns>
+        </member>
+        <member name="M:NAudio.Wave.XingHeader.#ctor">
+            <summary>
+            Sees if a frame contains a Xing header
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.XingHeader.Frames">
+            <summary>
+            Number of frames
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.XingHeader.Bytes">
+            <summary>
+            Number of bytes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.XingHeader.VbrScale">
+            <summary>
+            VBR Scale property
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.XingHeader.Mp3Frame">
+            <summary>
+            The MP3 frame
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.ISampleChunkConverter">
+            <summary>
+            Sample provider interface to make WaveChannel32 extensible
+            Still a bit ugly, hence internal at the moment - and might even make these into
+            bit depth converting WaveProviders
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.AdsrSampleProvider">
+            <summary>
+            ADSR sample provider allowing you to specify attack, decay, sustain and release values
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.AdsrSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a new AdsrSampleProvider with default values
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.AdsrSampleProvider.AttackSeconds">
+            <summary>
+            Attack time in seconds
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.AdsrSampleProvider.ReleaseSeconds">
+            <summary>
+            Release time in seconds
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.AdsrSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads audio from this sample provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.AdsrSampleProvider.Stop">
+            <summary>
+            Enters the Release phase
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.AdsrSampleProvider.WaveFormat">
+            <summary>
+            The output WaveFormat
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider">
+            <summary>
+            Sample Provider to concatenate multiple sample providers together
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.ISampleProvider})">
+            <summary>
+            Creates a new ConcatenatingSampleProvider
+            </summary>
+            <param name="providers">The source providers to play one after the other. Must all share the same sample rate and channel count</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this Sample Provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Read Samples from this sample provider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.FadeInOutSampleProvider">
+            <summary>
+            Sample Provider to allow fading in and out
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.FadeInOutSampleProvider.#ctor(NAudio.Wave.ISampleProvider,System.Boolean)">
+            <summary>
+            Creates a new FadeInOutSampleProvider
+            </summary>
+            <param name="source">The source stream with the audio to be faded in or out</param>
+            <param name="initiallySilent">If true, we start faded out</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.FadeInOutSampleProvider.BeginFadeIn(System.Double)">
+            <summary>
+            Requests that a fade-in begins (will start on the next call to Read)
+            </summary>
+            <param name="fadeDurationInMilliseconds">Duration of fade in milliseconds</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.FadeInOutSampleProvider.BeginFadeOut(System.Double)">
+            <summary>
+            Requests that a fade-out begins (will start on the next call to Read)
+            </summary>
+            <param name="fadeDurationInMilliseconds">Duration of fade in milliseconds</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.FadeInOutSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Buffer to read into</param>
+            <param name="offset">Offset within buffer to write to</param>
+            <param name="count">Number of samples desired</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.FadeInOutSampleProvider.WaveFormat">
+            <summary>
+            WaveFormat of this SampleProvider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.MeteringSampleProvider">
+            <summary>
+            Simple SampleProvider that passes through audio unchanged and raises
+            an event every n samples with the maximum sample value from the period
+            for metering purposes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MeteringSampleProvider.SamplesPerNotification">
+            <summary>
+            Number of Samples per notification
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.SampleProviders.MeteringSampleProvider.StreamVolume">
+            <summary>
+            Raised periodically to inform the user of the max volume
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MeteringSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initialises a new instance of MeteringSampleProvider that raises 10 stream volume
+            events per second
+            </summary>
+            <param name="source">Source sample provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MeteringSampleProvider.#ctor(NAudio.Wave.ISampleProvider,System.Int32)">
+            <summary>
+            Initialises a new instance of MeteringSampleProvider 
+            </summary>
+            <param name="source">source sampler provider</param>
+            <param name="samplesPerNotification">Number of samples between notifications</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MeteringSampleProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this sample provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MeteringSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this Sample Provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.StreamVolumeEventArgs">
+            <summary>
+            Event args for aggregated stream volume
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StreamVolumeEventArgs.MaxSampleValues">
+            <summary>
+            Max sample values array (one for each channel)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.MixingSampleProvider">
+            <summary>
+            A sample provider mixer, allowing inputs to be added and removed
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.#ctor(NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new MixingSampleProvider, with no inputs, but a specified WaveFormat
+            </summary>
+            <param name="waveFormat">The WaveFormat of this mixer. All inputs must be in this format</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.ISampleProvider})">
+            <summary>
+            Creates a new MixingSampleProvider, based on the given inputs
+            </summary>
+            <param name="sources">Mixer inputs - must all have the same waveformat, and must
+            all be of the same WaveFormat. There must be at least one input</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MixingSampleProvider.MixerInputs">
+            <summary>
+            Returns the mixer inputs (read-only - use AddMixerInput to add an input
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MixingSampleProvider.ReadFully">
+            <summary>
+            When set to true, the Read method always returns the number
+            of samples requested, even if there are no inputs, or if the
+            current inputs reach their end. Setting this to true effectively
+            makes this a never-ending sample provider, so take care if you plan
+            to write it out to a file.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.AddMixerInput(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Adds a WaveProvider as a Mixer input.
+            Must be PCM or IEEE float already
+            </summary>
+            <param name="mixerInput">IWaveProvider mixer input</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.AddMixerInput(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Adds a new mixer input
+            </summary>
+            <param name="mixerInput">Mixer input</param>
+        </member>
+        <member name="E:NAudio.Wave.SampleProviders.MixingSampleProvider.MixerInputEnded">
+            <summary>
+            Raised when a mixer input has been removed because it has ended
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.RemoveMixerInput(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Removes a mixer input
+            </summary>
+            <param name="mixerInput">Mixer input to remove</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.RemoveAllMixerInputs">
+            <summary>
+            Removes all mixer inputs
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MixingSampleProvider.WaveFormat">
+            <summary>
+            The output WaveFormat of this sample provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MixingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleProviderEventArgs">
+            <summary>
+            SampleProvider event args
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleProviderEventArgs.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Constructs a new SampleProviderEventArgs
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleProviderEventArgs.SampleProvider">
+            <summary>
+            The Sample Provider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider">
+            <summary>
+            No nonsense mono to stereo provider, no volume adjustment,
+            just copies input to left and right. 
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initializes a new instance of MonoToStereoSampleProvider
+            </summary>
+            <param name="source">Source sample provider</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.WaveFormat">
+            <summary>
+            WaveFormat of this provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.LeftVolume">
+            <summary>
+            Multiplier for left channel (default is 1.0)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.RightVolume">
+            <summary>
+            Multiplier for right channel (default is 1.0)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.MultiplexingSampleProvider">
+            <summary>
+            Allows any number of inputs to be patched to outputs
+            Uses could include swapping left and right channels, turning mono into stereo,
+            feeding different input sources to different soundcard outputs etc
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.ISampleProvider},System.Int32)">
+            <summary>
+            Creates a multiplexing sample provider, allowing re-patching of input channels to different
+            output channels
+            </summary>
+            <param name="inputs">Input sample providers. Must all be of the same sample rate, but can have any number of channels</param>
+            <param name="numberOfOutputChannels">Desired number of output channels.</param>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.inputBuffer">
+            <summary>
+            persistent temporary buffer to prevent creating work for garbage collector
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Buffer to be filled with sample data</param>
+            <param name="offset">Offset into buffer to start writing to, usually 0</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.WaveFormat">
+            <summary>
+            The output WaveFormat for this SampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.ConnectInputToOutput(System.Int32,System.Int32)">
+            <summary>
+            Connects a specified input channel to an output channel
+            </summary>
+            <param name="inputChannel">Input Channel index (zero based). Must be less than InputChannelCount</param>
+            <param name="outputChannel">Output Channel index (zero based). Must be less than OutputChannelCount</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.InputChannelCount">
+            <summary>
+            The number of input channels. Note that this is not the same as the number of input wave providers. If you pass in
+            one stereo and one mono input provider, the number of input channels is three.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MultiplexingSampleProvider.OutputChannelCount">
+            <summary>
+            The number of output channels, as specified in the constructor.
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.NotifyingSampleProvider">
+            <summary>
+            Simple class that raises an event on every sample
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.NotifyingSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initializes a new instance of NotifyingSampleProvider
+            </summary>
+            <param name="source">Source Sample Provider</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.NotifyingSampleProvider.WaveFormat">
+            <summary>
+            WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.NotifyingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="sampleCount">Number of samples desired</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="E:NAudio.Wave.SampleProviders.NotifyingSampleProvider.Sample">
+            <summary>
+            Sample notifier
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.OffsetSampleProvider">
+            <summary>
+            Allows you to:
+            1. insert a pre-delay of silence before the source begins
+            2. skip over a certain amount of the beginning of the source
+            3. only play a set amount from the source
+            4. insert silence at the end after the source is complete
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.DelayBySamples">
+            <summary>
+            Number of samples of silence to insert before playing source
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.DelayBy">
+            <summary>
+            Amount of silence to insert before playing
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.SkipOverSamples">
+            <summary>
+            Number of samples in source to discard
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.SkipOver">
+            <summary>
+            Amount of audio to skip over from the source before beginning playback
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.TakeSamples">
+            <summary>
+            Number of samples to read from source (if 0, then read it all)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.Take">
+            <summary>
+            Amount of audio to take from the source (TimeSpan.Zero means play to end)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.LeadOutSamples">
+            <summary>
+            Number of samples of silence to insert after playing source
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.LeadOut">
+            <summary>
+            Amount of silence to insert after playing source
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.OffsetSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a new instance of offsetSampleProvider
+            </summary>
+            <param name="sourceProvider">The Source Sample Provider to read from</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.OffsetSampleProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this SampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.OffsetSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset within sample buffer to read to</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.PanningSampleProvider">
+            <summary>
+            Converts a mono sample provider to stereo, with a customisable pan strategy
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.PanningSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initialises a new instance of the PanningSampleProvider
+            </summary>
+            <param name="source">Source sample provider, must be mono</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.PanningSampleProvider.Pan">
+            <summary>
+            Pan value, must be between -1 (left) and 1 (right)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.PanningSampleProvider.PanStrategy">
+            <summary>
+            The pan strategy currently in use
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.PanningSampleProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this sample provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.PanningSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples desired</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.StereoSamplePair">
+            <summary>
+            Pair of floating point values, representing samples or multipliers
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoSamplePair.Left">
+            <summary>
+            Left value
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoSamplePair.Right">
+            <summary>
+            Right value
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.IPanStrategy">
+            <summary>
+            Required Interface for a Panning Strategy
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.IPanStrategy.GetMultipliers(System.Single)">
+            <summary>
+            Gets the left and right multipliers for a given pan value
+            </summary>
+            <param name="pan">Pan value from -1 to 1</param>
+            <returns>Left and right multipliers in a stereo sample pair</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.StereoBalanceStrategy">
+            <summary>
+            Simplistic "balance" control - treating the mono input as if it was stereo
+            In the centre, both channels full volume. Opposite channel decays linearly 
+            as balance is turned to to one side
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.StereoBalanceStrategy.GetMultipliers(System.Single)">
+            <summary>
+            Gets the left and right channel multipliers for this pan value
+            </summary>
+            <param name="pan">Pan value, between -1 and 1</param>
+            <returns>Left and right multipliers</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SquareRootPanStrategy">
+            <summary>
+            Square Root Pan, thanks to Yuval Naveh
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SquareRootPanStrategy.GetMultipliers(System.Single)">
+            <summary>
+            Gets the left and right channel multipliers for this pan value
+            </summary>
+            <param name="pan">Pan value, between -1 and 1</param>
+            <returns>Left and right multipliers</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SinPanStrategy">
+            <summary>
+            Sinus Pan, thanks to Yuval Naveh
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SinPanStrategy.GetMultipliers(System.Single)">
+            <summary>
+            Gets the left and right channel multipliers for this pan value
+            </summary>
+            <param name="pan">Pan value, between -1 and 1</param>
+            <returns>Left and right multipliers</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.LinearPanStrategy">
+            <summary>
+            Linear Pan
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.LinearPanStrategy.GetMultipliers(System.Single)">
+            <summary>
+            Gets the left and right channel multipliers for this pan value
+            </summary>
+            <param name="pan">Pan value, between -1 and 1</param>
+            <returns>Left and right multipliers</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.Pcm16BitToSampleProvider">
+            <summary>
+            Converts an IWaveProvider containing 16 bit PCM to an
+            ISampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm16BitToSampleProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of Pcm16BitToSampleProvider
+            </summary>
+            <param name="source">Source wave provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm16BitToSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.Pcm24BitToSampleProvider">
+            <summary>
+            Converts an IWaveProvider containing 24 bit PCM to an
+            ISampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm24BitToSampleProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of Pcm24BitToSampleProvider
+            </summary>
+            <param name="source">Source Wave Provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm24BitToSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads floating point samples from this sample provider
+            </summary>
+            <param name="buffer">sample buffer</param>
+            <param name="offset">offset within sample buffer to write to</param>
+            <param name="count">number of samples required</param>
+            <returns>number of samples provided</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.Pcm32BitToSampleProvider">
+            <summary>
+            Converts an IWaveProvider containing 32 bit PCM to an
+            ISampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm32BitToSampleProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of Pcm32BitToSampleProvider
+            </summary>
+            <param name="source">Source Wave Provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm32BitToSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads floating point samples from this sample provider
+            </summary>
+            <param name="buffer">sample buffer</param>
+            <param name="offset">offset within sample buffer to write to</param>
+            <param name="count">number of samples required</param>
+            <returns>number of samples provided</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.Pcm8BitToSampleProvider">
+            <summary>
+            Converts an IWaveProvider containing 8 bit PCM to an
+            ISampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm8BitToSampleProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of Pcm8BitToSampleProvider
+            </summary>
+            <param name="source">Source wave provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.Pcm8BitToSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples to read</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleChannel">
+            <summary>
+            Utility class that takes an IWaveProvider input at any bit depth
+            and exposes it as an ISampleProvider. Can turn mono inputs into stereo,
+            and allows adjusting of volume
+            (The eventual successor to WaveChannel32)
+            This class also serves as an example of how you can link together several simple 
+            Sample Providers to form a more useful class.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleChannel.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of SampleChannel
+            </summary>
+            <param name="waveProvider">Source wave provider, must be PCM or IEEE</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleChannel.#ctor(NAudio.Wave.IWaveProvider,System.Boolean)">
+            <summary>
+            Initialises a new instance of SampleChannel
+            </summary>
+            <param name="waveProvider">Source wave provider, must be PCM or IEEE</param>
+            <param name="forceStereo">force mono inputs to become stereo</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleChannel.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="sampleCount">Number of samples desired</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleChannel.WaveFormat">
+            <summary>
+            The WaveFormat of this Sample Provider
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleChannel.Volume">
+            <summary>
+            Allows adjusting the volume, 1.0f = full volume
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.SampleProviders.SampleChannel.PreVolumeMeter">
+            <summary>
+            Raised periodically to inform the user of the max volume
+            (before the volume meter)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleProviderConverterBase">
+            <summary>
+            Helper base class for classes converting to ISampleProvider
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SampleProviderConverterBase.source">
+            <summary>
+            Source Wave Provider
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SampleProviderConverterBase.sourceBuffer">
+            <summary>
+            Source buffer (to avoid constantly creating small buffers during playback)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleProviderConverterBase.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialises a new instance of SampleProviderConverterBase
+            </summary>
+            <param name="source">Source Wave provider</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleProviderConverterBase.WaveFormat">
+            <summary>
+            Wave format of this wave provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleProviderConverterBase.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from the source wave provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="count">Number of samples required</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleProviderConverterBase.EnsureSourceBuffer(System.Int32)">
+            <summary>
+            Ensure the source buffer exists and is big enough
+            </summary>
+            <param name="sourceBytesRequired">Bytes required</param>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleProviderConverters">
+            <summary>
+            Utility class for converting to SampleProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleProviderConverters.ConvertWaveProviderIntoSampleProvider(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Helper function to go from IWaveProvider to a SampleProvider
+            Must already be PCM or IEEE float
+            </summary>
+            <param name="waveProvider">The WaveProvider to convert</param>
+            <returns>A sample provider</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleToWaveProvider">
+            <summary>
+            Helper class for when you need to convert back to an IWaveProvider from
+            an ISampleProvider. Keeps it as IEEE float
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initializes a new instance of the WaveProviderFloatToWaveProvider class
+            </summary>
+            <param name="source">Source wave provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this provider
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleToWaveProvider.WaveFormat">
+            <summary>
+            The waveformat of this WaveProvider (same as the source)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleToWaveProvider16">
+            <summary>
+            Converts a sample provider to 16 bit PCM, optionally clipping and adjusting volume along the way
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider16.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts from an ISampleProvider (IEEE float) to a 16 bit PCM IWaveProvider.
+            Number of channels and sample rate remain unchanged.
+            </summary>
+            <param name="sourceProvider">The input source provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider16.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleToWaveProvider16.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.IWaveProvider.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleToWaveProvider16.Volume">
+            <summary>
+            Volume of this channel. 1.0 = full scale
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SampleToWaveProvider24">
+            <summary>
+            Converts a sample provider to 24 bit PCM, optionally clipping and adjusting volume along the way
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider24.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts from an ISampleProvider (IEEE float) to a 16 bit PCM IWaveProvider.
+            Number of channels and sample rate remain unchanged.
+            </summary>
+            <param name="sourceProvider">The input source provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SampleToWaveProvider24.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream, clipping if necessary
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleToWaveProvider24.WaveFormat">
+            <summary>
+            The Format of this IWaveProvider
+            <see cref="P:NAudio.Wave.IWaveProvider.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SampleToWaveProvider24.Volume">
+            <summary>
+            Volume of this channel. 1.0 = full scale, 0.0 to mute
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SignalGenerator">
+            <summary>
+            Signal Generator
+            Sin, Square, Triangle, SawTooth, White Noise, Pink Noise, Sweep.
+            </summary>
+            <remarks>
+            Posibility to change ISampleProvider
+            Example :
+            ---------
+            WaveOut _waveOutGene = new WaveOut();
+            WaveGenerator wg = new SignalGenerator();
+            wg.Type = ...
+            wg.Frequency = ...
+            wg ...
+            _waveOutGene.Init(wg);
+            _waveOutGene.Play();
+            </remarks>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SignalGenerator.#ctor">
+            <summary>
+            Initializes a new instance for the Generator (Default :: 44.1Khz, 2 channels, Sinus, Frequency = 440, Gain = 1)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SignalGenerator.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance for the Generator (UserDef SampleRate &amp; Channels)
+            </summary>
+            <param name="sampleRate">Desired sample rate</param>
+            <param name="channel">Number of channels</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.WaveFormat">
+            <summary>
+            The waveformat of this WaveProvider (same as the source)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.Frequency">
+            <summary>
+            Frequency for the Generator. (20.0 - 20000.0 Hz)
+            Sin, Square, Triangle, SawTooth, Sweep (Start Frequency).
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.FrequencyLog">
+            <summary>
+            Return Log of Frequency Start (Read only)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.FrequencyEnd">
+            <summary>
+            End Frequency for the Sweep Generator. (Start Frequency in Frequency)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.FrequencyEndLog">
+            <summary>
+            Return Log of Frequency End (Read only)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.Gain">
+            <summary>
+            Gain for the Generator. (0.0 to 1.0)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.PhaseReverse">
+            <summary>
+            Channel PhaseReverse
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.Type">
+            <summary>
+            Type of Generator.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SignalGenerator.SweepLengthSecs">
+            <summary>
+            Length Seconds for the Sweep Generator.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SignalGenerator.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this provider.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SignalGenerator.NextRandomTwo">
+            <summary>
+            Private :: Random for WhiteNoise &amp; Pink Noise (Value form -1 to 1)
+            </summary>
+            <returns>Random value from -1 to +1</returns>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SignalGeneratorType">
+            <summary>
+            Signal Generator type
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.Pink">
+            <summary>
+            Pink noise
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.White">
+            <summary>
+            White noise
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.Sweep">
+            <summary>
+            Sweep
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.Sin">
+            <summary>
+            Sine wave
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.Square">
+            <summary>
+            Square wave
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.Triangle">
+            <summary>
+            Triangle Wave
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.SawTooth">
+            <summary>
+            Sawtooth wave
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider">
+             <summary>
+             Author: Freefall
+             Date: 05.08.16
+             Based on: the port of Stephan M. Bernsee´s pitch shifting class
+             Port site: https://sites.google.com/site/mikescoderama/pitch-shifting
+             Test application and github site: https://github.com/Freefall63/NAudio-Pitchshifter
+             
+             NOTE: I strongly advice to add a Limiter for post-processing.
+             For my needs the FastAttackCompressor1175 provides acceptable results:
+             https://github.com/Jiyuu/SkypeFX/blob/master/JSNet/FastAttackCompressor1175.cs
+            
+             UPDATE: Added a simple Limiter based on the pydirac implementation.
+             https://github.com/echonest/remix/blob/master/external/pydirac225/source/Dirac_LE.cpp
+             
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a new SMB Pitch Shifting Sample Provider with default settings
+            </summary>
+            <param name="sourceProvider">Source provider</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider.#ctor(NAudio.Wave.ISampleProvider,System.Int32,System.Int64,System.Single)">
+            <summary>
+            Creates a new SMB Pitch Shifting Sample Provider with custom settings
+            </summary>
+            <param name="sourceProvider">Source provider</param>
+            <param name="fftSize">FFT Size (any power of two &lt;= 4096: 4096, 2048, 1024, 512, ...)</param>
+            <param name="osamp">Oversampling (number of overlapping windows)</param>
+            <param name="initialPitch">Initial pitch (0.5f = octave down, 1.0f = normal, 2.0f = octave up)</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Read from this sample provider
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider.WaveFormat">
+            <summary>
+            WaveFormat
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.SmbPitchShiftingSampleProvider.PitchFactor">
+            <summary>
+            Pitch Factor (0.5f = octave down, 1.0f = normal, 2.0f = octave up)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider">
+            <summary>
+            Takes a stereo input and turns it to mono
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a new mono ISampleProvider based on a stereo input
+            </summary>
+            <param name="sourceProvider">Stereo 16 bit PCM input</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.LeftVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the left channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.RightVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the right channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.WaveFormat">
+            <summary>
+            Output Wave Format
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this SampleProvider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.VolumeSampleProvider">
+            <summary>
+            Very simple sample provider supporting adjustable gain
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.VolumeSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Initializes a new instance of VolumeSampleProvider
+            </summary>
+            <param name="source">Source Sample Provider</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.VolumeSampleProvider.WaveFormat">
+            <summary>
+            WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.VolumeSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads samples from this sample provider
+            </summary>
+            <param name="buffer">Sample buffer</param>
+            <param name="offset">Offset into sample buffer</param>
+            <param name="sampleCount">Number of samples desired</param>
+            <returns>Number of samples read</returns>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.VolumeSampleProvider.Volume">
+            <summary>
+            Allows adjusting the volume, 1.0f = full volume
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.WaveToSampleProvider">
+            <summary>
+            Helper class turning an already 32 bit floating point IWaveProvider
+            into an ISampleProvider - hopefully not needed for most applications
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WaveToSampleProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initializes a new instance of the WaveToSampleProvider class
+            </summary>
+            <param name="source">Source wave provider, must be IEEE float</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WaveToSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this provider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.WaveToSampleProvider64">
+            <summary>
+            Helper class turning an already 64 bit floating point IWaveProvider
+            into an ISampleProvider - hopefully not needed for most applications
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WaveToSampleProvider64.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initializes a new instance of the WaveToSampleProvider class
+            </summary>
+            <param name="source">Source wave provider, must be IEEE float</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WaveToSampleProvider64.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this provider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.WdlResamplingSampleProvider">
+            <summary>
+            Fully managed resampling sample provider, based on the WDL Resampler
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WdlResamplingSampleProvider.#ctor(NAudio.Wave.ISampleProvider,System.Int32)">
+            <summary>
+            Constructs a new resampler
+            </summary>
+            <param name="source">Source to resample</param>
+            <param name="newSampleRate">Desired output sample rate</param>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.WdlResamplingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this sample provider
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.WdlResamplingSampleProvider.WaveFormat">
+            <summary>
+            Output WaveFormat
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveExtensionMethods">
+            <summary>
+            Useful extension methods to make switching between WaveAndSampleProvider easier
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToSampleProvider(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Converts a WaveProvider into a SampleProvider (only works for PCM)
+            </summary>
+            <param name="waveProvider">WaveProvider to convert</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.Init(NAudio.Wave.IWavePlayer,NAudio.Wave.ISampleProvider,System.Boolean)">
+            <summary>
+            Allows sending a SampleProvider directly to an IWavePlayer without needing to convert
+            back to an IWaveProvider
+            </summary>
+            <param name="wavePlayer">The WavePlayer</param>
+            <param name="sampleProvider"></param>
+            <param name="convertTo16Bit"></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.AsStandardWaveFormat(NAudio.Wave.WaveFormat)">
+            <summary>
+            Turns WaveFormatExtensible into a standard waveformat if possible
+            </summary>
+            <param name="waveFormat">Input wave format</param>
+            <returns>A standard PCM or IEEE waveformat, or the original waveformat</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToWaveProvider(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts a ISampleProvider to a IWaveProvider but still 32 bit float
+            </summary>
+            <param name="sampleProvider">SampleProvider to convert</param>
+            <returns>An IWaveProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToWaveProvider16(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts a ISampleProvider to a IWaveProvider but and convert to 16 bit
+            </summary>
+            <param name="sampleProvider">SampleProvider to convert</param>
+            <returns>A 16 bit IWaveProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.FollowedBy(NAudio.Wave.ISampleProvider,NAudio.Wave.ISampleProvider)">
+            <summary>
+            Concatenates one Sample Provider on the end of another
+            </summary>
+            <param name="sampleProvider">The sample provider to play first</param>
+            <param name="next">The sample provider to play next</param>
+            <returns>A single sampleprovider to play one after the other</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.FollowedBy(NAudio.Wave.ISampleProvider,System.TimeSpan,NAudio.Wave.ISampleProvider)">
+            <summary>
+            Concatenates one Sample Provider on the end of another with silence inserted
+            </summary>
+            <param name="sampleProvider">The sample provider to play first</param>
+            <param name="silenceDuration">Silence duration to insert between the two</param>
+            <param name="next">The sample provider to play next</param>
+            <returns>A single sample provider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.Skip(NAudio.Wave.ISampleProvider,System.TimeSpan)">
+            <summary>
+            Skips over a specified amount of time (by consuming source stream)
+            </summary>
+            <param name="sampleProvider">Source sample provider</param>
+            <param name="skipDuration">Duration to skip over</param>
+            <returns>A sample provider that skips over the specified amount of time</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.Take(NAudio.Wave.ISampleProvider,System.TimeSpan)">
+            <summary>
+            Takes a specified amount of time from the source stream
+            </summary>
+            <param name="sampleProvider">Source sample provider</param>
+            <param name="takeDuration">Duration to take</param>
+            <returns>A sample provider that reads up to the specified amount of time</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToMono(NAudio.Wave.ISampleProvider,System.Single,System.Single)">
+            <summary>
+            Converts a Stereo Sample Provider to mono, allowing mixing of channel volume
+            </summary>
+            <param name="sourceProvider">Stereo Source Provider</param>
+            <param name="leftVol">Amount of left channel to mix in (0 = mute, 1 = full, 0.5 for mixing half from each channel)</param>
+            <param name="rightVol">Amount of right channel to mix in (0 = mute, 1 = full, 0.5 for mixing half from each channel)</param>
+            <returns>A mono SampleProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToStereo(NAudio.Wave.ISampleProvider,System.Single,System.Single)">
+            <summary>
+            Converts a Mono ISampleProvider to stereo
+            </summary>
+            <param name="sourceProvider">Mono Source Provider</param>
+            <param name="leftVol">Amount to mix to left channel (1.0 is full volume)</param>
+            <param name="rightVol">Amount to mix to right channel (1.0 is full volume)</param>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.Wave.AdpcmWaveFormat">
+            <summary>
+            Microsoft ADPCM
+            See http://icculus.org/SDL_sound/downloads/external_documentation/wavecomp.htm
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AdpcmWaveFormat.#ctor">
+            <summary>
+            Empty constructor needed for marshalling from a pointer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AdpcmWaveFormat.SamplesPerBlock">
+            <summary>
+            Samples per block
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AdpcmWaveFormat.NumCoefficients">
+            <summary>
+            Number of coefficients
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AdpcmWaveFormat.Coefficients">
+            <summary>
+            Coefficients
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AdpcmWaveFormat.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Microsoft ADPCM  
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Channels</param>
+        </member>
+        <member name="M:NAudio.Wave.AdpcmWaveFormat.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serializes this wave format
+            </summary>
+            <param name="writer">Binary writer</param>
+        </member>
+        <member name="M:NAudio.Wave.AdpcmWaveFormat.ToString">
+            <summary>
+            String Description of this WaveFormat
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Gsm610WaveFormat">
+            <summary>
+            GSM 610
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Gsm610WaveFormat.#ctor">
+            <summary>
+            Creates a GSM 610 WaveFormat
+            For now hardcoded to 13kbps
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Gsm610WaveFormat.SamplesPerBlock">
+            <summary>
+            Samples per block
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Gsm610WaveFormat.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Writes this structure to a BinaryWriter
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.ImaAdpcmWaveFormat">
+            <summary>
+            IMA/DVI ADPCM Wave Format
+            Work in progress
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.ImaAdpcmWaveFormat.#ctor">
+            <summary>
+            parameterless constructor for Marshalling
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.ImaAdpcmWaveFormat.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a new IMA / DVI ADPCM Wave Format
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Number of channels</param>
+            <param name="bitsPerSample">Bits Per Sample</param>
+        </member>
+        <member name="T:NAudio.Wave.Mp3WaveFormat">
+            <summary>
+            MP3 WaveFormat, MPEGLAYER3WAVEFORMAT from mmreg.h
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormat.id">
+            <summary>
+            Wave format ID (wID)
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormat.flags">
+            <summary>
+            Padding flags (fdwFlags)
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormat.blockSize">
+            <summary>
+            Block Size (nBlockSize)
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormat.framesPerBlock">
+            <summary>
+            Frames per block (nFramesPerBlock)
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormat.codecDelay">
+            <summary>
+            Codec Delay (nCodecDelay)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3WaveFormat.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a new MP3 WaveFormat
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Mp3WaveFormatFlags">
+            <summary>
+            Wave Format Padding Flags
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatFlags.PaddingIso">
+            <summary>
+            MPEGLAYER3_FLAG_PADDING_ISO
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatFlags.PaddingOn">
+            <summary>
+            MPEGLAYER3_FLAG_PADDING_ON
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatFlags.PaddingOff">
+            <summary>
+            MPEGLAYER3_FLAG_PADDING_OFF
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Mp3WaveFormatId">
+            <summary>
+            Wave Format ID
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatId.Unknown">
+            <summary>MPEGLAYER3_ID_UNKNOWN</summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatId.Mpeg">
+            <summary>MPEGLAYER3_ID_MPEG</summary>
+        </member>
+        <member name="F:NAudio.Wave.Mp3WaveFormatId.ConstantFrameSize">
+            <summary>MPEGLAYER3_ID_CONSTANTFRAMESIZE</summary>
+        </member>
+        <member name="T:NAudio.Wave.TrueSpeechWaveFormat">
+            <summary>
+            DSP Group TrueSpeech
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.TrueSpeechWaveFormat.#ctor">
+            <summary>
+            DSP Group TrueSpeech WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.TrueSpeechWaveFormat.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Writes this structure to a BinaryWriter
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormat">
+            <summary>
+            Represents a Wave file format
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.waveFormatTag">
+            <summary>format type</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.channels">
+            <summary>number of channels</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.sampleRate">
+            <summary>sample rate</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.averageBytesPerSecond">
+            <summary>for buffer estimation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.blockAlign">
+            <summary>block size of data</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.bitsPerSample">
+            <summary>number of bits per sample of mono data</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormat.extraSize">
+            <summary>number of following bytes</summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.#ctor">
+            <summary>
+            Creates a new PCM 44.1Khz stereo 16 bit format
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Creates a new 16 bit wave format with the specified sample
+            rate and channel count
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Number of channels</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.ConvertLatencyToByteSize(System.Int32)">
+            <summary>
+            Gets the size of a wave buffer equivalent to the latency in milliseconds.
+            </summary>
+            <param name="milliseconds">The milliseconds.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.CreateCustomFormat(NAudio.Wave.WaveFormatEncoding,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a WaveFormat with custom members
+            </summary>
+            <param name="tag">The encoding</param>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Number of channels</param>
+            <param name="averageBytesPerSecond">Average Bytes Per Second</param>
+            <param name="blockAlign">Block Align</param>
+            <param name="bitsPerSample">Bits Per Sample</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.CreateALawFormat(System.Int32,System.Int32)">
+            <summary>
+            Creates an A-law wave format
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Number of Channels</param>
+            <returns>Wave Format</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.CreateMuLawFormat(System.Int32,System.Int32)">
+            <summary>
+            Creates a Mu-law wave format
+            </summary>
+            <param name="sampleRate">Sample Rate</param>
+            <param name="channels">Number of Channels</param>
+            <returns>Wave Format</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a new PCM format with the specified sample rate, bit depth and channels
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.CreateIeeeFloatWaveFormat(System.Int32,System.Int32)">
+            <summary>
+            Creates a new 32 bit IEEE floating point wave format
+            </summary>
+            <param name="sampleRate">sample rate</param>
+            <param name="channels">number of channels</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.MarshalFromPtr(System.IntPtr)">
+            <summary>
+            Helper function to retrieve a WaveFormat structure from a pointer
+            </summary>
+            <param name="pointer">WaveFormat structure</param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.MarshalToPtr(NAudio.Wave.WaveFormat)">
+            <summary>
+            Helper function to marshal WaveFormat to an IntPtr
+            </summary>
+            <param name="format">WaveFormat</param>
+            <returns>IntPtr to WaveFormat structure (needs to be freed by callee)</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.FromFormatChunk(System.IO.BinaryReader,System.Int32)">
+            <summary>
+            Reads in a WaveFormat (with extra data) from a fmt chunk (chunk identifier and
+            length should already have been read)
+            </summary>
+            <param name="br">Binary reader</param>
+            <param name="formatChunkLength">Format chunk length</param>
+            <returns>A WaveFormatExtraData</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.#ctor(System.IO.BinaryReader)">
+            <summary>
+            Reads a new WaveFormat object from a stream
+            </summary>
+            <param name="br">A binary reader that wraps the stream</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.ToString">
+            <summary>
+            Reports this WaveFormat as a string
+            </summary>
+            <returns>String describing the wave format</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.Equals(System.Object)">
+            <summary>
+            Compares with another WaveFormat object
+            </summary>
+            <param name="obj">Object to compare to</param>
+            <returns>True if the objects are the same</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.GetHashCode">
+            <summary>
+            Provides a Hashcode for this WaveFormat
+            </summary>
+            <returns>A hashcode</returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.Encoding">
+            <summary>
+            Returns the encoding type used
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormat.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Writes this WaveFormat object to a stream
+            </summary>
+            <param name="writer">the output stream</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.Channels">
+            <summary>
+            Returns the number of channels (1=mono,2=stereo etc)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.SampleRate">
+            <summary>
+            Returns the sample rate (samples per second)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.AverageBytesPerSecond">
+            <summary>
+            Returns the average number of bytes used per second
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.BlockAlign">
+            <summary>
+            Returns the block alignment
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.BitsPerSample">
+            <summary>
+            Returns the number of bits per sample (usually 16 or 32, sometimes 24 or 8)
+            Can be 0 for some codecs
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormat.ExtraSize">
+            <summary>
+            Returns the number of extra bytes used by this waveformat. Often 0,
+            except for compressed formats which store extra data after the WAVEFORMATEX header
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormatCustomMarshaler">
+            <summary>
+            Custom marshaller for WaveFormat structures
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.GetInstance(System.String)">
+            <summary>
+            Gets the instance of this marshaller
+            </summary>
+            <param name="cookie"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.CleanUpManagedData(System.Object)">
+            <summary>
+            Clean up managed data
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.CleanUpNativeData(System.IntPtr)">
+            <summary>
+            Clean up native data
+            </summary>
+            <param name="pNativeData"></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.GetNativeDataSize">
+            <summary>
+            Get native data size
+            </summary>        
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.MarshalManagedToNative(System.Object)">
+            <summary>
+            Marshal managed to native
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatCustomMarshaler.MarshalNativeToManaged(System.IntPtr)">
+            <summary>
+            Marshal Native to Managed
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormatEncoding">
+            <summary>
+            Summary description for WaveFormatEncoding.
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Unknown">
+            <summary>WAVE_FORMAT_UNKNOWN,	Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Pcm">
+            <summary>WAVE_FORMAT_PCM		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Adpcm">
+            <summary>WAVE_FORMAT_ADPCM		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.IeeeFloat">
+            <summary>WAVE_FORMAT_IEEE_FLOAT Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vselp">
+            <summary>WAVE_FORMAT_VSELP		Compaq Computer Corp.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.IbmCvsd">
+            <summary>WAVE_FORMAT_IBM_CVSD	IBM Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.ALaw">
+            <summary>WAVE_FORMAT_ALAW		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MuLaw">
+            <summary>WAVE_FORMAT_MULAW		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Dts">
+            <summary>WAVE_FORMAT_DTS		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Drm">
+            <summary>WAVE_FORMAT_DRM		Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WmaVoice9">
+            <summary>WAVE_FORMAT_WMAVOICE9 </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.OkiAdpcm">
+            <summary>WAVE_FORMAT_OKI_ADPCM	OKI</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DviAdpcm">
+            <summary>WAVE_FORMAT_DVI_ADPCM	Intel Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.ImaAdpcm">
+            <summary>WAVE_FORMAT_IMA_ADPCM  Intel Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MediaspaceAdpcm">
+            <summary>WAVE_FORMAT_MEDIASPACE_ADPCM Videologic</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.SierraAdpcm">
+            <summary>WAVE_FORMAT_SIERRA_ADPCM Sierra Semiconductor Corp </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.G723Adpcm">
+            <summary>WAVE_FORMAT_G723_ADPCM Antex Electronics Corporation </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DigiStd">
+            <summary>WAVE_FORMAT_DIGISTD DSP Solutions, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DigiFix">
+            <summary>WAVE_FORMAT_DIGIFIX DSP Solutions, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DialogicOkiAdpcm">
+            <summary>WAVE_FORMAT_DIALOGIC_OKI_ADPCM Dialogic Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MediaVisionAdpcm">
+            <summary>WAVE_FORMAT_MEDIAVISION_ADPCM Media Vision, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.CUCodec">
+            <summary>WAVE_FORMAT_CU_CODEC Hewlett-Packard Company </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.YamahaAdpcm">
+            <summary>WAVE_FORMAT_YAMAHA_ADPCM Yamaha Corporation of America</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.SonarC">
+            <summary>WAVE_FORMAT_SONARC Speech Compression</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DspGroupTrueSpeech">
+            <summary>WAVE_FORMAT_DSPGROUP_TRUESPEECH DSP Group, Inc </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.EchoSpeechCorporation1">
+            <summary>WAVE_FORMAT_ECHOSC1 Echo Speech Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.AudioFileAf36">
+            <summary>WAVE_FORMAT_AUDIOFILE_AF36, Virtual Music, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Aptx">
+            <summary>WAVE_FORMAT_APTX Audio Processing Technology</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.AudioFileAf10">
+            <summary>WAVE_FORMAT_AUDIOFILE_AF10, Virtual Music, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Prosody1612">
+            <summary>WAVE_FORMAT_PROSODY_1612, Aculab plc</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Lrc">
+            <summary>WAVE_FORMAT_LRC, Merging Technologies S.A. </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DolbyAc2">
+            <summary>WAVE_FORMAT_DOLBY_AC2, Dolby Laboratories</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Gsm610">
+            <summary>WAVE_FORMAT_GSM610, Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MsnAudio">
+            <summary>WAVE_FORMAT_MSNAUDIO, Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.AntexAdpcme">
+            <summary>WAVE_FORMAT_ANTEX_ADPCME, Antex Electronics Corporation</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.ControlResVqlpc">
+            <summary>WAVE_FORMAT_CONTROL_RES_VQLPC, Control Resources Limited </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DigiReal">
+            <summary>WAVE_FORMAT_DIGIREAL, DSP Solutions, Inc. </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.DigiAdpcm">
+            <summary>WAVE_FORMAT_DIGIADPCM, DSP Solutions, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.ControlResCr10">
+            <summary>WAVE_FORMAT_CONTROL_RES_CR10, Control Resources Limited</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_NMS_VBXADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CS_IMAADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ECHOSC3">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ROCKWELL_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ROCKWELL_DIGITALK">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_XEBEC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G721_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G728_CELP">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MSG723">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Mpeg">
+            <summary>WAVE_FORMAT_MPEG, Microsoft Corporation </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_RT24">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_PAC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MpegLayer3">
+            <summary>WAVE_FORMAT_MPEGLAYER3, ISO/MPEG Layer3 Format Tag </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_LUCENT_G723">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CIRRUS">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ESPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CANOPUS_ATRAC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G726_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G722_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DSAT_DISPLAY">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_BYTE_ALIGNED">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_AC8">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_AC10">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_AC16">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_AC20">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_RT24">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_RT29">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_RT29HW">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_VR12">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_VR18">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_TQ40">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SOFTSOUND">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VOXWARE_TQ60">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MSRT24">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G729A">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MVI_MVI2">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DF_G726">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DF_GSM610">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ISIAUDIO">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ONLIVE">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SBC24">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DOLBY_AC3_SPDIF">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MEDIASONIC_G723">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_PROSODY_8KBPS">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ZYXEL_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_PHILIPS_LPCBB">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_PACKED">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MALDEN_PHONYTALK">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Gsm">
+            <summary>WAVE_FORMAT_GSM</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.G729">
+            <summary>WAVE_FORMAT_G729</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.G723">
+            <summary>WAVE_FORMAT_G723</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Acelp">
+            <summary>WAVE_FORMAT_ACELP</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.RawAac">
+            <summary>
+            WAVE_FORMAT_RAW_AAC1
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_RHETOREX_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_IRAT">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VIVO_G723">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VIVO_SIREN">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DIGITAL_G723">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SANYO_LD_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_ACEPLNET">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_ACELP4800">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_ACELP8V3">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_G729">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_G729A">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SIPROLAB_KELVIN">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_G726ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_QUALCOMM_PUREVOICE">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_QUALCOMM_HALFRATE">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_TUBGSM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_MSAUDIO1">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WindowsMediaAudio">
+            <summary>
+            Windows Media Audio, WAVE_FORMAT_WMAUDIO2, Microsoft Corporation
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WindowsMediaAudioProfessional">
+            <summary>
+            Windows Media Audio Professional WAVE_FORMAT_WMAUDIO3, Microsoft Corporation
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WindowsMediaAudioLosseless">
+            <summary>
+            Windows Media Audio Lossless, WAVE_FORMAT_WMAUDIO_LOSSLESS
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WindowsMediaAudioSpdif">
+            <summary>
+            Windows Media Audio Professional over SPDIF WAVE_FORMAT_WMASPDIF (0x0164)
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_UNISYS_NAP_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_UNISYS_NAP_ULAW">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_UNISYS_NAP_ALAW">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_UNISYS_NAP_16K">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CREATIVE_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CREATIVE_FASTSPEECH8">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CREATIVE_FASTSPEECH10">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_UHER_ADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_QUARTERDECK">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ILINK_VC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_RAW_SPORT">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_ESST_AC3">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_IPI_HSX">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_IPI_RPELP">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_CS2">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SONY_SCX">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_FM_TOWNS_SND">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_BTV_DIGITAL">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_QDESIGN_MUSIC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_VME_VMPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_TPC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_OLIGSM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_OLIADPCM">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_OLICELP">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_OLISBC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_OLIOPR">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_LH_CODEC">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_NORRIS">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_SOUNDSPACE_MUSICOMPRESS">
+            <summary></summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MPEG_ADTS_AAC">
+            <summary>
+            Advanced Audio Coding (AAC) audio in Audio Data Transport Stream (ADTS) format.
+            The format block is a WAVEFORMATEX structure with wFormatTag equal to WAVE_FORMAT_MPEG_ADTS_AAC.
+            </summary>
+            <remarks>
+            The WAVEFORMATEX structure specifies the core AAC-LC sample rate and number of channels, 
+            prior to applying spectral band replication (SBR) or parametric stereo (PS) tools, if present.
+            No additional data is required after the WAVEFORMATEX structure.
+            </remarks>
+            <see>http://msdn.microsoft.com/en-us/library/dd317599%28VS.85%29.aspx</see>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MPEG_RAW_AAC">
+            <summary></summary>
+            <remarks>Source wmCodec.h</remarks>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MPEG_LOAS">
+            <summary>
+            MPEG-4 audio transport stream with a synchronization layer (LOAS) and a multiplex layer (LATM).
+            The format block is a WAVEFORMATEX structure with wFormatTag equal to WAVE_FORMAT_MPEG_LOAS.
+            </summary>
+            <remarks>
+            The WAVEFORMATEX structure specifies the core AAC-LC sample rate and number of channels, 
+            prior to applying spectral SBR or PS tools, if present.
+            No additional data is required after the WAVEFORMATEX structure.
+            </remarks>
+            <see>http://msdn.microsoft.com/en-us/library/dd317599%28VS.85%29.aspx</see>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.NOKIA_MPEG_ADTS_AAC">
+            <summary>NOKIA_MPEG_ADTS_AAC</summary>
+            <remarks>Source wmCodec.h</remarks>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.NOKIA_MPEG_RAW_AAC">
+            <summary>NOKIA_MPEG_RAW_AAC</summary>
+            <remarks>Source wmCodec.h</remarks>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.VODAFONE_MPEG_ADTS_AAC">
+            <summary>VODAFONE_MPEG_ADTS_AAC</summary>
+            <remarks>Source wmCodec.h</remarks>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.VODAFONE_MPEG_RAW_AAC">
+            <summary>VODAFONE_MPEG_RAW_AAC</summary>
+            <remarks>Source wmCodec.h</remarks>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.MPEG_HEAAC">
+            <summary>
+            High-Efficiency Advanced Audio Coding (HE-AAC) stream.
+            The format block is an HEAACWAVEFORMAT structure.
+            </summary>
+            <see>http://msdn.microsoft.com/en-us/library/dd317599%28VS.85%29.aspx</see>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DVM">
+            <summary>WAVE_FORMAT_DVM</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis1">
+            <summary>WAVE_FORMAT_VORBIS1 "Og" Original stream compatible</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis2">
+            <summary>WAVE_FORMAT_VORBIS2 "Pg" Have independent header</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis3">
+            <summary>WAVE_FORMAT_VORBIS3 "Qg" Have no codebook header</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis1P">
+            <summary>WAVE_FORMAT_VORBIS1P "og" Original stream compatible</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis2P">
+            <summary>WAVE_FORMAT_VORBIS2P "pg" Have independent headere</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Vorbis3P">
+            <summary>WAVE_FORMAT_VORBIS3P "qg" Have no codebook header</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.Extensible">
+            <summary>WAVE_FORMAT_EXTENSIBLE</summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveFormatEncoding.WAVE_FORMAT_DEVELOPMENT">
+            <summary></summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormatExtensible">
+            <summary>
+            WaveFormatExtensible
+            http://www.microsoft.com/whdc/device/audio/multichaud.mspx
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.#ctor">
+            <summary>
+            Parameterless constructor for marshalling
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a new WaveFormatExtensible for PCM or IEEE
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.ToStandardWaveFormat">
+            <summary>
+            WaveFormatExtensible for PCM or floating point can be awkward to work with
+            This creates a regular WaveFormat structure representing the same audio format
+            Returns the WaveFormat unchanged for non PCM or IEEE float
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormatExtensible.SubFormat">
+            <summary>
+            SubFormat (may be one of AudioMediaSubtypes)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serialize
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.ToString">
+            <summary>
+            String representation
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormatExtraData">
+            <summary>
+            This class used for marshalling from unmanaged code
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormatExtraData.ExtraData">
+            <summary>
+            Allows the extra data to be read
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtraData.#ctor">
+            <summary>
+            parameterless constructor for marshalling
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtraData.#ctor(System.IO.BinaryReader)">
+            <summary>
+            Reads this structure from a BinaryReader
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtraData.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Writes this structure to a BinaryWriter
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFormats.WmaWaveFormat">
+            <summary>
+            The WMA wave format. 
+            May not be much use because WMA codec is a DirectShow DMO not an ACM
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.IWaveIn">
+            <summary>
+            Generic interface for wave recording
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IWaveIn.WaveFormat">
+            <summary>
+            Recording WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWaveIn.StartRecording">
+            <summary>
+            Start Recording
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWaveIn.StopRecording">
+            <summary>
+            Stop Recording
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.IWaveIn.DataAvailable">
+            <summary>
+            Indicates recorded data is available 
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.IWaveIn.RecordingStopped">
+            <summary>
+            Indicates that all recorded data has now been received.
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveInEventArgs">
+            <summary>
+            Event Args for WaveInStream event
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveInEventArgs.#ctor(System.Byte[],System.Int32)">
+            <summary>
+            Creates new WaveInEventArgs
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveInEventArgs.Buffer">
+            <summary>
+            Buffer containing recorded data. Note that it might not be completely
+            full. <seealso cref="P:NAudio.Wave.WaveInEventArgs.BytesRecorded"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveInEventArgs.BytesRecorded">
+            <summary>
+            The number of recorded bytes in Buffer. <seealso cref="P:NAudio.Wave.WaveInEventArgs.Buffer"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.AiffFileWriter">
+            <summary>
+            This class writes audio data to a .aif file on disk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.CreateAiffFile(System.String,NAudio.Wave.WaveStream)">
+            <summary>
+            Creates an Aiff file by reading all the data from a WaveProvider
+            BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
+            or the Aiff File will grow indefinitely.
+            </summary>
+            <param name="filename">The filename to use</param>
+            <param name="sourceProvider">The source WaveProvider</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.#ctor(System.IO.Stream,NAudio.Wave.WaveFormat)">
+            <summary>
+            AiffFileWriter that actually writes to a stream
+            </summary>
+            <param name="outStream">Stream to be written to</param>
+            <param name="format">Wave format to use</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.#ctor(System.String,NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new AiffFileWriter
+            </summary>
+            <param name="filename">The filename to write to</param>
+            <param name="format">The Wave Format of the output data</param>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.Filename">
+            <summary>
+            The aiff file name or null if not applicable
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.Length">
+            <summary>
+            Number of bytes of audio in the data chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.WaveFormat">
+            <summary>
+            WaveFormat of this aiff file
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.CanRead">
+            <summary>
+            Returns false: Cannot read from a AiffFileWriter
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.CanWrite">
+            <summary>
+            Returns true: Can write to a AiffFileWriter
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.CanSeek">
+            <summary>
+            Returns false: Cannot seek within a AiffFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read is not supported for a AiffFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Seek(System.Int64,System.IO.SeekOrigin)">
+            <summary>
+            Seek is not supported for a AiffFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.SetLength(System.Int64)">
+            <summary>
+            SetLength is not supported for AiffFileWriter
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileWriter.Position">
+            <summary>
+            Gets the Position in the AiffFile (i.e. number of bytes written so far)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Appends bytes to the AiffFile (assumes they are already in the correct format)
+            </summary>
+            <param name="data">the buffer containing the wave data</param>
+            <param name="offset">the offset from which to start writing</param>
+            <param name="count">the number of bytes to write</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.WriteSample(System.Single)">
+            <summary>
+            Writes a single sample to the Aiff file
+            </summary>
+            <param name="sample">the sample to write (assumed floating point with 1.0f as max value)</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.WriteSamples(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Writes 32 bit floating point samples to the Aiff file
+            They will be converted to the appropriate bit depth depending on the WaveFormat of the AIF file
+            </summary>
+            <param name="samples">The buffer containing the floating point samples</param>
+            <param name="offset">The offset from which to start writing</param>
+            <param name="count">The number of floating point samples to write</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.WriteSamples(System.Int16[],System.Int32,System.Int32)">
+            <summary>
+            Writes 16 bit samples to the Aiff file
+            </summary>
+            <param name="samples">The buffer containing the 16 bit samples</param>
+            <param name="offset">The offset from which to start writing</param>
+            <param name="count">The number of 16 bit samples to write</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Flush">
+            <summary>
+            Ensures data is written to disk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Dispose(System.Boolean)">
+            <summary>
+            Actually performs the close,making sure the header contains the correct data
+            </summary>
+            <param name="disposing">True if called from <see>Dispose</see></param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.UpdateHeader(System.IO.BinaryWriter)">
+            <summary>
+            Updates the header with file size information
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileWriter.Finalize">
+            <summary>
+            Finaliser - should only be called if the user forgot to close this AiffFileWriter
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.BextChunkInfo">
+            <summary>
+            https://tech.ebu.ch/docs/tech/tech3285.pdf
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BextChunkInfo.#ctor">
+            <summary>
+            Constructs a new BextChunkInfo
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.Description">
+            <summary>
+            Description (max 256 chars)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.Originator">
+            <summary>
+            Originator (max 32 chars)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.OriginatorReference">
+            <summary>
+            Originator Reference (max 32 chars)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.OriginationDateTime">
+            <summary>
+            Originator Date Time
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.OriginationDate">
+            <summary>
+            Origination Date as string
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.OriginationTime">
+            <summary>
+            Origination as time
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.TimeReference">
+            <summary>
+            Time reference (first sample count since midnight)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.Version">
+            <summary>
+            version 2 has loudness stuff which we don't know so using version 1
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.UniqueMaterialIdentifier">
+            <summary>
+            64 bytes http://en.wikipedia.org/wiki/UMID
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.Reserved">
+            <summary>
+            for version 2 = 180 bytes (10 before are loudness values), using version 1 = 190 bytes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BextChunkInfo.CodingHistory">
+            <summary>
+            Coding history arbitrary length string at end of structure
+            http://www.ebu.ch/CMSimages/fr/tec_text_r98-1999_tcm7-4709.pdf
+            A=PCM,F=48000,W=16,M=stereo,T=original,CR/LF
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.BwfWriter">
+            <summary>
+            Broadcast WAVE File Writer
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BwfWriter.#ctor(System.String,NAudio.Wave.WaveFormat,NAudio.Wave.BextChunkInfo)">
+            <summary>
+            Createa a new BwfWriter
+            </summary>
+            <param name="filename">Rarget filename</param>
+            <param name="format">WaveFormat</param>
+            <param name="bextChunkInfo">Chunk information</param>
+        </member>
+        <member name="M:NAudio.Wave.BwfWriter.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Write audio data to this BWF
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BwfWriter.Flush">
+            <summary>
+            Flush writer, and fix up header sizes
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BwfWriter.Dispose">
+            <summary>
+            Disposes this writer
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.CueWaveFileWriter">
+            <summary>
+            A wave file writer that adds cue support
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.CueWaveFileWriter.#ctor(System.String,NAudio.Wave.WaveFormat)">
+            <summary>
+            Writes a wave file, including a cues chunk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.CueWaveFileWriter.AddCue(System.Int32,System.String)">
+            <summary>
+            Adds a cue to the Wave file
+            </summary>
+            <param name="position">Sample position</param>
+            <param name="label">Label text</param>
+        </member>
+        <member name="M:NAudio.Wave.CueWaveFileWriter.UpdateHeader(System.IO.BinaryWriter)">
+            <summary>
+            Updates the header, and writes the cues out
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundOut">
+            <summary>
+            NativeDirectSoundOut using DirectSound COM interop.
+            Contact author: Alexandre Mutel - alexandre_mutel at yahoo.fr
+            Modified by: Graham "Gee" Plumb
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.DirectSoundOut.PlaybackStopped">
+            <summary>
+            Playback Stopped
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundOut.Devices">
+            <summary>
+            Gets the DirectSound output devices in the system
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.DirectSoundOut"/> class.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.#ctor(System.Guid)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.DirectSoundOut"/> class.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.DirectSoundOut"/> class.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.#ctor(System.Guid,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.DirectSoundOut"/> class.
+            (40ms seems to work under Vista).
+            </summary>
+            <param name="latency">The latency.</param>
+            <param name="device">Selected device</param>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Finalize">
+            <summary>
+            Releases unmanaged resources and performs other cleanup operations before the
+            <see cref="T:NAudio.Wave.DirectSoundOut"/> is reclaimed by garbage collection.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Play">
+            <summary>
+            Begin playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Stop">
+            <summary>
+            Stop playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Pause">
+            <summary>
+            Pause Playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.GetPosition">
+            <summary>
+            Gets the current position in bytes from the wave output device.
+            (n.b. this is not the same thing as the position within your reader
+            stream)
+            </summary>
+            <returns>Position in bytes</returns>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundOut.PlaybackPosition">
+            <summary>
+            Gets the current position from the wave output device.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Init(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialise playback
+            </summary>
+            <param name="waveProvider">The waveprovider to be played</param>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundOut.PlaybackState">
+            <summary>
+            Current playback state
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundOut.Volume">
+            <summary>
+            The volume 1.0 is full scale
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundOut.OutputWaveFormat">
+            <inheritdoc/>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.IsBufferLost">
+            <summary>
+            Determines whether the SecondaryBuffer is lost.
+            </summary>
+            <returns>
+            	<c>true</c> if [is buffer lost]; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.MsToBytes(System.Int32)">
+            <summary>
+            Convert ms to bytes size according to WaveFormat
+            </summary>
+            <param name="ms">The ms</param>
+            <returns>number of byttes</returns>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.PlaybackThreadFunc">
+            <summary>
+            Processes the samples in a separate thread.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.StopPlayback">
+            <summary>
+            Stop playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.CleanUpSecondaryBuffer">
+            <summary>
+            Clean up the SecondaryBuffer
+            </summary>
+            <remarks>
+            <para>
+            In DirectSound, when playback is started,
+            the rest of the sound that was played last time is played back as noise.
+            This happens even if the secondary buffer is completely silenced,
+            so it seems that the buffer in the primary buffer or higher is not cleared.
+            </para>
+            <para>
+            To solve this problem fill the secondary buffer with silence data when stop playback.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.Feed(System.Int32)">
+            <summary>
+            Feeds the SecondaryBuffer with the WaveStream
+            </summary>
+            <param name="bytesToCopy">number of bytes to feed</param>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundOut.IDirectSound">
+            <summary>
+            IDirectSound interface
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundOut.IDirectSoundBuffer">
+            <summary>
+            IDirectSoundBuffer interface
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundOut.IDirectSoundNotify">
+            <summary>
+            IDirectSoundNotify interface
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.DirectSoundCreate(System.Guid@,NAudio.Wave.DirectSoundOut.IDirectSound@,System.IntPtr)">
+            <summary>
+            Instanciate DirectSound from the DLL
+            </summary>
+            <param name="GUID">The GUID.</param>
+            <param name="directSound">The direct sound.</param>
+            <param name="pUnkOuter">The p unk outer.</param>
+        </member>
+        <member name="F:NAudio.Wave.DirectSoundOut.DSDEVID_DefaultPlayback">
+            <summary>
+            DirectSound default playback device GUID 
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.DirectSoundOut.DSDEVID_DefaultCapture">
+            <summary>
+            DirectSound default capture device GUID
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.DirectSoundOut.DSDEVID_DefaultVoicePlayback">
+            <summary>
+            DirectSound default device for voice playback
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.DirectSoundOut.DSDEVID_DefaultVoiceCapture">
+            <summary>
+            DirectSound default device for voice capture
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundOut.DSEnumCallback">
+            <summary>
+            The DSEnumCallback function is an application-defined callback function that enumerates the DirectSound drivers. 
+            The system calls this function in response to the application's call to the DirectSoundEnumerate or DirectSoundCaptureEnumerate function.
+            </summary>
+            <param name="lpGuid">Address of the GUID that identifies the device being enumerated, or NULL for the primary device. This value can be passed to the DirectSoundCreate8 or DirectSoundCaptureCreate8 function to create a device object for that driver. </param>
+            <param name="lpcstrDescription">Address of a null-terminated string that provides a textual description of the DirectSound device. </param>
+            <param name="lpcstrModule">Address of a null-terminated string that specifies the module name of the DirectSound driver corresponding to this device. </param>
+            <param name="lpContext">Address of application-defined data. This is the pointer passed to DirectSoundEnumerate or DirectSoundCaptureEnumerate as the lpContext parameter. </param>
+            <returns>Returns TRUE to continue enumerating drivers, or FALSE to stop.</returns>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.DirectSoundEnumerate(NAudio.Wave.DirectSoundOut.DSEnumCallback,System.IntPtr)">
+            <summary>
+            The DirectSoundEnumerate function enumerates the DirectSound drivers installed in the system.
+            </summary>
+            <param name="lpDSEnumCallback">callback function</param>
+            <param name="lpContext">User context</param>
+        </member>
+        <member name="M:NAudio.Wave.DirectSoundOut.GetDesktopWindow">
+            <summary>
+            Gets the HANDLE of the desktop window.
+            </summary>
+            <returns>HANDLE of the Desktop window</returns>
+        </member>
+        <member name="T:NAudio.Wave.DirectSoundDeviceInfo">
+            <summary>
+            Class for enumerating DirectSound devices
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundDeviceInfo.Guid">
+            <summary>
+            The device identifier
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundDeviceInfo.Description">
+            <summary>
+            Device description
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.DirectSoundDeviceInfo.ModuleName">
+            <summary>
+            Device module name
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.IWaveBuffer">
+            <summary>
+            IWaveBuffer interface use to store wave datas. 
+            Data can be manipulated with arrays (<see cref="P:NAudio.Wave.IWaveBuffer.ByteBuffer"/>,<see cref="P:NAudio.Wave.IWaveBuffer.FloatBuffer"/>,
+            <see cref="P:NAudio.Wave.IWaveBuffer.ShortBuffer"/>,<see cref="P:NAudio.Wave.IWaveBuffer.IntBuffer"/> ) that are pointing to the same memory buffer.
+            This is a requirement for all subclasses.
+            
+            Use the associated Count property based on the type of buffer to get the number of data in the 
+            buffer.
+            
+            <see cref="T:NAudio.Wave.WaveBuffer"/> for the standard implementation using C# unions.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.ByteBuffer">
+            <summary>
+            Gets the byte buffer.
+            </summary>
+            <value>The byte buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.FloatBuffer">
+            <summary>
+            Gets the float buffer.
+            </summary>
+            <value>The float buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.ShortBuffer">
+            <summary>
+            Gets the short buffer.
+            </summary>
+            <value>The short buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.IntBuffer">
+            <summary>
+            Gets the int buffer.
+            </summary>
+            <value>The int buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.MaxSize">
+            <summary>
+            Gets the max size in bytes of the byte buffer..
+            </summary>
+            <value>Maximum number of bytes in the buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.ByteBufferCount">
+            <summary>
+            Gets the byte buffer count.
+            </summary>
+            <value>The byte buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.FloatBufferCount">
+            <summary>
+            Gets the float buffer count.
+            </summary>
+            <value>The float buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.ShortBufferCount">
+            <summary>
+            Gets the short buffer count.
+            </summary>
+            <value>The short buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.IWaveBuffer.IntBufferCount">
+            <summary>
+            Gets the int buffer count.
+            </summary>
+            <value>The int buffer count.</value>
+        </member>
+        <member name="T:NAudio.Wave.IWavePlayer">
+            <summary>
+            Represents the interface to a device that can play a WaveFile
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWavePlayer.Play">
+            <summary>
+            Begin playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWavePlayer.Stop">
+            <summary>
+            Stop playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWavePlayer.Pause">
+            <summary>
+            Pause Playback
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWavePlayer.Init(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Initialise playback
+            </summary>
+            <param name="waveProvider">The waveprovider to be played</param>
+        </member>
+        <member name="P:NAudio.Wave.IWavePlayer.Volume">
+            <summary>
+            The volume 
+            1.0f is full scale
+            Note that not all implementations necessarily support volume changes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IWavePlayer.PlaybackState">
+            <summary>
+            Current playback state
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.IWavePlayer.PlaybackStopped">
+            <summary>
+            Indicates that playback has gone into a stopped state due to 
+            reaching the end of the input stream or an error has been encountered during playback
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IWavePlayer.OutputWaveFormat">
+            <summary>
+            The WaveFormat this device is using for playback
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.IWavePosition">
+            <summary>
+            Interface for IWavePlayers that can report position
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.IWavePosition.GetPosition">
+            <summary>
+            Position (in terms of bytes played - does not necessarily translate directly to the position within the source audio file)
+            </summary>
+            <returns>Position in bytes</returns>
+        </member>
+        <member name="P:NAudio.Wave.IWavePosition.OutputWaveFormat">
+            <summary>
+            Gets a <see cref="T:NAudio.Wave.WaveFormat"/> instance indicating the format the hardware is using.
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.IWaveProvider">
+            <summary>
+            Generic interface for all WaveProviders.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.IWaveProvider.WaveFormat">
+            <summary>
+            Gets the WaveFormat of this WaveProvider.
+            </summary>
+            <value>The wave format.</value>
+        </member>
+        <member name="M:NAudio.Wave.IWaveProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Fill the specified buffer with wave data.
+            </summary>
+            <param name="buffer">The buffer to fill of wave data.</param>
+            <param name="offset">Offset into buffer</param>
+            <param name="count">The number of bytes to read</param>
+            <returns>the number of bytes written to the buffer.</returns>
+        </member>
+        <member name="T:NAudio.Wave.ISampleProvider">
+            <summary>
+            Like IWaveProvider, but makes it much simpler to put together a 32 bit floating
+            point mixing engine
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.ISampleProvider.WaveFormat">
+            <summary>
+            Gets the WaveFormat of this Sample Provider.
+            </summary>
+            <value>The wave format.</value>
+        </member>
+        <member name="M:NAudio.Wave.ISampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Fill the specified buffer with 32 bit floating point samples
+            </summary>
+            <param name="buffer">The buffer to fill with samples.</param>
+            <param name="offset">Offset into buffer</param>
+            <param name="count">The number of samples to read</param>
+            <returns>the number of samples written to the buffer.</returns>
+        </member>
+        <member name="T:NAudio.Wave.PlaybackState">
+            <summary>
+            Playback State
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.PlaybackState.Stopped">
+            <summary>
+            Stopped
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.PlaybackState.Playing">
+            <summary>
+            Playing
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.PlaybackState.Paused">
+            <summary>
+            Paused
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.StoppedEventArgs">
+            <summary>
+            Stopped Event Args
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.StoppedEventArgs.#ctor(System.Exception)">
+            <summary>
+            Initializes a new instance of StoppedEventArgs
+            </summary>
+            <param name="exception">An exception to report (null if no exception)</param>
+        </member>
+        <member name="P:NAudio.Wave.StoppedEventArgs.Exception">
+            <summary>
+            An exception. Will be null if the playback or record operation stopped due to 
+            the user requesting stop or reached the end of the input audio
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveBuffer">
+            <summary>
+            WaveBuffer class use to store wave datas. Data can be manipulated with arrays
+            (<see cref="P:NAudio.Wave.WaveBuffer.ByteBuffer"/>,<see cref="P:NAudio.Wave.WaveBuffer.FloatBuffer"/>,<see cref="P:NAudio.Wave.WaveBuffer.ShortBuffer"/>,<see cref="P:NAudio.Wave.WaveBuffer.IntBuffer"/> ) that are pointing to the
+            same memory buffer. Use the associated Count property based on the type of buffer to get the number of 
+            data in the buffer.
+            Implicit casting is now supported to float[], byte[], int[], short[].
+            You must not use Length on returned arrays.
+            
+            n.b. FieldOffset is 8 now to allow it to work natively on 64 bit
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.WaveBuffer.numberOfBytes">
+            <summary>
+            Number of Bytes
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.WaveBuffer"/> class.
+            </summary>
+            <param name="sizeToAllocateInBytes">The number of bytes. The size of the final buffer will be aligned on 4 Bytes (upper bound)</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.#ctor(System.Byte[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.Wave.WaveBuffer"/> class binded to a specific byte buffer.
+            </summary>
+            <param name="bufferToBoundTo">A byte buffer to bound the WaveBuffer to.</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.BindTo(System.Byte[])">
+            <summary>
+            Binds this WaveBuffer instance to a specific byte buffer.
+            </summary>
+            <param name="bufferToBoundTo">A byte buffer to bound the WaveBuffer to.</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.op_Implicit(NAudio.Wave.WaveBuffer)~System.Byte[]">
+            <summary>
+            Performs an implicit conversion from <see cref="T:NAudio.Wave.WaveBuffer"/> to <see cref="T:System.Byte"/>.
+            </summary>
+            <param name="waveBuffer">The wave buffer.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.op_Implicit(NAudio.Wave.WaveBuffer)~System.Single[]">
+            <summary>
+            Performs an implicit conversion from <see cref="T:NAudio.Wave.WaveBuffer"/> to <see cref="T:System.Single"/>.
+            </summary>
+            <param name="waveBuffer">The wave buffer.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.op_Implicit(NAudio.Wave.WaveBuffer)~System.Int32[]">
+            <summary>
+            Performs an implicit conversion from <see cref="T:NAudio.Wave.WaveBuffer"/> to <see cref="T:System.Int32"/>.
+            </summary>
+            <param name="waveBuffer">The wave buffer.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.op_Implicit(NAudio.Wave.WaveBuffer)~System.Int16[]">
+            <summary>
+            Performs an implicit conversion from <see cref="T:NAudio.Wave.WaveBuffer"/> to <see cref="T:System.Int16"/>.
+            </summary>
+            <param name="waveBuffer">The wave buffer.</param>
+            <returns>The result of the conversion.</returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.ByteBuffer">
+            <summary>
+            Gets the byte buffer.
+            </summary>
+            <value>The byte buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.FloatBuffer">
+            <summary>
+            Gets the float buffer.
+            </summary>
+            <value>The float buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.ShortBuffer">
+            <summary>
+            Gets the short buffer.
+            </summary>
+            <value>The short buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.IntBuffer">
+            <summary>
+            Gets the int buffer.
+            </summary>
+            <value>The int buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.MaxSize">
+            <summary>
+            Gets the max size in bytes of the byte buffer..
+            </summary>
+            <value>Maximum number of bytes in the buffer.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.ByteBufferCount">
+            <summary>
+            Gets or sets the byte buffer count.
+            </summary>
+            <value>The byte buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.FloatBufferCount">
+            <summary>
+            Gets or sets the float buffer count.
+            </summary>
+            <value>The float buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.ShortBufferCount">
+            <summary>
+            Gets or sets the short buffer count.
+            </summary>
+            <value>The short buffer count.</value>
+        </member>
+        <member name="P:NAudio.Wave.WaveBuffer.IntBufferCount">
+            <summary>
+            Gets or sets the int buffer count.
+            </summary>
+            <value>The int buffer count.</value>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.Clear">
+            <summary>
+            Clears the associated buffer.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.Copy(System.Array)">
+            <summary>
+            Copy this WaveBuffer to a destination buffer up to ByteBufferCount bytes.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveBuffer.CheckValidityCount(System.String,System.Int32,System.Int32)">
+            <summary>
+            Checks the validity of the count parameters.
+            </summary>
+            <param name="argName">Name of the arg.</param>
+            <param name="value">The value.</param>
+            <param name="sizeOfValue">The size of value.</param>
+        </member>
+        <member name="T:NAudio.Wave.WaveFileWriter">
+            <summary>
+            This class writes WAV data to a .wav file on disk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.CreateWaveFile16(System.String,NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a 16 bit Wave File from an ISampleProvider
+            BEWARE: the source provider must not return data indefinitely
+            </summary>
+            <param name="filename">The filename to write to</param>
+            <param name="sourceProvider">The source sample provider</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.CreateWaveFile(System.String,NAudio.Wave.IWaveProvider)">
+            <summary>
+            Creates a Wave file by reading all the data from a WaveProvider
+            BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
+            or the Wave File will grow indefinitely.
+            </summary>
+            <param name="filename">The filename to use</param>
+            <param name="sourceProvider">The source WaveProvider</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteWavFileToStream(System.IO.Stream,NAudio.Wave.IWaveProvider)">
+            <summary>
+            Writes to a stream by reading all the data from a WaveProvider
+            BEWARE: the WaveProvider MUST return 0 from its Read method when it is finished,
+            or the Wave File will grow indefinitely.
+            </summary>
+            <param name="outStream">The stream the method will output to</param>
+            <param name="sourceProvider">The source WaveProvider</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.#ctor(System.IO.Stream,NAudio.Wave.WaveFormat)">
+            <summary>
+            WaveFileWriter that actually writes to a stream
+            </summary>
+            <param name="outStream">Stream to be written to</param>
+            <param name="format">Wave format to use</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.#ctor(System.String,NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new WaveFileWriter
+            </summary>
+            <param name="filename">The filename to write to</param>
+            <param name="format">The Wave Format of the output data</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.Filename">
+            <summary>
+            The wave file name or null if not applicable
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.Length">
+            <summary>
+            Number of bytes of audio in the data chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.TotalTime">
+            <summary>
+            Total time (calculated from Length and average bytes per second)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.WaveFormat">
+            <summary>
+            WaveFormat of this wave file
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.CanRead">
+            <summary>
+            Returns false: Cannot read from a WaveFileWriter
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.CanWrite">
+            <summary>
+            Returns true: Can write to a WaveFileWriter
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.CanSeek">
+            <summary>
+            Returns false: Cannot seek within a WaveFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read is not supported for a WaveFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Seek(System.Int64,System.IO.SeekOrigin)">
+            <summary>
+            Seek is not supported for a WaveFileWriter
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.SetLength(System.Int64)">
+            <summary>
+            SetLength is not supported for WaveFileWriter
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileWriter.Position">
+            <summary>
+            Gets the Position in the WaveFile (i.e. number of bytes written so far)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteData(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Appends bytes to the WaveFile (assumes they are already in the correct format)
+            </summary>
+            <param name="data">the buffer containing the wave data</param>
+            <param name="offset">the offset from which to start writing</param>
+            <param name="count">the number of bytes to write</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Appends bytes to the WaveFile (assumes they are already in the correct format)
+            </summary>
+            <param name="data">the buffer containing the wave data</param>
+            <param name="offset">the offset from which to start writing</param>
+            <param name="count">the number of bytes to write</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteSample(System.Single)">
+            <summary>
+            Writes a single sample to the Wave file
+            </summary>
+            <param name="sample">the sample to write (assumed floating point with 1.0f as max value)</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteSamples(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Writes 32 bit floating point samples to the Wave file
+            They will be converted to the appropriate bit depth depending on the WaveFormat of the WAV file
+            </summary>
+            <param name="samples">The buffer containing the floating point samples</param>
+            <param name="offset">The offset from which to start writing</param>
+            <param name="count">The number of floating point samples to write</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteData(System.Int16[],System.Int32,System.Int32)">
+            <summary>
+            Writes 16 bit samples to the Wave file
+            </summary>
+            <param name="samples">The buffer containing the 16 bit samples</param>
+            <param name="offset">The offset from which to start writing</param>
+            <param name="count">The number of 16 bit samples to write</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.WriteSamples(System.Int16[],System.Int32,System.Int32)">
+            <summary>
+            Writes 16 bit samples to the Wave file
+            </summary>
+            <param name="samples">The buffer containing the 16 bit samples</param>
+            <param name="offset">The offset from which to start writing</param>
+            <param name="count">The number of 16 bit samples to write</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Flush">
+            <summary>
+            Ensures data is written to disk
+            Also updates header, so that WAV file will be valid up to the point currently written
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Dispose(System.Boolean)">
+            <summary>
+            Actually performs the close,making sure the header contains the correct data
+            </summary>
+            <param name="disposing">True if called from <see>Dispose</see></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.UpdateHeader(System.IO.BinaryWriter)">
+            <summary>
+            Updates the header with file size information
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileWriter.Finalize">
+            <summary>
+            Finaliser - should only be called if the user forgot to close this WaveFileWriter
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.BufferedWaveProvider">
+            <summary>
+            Provides a buffered store of samples
+            Read method will return queued samples or fill buffer with zeroes
+            Now backed by a circular buffer
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BufferedWaveProvider.#ctor(NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new buffered WaveProvider
+            </summary>
+            <param name="waveFormat">WaveFormat</param>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.ReadFully">
+            <summary>
+            If true, always read the amount of data requested, padding with zeroes if necessary
+            By default is set to true
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.BufferLength">
+            <summary>
+            Buffer length in bytes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.BufferDuration">
+            <summary>
+            Buffer duration
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.DiscardOnBufferOverflow">
+            <summary>
+            If true, when the buffer is full, start throwing away data
+            if false, AddSamples will throw an exception when buffer is full
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.BufferedBytes">
+            <summary>
+            The number of buffered bytes
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.BufferedDuration">
+            <summary>
+            Buffered Duration
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.WaveFormat">
+            <summary>
+            Gets the WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BufferedWaveProvider.AddSamples(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Adds samples. Takes a copy of buffer, so that buffer can be reused if necessary
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BufferedWaveProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads from this WaveProvider
+            Will always return count bytes, since we will zero-fill the buffer if not enough available
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BufferedWaveProvider.ClearBuffer">
+            <summary>
+            Discards all audio from the buffer
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.MixingWaveProvider32">
+            <summary>
+            WaveProvider that can mix together multiple 32 bit floating point input provider
+            All channels must have the same number of inputs and same sample rate
+            n.b. Work in Progress - not tested yet
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.#ctor">
+            <summary>
+            Creates a new MixingWaveProvider32
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.IWaveProvider})">
+            <summary>
+            Creates a new 32 bit MixingWaveProvider32
+            </summary>
+            <param name="inputs">inputs - must all have the same format.</param>
+            <exception cref="T:System.ArgumentException">Thrown if the input streams are not 32 bit floating point,
+            or if they have different formats to each other</exception>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.AddInputStream(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Add a new input to the mixer
+            </summary>
+            <param name="waveProvider">The wave input to add</param>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.RemoveInputStream(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Remove an input from the mixer
+            </summary>
+            <param name="waveProvider">waveProvider to remove</param>
+        </member>
+        <member name="P:NAudio.Wave.MixingWaveProvider32.InputCount">
+            <summary>
+            The number of inputs to this mixer
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="buffer">buffer to read into</param>
+            <param name="offset">offset into buffer</param>
+            <param name="count">number of bytes required</param>
+            <returns>Number of bytes read.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if an invalid number of bytes requested</exception>
+        </member>
+        <member name="M:NAudio.Wave.MixingWaveProvider32.Sum32BitAudio(System.Byte[],System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            Actually performs the mixing
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.MixingWaveProvider32.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.MonoToStereoProvider16">
+            <summary>
+            Converts from mono to stereo, allowing freedom to route all, some, or none of the incoming signal to left or right channels
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MonoToStereoProvider16.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Creates a new stereo waveprovider based on a mono input
+            </summary>
+            <param name="sourceProvider">Mono 16 bit PCM input</param>
+        </member>
+        <member name="P:NAudio.Wave.MonoToStereoProvider16.LeftVolume">
+            <summary>
+            1.0 to copy the mono stream to the left channel without adjusting volume
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.MonoToStereoProvider16.RightVolume">
+            <summary>
+            1.0 to copy the mono stream to the right channel without adjusting volume
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.MonoToStereoProvider16.WaveFormat">
+            <summary>
+            Output Wave Format
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MonoToStereoProvider16.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this WaveProvider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.MultiplexingWaveProvider">
+            <summary>
+            Allows any number of inputs to be patched to outputs
+            Uses could include swapping left and right channels, turning mono into stereo,
+            feeding different input sources to different soundcard outputs etc
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MultiplexingWaveProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.IWaveProvider})">
+            <summary>
+            Creates a multiplexing wave provider, allowing re-patching of input channels to different
+            output channels. Number of outputs is equal to total number of channels in inputs
+            </summary>
+            <param name="inputs">Input wave providers. Must all be of the same format, but can have any number of channels</param>
+        </member>
+        <member name="M:NAudio.Wave.MultiplexingWaveProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.IWaveProvider},System.Int32)">
+            <summary>
+            Creates a multiplexing wave provider, allowing re-patching of input channels to different
+            output channels
+            </summary>
+            <param name="inputs">Input wave providers. Must all be of the same format, but can have any number of channels</param>
+            <param name="numberOfOutputChannels">Desired number of output channels. (-1 means use total number of input channels)</param>
+        </member>
+        <member name="F:NAudio.Wave.MultiplexingWaveProvider.inputBuffer">
+            <summary>
+            persistent temporary buffer to prevent creating work for garbage collector
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MultiplexingWaveProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads data from this WaveProvider
+            </summary>
+            <param name="buffer">Buffer to be filled with sample data</param>
+            <param name="offset">Offset to write to within buffer, usually 0</param>
+            <param name="count">Number of bytes required</param>
+            <returns>Number of bytes read</returns>
+        </member>
+        <member name="P:NAudio.Wave.MultiplexingWaveProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this WaveProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.MultiplexingWaveProvider.ConnectInputToOutput(System.Int32,System.Int32)">
+            <summary>
+            Connects a specified input channel to an output channel
+            </summary>
+            <param name="inputChannel">Input Channel index (zero based). Must be less than InputChannelCount</param>
+            <param name="outputChannel">Output Channel index (zero based). Must be less than OutputChannelCount</param>
+        </member>
+        <member name="P:NAudio.Wave.MultiplexingWaveProvider.InputChannelCount">
+            <summary>
+            The number of input channels. Note that this is not the same as the number of input wave providers. If you pass in
+            one stereo and one mono input provider, the number of input channels is three.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.MultiplexingWaveProvider.OutputChannelCount">
+            <summary>
+            The number of output channels, as specified in the constructor.
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SilenceProvider">
+            <summary>
+            Silence producing wave provider
+            Useful for playing silence when doing a WASAPI Loopback Capture
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SilenceProvider.#ctor(NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new silence producing wave provider
+            </summary>
+            <param name="wf">Desired WaveFormat (should be PCM / IEE float</param>
+        </member>
+        <member name="M:NAudio.Wave.SilenceProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read silence from into the buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SilenceProvider.WaveFormat">
+            <summary>
+            WaveFormat of this silence producing wave provider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.StereoToMonoProvider16">
+            <summary>
+            Takes a stereo 16 bit input and turns it mono, allowing you to select left or right channel only or mix them together
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.StereoToMonoProvider16.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Creates a new mono waveprovider based on a stereo input
+            </summary>
+            <param name="sourceProvider">Stereo 16 bit PCM input</param>
+        </member>
+        <member name="P:NAudio.Wave.StereoToMonoProvider16.LeftVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the left channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.StereoToMonoProvider16.RightVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the right channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.StereoToMonoProvider16.WaveFormat">
+            <summary>
+            Output Wave Format
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.StereoToMonoProvider16.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this WaveProvider
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.VolumeWaveProvider16">
+            <summary>
+            Helper class allowing us to modify the volume of a 16 bit stream without converting to IEEE float
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.VolumeWaveProvider16.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Constructs a new VolumeWaveProvider16
+            </summary>
+            <param name="sourceProvider">Source provider, must be 16 bit PCM</param>
+        </member>
+        <member name="P:NAudio.Wave.VolumeWaveProvider16.Volume">
+            <summary>
+            Gets or sets volume. 
+            1.0 is full scale, 0.0 is silence, anything over 1.0 will amplify but potentially clip
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.VolumeWaveProvider16.WaveFormat">
+            <summary>
+            WaveFormat of this WaveProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.VolumeWaveProvider16.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read bytes from this WaveProvider
+            </summary>
+            <param name="buffer">Buffer to read into</param>
+            <param name="offset">Offset within buffer to read to</param>
+            <param name="count">Bytes desired</param>
+            <returns>Bytes read</returns>
+        </member>
+        <member name="T:NAudio.Wave.Wave16ToFloatProvider">
+            <summary>
+            Converts 16 bit PCM to IEEE float, optionally adjusting volume along the way
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Wave16ToFloatProvider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Creates a new Wave16toFloatProvider
+            </summary>
+            <param name="sourceProvider">the source provider</param>
+        </member>
+        <member name="M:NAudio.Wave.Wave16ToFloatProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.Wave16ToFloatProvider.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.IWaveProvider.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave16ToFloatProvider.Volume">
+            <summary>
+            Volume of this channel. 1.0 = full scale
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFloatTo16Provider">
+            <summary>
+            Converts IEEE float to 16 bit PCM, optionally clipping and adjusting volume along the way
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFloatTo16Provider.#ctor(NAudio.Wave.IWaveProvider)">
+            <summary>
+            Creates a new WaveFloatTo16Provider
+            </summary>
+            <param name="sourceProvider">the source provider</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFloatTo16Provider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveFloatTo16Provider.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.IWaveProvider.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFloatTo16Provider.Volume">
+            <summary>
+            Volume of this channel. 1.0 = full scale
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveInProvider">
+            <summary>
+            Buffered WaveProvider taking source data from WaveIn
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveInProvider.#ctor(NAudio.Wave.IWaveIn)">
+            <summary>
+            Creates a new WaveInProvider
+            n.b. Should make sure the WaveFormat is set correctly on IWaveIn before calling
+            </summary>
+            <param name="waveIn">The source of wave data</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveInProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads data from the WaveInProvider
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveInProvider.WaveFormat">
+            <summary>
+            The WaveFormat
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveProvider16">
+            <summary>
+            Base class for creating a 16 bit wave provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider16.#ctor">
+            <summary>
+            Initializes a new instance of the WaveProvider16 class 
+            defaulting to 44.1kHz mono
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider16.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the WaveProvider16 class with the specified
+            sample rate and number of channels
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider16.SetWaveFormat(System.Int32,System.Int32)">
+            <summary>
+            Allows you to specify the sample rate and channels for this WaveProvider
+            (should be initialised before you pass it to a wave player)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider16.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Implements the Read method of IWaveProvider by delegating to the abstract
+            Read method taking a short array
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider16.Read(System.Int16[],System.Int32,System.Int32)">
+            <summary>
+            Method to override in derived classes
+            Supply the requested number of samples into the buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveProvider16.WaveFormat">
+            <summary>
+            The Wave Format
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveProvider32">
+            <summary>
+            Base class for creating a 32 bit floating point wave provider
+            Can also be used as a base class for an ISampleProvider that can 
+            be plugged straight into anything requiring an IWaveProvider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider32.#ctor">
+            <summary>
+            Initializes a new instance of the WaveProvider32 class 
+            defaulting to 44.1kHz mono
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider32.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the WaveProvider32 class with the specified
+            sample rate and number of channels
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider32.SetWaveFormat(System.Int32,System.Int32)">
+            <summary>
+            Allows you to specify the sample rate and channels for this WaveProvider
+            (should be initialised before you pass it to a wave player)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider32.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Implements the Read method of IWaveProvider by delegating to the abstract
+            Read method taking a float array
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveProvider32.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Method to override in derived classes
+            Supply the requested number of samples into the buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveProvider32.WaveFormat">
+            <summary>
+            The Wave Format
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveRecorder">
+            <summary>
+            Utility class to intercept audio from an IWaveProvider and
+            save it to disk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveRecorder.#ctor(NAudio.Wave.IWaveProvider,System.String)">
+            <summary>
+            Constructs a new WaveRecorder
+            </summary>
+            <param name="destination">The location to write the WAV file to</param>
+            <param name="source">The Source Wave Provider</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveRecorder.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read simply returns what the source returns, but writes to disk along the way
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveRecorder.WaveFormat">
+            <summary>
+            The WaveFormat
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveRecorder.Dispose">
+            <summary>
+            Closes the WAV file
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.AiffFileReader">
+            <summary>A read-only stream of AIFF data based on an aiff file
+            with an associated WaveFormat
+            originally contributed to NAudio by Giawa
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.#ctor(System.String)">
+            <summary>Supports opening a AIF file</summary>
+            <remarks>The AIF is of similar nastiness to the WAV format.
+            This supports basic reading of uncompressed PCM AIF files,
+            with 8, 16, 24 and 32 bit PCM data.
+            </remarks>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.#ctor(System.IO.Stream)">
+            <summary>
+            Creates an Aiff File Reader based on an input stream
+            </summary>
+            <param name="inputStream">The input stream containing a AIF file including header</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.ReadAiffHeader(System.IO.Stream,NAudio.Wave.WaveFormat@,System.Int64@,System.Int32@,System.Collections.Generic.List{NAudio.Wave.AiffFileReader.AiffChunk})">
+            <summary>
+            Ensures valid AIFF header and then finds data offset.
+            </summary>
+            <param name="stream">The stream, positioned at the start of audio data</param>
+            <param name="format">The format found</param>
+            <param name="dataChunkPosition">The position of the data chunk</param>
+            <param name="dataChunkLength">The length of the data chunk</param>
+            <param name="chunks">Additional chunks found</param>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.Dispose(System.Boolean)">
+            <summary>
+            Cleans up the resources associated with this AiffFileReader
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileReader.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileReader.Length">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileReader.SampleCount">
+            <summary>
+            Number of Samples (if possible to calculate)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.AiffFileReader.Position">
+            <summary>
+            Position in the AIFF file
+            <see cref="P:System.IO.Stream.Position"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from the AIFF File
+            <see cref="M:System.IO.Stream.Read(System.Byte[],System.Int32,System.Int32)"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.AiffFileReader.AiffChunk">
+            <summary>
+            AIFF Chunk
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.AiffFileReader.AiffChunk.ChunkName">
+            <summary>
+            Chunk Name
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.AiffFileReader.AiffChunk.ChunkLength">
+            <summary>
+            Chunk Length
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.AiffFileReader.AiffChunk.ChunkStart">
+            <summary>
+            Chunk start
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.AiffFileReader.AiffChunk.#ctor(System.UInt32,System.String,System.UInt32)">
+            <summary>
+            Creates a new AIFF Chunk
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.BlockAlignReductionStream">
+            <summary>
+            Helper stream that lets us read from compressed audio files with large block alignment
+            as though we could read any amount and reposition anywhere
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BlockAlignReductionStream.#ctor(NAudio.Wave.WaveStream)">
+            <summary>
+            Creates a new BlockAlignReductionStream
+            </summary>
+            <param name="sourceStream">the input stream</param>
+        </member>
+        <member name="P:NAudio.Wave.BlockAlignReductionStream.BlockAlign">
+            <summary>
+            Block alignment of this stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BlockAlignReductionStream.WaveFormat">
+            <summary>
+            Wave Format
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BlockAlignReductionStream.Length">
+            <summary>
+            Length of this Stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.BlockAlignReductionStream.Position">
+            <summary>
+            Current position within stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BlockAlignReductionStream.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.BlockAlignReductionStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads data from this stream
+            </summary>
+            <param name="buffer"></param>
+            <param name="offset"></param>
+            <param name="count"></param>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.Wave.Cue">
+            <summary>
+            Holds information on a cue: a labeled position within a Wave file
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Cue.Position">
+            <summary>
+            Cue position in samples
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Cue.Label">
+            <summary>
+            Label of the cue
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Cue.#ctor(System.Int32,System.String)">
+            <summary>
+            Creates a Cue based on a sample position and label 
+            </summary>
+            <param name="position"></param>
+            <param name="label"></param>
+        </member>
+        <member name="T:NAudio.Wave.CueList">
+             <summary>
+             Holds a list of cues
+             </summary>
+             <remarks>
+             The specs for reading and writing cues from the cue and list RIFF chunks 
+             are from http://www.sonicspot.com/guide/wavefiles.html and http://www.wotsit.org/
+             ------------------------------
+             The cues are stored like this:
+             ------------------------------
+             struct CuePoint
+             {
+              Int32 dwIdentifier;
+              Int32 dwPosition;
+              Int32 fccChunk;
+              Int32 dwChunkStart;
+              Int32 dwBlockStart;
+              Int32 dwSampleOffset;
+             } 
+            
+             struct CueChunk
+             {
+              Int32 chunkID;
+              Int32 chunkSize;
+              Int32 dwCuePoints;
+              CuePoint[] points;
+             }
+             ------------------------------
+             Labels look like this:
+             ------------------------------
+             struct ListHeader 
+             {
+               Int32 listID;      /* 'list' */
+               Int32 chunkSize;   /* includes the Type ID below */
+               Int32 typeID;      /* 'adtl' */
+             } 
+            
+             struct LabelChunk 
+             {
+               Int32 chunkID;
+               Int32 chunkSize;
+               Int32 dwIdentifier;
+               Char[] dwText;  /* Encoded with extended ASCII */
+             } LabelChunk;
+             </remarks>
+        </member>
+        <member name="M:NAudio.Wave.CueList.#ctor">
+            <summary>
+            Creates an empty cue list
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.CueList.Add(NAudio.Wave.Cue)">
+            <summary>
+            Adds an item to the list
+            </summary>
+            <param name="cue">Cue</param>
+        </member>
+        <member name="P:NAudio.Wave.CueList.CuePositions">
+            <summary>
+            Gets sample positions for the embedded cues
+            </summary>
+            <returns>Array containing the cue positions</returns>
+        </member>
+        <member name="P:NAudio.Wave.CueList.CueLabels">
+            <summary>
+            Gets labels for the embedded cues
+            </summary>
+            <returns>Array containing the labels</returns>
+        </member>
+        <member name="M:NAudio.Wave.CueList.#ctor(System.Byte[],System.Byte[])">
+            <summary>
+            Creates a cue list from the cue RIFF chunk and the list RIFF chunk
+            </summary>
+            <param name="cueChunkData">The data contained in the cue chunk</param>
+            <param name="listChunkData">The data contained in the list chunk</param>
+        </member>
+        <member name="M:NAudio.Wave.CueList.GetRiffChunks">
+            <summary>
+            Gets the cues as the concatenated cue and list RIFF chunks.
+            </summary>
+            <returns>RIFF chunks containing the cue data</returns>
+        </member>
+        <member name="P:NAudio.Wave.CueList.Count">
+            <summary>
+            Number of cues
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.CueList.Item(System.Int32)">
+            <summary>
+            Accesses the cue at the specified index
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Wave.CueList.FromChunks(NAudio.Wave.WaveFileReader)">
+            <summary>
+            Checks if the cue and list chunks exist and if so, creates a cue list
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.CueWaveFileReader">
+            <summary>
+            A wave file reader supporting cue reading
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.CueWaveFileReader.#ctor(System.String)">
+            <summary>
+            Loads a wavefile and supports reading cues
+            </summary>
+            <param name="fileName"></param>
+        </member>
+        <member name="M:NAudio.Wave.CueWaveFileReader.#ctor(System.IO.Stream)">
+            <summary>
+            Loads a wave from a stream and supports reading cues
+            </summary>
+            <param name="inputStream"></param>
+        </member>
+        <member name="P:NAudio.Wave.CueWaveFileReader.Cues">
+            <summary>
+            Cue List (can be null if cues not present)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.ISampleNotifier">
+            <summary>
+            An interface for WaveStreams which can report notification of individual samples
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.ISampleNotifier.Sample">
+            <summary>
+            A sample has been detected
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleEventArgs">
+            <summary>
+            Sample event arguments
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleEventArgs.Left">
+            <summary>
+            Left sample
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleEventArgs.Right">
+            <summary>
+            Right sample
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleEventArgs.#ctor(System.Single,System.Single)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.Mp3FileReaderBase">
+            <summary>
+            Class for reading from MP3 files
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.Mp3WaveFormat">
+            <summary>
+            The MP3 wave format (n.b. NOT the output format of this stream - see the WaveFormat property)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.#ctor(System.String,NAudio.Wave.Mp3FileReaderBase.FrameDecompressorBuilder)">
+            <summary>Supports opening a MP3 file</summary>
+            <param name="mp3FileName">MP3 File name</param>
+            <param name="frameDecompressorBuilder">Factory method to build a frame decompressor</param>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.#ctor(System.IO.Stream,NAudio.Wave.Mp3FileReaderBase.FrameDecompressorBuilder)">
+            <summary>
+            Opens MP3 from a stream rather than a file
+            Will not dispose of this stream itself
+            </summary>
+            <param name="inputStream">The incoming stream containing MP3 data</param>
+            <param name="frameDecompressorBuilder">Factory method to build a frame decompressor</param>
+        </member>
+        <member name="T:NAudio.Wave.Mp3FileReaderBase.FrameDecompressorBuilder">
+            <summary>
+            Function that can create an MP3 Frame decompressor
+            </summary>
+            <param name="mp3Format">A WaveFormat object describing the MP3 file format</param>
+            <returns>An MP3 Frame decompressor</returns>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.TotalSeconds">
+            <summary>
+            Gets the total length of this file in milliseconds.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.Id3v2Tag">
+            <summary>
+            ID3v2 tag if present
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.Id3v1Tag">
+            <summary>
+            ID3v1 tag if present
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.ReadNextFrame">
+            <summary>
+            Reads the next mp3 frame
+            </summary>
+            <returns>Next mp3 frame, or null if EOF</returns>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.ReadNextFrame(System.Boolean)">
+            <summary>
+            Reads the next mp3 frame
+            </summary>
+            <returns>Next mp3 frame, or null if EOF</returns>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.Length">
+            <summary>
+            This is the length in bytes of data available to be read out from the Read method
+            (i.e. the decompressed MP3 length)
+            n.b. this may return 0 for files whose length is unknown
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.Position">
+            <summary>
+            <see cref="P:System.IO.Stream.Position"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads decompressed PCM data from our MP3 file.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Mp3FileReaderBase.XingHeader">
+            <summary>
+            Xing header if present
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Mp3FileReaderBase.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.RawSourceWaveStream">
+            <summary>
+            WaveStream that simply passes on data from its source stream
+            (e.g. a MemoryStream)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.RawSourceWaveStream.#ctor(System.IO.Stream,NAudio.Wave.WaveFormat)">
+            <summary>
+            Initialises a new instance of RawSourceWaveStream
+            </summary>
+            <param name="sourceStream">The source stream containing raw audio</param>
+            <param name="waveFormat">The waveformat of the audio in the source stream</param>
+        </member>
+        <member name="M:NAudio.Wave.RawSourceWaveStream.#ctor(System.Byte[],System.Int32,System.Int32,NAudio.Wave.WaveFormat)">
+            <summary>
+            Initialises a new instance of RawSourceWaveStream
+            </summary>
+            <param name="byteStream">The buffer containing raw audio</param>
+            <param name="offset">Offset in the source buffer to read from</param>
+            <param name="count">Number of bytes to read in the buffer</param>
+            <param name="waveFormat">The waveformat of the audio in the source stream</param>
+        </member>
+        <member name="P:NAudio.Wave.RawSourceWaveStream.WaveFormat">
+            <summary>
+            The WaveFormat of this stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RawSourceWaveStream.Length">
+            <summary>
+            The length in bytes of this stream (if supported)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RawSourceWaveStream.Position">
+            <summary>
+            The current position in this stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.RawSourceWaveStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads data from the stream
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.RiffChunk">
+            <summary>
+            Holds information about a RIFF file chunk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.RiffChunk.#ctor(System.Int32,System.Int32,System.Int64)">
+            <summary>
+            Creates a RiffChunk object
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RiffChunk.Identifier">
+            <summary>
+            The chunk identifier
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RiffChunk.IdentifierAsString">
+            <summary>
+            The chunk identifier converted to a string
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RiffChunk.Length">
+            <summary>
+            The chunk length
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.RiffChunk.StreamPosition">
+            <summary>
+            The stream position this chunk is located at
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SimpleCompressorEffect">
+            <summary>
+            A simple compressor
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SimpleCompressorEffect.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Create a new simple compressor stream
+            </summary>
+            <param name="sourceStream">Source stream</param>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.MakeUpGain">
+            <summary>
+            Make-up Gain
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.Threshold">
+            <summary>
+            Threshold
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.Ratio">
+            <summary>
+            Ratio
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.Attack">
+            <summary>
+            Attack time
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.Release">
+            <summary>
+            Release time
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.Enabled">
+            <summary>
+            Turns gain on or off
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SimpleCompressorEffect.WaveFormat">
+            <summary>
+            Gets the WaveFormat of this stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SimpleCompressorEffect.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this stream
+            </summary>
+            <param name="array">Buffer to read into</param>
+            <param name="offset">Offset in array to read into</param>
+            <param name="count">Number of bytes to read</param>
+            <returns>Number of bytes read</returns>
+        </member>
+        <member name="T:NAudio.Wave.Wave32To16Stream">
+            <summary>
+            WaveStream that converts 32 bit audio back down to 16 bit, clipping if necessary
+            </summary>
+        </member>
+        <member name="F:NAudio.Wave.Wave32To16Stream.sourceBuffer">
+            <summary>
+            The <see cref="M:NAudio.Wave.Wave32To16Stream.Read(System.Byte[],System.Int32,System.Int32)"/> method reuses the same buffer to prevent
+            unnecessary allocations.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Wave32To16Stream.#ctor(NAudio.Wave.WaveStream)">
+            <summary>
+            Creates a new Wave32To16Stream
+            </summary>
+            <param name="sourceStream">the source stream</param>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.Volume">
+            <summary>
+            Sets the volume for this stream. 1.0f is full scale
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.BlockAlign">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.BlockAlign"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.Length">
+            <summary>
+            Returns the stream length
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.Position">
+            <summary>
+            Gets or sets the current position in the stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Wave32To16Stream.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">Destination buffer</param>
+            <param name="offset">Offset into destination buffer</param>
+            <param name="numBytes"></param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="M:NAudio.Wave.Wave32To16Stream.Convert32To16(System.Byte[],System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            Conversion to 16 bit and clipping
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.Wave32To16Stream.Clip">
+            <summary>
+            Clip indicator. Can be reset.
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.Wave32To16Stream.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveChannel32">
+            <summary>
+            Represents Channel for the WaveMixerStream
+            32 bit output and 16 bit input
+            It's output is always stereo
+            The input stream can be panned
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.#ctor(NAudio.Wave.WaveStream,System.Single,System.Single)">
+            <summary>
+            Creates a new WaveChannel32
+            </summary>
+            <param name="sourceStream">the source stream</param>
+            <param name="volume">stream volume (1 is 0dB)</param>
+            <param name="pan">pan control (-1 to 1)</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.#ctor(NAudio.Wave.WaveStream)">
+            <summary>
+            Creates a WaveChannel32 with default settings
+            </summary>
+            <param name="sourceStream">The source stream</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.BlockAlign">
+            <summary>
+            Gets the block alignment for this WaveStream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.Length">
+            <summary>
+            Returns the stream length
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.Position">
+            <summary>
+            Gets or sets the current position in the stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.PadWithZeroes">
+            <summary>
+            If true, Read always returns the number of bytes requested
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.Volume">
+            <summary>
+            Volume of this channel. 1.0 = full scale
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveChannel32.Pan">
+            <summary>
+            Pan of this channel (from -1 to 1)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.HasData(System.Int32)">
+            <summary>
+            Determines whether this channel has any data to play
+            to allow optimisation to not read, but bump position forward
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="E:NAudio.Wave.WaveChannel32.Sample">
+            <summary>
+            Sample
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveChannel32.RaiseSample(System.Single,System.Single)">
+            <summary>
+            Raise the sample event (no check for null because it has already been done)
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveFileReader">
+            <summary>This class supports the reading of WAV files,
+            providing a repositionable WaveStream that returns the raw data
+            contained in the WAV file
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.#ctor(System.String)">
+            <summary>Supports opening a WAV file</summary>
+            <remarks>The WAV file format is a real mess, but we will only
+            support the basic WAV file format which actually covers the vast
+            majority of WAV files out there. For more WAV file format information
+            visit www.wotsit.org. If you have a WAV file that can't be read by
+            this class, email it to the NAudio project and we will probably
+            fix this reader to support it
+            </remarks>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.#ctor(System.IO.Stream)">
+            <summary>
+            Creates a Wave File Reader based on an input stream
+            </summary>
+            <param name="inputStream">The input stream containing a WAV file including header</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileReader.ExtraChunks">
+            <summary>
+            Gets a list of the additional chunks found in this file
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.GetChunkData(NAudio.Wave.RiffChunk)">
+            <summary>
+            Gets the data for the specified chunk
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.Dispose(System.Boolean)">
+            <summary>
+            Cleans up the resources associated with this WaveFileReader
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileReader.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileReader.Length">
+            <summary>
+            This is the length of audio data contained in this WAV file, in bytes
+            (i.e. the byte length of the data chunk, not the length of the WAV file itself)
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileReader.SampleCount">
+            <summary>
+            Number of Sample Frames  (if possible to calculate)
+            This currently does not take into account number of channels
+            Multiply number of channels if you want the total number of samples
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveFileReader.Position">
+            <summary>
+            Position in the WAV data chunk.
+            <see cref="P:System.IO.Stream.Position"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from the Wave File
+            <see cref="M:System.IO.Stream.Read(System.Byte[],System.Int32,System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.ReadNextSampleFrame">
+            <summary>
+            Attempts to read the next sample or group of samples as floating point normalised into the range -1.0f to 1.0f
+            </summary>
+            <returns>An array of samples, 1 for mono, 2 for stereo etc. Null indicates end of file reached
+            </returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFileReader.TryReadFloat(System.Single@)">
+            <summary>
+            Attempts to read a sample into a float. n.b. only applicable for uncompressed formats
+            Will normalise the value read into the range -1.0f to 1.0f if it comes from a PCM encoding
+            </summary>
+            <returns>False if the end of the WAV data chunk was reached</returns>
+        </member>
+        <member name="T:NAudio.Wave.WaveMixerStream32">
+            <summary>
+            WaveStream that can mix together multiple 32 bit input streams
+            (Normally used with stereo input channels)
+            All channels must have the same number of inputs
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.#ctor">
+            <summary>
+            Creates a new 32 bit WaveMixerStream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.WaveStream},System.Boolean)">
+            <summary>
+            Creates a new 32 bit WaveMixerStream
+            </summary>
+            <param name="inputStreams">An Array of WaveStreams - must all have the same format.
+            Use WaveChannel is designed for this purpose.</param>
+            <param name="autoStop">Automatically stop when all inputs have been read</param>
+            <exception cref="T:System.ArgumentException">Thrown if the input streams are not 32 bit floating point,
+            or if they have different formats to each other</exception>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.AddInputStream(NAudio.Wave.WaveStream)">
+            <summary>
+            Add a new input to the mixer
+            </summary>
+            <param name="waveStream">The wave input to add</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.RemoveInputStream(NAudio.Wave.WaveStream)">
+            <summary>
+            Remove a WaveStream from the mixer
+            </summary>
+            <param name="waveStream">waveStream to remove</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.InputCount">
+            <summary>
+            The number of inputs to this mixer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.AutoStop">
+            <summary>
+            Automatically stop when all inputs have been read
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="buffer">buffer to read into</param>
+            <param name="offset">offset into buffer</param>
+            <param name="count">number of bytes required</param>
+            <returns>Number of bytes read.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if an invalid number of bytes requested</exception>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.Sum32BitAudio(System.Byte[],System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            Actually performs the mixing
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.BlockAlign">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.BlockAlign"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.Length">
+            <summary>
+            Length of this Wave Stream (in bytes)
+            <see cref="P:System.IO.Stream.Length"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.Position">
+            <summary>
+            Position within this Wave Stream (in bytes)
+            <see cref="P:System.IO.Stream.Position"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveMixerStream32.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveMixerStream32.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveOffsetStream">
+            <summary>
+            Simply shifts the input stream in time, optionally
+            clipping its start and end.
+            (n.b. may include looping in the future)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveOffsetStream.#ctor(NAudio.Wave.WaveStream,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Creates a new WaveOffsetStream
+            </summary>
+            <param name="sourceStream">the source stream</param>
+            <param name="startTime">the time at which we should start reading from the source stream</param>
+            <param name="sourceOffset">amount to trim off the front of the source stream</param>
+            <param name="sourceLength">length of time to play from source stream</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveOffsetStream.#ctor(NAudio.Wave.WaveStream)">
+            <summary>
+            Creates a WaveOffsetStream with default settings (no offset or pre-delay,
+            and whole length of source stream)
+            </summary>
+            <param name="sourceStream">The source stream</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.StartTime">
+            <summary>
+            The length of time before which no audio will be played
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.SourceOffset">
+            <summary>
+            An offset into the source stream from which to start playing
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.SourceLength">
+            <summary>
+            Length of time to read from the source stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.BlockAlign">
+            <summary>
+            Gets the block alignment for this WaveStream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.Length">
+            <summary>
+            Returns the stream length
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.Position">
+            <summary>
+            Gets or sets the current position in the stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveOffsetStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this wave stream
+            </summary>
+            <param name="destBuffer">The destination buffer</param>
+            <param name="offset">Offset into the destination buffer</param>
+            <param name="numBytes">Number of bytes read</param>
+            <returns>Number of bytes read.</returns>
+        </member>
+        <member name="P:NAudio.Wave.WaveOffsetStream.WaveFormat">
+            <summary>
+            <see cref="P:NAudio.Wave.WaveStream.WaveFormat"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveOffsetStream.HasData(System.Int32)">
+            <summary>
+            Determines whether this channel has any data to play
+            to allow optimisation to not read, but bump position forward
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveOffsetStream.Dispose(System.Boolean)">
+            <summary>
+            Disposes this WaveStream
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.WaveStream">
+            <summary>
+            Base class for all WaveStream classes. Derives from stream.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.WaveFormat">
+            <summary>
+            Retrieves the WaveFormat for this stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.CanRead">
+            <summary>
+            We can read from this stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.CanSeek">
+            <summary>
+            We can seek within this stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.CanWrite">
+            <summary>
+            We can't write to this stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.Flush">
+            <summary>
+            Flush does not need to do anything
+            See <see cref="M:System.IO.Stream.Flush"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <summary>
+            An alternative way of repositioning.
+            See <see cref="M:System.IO.Stream.Seek(System.Int64,System.IO.SeekOrigin)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.SetLength(System.Int64)">
+            <summary>
+            Sets the length of the WaveStream. Not Supported.
+            </summary>
+            <param name="length"></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Writes to the WaveStream. Not Supported.
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.BlockAlign">
+            <summary>
+            The block alignment for this wavestream. Do not modify the Position
+            to anything that is not a whole multiple of this value
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.Skip(System.Int32)">
+            <summary>
+            Moves forward or backwards the specified number of seconds in the stream
+            </summary>
+            <param name="seconds">Number of seconds to move, can be negative</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.CurrentTime">
+            <summary>
+            The current position in the stream in Time format
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.WaveStream.TotalTime">
+            <summary>
+            Total length in real-time of the stream (may be an estimate for compressed files)
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveStream.HasData(System.Int32)">
+            <summary>
+            Whether the WaveStream has non-zero sample data at the current position for the 
+            specified count
+            </summary>
+            <param name="count">Number of bytes to read</param>
+        </member>
+        <member name="T:NAudio.SoundFont.Generator">
+            <summary>
+            Soundfont generator
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.GeneratorType">
+            <summary>
+            Gets the generator type
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.UInt16Amount">
+            <summary>
+            Generator amount as an unsigned short
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.Int16Amount">
+            <summary>
+            Generator amount as a signed short
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.LowByteAmount">
+            <summary>
+            Low byte amount
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.HighByteAmount">
+            <summary>
+            High byte amount
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.Instrument">
+            <summary>
+            Instrument
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Generator.SampleHeader">
+            <summary>
+            Sample Header
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.Generator.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.GeneratorEnum">
+            <summary>
+            Generator types
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.StartAddressOffset">
+            <summary>Start address offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.EndAddressOffset">
+            <summary>End address offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.StartLoopAddressOffset">
+            <summary>Start loop address offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.EndLoopAddressOffset">
+            <summary>End loop address offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.StartAddressCoarseOffset">
+            <summary>Start address coarse offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ModulationLFOToPitch">
+            <summary>Modulation LFO to pitch</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.VibratoLFOToPitch">
+            <summary>Vibrato LFO to pitch</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ModulationEnvelopeToPitch">
+            <summary>Modulation envelope to pitch</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.InitialFilterCutoffFrequency">
+            <summary>Initial filter cutoff frequency</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.InitialFilterQ">
+            <summary>Initial filter Q</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ModulationLFOToFilterCutoffFrequency">
+            <summary>Modulation LFO to filter Cutoff frequency</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ModulationEnvelopeToFilterCutoffFrequency">
+            <summary>Modulation envelope to filter cutoff frequency</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.EndAddressCoarseOffset">
+            <summary>End address coarse offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ModulationLFOToVolume">
+            <summary>Modulation LFO to volume</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Unused1">
+            <summary>Unused</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ChorusEffectsSend">
+            <summary>Chorus effects send</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ReverbEffectsSend">
+            <summary>Reverb effects send</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Pan">
+            <summary>Pan</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Unused2">
+            <summary>Unused</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Unused3">
+            <summary>Unused</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Unused4">
+            <summary>Unused</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DelayModulationLFO">
+            <summary>Delay modulation LFO</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.FrequencyModulationLFO">
+            <summary>Frequency modulation LFO</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DelayVibratoLFO">
+            <summary>Delay vibrato LFO</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.FrequencyVibratoLFO">
+            <summary>Frequency vibrato LFO</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DelayModulationEnvelope">
+            <summary>Delay modulation envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.AttackModulationEnvelope">
+            <summary>Attack modulation envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.HoldModulationEnvelope">
+            <summary>Hold modulation envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DecayModulationEnvelope">
+            <summary>Decay modulation envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.SustainModulationEnvelope">
+            <summary>Sustain modulation envelop</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ReleaseModulationEnvelope">
+            <summary>Release modulation envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyNumberToModulationEnvelopeHold">
+            <summary>Key number to modulation envelope hold</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyNumberToModulationEnvelopeDecay">
+            <summary>Key number to modulation envelope decay</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DelayVolumeEnvelope">
+            <summary>Delay volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.AttackVolumeEnvelope">
+            <summary>Attack volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.HoldVolumeEnvelope">
+            <summary>Hold volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.DecayVolumeEnvelope">
+            <summary>Decay volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.SustainVolumeEnvelope">
+            <summary>Sustain volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ReleaseVolumeEnvelope">
+            <summary>Release volume envelope</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyNumberToVolumeEnvelopeHold">
+            <summary>Key number to volume envelope hold</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyNumberToVolumeEnvelopeDecay">
+            <summary>Key number to volume envelope decay</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Instrument">
+            <summary>Instrument</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Reserved1">
+            <summary>Reserved</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyRange">
+            <summary>Key range</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.VelocityRange">
+            <summary>Velocity range</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.StartLoopAddressCoarseOffset">
+            <summary>Start loop address coarse offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.KeyNumber">
+            <summary>Key number</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Velocity">
+            <summary>Velocity</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.InitialAttenuation">
+            <summary>Initial attenuation</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Reserved2">
+            <summary>Reserved</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.EndLoopAddressCoarseOffset">
+            <summary>End loop address coarse offset</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.CoarseTune">
+            <summary>Coarse tune</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.FineTune">
+            <summary>Fine tune</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.SampleID">
+            <summary>Sample ID</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.SampleModes">
+            <summary>Sample modes</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Reserved3">
+            <summary>Reserved</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ScaleTuning">
+            <summary>Scale tuning</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.ExclusiveClass">
+            <summary>Exclusive class</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.OverridingRootKey">
+            <summary>Overriding root key</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.Unused5">
+            <summary>Unused</summary>
+        </member>
+        <member name="F:NAudio.SoundFont.GeneratorEnum.UnusedEnd">
+            <summary>Unused</summary>
+        </member>
+        <member name="T:NAudio.SoundFont.InfoChunk">
+            <summary>
+            A soundfont info chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.SoundFontVersion">
+            <summary>
+            SoundFont Version
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.WaveTableSoundEngine">
+            <summary>
+            WaveTable sound engine
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.BankName">
+            <summary>
+            Bank name
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.DataROM">
+            <summary>
+            Data ROM
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.CreationDate">
+            <summary>
+            Creation Date
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.Author">
+            <summary>
+            Author
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.TargetProduct">
+            <summary>
+            Target Product
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.Copyright">
+            <summary>
+            Copyright
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.Comments">
+            <summary>
+            Comments
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.Tools">
+            <summary>
+            Tools
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.InfoChunk.ROMVersion">
+            <summary>
+            ROM Version
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.InfoChunk.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.Instrument">
+            <summary>
+            SoundFont instrument
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Instrument.Name">
+            <summary>
+            instrument name
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Instrument.Zones">
+            <summary>
+            Zones
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.Instrument.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.InstrumentBuilder">
+            <summary>
+            Instrument Builder
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.TransformEnum">
+            <summary>
+            Transform Types
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.TransformEnum.Linear">
+            <summary>
+            Linear
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.Modulator">
+            <summary>
+            Modulator
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Modulator.SourceModulationData">
+            <summary>
+            Source Modulation data type
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Modulator.DestinationGenerator">
+            <summary>
+            Destination generator type
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Modulator.Amount">
+            <summary>
+            Amount
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Modulator.SourceModulationAmount">
+            <summary>
+            Source Modulation Amount Type
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Modulator.SourceTransform">
+            <summary>
+            Source Transform Type
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.Modulator.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.ControllerSourceEnum">
+            <summary>
+            Controller Sources
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.NoController">
+            <summary>
+            No Controller
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.NoteOnVelocity">
+            <summary>
+            Note On Velocity
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.NoteOnKeyNumber">
+            <summary>
+            Note On Key Number
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.PolyPressure">
+            <summary>
+            Poly Pressure
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.ChannelPressure">
+            <summary>
+            Channel Pressure
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.PitchWheel">
+            <summary>
+            Pitch Wheel
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.ControllerSourceEnum.PitchWheelSensitivity">
+            <summary>
+            Pitch Wheel Sensitivity
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SourceTypeEnum">
+            <summary>
+            Source Types
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SourceTypeEnum.Linear">
+            <summary>
+            Linear
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SourceTypeEnum.Concave">
+            <summary>
+            Concave
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SourceTypeEnum.Convex">
+            <summary>
+            Convex
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SourceTypeEnum.Switch">
+            <summary>
+            Switch
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.ModulatorType">
+            <summary>
+            Modulator Type
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.ModulatorType.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.SoundFont.Preset">
+            <summary>
+            A SoundFont Preset
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Preset.Name">
+            <summary>
+            Preset name
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Preset.PatchNumber">
+            <summary>
+            Patch Number
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Preset.Bank">
+            <summary>
+            Bank number
+            0 - 127, GM percussion bank is 128
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Preset.Zones">
+            <summary>
+            Zones
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.Preset.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.PresetsChunk">
+            <summary>
+            Class to read the SoundFont file presets chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.PresetsChunk.Presets">
+            <summary>
+            The Presets contained in this chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.PresetsChunk.Instruments">
+            <summary>
+            The instruments contained in this chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.PresetsChunk.SampleHeaders">
+            <summary>
+            The sample headers contained in this chunk
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.PresetsChunk.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.RiffChunk.ReadChunkID">
+            <summary>
+            just reads a chunk ID at the current position
+            </summary>
+            <returns>chunk ID</returns>
+        </member>
+        <member name="M:NAudio.SoundFont.RiffChunk.ReadChunk">
+            <summary>
+            reads a chunk at the current position
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.RiffChunk.GetNextSubChunk">
+            <summary>
+            creates a new riffchunk from current position checking that we're not
+            at the end of this chunk first
+            </summary>
+            <returns>the new chunk</returns>
+        </member>
+        <member name="M:NAudio.SoundFont.RiffChunk.GetDataAsString">
+            <summary>
+            useful for chunks that just contain a string
+            </summary>
+            <returns>chunk as string</returns>
+        </member>
+        <member name="T:NAudio.SoundFont.SampleHeader">
+            <summary>
+            A SoundFont Sample Header
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.SampleName">
+            <summary>
+            The sample name
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.Start">
+            <summary>
+            Start offset
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.End">
+            <summary>
+            End offset
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.StartLoop">
+            <summary>
+            Start loop point
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.EndLoop">
+            <summary>
+            End loop point
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.SampleRate">
+            <summary>
+            Sample Rate
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.OriginalPitch">
+            <summary>
+            Original pitch
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.PitchCorrection">
+            <summary>
+            Pitch correction
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.SampleLink">
+            <summary>
+            Sample Link
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleHeader.SFSampleLink">
+            <summary>
+            SoundFont Sample Link Type
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.SampleHeader.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SampleMode">
+            <summary>
+            SoundFont sample modes
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleMode.NoLoop">
+            <summary>
+            No loop
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleMode.LoopContinuously">
+            <summary>
+            Loop Continuously
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleMode.ReservedNoLoop">
+            <summary>
+            Reserved no loop
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SampleMode.LoopAndContinue">
+            <summary>
+            Loop and continue
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SFSampleLink">
+            <summary>
+            Sample Link Type
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.MonoSample">
+            <summary>
+            Mono Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.RightSample">
+            <summary>
+            Right Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.LeftSample">
+            <summary>
+            Left Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.LinkedSample">
+            <summary>
+            Linked Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.RomMonoSample">
+            <summary>
+            ROM Mono Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.RomRightSample">
+            <summary>
+            ROM Right Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.RomLeftSample">
+            <summary>
+            ROM Left Sample
+            </summary>
+        </member>
+        <member name="F:NAudio.SoundFont.SFSampleLink.RomLinkedSample">
+            <summary>
+            ROM Linked Sample
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SFVersion">
+            <summary>
+            SoundFont Version Structure
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SFVersion.Major">
+            <summary>
+            Major Version
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SFVersion.Minor">
+            <summary>
+            Minor Version
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SFVersionBuilder">
+            <summary>
+            Builds a SoundFont version
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.SFVersionBuilder.Read(System.IO.BinaryReader)">
+            <summary>
+            Reads a SoundFont Version structure
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.SFVersionBuilder.Write(System.IO.BinaryWriter,NAudio.SoundFont.SFVersion)">
+            <summary>
+            Writes a SoundFont Version structure
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SFVersionBuilder.Length">
+            <summary>
+            Gets the length of this structure
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.SoundFont">
+            <summary>
+            Represents a SoundFont
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.SoundFont.#ctor(System.String)">
+            <summary>
+            Loads a SoundFont from a file
+            </summary>
+            <param name="fileName">Filename of the SoundFont</param>
+        </member>
+        <member name="M:NAudio.SoundFont.SoundFont.#ctor(System.IO.Stream)">
+            <summary>
+            Loads a SoundFont from a stream
+            </summary>
+            <param name="sfFile">stream</param>
+        </member>
+        <member name="P:NAudio.SoundFont.SoundFont.FileInfo">
+            <summary>
+            The File Info Chunk
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SoundFont.Presets">
+            <summary>
+            The Presets
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SoundFont.Instruments">
+            <summary>
+            The Instruments
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SoundFont.SampleHeaders">
+            <summary>
+            The Sample Headers
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.SoundFont.SampleData">
+            <summary>
+            The Sample Data
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.SoundFont.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.StructureBuilder`1">
+            <summary>
+            base class for structures that can read themselves
+            </summary>
+        </member>
+        <member name="T:NAudio.SoundFont.Zone">
+            <summary>
+            A SoundFont zone
+            </summary>
+        </member>
+        <member name="M:NAudio.SoundFont.Zone.ToString">
+            <summary>
+            <see cref="M:System.Object.ToString"/>
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Zone.Modulators">
+            <summary>
+            Modulators for this Zone
+            </summary>
+        </member>
+        <member name="P:NAudio.SoundFont.Zone.Generators">
+            <summary>
+            Generators for this Zone
+            </summary>
+        </member>
+        <member name="M:NAudio.FileFormats.Wav.WaveFileChunkReader.ReadDs64Chunk(System.IO.BinaryReader)">
+            <summary>
+            http://tech.ebu.ch/docs/tech/tech3306-2009.pdf
+            </summary>
+        </member>
+        <member name="P:NAudio.FileFormats.Wav.WaveFileChunkReader.WaveFormat">
+            <summary>
+            WaveFormat
+            </summary>
+        </member>
+        <member name="P:NAudio.FileFormats.Wav.WaveFileChunkReader.DataChunkPosition">
+            <summary>
+            Data Chunk Position
+            </summary>
+        </member>
+        <member name="P:NAudio.FileFormats.Wav.WaveFileChunkReader.DataChunkLength">
+            <summary>
+            Data Chunk Length
+            </summary>
+        </member>
+        <member name="P:NAudio.FileFormats.Wav.WaveFileChunkReader.RiffChunks">
+            <summary>
+            Riff Chunks
+            </summary>
+        </member>
+        <member name="T:NAudio.Manufacturers">
+            <summary>
+            Manufacturer codes from mmreg.h
+            </summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Microsoft">
+            <summary>Microsoft Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Creative">
+            <summary>Creative Labs, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Mediavision">
+            <summary>Media Vision, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Fujitsu">
+            <summary>Fujitsu Corp.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Artisoft">
+            <summary>Artisoft, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.TurtleBeach">
+            <summary>Turtle Beach, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ibm">
+            <summary>IBM Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Vocaltec">
+            <summary>Vocaltec LTD.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Roland">
+            <summary>Roland</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.DspSolutions">
+            <summary>DSP Solutions, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Nec">
+            <summary>NEC</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ati">
+            <summary>ATI</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Wanglabs">
+            <summary>Wang Laboratories, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Tandy">
+            <summary>Tandy Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Voyetra">
+            <summary>Voyetra</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Antex">
+            <summary>Antex Electronics Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.IclPS">
+            <summary>ICL Personal Systems</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Intel">
+            <summary>Intel Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Gravis">
+            <summary>Advanced Gravis</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Val">
+            <summary>Video Associates Labs, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Interactive">
+            <summary>InterActive Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Yamaha">
+            <summary>Yamaha Corporation of America</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Everex">
+            <summary>Everex Systems, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Echo">
+            <summary>Echo Speech Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Sierra">
+            <summary>Sierra Semiconductor Corp</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Cat">
+            <summary>Computer Aided Technologies</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Apps">
+            <summary>APPS Software International</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.DspGroup">
+            <summary>DSP Group, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Melabs">
+            <summary>microEngineering Labs</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.ComputerFriends">
+            <summary>Computer Friends, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ess">
+            <summary>ESS Technology</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Audiofile">
+            <summary>Audio, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Motorola">
+            <summary>Motorola, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Canopus">
+            <summary>Canopus, co., Ltd.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Epson">
+            <summary>Seiko Epson Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Truevision">
+            <summary>Truevision</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Aztech">
+            <summary>Aztech Labs, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Videologic">
+            <summary>Videologic</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Scalacs">
+            <summary>SCALACS</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Korg">
+            <summary>Korg Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Apt">
+            <summary>Audio Processing Technology</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ics">
+            <summary>Integrated Circuit Systems, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Iteratedsys">
+            <summary>Iterated Systems, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Metheus">
+            <summary>Metheus</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Logitech">
+            <summary>Logitech, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Winnov">
+            <summary>Winnov, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ncr">
+            <summary>NCR Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Exan">
+            <summary>EXAN</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ast">
+            <summary>AST Research Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Willowpond">
+            <summary>Willow Pond Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Sonicfoundry">
+            <summary>Sonic Foundry</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Vitec">
+            <summary>Vitec Multimedia</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Moscom">
+            <summary>MOSCOM Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Siliconsoft">
+            <summary>Silicon Soft, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Supermac">
+            <summary>Supermac</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Audiopt">
+            <summary>Audio Processing Technology</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Speechcomp">
+            <summary>Speech Compression</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ahead">
+            <summary>Ahead, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Dolby">
+            <summary>Dolby Laboratories</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Oki">
+            <summary>OKI</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Auravision">
+            <summary>AuraVision Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Olivetti">
+            <summary>Ing C. Olivetti &amp; C., S.p.A.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Iomagic">
+            <summary>I/O Magic Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Matsushita">
+            <summary>Matsushita Electric Industrial Co., LTD.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Controlres">
+            <summary>Control Resources Limited</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Xebec">
+            <summary>Xebec Multimedia Solutions Limited</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Newmedia">
+            <summary>New Media Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Nms">
+            <summary>Natural MicroSystems</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Lyrrus">
+            <summary>Lyrrus Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Compusic">
+            <summary>Compusic</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Opti">
+            <summary>OPTi Computers Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Adlacc">
+            <summary>Adlib Accessories Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Compaq">
+            <summary>Compaq Computer Corp.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Dialogic">
+            <summary>Dialogic Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Insoft">
+            <summary>InSoft, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Mptus">
+            <summary>M.P. Technologies, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Weitek">
+            <summary>Weitek</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.LernoutAndHauspie">
+            <summary>Lernout &amp; Hauspie</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Qciar">
+            <summary>Quanta Computer Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Apple">
+            <summary>Apple Computer, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Digital">
+            <summary>Digital Equipment Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Motu">
+            <summary>Mark of the Unicorn</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Workbit">
+            <summary>Workbit Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ositech">
+            <summary>Ositech Communications Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Miro">
+            <summary>miro Computer Products AG</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Cirruslogic">
+            <summary>Cirrus Logic</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Isolution">
+            <summary>ISOLUTION  B.V.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Horizons">
+            <summary>Horizons Technology, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Concepts">
+            <summary>Computer Concepts Ltd</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Vtg">
+            <summary>Voice Technologies Group, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Radius">
+            <summary>Radius</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Rockwell">
+            <summary>Rockwell International</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Xyz">
+            <summary>Co. XYZ for testing</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Opcode">
+            <summary>Opcode Systems</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Voxware">
+            <summary>Voxware Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.NorthernTelecom">
+            <summary>Northern Telecom Limited</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Apicom">
+            <summary>APICOM</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Grande">
+            <summary>Grande Software</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Addx">
+            <summary>ADDX</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Wildcat">
+            <summary>Wildcat Canyon Software</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Rhetorex">
+            <summary>Rhetorex Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Brooktree">
+            <summary>Brooktree Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ensoniq">
+            <summary>ENSONIQ Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Fast">
+            <summary>FAST Multimedia AG</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Nvidia">
+            <summary>NVidia Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Oksori">
+            <summary>OKSORI Co., Ltd.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Diacoustics">
+            <summary>DiAcoustics, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Gulbransen">
+            <summary>Gulbransen, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.KayElemetrics">
+            <summary>Kay Elemetrics, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Crystal">
+            <summary>Crystal Semiconductor Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.SplashStudios">
+            <summary>Splash Studios</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Quarterdeck">
+            <summary>Quarterdeck Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Tdk">
+            <summary>TDK Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.DigitalAudioLabs">
+            <summary>Digital Audio Labs, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Seersys">
+            <summary>Seer Systems, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Picturetel">
+            <summary>PictureTel Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.AttMicroelectronics">
+            <summary>AT&amp;T Microelectronics</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Osprey">
+            <summary>Osprey Technologies, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Mediatrix">
+            <summary>Mediatrix Peripherals</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Soundesigns">
+            <summary>SounDesignS M.C.S. Ltd.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Aldigital">
+            <summary>A.L. Digital Ltd.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.SpectrumSignalProcessing">
+            <summary>Spectrum Signal Processing, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ecs">
+            <summary>Electronic Courseware Systems, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Amd">
+            <summary>AMD</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Coredynamics">
+            <summary>Core Dynamics</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Canam">
+            <summary>CANAM Computers</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Softsound">
+            <summary>Softsound, Ltd.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Norris">
+            <summary>Norris Communications, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Ddd">
+            <summary>Danka Data Devices</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Euphonics">
+            <summary>EuPhonics</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Precept">
+            <summary>Precept Software, Inc.</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.CrystalNet">
+            <summary>Crystal Net Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Chromatic">
+            <summary>Chromatic Research, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Voiceinfo">
+            <summary>Voice Information Systems, Inc</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Viennasys">
+            <summary>Vienna Systems</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Connectix">
+            <summary>Connectix Corporation</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Gadgetlabs">
+            <summary>Gadget Labs LLC</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Frontier">
+            <summary>Frontier Design Group LLC</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Viona">
+            <summary>Viona Development GmbH</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Casio">
+            <summary>Casio Computer Co., LTD</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.Diamondmm">
+            <summary>Diamond Multimedia</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.S3">
+            <summary>S3</summary>
+        </member>
+        <member name="F:NAudio.Manufacturers.FraunhoferIis">
+            <summary>Fraunhofer</summary>
+        </member>
+        <member name="T:NAudio.MmException">
+            <summary>
+            Summary description for MmException.
+            </summary>
+        </member>
+        <member name="M:NAudio.MmException.#ctor(NAudio.MmResult,System.String)">
+            <summary>
+            Creates a new MmException
+            </summary>
+            <param name="result">The result returned by the Windows API call</param>
+            <param name="function">The name of the Windows API that failed</param>
+        </member>
+        <member name="M:NAudio.MmException.Try(NAudio.MmResult,System.String)">
+            <summary>
+            Helper function to automatically raise an exception on failure
+            </summary>
+            <param name="result">The result of the API call</param>
+            <param name="function">The API function name</param>
+        </member>
+        <member name="P:NAudio.MmException.Result">
+            <summary>
+            Returns the Windows API result
+            </summary>
+        </member>
+        <member name="P:NAudio.MmException.Function">
+            <summary>
+            The function being called
+            </summary>
+        </member>
+        <member name="T:NAudio.MmResult">
+            <summary>
+            Windows multimedia error codes from mmsystem.h.
+            </summary>
+        </member>
+        <member name="F:NAudio.MmResult.NoError">
+            <summary>no error, MMSYSERR_NOERROR</summary>
+        </member>
+        <member name="F:NAudio.MmResult.UnspecifiedError">
+            <summary>unspecified error, MMSYSERR_ERROR</summary>
+        </member>
+        <member name="F:NAudio.MmResult.BadDeviceId">
+            <summary>device ID out of range, MMSYSERR_BADDEVICEID</summary>
+        </member>
+        <member name="F:NAudio.MmResult.NotEnabled">
+            <summary>driver failed enable, MMSYSERR_NOTENABLED</summary>
+        </member>
+        <member name="F:NAudio.MmResult.AlreadyAllocated">
+            <summary>device already allocated, MMSYSERR_ALLOCATED</summary>
+        </member>
+        <member name="F:NAudio.MmResult.InvalidHandle">
+            <summary>device handle is invalid, MMSYSERR_INVALHANDLE</summary>
+        </member>
+        <member name="F:NAudio.MmResult.NoDriver">
+            <summary>no device driver present, MMSYSERR_NODRIVER</summary>
+        </member>
+        <member name="F:NAudio.MmResult.MemoryAllocationError">
+            <summary>memory allocation error, MMSYSERR_NOMEM</summary>
+        </member>
+        <member name="F:NAudio.MmResult.NotSupported">
+            <summary>function isn't supported, MMSYSERR_NOTSUPPORTED</summary>
+        </member>
+        <member name="F:NAudio.MmResult.BadErrorNumber">
+            <summary>error value out of range, MMSYSERR_BADERRNUM</summary>
+        </member>
+        <member name="F:NAudio.MmResult.InvalidFlag">
+            <summary>invalid flag passed, MMSYSERR_INVALFLAG</summary>
+        </member>
+        <member name="F:NAudio.MmResult.InvalidParameter">
+            <summary>invalid parameter passed, MMSYSERR_INVALPARAM</summary>
+        </member>
+        <member name="F:NAudio.MmResult.HandleBusy">
+            <summary>handle being used simultaneously on another thread (eg callback),MMSYSERR_HANDLEBUSY</summary>
+        </member>
+        <member name="F:NAudio.MmResult.InvalidAlias">
+            <summary>specified alias not found, MMSYSERR_INVALIDALIAS</summary>
+        </member>
+        <member name="F:NAudio.MmResult.BadRegistryDatabase">
+            <summary>bad registry database, MMSYSERR_BADDB</summary>
+        </member>
+        <member name="F:NAudio.MmResult.RegistryKeyNotFound">
+            <summary>registry key not found, MMSYSERR_KEYNOTFOUND</summary>
+        </member>
+        <member name="F:NAudio.MmResult.RegistryReadError">
+            <summary>registry read error, MMSYSERR_READERROR</summary>
+        </member>
+        <member name="F:NAudio.MmResult.RegistryWriteError">
+            <summary>registry write error, MMSYSERR_WRITEERROR</summary>
+        </member>
+        <member name="F:NAudio.MmResult.RegistryDeleteError">
+            <summary>registry delete error, MMSYSERR_DELETEERROR</summary>
+        </member>
+        <member name="F:NAudio.MmResult.RegistryValueNotFound">
+            <summary>registry value not found, MMSYSERR_VALNOTFOUND</summary>
+        </member>
+        <member name="F:NAudio.MmResult.NoDriverCallback">
+            <summary>driver does not call DriverCallback, MMSYSERR_NODRIVERCB</summary>
+        </member>
+        <member name="F:NAudio.MmResult.MoreData">
+            <summary>more data to be returned, MMSYSERR_MOREDATA</summary>
+        </member>
+        <member name="F:NAudio.MmResult.WaveBadFormat">
+            <summary>unsupported wave format, WAVERR_BADFORMAT</summary>
+        </member>
+        <member name="F:NAudio.MmResult.WaveStillPlaying">
+            <summary>still something playing, WAVERR_STILLPLAYING</summary>
+        </member>
+        <member name="F:NAudio.MmResult.WaveHeaderUnprepared">
+            <summary>header not prepared, WAVERR_UNPREPARED</summary>
+        </member>
+        <member name="F:NAudio.MmResult.WaveSync">
+            <summary>device is synchronous, WAVERR_SYNC</summary>
+        </member>
+        <member name="F:NAudio.MmResult.AcmNotPossible">
+            <summary>Conversion not possible (ACMERR_NOTPOSSIBLE)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.AcmBusy">
+            <summary>Busy (ACMERR_BUSY)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.AcmHeaderUnprepared">
+            <summary>Header Unprepared (ACMERR_UNPREPARED)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.AcmCancelled">
+            <summary>Cancelled (ACMERR_CANCELED)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.MixerInvalidLine">
+            <summary>invalid line (MIXERR_INVALLINE)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.MixerInvalidControl">
+            <summary>invalid control (MIXERR_INVALCONTROL)</summary>
+        </member>
+        <member name="F:NAudio.MmResult.MixerInvalidValue">
+            <summary>invalid value (MIXERR_INVALVALUE)</summary>
+        </member>
+        <member name="T:NAudio.Utils.BufferHelpers">
+            <summary>
+            Helper methods for working with audio buffers
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.BufferHelpers.Ensure(System.Byte[],System.Int32)">
+            <summary>
+            Ensures the buffer is big enough
+            </summary>
+            <param name="buffer"></param>
+            <param name="bytesRequired"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NAudio.Utils.BufferHelpers.Ensure(System.Single[],System.Int32)">
+            <summary>
+            Ensures the buffer is big enough
+            </summary>
+            <param name="buffer"></param>
+            <param name="samplesRequired"></param>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.Utils.ByteArrayExtensions">
+            <summary>
+            these will become extension methods once we move to .NET 3.5
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteArrayExtensions.IsEntirelyNull(System.Byte[])">
+            <summary>
+            Checks if the buffer passed in is entirely full of nulls
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteArrayExtensions.DescribeAsHex(System.Byte[],System.String,System.Int32)">
+            <summary>
+            Converts to a string containing the buffer described in hex
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteArrayExtensions.DecodeAsString(System.Byte[],System.Int32,System.Int32,System.Text.Encoding)">
+            <summary>
+            Decodes the buffer using the specified encoding, stopping at the first null
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteArrayExtensions.Concat(System.Byte[][])">
+            <summary>
+            Concatenates the given arrays into a single array.
+            </summary>
+            <param name="byteArrays">The arrays to concatenate</param>
+            <returns>The concatenated resulting array.</returns>
+        </member>
+        <member name="T:NAudio.Utils.ByteEncoding">
+            <summary>
+            An encoding for use with file types that have one byte per character
+            </summary>
+        </member>
+        <member name="F:NAudio.Utils.ByteEncoding.Instance">
+            <summary>
+            The one and only instance of this class
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetByteCount(System.Char[],System.Int32,System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetByteCount(System.Char[],System.Int32,System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetBytes(System.Char[],System.Int32,System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetBytes(System.Char[],System.Int32,System.Int32,System.Byte[],System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetCharCount(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetCharCount(System.Byte[],System.Int32,System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetChars(System.Byte[],System.Int32,System.Int32,System.Char[],System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetChars(System.Byte[],System.Int32,System.Int32,System.Char[],System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetMaxCharCount(System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetMaxCharCount(System.Int32)"/>
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ByteEncoding.GetMaxByteCount(System.Int32)">
+            <summary>
+            <see cref="M:System.Text.Encoding.GetMaxByteCount(System.Int32)"/>
+            </summary>
+        </member>
+        <member name="T:NAudio.Utils.ChunkIdentifier">
+            <summary>
+            Chunk Identifier helpers
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.ChunkIdentifier.ChunkIdentifierToInt32(System.String)">
+            <summary>
+            Chunk identifier to Int32 (replaces mmioStringToFOURCC)
+            </summary>
+            <param name="s">four character chunk identifier</param>
+            <returns>Chunk identifier as int 32</returns>
+        </member>
+        <member name="T:NAudio.Utils.CircularBuffer">
+            <summary>
+            A very basic circular buffer implementation
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.CircularBuffer.#ctor(System.Int32)">
+            <summary>
+            Create a new circular buffer
+            </summary>
+            <param name="size">Max buffer size in bytes</param>
+        </member>
+        <member name="M:NAudio.Utils.CircularBuffer.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Write data to the buffer
+            </summary>
+            <param name="data">Data to write</param>
+            <param name="offset">Offset into data</param>
+            <param name="count">Number of bytes to write</param>
+            <returns>number of bytes written</returns>
+        </member>
+        <member name="M:NAudio.Utils.CircularBuffer.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read from the buffer
+            </summary>
+            <param name="data">Buffer to read into</param>
+            <param name="offset">Offset into read buffer</param>
+            <param name="count">Bytes to read</param>
+            <returns>Number of bytes actually read</returns>
+        </member>
+        <member name="P:NAudio.Utils.CircularBuffer.MaxLength">
+            <summary>
+            Maximum length of this circular buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.CircularBuffer.Count">
+            <summary>
+            Number of bytes currently stored in the circular buffer
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.CircularBuffer.Reset">
+            <summary>
+            Resets the buffer
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.CircularBuffer.Advance(System.Int32)">
+            <summary>
+            Advances the buffer, discarding bytes
+            </summary>
+            <param name="count">Bytes to advance</param>
+        </member>
+        <member name="T:NAudio.Utils.Decibels">
+            <summary>
+            A util class for conversions
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.Decibels.LinearToDecibels(System.Double)">
+            <summary>
+            linear to dB conversion
+            </summary>
+            <param name="lin">linear value</param>
+            <returns>decibel value</returns>
+        </member>
+        <member name="M:NAudio.Utils.Decibels.DecibelsToLinear(System.Double)">
+            <summary>
+            dB to linear conversion
+            </summary>
+            <param name="dB">decibel value</param>
+            <returns>linear value</returns>
+        </member>
+        <member name="T:NAudio.Utils.FieldDescriptionAttribute">
+            <summary>
+            Allows us to add descriptions to interop members
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.FieldDescriptionAttribute.Description">
+            <summary>
+            The description
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.FieldDescriptionAttribute.#ctor(System.String)">
+            <summary>
+            Field description
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.FieldDescriptionAttribute.ToString">
+            <summary>
+            String representation
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:NAudio.Utils.FieldDescriptionHelper">
+            <summary>
+            Helper to get descriptions
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.FieldDescriptionHelper.Describe(System.Type,System.Guid)">
+            <summary>
+            Describes the Guid  by looking for a FieldDescription attribute on the specified class
+            </summary>
+        </member>
+        <member name="T:NAudio.Utils.HResult">
+            <summary>
+            HResult
+            </summary>
+        </member>
+        <member name="F:NAudio.Utils.HResult.S_OK">
+            <summary>
+            S_OK
+            </summary>
+        </member>
+        <member name="F:NAudio.Utils.HResult.S_FALSE">
+            <summary>
+            S_FALSE
+            </summary>
+        </member>
+        <member name="F:NAudio.Utils.HResult.E_INVALIDARG">
+            <summary>
+            E_INVALIDARG (from winerror.h)
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.HResult.MAKE_HRESULT(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            MAKE_HRESULT macro
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.HResult.GetHResult(System.Runtime.InteropServices.COMException)">
+            <summary>
+            Helper to deal with the fact that in Win Store apps,
+            the HResult property name has changed
+            </summary>
+            <param name="exception">COM Exception</param>
+            <returns>The HResult</returns>
+        </member>
+        <member name="T:NAudio.Utils.IEEE">
+            <summary>
+            Methods for converting between IEEE 80-bit extended double precision
+            and standard C# double precision.
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IEEE.ConvertToIeeeExtended(System.Double)">
+            <summary>
+            Converts a C# double precision number to an 80-bit
+            IEEE extended double precision number (occupying 10 bytes).
+            </summary>
+            <param name="num">The double precision number to convert to IEEE extended.</param>
+            <returns>An array of 10 bytes containing the IEEE extended number.</returns>
+        </member>
+        <member name="M:NAudio.Utils.IEEE.ConvertFromIeeeExtended(System.Byte[])">
+            <summary>
+            Converts an IEEE 80-bit extended precision number to a
+            C# double precision number.
+            </summary>
+            <param name="bytes">The 80-bit IEEE extended number (as an array of 10 bytes).</param>
+            <returns>A C# double precision number that is a close representation of the IEEE extended number.</returns>
+        </member>
+        <member name="T:NAudio.Utils.IgnoreDisposeStream">
+            <summary>
+            Pass-through stream that ignores Dispose
+            Useful for dealing with MemoryStreams that you want to re-use
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.SourceStream">
+            <summary>
+            The source stream all other methods fall through to
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.IgnoreDispose">
+            <summary>
+            If true the Dispose will be ignored, if false, will pass through to the SourceStream
+            Set to true by default
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.#ctor(System.IO.Stream)">
+            <summary>
+            Creates a new IgnoreDisposeStream
+            </summary>
+            <param name="sourceStream">The source stream</param>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.CanRead">
+            <summary>
+            Can Read
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.CanSeek">
+            <summary>
+            Can Seek
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.CanWrite">
+            <summary>
+            Can write to the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.Flush">
+            <summary>
+            Flushes the underlying stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.Length">
+            <summary>
+            Gets the length of the underlying stream
+            </summary>
+        </member>
+        <member name="P:NAudio.Utils.IgnoreDisposeStream.Position">
+            <summary>
+            Gets or sets the position of the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads from the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <summary>
+            Seeks on the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.SetLength(System.Int64)">
+            <summary>
+            Sets the length of the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Writes to the underlying stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.IgnoreDisposeStream.Dispose(System.Boolean)">
+            <summary>
+            Dispose - by default (IgnoreDispose = true) will do nothing,
+            leaving the underlying stream undisposed
+            </summary>
+        </member>
+        <member name="T:NAudio.Utils.NativeMethods">
+            <summary>
+            General purpose native methods for internal NAudio use
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.NativeMethods.LoadLibrary(System.String)">
+            <summary>
+            Loads a DLL
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.NativeMethods.GetProcAddress(System.IntPtr,System.String)">
+            <summary>
+            Get procedure address
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.NativeMethods.FreeLibrary(System.IntPtr)">
+            <summary>
+            Free a library
+            </summary>
+        </member>
+        <member name="T:NAudio.Utils.WavePositionExtensions">
+            <summary>
+            WavePosition extension methods
+            </summary>
+        </member>
+        <member name="M:NAudio.Utils.WavePositionExtensions.GetPositionTimeSpan(NAudio.Wave.IWavePosition)">
+            <summary>
+            Get Position as timespan
+            </summary>
+        </member>
+        <member name="T:NAudio.Dmo.AudioMediaSubtypes">
+            <summary>
+            Audio Media Subtypes
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_PCM">
+            <summary>
+            PCM
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_PCMAudioObsolete">
+            <summary>
+            PCM Audio obsolete
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_MPEG1Packet">
+            <summary>
+            MPEG1 Packet
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_MPEG1Payload">
+            <summary>
+            MPEG1 Payload
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_MPEG2_AUDIO">
+            <summary>
+            MPEG2 Audio
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_DVD_LPCM_AUDIO">
+            <summary>
+            DVD audio data
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_DRM_Audio">
+            <summary>
+            DRM Audio
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT">
+            <summary>
+            IEEE Float
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_DOLBY_AC3">
+            <summary>
+            Dolby AC3
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_DOLBY_AC3_SPDIF">
+            <summary>
+            Dolby AC3 SPDIF
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RAW_SPORT">
+            <summary>
+            RAW Sport
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_SPDIF_TAG_241h">
+            <summary>
+            SPDIF TAG 241h
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_I420">
+            <summary>
+            I420
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_IYUV">
+            <summary>
+            IYUV
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB1">
+            <summary>
+            RGB1
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB24">
+            <summary>
+            RGB24
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB32">
+            <summary>
+            RGB32
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB4">
+            <summary>
+            RGB4
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB555">
+            <summary>
+            RGB555
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB565">
+            <summary>
+            RGB565
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_RGB8">
+            <summary>
+            RGB8
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_UYVY">
+            <summary>
+            UYVY
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_VIDEOIMAGE">
+            <summary>
+            Video Image
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_YUY2">
+            <summary>
+            YUY2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_YV12">
+            <summary>
+            YV12
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_YVU9">
+            <summary>
+            YVU9
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_YVYU">
+            <summary>
+            YVYU
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMFORMAT_MPEG2Video">
+            <summary>
+            MPEG2 Video
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMFORMAT_Script">
+            <summary>
+            SCcript
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMFORMAT_VideoInfo">
+            <summary>
+            Video Info
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMFORMAT_WaveFormatEx">
+            <summary>
+            WAVEFORMATEX
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMFORMAT_WebStream">
+            <summary>
+            Webstream
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_ACELPnet">
+            <summary>
+            ACELP net
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_Base">
+            <summary>
+            Base
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_DRM">
+            <summary>
+            DRM
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MP3">
+            <summary>
+            MP3
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MP43">
+            <summary>
+            MP43
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MP4S">
+            <summary>
+            MP4S
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_M4S2">
+            <summary>
+            M4S2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_P422">
+            <summary>
+            P422
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MPEG2_VIDEO">
+            <summary>
+            MPEG2 Video
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MSS1">
+            <summary>
+            MSS1
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_MSS2">
+            <summary>
+            MSS2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_PCM">
+            <summary>
+            PCM
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WebStream">
+            <summary>
+            WebStream
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMAudio_Lossless">
+            <summary>
+            WM Audio Lossless
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMAudioV2">
+            <summary>
+            WM Audio V2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMAudioV7">
+            <summary>
+            WM Audio V7
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMAudioV8">
+            <summary>
+            WM Audio V8
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMAudioV9">
+            <summary>
+            WM Audio V9
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMSP1">
+            <summary>
+            WMSP1
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMV1">
+            <summary>
+            WMV1
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMV2">
+            <summary>
+            WMV2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMV3">
+            <summary>
+            WMV3
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMVA">
+            <summary>
+            WMVA
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WMVP">
+            <summary>
+            WMVP
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIASUBTYPE_WVP2">
+            <summary>
+            WMVP2
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_Audio">
+            <summary>
+            Audio
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_FileTransfer">
+            <summary>
+            File Transfer
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_Image">
+            <summary>
+            Image
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_Script">
+            <summary>
+            Script
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_Text">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMMEDIATYPE_Video">
+            <summary>
+            Video
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.WMSCRIPTTYPE_TwoStrings">
+            <summary>
+            Two strings
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_WAVE">
+            <summary>
+            Wave
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_AU">
+            <summary>
+            AU
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_AIFF">
+            <summary>
+            AIFF
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.AudioSubTypes">
+            <summary>
+            Audio Subtypes
+            </summary>
+        </member>
+        <member name="F:NAudio.Dmo.AudioMediaSubtypes.AudioSubTypeNames">
+            <summary>
+            Audio subtype names
+            </summary>
+        </member>
+        <member name="M:NAudio.Dmo.AudioMediaSubtypes.GetAudioSubtypeName(System.Guid)">
+            <summary>
+            Get Audio Subtype Name
+            </summary>
+        </member>
+        <member name="T:NAudio.CoreAudioApi.CaptureState">
+            <summary>
+            Represents state of a capture device
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Stopped">
+            <summary>
+            Not recording
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Starting">
+            <summary>
+            Beginning to record
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Capturing">
+            <summary>
+            Recording in progress
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Stopping">
+            <summary>
+            Requesting stop
+            </summary>
+        </member>
+    </members>
+</doc>

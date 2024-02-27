@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NAudio</id>
+    <version>2.2.1</version>
+    <authors>Mark Heath &amp; Contributors</authors>
+    <license type="file">license.txt</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>naudio-icon.png</icon>
+    <projectUrl>https://github.com/naudio/NAudio</projectUrl>
+    <description>NAudio, an audio library for .NET</description>
+    <copyright>© Mark Heath 2023</copyright>
+    <tags>C# .NET audio sound</tags>
+    <repository url="https://github.com/naudio/NAudio" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="NAudio.Asio" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Core" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Midi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Wasapi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinForms" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinMM" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="NAudio.Asio" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Core" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Midi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Wasapi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinForms" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinMM" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0">
+        <dependency id="NAudio.Asio" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Core" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Midi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Wasapi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinMM" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0-windows7.0">
+        <dependency id="NAudio.Asio" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Core" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Midi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.Wasapi" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinForms" version="2.2.1" exclude="Build,Analyzers" />
+        <dependency id="NAudio.WinMM" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

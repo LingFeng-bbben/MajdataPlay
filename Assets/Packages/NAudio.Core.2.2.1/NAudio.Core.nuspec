@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>NAudio.Core</id>
+    <version>2.2.1</version>
+    <authors>Mark Heath</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>naudio-icon.png</icon>
+    <projectUrl>https://github.com/naudio/NAudio</projectUrl>
+    <description>Package Description</description>
+    <copyright>© Mark Heath 2023</copyright>
+    <tags>C# .NET audio sound</tags>
+    <repository url="https://github.com/naudio/NAudio" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>
