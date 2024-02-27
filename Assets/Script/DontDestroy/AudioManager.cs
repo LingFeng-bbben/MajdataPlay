@@ -141,6 +141,10 @@ public class AudioManager : MonoBehaviour
     {
         SFXSamples[name].Pause();
     }
+    public void OpenAsioPannel()
+    {
+        asioOut.ShowControlPanel();
+    }
 }
 
 public class CachedSound
