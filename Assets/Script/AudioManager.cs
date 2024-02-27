@@ -12,6 +12,7 @@ using UnityEngine.UIElements;
 
 public class AudioManager : MonoBehaviour
 {
+    public static AudioManager Instance;
     readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
     readonly string[] SFXFileNames = new string[]
     {
@@ -31,10 +32,15 @@ public class AudioManager : MonoBehaviour
         "touchHold_riser.wav",
         "track_start.wav",
     };
-    private Dictionary<string, PauseSoundSampleProvider> SFXSamples = new Dictionary<string, PauseSoundSampleProvider>();
+    
+    private Dictionary<string, PausableSoundProvider> SFXSamples = new Dictionary<string, PausableSoundProvider>();
     private AsioOut asioOut;
     private MixingSampleProvider mixer;
     public bool PlayDebug;
+    private void Awake()
+    {
+        Instance = this;
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -46,7 +52,7 @@ public class AudioManager : MonoBehaviour
             var path = SFXFilePath + file;
             if (File.Exists(path))
             {
-                var provider =  new PauseSoundSampleProvider(new CachedSound(path));
+                var provider =  new PausableSoundProvider(new CachedSound(path));
                 SFXSamples.Add(file, provider);
                 mixer.AddMixerInput(provider);
             }
@@ -67,8 +73,6 @@ public class AudioManager : MonoBehaviour
         }
         
     }
-
-
     void OnTouchDown(object sender, TouchAreaEventArgs e)
     {
         SFXSamples["touch.wav"].PlayOneShot();
@@ -84,14 +88,36 @@ public class AudioManager : MonoBehaviour
         asioOut?.Stop();
         asioOut?.Dispose();
     }
-    // Update is called once per frame
-    void Update()
+    
+    public PausableSoundProvider LoadMusic(string path)
     {
-        //print(AudioFile.GetCurrentTime());
+        if (File.Exists(path))
+        {
+            var provider = new PausableSoundProvider(new CachedSound(path));
+            mixer.AddMixerInput(provider);
+            return provider;
+        }
+        else
+        {
+            Debug.LogWarning(path + " dos not exists");
+            return null;
+        }
+    }
+    public void UnLoadMusic(PausableSoundProvider psp)
+    {
+        if (psp != null)
+        {
+            mixer.RemoveMixerInput(psp);
+        }
+    }
+
+    public void PlaySFX(string name)
+    {
+        SFXSamples[name].PlayOneShot();
     }
 }
 
-class CachedSound
+public class CachedSound
 {
     public float[] AudioData { get; private set; }
     public WaveFormat WaveFormat { get; private set; }
@@ -114,7 +140,7 @@ class CachedSound
     }
 }
 
-class CachedSoundSampleProvider : ISampleProvider
+public class CachedSoundSampleProvider : ISampleProvider
 {
     private readonly CachedSound cachedSound;
     public long position;
@@ -144,17 +170,17 @@ class CachedSoundSampleProvider : ISampleProvider
     public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
 }
 
-class PauseSoundSampleProvider : ISampleProvider
+public class PausableSoundProvider : ISampleProvider
 {
     private readonly CachedSoundSampleProvider cachedSound;
     public long position => cachedSound.position;
     public float volume => cachedSound.volume;
     public bool isPlaying = false;
     public event EventHandler PlayStopped;
-    public PauseSoundSampleProvider(CachedSoundSampleProvider cachedSound) {
+    public PausableSoundProvider(CachedSoundSampleProvider cachedSound) {
         this.cachedSound = cachedSound;
     }
-    public PauseSoundSampleProvider(CachedSound cachedSound)
+    public PausableSoundProvider(CachedSound cachedSound)
     {
         this.cachedSound = new CachedSoundSampleProvider(cachedSound);
     }
@@ -185,6 +211,14 @@ class PauseSoundSampleProvider : ISampleProvider
     {
         isPlaying = true;
         cachedSound.position = 0;
+    }
+    public void Play()
+    {
+        isPlaying = true;
+    }
+    public void Pause()
+    {
+        isPlaying = false;
     }
     public double GetCurrentTime()
     {

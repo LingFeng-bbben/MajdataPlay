@@ -32,9 +32,9 @@ public class IOManager : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(this);
-        UnityRawInput.RawInput.Start();
-        UnityRawInput.RawInput.OnKeyDown += RawInput_OnKeyDown;
-        UnityRawInput.RawInput.OnKeyUp += RawInput_OnKeyUp;
+        RawInput.Start();
+        RawInput.OnKeyDown += RawInput_OnKeyDown;
+        RawInput.OnKeyUp += RawInput_OnKeyUp;
        try 
        {
             sensorStates = new bool[35];
@@ -51,7 +51,7 @@ public class IOManager : MonoBehaviour
        }
     }
 
-    private void RawInput_OnKeyUp(UnityRawInput.RawKey key)
+    private void RawInput_OnKeyUp(RawKey key)
     {
         for (int i = 0; i < IndexToKeyButton.Length; i++)
         {
@@ -63,7 +63,7 @@ public class IOManager : MonoBehaviour
         }
     }
 
-    private void RawInput_OnKeyDown(UnityRawInput.RawKey key)
+    private void RawInput_OnKeyDown(RawKey key)
     {
         for (int i = 0; i < IndexToKeyButton.Length; i++)
         {
