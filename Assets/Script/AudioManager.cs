@@ -58,16 +58,16 @@ public class AudioManager : MonoBehaviour
         
         var devices = AsioOut.GetDriverNames();
         asioOut = new AsioOut(devices.FirstOrDefault());
-        
-        
         asioOut.Init(mixer);
         asioOut.Play();
+
         if(PlayDebug) {
             IOManager.Instance.OnTouchAreaDown += OnTouchDown;
             IOManager.Instance.OnButtonDown += OnButtonDown;
         }
         
     }
+
 
     void OnTouchDown(object sender, TouchAreaEventArgs e)
     {
@@ -150,6 +150,7 @@ class PauseSoundSampleProvider : ISampleProvider
     public long position => cachedSound.position;
     public float volume => cachedSound.volume;
     public bool isPlaying = false;
+    public event EventHandler PlayStopped;
     public PauseSoundSampleProvider(CachedSoundSampleProvider cachedSound) {
         this.cachedSound = cachedSound;
     }
@@ -166,6 +167,7 @@ class PauseSoundSampleProvider : ISampleProvider
             {
                 isPlaying = false;
                 cachedSound.position = 0;
+                PlayStopped?.Invoke(this, EventArgs.Empty);
                 for (var n = 0; n < count; n++)
                     buffer[offset + n] = 0;
                 return count;
