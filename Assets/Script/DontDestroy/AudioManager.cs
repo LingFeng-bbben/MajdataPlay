@@ -14,6 +14,7 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
     readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
+    readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
     readonly string[] SFXFileNames = new string[]
     {
         "all_perfect.wav",
@@ -31,8 +32,14 @@ public class AudioManager : MonoBehaviour
         "touch.wav",
         "touchHold_riser.wav",
         "track_start.wav",
+        "titlebgm.mp3",
     };
-    
+    readonly string[] VoiceFileNames = new string[]
+    {
+        "MajdataPlay.wav",
+        "SelectSong.wav",
+        "Sugoi.wav",
+    };
     private Dictionary<string, PausableSoundProvider> SFXSamples = new Dictionary<string, PausableSoundProvider>();
     private AsioOut asioOut;
     private MixingSampleProvider mixer;
@@ -61,7 +68,22 @@ public class AudioManager : MonoBehaviour
                 Debug.LogWarning(path + " dos not exists");
             }
         }
-        
+
+        foreach (var file in VoiceFileNames)
+        {
+            var path = VoiceFilePath + file;
+            if (File.Exists(path))
+            {
+                var provider = new PausableSoundProvider(new CachedSound(path));
+                SFXSamples.Add(file, provider);
+                mixer.AddMixerInput(provider);
+            }
+            else
+            {
+                Debug.LogWarning(path + " dos not exists");
+            }
+        }
+
         var devices = AsioOut.GetDriverNames();
         asioOut = new AsioOut(devices.FirstOrDefault());
         asioOut.Init(mixer);
@@ -114,6 +136,10 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(string name)
     {
         SFXSamples[name].PlayOneShot();
+    }
+    public void StopSFX(string name)
+    {
+        SFXSamples[name].Pause();
     }
 }
 
