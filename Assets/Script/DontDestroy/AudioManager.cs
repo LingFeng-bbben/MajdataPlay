@@ -135,11 +135,19 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySFX(string name)
     {
-        SFXSamples[name].PlayOneShot();
+        PausableSoundProvider psp = null;
+        if (SFXSamples.TryGetValue(name, out psp))
+            psp.PlayOneShot();
+        else
+            Debug.LogError("No such SFX");
     }
     public void StopSFX(string name)
     {
-        SFXSamples[name].Pause();
+        PausableSoundProvider psp = null;
+        if (SFXSamples.TryGetValue(name, out psp))
+            psp.Pause();
+        else
+            Debug.LogError("No such SFX");
     }
     public void OpenAsioPannel()
     {
