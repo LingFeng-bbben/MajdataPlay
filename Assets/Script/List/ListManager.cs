@@ -63,6 +63,13 @@ public class ListManager : MonoBehaviour
         {
             CoverListDisplayer.SlideList(-6);
         }
+
+        //xxlb
+        if(e.AreaName == "A4"|| e.AreaName == "A5" || e.AreaName == "D5")
+        {
+
+            AudioManager.Instance.PlaySFX("DontTouchMe.wav");
+        }
     }
 
     private void IO_OnButtonDown(object sender, ButtonEventArgs e)

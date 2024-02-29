@@ -39,6 +39,7 @@ public class AudioManager : MonoBehaviour
         "MajdataPlay.wav",
         "SelectSong.wav",
         "Sugoi.wav",
+        "DontTouchMe.wav"
     };
     private Dictionary<string, PausableSoundProvider> SFXSamples = new Dictionary<string, PausableSoundProvider>();
     private AsioOut asioOut;
