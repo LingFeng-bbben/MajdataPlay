@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using Unity.VisualScripting;
 using UnityEngine.UIElements;
+using NAudio.CoreAudioApi;
 
 public class AudioManager : MonoBehaviour
 {
@@ -43,6 +44,8 @@ public class AudioManager : MonoBehaviour
     };
     private Dictionary<string, PausableSoundProvider> SFXSamples = new Dictionary<string, PausableSoundProvider>();
     private AsioOut asioOut;
+    private WaveOutEvent waveOut;
+    private WasapiOut wasapiOut;
     private MixingSampleProvider mixer;
     public bool PlayDebug;
     private void Awake()
@@ -53,7 +56,9 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(this);
-        mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+        var sampleRate = SettingManager.Instance.SettingFile.SoundOutputSamplerate;
+        var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
+        mixer = new MixingSampleProvider(waveformat);
         mixer.ReadFully = true;
         foreach(var file in SFXFileNames)
         {
@@ -84,13 +89,32 @@ public class AudioManager : MonoBehaviour
                 Debug.LogWarning(path + " dos not exists");
             }
         }
+        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.Asio)
+        {
+            
+            var devices = AsioOut.GetDriverNames();
+            asioOut = new AsioOut(devices.FirstOrDefault());
+            print("Starting ASIO...at " + devices.FirstOrDefault() + " as " + sampleRate);
+            asioOut.Init(mixer);
+            asioOut.Play();
+        }
+        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.WaveOut)
+        {
+            print("Starting WaveOut... with " + sampleRate);
+            waveOut = new WaveOutEvent();
+            waveOut.Init(mixer, false);
+            waveOut.Play();
+        }
+        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.Wasapi)
+        {
+            print("Starting WaveOut... with " + sampleRate);
+            wasapiOut = new WasapiOut(AudioClientShareMode.Exclusive,0);
+            wasapiOut.Init(mixer, false);
+            wasapiOut.Play();
+        }
 
-        var devices = AsioOut.GetDriverNames();
-        asioOut = new AsioOut(devices.FirstOrDefault());
-        asioOut.Init(mixer);
-        asioOut.Play();
 
-        if(PlayDebug) {
+        if (PlayDebug) {
             IOManager.Instance.OnTouchAreaDown += OnTouchDown;
             IOManager.Instance.OnButtonDown += OnButtonDown;
         }
@@ -110,6 +134,10 @@ public class AudioManager : MonoBehaviour
     {
         asioOut?.Stop();
         asioOut?.Dispose();
+        waveOut?.Stop();
+        waveOut?.Dispose();
+        wasapiOut?.Stop();
+        wasapiOut?.Dispose();
     }
     
     public PausableSoundProvider LoadMusic(string path)
@@ -165,7 +193,7 @@ public class CachedSound
     {
         using (var audioFileReader = new AudioFileReader(audioFileName))
         {
-            var resampler = new WdlResamplingSampleProvider(audioFileReader, 44100);
+            var resampler = new WdlResamplingSampleProvider(audioFileReader, SettingManager.Instance.SettingFile.SoundOutputSamplerate);
             WaveFormat = resampler.WaveFormat;
             var wholeFile = new List<float>();
             var readBuffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];
