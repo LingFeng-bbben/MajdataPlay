@@ -28,7 +28,7 @@ public class SettingManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        DontDestroyOnLoad(this);
     }
 
     // Update is called once per frame
@@ -45,7 +45,7 @@ public class SettingManager : MonoBehaviour
 
 public enum SoundBackendType
 {
-    WaveOut,Asio,Wasapi
+    WaveOut,Asio,Unity
 }
 
 public class SettingFile

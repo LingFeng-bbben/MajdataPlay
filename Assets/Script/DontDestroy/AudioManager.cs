@@ -10,6 +10,9 @@ using System.IO;
 using Unity.VisualScripting;
 using UnityEngine.UIElements;
 using NAudio.CoreAudioApi;
+using System.Threading;
+using System.Runtime.CompilerServices;
+using UnityEngine.Networking;
 
 public class AudioManager : MonoBehaviour
 {
@@ -42,10 +45,9 @@ public class AudioManager : MonoBehaviour
         "Sugoi.wav",
         "DontTouchMe.wav"
     };
-    private Dictionary<string, PausableSoundProvider> SFXSamples = new Dictionary<string, PausableSoundProvider>();
+    private Dictionary<string, AudioSampleWrap> SFXSamples = new Dictionary<string, AudioSampleWrap>();
     private AsioOut asioOut;
     private WaveOutEvent waveOut;
-    private WasapiOut wasapiOut;
     private MixingSampleProvider mixer;
     public bool PlayDebug;
     private void Awake()
@@ -56,62 +58,97 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(this);
-        var sampleRate = SettingManager.Instance.SettingFile.SoundOutputSamplerate;
-        var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
-        mixer = new MixingSampleProvider(waveformat);
-        mixer.ReadFully = true;
-        foreach(var file in SFXFileNames)
-        {
-            var path = SFXFilePath + file;
-            if (File.Exists(path))
+        var backend = SettingManager.Instance.SettingFile.SoundBackend;
+        if (backend == SoundBackendType.Unity) {
+            foreach (var file in SFXFileNames)
             {
-                var provider =  new PausableSoundProvider(new CachedSound(path));
-                SFXSamples.Add(file, provider);
-                mixer.AddMixerInput(provider);
+                var path = "file://" + SFXFilePath + file;
+                if (File.Exists(SFXFilePath + file))
+                {
+                    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
+                    {
+                        www.SendWebRequest();
+                        while (!www.isDone) ;
+                        AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
+                        SFXSamples.Add(file, new UnityAudioSample(myClip,gameObject));
+                        
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning(path + " dos not exists");
+                }
             }
-            else
+            foreach (var file in VoiceFileNames)
             {
-                Debug.LogWarning(path + " dos not exists");
+                var path = "file://" + VoiceFilePath + file;
+                if (File.Exists(VoiceFilePath + file))
+                {
+                    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
+                    {
+                        www.SendWebRequest();
+                        while (!www.isDone) ;
+                        AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
+                        SFXSamples.Add(file, new UnityAudioSample(myClip, gameObject));
+
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning(path + " dos not exists");
+                }
+            }
+        } else {
+            var sampleRate = SettingManager.Instance.SettingFile.SoundOutputSamplerate;
+            var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
+            mixer = new MixingSampleProvider(waveformat);
+            mixer.ReadFully = true;
+            foreach (var file in SFXFileNames)
+            {
+                var path = SFXFilePath + file;
+                if (File.Exists(path))
+                {
+                    var provider = new PausableSoundProvider(new CachedSound(path));
+                    SFXSamples.Add(file, new NAudioAudioSample( provider));
+                    mixer.AddMixerInput(provider);
+                }
+                else
+                {
+                    Debug.LogWarning(path + " dos not exists");
+                }
+            }
+
+            foreach (var file in VoiceFileNames)
+            {
+                var path = VoiceFilePath + file;
+                if (File.Exists(path))
+                {
+                    var provider = new PausableSoundProvider(new CachedSound(path));
+                    SFXSamples.Add(file, new NAudioAudioSample(provider));
+                    mixer.AddMixerInput(provider);
+                }
+                else
+                {
+                    Debug.LogWarning(path + " dos not exists");
+                }
+            }
+            if (backend == SoundBackendType.Asio)
+            {
+                var devices = AsioOut.GetDriverNames();
+                asioOut = new AsioOut(devices.FirstOrDefault());
+                print("Starting ASIO...at " + devices.FirstOrDefault() + " as " + sampleRate);
+                asioOut.Init(mixer);
+                asioOut.Play();
+            }
+            if (backend == SoundBackendType.WaveOut)
+            {
+                print("Starting WaveOut... with " + sampleRate);
+                waveOut = new WaveOutEvent();
+                waveOut.Init(mixer, false);
+                waveOut.Play();
             }
         }
 
-        foreach (var file in VoiceFileNames)
-        {
-            var path = VoiceFilePath + file;
-            if (File.Exists(path))
-            {
-                var provider = new PausableSoundProvider(new CachedSound(path));
-                SFXSamples.Add(file, provider);
-                mixer.AddMixerInput(provider);
-            }
-            else
-            {
-                Debug.LogWarning(path + " dos not exists");
-            }
-        }
-        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.Asio)
-        {
-            
-            var devices = AsioOut.GetDriverNames();
-            asioOut = new AsioOut(devices.FirstOrDefault());
-            print("Starting ASIO...at " + devices.FirstOrDefault() + " as " + sampleRate);
-            asioOut.Init(mixer);
-            asioOut.Play();
-        }
-        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.WaveOut)
-        {
-            print("Starting WaveOut... with " + sampleRate);
-            waveOut = new WaveOutEvent();
-            waveOut.Init(mixer, false);
-            waveOut.Play();
-        }
-        if (SettingManager.Instance.SettingFile.SoundBackend == SoundBackendType.Wasapi)
-        {
-            print("Starting WaveOut... with " + sampleRate);
-            wasapiOut = new WasapiOut(AudioClientShareMode.Exclusive,0);
-            wasapiOut.Init(mixer, false);
-            wasapiOut.Play();
-        }
 
 
         if (PlayDebug) {
@@ -136,17 +173,36 @@ public class AudioManager : MonoBehaviour
         asioOut?.Dispose();
         waveOut?.Stop();
         waveOut?.Dispose();
-        wasapiOut?.Stop();
-        wasapiOut?.Dispose();
     }
     
-    public PausableSoundProvider LoadMusic(string path)
+    public AudioSampleWrap LoadMusic(string path)
     {
+        var backend = SettingManager.Instance.SettingFile.SoundBackend;
         if (File.Exists(path))
         {
-            var provider = new PausableSoundProvider(new CachedSound(path));
-            mixer.AddMixerInput(provider);
-            return provider;
+            if (backend == SoundBackendType.Unity) {
+                path = "file://" + path;
+                if (File.Exists(path))
+                {
+                    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
+                    {
+                        www.SendWebRequest();
+                        AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
+                        return new UnityAudioSample(myClip, gameObject);
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+                
+            }
+            else
+            {
+                var provider = new PausableSoundProvider(new CachedSound(path));
+                mixer.AddMixerInput(provider);
+                return new NAudioAudioSample(provider);
+            }
         }
         else
         {
@@ -154,17 +210,21 @@ public class AudioManager : MonoBehaviour
             return null;
         }
     }
-    public void UnLoadMusic(PausableSoundProvider psp)
+    public void UnLoadMusic(AudioSampleWrap sample)
     {
-        if (psp != null)
+        throw new NotImplementedException();
+        /*if (sample.GetType() == typeof(PausableSoundProvider))
         {
-            mixer.RemoveMixerInput(psp);
-        }
+            if (sample != null)
+            {
+                mixer.RemoveMixerInput(sample);
+            }
+        }*/
     }
 
     public void PlaySFX(string name)
     {
-        PausableSoundProvider psp = null;
+        AudioSampleWrap psp = null;
         if (SFXSamples.TryGetValue(name, out psp))
             psp.PlayOneShot();
         else
@@ -172,7 +232,7 @@ public class AudioManager : MonoBehaviour
     }
     public void StopSFX(string name)
     {
-        PausableSoundProvider psp = null;
+        AudioSampleWrap psp = null;
         if (SFXSamples.TryGetValue(name, out psp))
             psp.Pause();
         else
@@ -180,7 +240,7 @@ public class AudioManager : MonoBehaviour
     }
     public void OpenAsioPannel()
     {
-        asioOut.ShowControlPanel();
+        asioOut?.ShowControlPanel();
     }
 }
 
@@ -243,7 +303,6 @@ public class PausableSoundProvider : ISampleProvider
     public long position => cachedSound.position;
     public float volume => cachedSound.volume;
     public bool isPlaying = false;
-    public event EventHandler PlayStopped;
     public PausableSoundProvider(CachedSoundSampleProvider cachedSound) {
         this.cachedSound = cachedSound;
     }
@@ -260,7 +319,7 @@ public class PausableSoundProvider : ISampleProvider
             {
                 isPlaying = false;
                 cachedSound.position = 0;
-                PlayStopped?.Invoke(this, EventArgs.Empty);
+                //PlayStopped?.Invoke(this, EventArgs.Empty);
                 for (var n = 0; n < count; n++)
                     buffer[offset + n] = 0;
                 return count;
@@ -296,4 +355,100 @@ public class PausableSoundProvider : ISampleProvider
         cachedSound.volume = volume;
     }
     public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
+}
+
+public abstract class AudioSampleWrap
+{
+    public abstract bool GetPlayState();
+    public abstract void Play() ;
+    public abstract void Pause();
+    public abstract void PlayOneShot() ;
+    public abstract double GetCurrentTime();
+    public abstract void SetCurrentTime(float time);
+    public abstract void SetVolume(float volume);
+}
+
+public class NAudioAudioSample : AudioSampleWrap
+{
+    private PausableSoundProvider soundProvider;
+    public NAudioAudioSample(PausableSoundProvider pausableSound)
+    {
+        soundProvider = pausableSound;
+    }
+    public override bool GetPlayState()
+    {
+        return soundProvider.isPlaying;
+    }
+    public override void Play()
+    {
+        soundProvider.Play();
+    }
+    public override void Pause()
+    {
+        soundProvider.Pause();
+    }
+    public override void PlayOneShot()
+    {
+        soundProvider.PlayOneShot();
+    }
+    public override double GetCurrentTime()
+    {
+        return soundProvider.GetCurrentTime();
+    }
+    public override void SetCurrentTime(float time)
+    {
+        //TODO: time to sample
+        //soundProvider.position = time;
+        throw new NotImplementedException();
+    }
+    public override void SetVolume(float volume)
+    {
+        soundProvider.SetVolume(volume);
+    }
+}
+
+public class UnityAudioSample : AudioSampleWrap
+{
+    private AudioClip audioClip;
+    private AudioSource audioSource;
+    private GameObject gameObject;
+    public UnityAudioSample(AudioClip audioClip, GameObject gameObject)
+    {
+        this.audioClip = audioClip;
+        this.gameObject = gameObject;
+        audioSource = this.gameObject.AddComponent<AudioSource>();
+        audioSource.clip = audioClip;
+        audioSource.loop = false;
+        audioSource.bypassEffects = true;
+    }
+
+    public override void PlayOneShot()
+    {
+        audioSource.time = 0;
+        audioSource.Play();
+    }
+    public override bool GetPlayState()
+    {
+        return audioSource.isPlaying;
+    }
+    public override void SetVolume(float volume)
+    {
+        audioSource.volume = volume;
+    }
+    public override double GetCurrentTime()
+    {
+        return audioSource.time;
+    }
+    public override void SetCurrentTime(float time)
+    {
+        audioSource.time = time;
+    }
+    public override void Play()
+    {
+        audioSource.Play();
+    }
+    public override void Pause()
+    {
+        audioSource.Pause();
+    }
 }

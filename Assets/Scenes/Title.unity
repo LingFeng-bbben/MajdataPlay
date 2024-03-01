@@ -1183,9 +1183,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: AudioManager
       objectReference: {fileID: 0}
+    - target: {fileID: 6668288901966947443, guid: f478e476b4242be469f8f68911de608a, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6774535822865417023, guid: f478e476b4242be469f8f68911de608a, type: 3}
       propertyPath: PlayDebug
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6774535822865417023, guid: f478e476b4242be469f8f68911de608a, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
