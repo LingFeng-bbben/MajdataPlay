@@ -1,0 +1,27 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "小小蓝白.moc3",
+		"Textures": [
+			"小小蓝白.4096/texture_00.png",
+			"小小蓝白.4096/texture_01.png"
+		],
+		"Physics": "小小蓝白.physics3.json",
+		"DisplayInfo": "小小蓝白.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

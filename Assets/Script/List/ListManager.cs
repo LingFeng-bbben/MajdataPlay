@@ -69,6 +69,7 @@ public class ListManager : MonoBehaviour
         {
 
             AudioManager.Instance.PlaySFX("DontTouchMe.wav");
+            XxlbAnimation.instance.PlayTouchAnimation();
         }
     }
 

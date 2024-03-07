@@ -148,9 +148,6 @@ public class AudioManager : MonoBehaviour
                 waveOut.Play();
             }
         }
-
-
-
         if (PlayDebug) {
             IOManager.Instance.OnTouchAreaDown += OnTouchDown;
             IOManager.Instance.OnButtonDown += OnButtonDown;
@@ -195,7 +192,6 @@ public class AudioManager : MonoBehaviour
                 {
                     return null;
                 }
-                
             }
             else
             {
@@ -213,13 +209,6 @@ public class AudioManager : MonoBehaviour
     public void UnLoadMusic(AudioSampleWrap sample)
     {
         throw new NotImplementedException();
-        /*if (sample.GetType() == typeof(PausableSoundProvider))
-        {
-            if (sample != null)
-            {
-                mixer.RemoveMixerInput(sample);
-            }
-        }*/
     }
 
     public void PlaySFX(string name)
