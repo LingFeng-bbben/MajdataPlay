@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ListManager : MonoBehaviour
 {
@@ -82,6 +83,10 @@ public class ListManager : MonoBehaviour
         if (e.ButtonIndex == 6)
         {
             CoverListDisplayer.SlideList(-1);
+        }
+        if (e.ButtonIndex == 4)
+        {
+            SceneManager.LoadSceneAsync(2);
         }
     }
 

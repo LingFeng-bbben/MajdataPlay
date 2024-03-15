@@ -178,12 +178,13 @@ public class AudioManager : MonoBehaviour
         if (File.Exists(path))
         {
             if (backend == SoundBackendType.Unity) {
-                path = "file://" + path;
                 if (File.Exists(path))
                 {
+                    path = "file://" + path;
                     using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
                     {
-                        www.SendWebRequest();
+                        var handle = www.SendWebRequest();
+                        while (!handle.isDone) ;
                         AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
                         return new UnityAudioSample(myClip, gameObject);
                     }

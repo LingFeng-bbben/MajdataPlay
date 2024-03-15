@@ -18,10 +18,12 @@ public class CoverListDisplayer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for (int i = 0; i < 1000; i++)
+        foreach (var song in GameManager.Instance.songList)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
-            obj.GetComponent<Image>().color = new Color(Random.Range(0, 1f), Random.Range(0, 1f), Random.Range(0, 1f));
+            var coversmall = obj.GetComponent<CoverSmallDisplayer>();
+            coversmall.SetCover(song.SongCover);
+            coversmall.SetLevelText(song.Levels[4]);
             covers.Add(obj);
         }
     }
@@ -38,6 +40,8 @@ public class CoverListDisplayer : MonoBehaviour
         {
             desiredListPos = 0;
         }
+        //TODO: Update the big cover here
+        GameManager.Instance.selectedIndex = desiredListPos;
     }
 
 

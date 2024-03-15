@@ -9,7 +9,9 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
-
+/Assets/[Ss]ongs/
+/Assets/Plugin/
+/Assets/i18n
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
