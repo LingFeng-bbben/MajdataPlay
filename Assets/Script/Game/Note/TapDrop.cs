@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets.Script.Game;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class TapDrop : NoteDrop
@@ -39,11 +40,12 @@ public class TapDrop : NoteDrop
     private SpriteRenderer spriteRenderer;
 
 
-    public void NotifyJudgeResult(string result)
+    public void NotifyJudgeResult(DataTypes.TapJudgeType result)
     {
         print(result);
-        
+
         //maybe instanciate some effects here?
+        NoteEffectManager.Instance.PlayEffect(startPosition, isBreak, result);
 
         Destroy(tapLine);
         Destroy(gameObject);

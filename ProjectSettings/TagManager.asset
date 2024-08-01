@@ -44,9 +44,18 @@ TagManager:
   - name: BG
     uniqueID: 3510106493
     locked: 0
+  - name: TapLines
+    uniqueID: 2323657797
+    locked: 0
   - name: Tap
     uniqueID: 1842247769
     locked: 0
   - name: Cover
     uniqueID: 1307213585
+    locked: 0
+  - name: Outline
+    uniqueID: 4059542081
+    locked: 0
+  - name: NoteEffect
+    uniqueID: 1222518565
     locked: 0

@@ -10,11 +10,15 @@ public class CoverListDisplayer : MonoBehaviour
     List<GameObject> covers = new List<GameObject>();
     public string soundEffectName;
     public GameObject CoverSmallPrefab;
-    public int desiredListPos;
+    public CoverBigDisplayer CoverBigDisplayer;
+
+    public int desiredListPos = 0;
     public float listPosReal;
     public float turnSpeed;
     public float radius;
     public float offset;
+
+    public int selectedDifficulty = 0;
     // Start is called before the first frame update
     void Start()
     {
@@ -26,6 +30,27 @@ public class CoverListDisplayer : MonoBehaviour
             coversmall.SetLevelText(song.Levels[4]);
             covers.Add(obj);
         }
+        var songinfo = GameManager.Instance.songList[desiredListPos];
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetDifficulty(selectedDifficulty);
+        CoverBigDisplayer.SetCover(songinfo.SongCover);
+    }
+
+    public void SlideDifficulty(int pos)
+    {
+        selectedDifficulty += pos;
+        if(selectedDifficulty > 5)
+        {
+            selectedDifficulty = 0;
+        }
+        if (selectedDifficulty < 0)
+        {
+            selectedDifficulty = 5;
+        }
+        GameManager.Instance.selectedDiff = selectedDifficulty;
+        var songinfo = GameManager.Instance.songList[desiredListPos];
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetDifficulty(selectedDifficulty);
     }
 
     public void SlideList(int pos)
@@ -41,6 +66,9 @@ public class CoverListDisplayer : MonoBehaviour
             desiredListPos = 0;
         }
         //TODO: Update the big cover here
+        var songinfo = GameManager.Instance.songList[desiredListPos];
+        CoverBigDisplayer.SetCover(songinfo.SongCover);
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty] );
         GameManager.Instance.selectedIndex = desiredListPos;
     }
 

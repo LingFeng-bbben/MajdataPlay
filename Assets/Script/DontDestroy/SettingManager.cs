@@ -52,4 +52,8 @@ public class SettingFile
 {
     public SoundBackendType SoundBackend { get; set; } = SoundBackendType.WaveOut;
     public int SoundOutputSamplerate { get; set; } = 44100;
+    public float TapSpeed = 7.5f;
+    public float TouchSpeed = 7.5f;
+    public float BackgroundDim = 0.8f;
+    public float JudgeOffset = 0f;
 }

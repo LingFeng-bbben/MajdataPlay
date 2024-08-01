@@ -17,11 +17,13 @@ public class BackgroundDisplayer : MonoBehaviour
     public void SetBackground(Sprite bg)
     {
         sr.sprite = bg;
+        var scale = 1080f / bg.texture.width;
+        gameObject.transform.localScale = new Vector3(scale, scale, scale);
     }
 
     public void SetBackgroundDim(float dim)
     {
-        
+        sr.color = new Color(dim, dim, dim);
     }
 
 }

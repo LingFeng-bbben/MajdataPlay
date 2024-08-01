@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -66,7 +67,7 @@ public class ListManager : MonoBehaviour
         }
 
         //xxlb
-        if(e.AreaName == "A4"|| e.AreaName == "A5" || e.AreaName == "D5")
+        if (e.AreaName == "A4" || e.AreaName == "A5" || e.AreaName == "D5")
         {
 
             AudioManager.Instance.PlaySFX("DontTouchMe.wav");
@@ -76,19 +77,34 @@ public class ListManager : MonoBehaviour
 
     private void IO_OnButtonDown(object sender, ButtonEventArgs e)
     {
-        if(e.ButtonIndex == 3)
+        try
         {
-            CoverListDisplayer.SlideList(1);
-        }
-        if (e.ButtonIndex == 6)
+            if (e.ButtonIndex == 3)
+            {
+                CoverListDisplayer.SlideList(1);
+            }
+            if (e.ButtonIndex == 6)
+            {
+                CoverListDisplayer.SlideList(-1);
+            }
+            if (e.ButtonIndex == 7)
+            {
+                CoverListDisplayer.SlideDifficulty(-1);
+            }
+            if (e.ButtonIndex == 2)
+            {
+                CoverListDisplayer.SlideDifficulty(1);
+            }
+            if (e.ButtonIndex == 4)
+            {
+                SceneManager.LoadSceneAsync(2);
+            }
+        } catch (Exception ex)
         {
-            CoverListDisplayer.SlideList(-1);
+            Debug.LogException(ex);
         }
-        if (e.ButtonIndex == 4)
-        {
-            SceneManager.LoadSceneAsync(2);
-        }
-    }
+    } 
+
 
     private void OnDestroy()
     {
