@@ -93,6 +93,7 @@ public class ListManager : MonoBehaviour
     private void OnDestroy()
     {
         IOManager.Instance.OnButtonDown -= IO_OnButtonDown;
+        IOManager.Instance.OnTouchAreaDown -= IO_OnTouchAreaDown;
     }
 
     // Update is called once per frame

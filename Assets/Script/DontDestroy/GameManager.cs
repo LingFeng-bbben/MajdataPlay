@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using SimaiParserWithAntlr;
 using System.IO;
 using System.Linq;
 
