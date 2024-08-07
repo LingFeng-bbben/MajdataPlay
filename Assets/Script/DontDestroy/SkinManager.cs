@@ -55,8 +55,9 @@ public class SkinManager : MonoBehaviour
     public static SkinManager Instance;
     private void Awake()
     {
-        Instance = this;
+        
         DontDestroyOnLoad(this);
+        Instance = this;
     }
 
     // Start is called before the first frame update

@@ -65,7 +65,7 @@ public class TouchHoldDrop : NoteLongDrop
                                    .GetComponent<Sensor>();
         manager = GameObject.Find("Sensors")
                                 .GetComponent<SensorManager>();
-        var customSkin = GameObject.Find("Outline").GetComponent<SkinManager>();
+        var customSkin = GameObject.Find("SkinManager").GetComponent<SkinManager>();
         judgeText = customSkin.JudgeText;
         sensor.OnStatusChanged += Check;
     }

@@ -6147,7 +6147,7 @@ MonoBehaviour:
   noteSpeed: 7
   touchSpeed: 7.5
   starEach: {fileID: 0}
-  tapPrefab: {fileID: 7955322054321000439, guid: 26caec55e90e8be4f9c465c88fc6f288, type: 3}
+  tapPrefab: {fileID: 7955322054321000439, guid: de312956ab0060a49a3f3585e600c39a, type: 3}
   holdPrefab: {fileID: 7566527781932749496, guid: 558452b6e8eb68f44b4f035c27e37c25, type: 3}
   starPrefab: {fileID: 3599915660479470153, guid: 279b1bd0701d99f4183a5258db1374b2, type: 3}
   touchHoldPrefab: {fileID: 4570065832926722978, guid: 741b480205f5f7343aa547639a92b489, type: 3}
@@ -6155,7 +6155,7 @@ MonoBehaviour:
   eachLine: {fileID: 278292873598720211, guid: 54e5879f47df2a248b91a3e19dfe8599, type: 3}
   starLine: {fileID: 7599635926637845735, guid: 170f7f7a95689ea479fc7270d6ebf074, type: 3}
   notes: {fileID: 1844328527}
-  star_slidePrefab: {fileID: 0}
+  star_slidePrefab: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
   slidePrefab:
   - {fileID: 51001413267503469, guid: cd5abf6f94eca144ca09399678cf2b5b, type: 3}
   - {fileID: 7987079123466364501, guid: b267b00e56991124987b1a4d95fe300f, type: 3}
@@ -6200,9 +6200,9 @@ MonoBehaviour:
   - {fileID: 8389343569395675099, guid: 32868e5f4fa463f4c905e870406abea5, type: 3}
   - {fileID: 349982270078930302, guid: d0fd46e58bee17740a889818d94c8816, type: 3}
   breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
-  BreakShine: {fileID: 9100000, guid: b66ee4653aeb1af41ab158f457f55e43, type: 2}
+  BreakShine: {fileID: 9100000, guid: c28f56116f6dc34408d6f0f544f1e2cc, type: 2}
   JudgeBreakShine: {fileID: 9100000, guid: 68e114e3215572c4380cbd3b06c36ad0, type: 2}
-  HoldShine: {fileID: 9100000, guid: 52f02ab32e2a1f647b2a598f1f46885a, type: 2}
+  HoldShine: {fileID: 9100000, guid: 3fcb4587ef8c7f141969450782191592, type: 2}
 --- !u!4 &1442909525
 Transform:
   m_ObjectHideFlags: 0

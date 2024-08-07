@@ -164,7 +164,7 @@ public class NoteEffectManager : MonoBehaviour
     /// <param name="judge"></param>
     public void PlayFastLate(int position,JudgeType judge)
     {
-        var customSkin = GameObject.Find("Outline").GetComponent<SkinManager>();
+        var customSkin = GameObject.Find("SkinManager").GetComponent<SkinManager>();
         var pos = position - 1;
         if ((int)judge is (0 or 7))
         {
@@ -188,7 +188,7 @@ public class NoteEffectManager : MonoBehaviour
     /// <param name="judge"></param>
     public void PlayFastLate(GameObject obj,Animator anim, JudgeType judge)
     {
-        var customSkin = GameObject.Find("Outline").GetComponent<SkinManager>();
+        var customSkin = GameObject.Find("SkinManager").GetComponent<SkinManager>();
         if ((int)judge is (0 or 7))
         {
             obj.SetActive(false);

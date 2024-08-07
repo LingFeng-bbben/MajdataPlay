@@ -435,11 +435,18 @@ public class NoteLoader : MonoBehaviour
         }
     };
     // Start is called before the first frame update
+
+    private void Awake()
+    {
+        ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
+        customSkin = SkinManager.Instance;
+    }
+
     private void Start()
     {
         Application.targetFrameRate = 120;
-        ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-        customSkin = GameObject.Find("SkinManager").GetComponent<SkinManager>();
+        
+        
     }
 
     // Update is called once per frame
@@ -454,12 +461,12 @@ public class NoteLoader : MonoBehaviour
 
         CountNoteSum(loadedData);
 
-        var lastNoteTime = loadedData.timinglist.Last().time;
+        var lastNoteTime = loadedData.notelist.Last().time;
 
-        foreach (var timing in loadedData.timinglist)
+        foreach (var timing in loadedData.notelist)
         {
-            try
-            {
+            //try
+            //{
                 if (timing.time < ignoreOffset)
                 {
                     CountNoteCount(timing.noteList);
@@ -669,12 +676,12 @@ public class NoteLoader : MonoBehaviour
                     lineDrop.startPosition = startPos;
                     lineDrop.curvLength = endPos - 1;
                 }
-            }
-            catch (Exception e)
-            {
-                GameObject.Find("ErrText").GetComponent<Text>().text =
-                    "在第" + (timing.rawTextPositionY + 1) + "行发现问题：\n" + e.Message;
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    GameObject.Find("ErrText").GetComponent<Text>().text =
+            //        "在第" + (timing.rawTextPositionY + 1) + "行发现问题：\n" + e.Message;
+            //}
         }
     }
 

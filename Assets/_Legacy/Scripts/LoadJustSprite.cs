@@ -10,7 +10,7 @@ public class LoadJustSprite : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        //gameObject.GetComponent<SpriteRenderer>().sprite = GameObject.Find("Outline").GetComponent<CustomSkin>().Just[_0curv1str2wifi + 3];
+        //gameObject.GetComponent<SpriteRenderer>().sprite = GameObject.Find("SkinManager").GetComponent<CustomSkin>().Just[_0curv1str2wifi + 3];
         //setR();
     }
 
@@ -59,7 +59,7 @@ public class LoadJustSprite : MonoBehaviour
     }
     private void refreshSprite()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = GameObject.Find("Outline").GetComponent<SkinManager>()
+        gameObject.GetComponent<SpriteRenderer>().sprite = GameObject.Find("SkinManager").GetComponent<SkinManager>()
             .Just[_0curv1str2wifi + indexOffset + judgeOffset];
     }
 }

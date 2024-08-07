@@ -746,14 +746,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 251167057978781646, guid: 4454e5c57e8110c4a8f4e535f6ddaae5, type: 3}
-      propertyPath: useDummy
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 251167057978781646, guid: 4454e5c57e8110c4a8f4e535f6ddaae5, type: 3}
-      propertyPath: displayDebug
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1509520029060248668, guid: 4454e5c57e8110c4a8f4e535f6ddaae5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1029,10 +1021,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
-    - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
-      propertyPath: selectedIndex
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3385664842408013483, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1129,18 +1117,6 @@ PrefabInstance:
     - target: {fileID: 6668288901966947443, guid: f478e476b4242be469f8f68911de608a, type: 3}
       propertyPath: m_Name
       value: AudioManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 6668288901966947443, guid: f478e476b4242be469f8f68911de608a, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6774535822865417023, guid: f478e476b4242be469f8f68911de608a, type: 3}
-      propertyPath: PlayDebug
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6774535822865417023, guid: f478e476b4242be469f8f68911de608a, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
