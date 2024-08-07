@@ -6,11 +6,12 @@ using UnityEngine;
 
 public class SongLoader : MonoBehaviour
 {
-    readonly static string Songdir = Application.dataPath + "/Songs/";
     public static List<SongDetail> ScanMusic()
     {
         List<SongDetail> songList = new List<SongDetail>();
-        var dirs = new DirectoryInfo(Songdir).GetDirectories();
+        var path = new DirectoryInfo(Application.dataPath).Parent.FullName + "/Songs/";
+        var dirs = new DirectoryInfo(path).GetDirectories();
+        
         foreach (var dir in dirs)
         {
             var files = dir.GetFiles();
