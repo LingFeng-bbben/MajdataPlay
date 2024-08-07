@@ -11,7 +11,7 @@ public class SensorManager : MonoBehaviour
     //Dictionary<SensorType, List<Guid>> sensorTask = new();
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         //sensorTask.Clear();
         var count = transform.childCount;
