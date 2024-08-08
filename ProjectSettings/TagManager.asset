@@ -38,11 +38,11 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Default
-    uniqueID: 0
-    locked: 0
   - name: BG
     uniqueID: 3510106493
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0
   - name: TapLines
     uniqueID: 2323657797
@@ -58,4 +58,7 @@ TagManager:
     locked: 0
   - name: NoteEffect
     uniqueID: 1222518565
+    locked: 0
+  - name: TouchEffect
+    uniqueID: 3826249881
     locked: 0
