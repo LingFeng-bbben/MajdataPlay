@@ -1,19 +1,11 @@
 ﻿#nullable enable
-using MajdataPlay;
+using MajdataPlay.IO;
+using MajdataPlay.Types;
 using System;
 using UnityEngine;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
-    public struct InputEventArgs
-    {
-        public SensorType Type { get; set; }
-        public SensorStatus OldStatus { get; set; }
-        public SensorStatus Status { get; set; }
-        public bool IsButton { get; set; }
-        public bool IsClick => OldStatus == SensorStatus.Off && Status == SensorStatus.On;
-
-    }
     public class Button
     {
         public KeyCode BindingKey { get; set; }

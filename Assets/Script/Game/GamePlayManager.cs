@@ -1,4 +1,5 @@
 using MajdataPlay.Game.Notes;
+using MajdataPlay.IO;
 using MajSimaiDecode;
 using System;
 using System.Collections;
