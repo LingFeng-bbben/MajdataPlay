@@ -28,10 +28,11 @@ public class IOManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this);
     }
     void Start()
     {
-        DontDestroyOnLoad(this);
+        
         RawInput.Start();
         RawInput.OnKeyDown += RawInput_OnKeyDown;
         RawInput.OnKeyUp += RawInput_OnKeyUp;

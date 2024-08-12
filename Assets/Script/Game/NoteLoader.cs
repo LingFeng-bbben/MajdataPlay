@@ -1,12 +1,12 @@
-﻿using Assets.Scripts.IO;
-using Assets.Scripts.Notes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using MajSimaiDecode;
+using MajdataPlay.Types;
+using MajdataPlay.Game.Notes;
 
 public class NoteLoader : MonoBehaviour
 {

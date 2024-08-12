@@ -1,4 +1,4 @@
-using Assets.Script.Game;
+using MajdataPlay.Game.Notes;
 using MajSimaiDecode;
 using System;
 using System.Collections;
