@@ -13,14 +13,23 @@ namespace MajdataPlay.IO
         {
             foreach(var (index, on) in COMReport.WithIndex())
             {
-                var sensor = sensors[index];
-                if(sensor == null)
+                if (index > sensors.Length)
+                    break;
+                var sensor = index switch
+                {
+                    <= (int)SensorType.C => sensors[index],
+                     > 17 => sensors[index - 1],
+                     _    => sensors[16],
+                };
+                if (sensor == null)
                 {
                     Debug.LogError($"{index}# Sensor instance is null");
                     continue;
                 }
                 var oState = sensor.Status;
                 var nState = on ? SensorStatus.On : SensorStatus.Off;
+                if (sensor.Type == SensorType.C)
+                    nState = COMReport[16] || COMReport[17] ? SensorStatus.On : SensorStatus.Off;
                 if(oState != nState)
                 {
                     sensor.Status = nState;

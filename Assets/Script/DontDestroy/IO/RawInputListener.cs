@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityRawInput;
 #nullable enable
@@ -8,6 +9,17 @@ namespace MajdataPlay.IO
 {
     public partial class IOManager : MonoBehaviour
     {
+        readonly static RawKey[] bindingKeys = new RawKey[8]
+        {
+            RawKey.W,
+            RawKey.E,
+            RawKey.D,
+            RawKey.C,
+            RawKey.X,
+            RawKey.Z,
+            RawKey.A,
+            RawKey.Q
+        };
         Button[] buttons = new Button[8]
         {
             new Button(RawKey.W,SensorType.A1),
@@ -35,6 +47,8 @@ namespace MajdataPlay.IO
         }
         void OnRawKeyUp(RawKey key)
         {
+            if (bindingKeys.All(x => x != key))
+                return;
             var button = buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {
@@ -56,6 +70,8 @@ namespace MajdataPlay.IO
         }
         void OnRawKeyDown(RawKey key)
         {
+            if (bindingKeys.All(x => x != key))
+                return;
             var button = buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {

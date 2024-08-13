@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.IO
 {
     public partial class IOManager : MonoBehaviour
     {
         async void COMReceiveAsync(CancellationToken token)
         {
-            var serial = new SerialPort("COM3", 9600);
+            SerialPort? serial = null;
             try
             {
+                serial = new SerialPort("COM3", 9600);
                 recvTask = Task.Run(() =>
                 {
                     while (true)
@@ -55,9 +57,14 @@ namespace MajdataPlay.IO
                 });
                 await recvTask;
             }
+            catch(IOException)
+            {
+                Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
+                useDummy = true;
+            }
             finally
             {
-                serial.Close();
+                serial!.Close();
             }
         }
     }
