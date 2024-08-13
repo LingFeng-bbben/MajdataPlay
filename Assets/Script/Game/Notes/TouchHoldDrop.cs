@@ -61,33 +61,26 @@ namespace MajdataPlay.Game.Notes
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             mask.enabled = false;
 
-            sensor = GameObject.Find("Sensors")
-                                       .transform.GetChild(16)
-                                       .GetComponent<Sensor>();
-            manager = GameObject.Find("Sensors")
-                                    .GetComponent<SensorManager>();
-            inputManager = GameObject.Find("Input")
-                                     .GetComponent<InputManager>();
+            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
+            sensorPos = SensorType.C;
             //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
             //judgeText = customSkin.JudgeText;
-            inputManager.BindSensor(Check, SensorType.C);
+            ioManager.BindSensor(Check, SensorType.C);
         }
         void Check(object sender, InputEventArgs arg)
         {
-            if (isJudged || !noteManager.CanJudge(gameObject, sensor.Type))
-                return;
-            else if (InputManager.Mode is AutoPlayMode.Enable or AutoPlayMode.Random)
+            if (isJudged || !noteManager.CanJudge(gameObject, sensorPos))
                 return;
             else if (arg.IsClick)
             {
-                if (!inputManager.IsIdle(arg))
+                if (!ioManager.IsIdle(arg))
                     return;
                 else
-                    inputManager.SetBusy(arg);
+                    ioManager.SetBusy(arg);
                 Judge();
                 if (isJudged)
                 {
-                    inputManager.UnbindSensor(Check, SensorType.C);
+                    ioManager.UnbindSensor(Check, SensorType.C);
                     objectCounter.NextTouch(SensorType.C);
                 }
             }
@@ -140,37 +133,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(holdEffect);
                 Destroy(gameObject);
             }
-            else if (timing >= -0.01f)
-            {
-                // AutoPlay相关
-                switch (InputManager.Mode)
-                {
-                    case AutoPlayMode.Enable:
-                        if (!isJudged)
-                            objectCounter.NextTouch(SensorType.C);
-                        judgeResult = JudgeType.Perfect;
-                        isJudged = true;
-                        PlayHoldEffect();
-                        return;
-                    case AutoPlayMode.DJAuto:
-                        if (!isJudged)
-                            manager.SetSensorOn(sensor.Type, guid);
-                        break;
-                    case AutoPlayMode.Random:
-                        if (!isJudged)
-                        {
-                            objectCounter.NextTouch(SensorType.C);
-                            judgeResult = (JudgeType)UnityEngine.Random.Range(1, 14);
-                            isJudged = true;
-                        }
-                        PlayHoldEffect();
-                        return;
-                    case AutoPlayMode.Disable:
-                        manager.SetSensorOff(sensor.Type, guid);
-                        break;
-                }
-            }
-
+            
             if (isJudged)
             {
                 if (timing <= 0.25f) // 忽略头部15帧
@@ -180,7 +143,7 @@ namespace MajdataPlay.Game.Notes
                 else if (!timeProvider.isStart) // 忽略暂停
                     return;
 
-                var on = inputManager.CheckSensorStatus(SensorType.C, SensorStatus.On);
+                var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
                 else
@@ -193,7 +156,7 @@ namespace MajdataPlay.Game.Notes
             {
                 judgeDiff = 316.667f;
                 judgeResult = JudgeType.Miss;
-                inputManager.UnbindSensor(Check, SensorType.C);
+                ioManager.UnbindSensor(Check, SensorType.C);
                 isJudged = true;
                 objectCounter.NextTouch(SensorType.C);
             }
@@ -270,19 +233,6 @@ namespace MajdataPlay.Game.Notes
                 }
             }
 
-            switch (InputManager.Mode)
-            {
-                case AutoPlayMode.Enable:
-                    result = JudgeType.Perfect;
-                    break;
-                case AutoPlayMode.Random:
-                    result = (JudgeType)UnityEngine.Random.Range(1, 14);
-                    break;
-                case AutoPlayMode.DJAuto:
-                case AutoPlayMode.Disable:
-                    break;
-            }
-
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
             objectCounter.ReportResult(this, result);
             if (!isJudged)
@@ -292,8 +242,7 @@ namespace MajdataPlay.Game.Notes
                 fireworkEffect.SetTrigger("Fire");
                 firework.transform.position = transform.position;
             }
-            inputManager.UnbindSensor(Check, SensorType.C);
-            manager.SetSensorOff(sensor.Type, guid);
+            ioManager.UnbindSensor(Check, SensorType.C);
             PlayJudgeEffect(result);
         }
 

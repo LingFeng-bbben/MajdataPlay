@@ -40,8 +40,6 @@ public class ObjectCounter : MonoBehaviour
     private Text table;
     private Text judgeResultCount;
 
-
-    InputManager inputManager;
     NoteManager notes;
 
     double[] accRate = new double[5]
@@ -74,7 +72,6 @@ public class ObjectCounter : MonoBehaviour
         judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
         table = GameObject.Find("ObjectCount").GetComponent<Text>();
         rate = GameObject.Find("ObjectRate").GetComponent<Text>();
-        inputManager = GameObject.Find("Input").GetComponent<InputManager>();
 
         statusCombo = GameObject.Find("ComboText").GetComponent<Text>();
         statusScore = GameObject.Find("ScoreText").GetComponent<Text>();
@@ -562,13 +559,11 @@ public class ObjectCounter : MonoBehaviour
             "SLD: {2} / {7}\n" +
             "TOH: {3} / {8}\n" +
             "BRK: {4} / {9}\n" +
-            "ALL: {10} / {11}\n" +
-            "MOD: {12}",
+            "ALL: {10} / {11}\n",
             tapCount, holdCount, slideCount, touchCount, breakCount,
             tapSum, holdSum, slideSum, touchSum, breakSum,
             comboN,
-            tapSum + holdSum + slideSum + touchSum + breakSum,
-            InputManager.Mode
+            tapSum + holdSum + slideSum + touchSum + breakSum
         );
 
         rate.text = string.Format(

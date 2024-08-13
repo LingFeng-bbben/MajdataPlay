@@ -65,13 +65,10 @@ namespace MajdataPlay.Game.Notes
         bool isChecking = false;
         bool isFinished { get => _judgeQueues.All(x => x.Count == 0); }
         bool canCheck = false;
-        Dictionary<GameObject, Guid> guids = new();
-        SensorManager sManager;
-        List<GameObject> sensors = new();
+
         List<SensorType> boundSensors = new();
         public List<List<JudgeArea>> _judgeQueues = new();
         public List<List<JudgeArea>> judgeQueues = new();
-        public Dictionary<GameObject, List<Sensor>> triggerSensors = new();
 
         private void Start()
         {
@@ -165,21 +162,7 @@ namespace MajdataPlay.Game.Notes
                 sr.sortingOrder = sortIndex--;
                 sr.sortingLayerName = "Slide";
             }
-            var sManagerObj = GameObject.Find("Sensors");
-            sManager = sManagerObj.GetComponent<SensorManager>();
 
-
-            var count = GameObject.Find("Sensors").transform.childCount;
-
-            for (int i = 0; i < count; i++)
-                sensors.Add(sManagerObj.transform.GetChild(i).gameObject);
-            triggerSensors.Clear();
-            guids.Clear();
-            foreach (var star in star_slide)
-            {
-                triggerSensors.Add(star, new());
-                guids.Add(star, Guid.NewGuid());
-            }
             _judgeQueues = new(judgeQueues);
             foreach (var queue in _judgeQueues)
             {
@@ -199,10 +182,10 @@ namespace MajdataPlay.Game.Notes
             var allSensors = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
                                         .GroupBy(x => x)
                                         .Select(x => x.Key);
-            inputManager = GameObject.Find("Input").GetComponent<InputManager>();
+            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
             boundSensors.AddRange(allSensors);
             foreach (var sensor in allSensors)
-                inputManager.BindSensor(Check, sensor);
+                ioManager.BindSensor(Check, sensor);
         }
         private void FixedUpdate()
         {
@@ -215,8 +198,6 @@ namespace MajdataPlay.Game.Notes
 
             if (startTiming >= -0.05f)
                 canCheck = true;
-            else if (timing > 0)
-                Running();
 
             if (isFinished)
             {
@@ -260,8 +241,6 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (isChecking)
                 return;
-            else if (InputManager.Mode is AutoPlayMode.Enable or AutoPlayMode.Random)
-                return;
             isChecking = true;
             for (int i = 0; i < 3; i++)
             {
@@ -284,7 +263,7 @@ namespace MajdataPlay.Game.Notes
             var fType = first.GetSensorTypes();
             foreach (var t in fType)
             {
-                var sensor = sManager.GetSensor(t);
+                var sensor = ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
             }
 
@@ -293,7 +272,7 @@ namespace MajdataPlay.Game.Notes
                 var sType = second.GetSensorTypes();
                 foreach (var t in sType)
                 {
-                    var sensor = sManager.GetSensor(t);
+                    var sensor = ioManager.GetSensor(t);
                     second.Judge(t, sensor.Status);
                 }
 
@@ -387,39 +366,6 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i <= endIndex; i++)
                 slideBars[i].SetActive(false);
         }
-        void Running()
-        {
-            if (InputManager.Mode is AutoPlayMode.Enable or AutoPlayMode.Random or AutoPlayMode.Disable)
-                return;
-            foreach (var star in star_slide)
-            {
-                var starRadius = 0.763736616f;
-                var starPos = star.transform.position;
-                var oldList = new List<Sensor>(triggerSensors[star]);
-                triggerSensors[star].Clear();
-                foreach (var s in sensors.Select(x => x.GetComponent<RectTransform>()))
-                {
-                    var sensor = s.GetComponent<Sensor>();
-                    if (sensor.Group == SensorGroup.E || sensor.Group == SensorGroup.D)
-                        continue;
-
-                    var rCenter = s.position;
-                    var rWidth = s.rect.width * s.lossyScale.x;
-                    var rHeight = s.rect.height * s.lossyScale.y;
-
-                    var radius = Math.Max(rWidth, rHeight) / 2;
-
-                    if ((starPos - rCenter).sqrMagnitude <= radius * radius + starRadius * starRadius)
-                        triggerSensors[star].Add(sensor);
-                }
-                var untriggerSensors = oldList.Where(x => !triggerSensors[star].Contains(x));
-
-                foreach (var s in untriggerSensors)
-                    sManager.SetSensorOff(s.Type, guids[star]);
-                foreach (var s in triggerSensors[star])
-                    sManager.SetSensorOn(s.Type, guids[star]);
-            }
-        }
         // Update is called once per frame
         private void Update()
         {
@@ -459,10 +405,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
             else
-            {
                 UpdateStar();
-                Running();
-            }
             CheckAll();
         }
         void UpdateStar()
@@ -479,16 +422,6 @@ namespace MajdataPlay.Game.Notes
                     star_slide[i].transform.position = SlidePositionEnd[i];
                     star_slide[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
-                switch (InputManager.Mode)
-                {
-                    case AutoPlayMode.Enable:
-                    case AutoPlayMode.Random:
-                        var barIndex = areaStep[(int)(process * (areaStep.Count - 1))];
-                        HideBar(barIndex);
-                        DestroySelf();
-                        judgeQueues.Clear();
-                        return;
-                }
                 if (isFinished && isJudged)
                     DestroySelf();
             }
@@ -501,15 +434,6 @@ namespace MajdataPlay.Game.Notes
                         (SlidePositionEnd[i] - SlidePositionStart) * process + SlidePositionStart; //TODO add some runhua
                     star_slide[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
-            }
-            switch (InputManager.Mode)
-            {
-                case AutoPlayMode.Enable:
-                case AutoPlayMode.Random:
-                    var barIndex = areaStep[(int)(process * (areaStep.Count - 1))];
-                    judgeQueues = judgeQueues.Skip((int)(process * (judgeQueues.Count - 1))).ToList();
-                    HideBar(barIndex);
-                    break;
             }
         }
         void SetJust()
@@ -547,17 +471,6 @@ namespace MajdataPlay.Game.Notes
         }
         void OnDestroy()
         {
-            switch (InputManager.Mode)
-            {
-                case AutoPlayMode.Enable:
-                    judgeResult = JudgeType.Perfect;
-                    SetJust();
-                    break;
-                case AutoPlayMode.Random:
-                    judgeResult = (JudgeType)UnityEngine.Random.Range(1, 14);
-                    SetJust();
-                    break;
-            }
             objectCounter.ReportResult(this, judgeResult, isBreak);
             if (isBreak && judgeResult == JudgeType.Perfect)
                 slideOK.GetComponent<Animator>().runtimeAnimatorController = judgeBreakShine;
@@ -565,21 +478,8 @@ namespace MajdataPlay.Game.Notes
 
 
             foreach (var sensor in boundSensors)
-                inputManager.UnbindSensor(Check, sensor);
-            ClearTriggeredSensor();
+                ioManager.UnbindSensor(Check, sensor);
             isDestroying = true;
-        }
-        void ClearTriggeredSensor()
-        {
-            foreach (var sensor in sensors)
-            {
-                var s = sensor.GetComponent<Sensor>();
-                if (s != null)
-                {
-                    foreach (var id in guids.Values)
-                        s.SetOff(id);
-                }
-            }
         }
         private void setSlideBarAlpha(float alpha)
         {

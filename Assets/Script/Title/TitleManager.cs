@@ -1,4 +1,5 @@
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,20 +10,27 @@ public class TitleManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        IOManager.Instance.OnButtonDown += OnButtonPress;
-        IOManager.Instance.OnTouchAreaDown += Instance_OnTouchAreaDown;
+        IOManager.Instance.BindAnyArea(OnAreaDown);
         StartCoroutine(DelayPlayVoice());
     }
 
-    private void Instance_OnTouchAreaDown(object sender, TouchAreaEventArgs e)
+    private void OnAreaDown(object sender, InputEventArgs e)
     {
-        if (e.AreaName == "A8")
-        {
-            AudioManager.Instance.OpenAsioPannel();
-        }
-        if (e.AreaName == "E5")
-        {
+        if (!e.IsClick)
+            return;
+        if(e.IsButton)
             NextScene();
+        else
+        {
+            switch(e.Type)
+            {
+                case SensorType.A8:
+                    AudioManager.Instance.OpenAsioPannel();
+                    break;
+                case SensorType.E5:
+                    NextScene();
+                    break;
+            }
         }
     }
 
@@ -33,11 +41,6 @@ public class TitleManager : MonoBehaviour
         yield return new WaitForSeconds(2.5f);
         AudioManager.Instance.PlaySFX("titlebgm.mp3");
     }
-
-    void OnButtonPress(object sender, ButtonEventArgs e)
-    {
-        NextScene();
-    }
     void NextScene()
     {
         AudioManager.Instance.StopSFX("titlebgm.mp3");
@@ -45,13 +48,6 @@ public class TitleManager : MonoBehaviour
     }
     private void OnDestroy()
     {
-        IOManager.Instance.OnButtonDown -= OnButtonPress;
-        IOManager.Instance.OnTouchAreaDown -= Instance_OnTouchAreaDown;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        IOManager.Instance.UnbindAnyArea(OnAreaDown);
     }
 }

@@ -44,7 +44,6 @@ namespace MajdataPlay.Game.Notes
 
         private SpriteRenderer spriteRenderer;
 
-
         private void Start()
         {
             var notes = GameObject.Find("Notes").transform;
@@ -97,15 +96,9 @@ namespace MajdataPlay.Game.Notes
             exSpriteRender.forceRenderingOff = true;
             holdEndRender.enabled = false;
 
-            sensor = GameObject.Find("Sensors")
-                                       .transform.GetChild(startPosition - 1)
-                                       .GetComponent<Sensor>();
-            manager = GameObject.Find("Sensors")
-                                    .GetComponent<SensorManager>();
-            inputManager = GameObject.Find("Input")
-                                     .GetComponent<InputManager>();
+            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
             sensorPos = (SensorType)(startPosition - 1);
-            inputManager.BindArea(Check, sensorPos);
+            ioManager.BindArea(Check, sensorPos);
         }
         private void FixedUpdate()
         {
@@ -118,36 +111,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(holdEffect);
                 Destroy(gameObject);
             }
-            else if (timing >= -0.01f)
-            {
-                // AutoPlay相关
-                switch (InputManager.Mode)
-                {
-                    case AutoPlayMode.Enable:
-                        if (!isJudged)
-                            objectCounter.NextNote(startPosition);
-                        judgeResult = JudgeType.Perfect;
-                        isJudged = true;
-                        PlayHoldEffect();
-                        return;
-                    case AutoPlayMode.DJAuto:
-                        if (!isJudged)
-                            manager.SetSensorOn(sensor.Type, guid);
-                        break;
-                    case AutoPlayMode.Random:
-                        if (!isJudged)
-                        {
-                            objectCounter.NextNote(startPosition);
-                            judgeResult = (JudgeType)UnityEngine.Random.Range(1, 14);
-                            isJudged = true;
-                        }
-                        PlayHoldEffect();
-                        return;
-                    case AutoPlayMode.Disable:
-                        manager.SetSensorOff(sensor.Type, guid);
-                        break;
-                }
-            }
+            
 
             if (isJudged) // 头部判定完成后开始累计按压时长
             {
@@ -157,7 +121,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (!timeProvider.isStart) // 忽略暂停
                     return;
-                var on = inputManager.CheckAreaStatus(sensorPos, SensorStatus.On);
+                var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
                 else
@@ -176,22 +140,20 @@ namespace MajdataPlay.Game.Notes
         }
         void Check(object sender, InputEventArgs arg)
         {
-            if (arg.Type != sensor.Type)
+            if (arg.Type != sensorPos)
                 return;
             else if (isJudged || !noteManager.CanJudge(gameObject, startPosition))
                 return;
-            else if (InputManager.Mode is AutoPlayMode.Enable or AutoPlayMode.Random)
-                return;
             if (arg.IsClick)
             {
-                if (!inputManager.IsIdle(arg))
+                if (!ioManager.IsIdle(arg))
                     return;
                 else
-                    inputManager.SetBusy(arg);
+                    ioManager.SetBusy(arg);
                 Judge();
                 if (isJudged)
                 {
-                    inputManager.UnbindArea(Check, sensorPos);
+                    ioManager.UnbindArea(Check, sensorPos);
                     objectCounter.NextNote(startPosition);
                 }
             }
@@ -376,18 +338,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
 
-            switch (InputManager.Mode)
-            {
-                case AutoPlayMode.Enable:
-                    result = JudgeType.Perfect;
-                    break;
-                case AutoPlayMode.Random:
-                    result = (JudgeType)UnityEngine.Random.Range(1, 14);
-                    break;
-                case AutoPlayMode.DJAuto:
-                case AutoPlayMode.Disable:
-                    break;
-            }
+            
             var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
             effectManager.PlayEffect(startPosition, isBreak, result);
             effectManager.PlayFastLate(startPosition, result);
@@ -397,8 +348,7 @@ namespace MajdataPlay.Game.Notes
             if (!isJudged)
                 objectCounter.NextNote(startPosition);
 
-            manager.SetSensorOff(sensor.Type, guid);
-            inputManager.UnbindArea(Check, sensorPos);
+            ioManager.UnbindArea(Check, sensorPos);
         }
         protected override void PlayHoldEffect()
         {

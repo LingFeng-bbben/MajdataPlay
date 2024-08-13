@@ -32,15 +32,31 @@ namespace MajdataPlay.IO
                         IsButton = false
                     };
                     sensor.PushEvent(msg);
+                    PushEvent(msg);
                 }
             }
         }
-        void SetSensorStatus(SensorType type,SensorStatus status)
+        void SetSensorState(SensorType type,SensorStatus nState)
         {
             var sensor = sensors[(int)type];
             if (sensor == null)
                 throw new Exception($"{type} Sensor or Button not found.");
-            sensor.Status = status;
+            var oState = sensor.Status;
+            sensor.Status = nState;
+
+            if (oState != nState)
+            {
+                sensor.Status = nState;
+                var msg = new InputEventArgs()
+                {
+                    Type = sensor.Type,
+                    OldStatus = oState,
+                    Status = nState,
+                    IsButton = false
+                };
+                sensor.PushEvent(msg);
+                PushEvent(msg);
+            }
         }
         public void BindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
         {

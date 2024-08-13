@@ -1,19 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.IO.Ports;
 using System.Threading;
 using System;
-using UnityEngine.UI;
 using System.Linq;
-using Unity.VisualScripting.Antlr3.Runtime;
-using UnityEngine.EventSystems;
-using Unity.VisualScripting;
 using UnityRawInput;
 using System.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
-using UnityEngine.UIElements;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -23,6 +15,7 @@ namespace MajdataPlay.IO
         public bool displayDebug = false;
         public bool useDummy = false;
 
+        public event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
         bool[] COMReport = Enumerable.Repeat(false,35).ToArray();
         Task? recvTask = null;
@@ -65,6 +58,7 @@ namespace MajdataPlay.IO
             else
                 UpdateSensorState();
         }
+        public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var sensor = sensors.Find(x => x.Type == sType);
@@ -75,6 +69,7 @@ namespace MajdataPlay.IO
             sensor.OnStatusChanged += checker;
             button.OnStatusChanged += checker;
         }
+        public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var sensor = sensors.Find(x => x.Type == sType);
@@ -179,5 +174,10 @@ namespace MajdataPlay.IO
         public Sensor GetSensor(SensorType target) => sensors[(int)target];
         public Sensor[] GetSensors() => sensors.ToArray();
         public Sensor[] GetSensors(SensorGroup group) => sensors.Where(x => x.Group == group).ToArray();
+        void PushEvent(InputEventArgs args)
+        {
+            if (OnAnyAreaTrigger is not null)
+                OnAnyAreaTrigger(this, args);
+        }
     }
 }

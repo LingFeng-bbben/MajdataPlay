@@ -1,3 +1,4 @@
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
 using System.Diagnostics;
@@ -17,11 +18,8 @@ namespace MajdataPlay.Game.Notes
 
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         protected SensorType sensorPos;
-        protected Sensor sensor;
-        protected SensorManager manager;
-        protected InputManager inputManager;
+        protected IOManager ioManager;
         protected NoteManager noteManager;
-        protected Guid guid = Guid.NewGuid();
         protected bool isJudged = false;
         protected JudgeType judgeResult;
         protected ObjectCounter objectCounter;

@@ -110,13 +110,13 @@ namespace MajdataPlay.IO
                     var nState = newSensorsState[type];
                     var oState = oldSensorsState[type];
                     if (oState != nState)
-                        SetSensorStatus(type, nState);
+                        SetSensorState(type, nState);
                 }
             }
             else
             {
                 foreach (var s in sensors)
-                    SetSensorStatus(s.Type, SensorStatus.Off);
+                    SetSensorState(s.Type, SensorStatus.Off);
             }
         }
         bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;

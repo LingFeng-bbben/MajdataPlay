@@ -3,7 +3,7 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+#nullable enable
 public class Sensor : MonoBehaviour
 {
     public bool IsJudging { get; set; } = false;
@@ -27,7 +27,7 @@ public class Sensor : MonoBehaviour
         }
     }
 
-    public event EventHandler<InputEventArgs> OnStatusChanged;//oStatus nStatus
+    public event EventHandler<InputEventArgs>? OnStatusChanged;//oStatus nStatus
     public void PushEvent(in InputEventArgs args)
     {
         if (OnStatusChanged is not null)

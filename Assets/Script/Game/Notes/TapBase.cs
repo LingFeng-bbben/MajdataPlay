@@ -47,8 +47,6 @@ namespace MajdataPlay.Game.Notes
 
             spriteRenderer.sortingOrder += noteSortOrder;
             exSpriteRender.sortingOrder += noteSortOrder;
-
-
         }
         protected void FixedUpdate()
         {
@@ -65,27 +63,6 @@ namespace MajdataPlay.Game.Notes
                 Destroy(tapLine);
                 Destroy(gameObject);
             }
-            else if (timing >= -0.01f)
-            {
-                switch (InputManager.Mode)
-                {
-                    case AutoPlayMode.Enable:
-                        judgeResult = JudgeType.Perfect;
-                        isJudged = true;
-                        break;
-                    case AutoPlayMode.Random:
-                        judgeResult = (JudgeType)UnityEngine.Random.Range(1, 14);
-                        isJudged = true;
-                        break;
-                    case AutoPlayMode.DJAuto:
-                        if (isTriggered)
-                            return;
-                        inputManager.ClickSensor(sensorPos);
-                        isTriggered = true;
-                        break;
-                }
-            }
-
         }
         // Update is called once per frame
         protected virtual void Update()
@@ -144,19 +121,17 @@ namespace MajdataPlay.Game.Notes
         }
         protected void Check(object sender, InputEventArgs arg)
         {
-            if (arg.Type != sensor.Type)
+            if (arg.Type != sensorPos)
                 return;
             else if (isJudged || !noteManager.CanJudge(gameObject, startPosition))
-                return;
-            else if (InputManager.Mode is AutoPlayMode.Enable or AutoPlayMode.Random)
                 return;
 
             if (arg.IsClick)
             {
-                if (!inputManager.IsIdle(arg))
+                if (!ioManager.IsIdle(arg))
                     return;
                 else
-                    inputManager.SetBusy(arg);
+                    ioManager.SetBusy(arg);
 
                 Judge();
                 if (isJudged)
@@ -219,7 +194,7 @@ namespace MajdataPlay.Game.Notes
             effectManager.PlayFastLate(startPosition, judgeResult);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, judgeResult, isBreak);
-            inputManager.UnbindArea(Check, sensorPos);
+            ioManager.UnbindArea(Check, sensorPos);
         }
     }
 }

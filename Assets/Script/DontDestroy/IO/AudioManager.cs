@@ -13,6 +13,7 @@ using NAudio.CoreAudioApi;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using UnityEngine.Networking;
+using MajdataPlay.Types;
 
 namespace MajdataPlay.IO
 {
@@ -55,11 +56,11 @@ namespace MajdataPlay.IO
         private void Awake()
         {
             Instance = this;
+            DontDestroyOnLoad(this);
         }
         // Start is called before the first frame update
         void Start()
         {
-            DontDestroyOnLoad(this);
             var backend = SettingManager.Instance.SettingFile.SoundBackend;
             if (backend == SoundBackendType.Unity)
             {
@@ -154,20 +155,17 @@ namespace MajdataPlay.IO
                 }
             }
             if (PlayDebug)
-            {
-                IOManager.Instance.OnTouchAreaDown += OnTouchDown;
-                IOManager.Instance.OnButtonDown += OnButtonDown;
-            }
+                IOManager.Instance.BindAnyArea(OnAnyAreaDown);
 
         }
-        void OnTouchDown(object sender, TouchAreaEventArgs e)
+        void OnAnyAreaDown(object sender, InputEventArgs e)
         {
-            SFXSamples["touch.wav"].PlayOneShot();
-        }
-        void OnButtonDown(object sender, ButtonEventArgs e)
-        {
-            //SFXSamples["answer.wav"].SetVolume(e.ButtonIndex / 8f);
-            SFXSamples["answer.wav"].PlayOneShot();
+            if (e.Status != SensorStatus.On)
+                return;
+            if(e.IsButton)
+                SFXSamples["answer.wav"].PlayOneShot();
+            else
+                SFXSamples["touch.wav"].PlayOneShot();
         }
 
         private void OnApplicationQuit()

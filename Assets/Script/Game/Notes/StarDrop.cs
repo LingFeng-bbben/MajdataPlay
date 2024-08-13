@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.IO;
+using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -68,15 +69,9 @@ namespace MajdataPlay.Game.Notes
 
             if (!isNoHead)
             {
-                sensor = GameObject.Find("Sensors")
-                                       .transform.GetChild(startPosition - 1)
-                                       .GetComponent<Sensor>();
-                manager = GameObject.Find("Sensors")
-                                        .GetComponent<SensorManager>();
-                inputManager = GameObject.Find("Input")
-                                     .GetComponent<InputManager>();
+                ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
                 sensorPos = (SensorType)(startPosition - 1);
-                inputManager.BindArea(Check, sensorPos);
+                ioManager.BindArea(Check, sensorPos);
             }
             State = NoteStatus.Initialized;
         }

@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Types;
+using System;
 using UnityEngine;
 using UnityRawInput;
 #nullable enable
@@ -18,6 +19,20 @@ namespace MajdataPlay.IO
             new Button(RawKey.A,SensorType.A7),
             new Button(RawKey.Q,SensorType.A8),
         };
+        public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
+        {
+            var button = buttons.Find(x => x?.Type == sType);
+            if (button == null)
+                throw new Exception($"{sType} Button not found.");
+            button.OnStatusChanged += checker;
+        }
+        public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
+        {
+            var button = buttons.Find(x => x?.Type == sType);
+            if (button == null)
+                throw new Exception($"{sType} Button not found.");
+            button.OnStatusChanged -= checker;
+        }
         void OnRawKeyUp(RawKey key)
         {
             var button = buttons.Find(x => x.BindingKey == key);
@@ -37,6 +52,7 @@ namespace MajdataPlay.IO
                 IsButton = true
             };
             button.PushEvent(msg);
+            PushEvent(msg);
         }
         void OnRawKeyDown(RawKey key)
         {
@@ -57,6 +73,7 @@ namespace MajdataPlay.IO
                 IsButton = true
             };
             button.PushEvent(msg);
+            PushEvent(msg);
         }
     }
 }
