@@ -1,38 +1,62 @@
-﻿using MajdataPlay.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using UnityEngine;
 using UnityRawInput;
-
+#nullable enable
 namespace MajdataPlay.IO
 {
     public partial class IOManager : MonoBehaviour
     {
-        void RawInput_OnKeyUp(RawKey key)
+        Button[] buttons = new Button[8]
         {
-            for (int i = 0; i < IndexToKeyButton.Length; i++)
+            new Button(RawKey.W,SensorType.A1),
+            new Button(RawKey.E,SensorType.A2),
+            new Button(RawKey.D,SensorType.A3),
+            new Button(RawKey.C,SensorType.A4),
+            new Button(RawKey.X,SensorType.A5),
+            new Button(RawKey.Z,SensorType.A6),
+            new Button(RawKey.A,SensorType.A7),
+            new Button(RawKey.Q,SensorType.A8),
+        };
+        void OnRawKeyUp(RawKey key)
+        {
+            var button = buttons.Find(x => x.BindingKey == key);
+            if (button == null)
             {
-                if (IndexToKeyButton[i] == key.ToString())
-                {
-                    if (OnButtonUp != null)
-                        OnButtonUp(this, new ButtonEventArgs(i));
-                }
+                Debug.LogError($"Key not found:\n{key}");
+                return;
             }
+            var oldState = button.Status;
+            var newState = SensorStatus.Off;
+            Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+            var msg = new InputEventArgs()
+            {
+                Type = button.Type,
+                OldStatus = oldState,
+                Status = newState,
+                IsButton = true
+            };
+            button.PushEvent(msg);
         }
-
-        void RawInput_OnKeyDown(RawKey key)
+        void OnRawKeyDown(RawKey key)
         {
-            for (int i = 0; i < IndexToKeyButton.Length; i++)
+            var button = buttons.Find(x => x.BindingKey == key);
+            if (button == null)
             {
-                if (IndexToKeyButton[i] == key.ToString())
-                {
-                    if (OnButtonDown != null)
-                        OnButtonDown(this, new ButtonEventArgs(i));
-                }
+                Debug.LogError($"Key not found:\n{key}");
+                return;
             }
+            var oldState = button.Status;
+            var newState = SensorStatus.On;
+            Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+            var msg = new InputEventArgs()
+            {
+                Type = button.Type,
+                OldStatus = oldState,
+                Status = newState,
+                IsButton = true
+            };
+            button.PushEvent(msg);
         }
     }
 }

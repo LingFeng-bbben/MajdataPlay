@@ -28,87 +28,10 @@ public class Sensor : MonoBehaviour
     }
 
     public event EventHandler<InputEventArgs> OnStatusChanged;//oStatus nStatus
-
-    List<Guid> tasks = new();
-    public void SetOn(Guid id)
+    public void PushEvent(in InputEventArgs args)
     {
-        if (tasks.Contains(id))
-            return;
-        var oStatus = Status;
-        var nStatus = SensorStatus.On;
-
-        Status = nStatus;
-        
-        if(!tasks.Contains(id))
-            tasks.Add(id);
-        if (oStatus != nStatus)
-        {
-            if (OnStatusChanged != null)
-            {
-                OnStatusChanged(this,new InputEventArgs()
-                {
-                    IsButton = false,
-                    Type = Type,
-                    OldStatus = oStatus,
-                    Status = nStatus
-                });
-                IsJudging = false;
-            }
-            print($"Sensor:{Type} On");
-        }
+        if (OnStatusChanged is not null)
+            OnStatusChanged(this, args);
     }
-    public void SetOff(Guid id) 
-    {
-        if (!tasks.Contains(id))
-            return;
-        var nStatus = SensorStatus.Off;
-
-        tasks.Remove(id);
-        if(tasks.Count == 0)
-        {
-            var oStatus = Status;
-            if (OnStatusChanged != null)
-            {
-                OnStatusChanged(this,new InputEventArgs()
-                {
-                    IsButton = false,
-                    Type = Type,
-                    OldStatus = oStatus,
-                    Status = nStatus
-                });
-            }
-            Status = nStatus;
-            print($"Sensor:{Type} Off");
-        }
-    }
-    public void Click()
-    {
-        if (Status == SensorStatus.On)
-            return;
-        else if (OnStatusChanged != null)
-        {
-            Status = SensorStatus.On;
-            OnStatusChanged(this, new InputEventArgs()
-            {
-                IsButton = false,
-                Type = Type,
-                OldStatus = SensorStatus.Off,
-                Status = SensorStatus.On
-            });
-            IsJudging = false;
-            print($"Sensor:{Type} Click");
-            Status = SensorStatus.Off;
-        }
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    void Awake() => DontDestroyOnLoad(this);
 }

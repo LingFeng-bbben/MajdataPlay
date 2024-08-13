@@ -1,19 +1,18 @@
 ﻿#nullable enable
-using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using UnityEngine;
+using UnityRawInput;
 
 namespace MajdataPlay.IO
 {
     public class Button
     {
-        public KeyCode BindingKey { get; set; }
+        public RawKey BindingKey { get; set; }
         public SensorType Type { get; set; }
-        public bool IsJudging { get; set; }
+        public bool IsJudging { get; set; } = false;
         public SensorStatus Status { get; set; }
         public event EventHandler<InputEventArgs>? OnStatusChanged;
-        public Button(KeyCode bindingKey, SensorType type)
+        public Button(RawKey bindingKey, SensorType type)
         {
             BindingKey = bindingKey;
             Type = type;
@@ -21,7 +20,7 @@ namespace MajdataPlay.IO
             Status = SensorStatus.Off;
             OnStatusChanged = null;
         }
-        public void PushEvent(InputEventArgs args)
+        public void PushEvent(in InputEventArgs args)
         {
             if (OnStatusChanged is not null)
                 OnStatusChanged(this, args);
