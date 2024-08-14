@@ -1,6 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using MajdataPlay.IO;
+using MajdataPlay.Types;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,110 +10,87 @@ public class ListManager : MonoBehaviour
     void Start()
     {
         AudioManager.Instance.PlaySFX("SelectSong.wav");
-        IOManager.Instance.OnButtonDown += IO_OnButtonDown;
-        IOManager.Instance.OnTouchAreaDown += IO_OnTouchAreaDown;
+        IOManager.Instance.BindAnyArea(OnAreaDown);
     }
 
-    private void IO_OnTouchAreaDown(object sender, TouchAreaEventArgs e)
+    private void OnAreaDown(object sender, InputEventArgs e)
     {
-        if (e.AreaName == "A1")
+        if (!e.IsClick)
+            return;
+        if(!e.IsButton)
         {
-            CoverListDisplayer.SlideList(1);
+            switch (e.Type)
+            {
+                case SensorType.A1:
+                    CoverListDisplayer.SlideList(1);
+                    break;
+                case SensorType.D2:
+                    CoverListDisplayer.SlideList(2);
+                    break;
+                case SensorType.A2:
+                    CoverListDisplayer.SlideList(3);
+                    break;
+                case SensorType.D3:
+                    CoverListDisplayer.SlideList(4);
+                    break;
+                case SensorType.A3:
+                    CoverListDisplayer.SlideList(5);
+                    break;
+                case SensorType.D4:
+                    CoverListDisplayer.SlideList(6);
+                    break;
+                case SensorType.A8:
+                    CoverListDisplayer.SlideList(-1);
+                    break;
+                case SensorType.D8:
+                    CoverListDisplayer.SlideList(-2);
+                    break;
+                case SensorType.A7:
+                    CoverListDisplayer.SlideList(-3);
+                    break;
+                case SensorType.D7:
+                    CoverListDisplayer.SlideList(-4);
+                    break;
+                case SensorType.A6:
+                    CoverListDisplayer.SlideList(-5);
+                    break;
+                case SensorType.D6:
+                    CoverListDisplayer.SlideList(-6);
+                    break;
+                // xxlb
+                case SensorType.A4:
+                case SensorType.A5:
+                case SensorType.D5:
+                    AudioManager.Instance.PlaySFX("DontTouchMe.wav");
+                    XxlbAnimation.instance.PlayTouchAnimation();
+                    break;
+            }
         }
-        if (e.AreaName == "D2")
+        else
         {
-            CoverListDisplayer.SlideList(2);
-        }
-        if (e.AreaName == "A2")
-        {
-            CoverListDisplayer.SlideList(3);
-        }
-        if (e.AreaName == "D3")
-        {
-            CoverListDisplayer.SlideList(4);
-        }
-        if (e.AreaName == "A3")
-        {
-            CoverListDisplayer.SlideList(5);
-        }
-        if (e.AreaName == "D4")
-        {
-            CoverListDisplayer.SlideList(6);
-        }
-        if (e.AreaName == "A8")
-        {
-            CoverListDisplayer.SlideList(-1);
-        }
-        if (e.AreaName == "D8")
-        {
-            CoverListDisplayer.SlideList(-2);
-        }
-        if (e.AreaName == "A7")
-        {
-            CoverListDisplayer.SlideList(-3);
-        }
-        if (e.AreaName == "D7")
-        {
-            CoverListDisplayer.SlideList(-4);
-        }
-        if (e.AreaName == "A6")
-        {
-            CoverListDisplayer.SlideList(-5);
-        }
-        if (e.AreaName == "D6")
-        {
-            CoverListDisplayer.SlideList(-6);
-        }
-
-        //xxlb
-        if (e.AreaName == "A4" || e.AreaName == "A5" || e.AreaName == "D5")
-        {
-
-            AudioManager.Instance.PlaySFX("DontTouchMe.wav");
-            XxlbAnimation.instance.PlayTouchAnimation();
+            switch(e.Type)
+            {
+                case SensorType.A3:
+                    CoverListDisplayer.SlideList(1);
+                    break;
+                case SensorType.A6:
+                    CoverListDisplayer.SlideList(-1);
+                    break;
+                case SensorType.A7:
+                    CoverListDisplayer.SlideDifficulty(-1);
+                    break;
+                case SensorType.A2:
+                    CoverListDisplayer.SlideDifficulty(1);
+                    break;
+                case SensorType.A4:
+                    SceneManager.LoadSceneAsync(2);
+                    break;
+            }
         }
     }
-
-    private void IO_OnButtonDown(object sender, ButtonEventArgs e)
-    {
-        try
-        {
-            if (e.ButtonIndex == 3)
-            {
-                CoverListDisplayer.SlideList(1);
-            }
-            if (e.ButtonIndex == 6)
-            {
-                CoverListDisplayer.SlideList(-1);
-            }
-            if (e.ButtonIndex == 7)
-            {
-                CoverListDisplayer.SlideDifficulty(-1);
-            }
-            if (e.ButtonIndex == 2)
-            {
-                CoverListDisplayer.SlideDifficulty(1);
-            }
-            if (e.ButtonIndex == 4)
-            {
-                SceneManager.LoadSceneAsync(2);
-            }
-        } catch (Exception ex)
-        {
-            Debug.LogException(ex);
-        }
-    } 
-
 
     private void OnDestroy()
     {
-        IOManager.Instance.OnButtonDown -= IO_OnButtonDown;
-        IOManager.Instance.OnTouchAreaDown -= IO_OnTouchAreaDown;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        IOManager.Instance.UnbindAnyArea(OnAreaDown);
     }
 }
