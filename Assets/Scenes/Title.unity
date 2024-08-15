@@ -920,49 +920,53 @@ PrefabInstance:
       propertyPath: m_Name
       value: IOManager
       objectReference: {fileID: 0}
+    - target: {fileID: 43995176099355728, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_Pivot.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_Pivot.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.027960923
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.027960923
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.027960923
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1014,6 +1018,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4786871547656972707, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: useDummy
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8212452108067703808, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 6959415326676185806}
+    - target: {fileID: 8212452108067703808, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
+      propertyPath: m_RenderMode
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
