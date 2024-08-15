@@ -96,7 +96,7 @@ namespace MajdataPlay.Game.Notes
             exSpriteRender.forceRenderingOff = true;
             holdEndRender.enabled = false;
 
-            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
+            ioManager = IOManager.Instance;
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
         }

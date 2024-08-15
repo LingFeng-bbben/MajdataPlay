@@ -61,7 +61,7 @@ namespace MajdataPlay.Game.Notes
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             mask.enabled = false;
 
-            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
+            ioManager = IOManager.Instance;
             sensorPos = SensorType.C;
             //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
             //judgeText = customSkin.JudgeText;

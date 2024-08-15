@@ -79,7 +79,7 @@ namespace MajdataPlay.Game.Notes
             transform.position = GetAreaPos(startPosition, areaPosition);
             justEffect.SetActive(false);
             SetfanColor(new Color(1f, 1f, 1f, 0f));
-            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
+            ioManager = IOManager.Instance;
             //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
             //judgeText = customSkin.JudgeText;
             ioManager.BindSensor(Check, GetSensor());

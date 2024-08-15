@@ -277,7 +277,7 @@ namespace MajdataPlay.Game.Notes
                                        .GroupBy(x => x)
                                        .Select(x => x.Key);
             var a = judgeQueue.Select(x => x.GetSensorTypes()).ToList();
-            ioManager = GameObject.Find("IOManager").GetComponent<IOManager>();
+            ioManager = IOManager.Instance;
             boundSensors.AddRange(allSensors);
             foreach (var sensor in allSensors)
                 ioManager.BindSensor(Check, sensor);
