@@ -43,7 +43,7 @@ namespace MajdataPlay.Game.Notes
             holdEffect = Instantiate(holdEffect, notes);
             holdEffect.SetActive(false);
 
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
 
             firework = GameObject.Find("FireworkEffect");
             fireworkEffect = firework.GetComponent<Animator>();
@@ -97,7 +97,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
@@ -140,7 +140,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (remainingTime <= 0.2f) // 忽略尾部12帧
                     return;
-                else if (!timeProvider.isStart) // 忽略暂停
+                else if (!gpManager.isStart) // 忽略暂停
                     return;
 
                 var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);

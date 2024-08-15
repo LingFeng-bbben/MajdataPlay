@@ -50,6 +50,12 @@ TagManager:
   - name: Tap
     uniqueID: 1842247769
     locked: 0
+  - name: Slides
+    uniqueID: 3147299915
+    locked: 0
+  - name: Touch
+    uniqueID: 2327307507
+    locked: 0
   - name: Cover
     uniqueID: 1307213585
     locked: 0
@@ -61,4 +67,7 @@ TagManager:
     locked: 0
   - name: TouchEffect
     uniqueID: 3826249881
+    locked: 0
+  - name: FireWork
+    uniqueID: 1068857585
     locked: 0

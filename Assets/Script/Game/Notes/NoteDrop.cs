@@ -14,7 +14,7 @@ namespace MajdataPlay.Game.Notes
         public float speed = 7;
         public bool isEach;
 
-        protected AudioTimeProvider timeProvider;
+        protected GamePlayManager gpManager;
 
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         protected SensorType sensorPos;
@@ -31,7 +31,7 @@ namespace MajdataPlay.Game.Notes
         /// 当前时刻在正解帧后方，结果为正数
         /// <para>当前时刻在正解帧前方，结果为负数</para>
         /// </returns>
-        protected float GetJudgeTiming() => timeProvider.AudioTime - time;
+        protected float GetJudgeTiming() => gpManager.AudioTime - time;
         protected Vector3 getPositionFromDistance(float distance) => getPositionFromDistance(distance, startPosition);
         protected Vector3 getPositionFromDistance(float distance, int position)
         {

@@ -28,6 +28,7 @@ public class GamePlayManager : MonoBehaviour
     public float CurrentSpeed = 1f;
 
     private int noteSortOrder = 0;
+    private float AudioStartTime = -114514f;
 
     public List<TapDrop> TapPool = new List<TapDrop>();
 
@@ -61,6 +62,7 @@ public class GamePlayManager : MonoBehaviour
     {
         yield return new WaitForSeconds(2);
         audioSample.Play();
+        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime();
     }
 
     private void OnDestroy()
@@ -72,8 +74,10 @@ public class GamePlayManager : MonoBehaviour
     void Update()
     {
         if (audioSample == null) return;
-        AudioTime = (float)audioSample.GetCurrentTime();
-
+        //Do not use this!!!! This have connection with sample batch size
+        //AudioTime = (float)audioSample.GetCurrentTime();
+        if(AudioStartTime!=-114514f)
+            AudioTime = Time.unscaledTime - AudioStartTime;
         var delta = Math.Abs(AudioTime - (Chart.notelist[i].time + song.First));
         if( delta < 0.01) {
             AudioManager.Instance.PlaySFX("answer.wav");

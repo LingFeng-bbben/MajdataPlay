@@ -42,7 +42,7 @@ namespace MajdataPlay.Game.Notes
             lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
             spriteRenderer = GetComponent<SpriteRenderer>();
             exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             spriteRenderer.sortingOrder += noteSortOrder;
@@ -115,7 +115,7 @@ namespace MajdataPlay.Game.Notes
             if (isEX) exSpriteRender.forceRenderingOff = false;
             if (isBreak)
             {
-                var extra = Math.Max(Mathf.Sin(timeProvider.GetFrame() * 0.17f) * 0.5f, 0);
+                var extra = Math.Max(Mathf.Sin(gpManager.GetFrame() * 0.17f) * 0.5f, 0);
                 spriteRenderer.material.SetFloat("_Brightness", 0.95f + extra);
             }
         }
@@ -156,7 +156,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;

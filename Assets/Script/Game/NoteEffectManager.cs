@@ -4,8 +4,6 @@ using UnityEngine;
 public class NoteEffectManager : MonoBehaviour
 {
     
-    public Sprite hex;
-    public Sprite star;
     private readonly Animator[] judgeAnimators = new Animator[8];
     private readonly GameObject[] judgeEffects = new GameObject[8];
     private readonly Animator[] tapAnimators = new Animator[8];
@@ -21,12 +19,12 @@ public class NoteEffectManager : MonoBehaviour
     Sprite[] judgeText;
 
     // Start is called before the first frame update
-    private void Start()
+    private void Awake()
     {
         var tapEffectParent = transform.GetChild(0).gameObject;
+        var judgeEffectParent = transform.GetChild(1).gameObject;
         var greatEffectParent = transform.GetChild(2).gameObject;
         var goodEffectParent = transform.GetChild(3).gameObject;
-        var judgeEffectParent = transform.GetChild(1).gameObject;
         var flParent = transform.GetChild(4).gameObject;
 
         for (var i = 0; i < 8; i++)
@@ -59,18 +57,17 @@ public class NoteEffectManager : MonoBehaviour
     /// </summary>
     private void LoadSkin()
     {
-        // TO-DO
 
-        //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
-        //judgeText = customSkin.JudgeText;
+        var customSkin = SkinManager.Instance;
+        judgeText = customSkin.JudgeText;
 
-        //foreach (var judgeEffect in judgeEffects)
-        //{
-        //    judgeEffect.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite =
-        //        customSkin.JudgeText[0];
-        //    judgeEffect.transform.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().sprite =
-        //        customSkin.JudgeText_Break;
-        //}
+        foreach (var judgeEffect in judgeEffects)
+        {
+            judgeEffect.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite =
+                customSkin.JudgeText[0];
+            judgeEffect.transform.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().sprite =
+                customSkin.JudgeText_Break;
+        }
     }
 
     // Update is called once per frame

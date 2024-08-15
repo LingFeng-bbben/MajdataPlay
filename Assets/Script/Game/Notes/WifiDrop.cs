@@ -84,7 +84,7 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator.SetTrigger("wifi");
 
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
             var notes = GameObject.Find("Notes").transform;
             for (var i = 0; i < star_slide.Length; i++)
             {
@@ -192,8 +192,8 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = timeProvider.AudioTime - time;
-            var startTiming = timeProvider.AudioTime - timeStart;
+            var timing = gpManager.AudioTime - time;
+            var startTiming = gpManager.AudioTime - timeStart;
             var forceJudgeTiming = time + LastFor + 0.6;
 
             if (startTiming >= -0.05f)
@@ -204,7 +204,7 @@ namespace MajdataPlay.Game.Notes
                 HideBar(areaStep.LastOrDefault());
                 Judge();
             }
-            else if (timeProvider.AudioTime - forceJudgeTiming >= 0)
+            else if (gpManager.AudioTime - forceJudgeTiming >= 0)
                 TooLateJudge();
         }
         int GetLastIndex()
@@ -302,15 +302,15 @@ namespace MajdataPlay.Game.Notes
         }
         void Judge()
         {
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var starTiming = timeStart + (time - timeStart) * 0.667;
             var pTime = LastFor / areaStep.Last();
             var judgeTime = time + pTime * (areaStep.LastOrDefault() - 2.1f);// 正解帧
             var stayTime = time + LastFor - judgeTime; // 停留时间
             if (!isJudged)
             {
-                arriveTime = timeProvider.AudioTime;
-                var triggerTime = timeProvider.AudioTime;
+                arriveTime = gpManager.AudioTime;
+                var triggerTime = gpManager.AudioTime;
 
                 const float totalInterval = 1.2f; // 秒
                 const float nPInterval = 0.4666667f; // Perfect基础区间
@@ -355,9 +355,9 @@ namespace MajdataPlay.Game.Notes
                 SetJust();
                 isJudged = true;
             }
-            else if (arriveTime < starTiming && timeProvider.AudioTime >= starTiming + stayTime * 0.667)
+            else if (arriveTime < starTiming && gpManager.AudioTime >= starTiming + stayTime * 0.667)
                 DestroySelf();
-            else if (arriveTime >= starTiming && timeProvider.AudioTime >= arriveTime + stayTime * 0.667)
+            else if (arriveTime >= starTiming && gpManager.AudioTime >= arriveTime + stayTime * 0.667)
                 DestroySelf();
         }
         void HideBar(int endIndex)
@@ -370,7 +370,7 @@ namespace MajdataPlay.Game.Notes
         private void Update()
         {
             // Wifi Slide淡入期间，不透明度从0到1耗时200ms
-            var startiming = timeProvider.AudioTime - timeStart;
+            var startiming = gpManager.AudioTime - timeStart;
             if (startiming <= 0f)
             {
                 if (startiming >= -0.05f)
@@ -388,7 +388,7 @@ namespace MajdataPlay.Game.Notes
             foreach (var star in star_slide)
                 star.SetActive(true);
 
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             if (timing <= 0f)
             {
                 canShine = true;
@@ -410,7 +410,7 @@ namespace MajdataPlay.Game.Notes
         }
         void UpdateStar()
         {
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var process = (LastFor - timing) / LastFor;
             process = 1f - process;
 

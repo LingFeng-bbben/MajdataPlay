@@ -190,10 +190,10 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator.speed = 0.2f / interval;
             fadeInAnimator.SetTrigger("slide");
 
-            var sManagerObj = GameObject.Find("Sensors");
-            var count = sManagerObj.transform.childCount;
+            var ioManagerObj = IOManager.Instance;
+            var count = ioManagerObj.transform.childCount;
             for (int i = 0; i < count; i++)
-                sensors.Add(sManagerObj.transform.GetChild(i).gameObject);
+                sensors.Add(ioManagerObj.transform.GetChild(i).gameObject);
 
             GetSensors(sensors.Select(x => x.GetComponent<RectTransform>())
                                             .ToArray());
@@ -319,8 +319,8 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = timeProvider.AudioTime - time;
-            var startTiming = timeProvider.AudioTime - timeStart;
+            var timing = gpManager.AudioTime - time;
+            var startTiming = gpManager.AudioTime - timeStart;
             var forceJudgeTiming = time + LastFor + 0.6;
 
             if (ConnectInfo.IsGroupPart)
@@ -340,7 +340,7 @@ namespace MajdataPlay.Game.Notes
                     HideBar(areaStep.LastOrDefault());
                     Judge();
                 }
-                else if (ConnectInfo.IsGroupPartEnd && timeProvider.AudioTime - forceJudgeTiming >= 0)
+                else if (ConnectInfo.IsGroupPartEnd && gpManager.AudioTime - forceJudgeTiming >= 0)
                     TooLateJudge();
                 else if (isFinished)
                     HideBar(areaStep.LastOrDefault());
@@ -350,7 +350,7 @@ namespace MajdataPlay.Game.Notes
                 HideBar(areaStep.LastOrDefault());
                 Judge();
             }
-            else if (timeProvider.AudioTime - forceJudgeTiming >= 0)
+            else if (gpManager.AudioTime - forceJudgeTiming >= 0)
                 TooLateJudge();
         }
         // Update is called once per frame
@@ -363,7 +363,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
             // Slide淡入期间，不透明度从0到0.55耗时200ms
-            var startiming = timeProvider.AudioTime - timeStart;
+            var startiming = gpManager.AudioTime - timeStart;
             if (startiming <= 0f)
             {
                 if (startiming >= -0.05f)
@@ -380,7 +380,7 @@ namespace MajdataPlay.Game.Notes
             setSlideBarAlpha(1f);
 
             star_slide.SetActive(true);
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             if (timing <= 0f)
             {
                 canShine = true;
@@ -503,8 +503,8 @@ namespace MajdataPlay.Game.Notes
             var stayTime = time + LastFor - judgeTiming; // 停留时间
             if (!isJudged)
             {
-                arriveTime = timeProvider.AudioTime;
-                var triggerTime = timeProvider.AudioTime;
+                arriveTime = gpManager.AudioTime;
+                var triggerTime = gpManager.AudioTime;
 
                 const float totalInterval = 1.2f; // 秒
                 const float nPInterval = 0.4666667f; // Perfect基础区间
@@ -548,9 +548,9 @@ namespace MajdataPlay.Game.Notes
                 SetJust();
                 isJudged = true;
             }
-            else if (arriveTime < starTiming && timeProvider.AudioTime >= starTiming + stayTime * 0.8)
+            else if (arriveTime < starTiming && gpManager.AudioTime >= starTiming + stayTime * 0.8)
                 DestroySelf();
-            else if (arriveTime >= starTiming && timeProvider.AudioTime >= arriveTime + stayTime * 0.8)
+            else if (arriveTime >= starTiming && gpManager.AudioTime >= arriveTime + stayTime * 0.8)
                 DestroySelf();
         }
         void SetJust()

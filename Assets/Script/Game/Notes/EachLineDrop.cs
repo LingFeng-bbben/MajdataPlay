@@ -15,12 +15,12 @@ namespace MajdataPlay.Game.Notes
         public Sprite[] curvSprites;
         private SpriteRenderer sr;
 
-        private AudioTimeProvider timeProvider;
+        private GamePlayManager gpManager;
 
         // Start is called before the first frame update
         private void Start()
         {
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
 
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
@@ -30,7 +30,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
             if (timing > 0) Destroy(gameObject);

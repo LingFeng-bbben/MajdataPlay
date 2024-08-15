@@ -168,7 +168,7 @@ namespace MajdataPlay.IO
                 SFXSamples["touch.wav"].PlayOneShot();
         }
 
-        private void OnApplicationQuit()
+        private void OnDestroy()
         {
             asioOut?.Stop();
             asioOut?.Dispose();

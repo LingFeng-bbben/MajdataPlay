@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         protected override void Update()
         {
-            var songSpeed = timeProvider.CurrentSpeed;
+            var songSpeed = gpManager.CurrentSpeed;
             var judgeTiming = GetJudgeTiming();
             var distance = judgeTiming * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
@@ -146,7 +146,7 @@ namespace MajdataPlay.Game.Notes
                 if (isEX) exSpriteRender.forceRenderingOff = false;
             }
 
-            if (timeProvider.isStart && !isFakeStar)
+            if (gpManager.isStart && !isFakeStar)
                 transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / rotateSpeed);
             else if (isFakeStarRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);

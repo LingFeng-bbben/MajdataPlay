@@ -14,7 +14,7 @@ public class NoteManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 30;
+        //Application.targetFrameRate = 30;
     }
     public void Refresh()
     {
@@ -76,10 +76,5 @@ public class NoteManager : MonoBehaviour
         var nowIndex = touchIndex[t];
 
         return index <= nowIndex;
-    }
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

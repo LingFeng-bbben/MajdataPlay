@@ -49,8 +49,6 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -73,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 182344715
-  m_SortingLayer: 4
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: f63d7905457bfe74c8bb67ec5b4efe9a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -135,8 +133,6 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -159,7 +155,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 182344715
-  m_SortingLayer: 4
+  m_SortingLayer: 0
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 47815b199a529c64b821f1181f2bb5ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
@@ -224,8 +220,6 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -247,8 +241,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 182344715
-  m_SortingLayer: 4
+  m_SortingLayerID: 1842247769
+  m_SortingLayer: 2
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 69b328dbae9628c44b0882a049fcbf0b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -273,12 +267,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a269f699525b313479335d4afd246e37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startPosition: 1
   time: 0
   noteSortOrder: 0
-  LastFor: 1
-  startPosition: 1
   speed: 1
   isEach: 0
+  LastFor: 1
+  holdEffect: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
   isEX: 0
   isBreak: 0
   tapSpr: {fileID: 21300000, guid: 69b328dbae9628c44b0882a049fcbf0b, type: 3}
@@ -295,10 +290,7 @@ MonoBehaviour:
   holdBreakEnd: {fileID: 21300000, guid: 8da47e3bcdd19304da9c55e701f26363, type: 3}
   HoldShine: {fileID: 0}
   BreakShine: {fileID: 0}
-  holdEffect: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2,
-    type: 3}
   tapLine: {fileID: 8134463029818261665, guid: ed6ad005bb60e9c409c75936f65b7f86, type: 3}
-  missMaterial: {fileID: 2100000, guid: 185f4e66891cf6640a3bdff36359c4f3, type: 2}
   exEffectTap: {r: 1, g: 0.6745283, b: 0.8829237, a: 1}
   exEffectEach: {r: 1, g: 0.9943893, b: 0.4669811, a: 1}
   exEffectBreak: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}

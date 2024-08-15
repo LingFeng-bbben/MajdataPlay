@@ -138,7 +138,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 1918292637
+  m_SortingLayerID: 1222518565
   m_SortingLayer: 6
   m_SortingOrder: 7
   m_Sprite: {fileID: 0}
@@ -244,10 +244,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1918292637
-  m_SortingLayer: 6
+  m_SortingLayer: 0
   m_SortingOrder: 7
-  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36,
-    type: 3}
+  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -255,7 +254,7 @@ SpriteRenderer:
   m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &314035497306108139
@@ -329,10 +328,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1918292637
-  m_SortingLayer: 6
+  m_SortingLayer: 0
   m_SortingOrder: 7
-  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36,
-    type: 3}
+  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -340,7 +338,7 @@ SpriteRenderer:
   m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &383149366929862069
@@ -414,10 +412,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1918292637
-  m_SortingLayer: 6
+  m_SortingLayer: 0
   m_SortingOrder: 7
-  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36,
-    type: 3}
+  m_Sprite: {fileID: -5704131750519555382, guid: b0d70684c3fe0f540803ce1ea0c45d36, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -425,7 +422,7 @@ SpriteRenderer:
   m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &7624848221194125052

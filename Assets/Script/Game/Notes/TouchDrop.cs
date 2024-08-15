@@ -47,7 +47,7 @@ namespace MajdataPlay.Game.Notes
 
             var notes = GameObject.Find("Notes").transform;
             noteManager = notes.GetComponent<NoteManager>();
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
             multTouchHandler = GameObject.Find("MultTouchHandler").GetComponent<MultTouchHandler>();
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             firework = GameObject.Find("FireworkEffect");
@@ -140,7 +140,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
@@ -163,7 +163,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
 
             //var timing = time;
             //var pow = Mathf.Pow(-timing * speed, 0.1f)-0.4f;

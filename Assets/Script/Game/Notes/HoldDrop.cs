@@ -58,7 +58,7 @@ namespace MajdataPlay.Game.Notes
 
             exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GamePlayManager.Instance;
             spriteRenderer = GetComponent<SpriteRenderer>();
 
             holdEndRender = transform.GetChild(1).GetComponent<SpriteRenderer>();
@@ -119,7 +119,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (remainingTime <= 0.2f) // 忽略尾部12帧
                     return;
-                else if (!timeProvider.isStart) // 忽略暂停
+                else if (!gpManager.isStart) // 忽略暂停
                     return;
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
@@ -173,7 +173,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = timeProvider.AudioTime - time;
+            var timing = gpManager.AudioTime - time;
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
@@ -245,7 +245,7 @@ namespace MajdataPlay.Game.Notes
                 !holdAnimStart &&
                 !isJudged)
             {
-                var extra = Math.Max(Mathf.Sin(timeProvider.GetFrame() * 0.17f) * 0.5f, 0);
+                var extra = Math.Max(Mathf.Sin(gpManager.GetFrame() * 0.17f) * 0.5f, 0);
                 spriteRenderer.material.SetFloat("_Brightness", 0.95f + extra);
             }
 
