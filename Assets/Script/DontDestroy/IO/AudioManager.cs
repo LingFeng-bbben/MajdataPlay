@@ -150,6 +150,7 @@ namespace MajdataPlay.IO
                 {
                     print("Starting WaveOut... with " + sampleRate);
                     waveOut = new WaveOutEvent();
+                    waveOut.NumberOfBuffers = 12;
                     waveOut.Init(mixer, false);
                     waveOut.Play();
                 }
