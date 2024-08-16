@@ -15,6 +15,7 @@ public class NoteManager : MonoBehaviour
     void Start()
     {
         //Application.targetFrameRate = 30;
+        
     }
     public void Refresh()
     {
@@ -50,7 +51,7 @@ public class NoteManager : MonoBehaviour
         touchIndex.Clear();
         for (int i = 1; i < 9; i++)
             noteIndex.Add(i, 0);
-        var sensorParent = GameObject.Find("Sensors");
+        var sensorParent = GameObject.Find("IOManager");
         var count = sensorParent.transform.childCount;
         for (int i = 0; i < count; i++)
             touchIndex.Add(sensorParent.transform

@@ -27,7 +27,6 @@ namespace MajdataPlay.Game.Controllers
         private void OnEnable()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
-            gpManager = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
         }
     }
 }
