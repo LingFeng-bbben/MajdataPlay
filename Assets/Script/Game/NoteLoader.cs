@@ -444,7 +444,7 @@ public class NoteLoader : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 120;
+        //Application.targetFrameRate = 120;
         
         
     }

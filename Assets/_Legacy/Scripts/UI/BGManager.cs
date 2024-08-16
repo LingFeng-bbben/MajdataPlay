@@ -16,6 +16,7 @@ public class BGManager : MonoBehaviour
     private VideoPlayer videoPlayer;
 
     private float originalScaleX;
+
     // Start is called before the first frame update
     private void Start()
     {
@@ -60,47 +61,23 @@ public class BGManager : MonoBehaviour
         videoPlayer.Play();
     }
 
+    //Moved to songloader
+    //public void LoadBGFromPath(string path, float speed)
 
-    public void LoadBGFromPath(string path, float speed)
+    public void SetBackgroundPic(Sprite sprite)
     {
-        var pictureName = new[] { "Cover", "bg" };
-        var pictureExt = new[] { ".png", ".jpg", ".jpeg" };
-
-        var videoName = new[] { "pv.mp4", "mv.mp4", "bg.mp4" };
-
-        foreach (var name in pictureName)
-        {
-            var finished = false;
-            foreach (var ext in pictureExt)
-                if (File.Exists(path + "/" + name + ext))
-                {
-                    StartCoroutine(loadPic(path + "/" + name + ext));
-                    finished = true;
-                    break;
-                }
-
-            if (finished) break;
-        }
-
-        foreach (var name in videoName)
-        {
-            if (!File.Exists(path + "/" + name)) continue;
-            
-            loadVideo(path + "/" + name, speed);
-            break;
-        }
-    }
-
-    private IEnumerator loadPic(string path)
-    {
-        Sprite sprite;
-        yield return sprite = SpriteLoader.LoadSpriteFromFile(path);
         spriteRender.sprite = sprite;
-        var scale = 1140f / sprite.texture.width;
+        //todo:set correct scale
+        var scale = 1080f / sprite.texture.width;
         gameObject.transform.localScale = new Vector3(scale, scale, scale);
     }
 
-    private void loadVideo(string path, float speed)
+    public void SetBackgroundDim(float dim)
+    {
+        transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, dim);
+    }
+
+    private void SetBackgroundMovie(string path, float speed)
     {
         videoPlayer.url = "file://" + path;
         videoPlayer.audioOutputMode = VideoAudioOutputMode.None;

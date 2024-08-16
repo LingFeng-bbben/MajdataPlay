@@ -2651,11 +2651,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -1082374789
-  m_SortingLayer: 0
+  m_SortingLayerID: 1307213585
+  m_SortingLayer: 1
   m_SortingOrder: 26
   m_Sprite: {fileID: 21300000, guid: 4242916334dffd14f85ff0523d3edc93, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.43137255}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2673,12 +2673,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 688922305}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.1273, y: 1.1273, z: 1.1273}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -82.02953}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 878179203}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &692000923
 PrefabInstance:
@@ -4050,10 +4050,11 @@ Transform:
   m_GameObject: {fileID: 878179199}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 90}
-  m_LocalScale: {x: 1.0971658, y: 1.0971658, z: 1.0971658}
+  m_LocalPosition: {x: 0, y: -0, z: 94.809}
+  m_LocalScale: {x: 1.1172426, y: 1.1172426, z: 1.1172426}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 688922307}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &959806005
@@ -5475,7 +5476,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31c0ca86ea0e4e04ba77bc61f40535e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 234850116}
 --- !u!224 &1685856435
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6705,7 +6705,6 @@ SceneRoots:
   - {fileID: 878179203}
   - {fileID: 1107568674}
   - {fileID: 481412467}
-  - {fileID: 688922307}
   - {fileID: 1685856435}
   - {fileID: 1442909525}
   - {fileID: 620892875}

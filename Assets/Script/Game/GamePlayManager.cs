@@ -41,12 +41,6 @@ public class GamePlayManager : MonoBehaviour
     }
     void Start()
     {
-        //BackgroundDisplayer.SetBackground(song.SongCover);
-        var settings = SettingManager.Instance.SettingFile;
-        //BackgroundDisplayer.SetBackgroundDim(settings.BackgroundDim);
-
-        noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.TapSpeed + 0.9975f, -0.985558604f)));
-        touchSpeed = settings.TouchSpeed;
 
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
 
@@ -60,8 +54,18 @@ public class GamePlayManager : MonoBehaviour
     IEnumerator DelayPlay()
     {
         yield return new WaitForEndOfFrame();
+
+        var settings = SettingManager.Instance.SettingFile;
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
+        noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.TapSpeed + 0.9975f, -0.985558604f)));
+        noteLoader.touchSpeed = settings.TouchSpeed;
         noteLoader.LoadNotes(Chart);
+
+        yield return new WaitForEndOfFrame();
+        var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
+        BGManager.SetBackgroundPic(song.SongCover);
+        BGManager.SetBackgroundDim(settings.BackgroundDim);
+
         yield return new WaitForEndOfFrame();
         GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         yield return new WaitForSeconds(2);
