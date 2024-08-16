@@ -159,7 +159,7 @@ namespace MajdataPlay.Game.Notes
                 sbRender.Add(sr);
                 sr.color = new Color(1f, 1f, 1f, 0f);
                 sr.sortingOrder = sortIndex--;
-                sr.sortingLayerName = "Slide";
+                sr.sortingLayerName = "Slides";
             }
 
             _judgeQueues = new(judgeQueues);
