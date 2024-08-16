@@ -11,6 +11,8 @@ public class ListManager : MonoBehaviour
     {
         AudioManager.Instance.PlaySFX("SelectSong.wav");
         IOManager.Instance.BindAnyArea(OnAreaDown);
+        CoverListDisplayer.SlideToList(GameManager.Instance.selectedIndex);
+        CoverListDisplayer.SlideToDifficulty(GameManager.Instance.selectedDiff);
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)

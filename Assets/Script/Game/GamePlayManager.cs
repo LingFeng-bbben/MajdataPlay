@@ -46,10 +46,16 @@ public class GamePlayManager : MonoBehaviour
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
 
         Chart = new SimaiProcess(song.InnerMaidata[GameManager.Instance.selectedDiff]);
-        
 
-        print(Chart.notelist.Count);
-        StartCoroutine(DelayPlay());
+        if (Chart.notelist.Count == 0)
+        {
+            EndGame(0);
+        }
+        else { 
+            StartCoroutine(DelayPlay()); 
+        }
+
+            
     }
 
     IEnumerator DelayPlay()
@@ -94,13 +100,19 @@ public class GamePlayManager : MonoBehaviour
         if (audioSample == null) return;
         //Do not use this!!!! This have connection with sample batch size
         //AudioTime = (float)audioSample.GetCurrentTime();
-        if(AudioStartTime!=-114514f)
-            AudioTime = Time.unscaledTime - AudioStartTime;
-        var delta = Math.Abs(AudioTime - (Chart.notelist[i].time + song.First));
+        if (AudioStartTime != -114514f)
+        {
+            AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First;
+            //print((float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime));
+        }
+        if (i >= Chart.notelist.Count)
+            return;
+        var delta = Math.Abs(AudioTime - (Chart.notelist[i].time));
         if( delta < 0.01) {
             AudioManager.Instance.PlaySFX("answer.wav");
             //print(Chart.notelist[i].time);
             i++;
+            
         }
         //TODO: Render notes
     }

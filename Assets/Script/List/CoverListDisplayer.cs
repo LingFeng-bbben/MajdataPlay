@@ -37,10 +37,16 @@ public class CoverListDisplayer : MonoBehaviour
         CoverBigDisplayer.SetCover(songinfo.SongCover);
     }
 
-    public void SlideDifficulty(int pos)
+    public void SlideDifficulty(int delta)
     {
-        selectedDifficulty += pos;
-        if(selectedDifficulty > 5)
+        selectedDifficulty += delta;
+        SlideToDifficulty(selectedDifficulty);
+    }
+
+    public void SlideToDifficulty(int pos)
+    {
+        selectedDifficulty = pos;
+        if (selectedDifficulty > 5)
         {
             selectedDifficulty = 0;
         }
@@ -54,10 +60,16 @@ public class CoverListDisplayer : MonoBehaviour
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
     }
 
-    public void SlideList(int pos)
+    public void SlideList(int delta)
+    {
+        desiredListPos+=delta;
+        SlideToList(desiredListPos);
+    }
+    
+    public void SlideToList(int pos)
     {
         AudioManager.Instance.PlaySFX(soundEffectName);
-        desiredListPos+=pos;
+        desiredListPos = pos;
         if (desiredListPos >= covers.Count)
         {
             desiredListPos = covers.Count - 1;
@@ -69,10 +81,9 @@ public class CoverListDisplayer : MonoBehaviour
         //TODO: Update the big cover here
         var songinfo = GameManager.Instance.songList[desiredListPos];
         CoverBigDisplayer.SetCover(songinfo.SongCover);
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty] );
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
         GameManager.Instance.selectedIndex = desiredListPos;
     }
-
 
     private void Update()
     {

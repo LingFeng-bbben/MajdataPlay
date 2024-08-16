@@ -237,8 +237,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 92}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 0, y: 90}
+  m_SizeDelta: {x: 687.23, y: 66.995}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &483588175
 MonoBehaviour:
@@ -294,8 +294,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -821,7 +821,7 @@ GameObject:
   - component: {fileID: 1354892578}
   - component: {fileID: 1354892577}
   m_Layer: 5
-  m_Name: Title
+  m_Name: Omg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1210,8 +1210,31 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8053637610791840999, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
       addedObject: {fileID: 67220226}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5205452559665588105, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3234089997214234526}
   m_SourcePrefab: {fileID: 100100000, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+--- !u!1 &3234089997214234525 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5205452559665588105, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+  m_PrefabInstance: {fileID: 3234089997214234524}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3234089997214234526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3234089997214234525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f260dc882bd35b4abf9814fcf31189d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  title: {fileID: 483588175}
+  acc: {fileID: 1593491266}
+  coverImg: {fileID: 67220227}
 --- !u!1001 &6959415326676185805
 PrefabInstance:
   m_ObjectHideFlags: 0
