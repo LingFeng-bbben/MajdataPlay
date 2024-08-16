@@ -97,6 +97,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge();
+                ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     Destroy(gameObject);

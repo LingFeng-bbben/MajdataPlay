@@ -149,6 +149,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge();
+                ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     ioManager.UnbindArea(Check, sensorPos);

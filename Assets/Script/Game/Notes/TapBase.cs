@@ -133,6 +133,7 @@ namespace MajdataPlay.Game.Notes
                     ioManager.SetBusy(arg);
 
                 Judge();
+                ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     Destroy(tapLine);
@@ -185,6 +186,7 @@ namespace MajdataPlay.Game.Notes
 
             judgeResult = result;
             isJudged = true;
+            
         }
         protected virtual void OnDestroy()
         {

@@ -49,6 +49,7 @@ public class NoteManager : MonoBehaviour
     {
         noteIndex.Clear();
         touchIndex.Clear();
+        //八条轨道 判定到此轨道上的第几个note了
         for (int i = 1; i < 9; i++)
             noteIndex.Add(i, 0);
         var sensorParent = GameObject.Find("IOManager");

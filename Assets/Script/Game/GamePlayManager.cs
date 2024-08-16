@@ -62,6 +62,8 @@ public class GamePlayManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
         noteLoader.LoadNotes(Chart);
+        yield return new WaitForEndOfFrame();
+        GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         yield return new WaitForSeconds(2);
         audioSample.Play();
         AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime();
