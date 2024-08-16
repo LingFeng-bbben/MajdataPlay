@@ -9,7 +9,7 @@ namespace MajdataPlay.Game.Controllers
         public IFlasher? parent = null;
 
         SpriteRenderer spriteRenderer;
-        AudioTimeProvider timeProvider;
+        GamePlayManager gpManager => GamePlayManager.Instance;
         // Start is called before the first frame update
         void Start()
         {
@@ -20,14 +20,14 @@ namespace MajdataPlay.Game.Controllers
         {
             if (parent is not null && parent.CanShine())
             {
-                var extra = Math.Max(Mathf.Sin(timeProvider.GetFrame() * 0.17f) * 0.5f, 0);
+                var extra = Math.Max(Mathf.Sin(gpManager.GetFrame() * 0.17f) * 0.5f, 0);
                 spriteRenderer.material.SetFloat("_Brightness", 0.95f + extra);
             }
         }
         private void OnEnable()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
-            timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
+            gpManager = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
         }
     }
 }
