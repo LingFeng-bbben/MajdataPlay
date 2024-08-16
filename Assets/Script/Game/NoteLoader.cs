@@ -688,7 +688,7 @@ public class NoteLoader : MonoBehaviour
 
     private void CountNoteSum(SimaiProcess json)
     {
-        foreach (var timing in json.timinglist)
+        foreach (var timing in json.notelist)
             foreach (var note in timing.noteList)
                 if (!note.isBreak)
                 {

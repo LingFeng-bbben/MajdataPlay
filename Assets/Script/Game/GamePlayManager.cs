@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GamePlayManager : MonoBehaviour
 {
@@ -109,6 +110,19 @@ public class GamePlayManager : MonoBehaviour
         var _audioTime = AudioTime * 1000;
 
         return _audioTime / 16.6667f;
+    }
+
+    public void EndGame(float acc)
+    {
+        GameManager.Instance.lastGameResult = acc;
+        print("GameResult: "+acc);
+        StartCoroutine(delayEndGame());
+    }
+
+    IEnumerator delayEndGame()
+    {
+        yield return new WaitForSeconds(5f);
+        SceneManager.LoadScene(3);
     }
 
 }

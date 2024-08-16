@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public List<SongDetail> songList = new List<SongDetail> ();
     public int selectedIndex = 0;
     public int selectedDiff = 0;
+    public float lastGameResult = -1f; //this should be a struct in future
     // Start is called before the first frame update
     private void Awake()
     {

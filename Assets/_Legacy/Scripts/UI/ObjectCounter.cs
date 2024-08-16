@@ -42,7 +42,7 @@ public class ObjectCounter : MonoBehaviour
 
     NoteManager notes;
 
-    double[] accRate = new double[5]
+    public double[] accRate = new double[5]
     {
         0.00,    // classic acc (+)
         100.00,  // classic acc (-)
@@ -574,6 +574,12 @@ public class ObjectCounter : MonoBehaviour
             Math.Truncate((float)FiNowScore() / FiSumScore() * 10000) / 100,
             Math.Truncate(((float)DxNowScore() / DxSumScore() * 100 + BreakRate()) * 10000) / 10000
         );
+    }
+
+    public void CalculateFinalResult()
+    {
+        CalAccRate();
+        GamePlayManager.Instance.EndGame((float)accRate[2]);
     }
 
     private void UpdateState()

@@ -11,6 +11,8 @@ public class NoteManager : MonoBehaviour
 
     public Dictionary<GameObject, int> touchOrder = new();
     public Dictionary<SensorType, int> touchIndex = new();
+
+    private bool isNotesLoaded = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -44,6 +46,7 @@ public class NoteManager : MonoBehaviour
             notes.Add(child.gameObject);
         }
         ResetCounter();
+        isNotesLoaded = true;
     }
     void ResetCounter()
     {
@@ -78,5 +81,14 @@ public class NoteManager : MonoBehaviour
         var nowIndex = touchIndex[t];
 
         return index <= nowIndex;
+    }
+
+    private void FixedUpdate()
+    {
+        if(transform.childCount == 0 && isNotesLoaded)
+        {
+            Debug.Log("No More Notes");
+            GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>().CalculateFinalResult();
+        }
     }
 }
