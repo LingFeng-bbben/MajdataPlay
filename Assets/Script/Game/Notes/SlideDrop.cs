@@ -277,7 +277,6 @@ namespace MajdataPlay.Game.Notes
                                        .GroupBy(x => x)
                                        .Select(x => x.Key);
             var a = judgeQueue.Select(x => x.GetSensorTypes()).ToList();
-            ioManager = IOManager.Instance;
             boundSensors.AddRange(allSensors);
             foreach (var sensor in allSensors)
                 ioManager.BindSensor(Check, sensor);
@@ -295,7 +294,7 @@ namespace MajdataPlay.Game.Notes
                     if (sensor.Group == SensorGroup.E || sensor.Group == SensorGroup.D)
                         continue;
 
-                    var rCenter = s.position;
+                    var rCenter = s.transform.position;
                     var rWidth = s.rect.width * s.lossyScale.x;
                     var rHeight = s.rect.height * s.lossyScale.y;
 

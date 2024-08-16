@@ -69,7 +69,6 @@ namespace MajdataPlay.Game.Notes
 
             if (!isNoHead)
             {
-                ioManager = IOManager.Instance;
                 sensorPos = (SensorType)(startPosition - 1);
                 ioManager.BindArea(Check, sensorPos);
             }

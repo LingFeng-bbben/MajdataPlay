@@ -14,11 +14,11 @@ namespace MajdataPlay.Game.Notes
         public float speed = 7;
         public bool isEach;
 
-        protected GamePlayManager gpManager;
+        protected GamePlayManager gpManager => GamePlayManager.Instance;
 
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         protected SensorType sensorPos;
-        protected IOManager ioManager;
+        protected IOManager ioManager => IOManager.Instance;
         protected NoteManager noteManager;
         protected bool isJudged = false;
         protected JudgeType judgeResult;

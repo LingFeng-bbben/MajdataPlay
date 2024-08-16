@@ -58,7 +58,6 @@ namespace MajdataPlay.Game.Notes
 
             exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-            gpManager = GamePlayManager.Instance;
             spriteRenderer = GetComponent<SpriteRenderer>();
 
             holdEndRender = transform.GetChild(1).GetComponent<SpriteRenderer>();
@@ -96,7 +95,6 @@ namespace MajdataPlay.Game.Notes
             exSpriteRender.forceRenderingOff = true;
             holdEndRender.enabled = false;
 
-            ioManager = IOManager.Instance;
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
         }

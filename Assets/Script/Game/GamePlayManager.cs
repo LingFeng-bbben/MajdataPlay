@@ -51,8 +51,7 @@ public class GamePlayManager : MonoBehaviour
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
 
         Chart = new SimaiProcess(song.InnerMaidata[GameManager.Instance.selectedDiff]);
-        noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
-        noteLoader.LoadNotes(Chart);
+        
 
         print(Chart.notelist.Count);
         StartCoroutine(DelayPlay());
@@ -60,6 +59,9 @@ public class GamePlayManager : MonoBehaviour
 
     IEnumerator DelayPlay()
     {
+        yield return new WaitForEndOfFrame();
+        noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
+        noteLoader.LoadNotes(Chart);
         yield return new WaitForSeconds(2);
         audioSample.Play();
         AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime();

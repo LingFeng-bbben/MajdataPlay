@@ -84,7 +84,6 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator.SetTrigger("wifi");
 
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            gpManager = GamePlayManager.Instance;
             var notes = GameObject.Find("Notes").transform;
             for (var i = 0; i < star_slide.Length; i++)
             {
@@ -182,7 +181,6 @@ namespace MajdataPlay.Game.Notes
             var allSensors = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
                                         .GroupBy(x => x)
                                         .Select(x => x.Key);
-            ioManager = IOManager.Instance;
             boundSensors.AddRange(allSensors);
             foreach (var sensor in allSensors)
                 ioManager.BindSensor(Check, sensor);

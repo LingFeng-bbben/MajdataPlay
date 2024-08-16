@@ -32,7 +32,6 @@ namespace MajdataPlay.Game.Notes
             spriteRenderer.forceRenderingOff = true;
             exSpriteRender.forceRenderingOff = true;
 
-            ioManager = IOManager.Instance;
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
             State = NoteStatus.Initialized;

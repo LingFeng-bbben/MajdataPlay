@@ -43,8 +43,6 @@ namespace MajdataPlay.Game.Notes
             holdEffect = Instantiate(holdEffect, notes);
             holdEffect.SetActive(false);
 
-            gpManager = GamePlayManager.Instance;
-
             firework = GameObject.Find("FireworkEffect");
             fireworkEffect = firework.GetComponent<Animator>();
 
@@ -61,10 +59,9 @@ namespace MajdataPlay.Game.Notes
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             mask.enabled = false;
 
-            ioManager = IOManager.Instance;
             sensorPos = SensorType.C;
-            //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
-            //judgeText = customSkin.JudgeText;
+            var customSkin = SkinManager.Instance;
+            judgeText = customSkin.JudgeText;
             ioManager.BindSensor(Check, SensorType.C);
         }
         void Check(object sender, InputEventArgs arg)

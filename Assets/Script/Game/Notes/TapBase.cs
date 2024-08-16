@@ -42,7 +42,6 @@ namespace MajdataPlay.Game.Notes
             lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
             spriteRenderer = GetComponent<SpriteRenderer>();
             exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            gpManager = GamePlayManager.Instance;
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             spriteRenderer.sortingOrder += noteSortOrder;

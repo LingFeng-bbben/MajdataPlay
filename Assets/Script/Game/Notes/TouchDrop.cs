@@ -47,7 +47,6 @@ namespace MajdataPlay.Game.Notes
 
             var notes = GameObject.Find("Notes").transform;
             noteManager = notes.GetComponent<NoteManager>();
-            gpManager = GamePlayManager.Instance;
             multTouchHandler = GameObject.Find("MultTouchHandler").GetComponent<MultTouchHandler>();
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             firework = GameObject.Find("FireworkEffect");
@@ -79,9 +78,8 @@ namespace MajdataPlay.Game.Notes
             transform.position = GetAreaPos(startPosition, areaPosition);
             justEffect.SetActive(false);
             SetfanColor(new Color(1f, 1f, 1f, 0f));
-            ioManager = IOManager.Instance;
-            //var customSkin = GameObject.Find("Outline").GetComponent<CustomSkin>();
-            //judgeText = customSkin.JudgeText;
+            var customSkin = SkinManager.Instance;
+            judgeText = customSkin.JudgeText;
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
         }
