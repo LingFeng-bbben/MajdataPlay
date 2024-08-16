@@ -74,21 +74,22 @@ public class BGManager : MonoBehaviour
 
     public void SetBackgroundDim(float dim)
     {
-        transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, dim);
+        GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, dim);
     }
 
-    private void SetBackgroundMovie(string path, float speed)
+    public void SetBackgroundMovie(string path, float speed=1f)
     {
         videoPlayer.url = "file://" + path;
         videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
         videoPlayer.playbackSpeed = speed;
         playSpeed = speed;
+        videoPlayer.Prepare();
         StartCoroutine(waitFumenStart());
     }
 
     private IEnumerator waitFumenStart()
     {
-        videoPlayer.Prepare();
+        
         //videoPlayer.timeReference = VideoTimeReference.ExternalTime;
         while (gamePlayManager.AudioTime <= 0) yield return new WaitForEndOfFrame();
         while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
@@ -99,6 +100,6 @@ public class BGManager : MonoBehaviour
         spriteRender.sprite =
             Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
         
-        gameObject.transform.localScale = new Vector3(originalScaleX, originalScaleX * scale);
+        gameObject.transform.localScale = new Vector3(1f, 1f * scale);
     }
 }

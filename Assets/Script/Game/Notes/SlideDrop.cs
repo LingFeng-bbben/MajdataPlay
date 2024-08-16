@@ -154,7 +154,7 @@ namespace MajdataPlay.Game.Notes
                 var sr = gm.GetComponent<SpriteRenderer>();
                 sr.color = new Color(1f, 1f, 1f, 0f);
                 sr.sortingOrder = sortIndex--;
-                sr.sortingLayerName = "Slide";
+                sr.sortingLayerName = "Slides";
                 if (isBreak)
                 {
                     sr.sprite = spriteBreak;

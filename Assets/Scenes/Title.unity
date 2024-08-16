@@ -953,18 +953,6 @@ PrefabInstance:
       value: 1920
       objectReference: {fileID: 0}
     - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.0295406
-      objectReference: {fileID: 0}
-    - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.0295406
-      objectReference: {fileID: 0}
-    - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.0295406
-      objectReference: {fileID: 0}
-    - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -1012,42 +1000,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1996508097111949963, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_ConstrainProportionsScale
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774783890069047152, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_PresetInfoIsWorld
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5787596007000997901, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -0.69964
-      objectReference: {fileID: 0}
-    - target: {fileID: 5787596007000997901, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 107.62
-      objectReference: {fileID: 0}
-    - target: {fileID: 6245021229008158097, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0.00029609
-      objectReference: {fileID: 0}
     - target: {fileID: 8212452108067703808, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 6959415326676185806}
-    - target: {fileID: 8212452108067703808, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_RenderMode
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 8613785831666505836, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0.72914
-      objectReference: {fileID: 0}
-    - target: {fileID: 9012872261910340231, guid: 0f07ea5fd12102446b80ad9e1bf9d72e, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0.000061035
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

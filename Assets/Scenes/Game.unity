@@ -2653,9 +2653,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1307213585
   m_SortingLayer: 1
-  m_SortingOrder: 26
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 4242916334dffd14f85ff0523d3edc93, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.43137255}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.3882353}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2674,11 +2674,11 @@ Transform:
   m_GameObject: {fileID: 688922305}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -82.02953}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 3.1621094}
+  m_LocalScale: {x: 1.1172426, y: 1.1172426, z: 1.1172426}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 878179203}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &692000923
 PrefabInstance:
@@ -4053,8 +4053,7 @@ Transform:
   m_LocalPosition: {x: 0, y: -0, z: 94.809}
   m_LocalScale: {x: 1.1172426, y: 1.1172426, z: 1.1172426}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 688922307}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &959806005
@@ -6018,6 +6017,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -6088,6 +6099,10 @@ PrefabInstance:
     - target: {fileID: 8350591977979412089, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_PixelPerfect
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8350591977979412089, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 587624755
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6702,6 +6717,7 @@ SceneRoots:
   - {fileID: 775789381}
   - {fileID: 592746511}
   - {fileID: 1844328529}
+  - {fileID: 688922307}
   - {fileID: 878179203}
   - {fileID: 1107568674}
   - {fileID: 481412467}

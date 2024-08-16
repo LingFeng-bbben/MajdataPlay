@@ -44,7 +44,7 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Cover
+  - name: BGCover
     uniqueID: 1307213585
     locked: 0
   - name: FireWork
@@ -70,4 +70,7 @@ TagManager:
     locked: 0
   - name: TouchEffect
     uniqueID: 3826249881
+    locked: 0
+  - name: BlackCircle
+    uniqueID: 587624755
     locked: 0
