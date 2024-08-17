@@ -8,7 +8,7 @@ public class SettingManager : MonoBehaviour
 {
     
     public static SettingManager Instance;
-    readonly string JsonPath = Application.streamingAssetsPath + "/settings.json";
+    readonly string JsonPath = GameManager.SettingPath;
     public SettingFile SettingFile;
     private void Awake()
     {

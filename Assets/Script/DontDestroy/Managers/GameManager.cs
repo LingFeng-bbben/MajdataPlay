@@ -7,6 +7,11 @@ using System.Linq;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public static string AssestsPath => Application.streamingAssetsPath;
+    public static string ChartPath => Path.Combine(AssestsPath, "MaiCharts");
+    public static string SettingPath => Path.Combine(AssestsPath, "settings.json");
+    public static string SkinPath => Path.Combine(AssestsPath, "Skins");
+
     public List<SongDetail> songList = new List<SongDetail> ();
     public int selectedIndex = 0;
     public int selectedDiff = 0;

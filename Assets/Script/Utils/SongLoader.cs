@@ -8,8 +8,14 @@ public class SongLoader : MonoBehaviour
 {
     public static List<SongDetail> ScanMusic()
     {
+        if (!Directory.Exists(GameManager.ChartPath))
+        {
+            Directory.CreateDirectory(GameManager.ChartPath);
+            return new List<SongDetail>();
+        }
+
         List<SongDetail> songList = new List<SongDetail>();
-        var path = new DirectoryInfo(Application.dataPath).Parent.FullName + "/Songs/";
+        var path = GameManager.ChartPath;
         var dirs = new DirectoryInfo(path).GetDirectories();
         
         foreach (var dir in dirs)
