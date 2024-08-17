@@ -83,6 +83,15 @@ public class NoteManager : MonoBehaviour
         return index <= nowIndex;
     }
 
+    public void DestroyAllNotes()
+    {
+        foreach(var note in notes)
+        {
+            if(note != null)
+                Destroy(note);
+        }
+    }
+
     private void FixedUpdate()
     {
         if(transform.childCount == 0 && isNotesLoaded)

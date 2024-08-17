@@ -29,10 +29,7 @@ public class GamePlayManager : MonoBehaviour
     public bool isStart => audioSample.GetPlayState();
     public float CurrentSpeed = 1f;
 
-    private int noteSortOrder = 0;
     private float AudioStartTime = -114514f;
-
-    public List<TapDrop> TapPool = new List<TapDrop>();
 
     // Start is called before the first frame update
     private void Awake()
@@ -41,22 +38,35 @@ public class GamePlayManager : MonoBehaviour
         print(GameManager.Instance.selectedIndex);
         song = GameManager.Instance.songList[GameManager.Instance.selectedIndex];
     }
+
+    private void OnPauseButton(object sender,InputEventArgs e)
+    {
+        if (e.IsButton && e.IsClick && e.Type== MajdataPlay.Types.SensorType.P1) {
+            print("Pause!!");
+            BackToList();
+        }
+    }
+
     void Start()
     {
-
+        IOManager.Instance.BindAnyArea(OnPauseButton);
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
-
-        Chart = new SimaiProcess(song.InnerMaidata[GameManager.Instance.selectedDiff]);
-
-        if (Chart.notelist.Count == 0)
+        try
         {
-            EndGame(0);
+            Chart = new SimaiProcess(song.InnerMaidata[GameManager.Instance.selectedDiff]);
+            if (Chart.notelist.Count == 0)
+            {
+                BackToList();
+            }
+            else
+            {
+                StartCoroutine(DelayPlay());
+            }
         }
-        else { 
-            StartCoroutine(DelayPlay()); 
+        catch (Exception ex)
+        {
+            BackToList();
         }
-
-            
     }
 
     IEnumerator DelayPlay()
@@ -79,7 +89,14 @@ public class GamePlayManager : MonoBehaviour
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
         noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.TapSpeed + 0.9975f, -0.985558604f)));
         noteLoader.touchSpeed = settings.TouchSpeed;
-        noteLoader.LoadNotes(Chart);
+        try
+        {
+            noteLoader.LoadNotes(Chart);
+        }
+        catch (Exception e)
+        {
+            BackToList();
+        }
 
 
         yield return new WaitForEndOfFrame();
@@ -125,6 +142,24 @@ public class GamePlayManager : MonoBehaviour
         return _audioTime / 16.6667f;
     }
 
+    public void BackToList()
+    {
+        StopAllCoroutines();
+        audioSample.Pause();
+        audioSample = null;
+        IOManager.Instance.UnbindAnyArea(OnPauseButton);
+        StartCoroutine(delayBackToList());
+
+    }
+    IEnumerator delayBackToList()
+    {
+        yield return new WaitForEndOfFrame();
+        GameObject.Find("Notes").GetComponent<NoteManager>().DestroyAllNotes();
+        yield return new WaitForEndOfFrame();
+        SceneManager.LoadScene(1);
+    }
+
+
     public void EndGame(float acc)
     {
         GameManager.Instance.lastGameResult = acc;
@@ -136,6 +171,8 @@ public class GamePlayManager : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         audioSample.Pause();
+        audioSample = null;
+        IOManager.Instance.UnbindAnyArea(OnPauseButton);
         SceneManager.LoadScene(3);
     }
 
