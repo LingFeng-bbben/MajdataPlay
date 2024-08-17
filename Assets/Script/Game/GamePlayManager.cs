@@ -134,7 +134,7 @@ public class GamePlayManager : MonoBehaviour
 
     IEnumerator delayEndGame()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(3);
     }
 
