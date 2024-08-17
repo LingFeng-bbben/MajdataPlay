@@ -21,7 +21,7 @@ public class SettingManager : MonoBehaviour
         else
         {
             SettingFile = new SettingFile();
-            var jsnew = JsonConvert.SerializeObject(SettingFile);
+            var jsnew = JsonConvert.SerializeObject(SettingFile,Formatting.Indented);
             File.WriteAllText(JsonPath, jsnew);
         }
     }
@@ -38,7 +38,9 @@ public class SettingManager : MonoBehaviour
     }
     private void OnApplicationQuit()
     {
-        var jsnew = JsonConvert.SerializeObject(SettingFile);
+        SettingFile.lastSelectedSongDifficulty = GameManager.Instance.selectedDiff;
+        SettingFile.lastSelectedSongIndex = GameManager.Instance.selectedIndex;
+        var jsnew = JsonConvert.SerializeObject(SettingFile,Formatting.Indented);
         File.WriteAllText(JsonPath, jsnew);
     }
 }
@@ -55,5 +57,8 @@ public class SettingFile
     public float TapSpeed = 7.5f;
     public float TouchSpeed = 7.5f;
     public float BackgroundDim = 0.8f;
-    public float JudgeOffset = 0f;
+    public float AudioOffset = 0f;
+    public float DisplayOffset = 0f;
+    public int lastSelectedSongIndex = 0;
+    public int lastSelectedSongDifficulty = 0;
 }

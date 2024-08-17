@@ -15,6 +15,7 @@ public class GamePlayManager : MonoBehaviour
     AudioSampleWrap audioSample;
     SimaiProcess Chart;
     SongDetail song;
+    SettingManager settingManager => SettingManager.Instance;
 
     NoteLoader noteLoader;
 
@@ -60,7 +61,7 @@ public class GamePlayManager : MonoBehaviour
 
     IEnumerator DelayPlay()
     {
-        var settings = SettingManager.Instance.SettingFile;
+        var settings = settingManager.SettingFile;
 
         yield return new WaitForEndOfFrame();
         var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
@@ -102,12 +103,12 @@ public class GamePlayManager : MonoBehaviour
         //AudioTime = (float)audioSample.GetCurrentTime();
         if (AudioStartTime != -114514f)
         {
-            AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First;
+            AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
             //print((float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime));
         }
         if (i >= Chart.notelist.Count)
             return;
-        var delta = Math.Abs(AudioTime - (Chart.notelist[i].time));
+        var delta = Math.Abs(AudioTime - (Chart.notelist[i].time) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset);
         if( delta < 0.01) {
             AudioManager.Instance.PlaySFX("answer.wav");
             //print(Chart.notelist[i].time);

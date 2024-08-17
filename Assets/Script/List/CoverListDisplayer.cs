@@ -78,7 +78,6 @@ public class CoverListDisplayer : MonoBehaviour
         {
             desiredListPos = 0;
         }
-        //TODO: Update the big cover here
         var songinfo = GameManager.Instance.songList[desiredListPos];
         CoverBigDisplayer.SetCover(songinfo.SongCover);
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);

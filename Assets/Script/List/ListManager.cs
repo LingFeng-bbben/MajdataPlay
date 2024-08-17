@@ -78,10 +78,10 @@ public class ListManager : MonoBehaviour
                 case SensorType.A6:
                     CoverListDisplayer.SlideList(-1);
                     break;
-                case SensorType.A7:
+                case SensorType.A8:
                     CoverListDisplayer.SlideDifficulty(-1);
                     break;
-                case SensorType.A2:
+                case SensorType.A1:
                     CoverListDisplayer.SlideDifficulty(1);
                     break;
                 case SensorType.A4:

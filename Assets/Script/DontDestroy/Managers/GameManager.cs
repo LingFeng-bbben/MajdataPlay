@@ -19,8 +19,8 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        //TODO: Read Last selected
-        selectedIndex = 0;
+        selectedIndex = SettingManager.Instance.SettingFile.lastSelectedSongIndex;
+        selectedDiff = SettingManager.Instance.SettingFile.lastSelectedSongDifficulty;
         songList = SongLoader.ScanMusic();
     }
 
