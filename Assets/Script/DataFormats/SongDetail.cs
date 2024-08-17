@@ -10,11 +10,11 @@ public class SongDetail
     public string? Artist { get; set; }
     public string? Designer { get; set; }
     public string? Description { get; set; }
-    public string[]? Levels { get; set; } = new string[6];
+    public string[]? Levels { get; set; } = new string[7];
     //public string? Uploader { get; set; }
     //public long? Timestamp { get; set; }
 
-    public string?[] InnerMaidata { get; set; } = new string[6];
+    public string?[] InnerMaidata { get; set; } = new string[7];
     public string? VideoPath { get; set; }
     public string? TrackPath {  get; set; }
     public Sprite SongCover { get; set; }

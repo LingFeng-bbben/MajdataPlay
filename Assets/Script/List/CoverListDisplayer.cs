@@ -46,18 +46,24 @@ public class CoverListDisplayer : MonoBehaviour
     public void SlideToDifficulty(int pos)
     {
         selectedDifficulty = pos;
-        if (selectedDifficulty > 5)
+        if (selectedDifficulty > 6)
         {
             selectedDifficulty = 0;
         }
         if (selectedDifficulty < 0)
         {
-            selectedDifficulty = 5;
+            selectedDifficulty = 6;
         }
         GameManager.Instance.selectedDiff = selectedDifficulty;
         var songinfo = GameManager.Instance.songList[desiredListPos];
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
+        for(int i=0;i<covers.Count;i++)
+        {
+            var text = GameManager.Instance.songList[i].Levels[selectedDifficulty];
+            if (text == null || text == "") text = "-";
+            covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
+        }
     }
 
     public void SlideList(int delta)
