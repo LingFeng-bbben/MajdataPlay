@@ -7,6 +7,6 @@
   "lastSelectedSongIndex": 0,
   "lastSelectedSongDifficulty": 4,
   "AsioDeviceIndex": 0,
-  "SoundBackend": 0,
+  "SoundBackend": 1,
   "SoundOutputSamplerate": 44100
 }
