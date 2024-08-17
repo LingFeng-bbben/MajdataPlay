@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
-using UnityEditor.XR;
 
 public class SettingManager : MonoBehaviour
 {
