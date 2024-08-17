@@ -57,6 +57,7 @@ namespace MajdataPlay.IO
             }
             var oldState = button.Status;
             var newState = SensorStatus.Off;
+            button.Status = newState;
             Debug.Log($"Key \"{button.BindingKey}\": {newState}");
             var msg = new InputEventArgs()
             {
@@ -80,6 +81,7 @@ namespace MajdataPlay.IO
             }
             var oldState = button.Status;
             var newState = SensorStatus.On;
+            button.Status = newState;
             Debug.Log($"Key \"{button.BindingKey}\": {newState}");
             var msg = new InputEventArgs()
             {
