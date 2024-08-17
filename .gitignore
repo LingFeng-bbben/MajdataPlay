@@ -75,3 +75,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /[Aa]ssets/[Ss]treamingAssets/MaiCharts/*
 /[Aa]ssets/[Ss]treamingAssets/Skins/*
+/[Aa]ssets/[Ss]treamingAssets/settings.json
