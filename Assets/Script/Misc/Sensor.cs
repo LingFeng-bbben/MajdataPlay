@@ -46,7 +46,7 @@ public class Sensor : MonoBehaviour
     private void Update()
     {
         if (IsDebug) {
-            //image.color = (Status == SensorStatus.On) ? new Color(0, 0, 0, 1f) : new Color(0, 0, 0, 0f);
+            image.color = (Status == SensorStatus.On) ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
         }
     }
 }
