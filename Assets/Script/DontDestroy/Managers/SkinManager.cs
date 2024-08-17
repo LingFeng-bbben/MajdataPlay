@@ -63,7 +63,9 @@ public class SkinManager : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        var path = new DirectoryInfo(Application.dataPath).Parent.FullName + "/Skin/";
+        var path = GameManager.SkinPath;
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
         //TODO: move this to somewhere else
         Outline = gameObject.GetComponent<SpriteRenderer>();
         print(path);
