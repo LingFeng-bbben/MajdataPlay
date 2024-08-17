@@ -3,10 +3,13 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 #nullable enable
 public class Sensor : MonoBehaviour
 {
     public bool IsJudging { get; set; } = false;
+    private bool IsDebug = false;
+    private Image image;
     public SensorStatus Status = SensorStatus.Off;
     public SensorType Type;
     public SensorGroup Group 
@@ -33,5 +36,17 @@ public class Sensor : MonoBehaviour
         if (OnStatusChanged is not null)
             OnStatusChanged(this, args);
     }
-    void Awake() => DontDestroyOnLoad(this);
+    void Start() {
+        IsDebug = SettingManager.Instance.SettingFile.DisplaySensorDebug;
+        image = GetComponent<Image>();
+        if(!IsDebug) {
+            Destroy(image);
+        }
+    }
+    private void Update()
+    {
+        if (IsDebug) {
+            image.color = (Status == SensorStatus.On) ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
+        }
+    }
 }

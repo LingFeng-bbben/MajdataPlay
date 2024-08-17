@@ -74,3 +74,6 @@ TagManager:
   - name: BlackCircle
     uniqueID: 587624755
     locked: 0
+  - name: Debug
+    uniqueID: 1299929141
+    locked: 0

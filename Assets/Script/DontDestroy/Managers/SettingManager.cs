@@ -62,4 +62,5 @@ public class SettingFile
     public int lastSelectedSongIndex = 0;
     public int lastSelectedSongDifficulty = 0;
     public int AsioDeviceIndex = 0;
+    public bool DisplaySensorDebug = false;
 }

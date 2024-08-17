@@ -135,6 +135,7 @@ public class GamePlayManager : MonoBehaviour
     IEnumerator delayEndGame()
     {
         yield return new WaitForSeconds(2f);
+        audioSample.Pause();
         SceneManager.LoadScene(3);
     }
 
