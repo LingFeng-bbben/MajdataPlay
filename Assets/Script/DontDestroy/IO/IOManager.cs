@@ -41,7 +41,10 @@ namespace MajdataPlay.IO
                 useDummy = true;
             }
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
+            {
                 sensors[index] = child.GetComponent<Sensor>();
+                sensors[index].Type = (SensorType)index;
+            }
         }
         void OnApplicationQuit()
         {
