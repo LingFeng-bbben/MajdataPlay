@@ -7,7 +7,7 @@ using System.Linq;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    public static string AssestsPath => Application.streamingAssetsPath;
+    public static string AssestsPath => Path.Combine(Application.dataPath,"../");
     public static string ChartPath => Path.Combine(AssestsPath, "MaiCharts");
     public static string SettingPath => Path.Combine(AssestsPath, "settings.json");
     public static string SkinPath => Path.Combine(AssestsPath, "Skins");

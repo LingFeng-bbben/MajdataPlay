@@ -10,9 +10,11 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 /[Ss]ongs/
+/[Mm]ai[Cc]harts/
 /[Ss]kin/
 /Assets/Plugin/
 /Assets/i18n
+/settings.json
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
