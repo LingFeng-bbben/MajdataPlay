@@ -141,6 +141,7 @@ namespace MajdataPlay.IO
                 if (backend == SoundBackendType.Asio)
                 {
                     var devices = AsioOut.GetDriverNames();
+                    foreach(var device in devices) { print(device); }
                     asioOut = new AsioOut(devices.FirstOrDefault());
                     print("Starting ASIO...at " + devices.FirstOrDefault() + " as " + sampleRate);
                     asioOut.Init(mixer);
