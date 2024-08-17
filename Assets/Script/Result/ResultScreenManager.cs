@@ -21,6 +21,7 @@ public class ResultScreenManager : MonoBehaviour
         acc.text = gameManager.lastGameResult.ToString();
         coverImg.sprite = song.SongCover;
         IOManager.Instance.BindAnyArea(OnAreaDown);
+        AudioManager.Instance.PlaySFX("Sugoi.wav");
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)
