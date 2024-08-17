@@ -3,7 +3,9 @@
 
 ## How to use
 For best performance, you will need an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
-For the big iPod, you need to ensure the touch sensors is in COM3.
+
+For the big iPod, you need to ensure the touch sensors are connected to COM3.
+
 Put your songs in Songs/ folder, and you are good to go
 
 ## Adjusting settings
@@ -28,4 +30,7 @@ Navigate to `MajdataPlay_Data\StreamingAssets\settings.json`
 Navigate to `MajdataPlay_Data\StreamingAssets\` and replace the files you want.
 
 ## Reporting Problems
+Note this is project is still in a very early stage.
+Feel free if you wanna participate in coding or testing!!
+
 The log files should be in `C:\Users\YOUR_USERNAME\AppData\LocalLow\bbben\MajdataPlay\Player.log`
