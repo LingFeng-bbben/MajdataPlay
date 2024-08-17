@@ -61,4 +61,5 @@ public class SettingFile
     public float DisplayOffset = 0f;
     public int lastSelectedSongIndex = 0;
     public int lastSelectedSongDifficulty = 0;
+    public int AsioDeviceIndex = 0;
 }

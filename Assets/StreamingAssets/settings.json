@@ -4,8 +4,9 @@
   "BackgroundDim": 0.8,
   "AudioOffset": 0.0,
   "DisplayOffset": 0.0,
-  "lastSelectedSongIndex": 0,
+  "lastSelectedSongIndex": 2,
   "lastSelectedSongDifficulty": 4,
+  "AsioDeviceIndex": 0,
   "SoundBackend": 1,
   "SoundOutputSamplerate": 44100
 }

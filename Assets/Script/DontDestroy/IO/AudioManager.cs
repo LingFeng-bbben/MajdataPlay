@@ -142,8 +142,8 @@ namespace MajdataPlay.IO
                 {
                     var devices = AsioOut.GetDriverNames();
                     foreach(var device in devices) { print(device); }
-                    asioOut = new AsioOut(devices.FirstOrDefault());
-                    print("Starting ASIO...at " + devices.FirstOrDefault() + " as " + sampleRate);
+                    asioOut = new AsioOut(devices[SettingManager.Instance.SettingFile.AsioDeviceIndex]);
+                    print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
                     asioOut.Init(mixer);
                     asioOut.Play();
                 }
