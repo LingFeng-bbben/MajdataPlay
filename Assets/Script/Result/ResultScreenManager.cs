@@ -11,6 +11,10 @@ using System;
 public class ResultScreenManager : MonoBehaviour
 {
     public TextMeshProUGUI title;
+    public TextMeshProUGUI artist;
+    public TextMeshProUGUI designer;
+    public TextMeshProUGUI level;
+
     public TextMeshProUGUI accDX;
     public TextMeshProUGUI accClassic;
 
@@ -47,6 +51,10 @@ public class ResultScreenManager : MonoBehaviour
             omg.text = "ÄúÓ®ÁË";
 
         title.text = song.Title;
+        artist.text = song.Artist;
+        designer.text = song.Designer;
+        level.text = gameManager.SelectedDiff.ToString() + " "+ song.Levels[(int)gameManager.SelectedDiff];
+
         accDX.text = $"{result.Acc.DX:F4}%";
         accClassic.text = $"{result.Acc.Classic:F2}%";
 
