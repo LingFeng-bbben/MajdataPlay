@@ -18,7 +18,10 @@ public class GameManager : MonoBehaviour
     public static GameResult? LastGameResult { get; set; } = null;
     public List<SongDetail> songList = new List<SongDetail> ();
     public int selectedIndex = 0;
-    public int selectedDiff = 0;
+    /// <summary>
+    /// 玩家选择的谱面难度
+    /// </summary>
+    public ChartLevel SelectedDiff { get; set; } = 0;
     //public float lastGameResult = -1f; //this should be a struct in future
     // Start is called before the first frame update
     private void Awake()
@@ -29,7 +32,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         selectedIndex = SettingManager.Instance.SettingFile.lastSelectedSongIndex;
-        selectedDiff = SettingManager.Instance.SettingFile.lastSelectedSongDifficulty;
+        SelectedDiff = SettingManager.Instance.SettingFile.lastSelectedSongDifficulty;
         songList = SongLoader.ScanMusic();
     }
 

@@ -11,7 +11,8 @@ namespace MajdataPlay.Types
         public long DXScore { get; set; } = 0;
         public long Fast { get; set; } = 0;
         public long Late { get; set; } = 0;
-        public string? Hash { get; set; } = null;
+        public ChartLevel ChartLevel { get; init; } = ChartLevel.Easy;
+        public string? Hash { get; init; } = null;
         public long PlayCount { get; set; } = 0;
         public JudgeDetail? JudgeDeatil { get; set; } = null;
         public DateTime Timestamp { get; set; } = DateTime.MinValue;

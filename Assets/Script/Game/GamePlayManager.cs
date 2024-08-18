@@ -59,7 +59,7 @@ public class GamePlayManager : MonoBehaviour
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
         try
         {
-            var maidata = song.InnerMaidata[GameManager.Instance.selectedDiff];
+            var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
             if (maidata == "" || maidata == null) {
                 BackToList();
                 return;

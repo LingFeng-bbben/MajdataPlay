@@ -71,7 +71,7 @@ public class ResultScreenManager : MonoBehaviour
 
         IOManager.Instance.BindAnyArea(OnAreaDown);
         AudioManager.Instance.PlaySFX("Sugoi.wav");
-        ScoreManager.Instance.SaveScore(result);
+        ScoreManager.Instance.SaveScore(result,result.ChartLevel);
     }
     string BuildSubDisplayText(JudgeDetail judgeRecord)
     {

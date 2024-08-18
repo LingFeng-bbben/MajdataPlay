@@ -19,22 +19,26 @@ public class ScoreManager: MonoBehaviour
     void Start()
     {
         var path = GameManager.ScoreDBPath;
-        if(!File.Exists(path))
+        var option = new JsonSerializerOptions();
+        option.Converters.Add(new JudgeDetailConverter());
+        option.Converters.Add(new JudgeInfoConverter());
+
+        if (!File.Exists(path))
         {
             var json = JsonSerializer.Serialize(scores);
             File.WriteAllText(path, json);
             return;
         }
         var content = File.ReadAllText(path);
-        var result = JsonSerializer.Deserialize<List<MaiScore>>(content);
+        var result = JsonSerializer.Deserialize<List<MaiScore>>(content, option);
 
         if(result is not null)
             scores = result;
 
     }
-    public MaiScore GetScore(SongDetail song)
+    public MaiScore GetScore(SongDetail song, ChartLevel level)
     {
-        var record = scores.Find(x => x.Hash == song.Hash);
+        var record = scores.Find(x => x.Hash == song.Hash && x.ChartLevel == level);
         if(record is null)
         {
             var newRecord = new MaiScore()
@@ -46,20 +50,22 @@ public class ScoreManager: MonoBehaviour
         }
         return record;
     }
-    public bool SaveScore(in GameResult result)
+    public bool SaveScore(in GameResult result,ChartLevel level)
     {
         try
         {
             var songInfo = result.SongInfo;
 
-            var record = scores.Find(x => x.Hash == songInfo.Hash);
+            var record = scores.Find(x => x.Hash == songInfo.Hash && x.ChartLevel == level);
             if (record is null)
             {
                 record = new MaiScore()
                 {
+                    ChartLevel = level,
                     Hash = songInfo.Hash,
                     PlayCount = 0
                 };
+                scores.Add(record);
             }
 
             record.Acc = result.Acc > record.Acc ? record.Acc.Update(result.Acc) : record.Acc;
