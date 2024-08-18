@@ -13,7 +13,7 @@ public class NoteAudioManager : MonoBehaviour
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
-                //TODO
+                audioManager.PlaySFX("good.wav");
                 break;
             case JudgeType.LateGreat:
             case JudgeType.LateGreat1:
@@ -21,7 +21,7 @@ public class NoteAudioManager : MonoBehaviour
             case JudgeType.FastGreat2:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
-                //TODO
+                audioManager.PlaySFX("great.wav");
                 break;
             case JudgeType.LatePerfect2:
             case JudgeType.FastPerfect2:

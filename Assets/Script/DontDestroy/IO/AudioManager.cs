@@ -39,6 +39,8 @@ namespace MajdataPlay.IO
         "touch.wav",
         "touchHold_riser.wav",
         "track_start.wav",
+        "good.wav",
+        "great.wav",
         "titlebgm.mp3",
         };
         readonly string[] VoiceFileNames = new string[]
