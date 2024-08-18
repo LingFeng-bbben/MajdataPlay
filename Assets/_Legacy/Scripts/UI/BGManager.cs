@@ -66,6 +66,7 @@ public class BGManager : MonoBehaviour
 
     public void SetBackgroundPic(Sprite sprite)
     {
+        if (sprite == null) return;
         spriteRender.sprite = sprite;
         //todo:set correct scale
         var scale = 1080f / sprite.texture.width;
