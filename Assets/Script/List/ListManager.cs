@@ -10,7 +10,7 @@ public class ListManager : MonoBehaviour
     void Start()
     {
         CoverListDisplayer.SlideToList(GameManager.Instance.selectedIndex);
-        CoverListDisplayer.SlideToDifficulty(GameManager.Instance.selectedDiff);
+        CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
         AudioManager.Instance.PlaySFX("SelectSong.wav");
         IOManager.Instance.BindAnyArea(OnAreaDown);
 

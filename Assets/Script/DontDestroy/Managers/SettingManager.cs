@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using MajdataPlay.Types;
 
 public class SettingManager : MonoBehaviour
 {
@@ -38,7 +39,7 @@ public class SettingManager : MonoBehaviour
     }
     private void OnApplicationQuit()
     {
-        SettingFile.lastSelectedSongDifficulty = GameManager.Instance.selectedDiff;
+        SettingFile.lastSelectedSongDifficulty = GameManager.Instance.SelectedDiff;
         SettingFile.lastSelectedSongIndex = GameManager.Instance.selectedIndex;
         var jsnew = JsonConvert.SerializeObject(SettingFile,Formatting.Indented);
         File.WriteAllText(JsonPath, jsnew);
@@ -60,7 +61,7 @@ public class SettingFile
     public float AudioOffset = 0f;
     public float DisplayOffset = 0f;
     public int lastSelectedSongIndex = 0;
-    public int lastSelectedSongDifficulty = 0;
+    public ChartLevel lastSelectedSongDifficulty = ChartLevel.Easy;
     public int AsioDeviceIndex = 0;
     public bool DisplaySensorDebug = false;
     public float VolumeAnwser = 0.8f;

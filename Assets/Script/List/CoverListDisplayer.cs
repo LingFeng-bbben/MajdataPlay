@@ -1,4 +1,5 @@
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting.Dependencies.NCalc;
@@ -49,9 +50,11 @@ public class CoverListDisplayer : MonoBehaviour
         {
             selectedDifficulty = 6;
         }
-        GameManager.Instance.selectedDiff = selectedDifficulty;
+        GameManager.Instance.SelectedDiff = (ChartLevel)selectedDifficulty;
         var songinfo = GameManager.Instance.songList[desiredListPos];
+        var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetScore(songScore);
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
         for(int i=0;i<covers.Count;i++)
         {
@@ -80,8 +83,10 @@ public class CoverListDisplayer : MonoBehaviour
             desiredListPos = 0;
         }
         var songinfo = GameManager.Instance.songList[desiredListPos];
+        var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
         CoverBigDisplayer.SetCover(songinfo.SongCover);
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetScore(songScore);
         GameManager.Instance.selectedIndex = desiredListPos;
     }
 

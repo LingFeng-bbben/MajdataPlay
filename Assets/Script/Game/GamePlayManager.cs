@@ -1,5 +1,6 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
 using System.Collections;
@@ -8,7 +9,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+#nullable enable
 public class GamePlayManager : MonoBehaviour
 {
     public static GamePlayManager Instance;
@@ -44,7 +45,7 @@ public class GamePlayManager : MonoBehaviour
 
     private void OnPauseButton(object sender,InputEventArgs e)
     {
-        if (e.IsButton && e.IsClick && e.Type== MajdataPlay.Types.SensorType.P1) {
+        if (e.IsButton && e.IsClick && e.Type == SensorType.P1) {
             print("Pause!!");
             BackToList();
         }
@@ -58,7 +59,7 @@ public class GamePlayManager : MonoBehaviour
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
         try
         {
-            var maidata = song.InnerMaidata[GameManager.Instance.selectedDiff];
+            var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
             if (maidata == "" || maidata == null) {
                 BackToList();
                 return;
@@ -219,8 +220,10 @@ public class GamePlayManager : MonoBehaviour
 
     public void EndGame(float acc)
     {
-        GameManager.Instance.lastGameResult = acc;
         print("GameResult: "+acc);
+        var objectCounter = FindFirstObjectByType<ObjectCounter?>();
+        if(objectCounter != null)
+            GameManager.LastGameResult = objectCounter.GetPlayRecord(song,GameManager.Instance.SelectedDiff);
         StartCoroutine(delayEndGame());
     }
 

@@ -82,11 +82,39 @@
         Finished,
         Destroyed
     }
-    public enum AutoPlayMode
+    public enum ComboState
     {
-        Enable,
-        DJAuto,
-        Random,
-        Disable
+        None,
+        FC,
+        FCPlus,
+        AP,
+        APPlus
+    }
+    public enum ScoreNoteType
+    {
+        Tap,
+        Hold,
+        Slide,
+        Break,
+        Touch
+    }
+    public enum ComponentState
+    {
+        Idle,
+        Scanning,
+        Loading,
+        Parsing,
+        Running,
+        Finished
+    }
+    public enum ChartLevel
+    {
+        Easy,
+        Basic,
+        Advance,
+        Expert,
+        Master,
+        ReMaster,
+        UTAGE
     }
 }

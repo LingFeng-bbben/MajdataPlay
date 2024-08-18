@@ -1,3 +1,4 @@
+using MajdataPlay.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,5 +40,15 @@ public class CoverBigDisplayer : MonoBehaviour
         Artist.text = _Artist;
         Charter.text = _Charter;
         Level.text = _Level;
+    }
+    public void SetScore(MaiScore score)
+    {
+        if (score.PlayCount == 0)
+            ArchieveRate.enabled = false;
+        else
+        {
+            ArchieveRate.text = $"{score.Acc.DX:F4}%";
+            ArchieveRate.enabled = true;
+        }
     }
 }

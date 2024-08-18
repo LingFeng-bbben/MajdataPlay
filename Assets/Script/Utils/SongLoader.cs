@@ -1,11 +1,16 @@
+using MajdataPlay.Types;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using UnityEngine;
 
-public class SongLoader : MonoBehaviour
+public static class SongLoader
 {
+    public static long TotalChartCount { get; private set; } = 0;
+    public static ComponentState State { get; private set; } = ComponentState.Idle;
     public static List<SongDetail> ScanMusic()
     {
         if (!Directory.Exists(GameManager.ChartPath))
@@ -21,34 +26,46 @@ public class SongLoader : MonoBehaviour
         foreach (var dir in dirs)
         {
             var files = dir.GetFiles();
-            var maidatafile = files.First(o => o.Name == "maidata.txt");
-            SongDetail song = new SongDetail();
-            if (maidatafile != null)
-            {
-                var txtcontent = File.ReadAllText(maidatafile.FullName);
-                song = SongDetail.LoadFromMaidata(txtcontent);
-            }
-            var coverfile = files.FirstOrDefault(o => o.Name == "bg.png" || o.Name == "bg.jpg");
-            if (coverfile != null)
-            {
-                song.SongCover = LoadSpriteFromFile(coverfile.FullName);
-            }
-            var videofile = files.FirstOrDefault(o => o.Name == "bg.mp4" || o.Name == "pv.mp4" || o.Name == "mv.mp4");
-            if (videofile != null)
-            {
-                song.VideoPath = videofile.FullName;
-            }
-            var trackfile = files.FirstOrDefault(o => o.Name == "track.mp3" || o.Name == "track.ogg");
-            if (trackfile != null)
-            {
-                song.TrackPath = trackfile.FullName;
-            }
+            var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+            var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+            var videoFile = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4");
+            var coverFile = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg");
+            
+
+            if (maidataFile is null || trackFile is null)
+                continue;
+
+            var song = new SongDetail();
+            var txtcontent = File.ReadAllText(maidataFile.FullName);
+            song = SongDetail.LoadFromMaidata(txtcontent);
+            song.TrackPath = trackFile.FullName;
+            song.Hash = GetHash(maidataFile.FullName, song.TrackPath);
+
+            if (coverFile != null)
+                song.SongCover = LoadSpriteFromFile(coverFile.FullName);
+            if (videoFile != null)
+                song.VideoPath = videoFile.FullName;
 
             songList.Add(song);
         }
         return songList;
     }
+    public static string GetHash(string chartPath,string trackPath)
+    {
+        var hashComputer = SHA256.Create();
+        using var chartStream = File.OpenRead(chartPath);
+        using var trackStream = File.OpenRead(trackPath);
+        var chartHash = hashComputer.ComputeHash(chartStream);
+        var trackHash = hashComputer.ComputeHash(trackStream);
 
+        byte[] raw = new byte[chartHash.Length + trackHash.Length];
+        Buffer.BlockCopy(chartHash, 0, raw, 0, chartHash.Length);
+        Buffer.BlockCopy(trackHash, 0, raw, chartHash.Length, trackHash.Length);
+
+        var hash = hashComputer.ComputeHash(raw);
+
+        return Convert.ToBase64String(hash);
+    }
     static Sprite LoadSpriteFromFile(string FilePath)
     {
         Texture2D SpriteTexture = LoadTexture(FilePath);

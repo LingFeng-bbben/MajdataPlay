@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
@@ -209,6 +210,44 @@ public class ObjectCounter : MonoBehaviour
     {
         UpdateState();
         UpdateOutput();
+    }
+    internal GameResult GetPlayRecord(SongDetail song,ChartLevel level)
+    {
+        var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
+                                   .Select(x => x.Value)
+                                   .Sum();
+        var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
+                                   .Select(x => x.Value)
+                                   .Sum();
+        var holdRecord = judgedHoldCount.ToDictionary(
+            kv => kv.Key,
+            kv => judgedHoldCount[kv.Key] + judgedTouchHoldCount[kv.Key]
+        );
+        var record = new Dictionary<ScoreNoteType, JudgeInfo>()
+        {
+            { ScoreNoteType.Tap, new (judgedTapCount) },
+            { ScoreNoteType.Hold, new (holdRecord)},
+            { ScoreNoteType.Slide,new (judgedSlideCount)},
+            { ScoreNoteType.Break, new (judgedBreakCount)},
+            { ScoreNoteType.Touch, new (judgedTouchCount) }
+        };
+        var judgeRecord = new JudgeDetail(record);
+
+        return new GameResult()
+        {
+            Acc = new()
+            {
+                DX = accRate[3],
+                Classic = accRate[1]
+            },
+            SongInfo = song,
+            ChartLevel = level,
+            JudgeRecord = judgeRecord,
+            Fast = fast,
+            Late = late,
+            DXScore = 0,
+            ComboState = ComboState.None
+        };
     }
 
     private void UpdateOutput()
@@ -566,14 +605,10 @@ public class ObjectCounter : MonoBehaviour
             tapSum + holdSum + slideSum + touchSum + breakSum
         );
 
-        rate.text = string.Format(
-            "FiNALE  Rate:\n" +
-            "{0:000.00}   %\n" +
-            "DELUXE Rate:\n" +
-            "{1:000.0000} % ",
-            Math.Truncate((float)FiNowScore() / FiSumScore() * 10000) / 100,
-            Math.Truncate(((float)DxNowScore() / DxSumScore() * 100 + BreakRate()) * 10000) / 10000
-        );
+        rate.text = "FiNALE  Rate:\n" +
+                    $"{accRate[0]:F2}   %\n" +
+                    "DELUXE Rate:\n" +
+                    $"{accRate[4]:F4} % ";
     }
 
     public void CalculateFinalResult()
