@@ -123,7 +123,9 @@ public class GamePlayManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        print("GPManagerDestroy");
         audioSample = null;
+        GC.Collect();
     }
     int i = 0;
     // Update is called once per frame
