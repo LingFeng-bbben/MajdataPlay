@@ -78,13 +78,6 @@
         Finished,
         Destroyed
     }
-    public enum AutoPlayMode
-    {
-        Enable,
-        DJAuto,
-        Random,
-        Disable
-    }
     public enum ComboState
     {
         None,
@@ -100,5 +93,14 @@
         Slide,
         Break,
         Touch
+    }
+    public enum ComponentState
+    {
+        Idle,
+        Scanning,
+        Loading,
+        Parsing,
+        Running,
+        Finished
     }
 }

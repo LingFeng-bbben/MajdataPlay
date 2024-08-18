@@ -1,7 +1,3 @@
-using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
 public class SongDetail
@@ -20,18 +16,9 @@ public class SongDetail
     public string? TrackPath {  get; set; }
     public Sprite? SongCover { get; set; }
     public double First {  get; set; }
+    public string Hash { get; set; }
 
-    public async ValueTask<string> GetHash()
-    {
-        return await Task.Run(() =>
-        {
-            var hashComputer = SHA256.Create();
-            using var stream = File.OpenRead(filepath);
-            var hash = hashComputer.ComputeHash(stream);
-
-            return Encoding.UTF8.GetString(hash);
-        });
-    }
+    
     /*    public SongDetail(string _id, string _title, string _artist, string _designer, IEnumerable<string> _levels, string _description = "")
         {
             Id = _id;

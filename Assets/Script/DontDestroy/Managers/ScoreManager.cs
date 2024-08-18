@@ -5,15 +5,14 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-
-public static class ScoreManager
+using UnityEngine;
+public class ScoreManager: MonoBehaviour
 {
-    static string GetHash(string filepath)
-    {
-        var hashComputer = SHA256.Create();
-        using var stream = File.OpenRead(filepath);
-        var hash = hashComputer.ComputeHash(stream);
+    public static ScoreManager Instance { get; private set; }
 
-        return Encoding.UTF8.GetString(hash);
+
+    public void Awake()
+    {
+        Instance = this;
     }
 }

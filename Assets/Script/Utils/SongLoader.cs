@@ -1,11 +1,19 @@
+using MajdataPlay.Types;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Policy;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public static class SongLoader
 {
+    public static long TotalChartCount { get; private set; } = 0;
+    public static ComponentState State { get; private set; } = ComponentState.Idle;
     public static List<SongDetail> ScanMusic()
     {
         if (!Directory.Exists(GameManager.ChartPath))
@@ -34,7 +42,7 @@ public static class SongLoader
             var txtcontent = File.ReadAllText(maidataFile.FullName);
             song = SongDetail.LoadFromMaidata(txtcontent);
             song.TrackPath = trackFile.FullName;
-
+            song.Hash = GetHash(maidataFile.FullName, song.TrackPath);
 
             if (coverFile != null)
                 song.SongCover = LoadSpriteFromFile(coverFile.FullName);
@@ -45,7 +53,22 @@ public static class SongLoader
         }
         return songList;
     }
+    public static string GetHash(string chartPath,string trackPath)
+    {
+        var hashComputer = SHA256.Create();
+        using var chartStream = File.OpenRead(chartPath);
+        using var trackStream = File.OpenRead(trackPath);
+        var chartHash = hashComputer.ComputeHash(chartStream);
+        var trackHash = hashComputer.ComputeHash(trackStream);
 
+        byte[] raw = new byte[chartHash.Length + trackHash.Length];
+        Buffer.BlockCopy(chartHash, 0, raw, 0, chartHash.Length);
+        Buffer.BlockCopy(trackHash, 0, raw, chartHash.Length, trackHash.Length);
+
+        var hash = hashComputer.ComputeHash(raw);
+
+        return Convert.ToBase64String(hash);
+    }
     static Sprite LoadSpriteFromFile(string FilePath)
     {
         Texture2D SpriteTexture = LoadTexture(FilePath);
