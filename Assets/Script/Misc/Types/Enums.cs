@@ -85,4 +85,20 @@
         Random,
         Disable
     }
+    public enum ComboState
+    {
+        None,
+        FC,
+        FCPlus,
+        AP,
+        APPlus
+    }
+    public enum ScoreNoteType
+    {
+        Tap,
+        Hold,
+        Slide,
+        Break,
+        Touch
+    }
 }

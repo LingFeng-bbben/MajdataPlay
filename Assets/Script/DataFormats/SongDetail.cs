@@ -1,8 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 public class SongDetail
 {
     public string? Id { get; set; }
@@ -17,21 +18,29 @@ public class SongDetail
     public string?[] InnerMaidata { get; set; } = new string[7];
     public string? VideoPath { get; set; }
     public string? TrackPath {  get; set; }
-    public Sprite SongCover { get; set; }
-
+    public Sprite? SongCover { get; set; }
     public double First {  get; set; }
 
-
-/*    public SongDetail(string _id, string _title, string _artist, string _designer, IEnumerable<string> _levels, string _description = "")
+    public async ValueTask<string> GetHash()
     {
-        Id = _id;
-        Title = _title;
-        Artist = _artist;
-        Designer = _designer;
-        Description = _description;
-        Levels = _levels.ToArray();
-    }*/
-    public SongDetail() { }
+        return await Task.Run(() =>
+        {
+            var hashComputer = SHA256.Create();
+            using var stream = File.OpenRead(filepath);
+            var hash = hashComputer.ComputeHash(stream);
+
+            return Encoding.UTF8.GetString(hash);
+        });
+    }
+    /*    public SongDetail(string _id, string _title, string _artist, string _designer, IEnumerable<string> _levels, string _description = "")
+        {
+            Id = _id;
+            Title = _title;
+            Artist = _artist;
+            Designer = _designer;
+            Description = _description;
+            Levels = _levels.ToArray();
+        }*/
     public static SongDetail LoadFromMaidata(string maidatas)
     {
         var maidata = maidatas.Split('\n');
@@ -79,7 +88,7 @@ public class SongDetail
         detail.Levels = levels;
         return detail;
     }
-    static private string GetValue(string varline)
+    static private string? GetValue(string varline)
     {
         try
         {
