@@ -5,10 +5,9 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEditor;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
+
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
