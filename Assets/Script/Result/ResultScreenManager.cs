@@ -22,6 +22,8 @@ public class ResultScreenManager : MonoBehaviour
     public TextMeshProUGUI fastCount;
     public TextMeshProUGUI lateCount;
 
+    public TextMeshProUGUI omg;
+
     public TextMeshProUGUI subMonitor;
 
 
@@ -38,7 +40,12 @@ public class ResultScreenManager : MonoBehaviour
 
         var totalJudgeRecord = UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
         var song = result.SongInfo;
-        
+
+        if (result.Acc.DX < 70)
+            omg.text = "ÄúÊäÁË";
+        else
+            omg.text = "ÄúÓ®ÁË";
+
         title.text = song.Title;
         accDX.text = $"{result.Acc.DX:F4}%";
         accClassic.text = $"{result.Acc.Classic:F2}%";
