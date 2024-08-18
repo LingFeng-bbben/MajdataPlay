@@ -54,6 +54,7 @@ public class GamePlayManager : MonoBehaviour
     {
         IOManager.Instance.BindAnyArea(OnPauseButton);
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
+        audioSample.SetVolume(settingManager.SettingFile.VolumeBgm);
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
         try
         {
@@ -192,6 +193,7 @@ public class GamePlayManager : MonoBehaviour
         StopAllCoroutines();
         audioSample.Pause();
         audioSample = null;
+        //AudioManager.Instance.UnLoadMusic();
         IOManager.Instance.UnbindAnyArea(OnPauseButton);
         StartCoroutine(delayBackToList());
 
