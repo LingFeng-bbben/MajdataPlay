@@ -21,7 +21,7 @@ public class CoverListDisplayer : MonoBehaviour
 
     public int selectedDifficulty = 0;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         foreach (var song in GameManager.Instance.songList)
         {

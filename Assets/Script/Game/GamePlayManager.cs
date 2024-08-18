@@ -155,31 +155,36 @@ public class GamePlayManager : MonoBehaviour
         if (audioSample == null) return;
         //Do not use this!!!! This have connection with sample batch size
         //AudioTime = (float)audioSample.GetCurrentTime();
-        if (AudioStartTime != -114514f)
-        {
-            AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
-            var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
-            if (Math.Abs(realTimeDifference) > 0.04f)
-            {
-                ErrorText.text = "¼ì²âµ½ÒôÆµ´íÎ»ÁËÓ´\n" + realTimeDifference;
-            }
-            else if (Math.Abs(realTimeDifference) > 0.02f)
-            {
-                ErrorText.text = "ÐÞÕýÒôÆµ\n" + realTimeDifference;
-                AudioStartTime -= realTimeDifference;
-            }
-        }
+        if (AudioStartTime == -114514f) return;
 
+        AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
+        var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (i >= AnwserSoundList.Count)
             return;
+        if (Math.Abs(realTimeDifference) > 0.04f)
+        {
+            ErrorText.text = "¼ì²âµ½ÒôÆµ´íÎ»ÁËÓ´\n" + realTimeDifference;
+        }
+        else if (Math.Abs(realTimeDifference) > 0.02f)
+        {
+            ErrorText.text = "ÐÞÕýÒôÆµ\n" + realTimeDifference;
+            AudioStartTime -= realTimeDifference;
+        }
+
+
+
         var noteToPlay = AnwserSoundList[i].time;
         var delta = AudioTime - (noteToPlay) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset;
         //print(delta);
-        if(!AnwserSoundList[i].havePlayed && delta > 0)
+        /*        if(!AnwserSoundList[i].havePlayed && delta > 0)
+                {
+                    AudioManager.Instance.PlaySFX("answer.wav");
+                    AnwserSoundList[i].havePlayed = true;
+                    print("lateplay");
+                    i++;
+                }*/
+        if (delta > 0)
         {
-            i++;
-        }
-        if(Math.Abs(delta) < 0.01) {
             AudioManager.Instance.PlaySFX("answer.wav");
             AnwserSoundList[i].havePlayed = true;
             i++;
