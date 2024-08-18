@@ -211,7 +211,7 @@ public class ObjectCounter : MonoBehaviour
         UpdateState();
         UpdateOutput();
     }
-    internal GameResult GetPlayRecord(SongDetail song)
+    internal GameResult GetPlayRecord(SongDetail song,ChartLevel level)
     {
         var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
                                    .Select(x => x.Value)
@@ -241,6 +241,7 @@ public class ObjectCounter : MonoBehaviour
                 Classic = accRate[1]
             },
             SongInfo = song,
+            ChartLevel = level,
             JudgeRecord = judgeRecord,
             Fast = fast,
             Late = late,

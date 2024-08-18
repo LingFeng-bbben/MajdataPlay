@@ -45,7 +45,7 @@ public class GamePlayManager : MonoBehaviour
 
     private void OnPauseButton(object sender,InputEventArgs e)
     {
-        if (e.IsButton && e.IsClick && e.Type== MajdataPlay.Types.SensorType.P1) {
+        if (e.IsButton && e.IsClick && e.Type == SensorType.P1) {
             print("Pause!!");
             BackToList();
         }
@@ -223,7 +223,7 @@ public class GamePlayManager : MonoBehaviour
         print("GameResult: "+acc);
         var objectCounter = FindFirstObjectByType<ObjectCounter?>();
         if(objectCounter != null)
-            GameManager.LastGameResult = objectCounter.GetPlayRecord(song);
+            GameManager.LastGameResult = objectCounter.GetPlayRecord(song,GameManager.Instance.SelectedDiff);
         StartCoroutine(delayEndGame());
     }
 
