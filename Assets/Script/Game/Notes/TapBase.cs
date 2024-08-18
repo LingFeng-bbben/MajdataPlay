@@ -75,6 +75,7 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
+                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         State = NoteStatus.Pending;
                         goto case NoteStatus.Pending;
