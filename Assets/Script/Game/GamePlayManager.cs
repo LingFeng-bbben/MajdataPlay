@@ -172,12 +172,17 @@ public class GamePlayManager : MonoBehaviour
 
         if (i >= AnwserSoundList.Count)
             return;
-        var delta = Math.Abs(AudioTime - (AnwserSoundList[i].time) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset);
-        if( delta < 0.01) {
-            AudioManager.Instance.PlaySFX("answer.wav");
-            //print(Chart.notelist[i].time);
+        var noteToPlay = AnwserSoundList[i].time;
+        var delta = AudioTime - (noteToPlay) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset;
+        //print(delta);
+        if(!AnwserSoundList[i].havePlayed && delta > 0)
+        {
             i++;
-            
+        }
+        if(Math.Abs(delta) < 0.01) {
+            AudioManager.Instance.PlaySFX("answer.wav");
+            AnwserSoundList[i].havePlayed = true;
+            i++;
         }
     }
 
