@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class GamePlayManager : MonoBehaviour
@@ -18,6 +19,8 @@ public class GamePlayManager : MonoBehaviour
     SettingManager settingManager => SettingManager.Instance;
 
     NoteLoader noteLoader;
+
+    Text ErrorText;
 
     public GameObject notesParent;
     public GameObject tapPrefab;
@@ -51,12 +54,20 @@ public class GamePlayManager : MonoBehaviour
     {
         IOManager.Instance.BindAnyArea(OnPauseButton);
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
+        ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
         try
         {
-            Chart = new SimaiProcess(song.InnerMaidata[GameManager.Instance.selectedDiff]);
+            var maidata = song.InnerMaidata[GameManager.Instance.selectedDiff];
+            if (maidata == "" || maidata == null) {
+                BackToList();
+                return;
+            }
+                
+            Chart = new SimaiProcess(maidata);
             if (Chart.notelist.Count == 0)
             {
                 BackToList();
+                return;
             }
             else
             {
@@ -65,7 +76,8 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            BackToList();
+            ErrorText.text = "分割note出错了哟\n+" + ex.Message;
+            Debug.LogError(ex);
         }
     }
 
@@ -93,9 +105,11 @@ public class GamePlayManager : MonoBehaviour
         {
             noteLoader.LoadNotes(Chart);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            BackToList();
+            ErrorText.text = "解析note出错了哟\n+" + ex.Message;
+            Debug.LogError(ex);
+            StopAllCoroutines();
         }
 
 
