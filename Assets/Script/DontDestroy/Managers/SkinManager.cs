@@ -49,8 +49,9 @@ public class SkinManager : MonoBehaviour
 
     public Sprite[] TouchHold = new Sprite[5];
 
+    public Sprite Outline;
+
     public Texture2D test;
-    private SpriteRenderer Outline;
 
     public static SkinManager Instance;
     private void Awake()
@@ -66,11 +67,10 @@ public class SkinManager : MonoBehaviour
         var path = GameManager.SkinPath;
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
-        //TODO: move this to somewhere else
-        Outline = gameObject.GetComponent<SpriteRenderer>();
+
         print(path);
 
-        Outline.sprite = SpriteLoader.LoadSpriteFromFile(path + "/outline.png");
+        Outline = SpriteLoader.LoadSpriteFromFile(path + "/outline.png");
 
         Tap = SpriteLoader.LoadSpriteFromFile(path + "/tap.png");
         Tap_Each = SpriteLoader.LoadSpriteFromFile(path + "/tap_each.png");

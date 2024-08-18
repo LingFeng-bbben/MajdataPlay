@@ -9,7 +9,7 @@ namespace MajdataPlay.IO
 {
     public partial class IOManager : MonoBehaviour
     {
-        readonly static RawKey[] bindingKeys = new RawKey[8]
+        readonly static RawKey[] bindingKeys = new RawKey[12]
         {
             RawKey.W,
             RawKey.E,
@@ -18,9 +18,13 @@ namespace MajdataPlay.IO
             RawKey.X,
             RawKey.Z,
             RawKey.A,
-            RawKey.Q
+            RawKey.Q,
+            RawKey.Numpad9,
+            RawKey.Multiply,
+            RawKey.Numpad7,
+            RawKey.Numpad3,
         };
-        Button[] buttons = new Button[8]
+        Button[] buttons = new Button[12]
         {
             new Button(RawKey.W,SensorType.A1),
             new Button(RawKey.E,SensorType.A2),
@@ -30,6 +34,10 @@ namespace MajdataPlay.IO
             new Button(RawKey.Z,SensorType.A6),
             new Button(RawKey.A,SensorType.A7),
             new Button(RawKey.Q,SensorType.A8),
+            new Button(RawKey.Numpad9,SensorType.Test),
+            new Button(RawKey.Multiply,SensorType.P1),
+            new Button(RawKey.Numpad7,SensorType.Service),
+            new Button(RawKey.Numpad3,SensorType.P2),
         };
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {

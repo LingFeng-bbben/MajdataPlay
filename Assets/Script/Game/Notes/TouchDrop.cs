@@ -213,19 +213,26 @@ namespace MajdataPlay.Game.Notes
         }
         private void OnDestroy()
         {
+            ioManager.UnbindSensor(Check, GetSensor());
             multTouchHandler.cancelTouch(this);
+            if (!isJudged) return;
+
             PlayJudgeEffect();
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
                 GroupInfo.JudgeResult = judgeResult;
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            if(judgeResult != JudgeType.Miss)
+                audioEffMana.PlayTouchSound();
             objectCounter.ReportResult(this, judgeResult);
             objectCounter.NextTouch(sensorPos);
 
             if (isFirework && judgeResult != JudgeType.Miss)
             {
                 fireworkEffect.SetTrigger("Fire");
+                audioEffMana.PlayHanabiSound();
                 firework.transform.position = transform.position;
             }
-            ioManager.UnbindSensor(Check, GetSensor());
+            
         }
         void PlayJudgeEffect()
         {

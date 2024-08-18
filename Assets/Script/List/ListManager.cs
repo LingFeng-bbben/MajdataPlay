@@ -9,10 +9,11 @@ public class ListManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        AudioManager.Instance.PlaySFX("SelectSong.wav");
-        IOManager.Instance.BindAnyArea(OnAreaDown);
         CoverListDisplayer.SlideToList(GameManager.Instance.selectedIndex);
         CoverListDisplayer.SlideToDifficulty(GameManager.Instance.selectedDiff);
+        AudioManager.Instance.PlaySFX("SelectSong.wav");
+        IOManager.Instance.BindAnyArea(OnAreaDown);
+
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)

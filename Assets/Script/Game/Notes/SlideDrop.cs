@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -76,7 +77,7 @@ namespace MajdataPlay.Game.Notes
         float judgeTiming; // 正解帧
         bool isInitialized = false; //防止重复初始化
         bool isDestroying = false; // 防止重复销毁
-
+        bool isSoundPlayed = false;
         /// <summary>
         /// Slide初始化
         /// </summary>
@@ -443,6 +444,13 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
+            if (first.IsFinished && !isSoundPlayed && (ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide))
+            {
+                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+                audioEffMana.PlaySlideSound(isBreak);
+                isSoundPlayed = true;
+            }
+
             if (second is not null && (first.CanSkip || first.On))
             {
                 var sType = second.GetSensorTypes();
@@ -650,12 +658,19 @@ namespace MajdataPlay.Game.Notes
                 Destroy(ConnectInfo.Parent);
             if (star_slide != null)
                 Destroy(star_slide);
+            foreach (var sensor in boundSensors)
+                ioManager.UnbindSensor(Check, sensor);
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 objectCounter.ReportResult(this, judgeResult, isBreak);
-                if (isBreak && judgeResult == JudgeType.Perfect)
+                
+                if (isBreak && judgeResult == JudgeType.Perfect) { 
                     slideOK.GetComponent<Animator>().runtimeAnimatorController = judgeBreakShine;
+                    var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+                    audioEffMana.PlayBreakSlideEndSound();
+                }
+                    
                 slideOK.SetActive(true);
             }
             else
@@ -663,8 +678,6 @@ namespace MajdataPlay.Game.Notes
                 // 如果不是组内最后一个 那么也要将判定条删掉
                 Destroy(slideOK);
             }
-            foreach (var sensor in boundSensors)
-                ioManager.UnbindSensor(Check, sensor);
             isDestroying = true;
         }
         /// <summary>

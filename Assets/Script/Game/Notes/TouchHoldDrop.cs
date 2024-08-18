@@ -190,6 +190,8 @@ namespace MajdataPlay.Game.Notes
         }
         private void OnDestroy()
         {
+            ioManager.UnbindSensor(Check, SensorType.C);
+            if (!isJudged) return;
             var realityHT = LastFor - 0.45f - judgeDiff / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
             JudgeType result = judgeResult;
@@ -235,18 +237,25 @@ namespace MajdataPlay.Game.Notes
             objectCounter.ReportResult(this, result);
             if (!isJudged)
                 objectCounter.NextTouch(SensorType.C);
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             if (isFirework && result != JudgeType.Miss)
             {
                 fireworkEffect.SetTrigger("Fire");
                 firework.transform.position = transform.position;
+                
+                audioEffMana.PlayHanabiSound();
             }
-            ioManager.UnbindSensor(Check, SensorType.C);
+            audioEffMana.PlayTapSound(false,false,judgeResult);
+            audioEffMana.StopTouchHoldSound();
+            
             PlayJudgeEffect(result);
         }
 
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTouchHoldSound();
             boarder.sprite = touchHoldBoard;
         }
         void PlayJudgeEffect(JudgeType judgeResult)
@@ -311,6 +320,8 @@ namespace MajdataPlay.Game.Notes
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.StopTouchHoldSound();
             boarder.sprite = touchHoldBoard_Miss;
         }
         private Vector3 GetAngle(int index)

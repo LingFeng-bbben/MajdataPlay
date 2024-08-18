@@ -63,4 +63,11 @@ public class SettingFile
     public int lastSelectedSongDifficulty = 0;
     public int AsioDeviceIndex = 0;
     public bool DisplaySensorDebug = false;
+    public float VolumeAnwser = 0.8f;
+    public float VolumeBgm = 1f;
+    public float VolumeJudge = 0.3f;
+    public float VolumeSlide = 0.3f;
+    public float VolumeBreak = 0.3f;
+    public float VolumeTouch = 0.3f;
+    public float VolumeVoice = 1f;
 }

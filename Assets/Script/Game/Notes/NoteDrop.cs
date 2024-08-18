@@ -21,7 +21,7 @@ namespace MajdataPlay.Game.Notes
         protected IOManager ioManager => IOManager.Instance;
         protected NoteManager noteManager;
         protected bool isJudged = false;
-        protected JudgeType judgeResult;
+        protected JudgeType judgeResult = JudgeType.Miss;
         protected ObjectCounter objectCounter;
 
         /// <summary>
