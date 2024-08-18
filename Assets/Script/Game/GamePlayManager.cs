@@ -76,7 +76,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "分割note出错了哟\n+" + ex.Message;
+            ErrorText.text = "分割note出错了哟\n" + ex.Message;
             Debug.LogError(ex);
         }
     }
@@ -107,7 +107,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "解析note出错了哟\n+" + ex.Message;
+            ErrorText.text = "解析note出错了哟\n" + ex.Message;
             Debug.LogError(ex);
             StopAllCoroutines();
         }
@@ -135,8 +135,13 @@ public class GamePlayManager : MonoBehaviour
         if (AudioStartTime != -114514f)
         {
             AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
-            //print((float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime));
+            var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
+            if (Math.Abs(realTimeDifference) > 0.01f)
+            {
+                ErrorText.text = "检测到音频错位了哟\n";
+            }
         }
+
         if (i >= Chart.notelist.Count)
             return;
         var delta = Math.Abs(AudioTime - (Chart.notelist[i].time) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset);
