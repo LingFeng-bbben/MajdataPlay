@@ -21,20 +21,15 @@ public class CoverListDisplayer : MonoBehaviour
 
     public int selectedDifficulty = 0;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         foreach (var song in GameManager.Instance.songList)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
             var coversmall = obj.GetComponent<CoverSmallDisplayer>();
             coversmall.SetCover(song.SongCover);
-            coversmall.SetLevelText(song.Levels[4]);
             covers.Add(obj);
         }
-        var songinfo = GameManager.Instance.songList[desiredListPos];
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
-        CoverBigDisplayer.SetDifficulty(selectedDifficulty);
-        CoverBigDisplayer.SetCover(songinfo.SongCover);
     }
 
     public void SlideDifficulty(int delta)

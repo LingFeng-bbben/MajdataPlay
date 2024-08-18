@@ -39,6 +39,8 @@ namespace MajdataPlay.IO
         "touch.wav",
         "touchHold_riser.wav",
         "track_start.wav",
+        "good.wav",
+        "great.wav",
         "titlebgm.mp3",
         };
         readonly string[] VoiceFileNames = new string[]
@@ -158,7 +160,7 @@ namespace MajdataPlay.IO
             }
             if (PlayDebug)
                 IOManager.Instance.BindAnyArea(OnAnyAreaDown);
-
+            ReadVolumeFromSettings();
         }
         void OnAnyAreaDown(object sender, InputEventArgs e)
         {
@@ -176,6 +178,34 @@ namespace MajdataPlay.IO
             asioOut?.Dispose();
             waveOut?.Stop();
             waveOut?.Dispose();
+        }
+
+        public void ReadVolumeFromSettings()
+        {
+            var setting = SettingManager.Instance.SettingFile;
+            SFXSamples["answer.wav"].SetVolume(setting.VolumeAnwser);
+            SFXSamples["all_perfect.wav"].SetVolume(setting.VolumeVoice);
+            SFXSamples["break.wav"].SetVolume(setting.VolumeBreak);
+            SFXSamples["break_slide.wav"].SetVolume(setting.VolumeBreak);
+            SFXSamples["break_slide_start.wav"].SetVolume(setting.VolumeSlide);
+            SFXSamples["clock.wav"].SetVolume(setting.VolumeAnwser);
+            SFXSamples["hanabi.wav"].SetVolume(setting.VolumeTouch);
+            SFXSamples["judge.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["judge_break.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["judge_break_slide.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["judge_ex.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["slide.wav"].SetVolume(setting.VolumeSlide);
+            SFXSamples["touch.wav"].SetVolume(setting.VolumeTouch);
+            SFXSamples["touchHold_riser.wav"].SetVolume(setting.VolumeTouch);
+            SFXSamples["track_start.wav"].SetVolume(setting.VolumeBgm);
+            SFXSamples["good.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["great.wav"].SetVolume(setting.VolumeJudge);
+            SFXSamples["titlebgm.mp3"].SetVolume(setting.VolumeBgm);
+
+            SFXSamples["MajdataPlay.wav"].SetVolume(setting.VolumeVoice);
+            SFXSamples["SelectSong.wav"].SetVolume(setting.VolumeVoice);
+            SFXSamples["Sugoi.wav"].SetVolume(setting.VolumeVoice);
+            SFXSamples["DontTouchMe.wav"].SetVolume(setting.VolumeVoice);
         }
 
         public AudioSampleWrap LoadMusic(string path)
