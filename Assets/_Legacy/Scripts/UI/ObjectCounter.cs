@@ -605,14 +605,10 @@ public class ObjectCounter : MonoBehaviour
             tapSum + holdSum + slideSum + touchSum + breakSum
         );
 
-        rate.text = string.Format(
-            "FiNALE  Rate:\n" +
-            "{0:000.00}   %\n" +
-            "DELUXE Rate:\n" +
-            "{1:000.0000} % ",
-            Math.Truncate((float)FiNowScore() / FiSumScore() * 10000) / 100,
-            Math.Truncate(((float)DxNowScore() / DxSumScore() * 100 + BreakRate()) * 10000) / 10000
-        );
+        rate.text = "FiNALE  Rate:\n" +
+                    $"{accRate[0]:F2}   %\n" +
+                    "DELUXE Rate:\n" +
+                    $"{accRate[4]:F4} % ";
     }
 
     public void CalculateFinalResult()
