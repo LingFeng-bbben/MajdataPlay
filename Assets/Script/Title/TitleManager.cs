@@ -38,12 +38,12 @@ public class TitleManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.3f);
         AudioManager.Instance.PlaySFX("MajdataPlay.wav");
-        yield return new WaitForSeconds(2.5f);
         AudioManager.Instance.PlaySFX("titlebgm.mp3");
     }
     void NextScene()
     {
         AudioManager.Instance.StopSFX("titlebgm.mp3");
+        AudioManager.Instance.StopSFX("MajdataPlay.wav");
         SceneManager.LoadSceneAsync(1);
     }
     private void OnDestroy()
