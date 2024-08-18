@@ -55,15 +55,23 @@ public class ResultScreenManager : MonoBehaviour
 
         coverImg.sprite = song.SongCover;
 
+        var breakJudgeInfo = UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
+
         if(!totalJudgeRecord.IsNoMiss)
             clearLogo.SetActive(false);
         else if(totalJudgeRecord.IsNoGood)
             clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
         else if(totalJudgeRecord.IsAllPerfect)
-            clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+        {
+            if(breakJudgeInfo.Perfect == 0)
+                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+            else
+                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+        }
 
         IOManager.Instance.BindAnyArea(OnAreaDown);
         AudioManager.Instance.PlaySFX("Sugoi.wav");
+        ScoreManager.Instance.SaveScore(result);
     }
     string BuildSubDisplayText(JudgeDetail judgeRecord)
     {
