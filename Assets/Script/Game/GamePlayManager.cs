@@ -136,9 +136,14 @@ public class GamePlayManager : MonoBehaviour
         {
             AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
             var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
-            if (Math.Abs(realTimeDifference) > 0.01f)
+            if (Math.Abs(realTimeDifference) > 0.04f)
             {
-                ErrorText.text = "ºÏ≤‚µΩ“Ù∆µ¥ÌŒª¡À”¥\n";
+                ErrorText.text = "ºÏ≤‚µΩ“Ù∆µ¥ÌŒª¡À”¥\n" + realTimeDifference;
+            }
+            else if (Math.Abs(realTimeDifference) > 0.02f)
+            {
+                ErrorText.text = "–ﬁ’˝“Ù∆µ\n" + realTimeDifference;
+                AudioStartTime -= realTimeDifference;
             }
         }
 
