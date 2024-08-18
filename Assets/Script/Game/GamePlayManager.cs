@@ -33,7 +33,7 @@ public class GamePlayManager : MonoBehaviour
     public float CurrentSpeed = 1f;
 
     private float AudioStartTime = -114514f;
-
+    List<SimaiTimingPoint> AnwserSoundList = new List<SimaiTimingPoint>();
     // Start is called before the first frame update
     private void Awake()
     {
@@ -73,6 +73,26 @@ public class GamePlayManager : MonoBehaviour
             {
                 StartCoroutine(DelayPlay());
             }
+
+            //Generate AnwserSounds
+            foreach (var timingPoint in Chart.notelist)
+            {
+                timingPoint.havePlayed = false;
+                if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
+
+                AnwserSoundList.Add(timingPoint);
+                var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
+                if (holds.Count == 0) continue;
+                foreach (var hold in holds)
+                {
+                    var newtime = timingPoint.time + hold.holdTime;
+                    if(!Chart.notelist.Any(o=>Math.Abs(o.time-newtime) < 0.001)&&
+                        !AnwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
+                        )
+                        AnwserSoundList.Add(new SimaiTimingPoint(newtime));
+                }
+            }
+            AnwserSoundList = AnwserSoundList.OrderBy(o=>o.time).ToList();
         }
         catch (Exception ex)
         {
@@ -149,16 +169,15 @@ public class GamePlayManager : MonoBehaviour
             }
         }
 
-        if (i >= Chart.notelist.Count)
+        if (i >= AnwserSoundList.Count)
             return;
-        var delta = Math.Abs(AudioTime - (Chart.notelist[i].time) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset);
+        var delta = Math.Abs(AudioTime - (AnwserSoundList[i].time) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset);
         if( delta < 0.01) {
             AudioManager.Instance.PlaySFX("answer.wav");
             //print(Chart.notelist[i].time);
             i++;
             
         }
-        //TODO: Render notes
     }
 
     public float GetFrame()
