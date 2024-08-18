@@ -1,5 +1,6 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
 using System.Collections;
@@ -8,7 +9,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-
+#nullable enable
 public class GamePlayManager : MonoBehaviour
 {
     public static GamePlayManager Instance;
@@ -219,8 +220,10 @@ public class GamePlayManager : MonoBehaviour
 
     public void EndGame(float acc)
     {
-        GameManager.Instance.lastGameResult = acc;
         print("GameResult: "+acc);
+        var objectCounter = FindFirstObjectByType<ObjectCounter?>();
+        if(objectCounter != null)
+            GameManager.LastGameResult = objectCounter.GetPlayRecord(song);
         StartCoroutine(delayEndGame());
     }
 

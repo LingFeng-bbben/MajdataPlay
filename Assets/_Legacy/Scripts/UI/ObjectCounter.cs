@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
@@ -209,6 +210,43 @@ public class ObjectCounter : MonoBehaviour
     {
         UpdateState();
         UpdateOutput();
+    }
+    internal GameResult GetPlayRecord(SongDetail song)
+    {
+        var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
+                                   .Select(x => x.Value)
+                                   .Sum();
+        var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
+                                   .Select(x => x.Value)
+                                   .Sum();
+        var holdRecord = judgedHoldCount.ToDictionary(
+            kv => kv.Key,
+            kv => judgedHoldCount[kv.Key] + judgedTouchHoldCount[kv.Key]
+        );
+        var record = new Dictionary<ScoreNoteType, JudgeInfo>()
+        {
+            { ScoreNoteType.Tap, new (judgedTapCount) },
+            { ScoreNoteType.Hold, new (holdRecord)},
+            { ScoreNoteType.Slide,new (judgedSlideCount)},
+            { ScoreNoteType.Break, new (judgedBreakCount)},
+            { ScoreNoteType.Touch, new (judgedTouchCount) }
+        };
+        var judgeRecord = new JudgeDetail(record);
+
+        return new GameResult()
+        {
+            Acc = new()
+            {
+                DX = accRate[3],
+                Classic = accRate[1]
+            },
+            SongInfo = song,
+            JudgeRecord = judgeRecord,
+            Fast = fast,
+            Late = late,
+            DXScore = 0,
+            ComboState = ComboState.None
+        };
     }
 
     private void UpdateOutput()

@@ -62,8 +62,7 @@ public class ScoreManager: MonoBehaviour
                 };
             }
 
-            record.Accurate = result.Accurate > record.Accurate ? result.Accurate : record.Accurate;
-            record.Accurate_Classic = result.Accurate_Classic > record.Accurate_Classic ? result.Accurate_Classic : record.Accurate_Classic;
+            record.Acc = result.Acc > record.Acc ? record.Acc.Update(result.Acc) : record.Acc;
             // TO-DO
             record.DXScore = result.DXScore;
 

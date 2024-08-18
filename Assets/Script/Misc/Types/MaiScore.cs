@@ -7,8 +7,7 @@ namespace MajdataPlay.Types
 {
     public class MaiScore
     {
-        public double Accurate { get; set; } = 0.0000;
-        public double Accurate_Classic { get; set; } = 0.00;
+        public Accurate Acc { get; set; }
         public long DXScore { get; set; } = 0;
         public long Fast { get; set; } = 0;
         public long Late { get; set; } = 0;

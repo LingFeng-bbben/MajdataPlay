@@ -15,11 +15,11 @@ public class GameManager : MonoBehaviour
     public static string ScoreDBPath => Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
 
-    public static JudgeDetail? LastJudgeDetail { get; set; } = null;
+    public static GameResult? LastGameResult { get; set; } = null;
     public List<SongDetail> songList = new List<SongDetail> ();
     public int selectedIndex = 0;
     public int selectedDiff = 0;
-    public float lastGameResult = -1f; //this should be a struct in future
+    //public float lastGameResult = -1f; //this should be a struct in future
     // Start is called before the first frame update
     private void Awake()
     {

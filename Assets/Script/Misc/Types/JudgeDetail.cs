@@ -5,10 +5,14 @@ namespace MajdataPlay.Types
 {
     public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType,JudgeInfo>
     {
+        public JudgeInfo TotalJudgeInfo => total;
         IReadOnlyDictionary<ScoreNoteType, JudgeInfo> db;
+        JudgeInfo total = JudgeInfo.Empty;
         public JudgeDetail(IReadOnlyDictionary<ScoreNoteType, JudgeInfo> source)
         {
             db = source;
+            foreach (var kv in source)
+                total += kv.Value;
         }
 
         public JudgeInfo this[ScoreNoteType key] => db[key];
