@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
-
+using MajdataPlay.Types;
+#nullable enable
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance { get; private set; }
     public static string AssestsPath => Path.Combine(Application.dataPath,"../");
     public static string ChartPath => Path.Combine(AssestsPath, "MaiCharts");
     public static string SettingPath => Path.Combine(AssestsPath, "settings.json");
@@ -14,7 +15,7 @@ public class GameManager : MonoBehaviour
     public static string ScoreDBPath => Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
 
-
+    public static JudgeDetail? LastJudgeDetail { get; set; } = null;
     public List<SongDetail> songList = new List<SongDetail> ();
     public int selectedIndex = 0;
     public int selectedDiff = 0;
