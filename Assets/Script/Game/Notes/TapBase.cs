@@ -191,12 +191,16 @@ namespace MajdataPlay.Game.Notes
         }
         protected virtual void OnDestroy()
         {
+            ioManager.UnbindArea(Check, sensorPos);
+            if (!isJudged) return;
             var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
             effectManager.PlayEffect(startPosition, isBreak, judgeResult);
             effectManager.PlayFastLate(startPosition, judgeResult);
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, judgeResult, isBreak);
-            ioManager.UnbindArea(Check, sensorPos);
+            
         }
     }
 }

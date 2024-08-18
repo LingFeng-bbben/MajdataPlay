@@ -206,6 +206,9 @@ namespace MajdataPlay.Game.Notes
 
             judgeResult = result;
             isJudged = true;
+
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTapSound(isBreak, isEX, result);
             PlayHoldEffect();
         }
         // Update is called once per frame
@@ -296,6 +299,9 @@ namespace MajdataPlay.Game.Notes
         }
         private void OnDestroy()
         {
+            ioManager.UnbindArea(Check, sensorPos);
+            if (!isJudged) return;
+
             var realityHT = LastFor - 0.3f - judgeDiff / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
             JudgeType result = judgeResult;
@@ -337,7 +343,8 @@ namespace MajdataPlay.Game.Notes
                 }
             }
 
-            
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTapSound(false, false, result);
             var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
             effectManager.PlayEffect(startPosition, isBreak, result);
             effectManager.PlayFastLate(startPosition, result);
@@ -347,7 +354,7 @@ namespace MajdataPlay.Game.Notes
             if (!isJudged)
                 objectCounter.NextNote(startPosition);
 
-            ioManager.UnbindArea(Check, sensorPos);
+            
         }
         protected override void PlayHoldEffect()
         {

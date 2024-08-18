@@ -5,7 +5,9 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -65,6 +67,7 @@ namespace MajdataPlay.Game.Notes
         bool isChecking = false;
         bool isFinished { get => _judgeQueues.All(x => x.Count == 0); }
         bool canCheck = false;
+        bool isSoundPlayed = false;
 
         List<SensorType> boundSensors = new();
         public List<List<JudgeArea>> _judgeQueues = new();
@@ -263,6 +266,13 @@ namespace MajdataPlay.Game.Notes
             {
                 var sensor = ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
+            }
+
+            if (first.IsFinished && !isSoundPlayed)
+            {
+                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+                audioEffMana.PlaySlideSound(isBreak);
+                isSoundPlayed = true;
             }
 
             if (second is not null && (first.CanSkip || first.On))
@@ -469,14 +479,20 @@ namespace MajdataPlay.Game.Notes
         }
         void OnDestroy()
         {
+            foreach (var sensor in boundSensors)
+                ioManager.UnbindSensor(Check, sensor);
+
             objectCounter.ReportResult(this, judgeResult, isBreak);
             if (isBreak && judgeResult == JudgeType.Perfect)
+            {
                 slideOK.GetComponent<Animator>().runtimeAnimatorController = judgeBreakShine;
+                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+                audioEffMana.PlayBreakSlideEndSound();
+            }
             slideOK.SetActive(true);
 
 
-            foreach (var sensor in boundSensors)
-                ioManager.UnbindSensor(Check, sensor);
+            
             isDestroying = true;
         }
         private void setSlideBarAlpha(float alpha)
