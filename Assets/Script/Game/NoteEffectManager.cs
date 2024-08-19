@@ -6,6 +6,7 @@ public class NoteEffectManager : MonoBehaviour
 {
     public GameObject touchEffect;
     public GameObject touchJudgeEffect;
+    public GameObject perfectEffect; // TouchHold
 
     private readonly Animator[] judgeAnimators = new Animator[8];
     private readonly GameObject[] judgeEffects = new GameObject[8];
@@ -218,6 +219,7 @@ public class NoteEffectManager : MonoBehaviour
 
         anim.SetTrigger("touch");
     }
+    
     /// <summary>
     /// Tap，Hold，Star
     /// </summary>

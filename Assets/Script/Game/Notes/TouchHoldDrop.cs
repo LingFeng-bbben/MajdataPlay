@@ -248,9 +248,67 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.PlayTapSound(false,false,judgeResult);
             audioEffMana.StopTouchHoldSound();
 
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayTouchEffect(transform, SensorType.C, result);
+            PlayJudgeEffect(judgeResult);
         }
+        void PlayJudgeEffect(JudgeType judgeResult)
+        {
+            var obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
+            var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
+            var judgeObj = obj.transform.GetChild(0);
+            var flObj = _obj.transform.GetChild(0);
 
+            judgeObj.transform.position = new Vector3(0, -0.6f, 0);
+            flObj.transform.position = new Vector3(0, -1.08f, 0);
+            flObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
+            judgeObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
+            var anim = obj.GetComponent<Animator>();
+
+            var effects = GameObject.Find("NoteEffects");
+            var flAnim = _obj.GetComponent<Animator>();
+            GameObject effect;
+            switch (judgeResult)
+            {
+                case JudgeType.LateGood:
+                case JudgeType.FastGood:
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                    effect = Instantiate(effects.transform.GetChild(3).GetChild(0), transform.position, transform.rotation).gameObject;
+                    effect.SetActive(true);
+                    break;
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat2:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat:
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                    //transform.Rotate(0, 0f, 30f);
+                    effect = Instantiate(effects.transform.GetChild(2).GetChild(0), transform.position, transform.rotation).gameObject;
+                    effect.SetActive(true);
+                    effect.gameObject.GetComponent<Animator>().SetTrigger("great");
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                    transform.Rotate(0, 180f, 90f);
+                    Instantiate(tapEffect, transform.position, transform.rotation);
+                    break;
+                case JudgeType.Perfect:
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                    transform.Rotate(0, 180f, 90f);
+                    Instantiate(tapEffect, transform.position, transform.rotation);
+                    break;
+                case JudgeType.Miss:
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                    break;
+                default:
+                    break;
+            }
+            //judgeEffect.transform.position = new Vector3(0, -0.6f, 0);
+            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayFastLate(_obj, flAnim, judgeResult);
+            anim.SetTrigger("touch");
+        }
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
