@@ -5,16 +5,17 @@
 
  
 ## How to use
-For best performance, you will need an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
+By default, the app use SoundBackend=2 for unity audio, this provide somehow acceptable latency.
+However, for best performance, you will need an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
 
-Or you can use SoundBackend=2 for unity audio, this provide somehow acceptable latency too.
+If you encounter desync issues, try to tweak the sound control pannel: Turn off all audio enhancements and allow exclusive control.
 
 For the big iPod, you need to ensure the touch sensors are connected to COM3.
 
 Put your songs in `MaiCharts\` folder, and you are good to go.
 
 ## Adjusting settings
-Navigate to `MajdataPlay_Data\`
+Navigate to `settings.json`
 
 ```Json
 {
@@ -38,6 +39,10 @@ Navigate to `MajdataPlay_Data\`
   "SoundOutputSamplerate": 44100 //Dont touch this if you dont know what does it mean
 }
 ```
+
+## Keybindings
+* Buttons: qwedcxza
+* Exit Song: * (One of the side button on your big iPod)
 
 ## Adjusting Skin/SFX/Voice/MovieBG
 Navigate to `MajdataPlay_Data\StreamingAssets\` and replace the files you want.
