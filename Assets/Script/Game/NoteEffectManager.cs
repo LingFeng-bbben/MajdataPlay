@@ -1,9 +1,12 @@
 ﻿using MajdataPlay.Types;
+using System;
 using UnityEngine;
 #nullable enable
 public class NoteEffectManager : MonoBehaviour
 {
-    
+    public GameObject touchEffect;
+    public GameObject touchJudgeEffect;
+
     private readonly Animator[] judgeAnimators = new Animator[8];
     private readonly GameObject[] judgeEffects = new GameObject[8];
     private readonly Animator[] tapAnimators = new Animator[8];
@@ -70,7 +73,12 @@ public class NoteEffectManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Tap, Hold, Star
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="isBreak"></param>
+    /// <param name="judge"></param>
     public void PlayEffect(int position, bool isBreak,JudgeType judge = JudgeType.Perfect)
     {
         var pos = position - 1;
@@ -143,6 +151,73 @@ public class NoteEffectManager : MonoBehaviour
         else
             judgeAnimators[pos].SetTrigger("perfect");
     }
+    public void PlayTouchEffect(Transform touchTransform,SensorType sensorPos,JudgeType judgeResult = JudgeType.Perfect)
+    {
+        var pos = touchTransform.position;
+
+        var obj = Instantiate(touchJudgeEffect, Vector3.zero, touchTransform.rotation); // Judge Text
+        var _obj = Instantiate(touchJudgeEffect, Vector3.zero, touchTransform.rotation); // Fast/Late Text
+        var effectObj = Instantiate(touchEffect, pos, touchTransform.rotation); // Hit Effect
+
+        var judgeObj = obj.transform.GetChild(0);
+        var flObj = _obj.transform.GetChild(0);
+
+        if (sensorPos != SensorType.C)
+        {
+            judgeObj.transform.position = GetPosition(touchTransform.position ,-0.46f);
+            flObj.transform.position = GetPosition(touchTransform.position ,-0.92f);
+        }
+        else
+        {
+            judgeObj.transform.position = new Vector3(0, -0.6f, 0);
+            flObj.transform.position = new Vector3(0, -1.08f, 0);
+        }
+        judgeObj.GetChild(0).transform.rotation = GetRoation(pos,sensorPos);
+        flObj.GetChild(0).transform.rotation = GetRoation(pos,sensorPos);
+
+        var anim = obj.GetComponent<Animator>();
+        var flAnim = _obj.GetComponent<Animator>();
+        var effectAnim = effectObj.GetComponent<Animator>();
+        switch (judgeResult)
+        {
+            case JudgeType.LateGood:
+            case JudgeType.FastGood:
+                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                effectAnim.SetTrigger("good");
+                break;
+            case JudgeType.LateGreat:
+            case JudgeType.LateGreat1:
+            case JudgeType.LateGreat2:
+            case JudgeType.FastGreat2:
+            case JudgeType.FastGreat1:
+            case JudgeType.FastGreat:
+                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                effectAnim.SetTrigger("great");
+                break;
+            case JudgeType.LatePerfect2:
+            case JudgeType.FastPerfect2:
+            case JudgeType.LatePerfect1:
+            case JudgeType.FastPerfect1:
+                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                effectAnim.SetTrigger("perfect");
+                break;
+            case JudgeType.Perfect:
+                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                effectAnim.SetTrigger("perfect");
+                break;
+            case JudgeType.Miss:
+                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                Destroy(effectObj);
+                break;
+            default:
+                break;
+        }
+            
+
+        PlayFastLate(_obj, flAnim, judgeResult);
+
+        anim.SetTrigger("touch");
+    }
     /// <summary>
     /// Tap，Hold，Star
     /// </summary>
@@ -196,5 +271,20 @@ public class NoteEffectManager : MonoBehaviour
         tapEffects[position - 1].SetActive(false);
         greatEffects[position - 1].SetActive(false);
         goodEffects[position - 1].SetActive(false);
+    }
+    Vector3 GetPosition(Vector3 position,float distance)
+    {
+        var d = position.magnitude;
+        var ratio = MathF.Max(0, d + distance) / d;
+        return position * ratio;
+    }
+    Quaternion GetRoation(Vector3 position,SensorType sensorPos)
+    {
+        if (sensorPos == SensorType.C)
+            return Quaternion.Euler(Vector3.zero);
+        var d = Vector3.zero - position;
+        var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
+
+        return Quaternion.Euler(new Vector3(0, 0, -deg));
     }
 }

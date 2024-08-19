@@ -2297,6 +2297,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cd085963a2b0924587ac210ff73f837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  touchEffect: {fileID: 544298055609030963, guid: ce8dca9ef711fc640a1b90ad7fb49838, type: 3}
+  touchJudgeEffect: {fileID: 2214473122963414705, guid: e863ee95f9b63c044a47510ad82daf33, type: 3}
 --- !u!4 &592746511
 Transform:
   m_ObjectHideFlags: 0

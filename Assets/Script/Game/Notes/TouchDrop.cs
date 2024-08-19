@@ -2,6 +2,7 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
+using System.Security.Claims;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -162,26 +163,29 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = gpManager.AudioTime - time;
-
+            var timing = GetJudgeTiming();
+            
             //var timing = time;
             //var pow = Mathf.Pow(-timing * speed, 0.1f)-0.4f;
             var pow = -Mathf.Exp(8 * (timing * 0.4f / moveDuration) - 0.85f) + 0.42f;
             var distance = Mathf.Clamp(pow, 0f, 0.4f);
 
-            if (timing >= 0)
+            if (timing > -0.02f)
             {
-                var _pow = -Mathf.Exp(-0.85f) + 0.42f;
-                var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
-                for (var i = 0; i < 4; i++)
+                justEffect.SetActive(true);
+                if (timing >= 0)
                 {
-                    var pos = (0.226f + _distance) * GetAngle(i);
-                    fans[i].transform.localPosition = pos;
+                    var _pow = -Mathf.Exp(-0.85f) + 0.42f;
+                    var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var pos = (0.226f + _distance) * GetAngle(i);
+                        fans[i].transform.localPosition = pos;
+                    }
+                    return;
                 }
-                return;
+                
             }
-
-            if (timing > -0.02f) justEffect.SetActive(true);
 
             if (-timing <= wholeDuration && -timing > moveDuration)
             {
@@ -217,7 +221,8 @@ namespace MajdataPlay.Game.Notes
             multTouchHandler.cancelTouch(this);
             if (!isJudged) return;
 
-            PlayJudgeEffect();
+            //PlayJudgeEffect();
+            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayTouchEffect(transform,sensorPos,judgeResult);
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
                 GroupInfo.JudgeResult = judgeResult;
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
@@ -234,76 +239,7 @@ namespace MajdataPlay.Game.Notes
             }
             
         }
-        void PlayJudgeEffect()
-        {
-            var obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
-            var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
-            var judgeObj = obj.transform.GetChild(0);
-            var flObj = _obj.transform.GetChild(0);
-
-            if (sensorPos != SensorType.C)
-            {
-                judgeObj.transform.position = GetPosition(-0.46f);
-                flObj.transform.position = GetPosition(-0.92f);
-            }
-            else
-            {
-                judgeObj.transform.position = new Vector3(0, -0.6f, 0);
-                flObj.transform.position = new Vector3(0, -1.08f, 0);
-            }
-            judgeObj.GetChild(0).transform.rotation = GetRoation();
-            flObj.GetChild(0).transform.rotation = GetRoation();
-            var anim = obj.GetComponent<Animator>();
-            var flAnim = _obj.GetComponent<Animator>();
-            switch (judgeResult)
-            {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
-                    break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
-                    break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
-                    break;
-                case JudgeType.Perfect:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
-                    break;
-                case JudgeType.Miss:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
-                    break;
-                default:
-                    break;
-            }
-            if (judgeResult != JudgeType.Miss)
-                Instantiate(tapEffect, transform.position, transform.rotation);
-
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayFastLate(_obj, flAnim, judgeResult);
-
-            anim.SetTrigger("touch");
-        }
-        /// <summary>
-        /// 获取当前坐标指定距离的坐标
-        /// <para>方向：原点</para>
-        /// </summary>
-        /// <param name="magnitude"></param>
-        /// <param name="distance"></param>
-        /// <returns></returns>
-        Vector3 GetPosition(float distance)
-        {
-            var d = transform.position.magnitude;
-            var ratio = MathF.Max(0, d + distance) / d;
-            return transform.position * ratio;
-        }
+        
         public void setLayer(int newLayer)
         {
             layer = newLayer;
