@@ -12,7 +12,7 @@
 /[Ss]ongs/
 /[Mm]ai[Cc]harts/
 /[Ss]kins/
-/Assets/Plugin/
+#/Assets/Plugin/
 /Assets/i18n
 /settings.json
 /MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db
