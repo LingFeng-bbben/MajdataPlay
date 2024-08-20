@@ -2297,6 +2297,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cd085963a2b0924587ac210ff73f837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  touchEffect: {fileID: 544298055609030963, guid: ce8dca9ef711fc640a1b90ad7fb49838, type: 3}
+  touchJudgeEffect: {fileID: 2214473122963414705, guid: e863ee95f9b63c044a47510ad82daf33, type: 3}
+  perfectEffect: {fileID: 314035496818238881, guid: 9af6320e11c16f1488b14c8d2ee95a65, type: 3}
 --- !u!4 &592746511
 Transform:
   m_ObjectHideFlags: 0
@@ -6199,7 +6202,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8053637610791840999, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
       addedObject: {fileID: 571068162}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7848876556989961994, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1775716743}
   m_SourcePrefab: {fileID: 100100000, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
 --- !u!224 &1775716740 stripped
 RectTransform:
@@ -6211,6 +6217,41 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1902335688730886507, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
   m_PrefabInstance: {fileID: 1775716739}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1775716742 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7848876556989961994, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+  m_PrefabInstance: {fileID: 1775716739}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1775716743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775716742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1844328527
 GameObject:
   m_ObjectHideFlags: 0

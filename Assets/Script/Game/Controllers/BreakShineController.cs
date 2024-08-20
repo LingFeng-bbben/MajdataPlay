@@ -20,8 +20,9 @@ namespace MajdataPlay.Game.Controllers
         {
             if (parent is not null && parent.CanShine())
             {
-                var extra = Math.Max(Mathf.Sin(gpManager.GetFrame() * 0.17f) * 0.5f, 0);
-                spriteRenderer.material.SetFloat("_Brightness", 0.95f + extra);
+                var (brightness, contrast) = gpManager.BreakParams;
+                spriteRenderer.material.SetFloat("_Brightness", brightness);
+                spriteRenderer.material.SetFloat("_Contrast", contrast);
             }
         }
         private void OnEnable()

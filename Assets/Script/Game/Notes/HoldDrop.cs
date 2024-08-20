@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
+using System.Diagnostics.Contracts;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -243,12 +244,11 @@ namespace MajdataPlay.Game.Notes
             tapLine.transform.rotation = transform.rotation;
             holdEffect.transform.position = getPositionFromDistance(4.8f);
 
-            if (isBreak &&
-                !holdAnimStart &&
-                !isJudged)
+            if (isBreak && !holdAnimStart && !isJudged)
             {
-                var extra = Math.Max(Mathf.Sin(gpManager.GetFrame() * 0.17f) * 0.5f, 0);
-                spriteRenderer.material.SetFloat("_Brightness", 0.95f + extra);
+                var (brightness, contrast) = gpManager.BreakParams;
+                spriteRenderer.material.SetFloat("_Brightness", brightness);
+                spriteRenderer.material.SetFloat("_Contrast", contrast);
             }
 
 
@@ -369,11 +369,16 @@ namespace MajdataPlay.Game.Notes
                 animator.enabled = true;
                 var sprRenderer = GetComponent<SpriteRenderer>();
                 if (isBreak)
+                { 
                     sprRenderer.sprite = breakHoldOnSpr;
+                    spriteRenderer.material.SetFloat("_Brightness", 1);
+                    spriteRenderer.material.SetFloat("_Contrast", 1);
+                }
                 else if (isEach)
                     sprRenderer.sprite = eachHoldOnSpr;
                 else
                     sprRenderer.sprite = holdOnSpr;
+
             }
         }
         protected override void StopHoldEffect()
@@ -384,6 +389,11 @@ namespace MajdataPlay.Game.Notes
             animator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
             sprRenderer.sprite = holdOffSpr;
+            if(isBreak)
+            {
+                spriteRenderer.material.SetFloat("_Brightness", 1);
+                spriteRenderer.material.SetFloat("_Contrast", 1);
+            }
         }
 
     }

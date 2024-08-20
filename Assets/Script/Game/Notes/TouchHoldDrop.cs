@@ -247,16 +247,8 @@ namespace MajdataPlay.Game.Notes
             }
             audioEffMana.PlayTapSound(false,false,judgeResult);
             audioEffMana.StopTouchHoldSound();
-            
-            PlayJudgeEffect(result);
-        }
 
-        protected override void PlayHoldEffect()
-        {
-            base.PlayHoldEffect();
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTouchHoldSound();
-            boarder.sprite = touchHoldBoard;
+            PlayJudgeEffect(judgeResult);
         }
         void PlayJudgeEffect(JudgeType judgeResult)
         {
@@ -316,6 +308,13 @@ namespace MajdataPlay.Game.Notes
             //judgeEffect.transform.position = new Vector3(0, -0.6f, 0);
             GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayFastLate(_obj, flAnim, judgeResult);
             anim.SetTrigger("touch");
+        }
+        protected override void PlayHoldEffect()
+        {
+            base.PlayHoldEffect();
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTouchHoldSound();
+            boarder.sprite = touchHoldBoard;
         }
         protected override void StopHoldEffect()
         {
