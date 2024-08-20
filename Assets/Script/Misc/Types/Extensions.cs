@@ -141,5 +141,81 @@ namespace MajdataPlay.Extensions
                 _ => throw new InvalidOperationException($"\"{source}\" is not a valid touch panel area")
             };
         }
+        public static SensorType Mirror(this SensorType source,SensorType baseLine)
+        {
+            if (source == SensorType.C || source.IsCollinearWith(baseLine))
+                return source;
+            
+        }
+        public static bool IsCollinearWith(this SensorType source, SensorType target)
+        {
+            var thisGroup = source.GetGroup();
+            var targetGroup = target.GetGroup();
+            if (thisGroup is SensorGroup.C || targetGroup is SensorGroup.C)
+                return true;
+
+            var thisIndex = source.GetIndex();
+            var targetIndex = target.GetIndex();
+            
+            if (thisGroup is (SensorGroup.A or SensorGroup.B) && targetGroup is (SensorGroup.A or SensorGroup.B))
+                return thisIndex == targetIndex || Math.Abs(thisIndex - targetIndex) == 4;
+            else if (thisGroup is (SensorGroup.D or SensorGroup.E) && targetGroup is (SensorGroup.D or SensorGroup.E))
+                return thisIndex == targetIndex || Math.Abs(thisIndex - targetIndex) == 4;
+            else
+                return false;
+        }
+        public static bool IsLeftOf(this SensorType source, SensorType target)
+        {
+            if (source == SensorType.C || target == SensorType.C)
+                throw new InvalidOperationException("cnm");
+            else if (source.IsCollinearWith(target))
+                return false;
+
+            var opposite = target.GetDiff(4);
+            var thisIndex = source.GetIndex();
+            var aIndex = target.GetIndex();
+            var bIndex = opposite.GetIndex();
+            var min = Math.Min(aIndex, bIndex);
+            var max = Math.Max(aIndex, bIndex);
+
+            var thisGroup = source.GetGroup();
+            var targetGroup = target.GetGroup();
+
+            var AorB = thisGroup is SensorGroup.A or SensorGroup.B && targetGroup is SensorGroup.A or SensorGroup.B;
+            var DorE = thisGroup is SensorGroup.D or SensorGroup.E && targetGroup is SensorGroup.D or SensorGroup.E;
+            if (AorB || DorE)
+            {
+                if (thisIndex > min && thisIndex < max)
+                    return false;
+                else
+                    return true;
+            }
+            else
+            {
+                if(targetGroup is SensorGroup.A or SensorGroup.B)
+                {
+                    if (thisIndex > min && thisIndex <= max)
+                        return false;
+                    else
+                        return true;
+                }
+                else
+                {
+                    if (thisIndex >= min && thisIndex < max)
+                        return false;
+                    else
+                        return true;
+                }
+            }
+        }
+        public static bool IsRightOf(this SensorType source, SensorType target)
+        {
+            if (source == SensorType.C || target == SensorType.C)
+                throw new InvalidOperationException("cnm");
+            else if (source.IsCollinearWith(target))
+                return false;
+            else
+                return !source.IsLeftOf(target);
+        }
     }
 }
