@@ -344,6 +344,184 @@ namespace MajdataPlay.Extensions
                             SensorType.B7 => SensorType.B8,
                             _ => throw new NotSupportedException()
                         };
+                    case SensorType.A1:
+                    case SensorType.B1:
+                        return source switch
+                        {
+                            SensorType.D1 => SensorType.D2,
+                            SensorType.D2 => SensorType.D1,
+                            SensorType.D3 => SensorType.D8,
+                            SensorType.D4 => SensorType.D7,
+                            SensorType.D5 => SensorType.D6,
+                            SensorType.D6 => SensorType.D5,
+                            SensorType.D7 => SensorType.D4,
+                            SensorType.D8 => SensorType.D3,
+                            SensorType.E1 => SensorType.E2,
+                            SensorType.E2 => SensorType.E1,
+                            SensorType.E3 => SensorType.E8,
+                            SensorType.E4 => SensorType.E7,
+                            SensorType.E5 => SensorType.E6,
+                            SensorType.E6 => SensorType.E5,
+                            SensorType.E7 => SensorType.E4,
+                            SensorType.E8 => SensorType.E3,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A2:
+                    case SensorType.B2:
+                        return source switch
+                        {
+                            SensorType.D3 => SensorType.D2,
+                            SensorType.D4 => SensorType.D1,
+                            SensorType.D5 => SensorType.D8,
+                            SensorType.D6 => SensorType.D7,
+                            SensorType.D7 => SensorType.D6,
+                            SensorType.D8 => SensorType.D5,
+                            SensorType.D1 => SensorType.D4,
+                            SensorType.D2 => SensorType.D3,
+                            SensorType.E3 => SensorType.E2,
+                            SensorType.E4 => SensorType.E1,
+                            SensorType.E5 => SensorType.E8,
+                            SensorType.E6 => SensorType.E7,
+                            SensorType.E7 => SensorType.E6,
+                            SensorType.E8 => SensorType.E5,
+                            SensorType.E1 => SensorType.E4,
+                            SensorType.E2 => SensorType.E3,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A3:
+                    case SensorType.B3:
+                        return source switch
+                        {
+                            SensorType.D4 => SensorType.D3,
+                            SensorType.D5 => SensorType.D2,
+                            SensorType.D6 => SensorType.D1,
+                            SensorType.D7 => SensorType.D8,
+                            SensorType.D8 => SensorType.D7,
+                            SensorType.D1 => SensorType.D6,
+                            SensorType.D2 => SensorType.D5,
+                            SensorType.D3 => SensorType.D4,
+                            SensorType.E4 => SensorType.E3,
+                            SensorType.E5 => SensorType.E2,
+                            SensorType.E6 => SensorType.E1,
+                            SensorType.E7 => SensorType.E8,
+                            SensorType.E8 => SensorType.E7,
+                            SensorType.E1 => SensorType.E6,
+                            SensorType.E2 => SensorType.E5,
+                            SensorType.E3 => SensorType.E4,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A4:
+                    case SensorType.B4:
+                        return source switch
+                        { 
+                            SensorType.D5 => SensorType.D4,
+                            SensorType.D6 => SensorType.D3,
+                            SensorType.D7 => SensorType.D2,
+                            SensorType.D8 => SensorType.D1,
+                            SensorType.D1 => SensorType.D8,
+                            SensorType.D2 => SensorType.D7,
+                            SensorType.D3 => SensorType.D6,
+                            SensorType.D4 => SensorType.D5,
+                            SensorType.E5 => SensorType.E4,
+                            SensorType.E6 => SensorType.E3,
+                            SensorType.E7 => SensorType.E2,
+                            SensorType.E8 => SensorType.E1,
+                            SensorType.E1 => SensorType.E8,
+                            SensorType.E2 => SensorType.E7,
+                            SensorType.E3 => SensorType.E6,
+                            SensorType.E4 => SensorType.E5,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A5:
+                    case SensorType.B5:
+                        return source switch
+                        {
+                            SensorType.D6 => SensorType.D5,
+                            SensorType.D7 => SensorType.D4,
+                            SensorType.D8 => SensorType.D3,
+                            SensorType.D1 => SensorType.D2,
+                            SensorType.D2 => SensorType.D1,
+                            SensorType.D3 => SensorType.D8,
+                            SensorType.D4 => SensorType.D7,
+                            SensorType.D5 => SensorType.D6,
+                            SensorType.E6 => SensorType.E5,
+                            SensorType.E7 => SensorType.E4,
+                            SensorType.E8 => SensorType.E3,
+                            SensorType.E1 => SensorType.E2,
+                            SensorType.E2 => SensorType.E1,
+                            SensorType.E3 => SensorType.E8,
+                            SensorType.E4 => SensorType.E7,
+                            SensorType.E5 => SensorType.E6,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A6:
+                    case SensorType.B6:
+                        return source switch
+                        {
+                            SensorType.D7 => SensorType.D6,
+                            SensorType.D8 => SensorType.D5,
+                            SensorType.D1 => SensorType.D4,
+                            SensorType.D2 => SensorType.D3,
+                            SensorType.D3 => SensorType.D2,
+                            SensorType.D4 => SensorType.D1,
+                            SensorType.D5 => SensorType.D8,
+                            SensorType.D6 => SensorType.D7,
+                            SensorType.E7 => SensorType.E6,
+                            SensorType.E8 => SensorType.E5,
+                            SensorType.E1 => SensorType.E4,
+                            SensorType.E2 => SensorType.E3,
+                            SensorType.E3 => SensorType.E2,
+                            SensorType.E4 => SensorType.E1,
+                            SensorType.E5 => SensorType.E8,
+                            SensorType.E6 => SensorType.E7,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A7:
+                    case SensorType.B7:
+                        return source switch
+                        {
+                            SensorType.D8 => SensorType.D7,
+                            SensorType.D1 => SensorType.D6,
+                            SensorType.D2 => SensorType.D5,
+                            SensorType.D3 => SensorType.D4,
+                            SensorType.D4 => SensorType.D3,
+                            SensorType.D5 => SensorType.D2,
+                            SensorType.D6 => SensorType.D1,
+                            SensorType.D7 => SensorType.D8,
+                            SensorType.E8 => SensorType.E7,
+                            SensorType.E1 => SensorType.E6,
+                            SensorType.E2 => SensorType.E5,
+                            SensorType.E3 => SensorType.E4,
+                            SensorType.E4 => SensorType.E3,
+                            SensorType.E5 => SensorType.E2,
+                            SensorType.E6 => SensorType.E1,
+                            SensorType.E7 => SensorType.E8,
+                            _ => throw new NotSupportedException()
+                        };
+                    case SensorType.A8:
+                    case SensorType.B8:
+                        return source switch
+                        {
+                            SensorType.D1 => SensorType.D8,
+                            SensorType.D2 => SensorType.D7,
+                            SensorType.D3 => SensorType.D6,
+                            SensorType.D4 => SensorType.D5,
+                            SensorType.D5 => SensorType.D4,
+                            SensorType.D6 => SensorType.D3,
+                            SensorType.D7 => SensorType.D2,
+                            SensorType.D8 => SensorType.D1,
+                            SensorType.E1 => SensorType.E8,
+                            SensorType.E2 => SensorType.E7,
+                            SensorType.E3 => SensorType.E6,
+                            SensorType.E4 => SensorType.E5,
+                            SensorType.E5 => SensorType.E4,
+                            SensorType.E6 => SensorType.E3,
+                            SensorType.E7 => SensorType.E2,
+                            SensorType.E8 => SensorType.E1,
+                            _ => throw new NotSupportedException()
+                        };
+                    default:
+                        throw new NotSupportedException();
                 }
             }
 
