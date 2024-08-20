@@ -13,6 +13,7 @@ using UnityEngine.SceneManagement;
 public class GamePlayManager : MonoBehaviour
 {
     public static GamePlayManager Instance;
+    public (float,float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
 
     AudioSampleWrap audioSample;
     SimaiProcess Chart;
