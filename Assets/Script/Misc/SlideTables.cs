@@ -164,6 +164,90 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A7,13,true,true)
                 }
             },
+            new SlideTable()
+            {
+                Name = "v1",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B1,15),
+                    BuildJudgeArea(SensorType.A1,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v2",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B2,15),
+                    BuildJudgeArea(SensorType.A2,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v3",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B3,15),
+                    BuildJudgeArea(SensorType.A3,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v4",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B4,15),
+                    BuildJudgeArea(SensorType.A4,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v6",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B6,15),
+                    BuildJudgeArea(SensorType.A6,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v7",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B7,15),
+                    BuildJudgeArea(SensorType.A7,19,true,true)
+                }
+            },
+            new SlideTable()
+            {
+                Name = "v8",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B1,6),
+                    BuildJudgeArea(SensorType.C,11),
+                    BuildJudgeArea(SensorType.B8,15),
+                    BuildJudgeArea(SensorType.A8,19,true,true)
+                }
+            },
         };
         static JudgeArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
         {
