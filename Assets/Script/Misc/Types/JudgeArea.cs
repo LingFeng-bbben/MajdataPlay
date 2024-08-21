@@ -48,14 +48,18 @@ namespace MajdataPlay.Types
         {
 
         }
-        public void SetIsLast()
+        public void Mirror(SensorType baseLine)
         {
-            areas.ForEach(x => x.IsLast = true);
+            foreach(var area in areas)
+                area.Mirror(baseLine);
         }
-        public void SetNonLast()
+        public void SetDiff(int diff)
         {
-            areas.ForEach(x => x.IsLast = false);
+            foreach(var area in areas)
+                area.SetDiff(diff);
         }
+        public void SetIsLast() => areas.ForEach(x => x.IsLast = true);
+        public void SetNonLast() => areas.ForEach(x => x.IsLast = false);
         public void Judge(SensorType type, SensorStatus status)
         {
             var areaList = areas.Where(x => x.Type == type);

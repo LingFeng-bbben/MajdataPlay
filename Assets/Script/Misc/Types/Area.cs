@@ -1,4 +1,6 @@
 ﻿
+using MajdataPlay.Extensions;
+
 namespace MajdataPlay.Types
 {
     public class Area
@@ -32,5 +34,7 @@ namespace MajdataPlay.Types
             On = false;
             Off = false;
         }
+        public void Mirror(SensorType baseLine) => Type = Type.Mirror(baseLine);
+        public void SetDiff(int diff) => Type = Type.GetDiff(diff);
     }
 }

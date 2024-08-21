@@ -94,6 +94,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isMirror)
             {
+                slideTable.Mirror();
                 transform.localScale = new Vector3(-1f, 1f, 1f);
                 transform.rotation = Quaternion.Euler(0f, 0f, -45f * startPosition);
                 slideOK.transform.localScale = new Vector3(-1f, 1f, 1f);
@@ -102,6 +103,10 @@ namespace MajdataPlay.Game.Notes
             {
                 transform.rotation = Quaternion.Euler(0f, 0f, -45f * (startPosition - 1));
             }
+
+            var diff = Math.Abs(1 - startPosition);
+            if(diff != 0)
+                slideTable.SetDiff(diff);
 
             if (isJustR)
             {

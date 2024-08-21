@@ -114,36 +114,26 @@ namespace MajdataPlay.Extensions
             diff = diff % 8;
             if (diff == 0)
                 return source;
-
-            var isReverse = diff < 0;
-            var result = source.GetIndex() + diff;
+            else if (diff < 0)
+                diff = 8 + diff;
+            //var isReverse = diff < 0;
+            var result = (source.GetIndex() - 1 + diff) % 8 ;
             var group = source.GetGroup();
             switch(group)
             {
                 case SensorGroup.A:
-                    if (isReverse)
-                        result += 7;
                     return (SensorType)result;
                 case SensorGroup.B:
-                    if (isReverse)
-                        result += 7 + 8;
-                    else
-                        result += 8;
+                    result += 8;
                     return (SensorType)result;
                 case SensorGroup.C:
                     return source;
                 case SensorGroup.D:
-                    if (isReverse)
-                        result += 7 + 17;
-                    else
-                        result += 17;
+                    result += 17;
                     return (SensorType)result;
                 // SensorGroup.E
                 default:
-                    if (isReverse)
-                        result += 7 + 25;
-                    else
-                        result += 25;
+                    result += 25;
                     return (SensorType)result;
             }
         }
