@@ -74,15 +74,16 @@ public class ResultScreenManager : MonoBehaviour
 
         if(!totalJudgeRecord.IsNoMiss)
             clearLogo.SetActive(false);
-        else if(totalJudgeRecord.IsNoGood)
-            clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
-        else if(totalJudgeRecord.IsAllPerfect)
+        else if (totalJudgeRecord.IsAllPerfect)
         {
-            if(breakJudgeInfo.Perfect == 0)
+            if (breakJudgeInfo.Perfect == 0)
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
             else
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
         }
+        else if(totalJudgeRecord.IsNoGood)
+            clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
+        
 
         IOManager.Instance.BindAnyArea(OnAreaDown);
         AudioManager.Instance.PlaySFX("Sugoi.wav");
