@@ -44,6 +44,10 @@ namespace MajdataPlay.Types
             }
             SlideIndex = slideIndex;
         }
+        public JudgeArea()
+        {
+
+        }
         public void SetIsLast()
         {
             areas.ForEach(x => x.IsLast = true);

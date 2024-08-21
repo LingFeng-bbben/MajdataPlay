@@ -113,7 +113,7 @@ namespace MajdataPlay.Types
             },
             new SlideTable()
             {
-                Name = "Line3",
+                Name = "line3",
                 JudgeQueue = new JudgeArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
@@ -123,7 +123,7 @@ namespace MajdataPlay.Types
             },
             new SlideTable()
             {
-                Name = "Line4",
+                Name = "line4",
                 JudgeQueue = new JudgeArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
@@ -134,7 +134,7 @@ namespace MajdataPlay.Types
             },
             new SlideTable()
             {
-                Name = "Line5",
+                Name = "line5",
                 JudgeQueue = new JudgeArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
@@ -146,7 +146,7 @@ namespace MajdataPlay.Types
             },
             new SlideTable()
             {
-                Name = "Line6",
+                Name = "line6",
                 JudgeQueue = new JudgeArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
@@ -157,7 +157,7 @@ namespace MajdataPlay.Types
             },
             new SlideTable()
             {
-                Name = "Line7",
+                Name = "line7",
                 JudgeQueue = new JudgeArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
