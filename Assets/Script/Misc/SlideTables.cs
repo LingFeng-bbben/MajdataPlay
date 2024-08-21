@@ -333,8 +333,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A3,25),
                     BuildJudgeArea(SensorType.A2,28),
                     BuildJudgeArea(SensorType.B1,34),
-                    BuildJudgeArea(SensorType.C,38),
-                    BuildJudgeArea(SensorType.B6,41),
+                    BuildJudgeArea(new SensorType[] { SensorType.C,SensorType.B8 },38),
+                    BuildJudgeArea(new SensorType[] { SensorType.B7,SensorType.B6 },41),
                     BuildJudgeArea(SensorType.A6,48,true,true),
                 }
             },
@@ -367,6 +367,58 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A2,29),
                     BuildJudgeArea(new SensorType[] { SensorType.B1,SensorType.A1 },35),
                     BuildJudgeArea(SensorType.A8,41,true,true),
+                }
+            },
+            new SlideTable()
+            {
+                Name = "L2",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,2),
+                    BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },7,false),
+                    BuildJudgeArea(SensorType.A7,15),
+                    BuildJudgeArea(SensorType.B8,21),
+                    BuildJudgeArea(SensorType.A1,26),
+                    BuildJudgeArea(SensorType.A2,32,true,true),
+                }
+            },
+            new SlideTable()
+            {
+                Name = "L3",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,2),
+                    BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
+                    BuildJudgeArea(SensorType.A7,17),
+                    BuildJudgeArea(SensorType.B7,22),
+                    BuildJudgeArea(SensorType.C,26),
+                    BuildJudgeArea(SensorType.B3,29),
+                    BuildJudgeArea(SensorType.A3,34,true,true),
+                }
+            },
+            new SlideTable()
+            {
+                Name = "L4",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,2),
+                    BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
+                    BuildJudgeArea(SensorType.A7,17),
+                    BuildJudgeArea(SensorType.B6,22),
+                    BuildJudgeArea(SensorType.B5,26),
+                    BuildJudgeArea(SensorType.A4,32,true,true),
+                }
+            },
+            new SlideTable()
+            {
+                Name = "L5",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,2),
+                    BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
+                    BuildJudgeArea(SensorType.A7,16),
+                    BuildJudgeArea(new SensorType[] { SensorType.B6,SensorType.A6 },22,false),
+                    BuildJudgeArea(SensorType.A5,28,true,true),
                 }
             },
         };
