@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,14 +9,14 @@ namespace MajdataPlay.Types
 {
     public static class SlideTables
     {
-        public static SlideTable[] SLIDE_TABLES = new SlideTable[]
+        public static SlideTable[] SLIDE_TABLES => new SlideTable[]
         {
             new SlideTable()
             {
                 Name = "circle2",
                 JudgeQueue = new JudgeArea[]
                 {
-                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.A1,3,false),
                     BuildJudgeArea(SensorType.A2,7,true,true)
                 }
             },
@@ -560,6 +561,12 @@ namespace MajdataPlay.Types
                 }
             },
         };
+        public static SlideTable? FindTableByName(string prefabName)
+        {
+            var result = SLIDE_TABLES.Find(x => x.Name == prefabName);
+            var clone = result.Clone();
+            return clone;
+        }
         static JudgeArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
         {
             var obj = new JudgeArea(new Dictionary<SensorType, bool>

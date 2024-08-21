@@ -86,6 +86,9 @@ namespace MajdataPlay.Game.Notes
             if (isInitialized)
                 return;
             isInitialized = true;
+            var slideTable = SlideTables.FindTableByName(slideType);
+            if (slideTable is null)
+                throw new MissingComponentException($"Slide table of \"{slideType}\" is not found");
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
@@ -129,7 +132,8 @@ namespace MajdataPlay.Game.Notes
                 controller.parent = this;
             }
 
-            for (var i = 0; i < transform.childCount - 1; i++) slideBars.Add(transform.GetChild(i).gameObject);
+            for (var i = 0; i < transform.childCount - 1; i++) 
+                slideBars.Add(transform.GetChild(i).gameObject);
 
             slideOK.SetActive(false);
             slideOK.transform.SetParent(transform.parent);

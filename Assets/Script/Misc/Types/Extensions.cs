@@ -32,7 +32,7 @@ namespace MajdataPlay.Extensions
                 var array = source as Array;
                 if (array is null)
                     return default;
-                Array copiedArray = Array.CreateInstance(elementType, array.Length);
+                var copiedArray = Array.CreateInstance(elementType, array.Length);
 
                 for (int i = 0; i < array.Length; i++)
                     copiedArray.SetValue(array.GetValue(i).Clone(), i);
@@ -44,9 +44,9 @@ namespace MajdataPlay.Extensions
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var field in fields)
             {
-                object fieldValue = field.GetValue(source);
-                if (fieldValue != null)
-                    field.SetValue(result, fieldValue.Clone());
+                var value = field.GetValue(source);
+                if (value != null)
+                    field.SetValue(result, value.Clone());
             }
 
             return (T)result;
