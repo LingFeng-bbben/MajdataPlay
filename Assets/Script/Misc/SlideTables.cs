@@ -421,6 +421,20 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A5,28,true,true),
                 }
             },
+            new SlideTable()
+            {
+                Name = "s",
+                JudgeQueue = new JudgeArea[]
+                {
+                    BuildJudgeArea(SensorType.A1,3),
+                    BuildJudgeArea(SensorType.B8,8),
+                    BuildJudgeArea(SensorType.B7,11),
+                    BuildJudgeArea(SensorType.C,17),
+                    BuildJudgeArea(SensorType.B3,21),
+                    BuildJudgeArea(SensorType.B4,24),
+                    BuildJudgeArea(SensorType.A5,30,true,true),
+                }
+            },
         };
         static JudgeArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
         {
