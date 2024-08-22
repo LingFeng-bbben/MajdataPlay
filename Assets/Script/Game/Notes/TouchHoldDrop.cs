@@ -248,7 +248,7 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.PlayTapSound(false,false,judgeResult);
             audioEffMana.StopTouchHoldSound();
 
-            PlayJudgeEffect(judgeResult);
+            PlayJudgeEffect(result);
         }
         void PlayJudgeEffect(JudgeType judgeResult)
         {
