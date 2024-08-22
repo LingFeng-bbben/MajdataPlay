@@ -194,12 +194,10 @@ namespace MajdataPlay.Extensions
             if(AorB || DorE)
             {
                 var diff = baseIndex - thisIndex;
-                if (diff < 0)
-                    diff += 8;
                 if(source.IsLeftOf(baseLine))
                     return baseLine.GetDiff(diff);
                 else
-                    return baseLine.GetDiff(-diff);
+                    return baseLine.GetDiff(diff);
             }
             else
             {
