@@ -19,7 +19,7 @@ namespace MajdataPlay.Types
                     return On && Off;
             }
         }
-        public void Judge(SensorStatus status)
+        public void Judge(in SensorStatus status)
         {
             if (status == SensorStatus.Off)
             {

@@ -20,7 +20,6 @@ namespace MajdataPlay.Game.Notes
         public Sprite spriteBreak;
         public RuntimeAnimatorController slideShine;
         public RuntimeAnimatorController judgeBreakShine;
-        public GameObject parent;
 
         public bool isMirror;
         public bool isJustR;
@@ -44,14 +43,9 @@ namespace MajdataPlay.Game.Notes
         public Material breakMaterial;
         public string slideType;
 
-        List<SensorType> boundSensors = new();
-        List<Sensor> judgeSensors = new();
-        List<JudgeArea> judgeQueue = new(); // 判定队列
-        List<JudgeArea> _judgeQueue = new(); // 判定队列
+        
 
-        public ConnSlideInfo ConnectInfo { get; set; } = new();
-        public bool isFinished { get => judgeQueue.Count == 0; }
-        public bool isPendingFinish { get => judgeQueue.Count == 1; }
+        
 
 
         Animator fadeInAnimator;
@@ -67,17 +61,24 @@ namespace MajdataPlay.Game.Notes
 
         public int endPosition;
 
-        List<GameObject> sensors = new();
 
-        List<Sensor> registerSensors = new();
 
-        bool canShine = false;
+        
+        public ConnSlideInfo ConnectInfo { get; set; } = new();
+        public bool isFinished { get => judgeQueue.Length == 0; }
+        public bool isPendingFinish { get => judgeQueue.Length == 1; }
+        public bool CanShine { get; private set; } = false;
+
         bool canCheck = false;
         bool isChecking = false;
         float judgeTiming; // 正解帧
         bool isInitialized = false; //防止重复初始化
         bool isDestroying = false; // 防止重复销毁
         bool isSoundPlayed = false;
+        float lastWaitTime;
+        SlideTable table;
+        JudgeArea[] judgeQueue = { }; // 判定队列
+        IEnumerable<SensorType> judgeAreas;
         /// <summary>
         /// Slide初始化
         /// </summary>
@@ -89,12 +90,13 @@ namespace MajdataPlay.Game.Notes
             var slideTable = SlideTables.FindTableByName(slideType);
             if (slideTable is null)
                 throw new MissingComponentException($"Slide table of \"{slideType}\" is not found");
+            table = slideTable;
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             if (isMirror)
             {
-                slideTable.Mirror();
+                table.Mirror();
                 transform.localScale = new Vector3(-1f, 1f, 1f);
                 transform.rotation = Quaternion.Euler(0f, 0f, -45f * startPosition);
                 slideOK.transform.localScale = new Vector3(-1f, 1f, 1f);
@@ -106,7 +108,7 @@ namespace MajdataPlay.Game.Notes
 
             var diff = Math.Abs(1 - startPosition);
             if(diff != 0)
-                slideTable.SetDiff(diff);
+                table.SetDiff(diff);
 
             if (isJustR)
             {
@@ -200,64 +202,13 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator.speed = 0.2f / interval;
             fadeInAnimator.SetTrigger("slide");
 
-            var ioManagerObj = IOManager.Instance;
-            var count = ioManagerObj.transform.childCount;
-            for (int i = 0; i < count; i++)
-                sensors.Add(ioManagerObj.transform.GetChild(i).gameObject);
+            judgeQueue = table.JudgeQueue;
 
-            GetSensors(sensors.Select(x => x.GetComponent<RectTransform>())
-                                            .ToArray());
-
-            var _slideIndex = areaStep.Skip(1).ToArray();
-            if (_slideIndex.Length != judgeSensors.Count)
-                _slideIndex = null;
-            for (int i = 0; i < judgeSensors.Count; i++)
-            {
-                var sensor = judgeSensors[i];
-                int index = 0;
-                if (_slideIndex is null)
-                    index = slideBars.Count / judgeSensors.Count * (i + 1);
-                else
-                    index = _slideIndex[i];
-                judgeQueue.Add(new JudgeArea(
-                    new Dictionary<SensorType, bool>
-                    {
-                    {sensor.Type, i == judgeSensors.Count - 1 }
-                    }, index));
-            }
-            if (slideType is "line3" or "line7")// 1-3
-            {
-                judgeQueue[1].CanSkip = ConnectInfo.IsConnSlide;
-                judgeQueue[1].AddArea(judgeSensors[1].Type + 8);
-                registerSensors.Add(ioManager.GetSensor(judgeSensors[1].Type + 8));
-            }
-            else if (slideType == "circle3")// 1^3
-                judgeQueue[1].CanSkip = ConnectInfo.IsConnSlide;
-            else if (slideType[0] == 'L')// 1V3
-            {
-                judgeQueue[1].CanSkip = ConnectInfo.IsConnSlide;
-                judgeQueue[1].AddArea(judgeSensors[1].Type + 8);
-                registerSensors.Add(ioManager.GetSensor(judgeSensors[1].Type + 8));
-                if (slideType == "L5")// 1V35
-                {
-                    judgeQueue[3].CanSkip = ConnectInfo.IsConnSlide;
-                    judgeQueue[3].AddArea(judgeSensors[3].Type + 8);
-                    registerSensors.Add(ioManager.GetSensor(judgeSensors[3].Type + 8));
-                }
-            }
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
                 judgeQueue.LastOrDefault().SetIsLast();
             else if (ConnectInfo.IsConnSlide)
                 judgeQueue.LastOrDefault().SetNonLast();
-            registerSensors.AddRange(judgeSensors);
-            _judgeQueue = new(judgeQueue);
 
-            parent = ConnectInfo.Parent;
-            if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd ||
-                !ConnectInfo.IsConnSlide)
-            {
-                judgeTiming = time + LastFor * CalJudgeTiming();
-            }
 
         }
         /// <summary>
@@ -268,7 +219,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
-            judgeQueue.Clear();
+            judgeQueue = Array.Empty<JudgeArea>();
         }
         private void Start()
         {
@@ -280,48 +231,19 @@ namespace MajdataPlay.Game.Notes
                 {
                     var parent = ConnectInfo.Parent!.GetComponent<SlideDrop>();
                     time = parent.time + parent.LastFor;
-                    judgeTiming = time + LastFor * CalJudgeTiming();
                 }
             }
-            var allSensors = judgeQueue.SelectMany(x => x.GetSensorTypes())
-                                       .GroupBy(x => x)
-                                       .Select(x => x.Key);
-            var a = judgeQueue.Select(x => x.GetSensorTypes()).ToList();
-            boundSensors.AddRange(allSensors);
-            foreach (var sensor in allSensors)
+
+            if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
+                judgeTiming = time + LastFor * CalJudgeTiming();
+
+            judgeAreas = table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
+                                         .GroupBy(x => x)
+                                         .Select(x => x.Key)
+                                         .ToArray();
+
+            foreach (var sensor in judgeAreas)
                 ioManager.BindSensor(Check, sensor);
-        }
-        void GetSensors(RectTransform[] sensors)
-        {
-            Sensor lastSensor = null;
-            foreach (var bar in slideBars)
-            {
-                var pos = bar.transform.position;
-
-                foreach (var s in sensors)
-                {
-                    var sensor = s.GetComponent<Sensor>();
-                    if (sensor.Group == SensorGroup.E || sensor.Group == SensorGroup.D)
-                        continue;
-
-                    var rCenter = s.transform.position;
-                    var rWidth = s.rect.width * s.lossyScale.x;
-                    var rHeight = s.rect.height * s.lossyScale.y;
-
-                    var radius = Math.Max(rWidth, rHeight) / 2;
-
-                    if ((pos - rCenter).sqrMagnitude <= radius * radius)
-                    {
-                        if (lastSensor is null || sensor != lastSensor)
-                        {
-                            judgeSensors.Add(sensor);
-                            lastSensor = sensor;
-                            break;
-                        }
-                    }
-                }
-            }
-
         }
         private void FixedUpdate()
         {
@@ -392,7 +314,7 @@ namespace MajdataPlay.Game.Notes
             var timing = gpManager.AudioTime - time;
             if (timing <= 0f)
             {
-                canShine = true;
+                CanShine = true;
                 float alpha;
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
                     alpha = 0;
@@ -435,7 +357,7 @@ namespace MajdataPlay.Game.Notes
             else if (isChecking)
                 return;
             isChecking = true;
-            if (ConnectInfo.Parent != null && judgeQueue.Count < _judgeQueue.Count)
+            if (ConnectInfo.Parent != null && judgeQueue.Length < table.JudgeQueue.Length)
             {
                 if (!ConnectInfo.ParentFinished)
                     ConnectInfo.Parent.GetComponent<SlideDrop>().ForceFinish();
@@ -444,7 +366,7 @@ namespace MajdataPlay.Game.Notes
             var first = judgeQueue.First();
             JudgeArea? second = null;
 
-            if (judgeQueue.Count >= 2)
+            if (judgeQueue.Length >= 2)
                 second = judgeQueue[1];
             var fType = first.GetSensorTypes();
             foreach (var t in fType)
@@ -472,14 +394,14 @@ namespace MajdataPlay.Game.Notes
                 if (second.IsFinished)
                 {
                     HideBar(first.SlideIndex);
-                    judgeQueue = judgeQueue.Skip(2).ToList();
+                    judgeQueue = judgeQueue.Skip(2).ToArray();
                     isChecking = false;
                     return;
                 }
                 else if (second.On)
                 {
                     HideBar(first.SlideIndex);
-                    judgeQueue = judgeQueue.Skip(1).ToList();
+                    judgeQueue = judgeQueue.Skip(1).ToArray();
                     isChecking = false;
                     return;
                 }
@@ -488,7 +410,7 @@ namespace MajdataPlay.Game.Notes
             if (first.IsFinished)
             {
                 HideBar(first.SlideIndex);
-                judgeQueue = judgeQueue.Skip(1).ToList();
+                judgeQueue = judgeQueue.Skip(1).ToArray();
                 isChecking = false;
                 return;
             }
@@ -598,14 +520,16 @@ namespace MajdataPlay.Game.Notes
         /// <returns>正解帧 (单位: s)</returns>
         float CalJudgeTiming()
         {
-            var s = judgeSensors.LastOrDefault().gameObject.transform.GetComponent<RectTransform>();
+            var s = ioManager.GetSensor(judgeQueue.LastOrDefault()
+                              .GetSensorTypes()
+                              .FirstOrDefault()).GetComponent<RectTransform>();
             var starRadius = 0.763736616f;
             var rCenter = s.position;
             var rWidth = s.rect.width * s.lossyScale.x;
             var rHeight = s.rect.height * s.lossyScale.y;
 
             var radius = Math.Max(rWidth, rHeight) / 2;
-            for (float process = 0.85f; process < 1; process += 0.01f)
+            for (float process = 0.80f; process < 1; process += 0.01f)
             {
                 var indexProcess = (slidePositions.Count - 1) * process;
                 var index = (int)indexProcess;
@@ -626,7 +550,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         void TooLateJudge()
         {
-            if (judgeQueue.Count == 1)
+            if (judgeQueue.Length == 1)
                 slideOK.GetComponent<LoadJustSprite>().setLateGd();
             else
                 slideOK.GetComponent<LoadJustSprite>().setMiss();
@@ -642,10 +566,7 @@ namespace MajdataPlay.Game.Notes
         {
 
             if (onlyStar)
-            {
                 Destroy(star_slide);
-                star_slide = null;
-            }
             else
             {
                 if (ConnectInfo.Parent != null)
@@ -667,7 +588,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(ConnectInfo.Parent);
             if (star_slide != null)
                 Destroy(star_slide);
-            foreach (var sensor in boundSensors)
+            foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
@@ -747,6 +668,5 @@ namespace MajdataPlay.Game.Notes
                 star_slide.transform.rotation = newRotation;
         }
         public GameObject[] GetSlideBars() => slideBars.ToArray();
-        public bool CanShine() => canShine;
     }
 }

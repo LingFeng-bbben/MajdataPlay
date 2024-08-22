@@ -60,7 +60,7 @@ namespace MajdataPlay.Types
         }
         public void SetIsLast() => areas.ForEach(x => x.IsLast = true);
         public void SetNonLast() => areas.ForEach(x => x.IsLast = false);
-        public void Judge(SensorType type, SensorStatus status)
+        public void Judge(SensorType type,in SensorStatus status)
         {
             var areaList = areas.Where(x => x.Type == type);
 
