@@ -443,59 +443,60 @@ namespace MajdataPlay.Game.Notes
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
-            var starTiming = timeStart + (time - timeStart) * 0.75;
-            var stayTime = time + LastFor - judgeTiming; // 停留时间
-            if (!isJudged)
+            else if (isJudged)
+                return;
+            //var stayTime = time + LastFor - judgeTiming; // 停留时间
+            var stayTime = lastWaitTime; // 停留时间
+
+            arriveTime = gpManager.AudioTime;
+            var triggerTime = gpManager.AudioTime;
+
+            const float totalInterval = 1.2f; // 秒
+            const float nPInterval = 0.4666667f; // Perfect基础区间
+
+            float extInterval = MathF.Min(stayTime / 4, 0.733333f);           // Perfect额外区间
+            float pInterval = MathF.Min(nPInterval + extInterval, totalInterval);// Perfect总区间
+            var ext = MathF.Max(extInterval - 0.4f, 0);
+            float grInterval = MathF.Max(0.4f - extInterval, 0);        // Great总区间
+            float gdInterval = MathF.Max(0.3333334f - ext, 0); // Good总区间
+
+            var diff = judgeTiming - triggerTime; // 大于0为Fast，小于为Late
+            bool isFast = false;
+            JudgeType? judge = null;
+
+            if (diff > 0)
+                isFast = true;
+
+            var p = pInterval / 2;
+            var gr = grInterval / 2;
+            var gd = gdInterval / 2;
+            diff = MathF.Abs(diff);
+
+            if (gr == 0)
             {
-                arriveTime = gpManager.AudioTime;
-                var triggerTime = gpManager.AudioTime;
-
-                const float totalInterval = 1.2f; // 秒
-                const float nPInterval = 0.4666667f; // Perfect基础区间
-
-                float extInterval = MathF.Min(stayTime / 4, 0.733333f);           // Perfect额外区间
-                float pInterval = MathF.Min(nPInterval + extInterval, totalInterval);// Perfect总区间
-                var ext = MathF.Max(extInterval - 0.4f, 0);
-                float grInterval = MathF.Max(0.4f - extInterval, 0);        // Great总区间
-                float gdInterval = MathF.Max(0.3333334f - ext, 0); // Good总区间
-
-                var diff = judgeTiming - triggerTime; // 大于0为Fast，小于为Late
-                bool isFast = false;
-                JudgeType? judge = null;
-
-                if (diff > 0)
-                    isFast = true;
-
-                var p = pInterval / 2;
-                var gr = grInterval / 2;
-                var gd = gdInterval / 2;
-                diff = MathF.Abs(diff);
-
-                if (gr == 0)
-                {
-                    if (diff >= p)
-                        judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
-                    else
-                        judge = JudgeType.Perfect;
-                }
+                if (diff >= p)
+                    judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
                 else
-                {
-                    if (diff >= gr + p || diff >= totalInterval / 2)
-                        judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
-                    else if (diff >= p)
-                        judge = isFast ? JudgeType.FastGreat : JudgeType.LateGreat;
-                    else
-                        judge = JudgeType.Perfect;
-                }
-                print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-                judgeResult = judge ?? JudgeType.Miss;
-                SetJust();
-                isJudged = true;
+                    judge = JudgeType.Perfect;
             }
-            else if (arriveTime < starTiming && gpManager.AudioTime >= starTiming + stayTime * 0.8)
-                DestroySelf();
-            else if (arriveTime >= starTiming && gpManager.AudioTime >= arriveTime + stayTime * 0.8)
-                DestroySelf();
+            else
+            {
+                if (diff >= gr + p || diff >= totalInterval / 2)
+                    judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
+                else if (diff >= p)
+                    judge = isFast ? JudgeType.FastGreat : JudgeType.LateGreat;
+                else
+                    judge = JudgeType.Perfect;
+            }
+            print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
+            judgeResult = judge ?? JudgeType.Miss;
+            SetJust();
+            isJudged = true;
+
+            if (GetJudgeTiming() < 0)
+                lastWaitTime += MathF.Abs(GetJudgeTiming()) / 2;
+            else if (diff >= totalInterval / 2 && !isFast)
+                lastWaitTime = 0;
         }
         void SetJust()
         {
