@@ -219,6 +219,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
+            HideBar(areaStep.LastOrDefault());
             judgeQueue = Array.Empty<JudgeArea>();
         }
         private void Start()
@@ -235,7 +236,11 @@ namespace MajdataPlay.Game.Notes
             }
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
-                judgeTiming = time + LastFor * CalJudgeTiming();
+            {
+                var percent = CalJudgeTiming();
+                judgeTiming = time + LastFor * percent;
+                lastWaitTime = LastFor * (1 - percent);
+            }
 
             judgeAreas = table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
                                          .GroupBy(x => x)
@@ -254,35 +259,42 @@ namespace MajdataPlay.Game.Notes
             var startTiming = gpManager.AudioTime - timeStart;
             var forceJudgeTiming = time + LastFor + 0.6;
 
-            if (ConnectInfo.IsGroupPart)
+            if(!canCheck)
             {
-                if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
-                    canCheck = true;
-                else if (!ConnectInfo.IsGroupPartHead)
-                    canCheck = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
-            }
-            else if (startTiming >= -0.05f)
-                canCheck = true;
-
-            if (ConnectInfo.IsConnSlide)
-            {
-                if (ConnectInfo.IsGroupPartEnd && isFinished)
+                if (ConnectInfo.IsGroupPart)
                 {
-                    HideBar(areaStep.LastOrDefault());
-                    Judge();
+                    if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
+                        canCheck = true;
+                    else if (!ConnectInfo.IsGroupPartHead)
+                        canCheck = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
                 }
-                else if (ConnectInfo.IsGroupPartEnd && gpManager.AudioTime - forceJudgeTiming >= 0)
-                    TooLateJudge();
-                else if (isFinished)
-                    HideBar(areaStep.LastOrDefault());
+                else if (startTiming >= -0.05f)
+                    canCheck = true;
             }
-            else if (isFinished)
+
+            var canJudge = ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide;
+
+            if(canJudge)
             {
-                HideBar(areaStep.LastOrDefault());
-                Judge();
+                if(!isJudged)
+                {
+                    if (isFinished)
+                    {
+                        HideBar(areaStep.LastOrDefault());
+                        Judge();
+                        return;
+                    }
+                    else if(gpManager.AudioTime - forceJudgeTiming >= 0)
+                        TooLateJudge();
+                }
+                else
+                {
+                    if (lastWaitTime < 0)
+                        DestroySelf();
+                    else
+                        lastWaitTime -= Time.fixedDeltaTime;
+                }
             }
-            else if (gpManager.AudioTime - forceJudgeTiming >= 0)
-                TooLateJudge();
         }
         // Update is called once per frame
         private void Update()
@@ -423,12 +435,6 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i <= endIndex; i++)
                 slideBars[i].SetActive(false);
         }
-        /// <summary>
-        /// AutoPlay
-        /// <para>
-        /// 用于触发Sensor
-        /// </para>
-        /// </summary>
         
         /// <summary>
         /// Slide判定
