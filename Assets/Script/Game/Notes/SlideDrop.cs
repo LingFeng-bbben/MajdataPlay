@@ -237,7 +237,7 @@ namespace MajdataPlay.Game.Notes
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
-                var percent = CalJudgeTiming();
+                var percent = table.Const;
                 judgeTiming = time + LastFor * percent;
                 lastWaitTime = LastFor * (1 - percent);
             }
@@ -494,7 +494,7 @@ namespace MajdataPlay.Game.Notes
             isJudged = true;
 
             if (GetJudgeTiming() < 0)
-                lastWaitTime += MathF.Abs(GetJudgeTiming()) / 2;
+                lastWaitTime = MathF.Abs(GetJudgeTiming()) / 2;
             else if (diff >= totalInterval / 2 && !isFast)
                 lastWaitTime = 0;
         }
@@ -521,37 +521,7 @@ namespace MajdataPlay.Game.Notes
 
             }
         }
-        /// <summary>
-        /// 计算引导Star进入最后一个判定区的时机
-        /// </summary>
-        /// <returns>正解帧 (单位: s)</returns>
-        float CalJudgeTiming()
-        {
-            var s = ioManager.GetSensor(judgeQueue.LastOrDefault()
-                              .GetSensorTypes()
-                              .FirstOrDefault()).GetComponent<RectTransform>();
-            var starRadius = 0.763736616f;
-            var rCenter = s.position;
-            var rWidth = s.rect.width * s.lossyScale.x;
-            var rHeight = s.rect.height * s.lossyScale.y;
-
-            var radius = Math.Max(rWidth, rHeight) / 2;
-            for (float process = 0.80f; process < 1; process += 0.01f)
-            {
-                var indexProcess = (slidePositions.Count - 1) * process;
-                var index = (int)indexProcess;
-                var pos = indexProcess - index;
-
-                var a = slidePositions[index + 1];
-                var b = slidePositions[index];
-                var ba = a - b;
-                var newPos = ba * pos + b;
-
-                if ((newPos - rCenter).sqrMagnitude <= radius * radius + starRadius * starRadius)
-                    return process;
-            }
-            return 0.9f;
-        }
+        
         /// <summary>
         /// 强制将Slide判定为TooLate并销毁
         /// </summary>
