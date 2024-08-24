@@ -11,6 +11,7 @@ namespace MajdataPlay.Types
     {
         public string Name { get; init; }
         public JudgeArea[] JudgeQueue { get; init; }
+        public float Const { get; init; }
         public void Mirror()
         {
             foreach(var item in JudgeQueue)

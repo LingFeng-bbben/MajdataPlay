@@ -18,7 +18,8 @@ namespace MajdataPlay.Types
                 {
                     BuildJudgeArea(SensorType.A1,3,false),
                     BuildJudgeArea(SensorType.A2,7,true,true)
-                }
+                },
+                Const = 0.46526f
             },
             new SlideTable()
             {
@@ -28,7 +29,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11,false),
                     BuildJudgeArea(SensorType.A3,15,true,true)
-                }
+                },
+                Const = 0.23263f
             },
             new SlideTable()
             {
@@ -39,7 +41,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A2,11),
                     BuildJudgeArea(SensorType.A3,19),
                     BuildJudgeArea(SensorType.A4,23,true,true)
-                }
+                },
+                Const = 0.15509f
             },
             new SlideTable()
             {
@@ -51,7 +54,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A3,19),
                     BuildJudgeArea(SensorType.A4,27),
                     BuildJudgeArea(SensorType.A5,31,true,true)
-                }
+                },
+                Const = 0.11631f
             },
             new SlideTable()
             {
@@ -64,7 +68,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A4,27),
                     BuildJudgeArea(SensorType.A5,35),
                     BuildJudgeArea(SensorType.A6,39,true,true)
-                }
+                },
+                Const = 0.09305f
             },
             new SlideTable()
             {
@@ -78,7 +83,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A5,35),
                     BuildJudgeArea(SensorType.A6,43),
                     BuildJudgeArea(SensorType.A7,47,true,true)
-                }
+                },
+                Const = 0.07754f
             },
             new SlideTable()
             {
@@ -93,7 +99,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A6,43),
                     BuildJudgeArea(SensorType.A7,50),
                     BuildJudgeArea(SensorType.A8,55,true,true)
-                }
+                },
+                Const = 0.06647f
             },
             new SlideTable()
             {
@@ -109,7 +116,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A7,50),
                     BuildJudgeArea(SensorType.A8,58),
                     BuildJudgeArea(SensorType.A1,63,true,true)
-                }
+                },
+                Const = 0.05816f
             },
             new SlideTable()
             {
@@ -119,7 +127,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[]{SensorType.A2,SensorType.B2 },8,false),
                     BuildJudgeArea(SensorType.A3,13,true,true)
-                }
+                },
+                Const = 0.19195f
             },
             new SlideTable()
             {
@@ -130,7 +139,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B2,8),
                     BuildJudgeArea(SensorType.B3,12),
                     BuildJudgeArea(SensorType.A4,18,true,true)
-                }
+                },
+                Const = 0.17929f
             },
             new SlideTable()
             {
@@ -142,7 +152,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B5,15),
                     BuildJudgeArea(SensorType.A5,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -153,7 +164,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B8,8),
                     BuildJudgeArea(SensorType.B7,12),
                     BuildJudgeArea(SensorType.A6,18,true,true)
-                }
+                },
+                Const = 0.17929f
             },
             new SlideTable()
             {
@@ -163,7 +175,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[]{SensorType.A8,SensorType.B8 },8,false),
                     BuildJudgeArea(SensorType.A7,13,true,true)
-                }
+                },
+                Const = 0.19195f
             },
             new SlideTable()
             {
@@ -175,7 +188,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B1,15),
                     BuildJudgeArea(SensorType.A1,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -187,7 +201,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B2,15),
                     BuildJudgeArea(SensorType.A2,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -199,7 +214,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B3,15),
                     BuildJudgeArea(SensorType.A3,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -211,7 +227,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B4,15),
                     BuildJudgeArea(SensorType.A4,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -223,7 +240,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B6,15),
                     BuildJudgeArea(SensorType.A6,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -235,7 +253,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B7,15),
                     BuildJudgeArea(SensorType.A7,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -247,7 +266,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,11),
                     BuildJudgeArea(SensorType.B8,15),
                     BuildJudgeArea(SensorType.A8,19,true,true)
-                }
+                },
+                Const = 0.16287f
             },
             new SlideTable()
             {
@@ -261,7 +281,9 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A3,26),
                     BuildJudgeArea(SensorType.A2,32),
                     BuildJudgeArea(SensorType.A1,35,true,true)
-                }
+                },
+                Const = 0.073445f
+                
             },
             new SlideTable()
             {
@@ -274,7 +296,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B4,16),
                     BuildJudgeArea(SensorType.A3,25),
                     BuildJudgeArea(SensorType.A2,28,true,true),
-                }
+                },
+                Const = 0.087213f
             },
             new SlideTable()
             {
@@ -286,7 +309,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,12),
                     BuildJudgeArea(SensorType.B4,15),
                     BuildJudgeArea(SensorType.A3,22,true,true),
-                }
+                },
+                Const = 0.15091f
             },
             new SlideTable()
             {
@@ -303,7 +327,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,40),
                     BuildJudgeArea(SensorType.B4,44),
                     BuildJudgeArea(SensorType.A4,49,true,true),
-                }
+                },
+                Const = 0.06976f
             },
             new SlideTable()
             {
@@ -320,7 +345,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,40),
                     BuildJudgeArea(SensorType.B5,44),
                     BuildJudgeArea(SensorType.A5,49,true,true),
-                }
+                },
+                Const = 0.06976f
             },
             new SlideTable()
             {
@@ -337,7 +363,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(new SensorType[] { SensorType.C,SensorType.B8 },38),
                     BuildJudgeArea(new SensorType[] { SensorType.B7,SensorType.B6 },41),
                     BuildJudgeArea(SensorType.A6,48,true,true),
-                }
+                },
+                Const = 0.07107f
             },
             new SlideTable()
             {
@@ -353,7 +380,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B1,37),
                     BuildJudgeArea(SensorType.B8,41),
                     BuildJudgeArea(SensorType.A7,46,true,true),
-                }
+                },
+                Const = 0.08106f
             },
             new SlideTable()
             {
@@ -368,7 +396,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A2,29),
                     BuildJudgeArea(new SensorType[] { SensorType.B1,SensorType.A1 },35),
                     BuildJudgeArea(SensorType.A8,41,true,true),
-                }
+                },
+                Const = 0.06027f
             },
             new SlideTable()
             {
@@ -381,7 +410,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B8,21),
                     BuildJudgeArea(SensorType.A1,26),
                     BuildJudgeArea(SensorType.A2,32,true,true),
-                }
+                },
+                Const = 0.09482f
             },
             new SlideTable()
             {
@@ -395,7 +425,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.C,26),
                     BuildJudgeArea(SensorType.B3,29),
                     BuildJudgeArea(SensorType.A3,34,true,true),
-                }
+                },
+                Const = 0.09546f
             },
             new SlideTable()
             {
@@ -408,7 +439,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B6,22),
                     BuildJudgeArea(SensorType.B5,26),
                     BuildJudgeArea(SensorType.A4,32,true,true),
-                }
+                },
+                Const = 0.10176f
             },
             new SlideTable()
             {
@@ -420,7 +452,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A7,16),
                     BuildJudgeArea(new SensorType[] { SensorType.B6,SensorType.A6 },22,false),
                     BuildJudgeArea(SensorType.A5,28,true,true),
-                }
+                },
+                Const = 0.09598f
             },
             new SlideTable()
             {
@@ -434,7 +467,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B3,21),
                     BuildJudgeArea(SensorType.B4,24),
                     BuildJudgeArea(SensorType.A5,30,true,true),
-                }
+                },
+                Const = 0.10546f
             },
             new SlideTable()
             {
@@ -450,7 +484,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B3,24),
                     BuildJudgeArea(SensorType.B2,27),
                     BuildJudgeArea(SensorType.A1,33,true,true),
-                }
+                },
+                Const = 0.09215f
             },
             new SlideTable()
             {
@@ -465,7 +500,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B4,21),
                     BuildJudgeArea(SensorType.B3,24),
                     BuildJudgeArea(SensorType.A2,30,true,true),
-                }
+                },
+                Const = 0.10208f
             },
             new SlideTable()
             {
@@ -479,7 +515,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B5,19),
                     BuildJudgeArea(SensorType.B4,23),
                     BuildJudgeArea(SensorType.A3,27,true,true),
-                }
+                },
+                Const = 0.12468f
             },
             new SlideTable()
             {
@@ -492,7 +529,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B6,16),
                     BuildJudgeArea(SensorType.B5,20),
                     BuildJudgeArea(SensorType.A4,24,true,true),
-                }
+                },
+                Const = 0.14359f
             },
             new SlideTable()
             {
@@ -504,7 +542,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B7,13),
                     BuildJudgeArea(SensorType.B6,17),
                     BuildJudgeArea(SensorType.A5,21,true,true),
-                }
+                },
+                Const = 0.16925f
             },
             new SlideTable()
             {
@@ -523,7 +562,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B8,35),
                     BuildJudgeArea(SensorType.B7,38),
                     BuildJudgeArea(SensorType.A6,42,true,true),
-                }
+                },
+                Const = 0.07518f
             },
             new SlideTable()
             {
@@ -541,7 +581,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B1,32),
                     BuildJudgeArea(SensorType.B8,35),
                     BuildJudgeArea(SensorType.A7,39,true,true),
-                }
+                },
+                Const = 0.08167f
             },
             new SlideTable()
             {
@@ -558,7 +599,8 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B2,27),
                     BuildJudgeArea(SensorType.B1,30),
                     BuildJudgeArea(SensorType.A8,36,true,true),
-                }
+                },
+                Const = 0.08398f
             },
         };
         public static SlideTable? FindTableByName(string prefabName)

@@ -14,7 +14,7 @@ namespace MajdataPlay.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static T? Clone<T>(this T? source)
+        public static T? Clone<T>(this T? source) where T: new()
         {
             if (source is null)
                 return default;
