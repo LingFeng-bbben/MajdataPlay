@@ -5,7 +5,6 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -312,7 +311,7 @@ namespace MajdataPlay.Game.Notes
                 if (startiming >= -0.05f)
                 {
                     fadeInAnimator.enabled = false;
-                    setSlideBarAlpha(1f);
+                    SetSlideBarAlpha(1f);
                 }
                 else if (!fadeInAnimator.enabled && startiming >= fadeInTime)
                     fadeInAnimator.enabled = true;
@@ -320,7 +319,7 @@ namespace MajdataPlay.Game.Notes
 
             }
             fadeInAnimator.enabled = false;
-            setSlideBarAlpha(1f);
+            SetSlideBarAlpha(1f);
 
             star_slide.SetActive(true);
             var timing = gpManager.AudioTime - time;
@@ -341,7 +340,7 @@ namespace MajdataPlay.Game.Notes
                 spriteRenderer_star.color = new Color(1, 1, 1, alpha);
                 star_slide.transform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
                 star_slide.transform.position = slidePositions[0];
-                applyStarRotation(slideRotations[0]);
+                ApplyStarRotation(slideRotations[0]);
             }
             else
                 UpdateStar();
@@ -448,78 +447,40 @@ namespace MajdataPlay.Game.Notes
             //var stayTime = time + LastFor - judgeTiming; // 停留时间
             var stayTime = lastWaitTime; // 停留时间
 
-            arriveTime = gpManager.AudioTime;
-            var triggerTime = gpManager.AudioTime;
+            // By Minepig
+            var diff = judgeTiming - gpManager.AudioTime;
+            var isFast = diff > 0;
 
-            const float totalInterval = 1.2f; // 秒
-            const float nPInterval = 0.4666667f; // Perfect基础区间
+            // input latency simulation
+            //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
+            var ext = MathF.Min(stayTime / 4, 0.36666667f);
 
-            float extInterval = MathF.Min(stayTime / 4, 0.733333f);           // Perfect额外区间
-            float pInterval = MathF.Min(nPInterval + extInterval, totalInterval);// Perfect总区间
-            var ext = MathF.Max(extInterval - 0.4f, 0);
-            float grInterval = MathF.Max(0.4f - extInterval, 0);        // Great总区间
-            float gdInterval = MathF.Max(0.3333334f - ext, 0); // Good总区间
+            var perfect = 0.2333333f + ext;
 
-            var diff = judgeTiming - triggerTime; // 大于0为Fast，小于为Late
-            bool isFast = false;
+            diff = MathF.Abs(diff);
             JudgeType? judge = null;
 
-            if (diff > 0)
-                isFast = true;
-
-            var p = pInterval / 2;
-            var gr = grInterval / 2;
-            var gd = gdInterval / 2;
-            diff = MathF.Abs(diff);
-
-            if (gr == 0)
-            {
-                if (diff >= p)
-                    judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
-                else
-                    judge = JudgeType.Perfect;
-            }
+            if (diff <= perfect)// 其实最小0.2833333f, 17帧
+                judge = JudgeType.Perfect;
             else
             {
-                if (diff >= gr + p || diff >= totalInterval / 2)
-                    judge = isFast ? JudgeType.FastGood : JudgeType.LateGood;
-                else if (diff >= p)
-                    judge = isFast ? JudgeType.FastGreat : JudgeType.LateGreat;
-                else
-                    judge = JudgeType.Perfect;
+                judge = diff switch
+                {
+                    <= 0.35f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                    <= 0.4166667f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                    <= 0.4833333f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+                };
             }
+
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
             judgeResult = judge ?? JudgeType.Miss;
-            SetJust();
             isJudged = true;
 
             if (GetJudgeTiming() < 0)
                 lastWaitTime = MathF.Abs(GetJudgeTiming()) / 2;
-            else if (diff >= totalInterval / 2 && !isFast)
+            else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
-        }
-        void SetJust()
-        {
-            switch (judgeResult)
-            {
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    slideOK.GetComponent<LoadJustSprite>().setFastGr();
-                    break;
-                case JudgeType.FastGood:
-                    slideOK.GetComponent<LoadJustSprite>().setFastGd();
-                    break;
-                case JudgeType.LateGood:
-                    slideOK.GetComponent<LoadJustSprite>().setLateGd();
-                    break;
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.LateGreat:
-                    slideOK.GetComponent<LoadJustSprite>().setLateGr();
-                    break;
-
-            }
         }
         
         /// <summary>
@@ -527,10 +488,16 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         void TooLateJudge()
         {
+            if(isJudged)
+            {
+                DestroySelf();
+                return;
+            }
+
             if (judgeQueue.Length == 1)
-                slideOK.GetComponent<LoadJustSprite>().setLateGd();
+                judgeResult = JudgeType.LateGood;
             else
-                slideOK.GetComponent<LoadJustSprite>().setMiss();
+                judgeResult = JudgeType.Miss;
             isJudged = true;
             DestroySelf();
         }
@@ -577,7 +544,7 @@ namespace MajdataPlay.Game.Notes
                     var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                     audioEffMana.PlayBreakSlideEndSound();
                 }
-                    
+                slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
                 slideOK.SetActive(true);
             }
             else
@@ -604,7 +571,7 @@ namespace MajdataPlay.Game.Notes
             if (process == 1)
             {
                 star_slide.transform.position = slidePositions.LastOrDefault();
-                applyStarRotation(slideRotations.LastOrDefault());
+                ApplyStarRotation(slideRotations.LastOrDefault());
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
                     DestroySelf(true);
                 else if (isFinished && isJudged)
@@ -626,16 +593,16 @@ namespace MajdataPlay.Game.Notes
                     dAngle = Mathf.Abs(dAngle);
                     var newRotation = Quaternion.Euler(0f, 0f,
                                     Mathf.MoveTowardsAngle(_b, _a, dAngle));
-                    applyStarRotation(newRotation);
+                    ApplyStarRotation(newRotation);
                 }
             }
         }
 
-        private void setSlideBarAlpha(float alpha)
+        private void SetSlideBarAlpha(float alpha)
         {
             foreach (var gm in slideBars) gm.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, alpha);
         }
-        private void applyStarRotation(Quaternion newRotation)
+        private void ApplyStarRotation(Quaternion newRotation)
         {
             var halfFlip = newRotation.eulerAngles;
             halfFlip.z += 180f;
@@ -644,6 +611,5 @@ namespace MajdataPlay.Game.Notes
             else
                 star_slide.transform.rotation = newRotation;
         }
-        public GameObject[] GetSlideBars() => slideBars.ToArray();
     }
 }
