@@ -7,10 +7,6 @@ namespace MajdataPlay.Game.Notes
 {
     public class TapBase : NoteDrop
     {
-        public bool isBreak;
-        public bool isEX;
-        bool isTriggered = false;
-
         public Sprite tapSpr;
         public Sprite eachSpr;
         public Sprite breakSpr;

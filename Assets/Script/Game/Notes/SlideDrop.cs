@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class SlideDrop : NoteLongDrop, IFlasher
+    public class SlideDrop : SlideBase
     {
         // Start is called before the first frame update
         public GameObject star_slide;
@@ -21,62 +21,19 @@ namespace MajdataPlay.Game.Notes
         public RuntimeAnimatorController judgeBreakShine;
 
         public bool isMirror;
-        public bool isJustR;
         public bool isSpecialFlip; // fixes known star problem
-        public bool isBreak;
-
-        public float timeStart;
-
-        public int sortIndex;
-
-        public float fadeInTime;
-
-        public float fullFadeInTime;
-
-        public float slideConst;
-        float arriveTime = -1;
 
         public List<int> areaStep = new List<int>();
-        public bool smoothSlideAnime = false;
 
         public Material breakMaterial;
-        public string slideType;
-
         
-
-        
-
-
-        Animator fadeInAnimator;
-
-
-        private readonly List<GameObject> slideBars = new();
-
         private readonly List<Vector3> slidePositions = new();
         private readonly List<Quaternion> slideRotations = new();
-        private GameObject slideOK;
 
         private SpriteRenderer spriteRenderer_star;
-
-        public int endPosition;
-
-
-
         
-        public ConnSlideInfo ConnectInfo { get; set; } = new();
-        public bool isFinished { get => judgeQueue.Length == 0; }
-        public bool isPendingFinish { get => judgeQueue.Length == 1; }
-        public bool CanShine { get; private set; } = false;
-
-        bool canCheck = false;
-        bool isChecking = false;
-        float judgeTiming; // 正解帧
-        bool isInitialized = false; //防止重复初始化
-        bool isDestroying = false; // 防止重复销毁
-        bool isSoundPlayed = false;
-        float lastWaitTime;
         SlideTable table;
-        JudgeArea[] judgeQueue = { }; // 判定队列
+
         IEnumerable<SensorType> judgeAreas;
         /// <summary>
         /// Slide初始化
@@ -138,8 +95,9 @@ namespace MajdataPlay.Game.Notes
                 controller.parent = this;
             }
 
+            slideBars = new GameObject[transform.childCount];
             for (var i = 0; i < transform.childCount - 1; i++) 
-                slideBars.Add(transform.GetChild(i).gameObject);
+                slideBars[i] = transform.GetChild(i).gameObject;
 
             slideOK.SetActive(false);
             slideOK.transform.SetParent(transform.parent);
@@ -357,11 +315,11 @@ namespace MajdataPlay.Game.Notes
             }
             return len;
         }
-        public void Check(object sender, InputEventArgs arg) => Check();
+        public override void Check(object sender, InputEventArgs arg) => Check();
         /// <summary>
         /// 判定队列检查
         /// </summary>
-        public void Check()
+        void Check()
         {
             if (isFinished || !canCheck)
                 return;
@@ -427,62 +385,8 @@ namespace MajdataPlay.Game.Notes
             }
             isChecking = false;
         }
-        void HideBar(int endIndex)
-        {
-            endIndex = endIndex - 1;
-            endIndex = Math.Min(endIndex, slideBars.Count - 1);
-            for (int i = 0; i <= endIndex; i++)
-                slideBars[i].SetActive(false);
-        }
         
-        /// <summary>
-        /// Slide判定
-        /// </summary>
-        void Judge()
-        {
-            if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
-                return;
-            else if (isJudged)
-                return;
-            //var stayTime = time + LastFor - judgeTiming; // 停留时间
-            var stayTime = lastWaitTime; // 停留时间
-
-            // By Minepig
-            var diff = judgeTiming - gpManager.AudioTime;
-            var isFast = diff > 0;
-
-            // input latency simulation
-            //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
-            var ext = MathF.Min(stayTime / 4, 0.36666667f);
-
-            var perfect = 0.2333333f + ext;
-
-            diff = MathF.Abs(diff);
-            JudgeType? judge = null;
-
-            if (diff <= perfect)// 其实最小0.2833333f, 17帧
-                judge = JudgeType.Perfect;
-            else
-            {
-                judge = diff switch
-                {
-                    <= 0.35f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                    <= 0.4166667f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                    <= 0.4833333f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
-                };
-            }
-
-            print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            judgeResult = judge ?? JudgeType.Miss;
-            isJudged = true;
-
-            if (GetJudgeTiming() < 0)
-                lastWaitTime = MathF.Abs(GetJudgeTiming()) / 2;
-            else if (diff >= 0.6166679 && !isFast)
-                lastWaitTime = 0;
-        }
-        
+       
         /// <summary>
         /// 强制将Slide判定为TooLate并销毁
         /// </summary>
@@ -596,11 +500,6 @@ namespace MajdataPlay.Game.Notes
                     ApplyStarRotation(newRotation);
                 }
             }
-        }
-
-        private void SetSlideBarAlpha(float alpha)
-        {
-            foreach (var gm in slideBars) gm.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, alpha);
         }
         private void ApplyStarRotation(Quaternion newRotation)
         {

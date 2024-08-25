@@ -29,7 +29,6 @@ namespace MajdataPlay.Game.Notes
         public bool isJustR;
 
         public float timeStart;
-        public bool isBreak;
         public bool isGroupPart;
         public bool isGroupPartEnd;
 
