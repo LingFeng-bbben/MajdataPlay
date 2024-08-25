@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class SkinManager : MonoBehaviour
 {
+    public static SkinManager Instance { get; private set; }
+
     public Sprite Tap;
     public Sprite Tap_Each;
     public Sprite Tap_Break;
@@ -53,10 +55,8 @@ public class SkinManager : MonoBehaviour
 
     public Texture2D test;
 
-    public static SkinManager Instance;
     private void Awake()
     {
-        
         DontDestroyOnLoad(this);
         Instance = this;
     }
