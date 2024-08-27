@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TapBase : NoteDrop
+    public abstract class TapBase : NoteDrop
     {
         public Sprite tapSpr;
         public Sprite eachSpr;
@@ -43,6 +43,7 @@ namespace MajdataPlay.Game.Notes
             spriteRenderer.sortingOrder += noteSortOrder;
             exSpriteRender.sortingOrder += noteSortOrder;
         }
+        protected abstract void LoadSkin();
         protected void FixedUpdate()
         {
             var timing = GetJudgeTiming();

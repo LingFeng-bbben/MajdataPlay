@@ -36,5 +36,12 @@ namespace MajdataPlay.Game.Notes
             ioManager.BindArea(Check, sensorPos);
             State = NoteStatus.Initialized;
         }
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetTapSkin();
+            var renderer = GetComponent<SpriteRenderer>();
+
+            renderer.sprite = skin.Normal;
+        }
     }
 }
