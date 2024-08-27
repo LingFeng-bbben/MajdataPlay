@@ -25,6 +25,11 @@ namespace MajdataPlay.IO
         {
             Instance = this;
             DontDestroyOnLoad(this);
+            foreach (var (index, child) in transform.ToEnumerable().WithIndex())
+            {
+                sensors[index] = child.GetComponent<Sensor>();
+                sensors[index].Type = (SensorType)index;
+            }
         }
         void Start()
         {
@@ -40,11 +45,7 @@ namespace MajdataPlay.IO
                 Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
                 useDummy = true;
             }
-            foreach (var (index, child) in transform.ToEnumerable().WithIndex())
-            {
-                sensors[index] = child.GetComponent<Sensor>();
-                sensors[index].Type = (SensorType)index;
-            }
+
         }
         void OnApplicationQuit()
         {
