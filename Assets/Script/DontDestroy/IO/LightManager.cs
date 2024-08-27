@@ -2,6 +2,7 @@ using MajdataPlay.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ public class LightManager : MonoBehaviour
     bool useDummy = true;
     SpriteRenderer[] DummyLights;
     SerialPort serial;
-    List<byte> templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x33, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x55 };
+    List<byte> templateAll = new List<byte>()    {0xE0, 0x11, 0x01, 0x08, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     List<byte> templateSingle = new List<byte>() {0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
     private void Awake()
     {
@@ -22,6 +23,7 @@ public class LightManager : MonoBehaviour
         try
         {
             serial = new SerialPort("COM21", 115200);
+            serial.WriteBufferSize = 16;
             serial.Open();
             useDummy = false;
             foreach (var light in DummyLights)
@@ -33,10 +35,6 @@ public class LightManager : MonoBehaviour
         {
             Debug.Log("Cannot open COM21, using dummy lights");
             useDummy = true;
-        }
-        finally
-        {
-            serial!.Close();
         }
     }
     private void OnDestroy()
@@ -68,17 +66,17 @@ public class LightManager : MonoBehaviour
         bytes[9] = (byte)(color.g * 255);
         bytes[10] = (byte)(color.b * 255);
         bytes.Add(CalculateCheckSum(bytes));
-        serial!.Write(bytes.ToArray(), 0, bytes.Count);
+        Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
     }
     void SetButtonLightSerial(Color color,int button)
     {
         var bytes = templateSingle.Clone();
-        bytes[5] = (byte)button;
+        bytes[5] = (byte)(button-1);
         bytes[6] = (byte)(color.r * 255);
         bytes[7] = (byte)(color.g * 255);
         bytes[8] = (byte)(color.b * 255);
         bytes.Add(CalculateCheckSum(bytes));
-        serial!.Write(bytes.ToArray(), 0, bytes.Count);
+        Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
     }
 
     public void SetAllLight(Color lightColor)
@@ -112,41 +110,41 @@ public class LightManager : MonoBehaviour
     {
         while (true)
         {
-            SetAllLight(Color.red);
-            yield return new WaitForSeconds(1);
-            SetAllLight(Color.green);
-            yield return new WaitForSeconds(1);
-            SetAllLight(Color.blue);
-            yield return new WaitForSeconds(1);
-            for (int i = 1; i < 9; i++)
-            {
-                SetButtonLight(Color.red, i);
-                yield return new WaitForSeconds(0.1f);
-            }
-            for (int i = 1; i < 9; i++)
-            {
-                SetButtonLight(Color.green, i);
-                yield return new WaitForSeconds(0.1f);
-            }
-            for (int i = 1; i < 9; i++)
-            {
-                SetButtonLight(Color.blue, i);
-                yield return new WaitForSeconds(0.1f);
-            }
-            for (float i = 0; i < 1; i += 0.01f)
-            {
-                SetAllLight(new Color(1f - i, 1f - i, 1f - i));
-                yield return new WaitForSeconds(0.005f);
-            }
-            for (float i = 0; i < 1; i+=0.01f) {
-                SetAllLight(new Color(i,i,i));
-                yield return new WaitForSeconds(0.005f); 
-            }
-            for (float i = 0; i < 1; i += 0.01f)
-            {
-                SetAllLight(Color.HSVToRGB(i,1,1));
-                yield return new WaitForSeconds(0.1f);
-            }
+            SetButtonLight(Color.red,1);
+            yield return new WaitForSeconds(0.3f);
+            SetButtonLight(Color.green,1);
+            yield return new WaitForSeconds(0.3f);
+            //SetAllLight(Color.blue);
+            //yield return new WaitForSeconds(1);
+            //for (int i = 1; i < 9; i++)
+            //{
+            //    SetButtonLight(Color.red, i);
+            //    yield return new WaitForSeconds(0.3f);
+            //}
+            //for (int i = 1; i < 9; i++)
+            //{
+            //    SetButtonLight(Color.green, i);
+            //    yield return new WaitForSeconds(0.3f);
+            //}
+            //for (int i = 1; i < 9; i++)
+            //{
+            //    SetButtonLight(Color.blue, i);
+            //    yield return new WaitForSeconds(0.3f);
+            //}
+            //for (float i = 0; i < 1; i += 0.01f)
+            //{
+            //    SetAllLight(new Color(1f - i, 1f - i, 1f - i));
+            //    yield return new WaitForSeconds(0.01f);
+            //}
+            //for (float i = 0; i < 1; i+=0.01f) {
+            //    SetAllLight(new Color(i,i,i));
+            //    yield return new WaitForSeconds(0.01f); 
+            //}
+            //for (float i = 0; i < 1; i += 0.01f)
+            //{
+            //    SetAllLight(Color.HSVToRGB(i,1,1));
+            //    yield return new WaitForSeconds(0.1f);
+            //}
         }
     }
 
