@@ -1109,7 +1109,6 @@ public class NoteLoader : MonoBehaviour
         SliCompo.breakMaterial = breakMaterial;
         SliCompo.judgeBreakShine = JudgeBreakShine;
         SliCompo.areaStep = new List<int>(SLIDE_AREA_STEP_MAP[slideShape]);
-        SliCompo.slideConst = SLIDE_AREA_CONST[slideShape];
 
         if (timing.noteList.Count > 1)
         {

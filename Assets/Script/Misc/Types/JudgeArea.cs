@@ -44,15 +44,23 @@ namespace MajdataPlay.Types
             }
             SlideIndex = slideIndex;
         }
-        public void SetIsLast()
+        public JudgeArea()
         {
-            areas.ForEach(x => x.IsLast = true);
+
         }
-        public void SetNonLast()
+        public void Mirror(SensorType baseLine)
         {
-            areas.ForEach(x => x.IsLast = false);
+            foreach(var area in areas)
+                area.Mirror(baseLine);
         }
-        public void Judge(SensorType type, SensorStatus status)
+        public void SetDiff(int diff)
+        {
+            foreach(var area in areas)
+                area.SetDiff(diff);
+        }
+        public void SetIsLast() => areas.ForEach(x => x.IsLast = true);
+        public void SetNonLast() => areas.ForEach(x => x.IsLast = false);
+        public void Judge(SensorType type,in SensorStatus status)
         {
             var areaList = areas.Where(x => x.Type == type);
 

@@ -2,6 +2,6 @@
 {
     public interface IFlasher
     {
-        bool CanShine();
+        bool CanShine { get; }
     }
 }

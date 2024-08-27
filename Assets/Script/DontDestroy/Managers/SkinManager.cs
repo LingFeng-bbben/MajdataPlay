@@ -1,8 +1,12 @@
-﻿using System.IO;
+﻿using MajdataPlay.Types;
+using MajSimaiDecode;
+using System.IO;
 using UnityEngine;
 
 public class SkinManager : MonoBehaviour
 {
+    public static SkinManager Instance { get; private set; }
+
     public Sprite Tap;
     public Sprite Tap_Each;
     public Sprite Tap_Break;
@@ -53,10 +57,12 @@ public class SkinManager : MonoBehaviour
 
     public Texture2D test;
 
-    public static SkinManager Instance;
+    public Sprite[] TapLines;
+    public Sprite[] StarLines;
+    public Material BreakMaterial;
+
     private void Awake()
     {
-        
         DontDestroyOnLoad(this);
         Instance = this;
     }
@@ -189,8 +195,70 @@ public class SkinManager : MonoBehaviour
         Debug.Log(test);
     }
 
-    // Update is called once per frame
-    private void Update()
+    public TapSkin GetTapSkin()
     {
+        return new()
+        {
+            Normal = Tap,
+            Each = Tap_Each,
+            Break = Tap_Break,
+            Ex = Tap_Ex,
+
+            BreakMaterial = BreakMaterial,
+            NoteLines = TapLines,
+            ExEffects = new Color[] 
+            {
+                new Color(255,172,225), // Pink
+                new Color(255,254,119), // Yellow
+                new Color(255,254,119), // Yellow
+            }
+        };
     }
+    public StarSkin GetStarSkin()
+    {
+        return new()
+        {
+            Normal = Star,
+            Double = Star_Double,
+            Each = Star_Each,
+            EachDouble = Star_Each_Double,
+            Break = Star_Break,
+            BreakDouble = Star_Break_Double,
+            Ex = Star_Ex,
+            ExDouble = Star_Ex_Double,
+
+            BreakMaterial = BreakMaterial,
+            NoteLines = StarLines,
+            ExEffects = new Color[]
+            {
+                new Color(255,172,225), // Pink
+                new Color(255,254,119), // Yellow
+                new Color(255,254,119), // Yellow
+            }
+        };
+    }
+    public HoldSkin GetHoldSkin()
+    {
+        return new()
+        {
+            Normal = Hold,
+            Off = Hold_Off,
+            Normal_On = Hold_On,
+            Each = Hold_Each,
+            Each_On = Hold_Each_On,
+            Break = Hold_Break,
+            Break_On = Hold_Break_On,
+            Ex = Hold_Ex,
+
+            BreakMaterial = BreakMaterial,
+            NoteLines = TapLines,
+            ExEffects = new Color[]
+            {
+                new Color(255,172,225), // Pink
+                new Color(255,254,119), // Yellow
+                new Color(255,254,119), // Yellow
+            }
+        };
+    }
+
 }

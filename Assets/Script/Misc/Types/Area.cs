@@ -1,4 +1,6 @@
 ﻿
+using MajdataPlay.Extensions;
+
 namespace MajdataPlay.Types
 {
     public class Area
@@ -17,7 +19,7 @@ namespace MajdataPlay.Types
                     return On && Off;
             }
         }
-        public void Judge(SensorStatus status)
+        public void Judge(in SensorStatus status)
         {
             if (status == SensorStatus.Off)
             {
@@ -32,5 +34,7 @@ namespace MajdataPlay.Types
             On = false;
             Off = false;
         }
+        public void Mirror(SensorType baseLine) => Type = Type.Mirror(baseLine);
+        public void SetDiff(int diff) => Type = Type.GetDiff(diff);
     }
 }

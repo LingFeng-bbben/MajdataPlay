@@ -29,7 +29,6 @@ namespace MajdataPlay.Game.Notes
         public bool isJustR;
 
         public float timeStart;
-        public bool isBreak;
         public bool isGroupPart;
         public bool isGroupPartEnd;
 
@@ -43,7 +42,7 @@ namespace MajdataPlay.Game.Notes
 
         public Material breakMaterial;
 
-        bool canShine = false;
+        public bool CanShine { get; private set; } = false;
 
         public List<int> areaStep = new List<int>();
         public bool smoothSlideAnime = false;
@@ -398,7 +397,7 @@ namespace MajdataPlay.Game.Notes
             var timing = gpManager.AudioTime - time;
             if (timing <= 0f)
             {
-                canShine = true;
+                CanShine = true;
                 float alpha;
                 alpha = 1f - -timing / (time - timeStart);
                 alpha = alpha > 1f ? 1f : alpha;
@@ -466,7 +465,6 @@ namespace MajdataPlay.Game.Notes
 
             }
         }
-        public bool CanShine() => canShine;
         void DestroySelf()
         {
             foreach (GameObject obj in slideBars)

@@ -13,6 +13,8 @@ namespace MajdataPlay.Game.Notes
         public int noteSortOrder;
         public float speed = 7;
         public bool isEach;
+        public bool isBreak = false;
+        public bool isEX = false;
 
         protected GamePlayManager gpManager => GamePlayManager.Instance;
 

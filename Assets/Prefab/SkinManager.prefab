@@ -168,3 +168,12 @@ MonoBehaviour:
   - {fileID: 0}
   Outline: {fileID: 0}
   test: {fileID: 0}
+  TapLines:
+  - {fileID: 21300000, guid: 3003041b178b9f246b4b465afb8079d3, type: 3}
+  - {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
+  - {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
+  StarLines:
+  - {fileID: 21300000, guid: 8576ec838da5f784e866901901ed374f, type: 3}
+  - {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
+  - {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
+  BreakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}

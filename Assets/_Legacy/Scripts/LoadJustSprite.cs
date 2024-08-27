@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using MajdataPlay.Types;
+using UnityEngine;
 
 public class LoadJustSprite : MonoBehaviour
 {
@@ -18,7 +19,37 @@ public class LoadJustSprite : MonoBehaviour
     private void Update()
     {
     }
-
+    public void SetResult(JudgeType result)
+    {
+        switch (result)
+        {
+            case JudgeType.LatePerfect2:
+            case JudgeType.LatePerfect1:
+            case JudgeType.Perfect:
+            case JudgeType.FastPerfect1:
+            case JudgeType.FastPerfect2:
+                break;
+            case JudgeType.FastGreat2:
+            case JudgeType.FastGreat1:
+            case JudgeType.FastGreat:
+                setFastGr();
+                break;
+            case JudgeType.FastGood:
+                setFastGd();
+                break;
+            case JudgeType.LateGood:
+                setLateGd();
+                break;
+            case JudgeType.LateGreat1:
+            case JudgeType.LateGreat2:
+            case JudgeType.LateGreat:
+                setLateGr();
+                break;
+            default:
+                setMiss();
+                break;
+        }
+    }
     public int setR()
     {
         indexOffset = 0;

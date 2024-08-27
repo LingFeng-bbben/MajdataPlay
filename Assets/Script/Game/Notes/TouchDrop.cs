@@ -80,7 +80,6 @@ namespace MajdataPlay.Game.Notes
             justEffect.SetActive(false);
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             var customSkin = SkinManager.Instance;
-            judgeText = customSkin.JudgeText;
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
         }

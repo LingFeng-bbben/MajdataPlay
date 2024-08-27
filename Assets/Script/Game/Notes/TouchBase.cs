@@ -11,8 +11,6 @@ namespace MajdataPlay.Game.Notes
         public GameObject tapEffect;
         public GameObject judgeEffect;
 
-
-        protected Sprite[] judgeText;
         public TouchGroup GroupInfo;
 
         protected Quaternion GetRoation()

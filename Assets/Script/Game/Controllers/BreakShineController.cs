@@ -18,7 +18,7 @@ namespace MajdataPlay.Game.Controllers
         // Update is called once per frame
         void Update()
         {
-            if (parent is not null && parent.CanShine())
+            if (parent is not null && parent.CanShine)
             {
                 var (brightness, contrast) = gpManager.BreakParams;
                 spriteRenderer.material.SetFloat("_Brightness", brightness);

@@ -8,9 +8,6 @@ namespace MajdataPlay.Game.Notes
 {
     public class HoldDrop : NoteLongDrop
     {
-        public bool isEX;
-        public bool isBreak;
-
         public Sprite tapSpr;
         public Sprite holdOnSpr;
         public Sprite holdOffSpr;
