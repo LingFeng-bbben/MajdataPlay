@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
@@ -6,31 +7,11 @@ namespace MajdataPlay.Game.Notes
 {
     public class TapDrop : TapBase
     {
-        private void Start()
+        protected override void Start()
         {
-            PreLoad();
+            base.Start();
 
-            spriteRenderer.sprite = tapSpr;
-            exSpriteRender.sprite = exSpr;
-
-            if (isEX) exSpriteRender.color = exEffectTap;
-            if (isEach)
-            {
-                spriteRenderer.sprite = eachSpr;
-                lineSpriteRender.sprite = eachLine;
-                if (isEX) exSpriteRender.color = exEffectEach;
-            }
-
-            if (isBreak)
-            {
-                spriteRenderer.sprite = breakSpr;
-                lineSpriteRender.sprite = breakLine;
-                if (isEX) exSpriteRender.color = exEffectBreak;
-                spriteRenderer.material = breakMaterial;
-            }
-
-            spriteRenderer.forceRenderingOff = true;
-            exSpriteRender.forceRenderingOff = true;
+            LoadSkin();
 
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
@@ -40,8 +21,35 @@ namespace MajdataPlay.Game.Notes
         {
             var skin = SkinManager.Instance.GetTapSkin();
             var renderer = GetComponent<SpriteRenderer>();
+            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
 
             renderer.sprite = skin.Normal;
+            exRenderer.sprite = skin.Ex;
+            exRenderer.color = skin.ExEffects[0];
+            
+                
+
+            if (isEach)
+            {
+                renderer.sprite = skin.Each;
+                tapLineRenderer.sprite = skin.NoteLines[1];
+                exRenderer.color = skin.ExEffects[1];
+
+            }
+
+            if (isBreak)
+            {
+                renderer.sprite = skin.Break;
+                renderer.material = skin.BreakMaterial;
+                tapLineRenderer.sprite = skin.NoteLines[2];
+                gameObject.AddComponent<BreakShineController>();
+                exRenderer.color = skin.ExEffects[2];
+
+            }
+
+            if (!isEX)
+                Destroy(exRenderer);
         }
     }
 }

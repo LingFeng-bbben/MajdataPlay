@@ -7,41 +7,23 @@ namespace MajdataPlay.Game.Notes
 {
     public abstract class TapBase : NoteDrop
     {
-        public Sprite tapSpr;
-        public Sprite eachSpr;
-        public Sprite breakSpr;
-        public Sprite exSpr;
-
-        public Sprite eachLine;
-        public Sprite breakLine;
-
-        public RuntimeAnimatorController BreakShine;
-
         public GameObject tapLine;
 
-        public Color exEffectTap;
-        public Color exEffectEach;
-        public Color exEffectBreak;
-
-        public Material breakMaterial;
-
-        protected SpriteRenderer exSpriteRender;
-        protected SpriteRenderer lineSpriteRender;
-
-        protected SpriteRenderer spriteRenderer;
-        protected void PreLoad()
+        protected virtual void Start()
         {
             var notes = GameObject.Find("Notes").transform;
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            var exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
+
             noteManager = notes.GetComponent<NoteManager>();
             tapLine = Instantiate(tapLine, notes);
             tapLine.SetActive(false);
-            lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
-            spriteRenderer = GetComponent<SpriteRenderer>();
-            exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             spriteRenderer.sortingOrder += noteSortOrder;
             exSpriteRender.sortingOrder += noteSortOrder;
+
+            transform.localScale = new Vector3(0, 0);
         }
         protected abstract void LoadSkin();
         protected void FixedUpdate()
@@ -108,14 +90,14 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
 
-            spriteRenderer.forceRenderingOff = false;
-            if (isEX) exSpriteRender.forceRenderingOff = false;
-            if (isBreak)
-            {
-                var (brightness, contrast) = gpManager.BreakParams;
-                spriteRenderer.material.SetFloat("_Brightness", brightness);
-                spriteRenderer.material.SetFloat("_Contrast", contrast);
-            }
+            //spriteRenderer.forceRenderingOff = false;
+            //if (isEX) exSpriteRender.forceRenderingOff = false;
+            //if (isBreak)
+            //{
+            //    var (brightness, contrast) = gpManager.BreakParams;
+            //    spriteRenderer.material.SetFloat("_Brightness", brightness);
+            //    spriteRenderer.material.SetFloat("_Contrast", contrast);
+            //}
         }
         protected void Check(object sender, InputEventArgs arg)
         {
