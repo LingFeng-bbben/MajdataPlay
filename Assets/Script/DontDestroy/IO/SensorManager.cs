@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class IOManager : MonoBehaviour
+    public partial class InputManager : MonoBehaviour
     {
         Sensor[] sensors = new Sensor[33];
 

@@ -10,7 +10,7 @@ public class TitleManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        IOManager.Instance.BindAnyArea(OnAreaDown);
+        InputManager.Instance.BindAnyArea(OnAreaDown);
         StartCoroutine(DelayPlayVoice());
     }
 
@@ -48,6 +48,6 @@ public class TitleManager : MonoBehaviour
     }
     private void OnDestroy()
     {
-        IOManager.Instance.UnbindAnyArea(OnAreaDown);
+        InputManager.Instance.UnbindAnyArea(OnAreaDown);
     }
 }

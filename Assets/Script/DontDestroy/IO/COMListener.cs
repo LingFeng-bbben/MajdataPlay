@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class IOManager : MonoBehaviour
+    public partial class InputManager : MonoBehaviour
     {
         async void COMReceiveAsync(CancellationToken token)
         {
@@ -37,7 +37,7 @@ namespace MajdataPlay.IO
                                     int k = 0;
                                     for (int i = 1; i < 8; i++)
                                     {
-                                        print(buf[i].ToString("X2"));
+                                        //print(buf[i].ToString("X2"));
                                         for (int j = 0; j < 5; j++)
                                         {
                                             COMReport[k] = (buf[i] & 0x01 << j) > 0;

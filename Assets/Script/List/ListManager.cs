@@ -12,7 +12,7 @@ public class ListManager : MonoBehaviour
         CoverListDisplayer.SlideToList(GameManager.Instance.selectedIndex);
         CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
         AudioManager.Instance.PlaySFX("SelectSong.wav");
-        IOManager.Instance.BindAnyArea(OnAreaDown);
+        InputManager.Instance.BindAnyArea(OnAreaDown);
 
     }
 
@@ -94,6 +94,6 @@ public class ListManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        IOManager.Instance.UnbindAnyArea(OnAreaDown);
+        InputManager.Instance.UnbindAnyArea(OnAreaDown);
     }
 }

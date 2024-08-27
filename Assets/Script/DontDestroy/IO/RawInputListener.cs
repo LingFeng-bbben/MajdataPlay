@@ -7,7 +7,7 @@ using UnityRawInput;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class IOManager : MonoBehaviour
+    public partial class InputManager : MonoBehaviour
     {
         readonly static RawKey[] bindingKeys = new RawKey[12]
         {

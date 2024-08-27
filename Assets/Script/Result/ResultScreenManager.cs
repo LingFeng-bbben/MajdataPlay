@@ -85,7 +85,7 @@ public class ResultScreenManager : MonoBehaviour
             clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
         
 
-        IOManager.Instance.BindAnyArea(OnAreaDown);
+        InputManager.Instance.BindAnyArea(OnAreaDown);
         AudioManager.Instance.PlaySFX("Sugoi.wav");
         ScoreManager.Instance.SaveScore(result,result.ChartLevel);
     }
@@ -174,7 +174,7 @@ public class ResultScreenManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        IOManager.Instance.UnbindAnyArea(OnAreaDown);
+        InputManager.Instance.UnbindAnyArea(OnAreaDown);
     }
     readonly ref struct UnpackJudgeInfo
     {
