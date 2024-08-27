@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MajdataPlay.IO
 {
-    public partial class IOManager : MonoBehaviour
+    public partial class InputManager : MonoBehaviour
     {
         void UpdateMousePosition()
         {

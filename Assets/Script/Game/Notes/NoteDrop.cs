@@ -18,7 +18,7 @@ namespace MajdataPlay.Game.Notes
 
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         protected SensorType sensorPos;
-        protected IOManager ioManager => IOManager.Instance;
+        protected InputManager ioManager => InputManager.Instance;
         protected NoteManager noteManager;
         protected bool isJudged = false;
         protected JudgeType judgeResult = JudgeType.Miss;

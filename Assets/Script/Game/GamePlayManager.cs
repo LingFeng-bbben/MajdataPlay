@@ -54,7 +54,7 @@ public class GamePlayManager : MonoBehaviour
 
     void Start()
     {
-        IOManager.Instance.BindAnyArea(OnPauseButton);
+        InputManager.Instance.BindAnyArea(OnPauseButton);
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
         audioSample.SetVolume(settingManager.SettingFile.VolumeBgm);
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
@@ -206,7 +206,7 @@ public class GamePlayManager : MonoBehaviour
         audioSample.Pause();
         audioSample = null;
         //AudioManager.Instance.UnLoadMusic();
-        IOManager.Instance.UnbindAnyArea(OnPauseButton);
+        InputManager.Instance.UnbindAnyArea(OnPauseButton);
         StartCoroutine(delayBackToList());
 
     }
@@ -233,7 +233,7 @@ public class GamePlayManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         audioSample.Pause();
         audioSample = null;
-        IOManager.Instance.UnbindAnyArea(OnPauseButton);
+        InputManager.Instance.UnbindAnyArea(OnPauseButton);
         SceneManager.LoadScene(3);
     }
 

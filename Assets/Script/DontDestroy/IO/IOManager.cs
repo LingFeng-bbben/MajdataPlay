@@ -9,9 +9,9 @@ using MajdataPlay.Types;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class IOManager : MonoBehaviour
+    public partial class InputManager : MonoBehaviour
     {
-        public static IOManager Instance;
+        public static InputManager Instance;
         public bool displayDebug = false;
         public bool useDummy = false;
 

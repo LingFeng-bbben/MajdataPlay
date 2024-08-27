@@ -159,7 +159,7 @@ namespace MajdataPlay.IO
                 }
             }
             if (PlayDebug)
-                IOManager.Instance.BindAnyArea(OnAnyAreaDown);
+                InputManager.Instance.BindAnyArea(OnAnyAreaDown);
             ReadVolumeFromSettings();
         }
         void OnAnyAreaDown(object sender, InputEventArgs e)

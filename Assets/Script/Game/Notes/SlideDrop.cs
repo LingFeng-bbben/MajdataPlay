@@ -191,7 +191,7 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator.speed = 0.2f / interval;
             fadeInAnimator.SetTrigger("slide");
 
-            var ioManagerObj = IOManager.Instance;
+            var ioManagerObj = InputManager.Instance;
             var count = ioManagerObj.transform.childCount;
             for (int i = 0; i < count; i++)
                 sensors.Add(ioManagerObj.transform.GetChild(i).gameObject);
