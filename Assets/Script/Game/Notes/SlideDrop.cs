@@ -195,7 +195,7 @@ namespace MajdataPlay.Game.Notes
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = time + LastFor * percent;
+                judgeTiming = time + LastFor * (1-percent);
                 lastWaitTime = LastFor * (1 - percent);
             }
 
