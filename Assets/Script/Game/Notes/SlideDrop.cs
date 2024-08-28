@@ -95,7 +95,7 @@ namespace MajdataPlay.Game.Notes
                 controller.parent = this;
             }
 
-            slideBars = new GameObject[transform.childCount];
+            slideBars = new GameObject[transform.childCount-1];
             for (var i = 0; i < transform.childCount - 1; i++) 
                 slideBars[i] = transform.GetChild(i).gameObject;
 
