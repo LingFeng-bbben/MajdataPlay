@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
@@ -13,59 +14,12 @@ namespace MajdataPlay.Game.Notes
         public bool isFakeStar = false;
         public bool isFakeStarRotate = false;
 
-        public Sprite tapSpr_Double;
-        public Sprite eachSpr_Double;
-        public Sprite breakSpr_Double;
-        public Sprite exSpr_Double;
-
         public GameObject slide;
-        private void Start()
+        protected override void Start()
         {
-            PreLoad();
+            base.Start();
 
-            if (isDouble)
-            {
-                exSpriteRender.sprite = exSpr_Double;
-                spriteRenderer.sprite = tapSpr_Double;
-                if (isEX) exSpriteRender.color = exEffectTap;
-                if (isEach)
-                {
-                    lineSpriteRender.sprite = eachLine;
-                    spriteRenderer.sprite = eachSpr_Double;
-                    if (isEX) exSpriteRender.color = exEffectEach;
-                }
-
-                if (isBreak)
-                {
-                    lineSpriteRender.sprite = breakLine;
-                    spriteRenderer.sprite = breakSpr_Double;
-                    if (isEX) exSpriteRender.color = exEffectBreak;
-                    spriteRenderer.material = breakMaterial;
-                }
-            }
-            else
-            {
-                exSpriteRender.sprite = exSpr;
-                spriteRenderer.sprite = tapSpr;
-                if (isEX) exSpriteRender.color = exEffectTap;
-                if (isEach)
-                {
-                    lineSpriteRender.sprite = eachLine;
-                    spriteRenderer.sprite = eachSpr;
-                    if (isEX) exSpriteRender.color = exEffectEach;
-                }
-
-                if (isBreak)
-                {
-                    lineSpriteRender.sprite = breakLine;
-                    spriteRenderer.sprite = breakSpr;
-                    if (isEX) exSpriteRender.color = exEffectBreak;
-                    spriteRenderer.material = breakMaterial;
-                }
-            }
-
-            spriteRenderer.forceRenderingOff = true;
-            exSpriteRender.forceRenderingOff = true;
+            LoadSkin();
 
             if (!isNoHead)
             {
@@ -134,17 +88,6 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
 
-            if (isNoHead)
-            {
-                spriteRenderer.forceRenderingOff = true;
-                if (isEX) exSpriteRender.forceRenderingOff = true;
-            }
-            else
-            {
-                spriteRenderer.forceRenderingOff = false;
-                if (isEX) exSpriteRender.forceRenderingOff = false;
-            }
-
             if (gpManager.isStart && !isFakeStar)
                 transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / rotateSpeed);
             else if (isFakeStarRotate)
@@ -154,6 +97,67 @@ namespace MajdataPlay.Game.Notes
         {
             if (!isNoHead || isFakeStar)
                 base.OnDestroy();
+        }
+        protected override void LoadSkin()
+        {
+            var renderer = GetComponent<SpriteRenderer>();
+            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+
+            if (isNoHead)
+            {
+                Destroy(tapLineRenderer);
+                Destroy(renderer);
+                Destroy(exRenderer);
+                return;
+            }
+
+            var skin = SkinManager.Instance.GetStarSkin();
+            exRenderer.color = skin.ExEffects[0];
+
+
+            if (isDouble)
+            {
+                renderer.sprite = skin.Double;
+                exRenderer.sprite = skin.ExDouble;
+                
+                if (isEach)
+                {
+                    renderer.sprite = skin.EachDouble;
+                    tapLineRenderer.sprite = skin.NoteLines[1];
+                    exRenderer.color = skin.ExEffects[1];
+                }
+                if (isBreak)
+                {
+                    renderer.sprite = skin.BreakDouble;
+                    tapLineRenderer.sprite = skin.NoteLines[2];
+                    gameObject.AddComponent<BreakShineController>();
+                    exRenderer.color = skin.ExEffects[2];
+                }
+            }
+            else
+            {
+                renderer.sprite = skin.Normal;
+                exRenderer.sprite = skin.Ex;
+
+                if (isEach)
+                {
+                    renderer.sprite = skin.Each;
+                    tapLineRenderer.sprite = skin.NoteLines[1];
+                    exRenderer.color = skin.ExEffects[1];
+                }
+                if (isBreak)
+                {
+                    renderer.sprite = skin.Break;
+                    tapLineRenderer.sprite = skin.NoteLines[2];
+                    gameObject.AddComponent<BreakShineController>();
+                    exRenderer.color = skin.ExEffects[2];
+                }
+            }
+
+            if (!isEX)
+                Destroy(exRenderer);
+
         }
     }
 }

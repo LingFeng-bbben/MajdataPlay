@@ -485,10 +485,6 @@ public class NoteLoader : MonoBehaviour
                         {
                             GOnote = Instantiate(starPrefab, notes.transform);
                             var _NDCompo = GOnote.GetComponent<StarDrop>();
-                            _NDCompo.tapSpr = customSkin.Star;
-                            _NDCompo.eachSpr = customSkin.Star_Each;
-                            _NDCompo.breakSpr = customSkin.Star_Break;
-                            _NDCompo.exSpr = customSkin.Star_Ex;
                             _NDCompo.tapLine = starLine;
                             _NDCompo.isFakeStarRotate = note.isFakeRotate;
                             _NDCompo.isFakeStar = true;
@@ -498,18 +494,11 @@ public class NoteLoader : MonoBehaviour
                         {
                             GOnote = Instantiate(tapPrefab, notes.transform);
                             NDCompo = GOnote.GetComponent<TapDrop>();
-                            //自定义note样式
-                            NDCompo.tapSpr = customSkin.Tap;
-                            NDCompo.breakSpr = customSkin.Tap_Break;
-                            NDCompo.eachSpr = customSkin.Tap_Each;
-                            NDCompo.exSpr = customSkin.Tap_Ex;
                         }
 
                         // note的图层顺序
                         NDCompo.noteSortOrder = noteSortOrder;
                         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-                        NDCompo.BreakShine = BreakShine;
 
                         if (timing.noteList.Count > 1) NDCompo.isEach = true;
                         NDCompo.isBreak = note.isBreak;
@@ -982,18 +971,6 @@ public class NoteLoader : MonoBehaviour
         NDCompo.noteSortOrder = noteSortOrder;
         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-        NDCompo.tapSpr = customSkin.Star;
-        NDCompo.eachSpr = customSkin.Star_Each;
-        NDCompo.breakSpr = customSkin.Star_Break;
-        NDCompo.exSpr = customSkin.Star_Ex;
-
-        NDCompo.tapSpr_Double = customSkin.Star_Double;
-        NDCompo.eachSpr_Double = customSkin.Star_Each_Double;
-        NDCompo.breakSpr_Double = customSkin.Star_Break_Double;
-        NDCompo.exSpr_Double = customSkin.Star_Ex_Double;
-
-        NDCompo.BreakShine = BreakShine;
-
         NDCompo.rotateSpeed = (float)note.slideTime;
         NDCompo.isEX = note.isEx;
         NDCompo.isBreak = note.isBreak;
@@ -1067,18 +1044,6 @@ public class NoteLoader : MonoBehaviour
         // note的图层顺序
         NDCompo.noteSortOrder = noteSortOrder;
         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        NDCompo.tapSpr = customSkin.Star;
-        NDCompo.eachSpr = customSkin.Star_Each;
-        NDCompo.breakSpr = customSkin.Star_Break;
-        NDCompo.exSpr = customSkin.Star_Ex;
-
-        NDCompo.tapSpr_Double = customSkin.Star_Double;
-        NDCompo.eachSpr_Double = customSkin.Star_Each_Double;
-        NDCompo.breakSpr_Double = customSkin.Star_Break_Double;
-        NDCompo.exSpr_Double = customSkin.Star_Ex_Double;
-
-        NDCompo.BreakShine = BreakShine;
 
         NDCompo.rotateSpeed = (float)note.slideTime;
         NDCompo.isEX = note.isEx;
