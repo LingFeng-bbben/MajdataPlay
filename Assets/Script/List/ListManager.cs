@@ -9,11 +9,15 @@ public class ListManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        LightManager.Instance.SetAllLight(Color.white);
+        LightManager.Instance.SetButtonLight(Color.green, 3);
+        LightManager.Instance.SetButtonLight(Color.blue, 2);
+        LightManager.Instance.SetButtonLight(Color.blue, 5);
         CoverListDisplayer.SlideToList(GameManager.Instance.selectedIndex);
         CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
         AudioManager.Instance.PlaySFX("SelectSong.wav");
+        AudioManager.Instance.PlaySFX("selectbgm.mp3",true);
         InputManager.Instance.BindAnyArea(OnAreaDown);
-
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)
@@ -95,5 +99,7 @@ public class ListManager : MonoBehaviour
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
+        AudioManager.Instance.StopSFX("SelectSong.wav");
+        AudioManager.Instance.StopSFX("selectbgm.mp3");
     }
 }

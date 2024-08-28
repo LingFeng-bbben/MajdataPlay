@@ -194,8 +194,9 @@ namespace MajdataPlay.Extensions
             if(AorB || DorE)
             {
                 var diff = baseIndex - thisIndex;
-                if(source.IsLeftOf(baseLine))
-                    return baseLine.GetDiff(diff);
+                //TODO: WHAT ABOUT D and E
+                if(thisGroup is SensorGroup.B)
+                    return (baseLine+8).GetDiff(diff);
                 else
                     return baseLine.GetDiff(diff);
             }

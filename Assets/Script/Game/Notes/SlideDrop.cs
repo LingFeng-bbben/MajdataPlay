@@ -95,7 +95,7 @@ namespace MajdataPlay.Game.Notes
                 controller.parent = this;
             }
 
-            slideBars = new GameObject[transform.childCount];
+            slideBars = new GameObject[transform.childCount-1];
             for (var i = 0; i < transform.childCount - 1; i++) 
                 slideBars[i] = transform.GetChild(i).gameObject;
 
@@ -195,8 +195,8 @@ namespace MajdataPlay.Game.Notes
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = time + LastFor * percent;
-                lastWaitTime = LastFor * (1 - percent);
+                judgeTiming = time + LastFor * (1-percent);
+                lastWaitTime = LastFor *  percent;
             }
 
             judgeAreas = table.JudgeQueue.SelectMany(x => x.GetSensorTypes())

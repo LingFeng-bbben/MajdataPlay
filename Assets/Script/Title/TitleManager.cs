@@ -12,6 +12,7 @@ public class TitleManager : MonoBehaviour
     {
         InputManager.Instance.BindAnyArea(OnAreaDown);
         StartCoroutine(DelayPlayVoice());
+        LightManager.Instance.SetAllLight(Color.white);
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)
@@ -36,18 +37,18 @@ public class TitleManager : MonoBehaviour
 
     IEnumerator DelayPlayVoice()
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForEndOfFrame();
         AudioManager.Instance.PlaySFX("MajdataPlay.wav");
         AudioManager.Instance.PlaySFX("titlebgm.mp3");
     }
     void NextScene()
     {
-        AudioManager.Instance.StopSFX("titlebgm.mp3");
-        AudioManager.Instance.StopSFX("MajdataPlay.wav");
         SceneManager.LoadSceneAsync(1);
     }
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
+        AudioManager.Instance.StopSFX("titlebgm.mp3");
+        AudioManager.Instance.StopSFX("MajdataPlay.wav");
     }
 }

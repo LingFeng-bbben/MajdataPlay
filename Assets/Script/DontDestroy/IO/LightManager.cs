@@ -44,7 +44,7 @@ public class LightManager : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(DebugLights());
+        //StartCoroutine(DebugLights());
         //print(string.Format("{0:X}", CalculateCheckSum(templateSingle)));
         //print(string.Format("{0:X}", CalculateCheckSum(templateAll)));
     }
@@ -71,7 +71,7 @@ public class LightManager : MonoBehaviour
     void SetButtonLightSerial(Color color,int button)
     {
         var bytes = templateSingle.Clone();
-        bytes[5] = (byte)(button-1);
+        bytes[5] = (byte)(button);
         bytes[6] = (byte)(color.r * 255);
         bytes[7] = (byte)(color.g * 255);
         bytes[8] = (byte)(color.b * 255);
@@ -98,7 +98,7 @@ public class LightManager : MonoBehaviour
     {
         if (useDummy)
         {
-            DummyLights[button-1].color = lightColor;
+            DummyLights[button].color = lightColor;
         }
         else
         {

@@ -7,6 +7,8 @@ public class SkinManager : MonoBehaviour
 {
     public static SkinManager Instance { get; private set; }
 
+    public Sprite SubDisplay;
+
     public Sprite Tap;
     public Sprite Tap_Each;
     public Sprite Tap_Break;
@@ -77,6 +79,7 @@ public class SkinManager : MonoBehaviour
         print(path);
 
         Outline = SpriteLoader.LoadSpriteFromFile(path + "/outline.png");
+        SubDisplay = SpriteLoader.LoadSpriteFromFile(path + "/SubBackgourd.png");
 
         Tap = SpriteLoader.LoadSpriteFromFile(path + "/tap.png");
         Tap_Each = SpriteLoader.LoadSpriteFromFile(path + "/tap_each.png");
