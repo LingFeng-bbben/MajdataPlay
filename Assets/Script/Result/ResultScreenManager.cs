@@ -42,6 +42,9 @@ public class ResultScreenManager : MonoBehaviour
         var result = (GameResult)GameManager.LastGameResult;
         GameManager.LastGameResult = null;
 
+        LightManager.Instance.SetAllLight(Color.white);
+        LightManager.Instance.SetButtonLight(Color.green, 3);
+
         var totalJudgeRecord = UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
         var song = result.SongInfo;
 

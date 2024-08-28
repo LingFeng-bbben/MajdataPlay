@@ -88,6 +88,7 @@ public class NoteEffectManager : MonoBehaviour
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
+                LightManager.Instance.SetButtonLight(Color.green, pos);
                 judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
                 ResetEffect(position);
                 if(isBreak)
@@ -105,6 +106,7 @@ public class NoteEffectManager : MonoBehaviour
             case JudgeType.FastGreat2:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
+                LightManager.Instance.SetButtonLight(new Color(1,0.54f,1f), pos);
                 judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
                 ResetEffect(position);
                 if (isBreak)
@@ -123,6 +125,7 @@ public class NoteEffectManager : MonoBehaviour
             case JudgeType.FastPerfect2:
             case JudgeType.LatePerfect1:
             case JudgeType.FastPerfect1:
+                LightManager.Instance.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), pos);
                 judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
                 ResetEffect(position);
                 tapEffects[pos].SetActive(true);
@@ -133,6 +136,7 @@ public class NoteEffectManager : MonoBehaviour
                 }
                 break;
             case JudgeType.Perfect:
+                LightManager.Instance.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), pos);
                 judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
                 ResetEffect(position);
                 tapEffects[pos].SetActive(true);

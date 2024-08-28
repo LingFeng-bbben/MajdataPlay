@@ -12,6 +12,7 @@ public class TitleManager : MonoBehaviour
     {
         InputManager.Instance.BindAnyArea(OnAreaDown);
         StartCoroutine(DelayPlayVoice());
+        LightManager.Instance.SetAllLight(Color.white);
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)

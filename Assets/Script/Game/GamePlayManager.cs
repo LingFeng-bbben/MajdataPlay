@@ -58,6 +58,7 @@ public class GamePlayManager : MonoBehaviour
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
         audioSample.SetVolume(settingManager.SettingFile.VolumeBgm);
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
+        LightManager.Instance.SetAllLight(Color.white);
         try
         {
             var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
