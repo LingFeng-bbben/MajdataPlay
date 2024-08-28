@@ -196,7 +196,7 @@ namespace MajdataPlay.Game.Notes
             {
                 var percent = table.Const;
                 judgeTiming = time + LastFor * (1-percent);
-                lastWaitTime = LastFor * (1 - percent);
+                lastWaitTime = LastFor *  percent;
             }
 
             judgeAreas = table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
