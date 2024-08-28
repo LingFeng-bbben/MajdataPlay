@@ -17,6 +17,7 @@ public class ResultScreenManager : MonoBehaviour
 
     public TextMeshProUGUI accDX;
     public TextMeshProUGUI accClassic;
+    public TextMeshProUGUI dxScore;
 
     public TextMeshProUGUI perfectCount;
     public TextMeshProUGUI greatCount;
@@ -60,6 +61,7 @@ public class ResultScreenManager : MonoBehaviour
 
         accDX.text = $"{result.Acc.DX:F4}%";
         accClassic.text = $"{result.Acc.Classic:F2}%";
+        dxScore.text = result.DXScore.ToString();
 
         perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
         greatCount.text = $"{totalJudgeRecord.Great}";
