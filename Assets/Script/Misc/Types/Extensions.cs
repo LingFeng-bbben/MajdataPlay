@@ -107,7 +107,7 @@ namespace MajdataPlay.Extensions
         /// <param name="diff">specified difference</param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throw exception when the touch panel is not in A1-E8</exception>
-        public static SensorType GetDiff(this SensorType source,int diff)
+        public static SensorType Diff(this SensorType source,int diff)
         {
             if(source > SensorType.E8)
                 throw new InvalidOperationException($"\"{source}\" is not a valid touch panel area");
@@ -194,11 +194,21 @@ namespace MajdataPlay.Extensions
             if(AorB || DorE)
             {
                 var diff = baseIndex - thisIndex;
-                //TODO: WHAT ABOUT D and E
-                if(thisGroup is SensorGroup.B)
-                    return (baseLine+8).GetDiff(diff);
+
+                if(thisGroup != baseGroup)
+                {
+                    var _baseLine = thisGroup switch
+                    {
+                        SensorGroup.A => (SensorType)(baseIndex - 1),
+                        SensorGroup.B => (SensorType)(baseIndex - 1 + 8),
+                        SensorGroup.D => (SensorType)(baseIndex - 1 + 17),
+                        SensorGroup.E => (SensorType)(baseIndex - 1 + 25),
+                        _ => throw new NotSupportedException("cnm")
+                    };
+                    return _baseLine.Diff(diff);
+                }
                 else
-                    return baseLine.GetDiff(diff);
+                    return baseLine.Diff(diff);
             }
             else
             {
@@ -586,7 +596,7 @@ namespace MajdataPlay.Extensions
             else if (source.IsCollinearWith(target))
                 return false;
 
-            var opposite = target.GetDiff(4);
+            var opposite = target.Diff(4);
             var thisIndex = source.GetIndex();
             var aIndex = target.GetIndex();
             var bIndex = opposite.GetIndex();

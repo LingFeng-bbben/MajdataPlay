@@ -64,7 +64,7 @@ namespace MajdataPlay.Game.Notes
 
             var diff = Math.Abs(1 - startPosition);
             if(diff != 0)
-                table.SetDiff(diff);
+                table.Diff(diff);
 
             if (isJustR)
             {
