@@ -87,6 +87,7 @@ public class ResultScreenManager : MonoBehaviour
 
         InputManager.Instance.BindAnyArea(OnAreaDown);
         AudioManager.Instance.PlaySFX("Sugoi.wav");
+        AudioManager.Instance.PlaySFX("resultbgm.mp3", true);
         ScoreManager.Instance.SaveScore(result,result.ChartLevel);
     }
     string BuildSubDisplayText(JudgeDetail judgeRecord)
@@ -175,6 +176,8 @@ public class ResultScreenManager : MonoBehaviour
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
+        AudioManager.Instance.StopSFX("Sugoi.wav");
+        AudioManager.Instance.StopSFX("resultbgm.mp3");
     }
     readonly ref struct UnpackJudgeInfo
     {

@@ -42,6 +42,8 @@ namespace MajdataPlay.IO
         "good.wav",
         "great.wav",
         "titlebgm.mp3",
+        "resultbgm.mp3",
+        "selectbgm.mp3"
         };
         readonly string[] VoiceFileNames = new string[]
         {
@@ -249,11 +251,13 @@ namespace MajdataPlay.IO
             throw new NotImplementedException();
         }
 
-        public void PlaySFX(string name)
+        public void PlaySFX(string name,bool isLoop=false)
         {
             AudioSampleWrap psp = null;
-            if (SFXSamples.TryGetValue(name, out psp))
+            if (SFXSamples.TryGetValue(name, out psp)) { 
                 psp.PlayOneShot();
+                psp.isLoop = isLoop;
+            }   
             else
                 Debug.LogError("No such SFX");
         }
@@ -299,18 +303,29 @@ namespace MajdataPlay.IO
         private readonly CachedSound cachedSound;
         public long position;
         public float volume = 1f;
+        public bool isLoop { get; set; } = false;
         public CachedSoundSampleProvider(CachedSound cachedSound)
         {
             this.cachedSound = cachedSound;
         }
-
+        int lastLoopOffset = 0;
         public int Read(float[] buffer, int offset, int count)
         {
             var availableSamples = cachedSound.AudioData.Length - position;
             var samplesToCopy = Math.Min(availableSamples, count);
 
             Console.WriteLine(samplesToCopy);
-            Array.Copy(cachedSound.AudioData, position, buffer, offset, samplesToCopy);
+            
+            if (availableSamples < count && isLoop)
+            {
+                lastLoopOffset = offset;
+                position = 0;
+                Array.Copy(cachedSound.AudioData, position, buffer, offset-lastLoopOffset, availableSamples);
+            }
+            else
+            {
+                Array.Copy(cachedSound.AudioData, position, buffer, offset, samplesToCopy);
+            }
             if (volume != 1f)
             {
                 for (int i = 0; i < buffer.Length; i++)
@@ -319,7 +334,7 @@ namespace MajdataPlay.IO
                 }
             }
             position += samplesToCopy;
-            return (int)samplesToCopy;
+            return (int)buffer.Length;
         }
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
     }
@@ -329,6 +344,14 @@ namespace MajdataPlay.IO
         private readonly CachedSoundSampleProvider cachedSound;
         public long position => cachedSound.position;
         public float volume => cachedSound.volume;
+        public bool isLoop
+        {
+            get
+            {
+                return cachedSound.isLoop;
+            }
+            set { cachedSound.isLoop = value; }
+        }
         public bool isPlaying = false;
         public PausableSoundProvider(CachedSoundSampleProvider cachedSound)
         {
@@ -387,6 +410,7 @@ namespace MajdataPlay.IO
 
     public abstract class AudioSampleWrap
     {
+        public abstract bool isLoop { get; set; }
         public abstract bool GetPlayState();
         public abstract void Play();
         public abstract void Pause();
@@ -398,6 +422,15 @@ namespace MajdataPlay.IO
 
     public class NAudioAudioSample : AudioSampleWrap
     {
+        public override bool isLoop
+        {
+            get
+            {
+                return soundProvider.isLoop;
+            }
+            set { soundProvider.isLoop = value; }
+        }
+
         private PausableSoundProvider soundProvider;
         public NAudioAudioSample(PausableSoundProvider pausableSound)
         {
@@ -440,6 +473,14 @@ namespace MajdataPlay.IO
         private AudioClip audioClip;
         private AudioSource audioSource;
         private GameObject gameObject;
+        public override bool isLoop
+        {
+            get
+            {
+                return audioSource.loop;
+            }
+            set { audioSource.loop = value; }
+        }
         public UnityAudioSample(AudioClip audioClip, GameObject gameObject)
         {
             this.audioClip = audioClip;
