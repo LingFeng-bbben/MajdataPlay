@@ -101,13 +101,13 @@ namespace MajdataPlay.Game.Notes
 
             slideOK.SetActive(false);
             slideOK.transform.SetParent(transform.parent);
-            slidePositions.Add(getPositionFromDistance(4.8f));
+            slidePositions.Add(GetPositionFromDistance(4.8f));
             foreach (var bars in slideBars)
             {
                 slidePositions.Add(bars.transform.position);
                 slideRotations.Add(Quaternion.Euler(bars.transform.rotation.eulerAngles + new Vector3(0f, 0f, 18f)));
             }
-            var endPos = getPositionFromDistance(4.8f, endPosition);
+            var endPos = GetPositionFromDistance(4.8f, endPosition);
             var x = slidePositions.LastOrDefault() - Vector3.zero;
             var y = endPos - Vector3.zero;
             var angle = Mathf.Acos(Vector3.Dot(x, y) / (x.magnitude * y.magnitude)) * Mathf.Rad2Deg;

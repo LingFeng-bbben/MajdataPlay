@@ -38,6 +38,10 @@ public class SkinManager : MonoBehaviour
     public Sprite Hold_Ex;
     public Sprite Hold_Break;
     public Sprite Hold_Break_On;
+    public Sprite HoldEnd;
+    public Sprite HoldEachEnd;
+    public Sprite HoldBreakEnd;
+
 
     public Sprite[] Just = new Sprite[36];
     public Sprite[] JudgeText = new Sprite[5];
@@ -255,6 +259,12 @@ public class SkinManager : MonoBehaviour
 
             BreakMaterial = BreakMaterial,
             NoteLines = TapLines,
+            Ends = new Sprite[3]
+            {
+                HoldEnd,
+                HoldEachEnd,
+                HoldBreakEnd
+            },
             ExEffects = new Color[]
             {
                 new Color(255,172,225), // Pink

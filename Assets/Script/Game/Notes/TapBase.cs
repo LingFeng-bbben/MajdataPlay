@@ -9,23 +9,22 @@ namespace MajdataPlay.Game.Notes
     {
         public GameObject tapLine;
 
-        protected virtual void Start()
+        protected override void Start()
         {
-            var notes = GameObject.Find("Notes").transform;
+            base.Start();
+
             var spriteRenderer = GetComponent<SpriteRenderer>();
             var exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-            noteManager = notes.GetComponent<NoteManager>();
-            tapLine = Instantiate(tapLine, notes);
+            tapLine = Instantiate(tapLine, noteManager.gameObject.transform);
             tapLine.SetActive(false);
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             spriteRenderer.sortingOrder += noteSortOrder;
             exSpriteRender.sortingOrder += noteSortOrder;
 
             transform.localScale = new Vector3(0, 0);
         }
-        protected abstract void LoadSkin();
+        
         protected void FixedUpdate()
         {
             var timing = GetJudgeTiming();
@@ -69,7 +68,7 @@ namespace MajdataPlay.Game.Notes
                         if (distance < 1.225f)
                         {
                             transform.localScale = new Vector3(destScale, destScale);
-                            transform.position = getPositionFromDistance(1.225f);
+                            transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
                             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
@@ -82,7 +81,7 @@ namespace MajdataPlay.Game.Notes
                     break;
                 case NoteStatus.Running:
                     {
-                        transform.position = getPositionFromDistance(distance);
+                        transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
                         tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
@@ -99,7 +98,7 @@ namespace MajdataPlay.Game.Notes
             //    spriteRenderer.material.SetFloat("_Contrast", contrast);
             //}
         }
-        protected void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (arg.Type != sensorPos)
                 return;

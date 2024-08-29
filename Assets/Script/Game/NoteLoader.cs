@@ -516,18 +516,6 @@ public class NoteLoader : MonoBehaviour
                         NDCompo.noteSortOrder = noteSortOrder;
                         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-                        NDCompo.tapSpr = customSkin.Hold;
-                        NDCompo.holdOnSpr = customSkin.Hold_On;
-                        NDCompo.holdOffSpr = customSkin.Hold_Off;
-                        NDCompo.eachSpr = customSkin.Hold_Each;
-                        NDCompo.eachHoldOnSpr = customSkin.Hold_Each_On;
-                        NDCompo.exSpr = customSkin.Hold_Ex;
-                        NDCompo.breakSpr = customSkin.Hold_Break;
-                        NDCompo.breakHoldOnSpr = customSkin.Hold_Break_On;
-
-                        NDCompo.HoldShine = HoldShine;
-                        NDCompo.BreakShine = BreakShine;
-
                         if (timing.noteList.Count > 1) NDCompo.isEach = true;
                         NDCompo.time = (float)timing.time;
                         NDCompo.LastFor = (float)note.holdTime;

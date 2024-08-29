@@ -1,100 +1,54 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Diagnostics.Contracts;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
     public class HoldDrop : NoteLongDrop
     {
-        public Sprite tapSpr;
-        public Sprite holdOnSpr;
-        public Sprite holdOffSpr;
-        public Sprite eachSpr;
-        public Sprite eachHoldOnSpr;
-        public Sprite exSpr;
-        public Sprite breakSpr;
-        public Sprite breakHoldOnSpr;
+        bool holdAnimStart;
 
-        public Sprite eachLine;
-        public Sprite breakLine;
+        GameObject tapLine;
 
-        public Sprite holdEachEnd;
-        public Sprite holdBreakEnd;
+        Sprite holdSprite;
+        Sprite holdOnSprite;
+        Sprite holdOffSprite;
 
-        public RuntimeAnimatorController HoldShine;
-        public RuntimeAnimatorController BreakShine;
+        Animator shineAnimator;
 
-        public GameObject tapLine;
+        SpriteRenderer exRenderer;
+        SpriteRenderer endRenderer;
+        SpriteRenderer thisRenderer;
 
-        public Color exEffectTap;
-        public Color exEffectEach;
-        public Color exEffectBreak;
-        private Animator animator;
+        BreakShineController? breakShineController = null;
 
-        public Material breakMaterial;
-
-        private SpriteRenderer exSpriteRender;
-        private bool holdAnimStart;
-        private SpriteRenderer holdEndRender;
-        private SpriteRenderer lineSpriteRender;
-
-        private SpriteRenderer spriteRenderer;
-
-        private void Start()
+        protected override void Start()
         {
-            var notes = GameObject.Find("Notes").transform;
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            noteManager = notes.GetComponent<NoteManager>();
+            base.Start();
+            var notes = noteManager.gameObject.transform;
+
             holdEffect = Instantiate(holdEffect, notes);
-            holdEffect.SetActive(false);
-
             tapLine = Instantiate(tapLine, notes);
+
+            holdEffect.SetActive(false);
             tapLine.SetActive(false);
-            lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
 
-            exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            thisRenderer = GetComponent<SpriteRenderer>();
+            endRenderer = transform.GetChild(1).GetComponent<SpriteRenderer>();
+            shineAnimator = gameObject.GetComponent<Animator>();
 
-            spriteRenderer = GetComponent<SpriteRenderer>();
+            LoadSkin();
 
-            holdEndRender = transform.GetChild(1).GetComponent<SpriteRenderer>();
-
-            spriteRenderer.sortingOrder += noteSortOrder;
-            exSpriteRender.sortingOrder += noteSortOrder;
-            holdEndRender.sortingOrder += noteSortOrder;
-
-            spriteRenderer.sprite = tapSpr;
-            exSpriteRender.sprite = exSpr;
-
-            var anim = gameObject.AddComponent<Animator>();
-            anim.enabled = false;
-            animator = anim;
-
-            if (isEX) exSpriteRender.color = exEffectTap;
-            if (isEach)
-            {
-                spriteRenderer.sprite = eachSpr;
-                lineSpriteRender.sprite = eachLine;
-                holdEndRender.sprite = holdEachEnd;
-                if (isEX) exSpriteRender.color = exEffectEach;
-            }
-
-            if (isBreak)
-            {
-                spriteRenderer.sprite = breakSpr;
-                lineSpriteRender.sprite = breakLine;
-                holdEndRender.sprite = holdBreakEnd;
-                if (isEX) exSpriteRender.color = exEffectBreak;
-                spriteRenderer.material = breakMaterial;
-            }
-
-            spriteRenderer.forceRenderingOff = true;
-            exSpriteRender.forceRenderingOff = true;
-            holdEndRender.enabled = false;
+            thisRenderer.sortingOrder += noteSortOrder;
+            exRenderer.sortingOrder += noteSortOrder;
+            endRenderer.sortingOrder += noteSortOrder;
 
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
+            transform.localScale = new Vector3(0, 0);
         }
         private void FixedUpdate()
         {
@@ -134,7 +88,7 @@ namespace MajdataPlay.Game.Notes
                 objectCounter.NextNote(startPosition);
             }
         }
-        void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (arg.Type != sensorPos)
                 return;
@@ -221,10 +175,10 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            spriteRenderer.forceRenderingOff = false;
-            if (isEX) exSpriteRender.forceRenderingOff = false;
+            thisRenderer.forceRenderingOff = false;
+            if (isEX) exRenderer.forceRenderingOff = false;
 
-            spriteRenderer.size = new Vector2(1.22f, 1.4f);
+            thisRenderer.size = new Vector2(1.22f, 1.4f);
 
             var holdTime = timing - LastFor;
             var holdDistance = holdTime * speed + 4.8f;
@@ -232,20 +186,20 @@ namespace MajdataPlay.Game.Notes
                 holdTime >= 0 && LastFor <= 0.15f)
             {
                 tapLine.transform.localScale = new Vector3(1f, 1f, 1f);
-                transform.position = getPositionFromDistance(4.8f);
+                transform.position = GetPositionFromDistance(4.8f);
                 return;
             }
 
 
             transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
             tapLine.transform.rotation = transform.rotation;
-            holdEffect.transform.position = getPositionFromDistance(4.8f);
+            holdEffect.transform.position = GetPositionFromDistance(4.8f);
 
             if (isBreak && !holdAnimStart && !isJudged)
             {
                 var (brightness, contrast) = gpManager.BreakParams;
-                spriteRenderer.material.SetFloat("_Brightness", brightness);
-                spriteRenderer.material.SetFloat("_Contrast", contrast);
+                thisRenderer.material.SetFloat("_Brightness", brightness);
+                thisRenderer.material.SetFloat("_Contrast", contrast);
             }
 
 
@@ -254,9 +208,9 @@ namespace MajdataPlay.Game.Notes
             if (distance < 1.225f)
             {
                 transform.localScale = new Vector3(destScale, destScale);
-                spriteRenderer.size = new Vector2(1.22f, 1.42f);
+                thisRenderer.size = new Vector2(1.22f, 1.42f);
                 distance = 1.225f;
-                var pos = getPositionFromDistance(distance);
+                var pos = GetPositionFromDistance(distance);
                 transform.position = pos;
             }
             else
@@ -274,25 +228,25 @@ namespace MajdataPlay.Game.Notes
                 {
                     distance = 4.8f;
 
-                    holdEndRender.enabled = true;
+                    endRenderer.enabled = true;
                 }
                 else if (holdDistance >= 1.225f && distance < 4.8f) // 头未到达 尾出现
                 {
-                    holdEndRender.enabled = true;
+                    endRenderer.enabled = true;
                 }
 
                 var dis = (distance - holdDistance) / 2 + holdDistance;
-                transform.position = getPositionFromDistance(dis); //0.325
+                transform.position = GetPositionFromDistance(dis); //0.325
                 var size = distance - holdDistance + 1.4f;
-                spriteRenderer.size = new Vector2(1.22f, size);
-                holdEndRender.transform.localPosition = new Vector3(0f, 0.6825f - size / 2);
+                thisRenderer.size = new Vector2(1.22f, size);
+                endRenderer.transform.localPosition = new Vector3(0f, 0.6825f - size / 2);
                 transform.localScale = new Vector3(1f, 1f);
             }
 
             var lineScale = Mathf.Abs(distance / 4.8f);
             lineScale = lineScale >= 1f ? 1f : lineScale;
             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
-            exSpriteRender.size = spriteRenderer.size;
+            exRenderer.size = thisRenderer.size;
         }
         private void OnDestroy()
         {
@@ -356,41 +310,78 @@ namespace MajdataPlay.Game.Notes
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().ResetEffect(startPosition);
+            effectManager.ResetEffect(startPosition);
             if (LastFor <= 0.3)
                 return;
             else if (!holdAnimStart && GetJudgeTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
                 holdAnimStart = true;
-                animator.runtimeAnimatorController = HoldShine;
-                animator.enabled = true;
+                shineAnimator.enabled = true;
                 var sprRenderer = GetComponent<SpriteRenderer>();
-                if (isBreak)
-                { 
-                    sprRenderer.sprite = breakHoldOnSpr;
-                    spriteRenderer.material.SetFloat("_Brightness", 1);
-                    spriteRenderer.material.SetFloat("_Contrast", 1);
+                
+                if(breakShineController != null)
+                {
+                    Destroy(breakShineController);
+                    thisRenderer.material.SetFloat("_Brightness", 1);
+                    thisRenderer.material.SetFloat("_Contrast", 1);
                 }
-                else if (isEach)
-                    sprRenderer.sprite = eachHoldOnSpr;
-                else
-                    sprRenderer.sprite = holdOnSpr;
-
+                thisRenderer.sprite = holdOnSprite;
             }
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
             holdAnimStart = false;
-            animator.runtimeAnimatorController = HoldShine;
-            animator.enabled = false;
+            shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
-            sprRenderer.sprite = holdOffSpr;
-            if(isBreak)
+            sprRenderer.sprite = holdOffSprite;
+            if (breakShineController != null)
             {
-                spriteRenderer.material.SetFloat("_Brightness", 1);
-                spriteRenderer.material.SetFloat("_Contrast", 1);
+                Destroy(breakShineController);
+                thisRenderer.material.SetFloat("_Brightness", 1);
+                thisRenderer.material.SetFloat("_Contrast", 1);
             }
+        }
+
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetHoldSkin();
+            var renderer = GetComponent<SpriteRenderer>();
+            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+
+            holdSprite = skin.Normal;
+            holdOnSprite = skin.Normal_On;
+            holdOffSprite = skin.Off;
+
+            exRenderer.sprite = skin.Ex;
+            exRenderer.color = skin.ExEffects[0];
+            endRenderer.sprite = skin.Ends[0];
+
+            if (isEach)
+            {
+                holdSprite = skin.Each;
+                holdOnSprite = skin.Each_On;
+                endRenderer.sprite = skin.Ends[1];
+                tapLineRenderer.sprite = skin.NoteLines[1];
+                exRenderer.color = skin.ExEffects[1];
+            }
+
+            if (isBreak)
+            {
+                holdSprite = skin.Break;
+                holdOnSprite = skin.Break_On;
+                endRenderer.sprite = skin.Ends[2];
+                renderer.material = skin.BreakMaterial;
+                tapLineRenderer.sprite = skin.NoteLines[2];
+                breakShineController = gameObject.AddComponent<BreakShineController>();
+                exRenderer.color = skin.ExEffects[2];
+            }
+
+            if (!isEX)
+                Destroy(exRenderer);
+
+            renderer.sprite = holdSprite;
         }
 
     }

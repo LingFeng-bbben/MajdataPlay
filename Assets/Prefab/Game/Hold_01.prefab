@@ -81,7 +81,7 @@ SpriteRenderer:
   m_Size: {x: 0.64, y: 0.64}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4308505936994024712
@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 7566527781932749477}
   - component: {fileID: 7566527781932749498}
   - component: {fileID: 7566527781932749499}
+  - component: {fileID: 4963379289684533625}
   m_Layer: 0
   m_Name: Hold_01
   m_TagString: Untagged
@@ -242,7 +243,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1842247769
-  m_SortingLayer: 2
+  m_SortingLayer: 6
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 69b328dbae9628c44b0882a049fcbf0b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -295,3 +296,24 @@ MonoBehaviour:
   exEffectEach: {r: 1, g: 0.9943893, b: 0.4669811, a: 1}
   exEffectBreak: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}
   breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
+--- !u!95 &4963379289684533625
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7566527781932749496}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 3fcb4587ef8c7f141969450782191592, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

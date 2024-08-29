@@ -47,7 +47,6 @@ namespace MajdataPlay.Game.Notes
         protected bool isInitialized = false; //防止重复初始化
         protected bool isDestroying = false; // 防止重复销毁
 
-        public abstract void Check(object sender, InputEventArgs arg);
         protected void Judge()
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)

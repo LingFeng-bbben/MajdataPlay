@@ -57,7 +57,7 @@ namespace MajdataPlay.Game.Notes
                         if (distance < 1.225f)
                         {
                             transform.localScale = new Vector3(destScale, destScale);
-                            transform.position = getPositionFromDistance(1.225f);
+                            transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
                             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
@@ -80,7 +80,7 @@ namespace MajdataPlay.Game.Notes
                     break;
                 case NoteStatus.Running:
                     {
-                        transform.position = getPositionFromDistance(distance);
+                        transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
                         tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);

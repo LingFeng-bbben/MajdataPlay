@@ -133,7 +133,7 @@ namespace MajdataPlay.Game.Notes
 
             slideOK.SetActive(false);
             slideOK.transform.SetParent(transform.parent);
-            SlidePositionStart = getPositionFromDistance(4.8f);
+            SlidePositionStart = GetPositionFromDistance(4.8f);
 
             for (var i = 0; i < slideBars.Count; i++)
             {
