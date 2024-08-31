@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class SlideBase : NoteLongDrop, IFlasher
+    public abstract class SlideBase : NoteLongDrop
     {
         public ConnSlideInfo ConnectInfo { get; set; } = new()
         {
@@ -19,7 +19,6 @@ namespace MajdataPlay.Game.Notes
         };
         public bool isFinished { get => judgeQueue.Length == 0; }
         public bool isPendingFinish { get => judgeQueue.Length == 1; }
-        public bool CanShine { get; protected set; } = false;
 
         protected JudgeArea[] judgeQueue = { }; // 判定队列
 

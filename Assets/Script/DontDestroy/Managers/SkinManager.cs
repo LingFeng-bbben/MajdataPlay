@@ -273,5 +273,16 @@ public class SkinManager : MonoBehaviour
             }
         };
     }
+    public SlideSkin GetSlideSkin()
+    {
+        return new SlideSkin()
+        {
+            Star = GetStarSkin(),
+            Normal = Slide,
+            Each = Slide_Each,
+            Break = Slide_Break,
+            BreakMaterial = BreakMaterial
+        };
+    }
 
 }

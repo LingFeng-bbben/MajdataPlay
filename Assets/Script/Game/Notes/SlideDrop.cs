@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Game.Controllers;
-using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -14,18 +13,10 @@ namespace MajdataPlay.Game.Notes
         // Start is called before the first frame update
         public GameObject star_slide;
 
-        public Sprite spriteNormal;
-        public Sprite spriteEach;
-        public Sprite spriteBreak;
-        public RuntimeAnimatorController slideShine;
-        public RuntimeAnimatorController judgeBreakShine;
-
         public bool isMirror;
         public bool isSpecialFlip; // fixes known star problem
 
         public List<int> areaStep = new List<int>();
-
-        public Material breakMaterial;
         
         private readonly List<Vector3> slidePositions = new();
         private readonly List<Quaternion> slideRotations = new();
@@ -48,7 +39,11 @@ namespace MajdataPlay.Game.Notes
                 throw new MissingComponentException($"Slide table of \"{slideType}\" is not found");
             table = slideTable;
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
+            spriteRenderer_star = star_slide.GetComponent<SpriteRenderer>();
+            slideBars = new GameObject[transform.childCount - 1];
+            for (var i = 0; i < transform.childCount - 1; i++)
+                slideBars[i] = transform.GetChild(i).gameObject;
+
 
             if (isMirror)
             {
@@ -66,87 +61,9 @@ namespace MajdataPlay.Game.Notes
             if(diff != 0)
                 table.Diff(diff);
 
-            if (isJustR)
-            {
-                if (slideOK.GetComponent<LoadJustSprite>().setR() == 1 && isMirror)
-                {
-                    slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
-                }
-            }
-            else
-            {
-                if (slideOK.GetComponent<LoadJustSprite>().setL() == 1 && !isMirror)
-                {
-                    slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
-                }
-            }
-            spriteRenderer_star = star_slide.GetComponent<SpriteRenderer>();
+            LoadPath();
+            LoadSkin();
 
-            if (isBreak)
-            {
-                spriteRenderer_star.material = breakMaterial;
-                spriteRenderer_star.material.SetFloat("_Brightness", 0.95f);
-                var controller = star_slide.AddComponent<BreakShineController>();
-                controller.enabled = true;
-                controller.parent = this;
-            }
-
-            slideBars = new GameObject[transform.childCount-1];
-            for (var i = 0; i < transform.childCount - 1; i++) 
-                slideBars[i] = transform.GetChild(i).gameObject;
-
-            slideOK.SetActive(false);
-            slideOK.transform.SetParent(transform.parent);
-            slidePositions.Add(GetPositionFromDistance(4.8f));
-            foreach (var bars in slideBars)
-            {
-                slidePositions.Add(bars.transform.position);
-                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.eulerAngles + new Vector3(0f, 0f, 18f)));
-            }
-            var endPos = GetPositionFromDistance(4.8f, endPosition);
-            var x = slidePositions.LastOrDefault() - Vector3.zero;
-            var y = endPos - Vector3.zero;
-            var angle = Mathf.Acos(Vector3.Dot(x, y) / (x.magnitude * y.magnitude)) * Mathf.Rad2Deg;
-            var offset = slideRotations.TakeLast(1).First().eulerAngles - slideRotations.TakeLast(2).First().eulerAngles;
-            if (offset.z < 0)
-                angle = -angle;
-
-            var q = slideRotations.LastOrDefault() * Quaternion.Euler(0, 0, angle);
-            slidePositions.Add(endPos);
-            slideRotations.Add(q);
-            foreach (var gm in slideBars)
-            {
-                var sr = gm.GetComponent<SpriteRenderer>();
-                sr.color = new Color(1f, 1f, 1f, 0f);
-                sr.sortingOrder = sortIndex--;
-                sr.sortingLayerName = "Slides";
-                if (isBreak)
-                {
-                    sr.sprite = spriteBreak;
-                    sr.material = breakMaterial;
-                    sr.material.SetFloat("_Brightness", 0.95f);
-                    var controller = gm.AddComponent<BreakShineController>();
-                    controller.parent = this;
-                    controller.enabled = true;
-                    //anim.runtimeAnimatorController = slideShine;
-                    //anim.enabled = false;
-                    //animators.Add(anim);
-                }
-                else if (isEach)
-                {
-                    sr.sprite = spriteEach;
-                }
-                else
-                {
-                    sr.sprite = spriteNormal;
-                }
-            }
-
-            //timeProvider = GameObject.Find("AudioTimeProvider").GetComponent<AudioTimeProvider>();
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             fadeInTime = -3.926913f / speed;
@@ -168,19 +85,20 @@ namespace MajdataPlay.Game.Notes
 
 
         }
-        /// <summary>
-        /// Connection Slide
-        /// <para>强制完成该Slide</para>
-        /// </summary>
-        public void ForceFinish()
+        public float GetSlideLength()
         {
-            if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
-                return;
-            HideBar(areaStep.LastOrDefault());
-            judgeQueue = Array.Empty<JudgeArea>();
+            float len = 0;
+            for (int i = 0; i < slidePositions.Count - 2; i++)
+            {
+                var a = slidePositions[i];
+                var b = slidePositions[i + 1];
+                len += (b - a).magnitude;
+            }
+            return len;
         }
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             Initialize();
             if (ConnectInfo.IsConnSlide)
             {
@@ -207,7 +125,7 @@ namespace MajdataPlay.Game.Notes
             foreach (var sensor in judgeAreas)
                 ioManager.BindSensor(Check, sensor);
         }
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
@@ -253,8 +171,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        // Update is called once per frame
-        private void Update()
+        void Update()
         {
             if (star_slide == null)
             {
@@ -303,19 +220,7 @@ namespace MajdataPlay.Game.Notes
             else
                 UpdateStar();
             Check();
-        }
-        public float GetSlideLength()
-        {
-            float len = 0;
-            for (int i = 0; i < slidePositions.Count - 2; i++)
-            {
-                var a = slidePositions[i];
-                var b = slidePositions[i + 1];
-                len += (b - a).magnitude;
-            }
-            return len;
-        }
-        public override void Check(object sender, InputEventArgs arg) => Check();
+        }        
         /// <summary>
         /// 判定队列检查
         /// </summary>
@@ -385,8 +290,6 @@ namespace MajdataPlay.Game.Notes
             }
             isChecking = false;
         }
-        
-       
         /// <summary>
         /// 强制将Slide判定为TooLate并销毁
         /// </summary>
@@ -443,9 +346,11 @@ namespace MajdataPlay.Game.Notes
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 objectCounter.ReportResult(this, judgeResult, isBreak);
                 
-                if (isBreak && judgeResult == JudgeType.Perfect) { 
-                    slideOK.GetComponent<Animator>().runtimeAnimatorController = judgeBreakShine;
+                if (isBreak && judgeResult == JudgeType.Perfect) 
+                { 
+                    var anim = slideOK.GetComponent<Animator>();
                     var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+                    anim.SetTrigger("break");
                     audioEffMana.PlayBreakSlideEndSound();
                 }
                 slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
@@ -501,7 +406,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        private void ApplyStarRotation(Quaternion newRotation)
+        void ApplyStarRotation(Quaternion newRotation)
         {
             var halfFlip = newRotation.eulerAngles;
             halfFlip.z += 180f;
@@ -510,5 +415,108 @@ namespace MajdataPlay.Game.Notes
             else
                 star_slide.transform.rotation = newRotation;
         }
+        void LoadPath()
+        {
+            slidePositions.Add(GetPositionFromDistance(4.8f));
+            foreach (var bars in slideBars)
+            {
+                slidePositions.Add(bars.transform.position);
+                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.eulerAngles + new Vector3(0f, 0f, 18f)));
+            }
+            var endPos = GetPositionFromDistance(4.8f, endPosition);
+            var x = slidePositions.LastOrDefault() - Vector3.zero;
+            var y = endPos - Vector3.zero;
+            var angle = Mathf.Acos(Vector3.Dot(x, y) / (x.magnitude * y.magnitude)) * Mathf.Rad2Deg;
+            var offset = slideRotations.TakeLast(1).First().eulerAngles - slideRotations.TakeLast(2).First().eulerAngles;
+            if (offset.z < 0)
+                angle = -angle;
+
+            var q = slideRotations.LastOrDefault() * Quaternion.Euler(0, 0, angle);
+            slidePositions.Add(endPos);
+            slideRotations.Add(q);
+        }
+        protected override void LoadSkin()
+        {
+            var bars = slideBars;
+            var skin = SkinManager.Instance.GetSlideSkin();
+
+            var barSprite = skin.Normal;
+            var starSprite = skin.Star.Normal;
+            Material? breakMaterial = null;
+
+            if(isEach)
+            {
+                barSprite = skin.Each;
+                starSprite = skin.Star.Each;
+            }
+            if(isBreak)
+            {
+                barSprite = skin.Star.Break;
+                starSprite = skin.Break;
+                breakMaterial = skin.BreakMaterial;
+            }
+
+            foreach(var bar in bars)
+            {
+                var barRenderer = bar.GetComponent<SpriteRenderer>();
+                
+                barRenderer.color = new Color(1f, 1f, 1f, 0f);
+                barRenderer.sortingOrder = sortIndex--;
+                barRenderer.sortingLayerName = "Slides";
+
+                barRenderer.sprite = barSprite;
+                
+
+                if(breakMaterial != null)
+                {
+                    barRenderer.material = breakMaterial;
+                    var controller = bar.AddComponent<BreakShineController>();
+                    controller.parent = this;
+                }
+            }
+
+            var starRenderer = star_slide.GetComponent<SpriteRenderer>();
+            starRenderer.sprite = starSprite;
+            if (breakMaterial != null)
+            {
+                starRenderer.material = breakMaterial;
+                var controller = star_slide.AddComponent<BreakShineController>();
+                controller.parent = this;
+            }
+
+            if (isJustR)
+            {
+                if (slideOK.GetComponent<LoadJustSprite>().setR() == 1 && isMirror)
+                {
+                    slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                }
+            }
+            else
+            {
+                if (slideOK.GetComponent<LoadJustSprite>().setL() == 1 && !isMirror)
+                {
+                    slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                }
+            }
+
+            slideOK.SetActive(false);
+            slideOK.transform.SetParent(transform.parent);
+        }
+        /// <summary>
+        /// Connection Slide
+        /// <para>强制完成该Slide</para>
+        /// </summary>
+        public void ForceFinish()
+        {
+            if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
+                return;
+            HideBar(areaStep.LastOrDefault());
+            judgeQueue = Array.Empty<JudgeArea>();
+        }
+        protected override void Check(object sender, InputEventArgs arg) => Check();
     }
 }

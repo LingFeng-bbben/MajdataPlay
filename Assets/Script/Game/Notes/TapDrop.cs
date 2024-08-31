@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
@@ -43,7 +44,8 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Break;
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
-                gameObject.AddComponent<BreakShineController>();
+                var controller = gameObject.AddComponent<BreakShineController>();
+                controller.parent = this;
                 exRenderer.color = skin.ExEffects[2];
 
             }

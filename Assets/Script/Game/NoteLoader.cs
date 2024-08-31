@@ -13,7 +13,6 @@ public class NoteLoader : MonoBehaviour
     public float noteSpeed = 7f;
     public float touchSpeed = 7.5f;
 
-    public Sprite starEach;
     public GameObject tapPrefab;
     public GameObject holdPrefab;
     public GameObject starPrefab;
@@ -1055,12 +1054,6 @@ public class NoteLoader : MonoBehaviour
         var SliCompo = slide.AddComponent<SlideDrop>();
 
         SliCompo.slideType = slideShape;
-        SliCompo.spriteNormal = customSkin.Slide;
-        SliCompo.spriteEach = customSkin.Slide_Each;
-        SliCompo.spriteBreak = customSkin.Slide_Break;
-        SliCompo.slideShine = BreakShine;
-        SliCompo.breakMaterial = breakMaterial;
-        SliCompo.judgeBreakShine = JudgeBreakShine;
         SliCompo.areaStep = new List<int>(SLIDE_AREA_STEP_MAP[slideShape]);
 
         if (timing.noteList.Count > 1)

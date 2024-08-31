@@ -1,3 +1,4 @@
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -5,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour
+    public abstract class NoteDrop : MonoBehaviour, IFlasher
     {
         public int startPosition;
         public float time;
@@ -18,7 +19,8 @@ namespace MajdataPlay.Game.Notes
         protected GamePlayManager gpManager => GamePlayManager.Instance;
         protected InputManager ioManager => InputManager.Instance;
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
-        
+        public bool CanShine { get; protected set; } = false;
+
         protected bool isJudged = false;
         protected float judgeDiff = -1;
         protected JudgeType judgeResult = JudgeType.Miss;
