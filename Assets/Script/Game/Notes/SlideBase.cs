@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Interfaces;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -17,10 +18,34 @@ namespace MajdataPlay.Game.Notes
             IsGroupPart = false,
             Parent = null
         };
-        public bool isFinished { get => judgeQueue.Length == 0; }
-        public bool isPendingFinish { get => judgeQueue.Length == 1; }
+        /// <summary>
+        /// 如果判定队列已经完成，返回True，反之False
+        /// </summary>
+        public bool IsFinished { get => QueueRemaining == 0; }
+        /// <summary>
+        /// 如果判定队列剩余1个未完成判定区，返回True
+        /// </summary>
+        public bool IsPendingFinish { get => QueueRemaining == 1; }
+        /// <summary>
+        /// 返回判定队列中未完成判定区的数量
+        /// </summary>
+        public int QueueRemaining 
+        { 
+            get
+            {
+                int[] reamaining = new int[3];
+                foreach (var (i, queue) in judgeQueues.WithIndex())
+                    reamaining[i] = queue.Length;
+                return reamaining.Max();
+            }
+        }
 
-        protected JudgeArea[] judgeQueue = { }; // 判定队列
+        protected JudgeArea[][] judgeQueues = new JudgeArea[3][]
+        { 
+            Array.Empty<JudgeArea>(), 
+            Array.Empty<JudgeArea>(), 
+            Array.Empty<JudgeArea>()
+        }; // 判定队列
 
         protected GameObject[] slideBars = { };
 
@@ -35,6 +60,11 @@ namespace MajdataPlay.Game.Notes
         public float fullFadeInTime;
         public int endPosition;
         public string slideType;
+
+        /// <summary>
+        /// 引导Star
+        /// </summary>
+        public GameObject[] stars = new GameObject[3];
 
         protected Animator fadeInAnimator;
         protected GameObject slideOK;
@@ -97,10 +127,72 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i <= endIndex; i++)
                 slideBars[i].SetActive(false);
         }
+        protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
             foreach (var gm in slideBars)
                 gm.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, alpha);
+        }
+        protected void TooLateJudge()
+        {
+            if (isJudged)
+            {
+                DestroySelf();
+                return;
+            }
+
+            if (QueueRemaining == 1)
+                judgeResult = JudgeType.LateGood;
+            else
+                judgeResult = JudgeType.Miss;
+            isJudged = true;
+            DestroySelf();
+        }
+        /// <summary>
+        /// 销毁当前Slide
+        /// <para>当 <paramref name="onlyStar"/> 为true时，仅销毁引导Star</para>
+        /// </summary>
+        /// <param name="onlyStar"></param>
+        protected void DestroySelf(bool onlyStar = false)
+        {
+
+            if (onlyStar)
+                DestroyStars();
+            else
+            {
+                if (ConnectInfo.Parent != null)
+                    Destroy(ConnectInfo.Parent);
+
+                foreach (GameObject obj in slideBars)
+                    obj.SetActive(false);
+
+                DestroyStars();
+                Destroy(gameObject);
+            }
+        }
+        /// <summary>
+        /// Connection Slide
+        /// <para>强制完成该Slide</para>
+        /// </summary>
+        protected void ForceFinish()
+        {
+            if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
+                return;
+            HideAllBar();
+            var emptyQueue = Array.Empty<JudgeArea>();
+            for (int i = 0; i < 2; i++)
+                judgeQueues[i] = emptyQueue;
+        }
+        void DestroyStars()
+        {
+            if (stars.IsEmpty())
+                return;
+            foreach (var star in stars)
+            {
+                if (star != null)
+                    Destroy(star);
+            }
+            stars = Array.Empty<GameObject>();
         }
     }
 }

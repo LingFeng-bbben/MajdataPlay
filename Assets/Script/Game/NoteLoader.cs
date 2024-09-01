@@ -1054,7 +1054,6 @@ public class NoteLoader : MonoBehaviour
         var SliCompo = slide.AddComponent<SlideDrop>();
 
         SliCompo.slideType = slideShape;
-        SliCompo.areaStep = new List<int>(SLIDE_AREA_STEP_MAP[slideShape]);
 
         if (timing.noteList.Count > 1)
         {
@@ -1109,7 +1108,7 @@ public class NoteLoader : MonoBehaviour
         SliCompo.speed = noteSpeed * timing.HSpeed;
         SliCompo.timeStart = (float)timing.time;
         SliCompo.startPosition = note.startPosition;
-        SliCompo.star_slide = slide_star;
+        SliCompo.stars = new GameObject[] { slide_star };
         SliCompo.time = (float)note.slideStartTime;
         SliCompo.LastFor = (float)note.slideTime;
         //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;

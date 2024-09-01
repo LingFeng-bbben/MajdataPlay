@@ -11,7 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class WifiDrop : NoteLongDrop, IFlasher
+    public class WifiDrop : SlideBase
     {
         // Start is called before the first frame update
         public GameObject star_slidePrefab;
@@ -26,46 +26,24 @@ namespace MajdataPlay.Game.Notes
         public RuntimeAnimatorController slideShine;
         public RuntimeAnimatorController judgeBreakShine;
 
-        public bool isJustR;
-
-        public float timeStart;
-        public bool isGroupPart;
-        public bool isGroupPartEnd;
-
-        public int endPosition;
-        public int sortIndex;
-
-        public float fadeInTime;
         public float slideConst;
         float arriveTime = -1;
-        public float fullFadeInTime;
 
         public Material breakMaterial;
 
-        public bool CanShine { get; private set; } = false;
 
         public List<int> areaStep = new List<int>();
-        public bool smoothSlideAnime = false;
 
-        Animator fadeInAnimator = null;
 
         private readonly List<SpriteRenderer> sbRender = new();
 
-        private readonly List<GameObject> slideBars = new();
         private readonly Vector3[] SlidePositionEnd = new Vector3[3];
 
         private readonly SpriteRenderer[] spriteRenderer_star = new SpriteRenderer[3];
         private readonly GameObject[] star_slide = new GameObject[3];
-        private GameObject slideOK;
 
         private Vector3 SlidePositionStart;
 
-        private bool isDestroying = false;
-
-        bool isChecking = false;
-        bool isFinished { get => _judgeQueues.All(x => x.Count == 0); }
-        bool canCheck = false;
-        bool isSoundPlayed = false;
 
         List<SensorType> boundSensors = new();
         public List<List<JudgeArea>> _judgeQueues = new();
@@ -198,7 +176,7 @@ namespace MajdataPlay.Game.Notes
             if (startTiming >= -0.05f)
                 canCheck = true;
 
-            if (isFinished)
+            if (IsFinished)
             {
                 HideBar(areaStep.LastOrDefault());
                 Judge();
@@ -233,10 +211,10 @@ namespace MajdataPlay.Game.Notes
             isJudged = true;
             DestroySelf();
         }
-        public void Check(object sender, InputEventArgs arg) => CheckAll();
+        protected override void Check(object sender, InputEventArgs arg) => CheckAll();
         void CheckAll()
         {
-            if (isFinished || !canCheck)
+            if (IsFinished || !canCheck)
                 return;
             else if (isChecking)
                 return;
@@ -302,7 +280,7 @@ namespace MajdataPlay.Game.Notes
                 judgeQueue = judgeQueue.Skip(1).ToList();
                 return;
             }
-            if (!isFinished)
+            if (!IsFinished)
                 HideBar(GetLastIndex());
 
         }
@@ -382,7 +360,7 @@ namespace MajdataPlay.Game.Notes
                 if (startiming >= -0.05f)
                 {
                     fadeInAnimator.enabled = false;
-                    setSlideBarAlpha(1f);
+                    SetSlideBarAlpha(1f);
                 }
                 else if (!fadeInAnimator.enabled && startiming >= fadeInTime)
                     fadeInAnimator.enabled = true;
@@ -390,7 +368,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             fadeInAnimator.enabled = false;
-            setSlideBarAlpha(1f);
+            SetSlideBarAlpha(1f);
             foreach (var star in star_slide)
                 star.SetActive(true);
 
@@ -428,7 +406,7 @@ namespace MajdataPlay.Game.Notes
                     star_slide[i].transform.position = SlidePositionEnd[i];
                     star_slide[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
-                if (isFinished && isJudged)
+                if (IsFinished && isJudged)
                     DestroySelf();
             }
             else
@@ -491,15 +469,6 @@ namespace MajdataPlay.Game.Notes
 
             
             isDestroying = true;
-        }
-        private void setSlideBarAlpha(float alpha)
-        {
-            foreach (var sr in sbRender)
-            {
-                var oldColor = sr.color;
-                oldColor.a = alpha;
-                sr.color = oldColor;
-            }
         }
     }
 }

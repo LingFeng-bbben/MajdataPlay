@@ -1,11 +1,16 @@
 ﻿using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
+    public static class ArrayExtensions
+    {
+        //public static bool IsEmpty(this Array source) => source.Length == 0;
+    }
     public static class ObjectExtensions
     {
         /// <summary>
@@ -54,6 +59,7 @@ namespace MajdataPlay.Extensions
     }
     public static class IEnumerableExtensions
     {
+        public static bool IsEmpty<T>(this IEnumerable<T> source) => source.Count() == 0;
         public static IEnumerable<(int, T)> WithIndex<T>(this IEnumerable<T> source)
         {
             int index = 0;
