@@ -47,7 +47,7 @@ namespace MajdataPlay.Game.Notes
             Array.Empty<JudgeArea>()
         }; // 判定队列
 
-        protected GameObject[] slideBars = { };
+        protected GameObject[] slideBars = { }; // Arrows
 
 
         /// <summary>
@@ -75,7 +75,12 @@ namespace MajdataPlay.Game.Notes
         protected float judgeTiming; // 正解帧
         protected bool isInitialized = false; //防止重复初始化
         protected bool isDestroying = false; // 防止重复销毁
-
+        /// <summary>
+        /// 存储Slide Queue中会经过的区域
+        /// <para>用于绑定或解绑Event</para>
+        /// </summary>
+        protected IEnumerable<SensorType> judgeAreas;
+        public abstract void Initialize();
         protected void Judge()
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)

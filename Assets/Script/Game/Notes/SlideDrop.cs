@@ -18,11 +18,11 @@ namespace MajdataPlay.Game.Notes
 
         SpriteRenderer starRenderer;
         SlideTable table;
-        IEnumerable<SensorType> judgeAreas;
+        
         /// <summary>
         /// Slide初始化
         /// </summary>
-        public void Initialize()
+        public override void Initialize()
         {
             if (isInitialized)
                 return;
@@ -404,8 +404,8 @@ namespace MajdataPlay.Game.Notes
             }
             if(isBreak)
             {
-                barSprite = skin.Star.Break;
-                starSprite = skin.Break;
+                barSprite = skin.Break;
+                starSprite = skin.Star.Break;
                 breakMaterial = skin.BreakMaterial;
             }
 

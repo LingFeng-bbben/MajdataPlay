@@ -130,309 +130,51 @@ public class NoteLoader : MonoBehaviour
         { SensorType.C, new SensorType[]{ SensorType.B1, SensorType.B2, SensorType.B3, SensorType.B4, SensorType.B5, SensorType.B6, SensorType.B7, SensorType.B8} },
     };
 
-    static Dictionary<string, float> SLIDE_AREA_CONST = new()
-    {
-        { "line3", 0.1919f},
-        { "line4", 0.1793f},
-        { "line5", 0.1629f},
-        { "line6", 0.1793f},
-        { "line7", 0.1919f},
-        { "circle1", 0.7892f},
-        { "circle2", 0.2326f},
-        { "circle3", 0.1550f},
-        { "circle4", 0.1163f},
-        { "circle5", 0.0930f},
-        { "circle6", 0.0775f},
-        { "circle7", 0.0664f},
-        { "circle8", 0.0490f},
-        { "v1", 0.1629f},
-        { "v2", 0.1629f},
-        { "v3", 0.1629f},
-        { "v4", 0.1629f},
-        { "v5", 0.1629f},
-        { "v6", 0.1629f},
-        { "v7", 0.1629f},
-        { "v8", 0.1629f},
-        { "ppqq1", 0.1014f},
-        { "ppqq2", 0.1204f},
-        { "ppqq3", 0.1434f},
-        { "ppqq4", 0.0697f},
-        { "ppqq5", 0.0867f},
-        { "ppqq6", 0.1026f},
-        { "ppqq7", 0.1266f},
-        { "ppqq8", 0.1413f},
-        { "pq1", 0.1021f},
-        { "pq2", 0.1144f},
-        { "pq3", 0.1247f},
-        { "pq4", 0.1436f},
-        { "pq5", 0.1627f},
-        { "pq6", 0.0752f},
-        { "pq7", 0.0984f},
-        { "pq8", 0.1126f},
-        { "s", 0.1054f},
-        { "wifi", 0.1829f},
-        { "L2", 0.0948f},
-        { "L3", 0.0711f},
-        { "L4", 0.0948f},
-        { "L5", 0.1186f},
-    };
-
-    private static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
-    {
-        {"line3", new List<int>(){ 0, 2, 8, 13 } },
-        {"line4", new List<int>(){ 0, 3, 8, 12, 18 } },
-        {"line5", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"line6", new List<int>(){ 0, 3, 8, 12, 18 } },
-        {"line7", new List<int>(){ 0, 2, 8, 13 } },
-        {"circle1", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 58, 63 } },
-        {"circle2", new List<int>(){ 0, 3, 7 } },
-        {"circle3", new List<int>(){ 0, 3, 11, 15 } },
-        {"circle4", new List<int>(){ 0, 3, 11, 19, 23 } },
-        {"circle5", new List<int>(){ 0, 3, 11, 19, 27, 31 } },
-        {"circle6", new List<int>(){ 0, 3, 11, 19, 27, 35, 39 } },
-        {"circle7", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 47 } },
-        {"circle8", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 55 } },
-        {"v1", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v2", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v3", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v4", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v6", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v7", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"v8", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-        {"ppqq1", new List<int>(){ 0, 3, 7, 13, 17, 26, 32, 35 } },
-        {"ppqq2", new List<int>(){ 0, 3, 7, 12, 16, 25, 28 } },
-        {"ppqq3", new List<int>(){ 0, 3, 6, 12, 15, 22 } },
-        {"ppqq4", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
-        {"ppqq5", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
-        {"ppqq6", new List<int>(){ 0, 3, 7, 12, 16, 25, 28, 34, 38, 41, 48 } },
-        {"ppqq7", new List<int>(){ 0, 3, 7, 13, 17, 27, 31, 37, 41, 46 } },
-        {"ppqq8", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 41 } },
-        {"pq1", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 33 } },
-        {"pq2", new List<int>(){ 0, 3, 8, 11, 14, 18, 21, 24, 30 } },
-        {"pq3", new List<int>(){ 0, 3, 9, 12, 16, 19, 23, 27 } },
-        {"pq4", new List<int>(){ 0, 3, 9, 13, 16, 20, 24 } },
-        {"pq5", new List<int>(){ 0, 3, 9, 13, 17, 21 } },
-        {"pq6", new List<int>(){ 0, 3, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 42 } },
-        {"pq7", new List<int>(){ 0, 3, 8, 12, 15, 18, 22, 25, 28, 32, 35, 39 } },
-        {"pq8", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 30, 36 } },
-        {"s", new List<int>(){ 0, 3, 8, 11, 17, 21, 24, 30 } },
-        {"wifi", new List<int>(){ 0, 1, 4, 6, 11 } },
-        {"L2", new List<int>(){ 0, 2, 7, 15, 21, 26, 32 } },
-        {"L3", new List<int>(){ 0, 2, 8, 17, 20, 26, 29, 34 } },
-        {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
-        {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
-    };
-    private static readonly Dictionary<int, List<List<JudgeArea>>> WIFISLIDE_JUDGE_QUEUE = new Dictionary<int, List<List<JudgeArea>>>()
-    {
-        { 1,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B8, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B7, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, true },{SensorType.D6, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B1, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, true },{SensorType.B5, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B2, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B3, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, true },{SensorType.D5, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 2,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B1, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B8, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, true },{SensorType.D7, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B2, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, true },{SensorType.B6, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B3, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B4, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, true },{SensorType.D6, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 3,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B2, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B1, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, true },{SensorType.D8, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B3, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, true },{SensorType.B7, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B4, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B5, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, true },{SensorType.D7, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 4,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B3, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B2, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, true },{SensorType.D1, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B4, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, true },{SensorType.B8, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B5, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B6, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, true },{SensorType.D8, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 5,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B4, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B3, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, true },{SensorType.D2, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B5, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, true },{SensorType.B1, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B6, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B7, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, true },{SensorType.D1, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 6,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B5, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B4, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, true },{SensorType.D3, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B6, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, true },{SensorType.B2, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A6, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B7, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B8, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A1, true },{SensorType.D2, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 7,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B6, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B5, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, true },{SensorType.D4, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B7, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, true },{SensorType.B3, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A7, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B8, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B1, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A2, true },{SensorType.D3, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        },
-        { 8,
-            new List<List<JudgeArea>>()
-            {
-                new List<JudgeArea>() // L
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B7, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B6, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A5, true },{SensorType.D5, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // Center
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B8, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.C, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A4, true },{SensorType.B4, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                },
-                new List<JudgeArea>() // R
-                {
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A8, false } },SLIDE_AREA_STEP_MAP["wifi"][0]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B1, false } },SLIDE_AREA_STEP_MAP["wifi"][1]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.B2, false } },SLIDE_AREA_STEP_MAP["wifi"][2]),
-                    new JudgeArea(new Dictionary<SensorType, bool>(){ {SensorType.A3, true },{SensorType.D4, true }  },SLIDE_AREA_STEP_MAP["wifi"][3] ),
-                }
-            }
-        }
-    };
+    public static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
+        {
+            {"line3", new List<int>(){ 0, 2, 8, 13 } },
+            {"line4", new List<int>(){ 0, 3, 8, 12, 18 } },
+            {"line5", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"line6", new List<int>(){ 0, 3, 8, 12, 18 } },
+            {"line7", new List<int>(){ 0, 2, 8, 13 } },
+            {"circle1", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 58, 63 } },
+            {"circle2", new List<int>(){ 0, 3, 7 } },
+            {"circle3", new List<int>(){ 0, 3, 11, 15 } },
+            {"circle4", new List<int>(){ 0, 3, 11, 19, 23 } },
+            {"circle5", new List<int>(){ 0, 3, 11, 19, 27, 31 } },
+            {"circle6", new List<int>(){ 0, 3, 11, 19, 27, 35, 39 } },
+            {"circle7", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 47 } },
+            {"circle8", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 55 } },
+            {"v1", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v2", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v3", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v4", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v6", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v7", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"v8", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
+            {"ppqq1", new List<int>(){ 0, 3, 7, 13, 17, 26, 32, 35 } },
+            {"ppqq2", new List<int>(){ 0, 3, 7, 12, 16, 25, 28 } },
+            {"ppqq3", new List<int>(){ 0, 3, 6, 12, 15, 22 } },
+            {"ppqq4", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
+            {"ppqq5", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
+            {"ppqq6", new List<int>(){ 0, 3, 7, 12, 16, 25, 28, 34, 38, 41, 48 } },
+            {"ppqq7", new List<int>(){ 0, 3, 7, 13, 17, 27, 31, 37, 41, 46 } },
+            {"ppqq8", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 41 } },
+            {"pq1", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 33 } },
+            {"pq2", new List<int>(){ 0, 3, 8, 11, 14, 18, 21, 24, 30 } },
+            {"pq3", new List<int>(){ 0, 3, 9, 12, 16, 19, 23, 27 } },
+            {"pq4", new List<int>(){ 0, 3, 9, 13, 16, 20, 24 } },
+            {"pq5", new List<int>(){ 0, 3, 9, 13, 17, 21 } },
+            {"pq6", new List<int>(){ 0, 3, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 42 } },
+            {"pq7", new List<int>(){ 0, 3, 8, 12, 15, 18, 22, 25, 28, 32, 35, 39 } },
+            {"pq8", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 30, 36 } },
+            {"s", new List<int>(){ 0, 3, 8, 11, 17, 21, 24, 30 } },
+            {"wifi", new List<int>(){ 0, 1, 4, 6, 11 } },
+            {"L2", new List<int>(){ 0, 2, 7, 15, 21, 26, 32 } },
+            {"L3", new List<int>(){ 0, 2, 8, 17, 20, 26, 29, 34 } },
+            {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
+            {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
+        };
     // Start is called before the first frame update
 
     private void Awake()
@@ -572,7 +314,7 @@ public class NoteLoader : MonoBehaviour
                     }
 
                     else if (note.noteType == SimaiNoteType.Slide)
-                        InstantiateStarGroup(timing, note, i, lastNoteTime); // 星星组
+                        InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
                 }
 
 
@@ -733,7 +475,7 @@ public class NoteLoader : MonoBehaviour
             }
     }
 
-    private void InstantiateStarGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
+    private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
     {
         int charIntParse(char c)
         {
@@ -926,7 +668,7 @@ public class NoteLoader : MonoBehaviour
                     IsGroupPartEnd = isGroupEnd,
                     Parent = parent
                 };
-                parent = InstantiateStar(timing, subSlide[i], info);
+                parent = InstantiateSlide(timing, subSlide[i], info);
                 subSlides.Add(parent.GetComponent<SlideDrop>());
             }
         }
@@ -967,20 +709,6 @@ public class NoteLoader : MonoBehaviour
         NDCompo.slide = slideWifi;
         var WifiCompo = slideWifi.GetComponent<WifiDrop>();
 
-        WifiCompo.normalStar = customSkin.Star;
-        WifiCompo.eachStar = customSkin.Star_Each;
-        WifiCompo.breakStar = customSkin.Star_Break;
-        WifiCompo.judgeBreakShine = JudgeBreakShine;
-        WifiCompo.breakMaterial = breakMaterial;
-        WifiCompo.slideShine = BreakShine;
-        WifiCompo.areaStep = new List<int>(SLIDE_AREA_STEP_MAP["wifi"]);
-        WifiCompo.judgeQueues = new(WIFISLIDE_JUDGE_QUEUE[startPos]);
-        WifiCompo.slideConst = SLIDE_AREA_CONST["wifi"];
-
-        Array.Copy(customSkin.Wifi, WifiCompo.normalSlide, 11);
-        Array.Copy(customSkin.Wifi_Each, WifiCompo.eachSlide, 11);
-        Array.Copy(customSkin.Wifi_Break, WifiCompo.breakSlide, 11);
-
         if (timing.noteList.Count > 1)
         {
             NDCompo.isEach = true;
@@ -1017,13 +745,19 @@ public class NoteLoader : MonoBehaviour
         WifiCompo.time = (float)note.slideStartTime;
         WifiCompo.LastFor = (float)note.slideTime;
         WifiCompo.sortIndex = slideLayer;
+        WifiCompo.stars = new GameObject[3] 
+        {
+            Instantiate(star_slidePrefab, notes.transform),
+            Instantiate(star_slidePrefab, notes.transform),
+            Instantiate(star_slidePrefab, notes.transform)
+        };
         slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
         //slideLayer += 5;
 
         return slideWifi;
     }
 
-    private GameObject InstantiateStar(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
+    private GameObject InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
     {
         var GOnote = Instantiate(starPrefab, notes.transform);
         var NDCompo = GOnote.GetComponent<StarDrop>();

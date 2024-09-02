@@ -110,7 +110,7 @@ public class SkinManager : MonoBehaviour
         Star_Ex_Double = SpriteLoader.LoadSpriteFromFile(path + "/star_ex_double.png");
 
         var border = new Vector4(0, 58, 0, 58);
-        Hold = SpriteLoader.LoadSpriteFromFile(path + "/hold.png", border);        
+        Hold = SpriteLoader.LoadSpriteFromFile(path + "/hold.png", border);
         Hold_Each = SpriteLoader.LoadSpriteFromFile(path + "/hold_each.png", border);
         Hold_Each_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_each_on.png", border);
         Hold_Ex = SpriteLoader.LoadSpriteFromFile(path + "/hold_ex.png", border);
@@ -213,7 +213,7 @@ public class SkinManager : MonoBehaviour
 
             BreakMaterial = BreakMaterial,
             NoteLines = TapLines,
-            ExEffects = new Color[] 
+            ExEffects = new Color[]
             {
                 new Color(255,172,225), // Pink
                 new Color(255,254,119), // Yellow
@@ -281,6 +281,17 @@ public class SkinManager : MonoBehaviour
             Normal = Slide,
             Each = Slide_Each,
             Break = Slide_Break,
+            BreakMaterial = BreakMaterial
+        };
+    }
+    public WifiSkin GetWifiSkin()
+    {
+        return new WifiSkin()
+        {
+            Star = GetStarSkin(),
+            Normal = Wifi,
+            Each = Wifi_Each,
+            Break = Wifi_Break,
             BreakMaterial = BreakMaterial
         };
     }
