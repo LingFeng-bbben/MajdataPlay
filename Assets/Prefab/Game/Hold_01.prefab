@@ -81,7 +81,7 @@ SpriteRenderer:
   m_Size: {x: 0.64, y: 0.64}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4308505936994024712
@@ -273,29 +273,11 @@ MonoBehaviour:
   noteSortOrder: 0
   speed: 1
   isEach: 0
+  isBreak: 0
+  isEX: 0
   LastFor: 1
   holdEffect: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
-  isEX: 0
-  isBreak: 0
-  tapSpr: {fileID: 21300000, guid: 69b328dbae9628c44b0882a049fcbf0b, type: 3}
-  holdOnSpr: {fileID: 0}
-  holdOffSpr: {fileID: 0}
-  eachSpr: {fileID: 21300000, guid: 2dcf4edddd7b12342a99c1ce92e6e0ab, type: 3}
-  eachHoldOnSpr: {fileID: 0}
-  exSpr: {fileID: 0}
-  breakSpr: {fileID: 0}
-  breakHoldOnSpr: {fileID: 0}
-  eachLine: {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
-  breakLine: {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
-  holdEachEnd: {fileID: 21300000, guid: 525ed29f5ee445942973894c8193d8fb, type: 3}
-  holdBreakEnd: {fileID: 21300000, guid: 8da47e3bcdd19304da9c55e701f26363, type: 3}
-  HoldShine: {fileID: 0}
-  BreakShine: {fileID: 0}
-  tapLine: {fileID: 8134463029818261665, guid: ed6ad005bb60e9c409c75936f65b7f86, type: 3}
-  exEffectTap: {r: 1, g: 0.6745283, b: 0.8829237, a: 1}
-  exEffectEach: {r: 1, g: 0.9943893, b: 0.4669811, a: 1}
-  exEffectBreak: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}
-  breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
+  tapLine: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}
 --- !u!95 &4963379289684533625
 Animator:
   serializedVersion: 5

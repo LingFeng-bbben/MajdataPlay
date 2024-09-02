@@ -11,15 +11,13 @@ namespace MajdataPlay.Game.Notes
         public GameObject tapEffect;
         public GameObject judgeEffect;
 
-        public Sprite touchHoldBoard;
-        public Sprite touchHoldBoard_Miss;
+        public Sprite board_On;
+        public Sprite Board_Off;
         public SpriteRenderer boarder;
-        public Sprite[] TouchHoldSprite = new Sprite[5];
-        public Sprite TouchPointSprite;
 
         public GameObject[] fans;
         public SpriteMask mask;
-        private readonly SpriteRenderer[] fansSprite = new SpriteRenderer[6];
+        private readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[6];
         private float displayDuration;
 
         private GameObject firework;
@@ -31,30 +29,20 @@ namespace MajdataPlay.Game.Notes
         Sprite[] judgeText;
 
         // Start is called before the first frame update
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            var notes = GameObject.Find("Notes").transform;
-            noteManager = notes.GetComponent<NoteManager>();
-            holdEffect = Instantiate(holdEffect, notes);
+            holdEffect = Instantiate(holdEffect, noteManager.transform);
             holdEffect.SetActive(false);
 
             firework = GameObject.Find("FireworkEffect");
             fireworkEffect = firework.GetComponent<Animator>();
 
-            for (var i = 0; i < 6; i++)
-            {
-                fansSprite[i] = fans[i].GetComponent<SpriteRenderer>();
-                fansSprite[i].sortingOrder += noteSortOrder;
-            }
-
-            for (var i = 0; i < 4; i++) fansSprite[i].sprite = TouchHoldSprite[i];
-            fansSprite[5].sprite = TouchHoldSprite[4]; // TouchHold Border
-            fansSprite[4].sprite = TouchPointSprite;
+            LoadSkin();
 
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             mask.enabled = false;
@@ -64,7 +52,7 @@ namespace MajdataPlay.Game.Notes
             judgeText = customSkin.JudgeText;
             ioManager.BindSensor(Check, SensorType.C);
         }
-        void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (isJudged || !noteManager.CanJudge(gameObject, sensorPos))
                 return;
@@ -82,6 +70,22 @@ namespace MajdataPlay.Game.Notes
                     objectCounter.NextTouch(SensorType.C);
                 }
             }
+        }
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetTouchHoldSkin();
+            for (var i = 0; i < 6; i++)
+            {
+                fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
+                fanRenderers[i].sortingOrder += noteSortOrder;
+            }
+
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].sprite = skin.Fans[i];
+            fanRenderers[5].sprite = skin.Boader; // TouchHold Border
+            fanRenderers[4].sprite = skin.Point;
+            board_On = skin.Boader;
+            Board_Off = skin.Off;
         }
         void Judge()
         {
@@ -314,24 +318,23 @@ namespace MajdataPlay.Game.Notes
             base.PlayHoldEffect();
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTouchHoldSound();
-            boarder.sprite = touchHoldBoard;
+            boarder.sprite = board_On;
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.StopTouchHoldSound();
-            boarder.sprite = touchHoldBoard_Miss;
+            boarder.sprite = Board_Off;
         }
-        private Vector3 GetAngle(int index)
+        Vector3 GetAngle(int index)
         {
             var angle = Mathf.PI / 4 + index * (Mathf.PI / 2);
             return new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
         }
-
-        private void SetfanColor(Color color)
+        void SetfanColor(Color color)
         {
-            foreach (var fan in fansSprite) fan.color = color;
+            foreach (var fan in fanRenderers) fan.color = color;
         }
     }
 }

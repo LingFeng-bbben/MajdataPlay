@@ -278,9 +278,6 @@ public class NoteLoader : MonoBehaviour
                         NDCompo.LastFor = (float)note.holdTime;
                         NDCompo.speed = touchSpeed * timing.HSpeed;
                         NDCompo.isFirework = note.isHanabi;
-
-                        Array.Copy(customSkin.TouchHold, NDCompo.TouchHoldSprite, 5);
-                        NDCompo.TouchPointSprite = customSkin.TouchPoint;
                     }
                     else if (note.noteType == SimaiNoteType.Touch)
                     {

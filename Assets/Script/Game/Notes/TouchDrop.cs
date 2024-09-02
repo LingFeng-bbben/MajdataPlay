@@ -40,41 +40,18 @@ namespace MajdataPlay.Game.Notes
         private float wholeDuration;
 
         // Start is called before the first frame update
-        void Start()
+        protected override void Start()
         {
+            base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
-            var notes = GameObject.Find("Notes").transform;
-            noteManager = notes.GetComponent<NoteManager>();
             multTouchHandler = GameObject.Find("MultTouchHandler").GetComponent<MultTouchHandler>();
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             firework = GameObject.Find("FireworkEffect");
             fireworkEffect = firework.GetComponent<Animator>();
 
-            for (var i = 0; i < 7; i++)
-            {
-                fansSprite[i] = fans[i].GetComponent<SpriteRenderer>();
-                fansSprite[i].sortingOrder += noteSortOrder;
-            }
-
-            if (isEach)
-            {
-                SetfanSprite(fanEachSprite);
-                fansSprite[4].sprite = pointEachSprite;
-                fansSprite[5].sprite = multTouchEachSprite[0];
-                fansSprite[6].sprite = multTouchEachSprite[1];
-            }
-            else
-            {
-                SetfanSprite(fanNormalSprite);
-                fansSprite[4].sprite = pointNormalSprite;
-                fansSprite[5].sprite = multTouchNormalSprite[0];
-                fansSprite[6].sprite = multTouchNormalSprite[1];
-            }
-
-            justEffect.GetComponent<SpriteRenderer>().sprite = justSprite;
+            LoadSkin();
 
             transform.position = GetAreaPos(startPosition, areaPosition);
             justEffect.SetActive(false);
@@ -83,7 +60,33 @@ namespace MajdataPlay.Game.Notes
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
         }
-        void Check(object sender, InputEventArgs arg)
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetTouchSkin();
+            for (var i = 0; i < 7; i++)
+            {
+                fansSprite[i] = fans[i].GetComponent<SpriteRenderer>();
+                fansSprite[i].sortingOrder += noteSortOrder;
+            }
+
+            if (isEach)
+            {
+                SetfanSprite(skin.Each);
+                fansSprite[4].sprite = skin.Point_Each;
+                fansSprite[5].sprite = skin.Border_Each[0];
+                fansSprite[6].sprite = skin.Border_Each[1];
+            }
+            else
+            {
+                SetfanSprite(skin.Normal);
+                fansSprite[4].sprite = skin.Point_Normal;
+                fansSprite[5].sprite = skin.Border_Normal[0];
+                fansSprite[6].sprite = skin.Border_Normal[1];
+            }
+
+            justEffect.GetComponent<SpriteRenderer>().sprite = skin.JustBorder;
+        }
+        protected override void Check(object sender, InputEventArgs arg)
         {
             var type = GetSensor();
             if (arg.Type != type)
@@ -218,10 +221,11 @@ namespace MajdataPlay.Game.Notes
         {
             ioManager.UnbindSensor(Check, GetSensor());
             multTouchHandler.cancelTouch(this);
-            if (!isJudged) return;
+            if (!isJudged) 
+                return;
 
             //PlayJudgeEffect();
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayTouchEffect(transform,sensorPos,judgeResult);
+            effectManager.PlayTouchEffect(transform,sensorPos,judgeResult);
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
                 GroupInfo.JudgeResult = judgeResult;
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();

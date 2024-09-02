@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Game.Controllers;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -166,7 +167,7 @@ namespace MajdataPlay.Game.Notes
         }
         void Update()
         {
-            if (stars[0] == null)
+            if (stars.IsEmpty() || stars[0] == null)
             {
                 if (IsFinished)
                     DestroySelf();
@@ -290,7 +291,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             if (ConnectInfo.Parent != null)
                 Destroy(ConnectInfo.Parent);
-            if (stars[0] != null)
+            if (!stars.IsEmpty() && stars[0] != null)
                 Destroy(stars[0]);
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
@@ -303,7 +304,7 @@ namespace MajdataPlay.Game.Notes
                 { 
                     var anim = slideOK.GetComponent<Animator>();
                     var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-                    anim.SetTrigger("break");
+                    anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                     audioEffMana.PlayBreakSlideEndSound();
                 }
                 slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);

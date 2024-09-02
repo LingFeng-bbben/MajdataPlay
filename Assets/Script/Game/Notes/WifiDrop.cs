@@ -30,6 +30,7 @@ namespace MajdataPlay.Game.Notes
             isInitialized = true;
 
             judgeQueues = SlideTables.FindWifiTable(startPosition);
+            areaStep = NoteLoader.SLIDE_AREA_STEP_MAP["wifi"];
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             fadeInTime = -3.926913f / speed;
@@ -40,7 +41,6 @@ namespace MajdataPlay.Game.Notes
             fadeInAnimator = GetComponent<Animator>();
             fadeInAnimator.speed = 0.2f / interval; //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度; interval永不为0
             fadeInAnimator.SetTrigger("wifi");
-
 
             SlidePositionEnd[0] = effectManager.transform.GetChild(0).GetChild(endPosition - 2 < 0 ? 7 : endPosition - 2).position;// R
             SlidePositionEnd[1] = effectManager.transform.GetChild(0).GetChild(endPosition - 1).position;// Center
@@ -54,6 +54,8 @@ namespace MajdataPlay.Game.Notes
 
             for (var i = 0; i < transform.childCount - 1; i++)
                 slideBars[i] = transform.GetChild(i).gameObject;
+
+            LoadSkin();
         }
         protected override void Start()
         {
@@ -251,7 +253,7 @@ namespace MajdataPlay.Game.Notes
             {
                 var anim = slideOK.GetComponent<Animator>();
                 var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-                anim.SetTrigger("break");
+                anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                 audioEffMana.PlayBreakSlideEndSound();
             }
             slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
@@ -298,6 +300,7 @@ namespace MajdataPlay.Game.Notes
             foreach(var (i, star) in stars.WithIndex())
             {
                 var starRenderer = star.GetComponent<SpriteRenderer>();
+                starRenderers[i] = starRenderer;
                 starRenderer.sprite = starSprite;
                 if (breakMaterial != null)
                 {

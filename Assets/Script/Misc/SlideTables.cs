@@ -821,7 +821,19 @@ namespace MajdataPlay.Types
             var clone = result.Clone();
             return clone;
         }
-        public static JudgeArea[][] FindWifiTable(int startPos) => WIFISLIDE_JUDGE_QUEUE[startPos];
+        public static JudgeArea[][] FindWifiTable(int startPos)
+        {
+            List<JudgeArea[]> queue = new();
+            var raw = WIFISLIDE_JUDGE_QUEUE[startPos];
+            foreach(var line in raw)
+            {
+                List<JudgeArea> rows = new();
+                foreach (var row in line)
+                    rows.Add(row.Clone()!);
+                queue.Add(rows.ToArray());
+            }
+            return queue.ToArray();
+        }
         static JudgeArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
         {
             var obj = new JudgeArea(new Dictionary<SensorType, bool>

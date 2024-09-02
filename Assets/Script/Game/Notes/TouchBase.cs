@@ -3,7 +3,7 @@ using MajdataPlay.Types;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TouchBase : NoteDrop
+    public abstract class TouchBase : NoteDrop
     {
         public char areaPosition;
         public bool isFirework;

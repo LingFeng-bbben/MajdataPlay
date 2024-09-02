@@ -58,6 +58,7 @@ public class SkinManager : MonoBehaviour
     public Sprite[] TouchBorder_Each = new Sprite[2];
 
     public Sprite[] TouchHold = new Sprite[5];
+    public Sprite TouchHold_Off;
 
     public Sprite Outline;
 
@@ -66,6 +67,7 @@ public class SkinManager : MonoBehaviour
     public Sprite[] TapLines;
     public Sprite[] StarLines;
     public Material BreakMaterial;
+    public RuntimeAnimatorController JustBreak;
 
     private void Awake()
     {
@@ -198,6 +200,7 @@ public class SkinManager : MonoBehaviour
 
         for (var i = 0; i < 4; i++) TouchHold[i] = SpriteLoader.LoadSpriteFromFile(path + "/touchhold_" + i + ".png");
         TouchHold[4] = SpriteLoader.LoadSpriteFromFile(path + "/touchhold_border.png");
+        TouchHold_Off = SpriteLoader.LoadSpriteFromFile(path + "/touchhold_off.png");
 
         Debug.Log(test);
     }
@@ -293,6 +296,35 @@ public class SkinManager : MonoBehaviour
             Each = Wifi_Each,
             Break = Wifi_Break,
             BreakMaterial = BreakMaterial
+        };
+    }
+    public TouchHoldSkin GetTouchHoldSkin()
+    {
+        return new TouchHoldSkin()
+        {
+            Fans = new Sprite[4]
+            {
+                TouchHold[0],
+                TouchHold[1],
+                TouchHold[2],
+                TouchHold[3],
+            },
+            Boader = TouchHold[4],
+            Point = TouchPoint,
+            Off = TouchHold_Off
+        };
+    }
+    public TouchSkin GetTouchSkin()
+    {
+        return new TouchSkin()
+        {
+            Normal = Touch,
+            Each = Touch_Each,
+            Point_Normal = TouchPoint,
+            Point_Each = TouchPoint_Each,
+            Border_Each = TouchBorder_Each,
+            Border_Normal = TouchBorder,
+            JustBorder = TouchJust
         };
     }
 

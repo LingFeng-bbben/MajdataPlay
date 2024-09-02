@@ -10,7 +10,7 @@ namespace MajdataPlay.Game.Notes
     {
         bool holdAnimStart;
 
-        GameObject tapLine;
+        public GameObject tapLine;
 
         Sprite holdSprite;
         Sprite holdOnSprite;
@@ -246,7 +246,8 @@ namespace MajdataPlay.Game.Notes
             var lineScale = Mathf.Abs(distance / 4.8f);
             lineScale = lineScale >= 1f ? 1f : lineScale;
             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
-            exRenderer.size = thisRenderer.size;
+            if(exRenderer != null)
+                exRenderer.size = thisRenderer.size;
         }
         private void OnDestroy()
         {
