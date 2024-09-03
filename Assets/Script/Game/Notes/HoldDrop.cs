@@ -164,7 +164,7 @@ namespace MajdataPlay.Game.Notes
             PlayHoldEffect();
         }
         // Update is called once per frame
-        private void Update()
+        void Update()
         {
             var timing = GetJudgeTiming();
             var distance = timing * speed + 4.8f;
@@ -249,14 +249,32 @@ namespace MajdataPlay.Game.Notes
             if(exRenderer != null)
                 exRenderer.size = thisRenderer.size;
         }
-        private void OnDestroy()
+        void OnDestroy()
         {
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
 
+            EndJudge(ref judgeResult);
+
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTapSound(false, false, judgeResult);
+
+            effectManager.PlayEffect(startPosition, isBreak, judgeResult);
+            effectManager.PlayFastLate(startPosition, judgeResult);
+            objectCounter.ReportResult(this, judgeResult, isBreak);
+            if (!isJudged)
+                objectCounter.NextNote(startPosition);
+
+            
+        }
+        void EndJudge(ref JudgeType result)
+        {
+            if (!isJudged)
+                return;
+
             var realityHT = LastFor - 0.3f - judgeDiff / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
-            JudgeType result = judgeResult;
+            result = judgeResult;
             if (realityHT > 0)
             {
                 if (percent >= 1f)
@@ -294,19 +312,35 @@ namespace MajdataPlay.Game.Notes
                         result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 }
             }
-
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(false, false, result);
-            var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
-            effectManager.PlayEffect(startPosition, isBreak, result);
-            effectManager.PlayFastLate(startPosition, result);
             print($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
-
-            objectCounter.ReportResult(this, result, isBreak);
+        }
+        void EndJudge_Classic(ref JudgeType result)
+        {
             if (!isJudged)
-                objectCounter.NextNote(startPosition);
+                return;
+            else if (result == JudgeType.Miss)
+                return;
 
-            
+            var releaseTiming = gpManager.AudioTime;
+            var diff = (time + LastFor) - releaseTiming;
+            var isFast = diff > 0;
+            diff = MathF.Abs(diff);
+
+            JudgeType endResult = diff switch
+            {
+                <= 0.016667f => JudgeType.Perfect,
+                <= 0.066668f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= 0.133336f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
+
+            var num = Math.Abs(7 - (int)result);
+            var endNum = Math.Abs(7 - (int)endResult);
+            if (endNum > num) // 取最差判定
+                result = endResult;
         }
         protected override void PlayHoldEffect()
         {

@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 #nullable enable
 public class GameManager : MonoBehaviour
 {
