@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
         DontDestroyOnLoad(this);
 
         if (File.Exists(SettingPath))
@@ -66,6 +67,7 @@ public class GameManager : MonoBehaviour
     private void OnApplicationQuit()
     {
         Save();
+        Screen.sleepTimeout = SleepTimeout.SystemSetting;
     }
     public void Save()
     {

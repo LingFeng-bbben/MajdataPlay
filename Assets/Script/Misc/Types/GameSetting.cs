@@ -43,5 +43,6 @@
     public class DebugOptions
     {
         public bool DisplaySensor { get; set; } = false;
+        public bool DisplayFPS { get; set; } = false;
     }
 }

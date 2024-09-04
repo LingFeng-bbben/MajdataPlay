@@ -56,13 +56,13 @@ namespace MajdataPlay.Game.Notes
                     {
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                        State = NoteStatus.Pending;
-                        goto case NoteStatus.Pending;
+                        State = NoteStatus.Scaling;
+                        goto case NoteStatus.Scaling;
                     }
                     else
                         transform.localScale = new Vector3(0, 0);
                     return;
-                case NoteStatus.Pending:
+                case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f)
                             tapLine.SetActive(true);
@@ -89,15 +89,6 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
             }
-
-            //spriteRenderer.forceRenderingOff = false;
-            //if (isEX) exSpriteRender.forceRenderingOff = false;
-            //if (isBreak)
-            //{
-            //    var (brightness, contrast) = gpManager.BreakParams;
-            //    spriteRenderer.material.SetFloat("_Brightness", brightness);
-            //    spriteRenderer.material.SetFloat("_Contrast", contrast);
-            //}
         }
         protected override void Check(object sender, InputEventArgs arg)
         {

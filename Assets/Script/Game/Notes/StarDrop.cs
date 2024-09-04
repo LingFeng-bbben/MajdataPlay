@@ -44,13 +44,13 @@ namespace MajdataPlay.Game.Notes
 
                         if (!isNoHead)
                             tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                        State = NoteStatus.Pending;
-                        goto case NoteStatus.Pending;
+                        State = NoteStatus.Scaling;
+                        goto case NoteStatus.Scaling;
                     }
                     else
                         transform.localScale = new Vector3(0, 0);
                     return;
-                case NoteStatus.Pending:
+                case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f && !isNoHead)
                             tapLine.SetActive(true);

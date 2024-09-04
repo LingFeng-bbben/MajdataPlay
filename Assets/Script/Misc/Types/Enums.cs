@@ -74,13 +74,9 @@
     {
         Start,
         Initialized,
-        Pending,
-        Prepared,
+        Scaling,
         Running,
-        WaitForJudge,
-        Judged,
-        Finished,
-        Destroyed
+        End
     }
     public enum ComboState
     {
