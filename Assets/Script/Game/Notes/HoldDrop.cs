@@ -53,25 +53,47 @@ namespace MajdataPlay.Game.Notes
         private void FixedUpdate()
         {
             var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - LastFor;
             var remainingTime = GetRemainingTime();
             var isTooLate = timing > 0.15f;
 
-            if (remainingTime == 0 && isJudged) // Hold完成后Destroy
+            if (isJudged) // Hold完成后Destroy
             {
-                Destroy(tapLine);
-                Destroy(holdEffect);
-                Destroy(gameObject);
+                if(IsClassic)
+                {
+                    if (endTiming >= 0.333334f)
+                    {
+                        Destroy(tapLine);
+                        Destroy(holdEffect);
+                        Destroy(gameObject);
+
+                        return;
+                    }
+                }
+                else if(remainingTime == 0)
+                {
+                    Destroy(tapLine);
+                    Destroy(holdEffect);
+                    Destroy(gameObject);
+                    return;
+                }
+                
             }
             
 
             if (isJudged) // 头部判定完成后开始累计按压时长
             {
-                if (timing <= 0.1f) // 忽略头部6帧
+                if(!IsClassic)
+                {
+                    if (timing <= 0.1f) // 忽略头部6帧
+                        return;
+                    else if (remainingTime <= 0.2f) // 忽略尾部12帧
+                        return;
+                }
+
+                if (!gpManager.isStart) // 忽略暂停
                     return;
-                else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                    return;
-                else if (!gpManager.isStart) // 忽略暂停
-                    return;
+
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
@@ -79,6 +101,13 @@ namespace MajdataPlay.Game.Notes
                 {
                     playerIdleTime += Time.fixedDeltaTime;
                     StopHoldEffect();
+
+                    if (IsClassic)
+                    {
+                        Destroy(tapLine);
+                        Destroy(holdEffect);
+                        Destroy(gameObject);
+                    }
                 }
             }
             else if (isTooLate) // 头部Miss
@@ -87,6 +116,12 @@ namespace MajdataPlay.Game.Notes
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
                 objectCounter.NextNote(startPosition);
+                if (gameSetting.Judge.Mode is JudgeMode.Classic)
+                {
+                    Destroy(tapLine);
+                    Destroy(holdEffect);
+                    Destroy(gameObject);
+                }
             }
         }
         protected override void Check(object sender, InputEventArgs arg)
@@ -182,13 +217,27 @@ namespace MajdataPlay.Game.Notes
 
             thisRenderer.size = new Vector2(1.22f, 1.4f);
 
+            var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - LastFor;
             var holdDistance = holdTime * speed + 4.8f;
-            if (holdTime >= 0 ||
-                holdTime >= 0 && LastFor <= 0.15f)
+
+            if (remaining == 0)
             {
+                var endTiming = timing - LastFor;
+                var endDistance = endTiming * speed + 4.8f;
                 tapLine.transform.localScale = new Vector3(1f, 1f, 1f);
-                transform.position = GetPositionFromDistance(4.8f);
+
+                if(IsClassic)
+                {
+                    var scale = Mathf.Abs(endDistance / 4.8f);
+                    transform.position = GetPositionFromDistance(endDistance);
+                    tapLine.transform.localScale = new Vector3(scale, scale, 1f);
+                }
+                else
+                    transform.position = GetPositionFromDistance(4.8f);
+
+                if (exRenderer != null)
+                    exRenderer.size = thisRenderer.size;
                 return;
             }
 
@@ -197,15 +246,8 @@ namespace MajdataPlay.Game.Notes
             tapLine.transform.rotation = transform.rotation;
             holdEffect.transform.position = GetPositionFromDistance(4.8f);
 
-            if (isBreak && !holdAnimStart && !isJudged)
-            {
-                var (brightness, contrast) = gpManager.BreakParams;
-                thisRenderer.material.SetFloat("_Brightness", brightness);
-                thisRenderer.material.SetFloat("_Contrast", contrast);
-            }
-
-
-            if (destScale > 0.3f) tapLine.SetActive(true);
+            if (destScale > 0.3f) 
+                tapLine.SetActive(true);
 
             if (distance < 1.225f)
             {
@@ -256,7 +298,10 @@ namespace MajdataPlay.Game.Notes
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
 
-            EndJudge(ref judgeResult);
+            if (IsClassic)
+                EndJudge_Classic(ref judgeResult);
+            else
+                EndJudge(ref judgeResult);
 
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTapSound(false, false, judgeResult);

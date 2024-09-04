@@ -327,7 +327,7 @@ namespace MajdataPlay.Game.Notes
             starRenderer.color = Color.white;
             stars[0].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
 
-            var process = MathF.Min((LastFor - GetSlideRemainingTime()) / LastFor, 1);
+            var process = MathF.Min((LastFor - GetRemainingTimeWithoutOffset()) / LastFor, 1);
             var indexProcess = (slidePositions.Count - 1) * process;
             var index = (int)indexProcess;
             var pos = indexProcess - index;

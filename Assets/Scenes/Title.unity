@@ -2013,6 +2013,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7757670946310935750, guid: f969a79afbe1f1a42ab81eefb9ee2c62, type: 3}
+      propertyPath: HoldEnd
+      value: 
+      objectReference: {fileID: 21300000, guid: b87d869531a250a4da89871ae21953b8, type: 3}
+    - target: {fileID: 7757670946310935750, guid: f969a79afbe1f1a42ab81eefb9ee2c62, type: 3}
+      propertyPath: HoldEachEnd
+      value: 
+      objectReference: {fileID: 21300000, guid: 72f2a72a9ae0d0d47ac8bff5a8c263d2, type: 3}
+    - target: {fileID: 7757670946310935750, guid: f969a79afbe1f1a42ab81eefb9ee2c62, type: 3}
+      propertyPath: HoldBreakEnd
+      value: 
+      objectReference: {fileID: 21300000, guid: 262379c990ccdc341884071c988ca0f7, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

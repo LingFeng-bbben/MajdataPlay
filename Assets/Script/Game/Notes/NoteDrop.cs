@@ -16,6 +16,7 @@ namespace MajdataPlay.Game.Notes
         public bool isBreak = false;
         public bool isEX = false;
 
+        public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
         protected GamePlayManager gpManager => GamePlayManager.Instance;
         protected InputManager ioManager => InputManager.Instance;
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
@@ -86,7 +87,7 @@ namespace MajdataPlay.Game.Notes
         /// Hold £”‡≥§∂»
         /// </returns>
         protected float GetRemainingTime() => MathF.Max(LastFor - GetTimeSpanToJudgeTiming(), 0);
-        protected float GetSlideRemainingTime() => MathF.Max(LastFor - GetTimeSpanToArriveTiming(), 0);
+        protected float GetRemainingTimeWithoutOffset() => MathF.Max(LastFor - GetTimeSpanToArriveTiming(), 0);
         protected virtual void PlayHoldEffect()
         {
             var material = holdEffect.GetComponent<ParticleSystemRenderer>().material;
