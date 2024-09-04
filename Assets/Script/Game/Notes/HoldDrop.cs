@@ -462,7 +462,7 @@ namespace MajdataPlay.Game.Notes
 
             if (!isEX)
                 Destroy(exRenderer);
-
+            endRenderer.enabled = false;
             renderer.sprite = holdSprite;
         }
 
