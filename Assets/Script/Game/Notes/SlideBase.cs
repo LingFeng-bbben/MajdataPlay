@@ -56,8 +56,8 @@ namespace MajdataPlay.Game.Notes
         public float timeStart;
         public int sortIndex;
         public bool isJustR;
-        public float fadeInTime;
-        public float fullFadeInTime;
+        public float fadeInTiming;
+        public float fullFadeInTiming;
         public int endPosition;
         public string slideType;
 

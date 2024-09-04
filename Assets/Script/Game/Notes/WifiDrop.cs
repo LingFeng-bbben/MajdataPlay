@@ -27,19 +27,24 @@ namespace MajdataPlay.Game.Notes
         {
             if (isInitialized)
                 return;
+            base.Start();
             isInitialized = true;
 
             judgeQueues = SlideTables.FindWifiTable(startPosition);
             areaStep = NoteLoader.SLIDE_AREA_STEP_MAP["wifi"];
+
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            fadeInTime = -3.926913f / speed;
+            fadeInTiming = -3.926913f / speed;
+            fadeInTiming += gameSetting.Game.SlideFadeInOffset;
+            fadeInTiming += timeStart;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            fullFadeInTime = Math.Min(fadeInTime + 0.2f, 0);
-            var interval = fullFadeInTime - fadeInTime;
+            fullFadeInTiming = fadeInTiming + 0.2f;
+            //var interval = fullFadeInTiming - fadeInTiming;
             fadeInAnimator = GetComponent<Animator>();
-            fadeInAnimator.speed = 0.2f / interval; //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度; interval永不为0
+            //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
+            //fadeInAnimator.speed = 0.2f / interval;
             fadeInAnimator.SetTrigger("wifi");
 
             SlidePositionEnd[0] = effectManager.transform.GetChild(0).GetChild(endPosition - 2 < 0 ? 7 : endPosition - 2).position;// R
@@ -59,7 +64,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Start()
         {
-            base.Start();
+            
             Initialize();
 
             var wifiConst = 0.162870f;
@@ -176,21 +181,29 @@ namespace MajdataPlay.Game.Notes
         void Update()
         {
             // Wifi Slide淡入期间，不透明度从0到1耗时200ms
-            var startiming = gpManager.AudioTime - timeStart;
-            if (startiming <= 0f)
+            var currentSec = gpManager.AudioTime;
+            var startiming = currentSec - timeStart;
+
+            if (fadeInTiming > timeStart)
+            {
+                if (currentSec > fadeInTiming)
+                    SetSlideBarAlpha(1f);
+            }
+            else if (currentSec > timeStart)
+                SetSlideBarAlpha(1f);
+            else if (currentSec > fadeInTiming)
             {
                 if (startiming >= -0.05f)
                 {
                     fadeInAnimator.enabled = false;
                     SetSlideBarAlpha(1f);
                 }
-                else if (!fadeInAnimator.enabled && startiming >= fadeInTime)
+                else
                     fadeInAnimator.enabled = true;
                 return;
             }
-
             fadeInAnimator.enabled = false;
-            SetSlideBarAlpha(1f);
+
             foreach (var star in stars)
                 star.SetActive(true);
 
