@@ -109,7 +109,7 @@ namespace MajdataPlay.Game.Notes
         }
         private void FixedUpdate()
         {
-            if (!isJudged && GetJudgeTiming() <= 0.316667f)
+            if (!isJudged && GetTimeSpanToArriveTiming() <= 0.316667f)
             {
                 if (GroupInfo is not null)
                 {
@@ -165,7 +165,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             
             //var timing = time;
             //var pow = Mathf.Pow(-timing * speed, 0.1f)-0.4f;

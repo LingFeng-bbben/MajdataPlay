@@ -24,7 +24,7 @@ public class CoverListDisplayer : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        foreach (var song in GameManager.Instance.songList)
+        foreach (var song in GameManager.Instance.SongList)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
             var coversmall = obj.GetComponent<CoverSmallDisplayer>();
@@ -51,14 +51,14 @@ public class CoverListDisplayer : MonoBehaviour
             selectedDifficulty = 6;
         }
         GameManager.Instance.SelectedDiff = (ChartLevel)selectedDifficulty;
-        var songinfo = GameManager.Instance.songList[desiredListPos];
+        var songinfo = GameManager.Instance.SongList[desiredListPos];
         var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
         CoverBigDisplayer.SetScore(songScore);
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
         for(int i=0;i<covers.Count;i++)
         {
-            var text = GameManager.Instance.songList[i].Levels[selectedDifficulty];
+            var text = GameManager.Instance.SongList[i].Levels[selectedDifficulty];
             if (text == null || text == "") text = "-";
             covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
         }
@@ -82,12 +82,12 @@ public class CoverListDisplayer : MonoBehaviour
         {
             desiredListPos = 0;
         }
-        var songinfo = GameManager.Instance.songList[desiredListPos];
+        var songinfo = GameManager.Instance.SongList[desiredListPos];
         var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
         CoverBigDisplayer.SetCover(songinfo.SongCover);
         CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
         CoverBigDisplayer.SetScore(songScore);
-        GameManager.Instance.selectedIndex = desiredListPos;
+        GameManager.Instance.SelectedIndex = desiredListPos;
     }
 
     private void Update()

@@ -80,7 +80,8 @@ namespace MajdataPlay.Game.Notes
             /// LastFor   是Slide的时值
             var timing = gpManager.AudioTime - time;
             var startTiming = gpManager.AudioTime - timeStart;
-            var forceJudgeTiming = time + LastFor + 0.6;
+            var tooLateTiming = time + LastFor + 0.6 - MathF.Min(gameSetting.Judge.JudgeOffset, 0);
+            var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
                 canCheck = true;
@@ -92,7 +93,7 @@ namespace MajdataPlay.Game.Notes
                     HideAllBar();
                     Judge();
                 }
-                else if (gpManager.AudioTime - forceJudgeTiming >= 0)
+                else if (isTooLate)
                     TooLateJudge();
             }
             else

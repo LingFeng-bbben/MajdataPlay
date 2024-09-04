@@ -127,7 +127,7 @@ namespace MajdataPlay.Game.Notes
         private void FixedUpdate()
         {
             var remainingTime = GetRemainingTime();
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var holdTime = timing - LastFor;
 
             if (remainingTime == 0 && isJudged)
@@ -166,7 +166,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var pow = -Mathf.Exp(8 * (timing * 0.4f / moveDuration) - 0.85f) + 0.42f;
             var distance = Mathf.Clamp(pow, 0f, 0.4f);
 

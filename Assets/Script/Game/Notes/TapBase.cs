@@ -27,8 +27,9 @@ namespace MajdataPlay.Game.Notes
         
         protected void FixedUpdate()
         {
-            var timing = GetJudgeTiming();
-            if (!isJudged && timing > 0.15f)
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+            if (!isJudged && isTooLate)
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
@@ -44,7 +45,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         protected virtual void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
 
@@ -136,9 +137,10 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
+
             JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;

@@ -117,4 +117,13 @@
         ReMaster,
         UTAGE
     }
+    public enum SoundBackendType
+    {
+        WaveOut, Asio, Unity
+    }
+    public enum JudgeMode
+    {
+        Classic,
+        Modern
+    }
 }

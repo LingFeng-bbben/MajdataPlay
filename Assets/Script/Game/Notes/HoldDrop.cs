@@ -52,8 +52,9 @@ namespace MajdataPlay.Game.Notes
         }
         private void FixedUpdate()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToJudgeTiming();
             var remainingTime = GetRemainingTime();
+            var isTooLate = timing > 0.15f;
 
             if (remainingTime == 0 && isJudged) // Hold完成后Destroy
             {
@@ -80,7 +81,7 @@ namespace MajdataPlay.Game.Notes
                     StopHoldEffect();
                 }
             }
-            else if (timing > 0.15f && !isJudged) // 头部Miss
+            else if (isTooLate && !isJudged) // 头部Miss
             {
                 judgeDiff = 150;
                 judgeResult = JudgeType.Miss;
@@ -124,9 +125,10 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
+
             JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;
@@ -166,7 +168,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
             if (destScale < 0f)
@@ -348,7 +350,7 @@ namespace MajdataPlay.Game.Notes
             effectManager.ResetEffect(startPosition);
             if (LastFor <= 0.3)
                 return;
-            else if (!holdAnimStart && GetJudgeTiming() >= 0.1f)//忽略开头6帧与结尾12帧
+            else if (!holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
                 holdAnimStart = true;
                 shineAnimator.enabled = true;
