@@ -19,24 +19,38 @@ Navigate to `settings.json`
 
 ```Json
 {
-  "TapSpeed": 7.5,
-  "TouchSpeed": 7.5,
-  "BackgroundDim": 0.8, //0-1 bigger dimmer
-  "AudioOffset": 0.0, //in seconds. + is late. same as &first
-  "DisplayOffset": 0.0, //in seconds. + is late
-  "lastSelectedSongIndex": 0,
-  "lastSelectedSongDifficulty": 0,
-  "AsioDeviceIndex": 0, // If you have multiple ASIO devices you can choose them here
-  "DisplaySensorDebug": false, // this will display sensor feedback
-  "VolumeAnwser": 0.8,
-  "VolumeBgm": 1.0,
-  "VolumeJudge": 0.3,
-  "VolumeSlide": 0.3,
-  "VolumeBreak": 0.3,
-  "VolumeTouch": 0.3,
-  "VolumeVoice": 1.0,
-  "SoundBackend": 2, // 0 = WaveOut(High Latency), 1 = ASIO(Low Latency, Driver needed), 2 = (Unity Classic, FMod i think?)
-  "SoundOutputSamplerate": 44100 //Dont touch this if you dont know what does it mean
+  "Game": {
+    "TapSpeed": 7.5,
+    "TouchSpeed": 7.5,
+    "SlideFadeInOffset": 0, // in seconds. this will advance or delay the timing of the Slide fade-in. + is delay
+    "BackgroundDim": 0.800000012, //0-1 bigger dimmer
+    "StarRotation": false
+  },
+  "Judge": {
+    "AudioOffset": 0, //in seconds. + is late. same as &first
+    "JudgeOffset": 0, //in seconds. + is late
+    "Mode": "Modern"  //Modern or Classic
+  },
+  "Audio": {
+    "Samplerate": 44100, // Dont touch this if you dont know what does it mean
+    "AsioDeviceIndex": 0, // If you have multiple ASIO devices you can choose them here
+    "Volume": {
+      "Anwser": 0.800000012,
+      "BGM": 1,
+      "Judge": 0.300000012,
+      "Slide": 0.300000012,
+      "Break": 0.300000012,
+      "Touch": 0.300000012,
+      "Voice": 1
+    },
+    "Backend": "Asio" // WaveOut(High Latency), Asio(Low Latency, Driver needed), Unity(Unity Classic, FMod i think?)
+  },
+  "Debug": {
+    "DisplaySensor": false, // this will display sensor feedback
+    "DisplayFPS": true // this will display FPS at the top right of the screen
+  },
+  "SelectedIndex": 0,
+  "SelectedDiff": "Easy"
 }
 ```
 
