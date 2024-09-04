@@ -20,7 +20,6 @@
     public class JudgeOptions
     {
         public float AudioOffset { get; set; } = 0f;
-        public float DisplayOffset { get; set; } = 0f;
         public float JudgeOffset { get; set; } = 0f;
         public JudgeMode Mode { get; set; } = JudgeMode.Modern;
     }

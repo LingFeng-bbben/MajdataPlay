@@ -160,7 +160,7 @@ public class GamePlayManager : MonoBehaviour
         //AudioTime = (float)audioSample.GetCurrentTime();
         if (AudioStartTime == -114514f) return;
 
-        AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.Setting.Judge.DisplayOffset;
+        AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First;
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (i >= AnwserSoundList.Count)
             return;
@@ -177,7 +177,7 @@ public class GamePlayManager : MonoBehaviour
 
 
         var noteToPlay = AnwserSoundList[i].time;
-        var delta = AudioTime - (noteToPlay) + settingManager.Setting.Judge.DisplayOffset - settingManager.Setting.Judge.AudioOffset;
+        var delta = AudioTime - (noteToPlay) - settingManager.Setting.Judge.AudioOffset;
         //print(delta);
         /*        if(!AnwserSoundList[i].havePlayed && delta > 0)
                 {

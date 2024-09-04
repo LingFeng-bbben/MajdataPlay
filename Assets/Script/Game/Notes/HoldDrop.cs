@@ -116,7 +116,7 @@ namespace MajdataPlay.Game.Notes
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
                 objectCounter.NextNote(startPosition);
-                if (gameSetting.Judge.Mode is JudgeMode.Classic)
+                if (IsClassic)
                 {
                     Destroy(tapLine);
                     Destroy(holdEffect);
@@ -375,8 +375,8 @@ namespace MajdataPlay.Game.Notes
 
             JudgeType endResult = diff switch
             {
-                <= 0.016667f => JudgeType.Perfect,
-                <= 0.066668f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= 0.044445f => JudgeType.Perfect,
+                <= 0.088889f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
                 <= 0.133336f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
                 <= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
                 <= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
