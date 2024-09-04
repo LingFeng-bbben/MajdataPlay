@@ -99,7 +99,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
@@ -127,8 +127,8 @@ namespace MajdataPlay.Game.Notes
         private void FixedUpdate()
         {
             var remainingTime = GetRemainingTime();
-            var timing = GetJudgeTiming();
-            var holdTime = timing - LastFor;
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
 
             if (remainingTime == 0 && isJudged)
             {
@@ -154,7 +154,7 @@ namespace MajdataPlay.Game.Notes
                     StopHoldEffect();
                 }
             }
-            else if (timing > 0.316667f)
+            else if (isTooLate)
             {
                 judgeDiff = 316.667f;
                 judgeResult = JudgeType.Miss;
@@ -166,7 +166,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var pow = -Mathf.Exp(8 * (timing * 0.4f / moveDuration) - 0.85f) + 0.42f;
             var distance = Mathf.Clamp(pow, 0f, 0.4f);
 

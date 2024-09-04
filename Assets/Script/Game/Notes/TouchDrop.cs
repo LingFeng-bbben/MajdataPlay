@@ -109,7 +109,8 @@ namespace MajdataPlay.Game.Notes
         }
         private void FixedUpdate()
         {
-            if (!isJudged && GetJudgeTiming() <= 0.316667f)
+            var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
+            if (!isJudged && !isTooLate)
             {
                 if (GroupInfo is not null)
                 {
@@ -142,7 +143,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
@@ -165,7 +166,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             
             //var timing = time;
             //var pow = Mathf.Pow(-timing * speed, 0.1f)-0.4f;

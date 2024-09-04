@@ -107,7 +107,7 @@ namespace MajdataPlay.Game.Notes
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = time + LastFor * (1-percent);
+                judgeTiming = time + LastFor * (1 - percent);
                 lastWaitTime = LastFor *  percent;
             }
 
@@ -126,9 +126,10 @@ namespace MajdataPlay.Game.Notes
             /// LastFor   是Slide的时值
             var timing = gpManager.AudioTime - time;
             var startTiming = gpManager.AudioTime - timeStart;
-            var forceJudgeTiming = time + LastFor + 0.6;
+            var tooLateTiming = time + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
+            var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
 
-            if(!canCheck)
+            if (!canCheck)
             {
                 if (ConnectInfo.IsGroupPart)
                 {
@@ -153,7 +154,7 @@ namespace MajdataPlay.Game.Notes
                         Judge();
                         return;
                     }
-                    else if(gpManager.AudioTime - forceJudgeTiming >= 0)
+                    else if(isTooLate)
                         TooLateJudge();
                 }
                 else
@@ -326,7 +327,7 @@ namespace MajdataPlay.Game.Notes
             starRenderer.color = Color.white;
             stars[0].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
 
-            var process = MathF.Min((LastFor - GetRemainingTime()) / LastFor, 1);
+            var process = MathF.Min((LastFor - GetRemainingTimeWithoutOffset()) / LastFor, 1);
             var indexProcess = (slidePositions.Count - 1) * process;
             var index = (int)indexProcess;
             var pos = indexProcess - index;

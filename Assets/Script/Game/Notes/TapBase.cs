@@ -27,8 +27,9 @@ namespace MajdataPlay.Game.Notes
         
         protected void FixedUpdate()
         {
-            var timing = GetJudgeTiming();
-            if (!isJudged && timing > 0.15f)
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+            if (!isJudged && isTooLate)
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
@@ -44,7 +45,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         protected virtual void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
 
@@ -55,13 +56,13 @@ namespace MajdataPlay.Game.Notes
                     {
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                        State = NoteStatus.Pending;
-                        goto case NoteStatus.Pending;
+                        State = NoteStatus.Scaling;
+                        goto case NoteStatus.Scaling;
                     }
                     else
                         transform.localScale = new Vector3(0, 0);
                     return;
-                case NoteStatus.Pending:
+                case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f)
                             tapLine.SetActive(true);
@@ -88,15 +89,6 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
             }
-
-            //spriteRenderer.forceRenderingOff = false;
-            //if (isEX) exSpriteRender.forceRenderingOff = false;
-            //if (isBreak)
-            //{
-            //    var (brightness, contrast) = gpManager.BreakParams;
-            //    spriteRenderer.material.SetFloat("_Brightness", brightness);
-            //    spriteRenderer.material.SetFloat("_Contrast", contrast);
-            //}
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
@@ -136,9 +128,10 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
             var diff = MathF.Abs(timing * 1000);
+
             JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;

@@ -65,7 +65,7 @@ namespace MajdataPlay.IO
         // Start is called before the first frame update
         void Start()
         {
-            var backend = SettingManager.Instance.SettingFile.SoundBackend;
+            var backend = GameManager.Instance.Setting.Audio.Backend;
             if (backend == SoundBackendType.Unity)
             {
                 foreach (var file in SFXFileNames)
@@ -109,7 +109,7 @@ namespace MajdataPlay.IO
             }
             else
             {
-                var sampleRate = SettingManager.Instance.SettingFile.SoundOutputSamplerate;
+                var sampleRate = GameManager.Instance.Setting.Audio.Samplerate;
                 var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 mixer = new MixingSampleProvider(waveformat);
                 mixer.ReadFully = true;
@@ -146,7 +146,7 @@ namespace MajdataPlay.IO
                 {
                     var devices = AsioOut.GetDriverNames();
                     foreach(var device in devices) { print(device); }
-                    asioOut = new AsioOut(devices[SettingManager.Instance.SettingFile.AsioDeviceIndex]);
+                    asioOut = new AsioOut(devices[GameManager.Instance.Setting.Audio.AsioDeviceIndex]);
                     print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
                     asioOut.Init(mixer);
                     asioOut.Play();
@@ -184,35 +184,35 @@ namespace MajdataPlay.IO
 
         public void ReadVolumeFromSettings()
         {
-            var setting = SettingManager.Instance.SettingFile;
-            SFXSamples["answer.wav"].SetVolume(setting.VolumeAnwser);
-            SFXSamples["all_perfect.wav"].SetVolume(setting.VolumeVoice);
-            SFXSamples["break.wav"].SetVolume(setting.VolumeBreak);
-            SFXSamples["break_slide.wav"].SetVolume(setting.VolumeBreak);
-            SFXSamples["break_slide_start.wav"].SetVolume(setting.VolumeSlide);
-            SFXSamples["clock.wav"].SetVolume(setting.VolumeAnwser);
-            SFXSamples["hanabi.wav"].SetVolume(setting.VolumeTouch);
-            SFXSamples["judge.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["judge_break.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["judge_break_slide.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["judge_ex.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["slide.wav"].SetVolume(setting.VolumeSlide);
-            SFXSamples["touch.wav"].SetVolume(setting.VolumeTouch);
-            SFXSamples["touchHold_riser.wav"].SetVolume(setting.VolumeTouch);
-            SFXSamples["track_start.wav"].SetVolume(setting.VolumeBgm);
-            SFXSamples["good.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["great.wav"].SetVolume(setting.VolumeJudge);
-            SFXSamples["titlebgm.mp3"].SetVolume(setting.VolumeBgm);
+            var setting = GameManager.Instance.Setting;
+            SFXSamples["answer.wav"].SetVolume(setting.Audio.Volume.Anwser);
+            SFXSamples["all_perfect.wav"].SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples["break.wav"].SetVolume(setting.Audio.Volume.Break);
+            SFXSamples["break_slide.wav"].SetVolume(setting.Audio.Volume.Break);
+            SFXSamples["break_slide_start.wav"].SetVolume(setting.Audio.Volume.Slide);
+            SFXSamples["clock.wav"].SetVolume(setting.Audio.Volume.Anwser);
+            SFXSamples["hanabi.wav"].SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples["judge.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["judge_break.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["judge_break_slide.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["judge_ex.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["slide.wav"].SetVolume(setting.Audio.Volume.Slide);
+            SFXSamples["touch.wav"].SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples["touchHold_riser.wav"].SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples["track_start.wav"].SetVolume(setting.Audio.Volume.BGM);
+            SFXSamples["good.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["great.wav"].SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples["titlebgm.mp3"].SetVolume(setting.Audio.Volume.BGM);
 
-            SFXSamples["MajdataPlay.wav"].SetVolume(setting.VolumeVoice);
-            SFXSamples["SelectSong.wav"].SetVolume(setting.VolumeVoice);
-            SFXSamples["Sugoi.wav"].SetVolume(setting.VolumeVoice);
-            SFXSamples["DontTouchMe.wav"].SetVolume(setting.VolumeVoice);
+            SFXSamples["MajdataPlay.wav"].SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples["SelectSong.wav"].SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples["Sugoi.wav"].SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples["DontTouchMe.wav"].SetVolume(setting.Audio.Volume.Voice);
         }
 
         public AudioSampleWrap LoadMusic(string path)
         {
-            var backend = SettingManager.Instance.SettingFile.SoundBackend;
+            var backend = GameManager.Instance.Setting.Audio.Backend;
             if (File.Exists(path))
             {
                 if (backend == SoundBackendType.Unity)
@@ -284,7 +284,7 @@ namespace MajdataPlay.IO
         {
             using (var audioFileReader = new AudioFileReader(audioFileName))
             {
-                var resampler = new WdlResamplingSampleProvider(audioFileReader, SettingManager.Instance.SettingFile.SoundOutputSamplerate);
+                var resampler = new WdlResamplingSampleProvider(audioFileReader, GameManager.Instance.Setting.Audio.Samplerate);
                 WaveFormat = resampler.WaveFormat;
                 var wholeFile = new List<float>();
                 var readBuffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];

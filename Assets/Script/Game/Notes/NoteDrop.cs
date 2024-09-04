@@ -16,12 +16,19 @@ namespace MajdataPlay.Game.Notes
         public bool isBreak = false;
         public bool isEX = false;
 
+        public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
         protected GamePlayManager gpManager => GamePlayManager.Instance;
         protected InputManager ioManager => InputManager.Instance;
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         public bool CanShine { get; protected set; } = false;
+        public float JudgeTiming { get => judgeTiming + gameSetting.Judge.JudgeOffset; }
+
 
         protected bool isJudged = false;
+        /// <summary>
+        /// 正解帧
+        /// </summary>
+        protected float judgeTiming;
         protected float judgeDiff = -1;
         protected JudgeType judgeResult = JudgeType.Miss;
 
@@ -29,22 +36,33 @@ namespace MajdataPlay.Game.Notes
         protected ObjectCounter objectCounter;
         protected NoteManager noteManager;
         protected NoteEffectManager effectManager;
+        protected GameSetting gameSetting = new();
         protected virtual void Start()
         {
             effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
+            gameSetting = GameManager.Instance.Setting;
+            judgeTiming = time;
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
         /// <summary>
-        /// 获取当前时刻距离正解帧的时间长度
+        /// 获取当前时刻距离抵达判定线的长度
+        /// </summary>
+        /// <returns>
+        /// 当前时刻在判定线后方，结果为正数
+        /// <para>当前时刻在判定线前方，结果为负数</para>
+        /// </returns>
+        protected float GetTimeSpanToArriveTiming() => gpManager.AudioTime - time;
+        /// <summary>
+        /// 获取当前时刻距离正解帧的长度
         /// </summary>
         /// <returns>
         /// 当前时刻在正解帧后方，结果为正数
         /// <para>当前时刻在正解帧前方，结果为负数</para>
         /// </returns>
-        protected float GetJudgeTiming() => gpManager.AudioTime - time;
+        protected float GetTimeSpanToJudgeTiming() => gpManager.AudioTime - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
         protected Vector3 GetPositionFromDistance(float distance, int position)
         {
@@ -68,7 +86,8 @@ namespace MajdataPlay.Game.Notes
         /// <returns>
         /// Hold剩余长度
         /// </returns>
-        protected float GetRemainingTime() => MathF.Max(LastFor - GetJudgeTiming(), 0);
+        protected float GetRemainingTime() => MathF.Max(LastFor - GetTimeSpanToJudgeTiming(), 0);
+        protected float GetRemainingTimeWithoutOffset() => MathF.Max(LastFor - GetTimeSpanToArriveTiming(), 0);
         protected virtual void PlayHoldEffect()
         {
             var material = holdEffect.GetComponent<ParticleSystemRenderer>().material;

@@ -37,7 +37,7 @@ public class Sensor : MonoBehaviour
             OnStatusChanged(this, args);
     }
     void Start() {
-        IsDebug = SettingManager.Instance.SettingFile.DisplaySensorDebug;
+        IsDebug = GameManager.Instance.Setting.Debug.DisplaySensor;
         image = GetComponent<Image>();
         if(!IsDebug) {
             Destroy(image);

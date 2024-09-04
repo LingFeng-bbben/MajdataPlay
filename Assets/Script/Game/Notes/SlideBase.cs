@@ -72,7 +72,7 @@ namespace MajdataPlay.Game.Notes
         protected float lastWaitTime;
         protected bool canCheck = false;
         protected bool isChecking = false;
-        protected float judgeTiming; // 正解帧
+        
         protected bool isInitialized = false; //防止重复初始化
         protected bool isDestroying = false; // 防止重复销毁
         /// <summary>
@@ -91,8 +91,8 @@ namespace MajdataPlay.Game.Notes
             var stayTime = lastWaitTime; // 停留时间
 
             // By Minepig
-            var diff = judgeTiming - gpManager.AudioTime;
-            var isFast = diff > 0;
+            var diff = GetTimeSpanToJudgeTiming();
+            var isFast = diff < 0;
 
             // input latency simulation
             //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
@@ -120,8 +120,8 @@ namespace MajdataPlay.Game.Notes
             judgeResult = judge ?? JudgeType.Miss;
             isJudged = true;
 
-            if (GetJudgeTiming() < 0)
-                lastWaitTime = MathF.Abs(GetJudgeTiming()) / 2;
+            if (GetTimeSpanToArriveTiming() < 0)
+                lastWaitTime = MathF.Abs(GetTimeSpanToArriveTiming()) / 2;
             else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
         }
