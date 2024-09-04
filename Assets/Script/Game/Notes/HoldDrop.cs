@@ -81,7 +81,7 @@ namespace MajdataPlay.Game.Notes
                     StopHoldEffect();
                 }
             }
-            else if (isTooLate && !isJudged) // 头部Miss
+            else if (isTooLate) // 头部Miss
             {
                 judgeDiff = 150;
                 judgeResult = JudgeType.Miss;
