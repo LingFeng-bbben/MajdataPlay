@@ -61,6 +61,7 @@ public class GamePlayManager : MonoBehaviour
         LightManager.Instance.SetAllLight(Color.white);
         try
         {
+            //TODO: should load from disk instead of memory
             var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
             if (maidata == "" || maidata == null) {
                 BackToList();
@@ -138,9 +139,12 @@ public class GamePlayManager : MonoBehaviour
 
         GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
-        yield return new WaitForSeconds(5);
-        audioSample.Play();
-        
+        while (Time.unscaledTime - AudioStartTime < 0)
+            yield return new WaitForEndOfFrame();
+       
+        audioSample.Play(); 
+        AudioStartTime = Time.unscaledTime;
+
     }
 
     private void OnDestroy()
@@ -169,10 +173,10 @@ public class GamePlayManager : MonoBehaviour
         {
             ErrorText.text = "ºÏ≤‚µΩ“Ù∆µ¥ÌŒª¡À”¥\n" + realTimeDifference;
         }
-        else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0)
+        else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0)
         {
             ErrorText.text = "–ﬁ’˝“Ù∆µ\n" + realTimeDifference;
-            AudioStartTime -= realTimeDifference;
+            AudioStartTime -= realTimeDifference * 0.8f;
         }
 
 

@@ -48,7 +48,7 @@ namespace MajdataPlay.Game.Notes
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
-            print(destScale);
+
             switch (State)
             {
                 case NoteStatus.Initialized:

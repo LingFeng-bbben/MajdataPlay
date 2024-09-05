@@ -485,6 +485,7 @@ namespace MajdataPlay.IO
         {
             this.audioClip = audioClip;
             this.gameObject = gameObject;
+            this.audioClip.LoadAudioData();
             audioSource = this.gameObject.AddComponent<AudioSource>();
             audioSource.clip = audioClip;
             audioSource.loop = false;
