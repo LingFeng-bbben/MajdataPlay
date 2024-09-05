@@ -30,7 +30,7 @@ public class GamePlayManager : MonoBehaviour
     public float noteSpeed = 9f;
     public float touchSpeed = 7.5f;
 
-    public float AudioTime = 0f;
+    public float AudioTime = -114514f;
     public bool isStart => audioSample.GetPlayState();
     public float CurrentSpeed = 1f;
 
@@ -136,13 +136,11 @@ public class GamePlayManager : MonoBehaviour
             StopAllCoroutines();
         }
 
-
-        yield return new WaitForEndOfFrame();
-
         GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
-        yield return new WaitForSeconds(2);
+        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
+        yield return new WaitForSeconds(5);
         audioSample.Play();
-        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime();
+        
     }
 
     private void OnDestroy()
@@ -167,11 +165,11 @@ public class GamePlayManager : MonoBehaviour
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (i >= AnwserSoundList.Count)
             return;
-        if (Math.Abs(realTimeDifference) > 0.04f)
+        if (Math.Abs(realTimeDifference) > 0.04f && AudioTime> 0)
         {
             ErrorText.text = "ºÏ≤‚µΩ“Ù∆µ¥ÌŒª¡À”¥\n" + realTimeDifference;
         }
-        else if (Math.Abs(realTimeDifference) > 0.02f)
+        else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0)
         {
             ErrorText.text = "–ﬁ’˝“Ù∆µ\n" + realTimeDifference;
             AudioStartTime -= realTimeDifference;
