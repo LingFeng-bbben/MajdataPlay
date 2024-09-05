@@ -169,11 +169,11 @@ public class GamePlayManager : MonoBehaviour
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (i >= AnwserSoundList.Count)
             return;
-        if (Math.Abs(realTimeDifference) > 0.04f && AudioTime> 0)
+        if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
         {
             ErrorText.text = "ºÏ≤‚µΩ“Ù∆µ¥ÌŒª¡À”¥\n" + realTimeDifference;
         }
-        else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0)
+        else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
         {
             ErrorText.text = "–ﬁ’˝“Ù∆µ\n" + realTimeDifference;
             AudioStartTime -= realTimeDifference * 0.8f;
