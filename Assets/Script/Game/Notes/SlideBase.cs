@@ -125,6 +125,43 @@ namespace MajdataPlay.Game.Notes
             else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
         }
+        protected void Judge_Classic()
+        {
+            if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
+                return;
+            else if (isJudged)
+                return;
+
+            var diff = GetTimeSpanToJudgeTiming();
+            var isFast = diff < 0;
+
+            var perfect = 0.15f;
+
+            diff = MathF.Abs(diff);
+            JudgeType? judge = null;
+
+            if (diff <= perfect)
+                judge = JudgeType.Perfect;
+            else
+            {
+                judge = diff switch
+                {
+                    <= 0.2305557f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                    <= 0.3111114f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                    <= 0.3916672f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+                };
+            }
+
+            print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
+            judgeResult = judge ?? JudgeType.Miss;
+            isJudged = true;
+
+            if (GetTimeSpanToArriveTiming() < 0)
+                lastWaitTime = MathF.Abs(GetTimeSpanToArriveTiming()) / 2;
+            else if (diff >= 0.6166679 && !isFast)
+                lastWaitTime = 0;
+        }
         protected void HideBar(int endIndex)
         {
             endIndex = endIndex - 1;

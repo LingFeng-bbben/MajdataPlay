@@ -96,7 +96,10 @@ namespace MajdataPlay.Game.Notes
                 if (IsFinished)
                 {
                     HideAllBar();
-                    Judge();
+                    if (IsClassic)
+                        Judge_Classic();
+                    else
+                        Judge();
                 }
                 else if (isTooLate)
                     TooLateJudge();
