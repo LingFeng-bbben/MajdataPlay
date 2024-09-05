@@ -778,7 +778,7 @@ public class NoteLoader : MonoBehaviour
 
         var slide = Instantiate(slidePrefab[slideIndex], notes.transform);
         var slide_star = Instantiate(star_slidePrefab, notes.transform);
-        slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
+        //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
         slide_star.SetActive(false);
         slide.SetActive(false);
         NDCompo.slide = slide;
@@ -794,7 +794,7 @@ public class NoteLoader : MonoBehaviour
                 > 1)
             {
                 SliCompo.isEach = true;
-                slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Each;
+                //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Each;
             }
 
             var count = timing.noteList.FindAll(
@@ -812,7 +812,7 @@ public class NoteLoader : MonoBehaviour
 
         SliCompo.ConnectInfo = info;
         SliCompo.isBreak = note.isSlideBreak;
-        if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
+        //if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
 
         NDCompo.isNoHead = note.isSlideNoHead;
         NDCompo.time = (float)timing.time;
