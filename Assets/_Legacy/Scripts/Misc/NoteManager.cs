@@ -1,5 +1,6 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
