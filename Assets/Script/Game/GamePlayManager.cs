@@ -84,7 +84,6 @@ public class GamePlayManager : MonoBehaviour
             {
                 timingPoint.havePlayed = false;
                 if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
-
                 AnwserSoundList.Add(timingPoint);
                 var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
                 if (holds.Count == 0) continue;
