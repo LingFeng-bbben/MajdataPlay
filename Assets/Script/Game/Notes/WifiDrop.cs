@@ -274,7 +274,7 @@ namespace MajdataPlay.Game.Notes
                 audioEffMana.PlayBreakSlideEndSound();
             }
             slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
-            slideOK.SetActive(true);
+            PlaySlideOK();
 
             isDestroying = true;
         }
@@ -330,10 +330,10 @@ namespace MajdataPlay.Game.Notes
             }
 
             if (isJustR)
-                slideOK.GetComponent<LoadJustSprite>().setR();
+                slideOK.GetComponent<LoadJustSprite>().SetR();
             else
             {
-                slideOK.GetComponent<LoadJustSprite>().setL();
+                slideOK.GetComponent<LoadJustSprite>().SetL();
                 slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
             slideOK.SetActive(false);

@@ -20,7 +20,7 @@ public class NoteEffectManager : MonoBehaviour
 
     private readonly Animator[] fastLateAnims = new Animator[8];
     private readonly GameObject[] fastLateEffects = new GameObject[8];
-    Sprite[] judgeText;
+    JudgeTextSkin judgeSkin;
 
     // Start is called before the first frame update
     private void Awake()
@@ -63,14 +63,14 @@ public class NoteEffectManager : MonoBehaviour
     {
 
         var customSkin = SkinManager.Instance;
-        judgeText = customSkin.JudgeText;
+        judgeSkin = customSkin.GetJudgeTextSkin();
 
         foreach (var judgeEffect in judgeEffects)
         {
             judgeEffect.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite =
                 customSkin.JudgeText[0];
             judgeEffect.transform.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().sprite =
-                customSkin.JudgeText_Break;
+                customSkin.CriticalPerfect_Break;
         }
     }
 
@@ -80,16 +80,22 @@ public class NoteEffectManager : MonoBehaviour
     /// <param name="position"></param>
     /// <param name="isBreak"></param>
     /// <param name="judge"></param>
-    public void PlayEffect(int position, bool isBreak,JudgeType judge = JudgeType.Perfect)
+    public void PlayEffect(int position,in JudgeResult judgeResult)
     {
         var pos = position - 1;
+        var textRenderer = judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        var breakTextRenderer = judgeEffects[pos].transform.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>();
 
-        switch (judge)
+        var isBreak = judgeResult.IsBreak;
+        var result = judgeResult.Result;
+        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
+
+        switch (result)
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
                 LightManager.Instance.SetButtonLight(Color.green, pos);
-                judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                textRenderer.sprite = judgeSkin.Good;
                 ResetEffect(position);
                 if(isBreak)
                 {
@@ -107,7 +113,7 @@ public class NoteEffectManager : MonoBehaviour
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
                 LightManager.Instance.SetButtonLight(new Color(1,0.54f,1f), pos);
-                judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                textRenderer.sprite = judgeSkin.Great;
                 ResetEffect(position);
                 if (isBreak)
                 {
@@ -126,7 +132,7 @@ public class NoteEffectManager : MonoBehaviour
             case JudgeType.LatePerfect1:
             case JudgeType.FastPerfect1:
                 LightManager.Instance.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), pos);
-                judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                textRenderer.sprite = judgeSkin.Perfect;
                 ResetEffect(position);
                 tapEffects[pos].SetActive(true);
                 if (isBreak)
@@ -137,7 +143,16 @@ public class NoteEffectManager : MonoBehaviour
                 break;
             case JudgeType.Perfect:
                 LightManager.Instance.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), pos);
-                judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                if(GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
+                {
+                    textRenderer.sprite = judgeSkin.CriticalPerfect;
+                    breakTextRenderer.sprite = judgeSkin.CP_Break;
+                }
+                else
+                {
+                    textRenderer.sprite = judgeSkin.Perfect;
+                    breakTextRenderer.sprite = judgeSkin.P_Break;
+                }
                 ResetEffect(position);
                 tapEffects[pos].SetActive(true);
                 if (isBreak)
@@ -147,18 +162,21 @@ public class NoteEffectManager : MonoBehaviour
                 }               
                 break;
             default:
-                judgeEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                textRenderer.sprite = judgeSkin.Miss;
                 break;
         }
 
-        if (isBreak && judge == JudgeType.Perfect)
+        if (!canPlay)
+            return;
+        if (isBreak && result == JudgeType.Perfect)
             judgeAnimators[pos].SetTrigger("break");
         else
             judgeAnimators[pos].SetTrigger("perfect");
     }
-    public void PlayTouchEffect(Transform touchTransform,SensorType sensorPos,JudgeType judgeResult = JudgeType.Perfect)
+    public void PlayTouchEffect(Transform touchTransform,SensorType sensorPos,in JudgeResult judgeResult)
     {
         var pos = touchTransform.position;
+        var result = judgeResult.Result;
 
         var obj = Instantiate(touchJudgeEffect, Vector3.zero, touchTransform.rotation); // Judge Text
         var _obj = Instantiate(touchJudgeEffect, Vector3.zero, touchTransform.rotation); // Fast/Late Text
@@ -183,11 +201,12 @@ public class NoteEffectManager : MonoBehaviour
         var anim = obj.GetComponent<Animator>();
         var flAnim = _obj.GetComponent<Animator>();
         var effectAnim = effectObj.GetComponent<Animator>();
-        switch (judgeResult)
+        var textRenderer = judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        switch (result)
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
-                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                textRenderer.sprite = judgeSkin.Good;
                 effectAnim.SetTrigger("good");
                 break;
             case JudgeType.LateGreat:
@@ -196,32 +215,38 @@ public class NoteEffectManager : MonoBehaviour
             case JudgeType.FastGreat2:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
-                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                textRenderer.sprite = judgeSkin.Great;
                 effectAnim.SetTrigger("great");
                 break;
             case JudgeType.LatePerfect2:
             case JudgeType.FastPerfect2:
             case JudgeType.LatePerfect1:
             case JudgeType.FastPerfect1:
-                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                textRenderer.sprite = judgeSkin.Perfect;
                 effectAnim.SetTrigger("perfect");
                 break;
             case JudgeType.Perfect:
-                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                if (GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
+                    textRenderer.sprite = judgeSkin.CriticalPerfect;
+                else
+                    textRenderer.sprite = judgeSkin.Perfect;
                 effectAnim.SetTrigger("perfect");
                 break;
             case JudgeType.Miss:
-                judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                textRenderer.sprite = judgeSkin.Miss;
                 Destroy(effectObj);
                 break;
             default:
                 break;
         }
-            
+        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
 
         PlayFastLate(_obj, flAnim, judgeResult);
 
-        anim.SetTrigger("touch");
+        if (canPlay)
+            anim.SetTrigger("touch");
+        else
+            Destroy(obj);
     }
     
     /// <summary>
@@ -229,24 +254,72 @@ public class NoteEffectManager : MonoBehaviour
     /// </summary>
     /// <param name="position"></param>
     /// <param name="judge"></param>
-    public void PlayFastLate(int position,JudgeType judge)
+    public void PlayFastLate(int position, in JudgeResult judgeResult)
     {
-
-        var customSkin = SkinManager.Instance;
         var pos = position - 1;
-        if ((int)judge is (0 or 7))
+        var canPlay = CheckFastLateSetting(judgeResult);
+
+        if (!canPlay)
         {
             fastLateEffects[pos].SetActive(false);
             return;
         }
+        
+        var textRenderer = fastLateEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+
         fastLateEffects[pos].SetActive(true);
-        bool isFast = (int)judge > 7;
-        if(isFast)
-             fastLateEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = customSkin.FastText;
+        if (judgeResult.IsFast)
+            textRenderer.sprite = judgeSkin.Fast;
         else
-            fastLateEffects[pos].transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = customSkin.LateText;
+            textRenderer.sprite = judgeSkin.Late;
         fastLateAnims[pos].SetTrigger("perfect");
 
+    }
+    bool CheckEffectSetting(JudgeDisplayType effectSetting, in JudgeResult judgeResult)
+    {
+        var result = judgeResult.Result;
+        var resultValue = (int)result;
+        var absValue = Math.Abs(7 - resultValue);
+
+        switch (effectSetting)
+        {
+            case JudgeDisplayType.All:
+                return true;
+            case JudgeDisplayType.BelowCP:
+                return absValue != 0;
+            case JudgeDisplayType.BelowP:
+                return absValue > 2;
+            case JudgeDisplayType.BelowGR:
+                return absValue > 5;
+            default:
+                return false;
+        }
+    }
+    bool CheckFastLateSetting(in JudgeResult judgeResult)
+    {
+        var flSetting = GameManager.Instance.Setting.Display.FastLateType;
+        var result = judgeResult.Result;
+        var resultValue = (int)result;
+        var absValue = Math.Abs(7 - resultValue);
+
+
+        if (resultValue is 0 || 
+            flSetting is JudgeDisplayType.Disable ||
+            judgeResult.Diff == 0)
+            return false;
+        switch(flSetting)
+        {
+            case JudgeDisplayType.All:
+                return true;
+            case JudgeDisplayType.BelowCP:
+                return resultValue != 7;
+            case JudgeDisplayType.BelowP:
+                return absValue > 2;
+            case JudgeDisplayType.BelowGR:
+                return absValue > 5;
+        }
+
+        return false;
     }
     /// <summary>
     /// Touch，TouchHold
@@ -254,21 +327,24 @@ public class NoteEffectManager : MonoBehaviour
     /// <param name="obj"></param>
     /// <param name="anim"></param>
     /// <param name="judge"></param>
-    public void PlayFastLate(GameObject obj,Animator anim, JudgeType judge)
+    public void PlayFastLate(GameObject obj,Animator anim, in JudgeResult judgeResult)
     {
         var customSkin = SkinManager.Instance;
-        if ((int)judge is (0 or 7))
+        var canPlay = CheckFastLateSetting(judgeResult);
+        if (!canPlay)
         {
             obj.SetActive(false);
             Destroy(obj);
             return;
         }
+
         obj.SetActive(true);
-        bool isFast = (int)judge > 7;
-        if (isFast)
-            obj.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = customSkin.FastText;
+        var textRenderer = obj.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+
+        if (judgeResult.IsFast)
+            textRenderer.sprite = customSkin.FastText;
         else
-            obj.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = customSkin.LateText;
+            textRenderer.sprite = customSkin.LateText;
         anim.SetTrigger("touch");
 
     }

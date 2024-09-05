@@ -122,4 +122,27 @@
         Classic,
         Modern
     }
+    public enum JudgeDisplayType
+    {
+        /// <summary>
+        /// CriticalPerfect, Pefect, Great, Good
+        /// </summary>
+        All,
+        /// <summary>
+        /// Pefect, Great, Good
+        /// </summary>
+        BelowCP,
+        /// <summary>
+        /// Great, Good
+        /// </summary>
+        BelowP,
+        /// <summary>
+        /// Good
+        /// </summary>
+        BelowGR,
+        /// <summary>
+        /// None
+        /// </summary>
+        Disable
+    }
 }

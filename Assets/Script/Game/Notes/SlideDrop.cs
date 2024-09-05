@@ -322,7 +322,7 @@ namespace MajdataPlay.Game.Notes
                     audioEffMana.PlayBreakSlideEndSound();
                 }
                 slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
-                slideOK.SetActive(true);
+                PlaySlideOK();
             }
             else
             {
@@ -454,7 +454,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isJustR)
             {
-                if (slideOK.GetComponent<LoadJustSprite>().setR() == 1 && isMirror)
+                if (slideOK.GetComponent<LoadJustSprite>().SetR() == 1 && isMirror)
                 {
                     slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
@@ -463,7 +463,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                if (slideOK.GetComponent<LoadJustSprite>().setL() == 1 && !isMirror)
+                if (slideOK.GetComponent<LoadJustSprite>().SetL() == 1 && !isMirror)
                 {
                     slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;

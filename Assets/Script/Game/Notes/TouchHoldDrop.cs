@@ -101,6 +101,7 @@ namespace MajdataPlay.Game.Notes
 
             var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
             if (diff > JUDGE_SEG_PERFECT && isFast)
@@ -309,8 +310,15 @@ namespace MajdataPlay.Game.Notes
                 default:
                     break;
             }
-            //judgeEffect.transform.position = new Vector3(0, -0.6f, 0);
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayFastLate(_obj, flAnim, judgeResult);
+
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = judgeDiff
+            };
+
+            effectManager.PlayFastLate(_obj, flAnim, result);
             anim.SetTrigger("touch");
         }
         protected override void PlayHoldEffect()

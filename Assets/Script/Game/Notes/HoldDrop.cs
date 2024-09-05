@@ -162,6 +162,7 @@ namespace MajdataPlay.Game.Notes
 
             var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
 
             JudgeType result;
@@ -305,9 +306,15 @@ namespace MajdataPlay.Game.Notes
 
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTapSound(false, false, judgeResult);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = 0
+            };
 
-            effectManager.PlayEffect(startPosition, isBreak, judgeResult);
-            effectManager.PlayFastLate(startPosition, judgeResult);
+            effectManager.PlayEffect(startPosition, result);
+            effectManager.PlayFastLate(startPosition, result);
             objectCounter.ReportResult(this, judgeResult, isBreak);
             if (!isJudged)
                 objectCounter.NextNote(startPosition);

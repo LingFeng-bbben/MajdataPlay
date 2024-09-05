@@ -169,6 +169,37 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i <= endIndex; i++)
                 slideBars[i].SetActive(false);
         }
+        protected void PlaySlideOK()
+        {
+            if (slideOK == null)
+                return;
+            var canPlay = CheckSetting();
+
+            if (canPlay)
+                slideOK.SetActive(true);
+            else
+                Destroy(slideOK);
+        }
+        bool CheckSetting()
+        {
+            var slideSetting = GameManager.Instance.Setting.Display.SlideJudgeType;
+            var resultValue = (int)judgeResult;
+            var absValue = Math.Abs(7 - resultValue);
+
+            switch (slideSetting)
+            {
+                case JudgeDisplayType.All:
+                    return true;
+                case JudgeDisplayType.BelowCP:
+                    return absValue != 0;
+                case JudgeDisplayType.BelowP:
+                    return absValue > 2;
+                case JudgeDisplayType.BelowGR:
+                    return absValue > 5;
+                default:
+                    return false;
+            }
+        }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {

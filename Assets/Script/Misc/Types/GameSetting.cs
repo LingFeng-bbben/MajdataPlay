@@ -4,6 +4,7 @@
     {
         public GameOptions Game { get; set; } = new();
         public JudgeOptions Judge { get; set; } = new();
+        public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
@@ -22,6 +23,23 @@
         public float AudioOffset { get; set; } = 0f;
         public float JudgeOffset { get; set; } = 0f;
         public JudgeMode Mode { get; set; } = JudgeMode.Modern;
+    }
+    public class DisplayOptions
+    {
+        public string Skin { get; set; } = "default";
+        public bool DisplayCriticalPerfect { get; set; } = false;
+        public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
+        public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType SlideJudgeType { get; set; } = JudgeDisplayType.All;
+        /// <summary>
+        /// Such like Tap、Star、Hold and Break
+        /// </summary>
+        public float OuterJudgeDistance { get; set; } = 0.8f;
+        /// <summary>
+        /// Such like Touch and TouchHold
+        /// </summary>
+        public float InnerJudgeDistance { get; set; } = 0.8f;
     }
     public class SoundOptions
     {

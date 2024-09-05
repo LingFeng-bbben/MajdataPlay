@@ -145,6 +145,7 @@ namespace MajdataPlay.Game.Notes
 
             var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
             if (diff > JUDGE_SEG_PERFECT && isFast)
@@ -225,8 +226,14 @@ namespace MajdataPlay.Game.Notes
             if (!isJudged) 
                 return;
 
-            //PlayJudgeEffect();
-            effectManager.PlayTouchEffect(transform,sensorPos,judgeResult);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                Diff = judgeDiff,
+                IsBreak = isBreak
+            };
+            
+            effectManager.PlayTouchEffect(transform,sensorPos, result);
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
                 GroupInfo.JudgeResult = judgeResult;
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();

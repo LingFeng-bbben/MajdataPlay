@@ -43,9 +43,10 @@ public class SkinManager : MonoBehaviour
     public Sprite HoldBreakEnd;
 
 
-    public Sprite[] Just = new Sprite[36];
+    public Sprite[] Just = new Sprite[54];
     public Sprite[] JudgeText = new Sprite[5];
-    public Sprite JudgeText_Break;
+    public Sprite CriticalPerfect_Break;
+    public Sprite Perfect_Break;
     public Sprite FastText;
     public Sprite LateText;
 
@@ -134,6 +135,8 @@ public class SkinManager : MonoBehaviour
         else
             Hold_Break_On = Hold_Break;
 
+        // Critical Perfect
+
         Just[0] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r.png");
         Just[1] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r.png");
         Just[2] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u.png");
@@ -141,47 +144,85 @@ public class SkinManager : MonoBehaviour
         Just[4] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l.png");
         Just[5] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d.png");
 
-        Just[6] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gr.png");
-        Just[7] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gr.png");
-        Just[8] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gr.png");
-        Just[9] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gr.png");
-        Just[10] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gr.png");
-        Just[11] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gr.png");
+        // Perfect
 
-        Just[12] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gd.png");
-        Just[13] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gd.png");
-        Just[14] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gd.png");
-        Just[15] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gd.png");
-        Just[16] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gd.png");
-        Just[17] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gd.png");
+        Just[6] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_p.png");
+        Just[7] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_p.png");
+        Just[8] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_p.png");
+        Just[9] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_p.png");
+        Just[10] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_p.png");
+        Just[11] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_p.png");
 
-        Just[18] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gr.png");
-        Just[19] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gr.png");
-        Just[20] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gr.png");
-        Just[21] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gr.png");
-        Just[22] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gr.png");
-        Just[23] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gr.png");
+        // Fast Perfect
 
-        Just[24] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gd.png");
-        Just[25] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gd.png");
-        Just[26] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gd.png");
-        Just[27] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gd.png");
-        Just[28] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gd.png");
-        Just[29] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gd.png");
+        Just[12] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_p.png");
+        Just[13] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_p.png");
+        Just[14] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_p.png");
+        Just[15] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_p.png");
+        Just[16] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_p.png");
+        Just[17] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_p.png");
 
-        Just[30] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_r.png");
-        Just[31] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_r.png");
-        Just[32] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_u.png");
-        Just[33] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_l.png");
-        Just[34] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_l.png");
-        Just[35] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_d.png");
+        // Fast Great
+
+        Just[18] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gr.png");
+        Just[19] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gr.png");
+        Just[20] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gr.png");
+        Just[21] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gr.png");
+        Just[22] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gr.png");
+        Just[23] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gr.png");
+
+        // Fast Good
+
+        Just[24] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gd.png");
+        Just[25] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gd.png");
+        Just[26] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gd.png");
+        Just[27] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gd.png");
+        Just[28] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gd.png");
+        Just[29] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gd.png");
+
+        // Late Perfect
+
+        Just[30] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_p.png");
+        Just[31] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_p.png");
+        Just[32] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_p.png");
+        Just[33] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_p.png");
+        Just[34] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_p.png");
+        Just[35] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_p.png");
+    
+        // Late Great
+
+        Just[36] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gr.png");
+        Just[37] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gr.png");
+        Just[38] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gr.png");
+        Just[39] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gr.png");
+        Just[40] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gr.png");
+        Just[41] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gr.png");
+
+        // Late Good
+
+        Just[42] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gd.png");
+        Just[43] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gd.png");
+        Just[44] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gd.png");
+        Just[45] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gd.png");
+        Just[46] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gd.png");
+        Just[47] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gd.png");
+       
+        // Miss
+
+        Just[48] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_r.png");
+        Just[49] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_r.png");
+        Just[50] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_u.png");
+        Just[51] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_l.png");
+        Just[52] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_l.png");
+        Just[53] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_d.png");
 
         JudgeText[0] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_miss.png");
         JudgeText[1] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_good.png");
         JudgeText[2] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_great.png");
         JudgeText[3] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_perfect.png");
         JudgeText[4] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_cPerfect.png");
-        JudgeText_Break = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_break.png");
+        CriticalPerfect_Break = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_break.png");
+        Perfect_Break = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_perfect_break.png");
 
         FastText = SpriteLoader.LoadSpriteFromFile(path + "/fast.png");
         LateText = SpriteLoader.LoadSpriteFromFile(path + "/late.png");
@@ -204,7 +245,22 @@ public class SkinManager : MonoBehaviour
 
         Debug.Log(test);
     }
+    public JudgeTextSkin GetJudgeTextSkin()
+    {
+        return new()
+        {
+            CP_Break = CriticalPerfect_Break,
+            P_Break = Perfect_Break,
+            CriticalPerfect = JudgeText[4],
+            Perfect = JudgeText[3],
+            Great = JudgeText[2],
+            Good = JudgeText[1],
+            Miss = JudgeText[0],
 
+            Fast = FastText,
+            Late = LateText
+        };
+    }
     public TapSkin GetTapSkin()
     {
         return new()
