@@ -115,6 +115,6 @@ public class LoadJustSprite : MonoBehaviour
     }
     private void refreshSprite()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = SkinManager.Instance.Just[_0curv1str2wifi + indexOffset + judgeOffset];
+        gameObject.GetComponent<SpriteRenderer>().sprite = SkinManager.Instance.SelectedSkin.Just[_0curv1str2wifi + indexOffset + judgeOffset];
     }
 }

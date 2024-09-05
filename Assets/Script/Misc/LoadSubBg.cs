@@ -9,7 +9,7 @@ public class LoadSubBg : MonoBehaviour
     void Start()
     {
         var img = GetComponent<Image>();
-        img.sprite = SkinManager.Instance.SubDisplay;
+        img.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
         img.color = Color.white;
     }
 

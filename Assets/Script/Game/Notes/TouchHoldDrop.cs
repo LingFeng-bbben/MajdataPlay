@@ -49,7 +49,7 @@ namespace MajdataPlay.Game.Notes
 
             sensorPos = SensorType.C;
             var customSkin = SkinManager.Instance;
-            judgeText = customSkin.JudgeText;
+            judgeText = customSkin.SelectedSkin.JudgeText;
             ioManager.BindSensor(Check, SensorType.C);
         }
         protected override void Check(object sender, InputEventArgs arg)

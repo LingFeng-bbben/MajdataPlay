@@ -68,9 +68,9 @@ public class NoteEffectManager : MonoBehaviour
         foreach (var judgeEffect in judgeEffects)
         {
             judgeEffect.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite =
-                customSkin.JudgeText[0];
+                customSkin.SelectedSkin.JudgeText[0];
             judgeEffect.transform.GetChild(0).GetChild(1).gameObject.GetComponent<SpriteRenderer>().sprite =
-                customSkin.CriticalPerfect_Break;
+                customSkin.SelectedSkin.CriticalPerfect_Break;
         }
     }
 
@@ -342,9 +342,9 @@ public class NoteEffectManager : MonoBehaviour
         var textRenderer = obj.transform.GetChild(0).GetChild(0).gameObject.GetComponent<SpriteRenderer>();
 
         if (judgeResult.IsFast)
-            textRenderer.sprite = customSkin.FastText;
+            textRenderer.sprite = customSkin.SelectedSkin.FastText;
         else
-            textRenderer.sprite = customSkin.LateText;
+            textRenderer.sprite = customSkin.SelectedSkin.LateText;
         anim.SetTrigger("touch");
 
     }

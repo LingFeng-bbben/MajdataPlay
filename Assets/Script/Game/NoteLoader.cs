@@ -292,13 +292,13 @@ public class NoteLoader : MonoBehaviour
                         NDCompo.areaPosition = note.touchArea;
                         NDCompo.startPosition = note.startPosition;
 
-                        NDCompo.fanNormalSprite = customSkin.Touch;
-                        NDCompo.fanEachSprite = customSkin.Touch_Each;
-                        NDCompo.pointNormalSprite = customSkin.TouchPoint;
-                        NDCompo.pointEachSprite = customSkin.TouchPoint_Each;
-                        NDCompo.justSprite = customSkin.TouchJust;
-                        Array.Copy(customSkin.TouchBorder, NDCompo.multTouchNormalSprite, 2);
-                        Array.Copy(customSkin.TouchBorder_Each, NDCompo.multTouchEachSprite, 2);
+                        NDCompo.fanNormalSprite = customSkin.SelectedSkin.Touch;
+                        NDCompo.fanEachSprite = customSkin.SelectedSkin.Touch_Each;
+                        NDCompo.pointNormalSprite = customSkin.SelectedSkin.TouchPoint;
+                        NDCompo.pointEachSprite = customSkin.SelectedSkin.TouchPoint_Each;
+                        NDCompo.justSprite = customSkin.SelectedSkin.TouchJust;
+                        Array.Copy(customSkin.SelectedSkin.TouchBorder, NDCompo.multTouchNormalSprite, 2);
+                        Array.Copy(customSkin.SelectedSkin.TouchBorder_Each, NDCompo.multTouchEachSprite, 2);
 
                         if (timing.noteList.Count > 1)
                         {
