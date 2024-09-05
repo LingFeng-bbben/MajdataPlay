@@ -1,3 +1,5 @@
+using MajdataPlay.Extensions;
+using System.Linq;
 using UnityEngine;
 #nullable enable
 public class SongDetail
@@ -7,6 +9,7 @@ public class SongDetail
     public string? Artist { get; set; }
     public string? Designer { get; set; }
     public string? Description { get; set; }
+    public int? ClockCount { get; set; }
     public string[]? Levels { get; set; } = new string[7];
     //public string? Uploader { get; set; }
     //public long? Timestamp { get; set; }
@@ -43,8 +46,11 @@ public class SongDetail
                 detail.Designer = GetValue(maidata[i]);
             else if (maidata[i].StartsWith("&freemsg="))
                 detail.Description = GetValue(maidata[i]);
+            else if (maidata[i].StartsWith("&clock_count="))
+                detail.ClockCount = int.Parse(GetValue(maidata[i]));
             else if (maidata[i].StartsWith("&first="))
                 detail.First = double.Parse( GetValue(maidata[i]));
+                detail.First = double.Parse(GetValue(maidata[i]));
             else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&inote_"))
             {
                 for (int j = 1; j < 8 && i < maidata.Length; j++)
@@ -79,7 +85,7 @@ public class SongDetail
     {
         try
         {
-            return varline.Split('=')[1].Trim().Replace("\r", "");
+            return varline.Substring(varline.FindIndex(o=>o=='=')+1).Replace("\r", "");
         }
         catch { return null; }
     }
