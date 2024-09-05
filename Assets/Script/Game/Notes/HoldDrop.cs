@@ -310,7 +310,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
-                Diff = 0
+                Diff = judgeDiff
             };
 
             effectManager.PlayEffect(startPosition, result);

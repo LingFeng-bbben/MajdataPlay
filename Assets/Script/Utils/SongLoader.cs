@@ -41,7 +41,7 @@ namespace MajdataPlay.Utils
                 var txtcontent = File.ReadAllText(maidataFile.FullName);
                 song = SongDetail.LoadFromMaidata(txtcontent);
                 song.TrackPath = trackFile.FullName;
-                song.Hash = GetHash(maidataFile.FullName, song.TrackPath);
+                song.Hash = GetHash(maidataFile.FullName);
 
                 if (coverFile != null)
                     song.SongCover = LoadSpriteFromFile(coverFile.FullName);
@@ -52,19 +52,29 @@ namespace MajdataPlay.Utils
             }
             return songList;
         }
-        public static string GetHash(string chartPath, string trackPath)
+        //public static string GetHash(string chartPath, string trackPath)
+        //{
+        //    var hashComputer = SHA256.Create();
+        //    using var chartStream = File.OpenRead(chartPath);
+        //    using var trackStream = File.OpenRead(trackPath);
+        //    var chartHash = hashComputer.ComputeHash(chartStream);
+        //    var trackHash = hashComputer.ComputeHash(trackStream);
+
+        //    byte[] raw = new byte[chartHash.Length + trackHash.Length];
+        //    Buffer.BlockCopy(chartHash, 0, raw, 0, chartHash.Length);
+        //    Buffer.BlockCopy(trackHash, 0, raw, chartHash.Length, trackHash.Length);
+
+        //    var hash = hashComputer.ComputeHash(raw);
+
+        //    return Convert.ToBase64String(hash);
+        //}
+        public static string GetHash(string chartPath)
         {
             var hashComputer = SHA256.Create();
             using var chartStream = File.OpenRead(chartPath);
-            using var trackStream = File.OpenRead(trackPath);
             var chartHash = hashComputer.ComputeHash(chartStream);
-            var trackHash = hashComputer.ComputeHash(trackStream);
 
-            byte[] raw = new byte[chartHash.Length + trackHash.Length];
-            Buffer.BlockCopy(chartHash, 0, raw, 0, chartHash.Length);
-            Buffer.BlockCopy(trackHash, 0, raw, chartHash.Length, trackHash.Length);
-
-            var hash = hashComputer.ComputeHash(raw);
+            var hash = hashComputer.ComputeHash(chartHash);
 
             return Convert.ToBase64String(hash);
         }

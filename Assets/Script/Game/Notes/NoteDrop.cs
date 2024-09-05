@@ -64,7 +64,7 @@ namespace MajdataPlay.Game.Notes
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => gpManager.AudioTime - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
-        protected Vector3 GetPositionFromDistance(float distance, int position)
+        public static Vector3 GetPositionFromDistance(float distance, int position)
         {
             return new Vector3(
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),

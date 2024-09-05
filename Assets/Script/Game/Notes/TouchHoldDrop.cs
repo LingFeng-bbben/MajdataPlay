@@ -26,7 +26,7 @@ namespace MajdataPlay.Game.Notes
 
         private float wholeDuration;
 
-        Sprite[] judgeText;
+        JudgeTextSkin judgeText;
 
         // Start is called before the first frame update
         protected override void Start()
@@ -49,7 +49,7 @@ namespace MajdataPlay.Game.Notes
 
             sensorPos = SensorType.C;
             var customSkin = SkinManager.Instance;
-            judgeText = customSkin.SelectedSkin.JudgeText;
+            judgeText = customSkin.GetJudgeTextSkin();
             ioManager.BindSensor(Check, SensorType.C);
         }
         protected override void Check(object sender, InputEventArgs arg)
@@ -261,9 +261,10 @@ namespace MajdataPlay.Game.Notes
             var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
             var judgeObj = obj.transform.GetChild(0);
             var flObj = _obj.transform.GetChild(0);
+            var distance = -0.6f;
 
-            judgeObj.transform.position = new Vector3(0, -0.6f, 0);
-            flObj.transform.position = new Vector3(0, -1.08f, 0);
+            judgeObj.transform.position = new Vector3(0, distance, 0);
+            flObj.transform.position = new Vector3(0, distance - 0.48f, 0);
             flObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
             judgeObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
             var anim = obj.GetComponent<Animator>();
@@ -275,7 +276,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Good;
                     effect = Instantiate(effects.transform.GetChild(3).GetChild(0), transform.position, transform.rotation).gameObject;
                     effect.SetActive(true);
                     break;
@@ -285,7 +286,7 @@ namespace MajdataPlay.Game.Notes
                 case JudgeType.FastGreat2:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Great;
                     //transform.Rotate(0, 0f, 30f);
                     effect = Instantiate(effects.transform.GetChild(2).GetChild(0), transform.position, transform.rotation).gameObject;
                     effect.SetActive(true);
@@ -295,17 +296,20 @@ namespace MajdataPlay.Game.Notes
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
                     transform.Rotate(0, 180f, 90f);
                     Instantiate(tapEffect, transform.position, transform.rotation);
                     break;
                 case JudgeType.Perfect:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                    if (GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
+                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.CriticalPerfect;
+                    else
+                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
                     transform.Rotate(0, 180f, 90f);
                     Instantiate(tapEffect, transform.position, transform.rotation);
                     break;
                 case JudgeType.Miss:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Miss;
                     break;
                 default:
                     break;

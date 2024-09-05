@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System;
 #nullable enable
 public class GameManager : MonoBehaviour
 {
@@ -57,6 +58,10 @@ public class GameManager : MonoBehaviour
             Setting = new GameSetting();
             Save();
         }
+        Setting.Display.InnerJudgeDistance = Math.Min(Setting.Display.InnerJudgeDistance,1);
+        Setting.Display.InnerJudgeDistance = Math.Max(Setting.Display.InnerJudgeDistance,0);
+        Setting.Display.OuterJudgeDistance = Math.Min(Setting.Display.OuterJudgeDistance, 1);
+        Setting.Display.OuterJudgeDistance = Math.Max(Setting.Display.OuterJudgeDistance, 0);
     }
     void Start()
     {

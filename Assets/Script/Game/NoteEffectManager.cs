@@ -1,6 +1,8 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Notes;
+using MajdataPlay.Types;
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 #nullable enable
 public class NoteEffectManager : MonoBehaviour
 {
@@ -54,6 +56,21 @@ public class NoteEffectManager : MonoBehaviour
         }
 
         LoadSkin();
+    }
+    void Start()
+    {
+        //var originPosition = NoteDrop.GetPositionFromDistance(4.8f, 1);
+        var pos = 4.3f * GameManager.Instance.Setting.Display.OuterJudgeDistance;
+        var flPos = pos - 0.66f;
+
+        var judgeEffectParent = transform.GetChild(1);
+        var flParent = transform.GetChild(4);
+
+        for(int i = 0; i < 8; i++)
+        {
+            judgeEffectParent.GetChild(i).GetChild(0).transform.localPosition = new Vector3(0, pos, 0);
+            flParent.GetChild(i).GetChild(0).transform.localPosition = new Vector3(0, flPos, 0);
+        }
     }
 
     /// <summary>
@@ -187,13 +204,16 @@ public class NoteEffectManager : MonoBehaviour
 
         if (sensorPos != SensorType.C)
         {
-            judgeObj.transform.position = GetPosition(touchTransform.position ,-0.46f);
-            flObj.transform.position = GetPosition(touchTransform.position ,-0.92f);
+            var distance = -0.46f * (2 - GameManager.Instance.Setting.Display.InnerJudgeDistance);
+
+            judgeObj.transform.position = GetPosition(touchTransform.position , distance);
+            flObj.transform.position = GetPosition(touchTransform.position , distance - 0.48f);
         }
         else
         {
-            judgeObj.transform.position = new Vector3(0, -0.6f, 0);
-            flObj.transform.position = new Vector3(0, -1.08f, 0);
+            var distance = -0.6f;
+            judgeObj.transform.position = new Vector3(0, distance, 0);
+            flObj.transform.position = new Vector3(0, distance - 0.48f, 0);
         }
         judgeObj.GetChild(0).transform.rotation = GetRoation(pos,sensorPos);
         flObj.GetChild(0).transform.rotation = GetRoation(pos,sensorPos);
