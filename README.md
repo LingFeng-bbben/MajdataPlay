@@ -31,6 +31,16 @@ Navigate to `settings.json`
     "JudgeOffset": 0, //in seconds. + is late
     "Mode": "Modern"  //Modern or Classic
   },
+  "Display": {
+    "Skin": "default",
+    "DisplayCriticalPerfect": false,
+    "FastLateType": "Disable", // All, BelowCP, BelowP, BelowGR, Disable
+    "NoteJudgeType": "All",
+    "TouchJudgeType": "All",
+    "SlideJudgeType": "All",
+    "OuterJudgeDistance": 1,
+    "InnerJudgeDistance": 1
+  },  
   "Audio": {
     "Samplerate": 44100, // Dont touch this if you dont know what does it mean
     "AsioDeviceIndex": 0, // If you have multiple ASIO devices you can choose them here

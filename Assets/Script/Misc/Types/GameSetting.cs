@@ -35,11 +35,11 @@
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>
-        public float OuterJudgeDistance { get; set; } = 0.8f;
+        public float OuterJudgeDistance { get; set; } = 1f;
         /// <summary>
         /// Such like Touch and TouchHold
         /// </summary>
-        public float InnerJudgeDistance { get; set; } = 0.8f;
+        public float InnerJudgeDistance { get; set; } = 1f;
     }
     public class SoundOptions
     {
