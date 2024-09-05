@@ -18,9 +18,11 @@ public class LoadJustSprite : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+
     }
     public void SetResult(JudgeType result)
     {
+        var displayCP = GameManager.Instance.Setting.Display.DisplayCriticalPerfect;
         switch (result)
         {
             case JudgeType.LatePerfect2:
@@ -28,69 +30,91 @@ public class LoadJustSprite : MonoBehaviour
             case JudgeType.Perfect:
             case JudgeType.FastPerfect1:
             case JudgeType.FastPerfect2:
+                if (displayCP)
+                    SetJustCP();
+                else
+                    SetJustP();
                 break;
             case JudgeType.FastGreat2:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
-                setFastGr();
+                SetFastGr();
                 break;
             case JudgeType.FastGood:
-                setFastGd();
+                SetFastGd();
                 break;
             case JudgeType.LateGood:
-                setLateGd();
+                SetLateGd();
                 break;
             case JudgeType.LateGreat1:
             case JudgeType.LateGreat2:
             case JudgeType.LateGreat:
-                setLateGr();
+                SetLateGr();
                 break;
             default:
-                setMiss();
+                SetMiss();
                 break;
         }
     }
-    public int setR()
+    public int SetR()
     {
         indexOffset = 0;
         refreshSprite();
         return _0curv1str2wifi;
     }
-
-    public int setL()
+    public int SetL()
     {
         indexOffset = 3;
         refreshSprite();
         return _0curv1str2wifi;
     }
-    public void setFastGr()
+    public void SetJustCP()
+    {
+        judgeOffset = 0;
+        refreshSprite();
+    }
+    public void SetJustP()
     {
         judgeOffset = 6;
         refreshSprite();
     }
-    public void setFastGd()
+    public void SetFastP()
     {
         judgeOffset = 12;
         refreshSprite();
     }
-    public void setLateGr()
+    public void SetFastGr()
     {
         judgeOffset = 18;
         refreshSprite();
     }
-    public void setLateGd()
+    public void SetFastGd()
     {
         judgeOffset = 24;
         refreshSprite();
     }
-    public void setMiss()
+    public void SetLateP()
     {
         judgeOffset = 30;
         refreshSprite();
     }
+    public void SetLateGr()
+    {
+        judgeOffset = 36;
+        refreshSprite();
+    }
+    public void SetLateGd()
+    {
+        judgeOffset = 42;
+        refreshSprite();
+    }
+    public void SetMiss()
+    {
+        judgeOffset = 48;
+        refreshSprite();
+    }
     private void refreshSprite()
     {
-        gameObject.GetComponent<SpriteRenderer>().sprite = GameObject.Find("SkinManager").GetComponent<SkinManager>()
-            .Just[_0curv1str2wifi + indexOffset + judgeOffset];
+        gameObject.GetComponent<SpriteRenderer>().sprite = SkinManager.Instance.SelectedSkin.Just[_0curv1str2wifi + indexOffset + judgeOffset];
     }
 }

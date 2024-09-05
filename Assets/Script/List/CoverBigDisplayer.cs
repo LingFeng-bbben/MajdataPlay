@@ -2,6 +2,7 @@ using MajdataPlay.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,23 @@ public class CoverBigDisplayer : MonoBehaviour
     public void SetDifficulty(int i)
     {
         bgCard.color = diffColors[i];
+        if(i+1 < diffColors.Length)
+        {
+            LightManager.Instance.SetButtonLight(diffColors[i+1], 0);
+        }
+        else
+        {
+            LightManager.Instance.SetButtonLight(diffColors.First(), 0);
+        }
+        if (i - 1 >=0)
+        {
+            LightManager.Instance.SetButtonLight(diffColors[i - 1], 7);
+        }
+        else
+        {
+            LightManager.Instance.SetButtonLight(diffColors.Last(), 7);
+        }
+
     }
     public void SetCover(Sprite sp)
     {

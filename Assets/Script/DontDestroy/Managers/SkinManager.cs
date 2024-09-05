@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Types;
 using MajSimaiDecode;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -7,59 +8,20 @@ public class SkinManager : MonoBehaviour
 {
     public static SkinManager Instance { get; private set; }
 
-    public Sprite Tap;
-    public Sprite Tap_Each;
-    public Sprite Tap_Break;
-    public Sprite Tap_Ex;
+    public CustomSkin SelectedSkin { get; set; }
 
-    public Sprite Slide;
-    public Sprite Slide_Each;
-    public Sprite Slide_Break;
-    public Sprite[] Wifi = new Sprite[11];
-    public Sprite[] Wifi_Each = new Sprite[11];
-    public Sprite[] Wifi_Break = new Sprite[11];
+    List<CustomSkin> loadedSkins = new();
 
-    public Sprite Star;
-    public Sprite Star_Double;
-    public Sprite Star_Each;
-    public Sprite Star_Each_Double;
-    public Sprite Star_Break;
-    public Sprite Star_Break_Double;
-    public Sprite Star_Ex;
-    public Sprite Star_Ex_Double;
-
-    public Sprite Hold;
-    public Sprite Hold_On;
-    public Sprite Hold_Off;
-    public Sprite Hold_Each;
-    public Sprite Hold_Each_On;
-    public Sprite Hold_Ex;
-    public Sprite Hold_Break;
-    public Sprite Hold_Break_On;
-
-    public Sprite[] Just = new Sprite[36];
-    public Sprite[] JudgeText = new Sprite[5];
-    public Sprite JudgeText_Break;
-    public Sprite FastText;
-    public Sprite LateText;
-
-    public Sprite Touch;
-    public Sprite Touch_Each;
-    public Sprite TouchPoint;
-    public Sprite TouchPoint_Each;
-    public Sprite TouchJust;
-    public Sprite[] TouchBorder = new Sprite[2];
-    public Sprite[] TouchBorder_Each = new Sprite[2];
-
-    public Sprite[] TouchHold = new Sprite[5];
-
-    public Sprite Outline;
+    public Sprite HoldEnd;
+    public Sprite HoldEachEnd;
+    public Sprite HoldBreakEnd;
 
     public Texture2D test;
 
     public Sprite[] TapLines;
     public Sprite[] StarLines;
     public Material BreakMaterial;
+    public RuntimeAnimatorController JustBreak;
 
     private void Awake()
     {
@@ -74,143 +36,53 @@ public class SkinManager : MonoBehaviour
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
 
+        var selectedSkinName = GameManager.Instance.Setting.Display.Skin;
+        var dicts = Directory.GetDirectories(path);
+
+        foreach (var skinPath in dicts)
+            loadedSkins.Add(new CustomSkin(skinPath));
+
+        var targetSkin = loadedSkins.Find(x => x.Name == selectedSkinName);
+        if(targetSkin is null)
+            targetSkin = new CustomSkin(Path.Combine(path,selectedSkinName));
+
+        SelectedSkin = targetSkin;
+
         print(path);
-
-        Outline = SpriteLoader.LoadSpriteFromFile(path + "/outline.png");
-
-        Tap = SpriteLoader.LoadSpriteFromFile(path + "/tap.png");
-        Tap_Each = SpriteLoader.LoadSpriteFromFile(path + "/tap_each.png");
-        Tap_Break = SpriteLoader.LoadSpriteFromFile(path + "/tap_break.png");
-        Tap_Ex = SpriteLoader.LoadSpriteFromFile(path + "/tap_ex.png");
-
-        Slide = SpriteLoader.LoadSpriteFromFile(path + "/slide.png");
-        Slide_Each = SpriteLoader.LoadSpriteFromFile(path + "/slide_each.png");
-        Slide_Break = SpriteLoader.LoadSpriteFromFile(path + "/slide_break.png");
-        for (var i = 0; i < 11; i++)
-        {
-            Wifi[i] = SpriteLoader.LoadSpriteFromFile(path + "/wifi_" + i + ".png");
-            Wifi_Each[i] = SpriteLoader.LoadSpriteFromFile(path + "/wifi_each_" + i + ".png");
-            Wifi_Break[i] = SpriteLoader.LoadSpriteFromFile(path + "/wifi_break_" + i + ".png");
-        }
-
-        Star = SpriteLoader.LoadSpriteFromFile(path + "/star.png");
-        Star_Double = SpriteLoader.LoadSpriteFromFile(path + "/star_double.png");
-        Star_Each = SpriteLoader.LoadSpriteFromFile(path + "/star_each.png");
-        Star_Each_Double = SpriteLoader.LoadSpriteFromFile(path + "/star_each_double.png");
-        Star_Break = SpriteLoader.LoadSpriteFromFile(path + "/star_break.png");
-        Star_Break_Double = SpriteLoader.LoadSpriteFromFile(path + "/star_break_double.png");
-        Star_Ex = SpriteLoader.LoadSpriteFromFile(path + "/star_ex.png");
-        Star_Ex_Double = SpriteLoader.LoadSpriteFromFile(path + "/star_ex_double.png");
-
-        var border = new Vector4(0, 58, 0, 58);
-        Hold = SpriteLoader.LoadSpriteFromFile(path + "/hold.png", border);        
-        Hold_Each = SpriteLoader.LoadSpriteFromFile(path + "/hold_each.png", border);
-        Hold_Each_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_each_on.png", border);
-        Hold_Ex = SpriteLoader.LoadSpriteFromFile(path + "/hold_ex.png", border);
-        Hold_Break = SpriteLoader.LoadSpriteFromFile(path + "/hold_break.png", border);
-        Hold_Break_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_break_on.png", border);
-
-        if (File.Exists(Path.Combine(path, "hold_on.png")))
-            Hold_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_on.png", border);
-        else
-            Hold_On = Hold;
-        Hold_Off = SpriteLoader.LoadSpriteFromFile(path + "/hold_off.png", border);
-        if (File.Exists(Path.Combine(path, "hold_each_on.png")))
-            Hold_Each_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_each_on.png", border);
-        else
-            Hold_Each_On = Hold_Each;
-
-        if (File.Exists(Path.Combine(path, "hold_break_on.png")))
-            Hold_Break_On = SpriteLoader.LoadSpriteFromFile(path + "/hold_break_on.png", border);
-        else
-            Hold_Break_On = Hold_Break;
-
-        Just[0] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r.png");
-        Just[1] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r.png");
-        Just[2] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u.png");
-        Just[3] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l.png");
-        Just[4] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l.png");
-        Just[5] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d.png");
-
-        Just[6] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gr.png");
-        Just[7] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gr.png");
-        Just[8] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gr.png");
-        Just[9] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gr.png");
-        Just[10] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gr.png");
-        Just[11] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gr.png");
-
-        Just[12] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_fast_gd.png");
-        Just[13] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_fast_gd.png");
-        Just[14] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_fast_gd.png");
-        Just[15] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_fast_gd.png");
-        Just[16] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_fast_gd.png");
-        Just[17] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_fast_gd.png");
-
-        Just[18] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gr.png");
-        Just[19] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gr.png");
-        Just[20] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gr.png");
-        Just[21] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gr.png");
-        Just[22] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gr.png");
-        Just[23] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gr.png");
-
-        Just[24] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_r_late_gd.png");
-        Just[25] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_r_late_gd.png");
-        Just[26] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_u_late_gd.png");
-        Just[27] = SpriteLoader.LoadSpriteFromFile(path + "/just_curv_l_late_gd.png");
-        Just[28] = SpriteLoader.LoadSpriteFromFile(path + "/just_str_l_late_gd.png");
-        Just[29] = SpriteLoader.LoadSpriteFromFile(path + "/just_wifi_d_late_gd.png");
-
-        Just[30] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_r.png");
-        Just[31] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_r.png");
-        Just[32] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_u.png");
-        Just[33] = SpriteLoader.LoadSpriteFromFile(path + "/miss_curv_l.png");
-        Just[34] = SpriteLoader.LoadSpriteFromFile(path + "/miss_str_l.png");
-        Just[35] = SpriteLoader.LoadSpriteFromFile(path + "/miss_wifi_d.png");
-
-        JudgeText[0] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_miss.png");
-        JudgeText[1] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_good.png");
-        JudgeText[2] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_great.png");
-        JudgeText[3] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_perfect.png");
-        JudgeText[4] = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_cPerfect.png");
-        JudgeText_Break = SpriteLoader.LoadSpriteFromFile(path + "/judge_text_break.png");
-
-        FastText = SpriteLoader.LoadSpriteFromFile(path + "/fast.png");
-        LateText = SpriteLoader.LoadSpriteFromFile(path + "/late.png");
-
-        Touch = SpriteLoader.LoadSpriteFromFile(path + "/touch.png");
-        Touch_Each = SpriteLoader.LoadSpriteFromFile(path + "/touch_each.png");
-        TouchPoint = SpriteLoader.LoadSpriteFromFile(path + "/touch_point.png");
-        TouchPoint_Each = SpriteLoader.LoadSpriteFromFile(path + "/touch_point_each.png");
-
-        TouchJust = SpriteLoader.LoadSpriteFromFile(path + "/touch_just.png");
-
-        TouchBorder[0] = SpriteLoader.LoadSpriteFromFile(path + "/touch_border_2.png");
-        TouchBorder[1] = SpriteLoader.LoadSpriteFromFile(path + "/touch_border_3.png");
-        TouchBorder_Each[0] = SpriteLoader.LoadSpriteFromFile(path + "/touch_border_2_each.png");
-        TouchBorder_Each[1] = SpriteLoader.LoadSpriteFromFile(path + "/touch_border_3_each.png");
-
-        for (var i = 0; i < 4; i++) TouchHold[i] = SpriteLoader.LoadSpriteFromFile(path + "/touchhold_" + i + ".png");
-        TouchHold[4] = SpriteLoader.LoadSpriteFromFile(path + "/touchhold_border.png");
-
         Debug.Log(test);
     }
+    public JudgeTextSkin GetJudgeTextSkin()
+    {
+        return new()
+        {
+            CP_Break = SelectedSkin.CriticalPerfect_Break,
+            P_Break = SelectedSkin.Perfect_Break,
+            CriticalPerfect = SelectedSkin.JudgeText[4],
+            Perfect = SelectedSkin.JudgeText[3],
+            Great = SelectedSkin.JudgeText[2],
+            Good = SelectedSkin.JudgeText[1],
+            Miss = SelectedSkin.JudgeText[0],
 
+            Fast = SelectedSkin.FastText,
+            Late = SelectedSkin.LateText
+        };
+    }
     public TapSkin GetTapSkin()
     {
         return new()
         {
-            Normal = Tap,
-            Each = Tap_Each,
-            Break = Tap_Break,
-            Ex = Tap_Ex,
+            Normal = SelectedSkin.Tap,
+            Each = SelectedSkin.Tap_Each,
+            Break = SelectedSkin.Tap_Break,
+            Ex = SelectedSkin.Tap_Ex,
 
             BreakMaterial = BreakMaterial,
             NoteLines = TapLines,
-            ExEffects = new Color[] 
+            ExEffects = new Color[]
             {
-                new Color(255,172,225), // Pink
-                new Color(255,254,119), // Yellow
-                new Color(255,254,119), // Yellow
+                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             }
         };
     }
@@ -218,22 +90,22 @@ public class SkinManager : MonoBehaviour
     {
         return new()
         {
-            Normal = Star,
-            Double = Star_Double,
-            Each = Star_Each,
-            EachDouble = Star_Each_Double,
-            Break = Star_Break,
-            BreakDouble = Star_Break_Double,
-            Ex = Star_Ex,
-            ExDouble = Star_Ex_Double,
+            Normal = SelectedSkin.Star,
+            Double = SelectedSkin.Star_Double,
+            Each = SelectedSkin.Star_Each,
+            EachDouble = SelectedSkin.Star_Each_Double,
+            Break = SelectedSkin.Star_Break,
+            BreakDouble = SelectedSkin.Star_Break_Double,
+            Ex = SelectedSkin.Star_Ex,
+            ExDouble = SelectedSkin.Star_Ex_Double,
 
             BreakMaterial = BreakMaterial,
             NoteLines = StarLines,
             ExEffects = new Color[]
             {
-                new Color(255,172,225), // Pink
-                new Color(255,254,119), // Yellow
-                new Color(255,254,119), // Yellow
+                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             }
         };
     }
@@ -241,23 +113,80 @@ public class SkinManager : MonoBehaviour
     {
         return new()
         {
-            Normal = Hold,
-            Off = Hold_Off,
-            Normal_On = Hold_On,
-            Each = Hold_Each,
-            Each_On = Hold_Each_On,
-            Break = Hold_Break,
-            Break_On = Hold_Break_On,
-            Ex = Hold_Ex,
+            Normal = SelectedSkin.Hold,
+            Off = SelectedSkin.Hold_Off,
+            Normal_On = SelectedSkin.Hold_On,
+            Each = SelectedSkin.Hold_Each,
+            Each_On = SelectedSkin.Hold_Each_On,
+            Break = SelectedSkin.Hold_Break,
+            Break_On = SelectedSkin.Hold_Break_On,
+            Ex = SelectedSkin.Hold_Ex,
 
             BreakMaterial = BreakMaterial,
             NoteLines = TapLines,
+            Ends = new Sprite[3]
+            {
+                HoldEnd,
+                HoldEachEnd,
+                HoldBreakEnd
+            },
             ExEffects = new Color[]
             {
-                new Color(255,172,225), // Pink
-                new Color(255,254,119), // Yellow
-                new Color(255,254,119), // Yellow
+                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             }
+        };
+    }
+    public SlideSkin GetSlideSkin()
+    {
+        return new SlideSkin()
+        {
+            Star = GetStarSkin(),
+            Normal = SelectedSkin.Slide,
+            Each = SelectedSkin.Slide_Each,
+            Break = SelectedSkin.Slide_Break,
+            BreakMaterial = BreakMaterial
+        };
+    }
+    public WifiSkin GetWifiSkin()
+    {
+        return new WifiSkin()
+        {
+            Star = GetStarSkin(),
+            Normal = SelectedSkin.Wifi,
+            Each = SelectedSkin.Wifi_Each,
+            Break = SelectedSkin.Wifi_Break,
+            BreakMaterial = BreakMaterial
+        };
+    }
+    public TouchHoldSkin GetTouchHoldSkin()
+    {
+        return new TouchHoldSkin()
+        {
+            Fans = new Sprite[4]
+            {
+                SelectedSkin.TouchHold[0],
+                SelectedSkin.TouchHold[1],
+                SelectedSkin.TouchHold[2],
+                SelectedSkin.TouchHold[3],
+            },
+            Boader = SelectedSkin.TouchHold[4],
+            Point = SelectedSkin.TouchPoint,
+            Off = SelectedSkin.TouchHold_Off
+        };
+    }
+    public TouchSkin GetTouchSkin()
+    {
+        return new TouchSkin()
+        {
+            Normal = SelectedSkin.Touch,
+            Each = SelectedSkin.Touch_Each,
+            Point_Normal = SelectedSkin.TouchPoint,
+            Point_Each = SelectedSkin.TouchPoint_Each,
+            Border_Each = SelectedSkin.TouchBorder_Each,
+            Border_Normal = SelectedSkin.TouchBorder,
+            JustBorder = SelectedSkin.TouchJust
         };
     }
 

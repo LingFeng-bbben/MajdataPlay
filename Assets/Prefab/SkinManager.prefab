@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7648b719b48b415478537ded27e8829e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SubDisplay: {fileID: 0}
   Tap: {fileID: 0}
   Tap_Each: {fileID: 0}
   Tap_Break: {fileID: 0}
@@ -103,6 +104,9 @@ MonoBehaviour:
   Hold_Ex: {fileID: 0}
   Hold_Break: {fileID: 0}
   Hold_Break_On: {fileID: 0}
+  HoldEnd: {fileID: 0}
+  HoldEachEnd: {fileID: 0}
+  HoldBreakEnd: {fileID: 0}
   Just:
   - {fileID: 0}
   - {fileID: 0}
@@ -166,6 +170,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  TouchHold_Off: {fileID: 0}
   Outline: {fileID: 0}
   test: {fileID: 0}
   TapLines:
@@ -177,3 +182,4 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
   - {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
   BreakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
+  JustBreak: {fileID: 9100000, guid: d9d72951bd126f747bb82ab814428546, type: 2}

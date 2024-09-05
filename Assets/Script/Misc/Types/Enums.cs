@@ -74,13 +74,9 @@
     {
         Start,
         Initialized,
-        Pending,
-        Prepared,
+        Scaling,
         Running,
-        WaitForJudge,
-        Judged,
-        Finished,
-        Destroyed
+        End
     }
     public enum ComboState
     {
@@ -116,5 +112,37 @@
         Master,
         ReMaster,
         UTAGE
+    }
+    public enum SoundBackendType
+    {
+        WaveOut, Asio, Unity
+    }
+    public enum JudgeMode
+    {
+        Classic,
+        Modern
+    }
+    public enum JudgeDisplayType
+    {
+        /// <summary>
+        /// CriticalPerfect, Pefect, Great, Good
+        /// </summary>
+        All,
+        /// <summary>
+        /// Pefect, Great, Good
+        /// </summary>
+        BelowCP,
+        /// <summary>
+        /// Great, Good
+        /// </summary>
+        BelowP,
+        /// <summary>
+        /// Good
+        /// </summary>
+        BelowGR,
+        /// <summary>
+        /// None
+        /// </summary>
+        Disable
     }
 }

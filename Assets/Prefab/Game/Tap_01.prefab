@@ -70,8 +70,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 182344715
-  m_SortingLayer: 0
+  m_SortingLayerID: 1842247769
+  m_SortingLayer: 6
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f4511f7d91a836d4ca946cf4252f31bf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
@@ -157,7 +157,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1842247769
-  m_SortingLayer: 2
+  m_SortingLayer: 6
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: c332bf4a60bcd5e4cb1bac9a38696049, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -189,15 +189,4 @@ MonoBehaviour:
   isEach: 0
   isBreak: 0
   isEX: 0
-  tapSpr: {fileID: 0}
-  eachSpr: {fileID: 21300000, guid: 5a2c3c94c8c3e2848803c02965b1c832, type: 3}
-  breakSpr: {fileID: 21300000, guid: eab54b673ac7b824f91b1f8bf900b69e, type: 3}
-  exSpr: {fileID: 0}
-  eachLine: {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
-  breakLine: {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
-  BreakShine: {fileID: 0}
-  tapLine: {fileID: 8134463029818261665, guid: ed6ad005bb60e9c409c75936f65b7f86, type: 3}
-  exEffectTap: {r: 1, g: 0.6745283, b: 0.8829237, a: 1}
-  exEffectEach: {r: 1, g: 0.9943893, b: 0.4669811, a: 1}
-  exEffectBreak: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}
-  breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
+  tapLine: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}

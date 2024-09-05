@@ -7,47 +7,29 @@ namespace MajdataPlay.Game.Notes
 {
     public abstract class TapBase : NoteDrop
     {
-        public Sprite tapSpr;
-        public Sprite eachSpr;
-        public Sprite breakSpr;
-        public Sprite exSpr;
-
-        public Sprite eachLine;
-        public Sprite breakLine;
-
-        public RuntimeAnimatorController BreakShine;
-
         public GameObject tapLine;
 
-        public Color exEffectTap;
-        public Color exEffectEach;
-        public Color exEffectBreak;
-
-        public Material breakMaterial;
-
-        protected SpriteRenderer exSpriteRender;
-        protected SpriteRenderer lineSpriteRender;
-
-        protected SpriteRenderer spriteRenderer;
-        protected void PreLoad()
+        protected override void Start()
         {
-            var notes = GameObject.Find("Notes").transform;
-            noteManager = notes.GetComponent<NoteManager>();
-            tapLine = Instantiate(tapLine, notes);
+            base.Start();
+
+            var spriteRenderer = GetComponent<SpriteRenderer>();
+            var exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
+
+            tapLine = Instantiate(tapLine, noteManager.gameObject.transform);
             tapLine.SetActive(false);
-            lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
-            spriteRenderer = GetComponent<SpriteRenderer>();
-            exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
 
             spriteRenderer.sortingOrder += noteSortOrder;
             exSpriteRender.sortingOrder += noteSortOrder;
+
+            transform.localScale = new Vector3(0, 0);
         }
-        protected abstract void LoadSkin();
+        
         protected void FixedUpdate()
         {
-            var timing = GetJudgeTiming();
-            if (!isJudged && timing > 0.15f)
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+            if (!isJudged && isTooLate)
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
@@ -63,7 +45,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         protected virtual void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
 
@@ -74,20 +56,20 @@ namespace MajdataPlay.Game.Notes
                     {
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                        State = NoteStatus.Pending;
-                        goto case NoteStatus.Pending;
+                        State = NoteStatus.Scaling;
+                        goto case NoteStatus.Scaling;
                     }
                     else
                         transform.localScale = new Vector3(0, 0);
                     return;
-                case NoteStatus.Pending:
+                case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f)
                             tapLine.SetActive(true);
                         if (distance < 1.225f)
                         {
                             transform.localScale = new Vector3(destScale, destScale);
-                            transform.position = getPositionFromDistance(1.225f);
+                            transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
                             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
@@ -100,24 +82,15 @@ namespace MajdataPlay.Game.Notes
                     break;
                 case NoteStatus.Running:
                     {
-                        transform.position = getPositionFromDistance(distance);
+                        transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
                         tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
                     break;
             }
-
-            spriteRenderer.forceRenderingOff = false;
-            if (isEX) exSpriteRender.forceRenderingOff = false;
-            if (isBreak)
-            {
-                var (brightness, contrast) = gpManager.BreakParams;
-                spriteRenderer.material.SetFloat("_Brightness", brightness);
-                spriteRenderer.material.SetFloat("_Contrast", contrast);
-            }
         }
-        protected void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (arg.Type != sensorPos)
                 return;
@@ -155,9 +128,11 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
+
             JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;
@@ -191,9 +166,17 @@ namespace MajdataPlay.Game.Notes
         {
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
-            var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
-            effectManager.PlayEffect(startPosition, isBreak, judgeResult);
-            effectManager.PlayFastLate(startPosition, judgeResult);
+
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = judgeDiff
+            };
+
+            effectManager.PlayEffect(startPosition, result);
+            effectManager.PlayFastLate(startPosition, result);
+
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
             objectCounter.NextNote(startPosition);

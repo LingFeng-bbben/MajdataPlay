@@ -17,10 +17,10 @@ namespace MajdataPlay.Types
             foreach(var item in JudgeQueue)
                 item.Mirror(SensorType.A1);
         }
-        public void SetDiff(int diff)
+        public void Diff(int diff)
         {
             foreach (var item in JudgeQueue)
-                item.SetDiff(diff);
+                item.Diff(diff);
         }
     }
 }

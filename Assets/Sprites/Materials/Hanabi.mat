@@ -62,8 +62,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha: 0.589
-    - _Brightness: 1
+    - _Alpha: 0.531
+    - _Brightness: 0.8
     - _BumpScale: 1
     - _Contrast: 1
     - _Cutoff: 0.5
@@ -80,7 +80,7 @@ Material:
     - _OuterLB: 0.36
     - _OuterUB: 0.429
     - _Parallax: 0.02
-    - _Saturation: 0.545
+    - _Saturation: 0.506
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 0.5

@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +19,7 @@ public class ScoreManager: MonoBehaviour
     }
     void Start()
     {
+        DontDestroyOnLoad(this);
         var path = GameManager.ScoreDBPath;
         var option = new JsonSerializerOptions();
         option.Converters.Add(new JudgeDetailConverter());
@@ -25,16 +27,17 @@ public class ScoreManager: MonoBehaviour
 
         if (!File.Exists(path))
         {
-            var json = JsonSerializer.Serialize(scores);
+            var json = Serializer.Json.Serialize(scores);
             File.WriteAllText(path, json);
             return;
         }
         var content = File.ReadAllText(path);
-        var result = JsonSerializer.Deserialize<List<MaiScore>>(content, option);
+        List<MaiScore>? result;
 
-        if(result is not null)
+        if (!Serializer.Json.TryDeserialize(content, out result, option) || result is null)
+            scores = new();
+        else
             scores = result;
-
     }
     public MaiScore GetScore(SongDetail song, ChartLevel level)
     {
@@ -98,6 +101,6 @@ public class ScoreManager: MonoBehaviour
     async Task SavingBackend()
     {
         using var stream = File.Create(GameManager.ScoreDBPath);
-        await JsonSerializer.SerializeAsync(stream, scores);
+        await Serializer.Json.SerializeAsync(stream, scores);
     }
 }

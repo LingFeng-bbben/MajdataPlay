@@ -35,6 +35,6 @@ namespace MajdataPlay.Types
             Off = false;
         }
         public void Mirror(SensorType baseLine) => Type = Type.Mirror(baseLine);
-        public void SetDiff(int diff) => Type = Type.GetDiff(diff);
+        public void Diff(int diff) => Type = Type.Diff(diff);
     }
 }

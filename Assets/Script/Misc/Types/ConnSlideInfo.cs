@@ -58,7 +58,7 @@ namespace MajdataPlay.Types
                 if (Parent == null)
                     return true;
                 else
-                    return Parent.GetComponent<SlideDrop>().isFinished;
+                    return Parent.GetComponent<SlideDrop>().IsFinished;
             }
         }
         /// <summary>
@@ -71,7 +71,7 @@ namespace MajdataPlay.Types
                 if (Parent == null)
                     return false;
                 else
-                    return Parent.GetComponent<SlideDrop>().isPendingFinish;
+                    return Parent.GetComponent<SlideDrop>().IsPendingFinish;
             }
         }
         bool _isGroupPartEnd = false;

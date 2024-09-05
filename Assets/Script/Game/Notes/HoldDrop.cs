@@ -1,122 +1,99 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Diagnostics.Contracts;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
     public class HoldDrop : NoteLongDrop
     {
-        public Sprite tapSpr;
-        public Sprite holdOnSpr;
-        public Sprite holdOffSpr;
-        public Sprite eachSpr;
-        public Sprite eachHoldOnSpr;
-        public Sprite exSpr;
-        public Sprite breakSpr;
-        public Sprite breakHoldOnSpr;
-
-        public Sprite eachLine;
-        public Sprite breakLine;
-
-        public Sprite holdEachEnd;
-        public Sprite holdBreakEnd;
-
-        public RuntimeAnimatorController HoldShine;
-        public RuntimeAnimatorController BreakShine;
+        bool holdAnimStart;
 
         public GameObject tapLine;
 
-        public Color exEffectTap;
-        public Color exEffectEach;
-        public Color exEffectBreak;
-        private Animator animator;
+        Sprite holdSprite;
+        Sprite holdOnSprite;
+        Sprite holdOffSprite;
 
-        public Material breakMaterial;
+        Animator shineAnimator;
 
-        private SpriteRenderer exSpriteRender;
-        private bool holdAnimStart;
-        private SpriteRenderer holdEndRender;
-        private SpriteRenderer lineSpriteRender;
+        SpriteRenderer exRenderer;
+        SpriteRenderer endRenderer;
+        SpriteRenderer thisRenderer;
 
-        private SpriteRenderer spriteRenderer;
+        BreakShineController? breakShineController = null;
 
-        private void Start()
+        protected override void Start()
         {
-            var notes = GameObject.Find("Notes").transform;
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            noteManager = notes.GetComponent<NoteManager>();
+            base.Start();
+            var notes = noteManager.gameObject.transform;
+
             holdEffect = Instantiate(holdEffect, notes);
-            holdEffect.SetActive(false);
-
             tapLine = Instantiate(tapLine, notes);
+
+            holdEffect.SetActive(false);
             tapLine.SetActive(false);
-            lineSpriteRender = tapLine.GetComponent<SpriteRenderer>();
 
-            exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            thisRenderer = GetComponent<SpriteRenderer>();
+            endRenderer = transform.GetChild(1).GetComponent<SpriteRenderer>();
+            shineAnimator = gameObject.GetComponent<Animator>();
 
-            spriteRenderer = GetComponent<SpriteRenderer>();
+            LoadSkin();
 
-            holdEndRender = transform.GetChild(1).GetComponent<SpriteRenderer>();
-
-            spriteRenderer.sortingOrder += noteSortOrder;
-            exSpriteRender.sortingOrder += noteSortOrder;
-            holdEndRender.sortingOrder += noteSortOrder;
-
-            spriteRenderer.sprite = tapSpr;
-            exSpriteRender.sprite = exSpr;
-
-            var anim = gameObject.AddComponent<Animator>();
-            anim.enabled = false;
-            animator = anim;
-
-            if (isEX) exSpriteRender.color = exEffectTap;
-            if (isEach)
-            {
-                spriteRenderer.sprite = eachSpr;
-                lineSpriteRender.sprite = eachLine;
-                holdEndRender.sprite = holdEachEnd;
-                if (isEX) exSpriteRender.color = exEffectEach;
-            }
-
-            if (isBreak)
-            {
-                spriteRenderer.sprite = breakSpr;
-                lineSpriteRender.sprite = breakLine;
-                holdEndRender.sprite = holdBreakEnd;
-                if (isEX) exSpriteRender.color = exEffectBreak;
-                spriteRenderer.material = breakMaterial;
-            }
-
-            spriteRenderer.forceRenderingOff = true;
-            exSpriteRender.forceRenderingOff = true;
-            holdEndRender.enabled = false;
+            thisRenderer.sortingOrder += noteSortOrder;
+            exRenderer.sortingOrder += noteSortOrder;
+            endRenderer.sortingOrder += noteSortOrder;
 
             sensorPos = (SensorType)(startPosition - 1);
             ioManager.BindArea(Check, sensorPos);
+            transform.localScale = new Vector3(0, 0);
         }
         private void FixedUpdate()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - LastFor;
             var remainingTime = GetRemainingTime();
+            var isTooLate = timing > 0.15f;
 
-            if (remainingTime == 0 && isJudged) // Hold完成后Destroy
+            if (isJudged) // Hold完成后Destroy
             {
-                Destroy(tapLine);
-                Destroy(holdEffect);
-                Destroy(gameObject);
+                if(IsClassic)
+                {
+                    if (endTiming >= 0.333334f)
+                    {
+                        Destroy(tapLine);
+                        Destroy(holdEffect);
+                        Destroy(gameObject);
+
+                        return;
+                    }
+                }
+                else if(remainingTime == 0)
+                {
+                    Destroy(tapLine);
+                    Destroy(holdEffect);
+                    Destroy(gameObject);
+                    return;
+                }
+                
             }
             
 
             if (isJudged) // 头部判定完成后开始累计按压时长
             {
-                if (timing <= 0.1f) // 忽略头部6帧
+                if(!IsClassic)
+                {
+                    if (timing <= 0.1f) // 忽略头部6帧
+                        return;
+                    else if (remainingTime <= 0.2f) // 忽略尾部12帧
+                        return;
+                }
+
+                if (!gpManager.isStart) // 忽略暂停
                     return;
-                else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                    return;
-                else if (!gpManager.isStart) // 忽略暂停
-                    return;
+
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
@@ -124,17 +101,30 @@ namespace MajdataPlay.Game.Notes
                 {
                     playerIdleTime += Time.fixedDeltaTime;
                     StopHoldEffect();
+
+                    if (IsClassic)
+                    {
+                        Destroy(tapLine);
+                        Destroy(holdEffect);
+                        Destroy(gameObject);
+                    }
                 }
             }
-            else if (timing > 0.15f && !isJudged) // 头部Miss
+            else if (isTooLate) // 头部Miss
             {
                 judgeDiff = 150;
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
                 objectCounter.NextNote(startPosition);
+                if (IsClassic)
+                {
+                    Destroy(tapLine);
+                    Destroy(holdEffect);
+                    Destroy(gameObject);
+                }
             }
         }
-        void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (arg.Type != sensorPos)
                 return;
@@ -170,9 +160,11 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
+
             JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;
@@ -210,9 +202,9 @@ namespace MajdataPlay.Game.Notes
             PlayHoldEffect();
         }
         // Update is called once per frame
-        private void Update()
+        void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
             if (destScale < 0f)
@@ -221,42 +213,49 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            spriteRenderer.forceRenderingOff = false;
-            if (isEX) exSpriteRender.forceRenderingOff = false;
+            thisRenderer.forceRenderingOff = false;
+            if (isEX) exRenderer.forceRenderingOff = false;
 
-            spriteRenderer.size = new Vector2(1.22f, 1.4f);
+            thisRenderer.size = new Vector2(1.22f, 1.4f);
 
+            var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - LastFor;
             var holdDistance = holdTime * speed + 4.8f;
-            if (holdTime >= 0 ||
-                holdTime >= 0 && LastFor <= 0.15f)
+
+            if (remaining == 0)
             {
+                var endTiming = timing - LastFor;
+                var endDistance = endTiming * speed + 4.8f;
                 tapLine.transform.localScale = new Vector3(1f, 1f, 1f);
-                transform.position = getPositionFromDistance(4.8f);
+
+                if(IsClassic)
+                {
+                    var scale = Mathf.Abs(endDistance / 4.8f);
+                    transform.position = GetPositionFromDistance(endDistance);
+                    tapLine.transform.localScale = new Vector3(scale, scale, 1f);
+                }
+                else
+                    transform.position = GetPositionFromDistance(4.8f);
+
+                if (exRenderer != null)
+                    exRenderer.size = thisRenderer.size;
                 return;
             }
 
 
             transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
             tapLine.transform.rotation = transform.rotation;
-            holdEffect.transform.position = getPositionFromDistance(4.8f);
+            holdEffect.transform.position = GetPositionFromDistance(4.8f);
 
-            if (isBreak && !holdAnimStart && !isJudged)
-            {
-                var (brightness, contrast) = gpManager.BreakParams;
-                spriteRenderer.material.SetFloat("_Brightness", brightness);
-                spriteRenderer.material.SetFloat("_Contrast", contrast);
-            }
-
-
-            if (destScale > 0.3f) tapLine.SetActive(true);
+            if (destScale > 0.3f) 
+                tapLine.SetActive(true);
 
             if (distance < 1.225f)
             {
                 transform.localScale = new Vector3(destScale, destScale);
-                spriteRenderer.size = new Vector2(1.22f, 1.42f);
+                thisRenderer.size = new Vector2(1.22f, 1.42f);
                 distance = 1.225f;
-                var pos = getPositionFromDistance(distance);
+                var pos = GetPositionFromDistance(distance);
                 transform.position = pos;
             }
             else
@@ -274,34 +273,62 @@ namespace MajdataPlay.Game.Notes
                 {
                     distance = 4.8f;
 
-                    holdEndRender.enabled = true;
+                    endRenderer.enabled = true;
                 }
                 else if (holdDistance >= 1.225f && distance < 4.8f) // 头未到达 尾出现
                 {
-                    holdEndRender.enabled = true;
+                    endRenderer.enabled = true;
                 }
 
                 var dis = (distance - holdDistance) / 2 + holdDistance;
-                transform.position = getPositionFromDistance(dis); //0.325
+                transform.position = GetPositionFromDistance(dis); //0.325
                 var size = distance - holdDistance + 1.4f;
-                spriteRenderer.size = new Vector2(1.22f, size);
-                holdEndRender.transform.localPosition = new Vector3(0f, 0.6825f - size / 2);
+                thisRenderer.size = new Vector2(1.22f, size);
+                endRenderer.transform.localPosition = new Vector3(0f, 0.6825f - size / 2);
                 transform.localScale = new Vector3(1f, 1f);
             }
 
             var lineScale = Mathf.Abs(distance / 4.8f);
             lineScale = lineScale >= 1f ? 1f : lineScale;
             tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
-            exSpriteRender.size = spriteRenderer.size;
+            if(exRenderer != null)
+                exRenderer.size = thisRenderer.size;
         }
-        private void OnDestroy()
+        void OnDestroy()
         {
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
 
+            if (IsClassic)
+                EndJudge_Classic(ref judgeResult);
+            else
+                EndJudge(ref judgeResult);
+
+            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
+            audioEffMana.PlayTapSound(false, false, judgeResult);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = judgeDiff
+            };
+
+            effectManager.PlayEffect(startPosition, result);
+            effectManager.PlayFastLate(startPosition, result);
+            objectCounter.ReportResult(this, judgeResult, isBreak);
+            if (!isJudged)
+                objectCounter.NextNote(startPosition);
+
+            
+        }
+        void EndJudge(ref JudgeType result)
+        {
+            if (!isJudged)
+                return;
+
             var realityHT = LastFor - 0.3f - judgeDiff / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
-            JudgeType result = judgeResult;
+            result = judgeResult;
             if (realityHT > 0)
             {
                 if (percent >= 1f)
@@ -339,58 +366,111 @@ namespace MajdataPlay.Game.Notes
                         result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 }
             }
-
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(false, false, result);
-            var effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
-            effectManager.PlayEffect(startPosition, isBreak, result);
-            effectManager.PlayFastLate(startPosition, result);
             print($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
-
-            objectCounter.ReportResult(this, result, isBreak);
+        }
+        void EndJudge_Classic(ref JudgeType result)
+        {
             if (!isJudged)
-                objectCounter.NextNote(startPosition);
+                return;
+            else if (result == JudgeType.Miss)
+                return;
 
-            
+            var releaseTiming = gpManager.AudioTime;
+            var diff = (time + LastFor) - releaseTiming;
+            var isFast = diff > 0;
+            diff = MathF.Abs(diff);
+
+            JudgeType endResult = diff switch
+            {
+                <= 0.044445f => JudgeType.Perfect,
+                <= 0.088889f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= 0.133336f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
+
+            var num = Math.Abs(7 - (int)result);
+            var endNum = Math.Abs(7 - (int)endResult);
+            if (endNum > num) // 取最差判定
+                result = endResult;
         }
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().ResetEffect(startPosition);
+            effectManager.ResetEffect(startPosition);
             if (LastFor <= 0.3)
                 return;
-            else if (!holdAnimStart && GetJudgeTiming() >= 0.1f)//忽略开头6帧与结尾12帧
+            else if (!holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
                 holdAnimStart = true;
-                animator.runtimeAnimatorController = HoldShine;
-                animator.enabled = true;
+                shineAnimator.enabled = true;
                 var sprRenderer = GetComponent<SpriteRenderer>();
-                if (isBreak)
-                { 
-                    sprRenderer.sprite = breakHoldOnSpr;
-                    spriteRenderer.material.SetFloat("_Brightness", 1);
-                    spriteRenderer.material.SetFloat("_Contrast", 1);
+                
+                if(breakShineController != null)
+                {
+                    Destroy(breakShineController);
+                    thisRenderer.material.SetFloat("_Brightness", 1);
+                    thisRenderer.material.SetFloat("_Contrast", 1);
                 }
-                else if (isEach)
-                    sprRenderer.sprite = eachHoldOnSpr;
-                else
-                    sprRenderer.sprite = holdOnSpr;
-
+                thisRenderer.sprite = holdOnSprite;
             }
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
             holdAnimStart = false;
-            animator.runtimeAnimatorController = HoldShine;
-            animator.enabled = false;
+            shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
-            sprRenderer.sprite = holdOffSpr;
-            if(isBreak)
+            sprRenderer.sprite = holdOffSprite;
+            if (breakShineController != null)
             {
-                spriteRenderer.material.SetFloat("_Brightness", 1);
-                spriteRenderer.material.SetFloat("_Contrast", 1);
+                Destroy(breakShineController);
+                thisRenderer.material.SetFloat("_Brightness", 1);
+                thisRenderer.material.SetFloat("_Contrast", 1);
             }
+        }
+
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetHoldSkin();
+            var renderer = GetComponent<SpriteRenderer>();
+            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+
+            holdSprite = skin.Normal;
+            holdOnSprite = skin.Normal_On;
+            holdOffSprite = skin.Off;
+
+            exRenderer.sprite = skin.Ex;
+            exRenderer.color = skin.ExEffects[0];
+            endRenderer.sprite = skin.Ends[0];
+
+            if (isEach)
+            {
+                holdSprite = skin.Each;
+                holdOnSprite = skin.Each_On;
+                endRenderer.sprite = skin.Ends[1];
+                tapLineRenderer.sprite = skin.NoteLines[1];
+                exRenderer.color = skin.ExEffects[1];
+            }
+
+            if (isBreak)
+            {
+                holdSprite = skin.Break;
+                holdOnSprite = skin.Break_On;
+                endRenderer.sprite = skin.Ends[2];
+                renderer.material = skin.BreakMaterial;
+                tapLineRenderer.sprite = skin.NoteLines[2];
+                breakShineController = gameObject.AddComponent<BreakShineController>();
+                exRenderer.color = skin.ExEffects[2];
+            }
+
+            if (!isEX)
+                Destroy(exRenderer);
+            endRenderer.enabled = false;
+            renderer.sprite = holdSprite;
         }
 
     }

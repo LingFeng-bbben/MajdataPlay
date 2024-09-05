@@ -18,7 +18,7 @@ public class GamePlayManager : MonoBehaviour
     AudioSampleWrap audioSample;
     SimaiProcess Chart;
     SongDetail song;
-    SettingManager settingManager => SettingManager.Instance;
+    GameManager settingManager => GameManager.Instance;
 
     NoteLoader noteLoader;
 
@@ -40,8 +40,8 @@ public class GamePlayManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        print(GameManager.Instance.selectedIndex);
-        song = GameManager.Instance.songList[GameManager.Instance.selectedIndex];
+        print(GameManager.Instance.SelectedIndex);
+        song = GameManager.Instance.SongList[GameManager.Instance.SelectedIndex];
     }
 
     private void OnPauseButton(object sender,InputEventArgs e)
@@ -51,13 +51,14 @@ public class GamePlayManager : MonoBehaviour
             BackToList();
         }
     }
-
+    
     void Start()
     {
         InputManager.Instance.BindAnyArea(OnPauseButton);
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
-        audioSample.SetVolume(settingManager.SettingFile.VolumeBgm);
+        audioSample.SetVolume(settingManager.Setting.Audio.Volume.BGM);
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
+        LightManager.Instance.SetAllLight(Color.white);
         try
         {
             var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
@@ -106,7 +107,7 @@ public class GamePlayManager : MonoBehaviour
 
     IEnumerator DelayPlay()
     {
-        var settings = settingManager.SettingFile;
+        var settings = settingManager.Setting;
 
         yield return new WaitForEndOfFrame();
         var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
@@ -118,12 +119,12 @@ public class GamePlayManager : MonoBehaviour
         {
             BGManager.SetBackgroundPic(song.SongCover);
         }
-        BGManager.SetBackgroundDim(settings.BackgroundDim);
+        BGManager.SetBackgroundDim(settings.Game.BackgroundDim);
 
         yield return new WaitForEndOfFrame();
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
-        noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.TapSpeed + 0.9975f, -0.985558604f)));
-        noteLoader.touchSpeed = settings.TouchSpeed;
+        noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.Game.TapSpeed + 0.9975f, -0.985558604f)));
+        noteLoader.touchSpeed = settings.Game.TouchSpeed;
         try
         {
             noteLoader.LoadNotes(Chart);
@@ -154,12 +155,15 @@ public class GamePlayManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (audioSample == null) return;
+        if (audioSample == null) 
+            return;
         //Do not use this!!!! This have connection with sample batch size
         //AudioTime = (float)audioSample.GetCurrentTime();
-        if (AudioStartTime == -114514f) return;
+        if (AudioStartTime == -114514f) 
+            return;
 
-        AudioTime = Time.unscaledTime - AudioStartTime - (float)song.First - settingManager.SettingFile.DisplayOffset;
+        var chartOffset = (float)song.First + settingManager.Setting.Judge.AudioOffset;
+        AudioTime = Time.unscaledTime - AudioStartTime - chartOffset;
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (i >= AnwserSoundList.Count)
             return;
@@ -176,7 +180,7 @@ public class GamePlayManager : MonoBehaviour
 
 
         var noteToPlay = AnwserSoundList[i].time;
-        var delta = AudioTime - (noteToPlay) + settingManager.SettingFile.DisplayOffset - settingManager.SettingFile.AudioOffset;
+        var delta = AudioTime - (noteToPlay);
         //print(delta);
         /*        if(!AnwserSoundList[i].havePlayed && delta > 0)
                 {

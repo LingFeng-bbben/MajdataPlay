@@ -11,15 +11,13 @@ namespace MajdataPlay.Game.Notes
         public GameObject tapEffect;
         public GameObject judgeEffect;
 
-        public Sprite touchHoldBoard;
-        public Sprite touchHoldBoard_Miss;
+        public Sprite board_On;
+        public Sprite Board_Off;
         public SpriteRenderer boarder;
-        public Sprite[] TouchHoldSprite = new Sprite[5];
-        public Sprite TouchPointSprite;
 
         public GameObject[] fans;
         public SpriteMask mask;
-        private readonly SpriteRenderer[] fansSprite = new SpriteRenderer[6];
+        private readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[6];
         private float displayDuration;
 
         private GameObject firework;
@@ -28,43 +26,33 @@ namespace MajdataPlay.Game.Notes
 
         private float wholeDuration;
 
-        Sprite[] judgeText;
+        JudgeTextSkin judgeText;
 
         // Start is called before the first frame update
-        private void Start()
+        protected override void Start()
         {
+            base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            var notes = GameObject.Find("Notes").transform;
-            noteManager = notes.GetComponent<NoteManager>();
-            holdEffect = Instantiate(holdEffect, notes);
+            holdEffect = Instantiate(holdEffect, noteManager.transform);
             holdEffect.SetActive(false);
 
             firework = GameObject.Find("FireworkEffect");
             fireworkEffect = firework.GetComponent<Animator>();
 
-            for (var i = 0; i < 6; i++)
-            {
-                fansSprite[i] = fans[i].GetComponent<SpriteRenderer>();
-                fansSprite[i].sortingOrder += noteSortOrder;
-            }
-
-            for (var i = 0; i < 4; i++) fansSprite[i].sprite = TouchHoldSprite[i];
-            fansSprite[5].sprite = TouchHoldSprite[4]; // TouchHold Border
-            fansSprite[4].sprite = TouchPointSprite;
+            LoadSkin();
 
             SetfanColor(new Color(1f, 1f, 1f, 0f));
             mask.enabled = false;
 
             sensorPos = SensorType.C;
             var customSkin = SkinManager.Instance;
-            judgeText = customSkin.JudgeText;
+            judgeText = customSkin.GetJudgeTextSkin();
             ioManager.BindSensor(Check, SensorType.C);
         }
-        void Check(object sender, InputEventArgs arg)
+        protected override void Check(object sender, InputEventArgs arg)
         {
             if (isJudged || !noteManager.CanJudge(gameObject, sensorPos))
                 return;
@@ -83,6 +71,22 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
+        protected override void LoadSkin()
+        {
+            var skin = SkinManager.Instance.GetTouchHoldSkin();
+            for (var i = 0; i < 6; i++)
+            {
+                fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
+                fanRenderers[i].sortingOrder += noteSortOrder;
+            }
+
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].sprite = skin.Fans[i];
+            fanRenderers[5].sprite = skin.Boader; // TouchHold Border
+            fanRenderers[4].sprite = skin.Point;
+            board_On = skin.Boader;
+            Board_Off = skin.Off;
+        }
         void Judge()
         {
 
@@ -95,8 +99,9 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = gpManager.AudioTime - time;
+            var timing = GetTimeSpanToJudgeTiming();
             var isFast = timing < 0;
+            judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
             if (diff > JUDGE_SEG_PERFECT && isFast)
@@ -123,8 +128,8 @@ namespace MajdataPlay.Game.Notes
         private void FixedUpdate()
         {
             var remainingTime = GetRemainingTime();
-            var timing = GetJudgeTiming();
-            var holdTime = timing - LastFor;
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
 
             if (remainingTime == 0 && isJudged)
             {
@@ -150,7 +155,7 @@ namespace MajdataPlay.Game.Notes
                     StopHoldEffect();
                 }
             }
-            else if (timing > 0.316667f)
+            else if (isTooLate)
             {
                 judgeDiff = 316.667f;
                 judgeResult = JudgeType.Miss;
@@ -162,7 +167,7 @@ namespace MajdataPlay.Game.Notes
         // Update is called once per frame
         private void Update()
         {
-            var timing = GetJudgeTiming();
+            var timing = GetTimeSpanToArriveTiming();
             var pow = -Mathf.Exp(8 * (timing * 0.4f / moveDuration) - 0.85f) + 0.42f;
             var distance = Mathf.Clamp(pow, 0f, 0.4f);
 
@@ -256,9 +261,10 @@ namespace MajdataPlay.Game.Notes
             var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
             var judgeObj = obj.transform.GetChild(0);
             var flObj = _obj.transform.GetChild(0);
+            var distance = -0.6f;
 
-            judgeObj.transform.position = new Vector3(0, -0.6f, 0);
-            flObj.transform.position = new Vector3(0, -1.08f, 0);
+            judgeObj.transform.position = new Vector3(0, distance, 0);
+            flObj.transform.position = new Vector3(0, distance - 0.48f, 0);
             flObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
             judgeObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
             var anim = obj.GetComponent<Animator>();
@@ -270,7 +276,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[1];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Good;
                     effect = Instantiate(effects.transform.GetChild(3).GetChild(0), transform.position, transform.rotation).gameObject;
                     effect.SetActive(true);
                     break;
@@ -280,7 +286,7 @@ namespace MajdataPlay.Game.Notes
                 case JudgeType.FastGreat2:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[2];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Great;
                     //transform.Rotate(0, 0f, 30f);
                     effect = Instantiate(effects.transform.GetChild(2).GetChild(0), transform.position, transform.rotation).gameObject;
                     effect.SetActive(true);
@@ -290,23 +296,33 @@ namespace MajdataPlay.Game.Notes
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[3];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
                     transform.Rotate(0, 180f, 90f);
                     Instantiate(tapEffect, transform.position, transform.rotation);
                     break;
                 case JudgeType.Perfect:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[4];
+                    if (GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
+                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.CriticalPerfect;
+                    else
+                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
                     transform.Rotate(0, 180f, 90f);
                     Instantiate(tapEffect, transform.position, transform.rotation);
                     break;
                 case JudgeType.Miss:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText[0];
+                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Miss;
                     break;
                 default:
                     break;
             }
-            //judgeEffect.transform.position = new Vector3(0, -0.6f, 0);
-            GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>().PlayFastLate(_obj, flAnim, judgeResult);
+
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = judgeDiff
+            };
+
+            effectManager.PlayFastLate(_obj, flAnim, result);
             anim.SetTrigger("touch");
         }
         protected override void PlayHoldEffect()
@@ -314,24 +330,23 @@ namespace MajdataPlay.Game.Notes
             base.PlayHoldEffect();
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTouchHoldSound();
-            boarder.sprite = touchHoldBoard;
+            boarder.sprite = board_On;
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.StopTouchHoldSound();
-            boarder.sprite = touchHoldBoard_Miss;
+            boarder.sprite = Board_Off;
         }
-        private Vector3 GetAngle(int index)
+        Vector3 GetAngle(int index)
         {
             var angle = Mathf.PI / 4 + index * (Mathf.PI / 2);
             return new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
         }
-
-        private void SetfanColor(Color color)
+        void SetfanColor(Color color)
         {
-            foreach (var fan in fansSprite) fan.color = color;
+            foreach (var fan in fanRenderers) fan.color = color;
         }
     }
 }

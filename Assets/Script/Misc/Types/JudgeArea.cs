@@ -53,10 +53,10 @@ namespace MajdataPlay.Types
             foreach(var area in areas)
                 area.Mirror(baseLine);
         }
-        public void SetDiff(int diff)
+        public void Diff(int diff)
         {
             foreach(var area in areas)
-                area.SetDiff(diff);
+                area.Diff(diff);
         }
         public void SetIsLast() => areas.ForEach(x => x.IsLast = true);
         public void SetNonLast() => areas.ForEach(x => x.IsLast = false);
