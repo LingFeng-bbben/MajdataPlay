@@ -142,7 +142,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "�ָ�note������Ӵ\n" + ex.Message;
+            ErrorText.text = "加载note时出错了哟\n" + ex.Message;
             Debug.LogError(ex);
         }
     }
@@ -177,7 +177,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "����note������Ӵ\n" + ex.Message;
+            ErrorText.text = "加载note时出错了哟\n" + ex.Message;
             Debug.LogError(ex);
             StopAllCoroutines();
         }
@@ -221,11 +221,11 @@ public class GamePlayManager : MonoBehaviour
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
         {
-            ErrorText.text = "��⵽��Ƶ��λ��Ӵ\n" + realTimeDifference;
+            ErrorText.text = "音频错位了哟\n" + realTimeDifference;
         }
         else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
         {
-            ErrorText.text = "������Ƶ\n" + realTimeDifference;
+            ErrorText.text = "修正音频哟\n" + realTimeDifference;
             AudioStartTime -= realTimeDifference * 0.8f;
         }
 
