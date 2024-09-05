@@ -46,7 +46,7 @@
         public int Samplerate { get; set; } = 44100;
         public int AsioDeviceIndex { get; set; } = 0;
         public SFXVolume Volume { get; set; } = new();
-        public SoundBackendType Backend { get; set; } = SoundBackendType.WaveOut;
+        public SoundBackendType Backend { get; set; } = SoundBackendType.Unity;
     }
     public class SFXVolume
     {
