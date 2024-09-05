@@ -49,7 +49,6 @@ public class SongDetail
             else if (maidata[i].StartsWith("&clock_count="))
                 detail.ClockCount = int.Parse(GetValue(maidata[i]));
             else if (maidata[i].StartsWith("&first="))
-                detail.First = double.Parse( GetValue(maidata[i]));
                 detail.First = double.Parse(GetValue(maidata[i]));
             else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&inote_"))
             {

@@ -36,7 +36,7 @@ public class GamePlayManager : MonoBehaviour
     public float CurrentSpeed = 1f;
 
     private float AudioStartTime = -114514f;
-    List<SimaiTimingPoint> AnwserSoundList = new List<SimaiTimingPoint>();
+    List<AnwserSoundPoint> AnwserSoundList = new List<AnwserSoundPoint>();
     // Start is called before the first frame update
     private void Awake()
     {
@@ -80,22 +80,62 @@ public class GamePlayManager : MonoBehaviour
                 StartCoroutine(DelayPlay());
             }
 
+            //Generate ClockSounds
+            var countnum = (song.ClockCount == null ? 4 : song.ClockCount);
+            var firstBpm = Chart.notelist.FirstOrDefault().currentBpm;
+            var interval = 60 / firstBpm;
+            if(Chart.notelist.Any(o=>o.time<countnum*interval)) {
+                //if there is something in first measure, we add clock before the bgm
+                for (int i = 0; i < countnum; i++)
+                {
+                    AnwserSoundList.Add(new AnwserSoundPoint()
+                    {
+                        time = -(i + 1) * interval,
+                        isClock = true,
+                        isPlayed = false
+                    });
+                }
+            }
+            else
+            {
+                //if nothing there, we can add it with bgm
+                for (int i = 0; i < countnum; i++)
+                {
+                    AnwserSoundList.Add(new AnwserSoundPoint()
+                    {
+                        time = i * interval,
+                        isClock = true,
+                        isPlayed = false
+                    });
+                }
+            }
+
+            
             //Generate AnwserSounds
             foreach (var timingPoint in Chart.notelist)
             {
-                timingPoint.havePlayed = false;
                 if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
 
-                AnwserSoundList.Add(timingPoint);
+                AnwserSoundList.Add(new AnwserSoundPoint()
+                {
+                    time = timingPoint.time,
+                    isClock = false,
+                    isPlayed = false
+                });
                 var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
                 if (holds.Count == 0) continue;
                 foreach (var hold in holds)
                 {
                     var newtime = timingPoint.time + hold.holdTime;
-                    if(!Chart.notelist.Any(o=>Math.Abs(o.time-newtime) < 0.001)&&
+                    if (!Chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
                         !AnwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
                         )
-                        AnwserSoundList.Add(new SimaiTimingPoint(newtime));
+                        AnwserSoundList.Add(new AnwserSoundPoint()
+                        {
+                            time = newtime,
+                            isClock = false,
+                            isPlayed = false
+                        });
                 }
             }
             AnwserSoundList = AnwserSoundList.OrderBy(o=>o.time).ToList();
@@ -111,7 +151,7 @@ public class GamePlayManager : MonoBehaviour
     {
         isLoading = true;
         var firstBpm = Chart.notelist.First().currentBpm;
-        var interval = 60 / firstBpm;
+        
         var settings = settingManager.Setting;
 
         AudioTime = -5f;
@@ -143,18 +183,12 @@ public class GamePlayManager : MonoBehaviour
         }
 
         GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
-        //AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
+        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
+        isLoading = false;
         while (Time.unscaledTime - AudioStartTime < 0)
             yield return new WaitForEndOfFrame();
-        for (int i = 0; i < 4; i++)
-        {
-            yield return new WaitForSeconds(interval);
-            AudioManager.Instance.PlaySFX("clock.wav");
-        }
 
-        isLoading = false;
-        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime() + 5f;
-        yield return new WaitForSeconds(5);
+        
         AudioStartTime = Time.unscaledTime;
         audioSample.Play();
         //AudioStartTime = Time.unscaledTime;
@@ -183,9 +217,8 @@ public class GamePlayManager : MonoBehaviour
 
         var chartOffset = (float)song.First + settingManager.Setting.Judge.AudioOffset;
         AudioTime = Time.unscaledTime - AudioStartTime - chartOffset;
+
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
-        if (i >= AnwserSoundList.Count)
-            return;
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
         {
             ErrorText.text = "¼ì²âµ½ÒôÆµ´íÎ»ÁËÓ´\n" + realTimeDifference;
@@ -196,22 +229,23 @@ public class GamePlayManager : MonoBehaviour
             AudioStartTime -= realTimeDifference * 0.8f;
         }
 
+        if (i >= AnwserSoundList.Count)
+            return;
+       
+
 
 
         var noteToPlay = AnwserSoundList[i].time;
         var delta = AudioTime - (noteToPlay);
-        //print(delta);
-        /*        if(!AnwserSoundList[i].havePlayed && delta > 0)
-                {
-                    AudioManager.Instance.PlaySFX("answer.wav");
-                    AnwserSoundList[i].havePlayed = true;
-                    print("lateplay");
-                    i++;
-                }*/
+        //if (AudioTime < 0) delta = -delta;
+        print(noteToPlay);
         if (delta > 0)
         {
-            AudioManager.Instance.PlaySFX("answer.wav");
-            AnwserSoundList[i].havePlayed = true;
+            if(AnwserSoundList[i].isClock)
+                AudioManager.Instance.PlaySFX("clock.wav");
+            else
+                AudioManager.Instance.PlaySFX("answer.wav");
+            AnwserSoundList[i].isPlayed = true;
             i++;
         }
     }
@@ -260,4 +294,10 @@ public class GamePlayManager : MonoBehaviour
         SceneManager.LoadScene(3);
     }
 
+    class AnwserSoundPoint
+    {
+        public double time;
+        public bool isClock;
+        public bool isPlayed;
+    }
 }
