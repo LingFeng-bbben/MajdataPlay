@@ -32,6 +32,7 @@ public class GamePlayManager : MonoBehaviour
 
     public float AudioTime = -114514f;
     public bool isStart => audioSample.GetPlayState();
+    bool isLoading = false;
     public float CurrentSpeed = 1f;
 
     private float AudioStartTime = -114514f;
@@ -108,8 +109,12 @@ public class GamePlayManager : MonoBehaviour
 
     IEnumerator DelayPlay()
     {
+        isLoading = true;
+        var firstBpm = Chart.notelist.First().currentBpm;
+        var interval = 60 / firstBpm;
         var settings = settingManager.Setting;
 
+        AudioTime = -5f;
         yield return new WaitForEndOfFrame();
         var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
         if (song.VideoPath != null)
@@ -138,12 +143,22 @@ public class GamePlayManager : MonoBehaviour
         }
 
         GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
-        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
+        //AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
         while (Time.unscaledTime - AudioStartTime < 0)
             yield return new WaitForEndOfFrame();
-       
-        audioSample.Play(); 
+        for (int i = 0; i < 4; i++)
+        {
+            yield return new WaitForSeconds(interval);
+            AudioManager.Instance.PlaySFX("clock.wav");
+        }
+
+        isLoading = false;
+        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime() + 5f;
+        yield return new WaitForSeconds(5);
         AudioStartTime = Time.unscaledTime;
+        audioSample.Play();
+        //AudioStartTime = Time.unscaledTime;
+        
 
     }
 
@@ -157,7 +172,9 @@ public class GamePlayManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (audioSample == null) 
+        if (audioSample == null)
+            return;
+        else if (isLoading)
             return;
         //Do not use this!!!! This have connection with sample batch size
         //AudioTime = (float)audioSample.GetCurrentTime();
