@@ -63,5 +63,6 @@
         public bool DisplaySensor { get; set; } = false;
         public bool DisplayFPS { get; set; } = false;
         public bool TryFixAudioSync { get; set; } = true;
+        public float NoteAppearRate { get; set; } = 0.36f;
     }
 }

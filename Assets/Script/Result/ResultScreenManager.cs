@@ -33,6 +33,7 @@ public class ResultScreenManager : MonoBehaviour
 
 
     public GameObject clearLogo;
+    public GameObject xxlb;
 
     public Image coverImg;
 
@@ -50,9 +51,15 @@ public class ResultScreenManager : MonoBehaviour
         var song = result.SongInfo;
 
         if (result.Acc.DX < 70)
+        {
             omg.text = "ÄúÊäÁË";
+            xxlb.GetComponent<Animator>().SetTrigger("Bad");
+        }
         else
+        {
             omg.text = "ÄúÓ®ÁË";
+            xxlb.GetComponent<Animator>().SetTrigger("Good");
+        }
 
         title.text = song.Title;
         artist.text = song.Artist;

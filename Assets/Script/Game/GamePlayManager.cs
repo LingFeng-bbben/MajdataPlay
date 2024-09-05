@@ -142,7 +142,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "·Ö¸înote³ö´íÁËÓ´\n" + ex.Message;
+            ErrorText.text = "ï¿½Ö¸ï¿½noteï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó´\n" + ex.Message;
             Debug.LogError(ex);
         }
     }
@@ -177,7 +177,7 @@ public class GamePlayManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ErrorText.text = "½âÎönote³ö´íÁËÓ´\n" + ex.Message;
+            ErrorText.text = "ï¿½ï¿½ï¿½ï¿½noteï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó´\n" + ex.Message;
             Debug.LogError(ex);
             StopAllCoroutines();
         }
@@ -221,11 +221,11 @@ public class GamePlayManager : MonoBehaviour
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
         {
-            ErrorText.text = "¼ì²âµ½ÒôÆµ´íÎ»ÁËÓ´\n" + realTimeDifference;
+            ErrorText.text = "ï¿½ï¿½âµ½ï¿½ï¿½Æµï¿½ï¿½Î»ï¿½ï¿½Ó´\n" + realTimeDifference;
         }
         else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
         {
-            ErrorText.text = "ÐÞÕýÒôÆµ\n" + realTimeDifference;
+            ErrorText.text = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ\n" + realTimeDifference;
             AudioStartTime -= realTimeDifference * 0.8f;
         }
 

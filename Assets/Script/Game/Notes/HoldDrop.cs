@@ -206,7 +206,9 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * speed + 4.8f;
-            var destScale = distance * 0.4f + 0.51f;
+            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+
             if (destScale < 0f)
             {
                 destScale = 0f;
