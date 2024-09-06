@@ -184,7 +184,7 @@ public class NoteLoader : MonoBehaviour
             {"pq7", new List<int>(){ 0, 3, 8, 12, 15, 18, 22, 25, 28, 32, 35, 39 } },
             {"pq8", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 30, 36 } },
             {"s", new List<int>(){ 0, 3, 8, 11, 17, 21, 24, 30 } },
-            {"wifi", new List<int>(){ 0, 1, 4, 6, 11 } },
+            {"wifi", new List<int>(){ 0, 1, 4, 6, 9} },
             {"L2", new List<int>(){ 0, 2, 7, 15, 21, 26, 32 } },
             {"L3", new List<int>(){ 0, 2, 8, 17, 20, 26, 29, 34 } },
             {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
