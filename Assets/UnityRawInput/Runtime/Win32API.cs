@@ -11,6 +11,8 @@ namespace UnityRawInput
         public static extern IntPtr SetWindowsHookEx (HookType code, HookProc func, IntPtr hInstance, int threadID);
         [DllImport("User32")]
         public static extern int UnhookWindowsHookEx (IntPtr hhook);
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
         [DllImport("User32")]
         public static extern int CallNextHookEx (IntPtr hhook, int code, IntPtr wParam, IntPtr lParam);
         [DllImport("Kernel32")]
