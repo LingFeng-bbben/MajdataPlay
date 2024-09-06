@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes
             Initialize();
 
             var wifiConst = 0.162870f;
-            judgeTiming = (time + LastFor) * (1 - wifiConst);
+            judgeTiming = time + (LastFor * (1 - wifiConst));
             lastWaitTime = LastFor * wifiConst;
 
             judgeAreas = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
