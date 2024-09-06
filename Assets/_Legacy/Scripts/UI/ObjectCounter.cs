@@ -5,6 +5,7 @@ using MajSimaiDecode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,11 @@ public class ObjectCounter : MonoBehaviour
     public Color AchievementBronzeColor; // = new Color32(127, 48, 32, 255);
     public Color AchievementSilverColor; // = new Color32(160, 160, 160, 255);
     public Color AchievementGoldColor; // = new Color32(224, 191, 127, 255);
+
+    public Color CPComboColor;
+    public Color PComboColor; 
+    public Color ComboColor;
+    public Color DXScoreColor;
 
     public bool AllFinished => tapCount == tapSum && 
         holdCount == holdSum && 
@@ -35,6 +41,8 @@ public class ObjectCounter : MonoBehaviour
     private Text rate;
     private Text statusAchievement;
 
+    Text bgInfoHeader;
+    Text bgInfoText;
     private Text statusCombo;
     private Text statusDXScore;
     private Text statusScore;
@@ -61,6 +69,8 @@ public class ObjectCounter : MonoBehaviour
     long fast = 0;
     long late = 0;
 
+    float diff = 0; // Note judge diff
+
     long combo = 0; // Combo
     long pCombo = 0; // Perfect Combo
     long cPCombo = 0; // Critical Perfect
@@ -79,6 +89,9 @@ public class ObjectCounter : MonoBehaviour
         judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
         table = GameObject.Find("ObjectCount").GetComponent<Text>();
         rate = GameObject.Find("ObjectRate").GetComponent<Text>();
+
+        bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
+        bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
 
         statusCombo = GameObject.Find("ComboText").GetComponent<Text>();
         statusScore = GameObject.Find("ScoreText").GetComponent<Text>();
@@ -209,6 +222,47 @@ public class ObjectCounter : MonoBehaviour
             {JudgeType.LateGood, 0 },
             {JudgeType.Miss, 0 },
         };
+        bgInfoText.gameObject.SetActive(true);
+        switch (GameManager.Instance.Setting.Game.BGInfo)
+        {
+            case BGInfoType.CPCombo:
+                bgInfoHeader.color = CPComboColor;
+                bgInfoText.color = CPComboColor;
+                bgInfoHeader.text = "CPCombo";
+                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                break;
+            case BGInfoType.PCombo:
+                bgInfoHeader.color = PComboColor;
+                bgInfoText.color = PComboColor;
+                bgInfoHeader.text = "PCombo";
+                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                break;
+            case BGInfoType.Combo:
+                bgInfoHeader.color = ComboColor;
+                bgInfoText.color = ComboColor;
+                bgInfoHeader.text = "Combo";
+                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                break;
+            case BGInfoType.Achievement_101:
+            case BGInfoType.Achievement_100:
+            case BGInfoType.Achievement:
+            case BGInfoType.AchievementClassical:
+            case BGInfoType.AchievementClassical_100:
+                bgInfoHeader.text = "Achievement";
+                bgInfoHeader.color = AchievementGoldColor;
+                bgInfoHeader.alignment = TextAnchor.MiddleRight;
+                break;
+            case BGInfoType.DXScore:
+            case BGInfoType.DXScoreDown:
+                bgInfoHeader.text = "でらっくす SCORE";
+                bgInfoHeader.color = DXScoreColor;
+                break;
+            case BGInfoType.None:
+                bgInfoText.gameObject.SetActive(false);
+                break;
+            default:
+                return;
+        }
     }
 
     // Update is called once per frame
@@ -260,7 +314,7 @@ public class ObjectCounter : MonoBehaviour
     {
         UpdateMainOutput();
         UpdateJudgeResult();
-        if (FiSumScore() == 0) return;
+        //if (FiSumScore() == 0) return;
         UpdateSideOutput();
     }
     NoteScore GetNoteScoreSum()
@@ -492,14 +546,20 @@ public class ObjectCounter : MonoBehaviour
             case JudgeType.Miss:
                 missCount++;
                 combo = 0;
+                cPCombo = 0;
+                pCombo = 0;
                 break;
             case JudgeType.Perfect:
-                cPerfectCount++; 
+                cPerfectCount++;
+                cPCombo++;
+                pCombo++;
                 break;
             case JudgeType.LatePerfect2:
             case JudgeType.LatePerfect1:
             case JudgeType.FastPerfect1:
             case JudgeType.FastPerfect2:
+                cPCombo = 0;
+                pCombo++;
                 perfectCount++;
                 break;
             case JudgeType.LateGreat2:
@@ -508,10 +568,14 @@ public class ObjectCounter : MonoBehaviour
             case JudgeType.FastGreat:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat2:
+                cPCombo = 0;
+                pCombo = 0;
                 greatCount++;
                 break;
             case JudgeType.LateGood:
             case JudgeType.FastGood:
+                cPCombo = 0;
+                pCombo = 0;
                 goodCount++;
                 break;
         }
@@ -592,61 +656,54 @@ public class ObjectCounter : MonoBehaviour
         TouchDrop => SimaiNoteType.Touch,
         _ => throw new InvalidOperationException()
     };
+    void UpdateCombo(long combo)
+    {
+        if (combo == 0)
+            bgInfoText.gameObject.SetActive(false);
+        else
+        {
+            bgInfoText.gameObject.SetActive(true);
+            bgInfoText.text = $"{combo}";
+        }
+    }
     private void UpdateMainOutput()
     {
-        //var comboValue = tapCount + holdCount + slideCount + touchCount + breakCount;
-        var scoreSSSValue = FiSumScore();
-        int[] scoreValues =
+        switch(GameManager.Instance.Setting.Game.BGInfo)
         {
-            FiNowScore(), DeDxNowScore(), DeDxNowBreakScore()
-        };
-        float[] accValues =
-        {
-            scoreSSSValue > 0 ? (float)FiNowScore() / scoreSSSValue * 100 : 0,
-            scoreSSSValue > 0 ? (float)FiNowBreakScore() / scoreSSSValue * 100 : 0,
-            scoreSSSValue > 0 ? (float)DxNowScore() / DxSumScore() * 100 + BreakRate() : 0,
-            100f + BreakRate()
-        };
-
-        //switch (textMode)
-        //{
-        //    case EditorComboIndicator.ScoreClassic: // Score (+) Classic
-        //        statusScore.text = string.Format("{0:#,##0}", scoreValues[0]);
-        //        break;
-        //    case EditorComboIndicator.AchievementClassic: // Achievement (+) Classic
-        //        UpdateAchievementColor(accRate[0]);
-        //        //statusAchievement.text = string.Format("{0,6:0.00}%", Math.Truncate(accValues[0] * 100) / 100);
-        //        statusAchievement.text = string.Format("{0,6:0.00}%", accRate[0]);
-        //        break;
-        //    case EditorComboIndicator.AchievementDownClassic: // Achievement (-) Classic (from 100%)
-        //        UpdateAchievementColor(accRate[1]);
-        //        //statusAchievement.text = string.Format("{0,6:0.00}%", Math.Truncate(accValues[1] * 100) / 100);
-        //        statusAchievement.text = string.Format("{0,6:0.00}%", accRate[1]);
-        //        break;
-        //    case EditorComboIndicator.AchievementDeluxe: // Achievement (+) Deluxe
-        //        UpdateAchievementColor(accRate[4]);
-        //        //statusAchievement.text = string.Format("{0,8:0.0000}%", Math.Truncate(accValues[2] * 10000) / 10000);
-        //        statusAchievement.text = string.Format("{0,8:0.0000}%", accRate[4]);
-        //        break;
-        //    case EditorComboIndicator.AchievementDownDeluxe: // Achievement (-) Deluxe (from 100%)
-        //        UpdateAchievementColor(accRate[3]);
-        //        //statusAchievement.text = string.Format("{0,8:0.0000}%", Math.Truncate(accValues[3] * 10000) / 10000);
-        //        statusAchievement.text = string.Format("{0,8:0.0000}%", accRate[3]);
-        //        break;
-        //    case EditorComboIndicator.ScoreDeluxe: // DX Score (+)
-        //        statusDXScore.text = DxExNowScore().ToString();
-        //        break;
-        //    case EditorComboIndicator.CScoreDedeluxe: // Score (+) DeDX
-        //        statusScore.text = string.Format("{0:#,##0}", scoreValues[1]);
-        //        break;
-        //    case EditorComboIndicator.CScoreDownDedeluxe: // Score (-) DeDX (from 100% rate)
-        //        statusScore.text = string.Format("{0:#,##0}", scoreValues[2]);
-        //        break;
-        //    case EditorComboIndicator.Combo:
-        //    default:
-        //        statusCombo.text = combo > 0 ? combo.ToString() : "";
-        //        break;
-        //}
+            case BGInfoType.CPCombo:
+                UpdateCombo(cPCombo);
+                break;
+            case BGInfoType.PCombo:
+                UpdateCombo(pCombo);
+                break;
+            case BGInfoType.Combo:
+                UpdateCombo(combo);
+                break;
+            case BGInfoType.Achievement_101:
+                bgInfoText.text = $"{accRate[2]:F4}%";
+                UpdateAchievementColor(accRate[2],bgInfoText);
+                break;
+            case BGInfoType.Achievement_100:
+                bgInfoText.text = $"{accRate[3]:F4}%";
+                UpdateAchievementColor(accRate[3], bgInfoText);
+                break;
+            case BGInfoType.Achievement:
+                bgInfoText.text = $"{accRate[4]:F4}%";
+                UpdateAchievementColor(accRate[4], bgInfoText);
+                break;
+            case BGInfoType.AchievementClassical:
+                bgInfoText.text = $"{accRate[0]:F2}%";
+                UpdateAchievementColor(accRate[0], bgInfoText);
+                break;
+            case BGInfoType.AchievementClassical_100:
+                bgInfoText.text = $"{accRate[1]:F2}%";
+                UpdateAchievementColor(accRate[1], bgInfoText);
+                break;
+            case BGInfoType.DXScore:
+            case BGInfoType.DXScoreDown:
+            default:
+                return;
+        }
     }
     void UpdateJudgeResult()
     {
@@ -707,7 +764,7 @@ public class ObjectCounter : MonoBehaviour
 #endif
     }
 
-    private void UpdateAchievementColor(double achievementRate)
+    private void UpdateAchievementColor(double achievementRate, Text textElement)
     {
         var newColor = achievementRate switch
         {
@@ -717,11 +774,8 @@ public class ObjectCounter : MonoBehaviour
             _ => AchievementDudColor
         };
 
-        var textElements = statusAchievement.gameObject.GetComponentsInChildren<Text>();
-
-        foreach (var celm in textElements)
-            if (celm.color != newColor)
-                celm.color = newColor;
+        if (textElement.color != newColor)
+            textElement.color = newColor;
     }
 
     //public void ComboSetActive(bool isActive)
@@ -756,53 +810,53 @@ public class ObjectCounter : MonoBehaviour
     //    statusDXScore.gameObject.SetActive(isActive && isPtsDeluxe);
     //}
 
-    private int FiSumScore()
-    {
-        return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500;
-    }
+    //private int FiSumScore()
+    //{
+    //    return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500;
+    //}
 
-    private int FiNowScore()
-    {
-        return tapCount * 500 + holdCount * 1000 + slideCount * 1500 + touchCount * 500 + breakCount * 2600;
-    }
+    //private int FiNowScore()
+    //{
+    //    return tapCount * 500 + holdCount * 1000 + slideCount * 1500 + touchCount * 500 + breakCount * 2600;
+    //}
 
-    private int FiNowBreakScore()
-    {
-        return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500 + breakCount * 100;
-    }
+    //private int FiNowBreakScore()
+    //{
+    //    return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500 + breakCount * 100;
+    //}
 
-    private int DxSumScore()
-    {
-        return tapSum * 1 + holdSum * 2 + slideSum * 3 + touchSum * 1 + breakSum * 5;
-    }
+    //private int DxSumScore()
+    //{
+    //    return tapSum * 1 + holdSum * 2 + slideSum * 3 + touchSum * 1 + breakSum * 5;
+    //}
 
-    private int DxNowScore()
-    {
-        return tapCount * 1 + holdCount * 2 + slideCount * 3 + touchCount * 1 + breakCount * 5;
-    }
+    //private int DxNowScore()
+    //{
+    //    return tapCount * 1 + holdCount * 2 + slideCount * 3 + touchCount * 1 + breakCount * 5;
+    //}
 
-    private int DxExSumScore()
-    {
-        return (tapSum + holdSum + slideSum + touchSum + breakSum) * 3;
-    }
+    //private int DxExSumScore()
+    //{
+    //    return (tapSum + holdSum + slideSum + touchSum + breakSum) * 3;
+    //}
 
-    private int DxExNowScore()
-    {
-        return (tapCount + holdCount + slideCount + touchCount + breakCount) * 3;
-    }
+    //private int DxExNowScore()
+    //{
+    //    return (tapCount + holdCount + slideCount + touchCount + breakCount) * 3;
+    //}
 
-    private int DeDxNowScore()
-    {
-        return (int)Math.Round(FiSumScore() * ((float)DxNowScore() / DxSumScore() + BreakRate() / 100f) / 5) * 5;
-    }
+    //private int DeDxNowScore()
+    //{
+    //    return (int)Math.Round(FiSumScore() * ((float)DxNowScore() / DxSumScore() + BreakRate() / 100f) / 5) * 5;
+    //}
 
-    private int DeDxNowBreakScore()
-    {
-        return (int)Math.Round(FiSumScore() * (1f + BreakRate() / 100f) / 5) * 5;
-    }
+    //private int DeDxNowBreakScore()
+    //{
+    //    return (int)Math.Round(FiSumScore() * (1f + BreakRate() / 100f) / 5) * 5;
+    //}
 
-    private float BreakRate()
-    {
-        return breakSum > 0 ? (float)breakCount / breakSum : 0f;
-    }
+    //private float BreakRate()
+    //{
+    //    return breakSum > 0 ? (float)breakCount / breakSum : 0f;
+    //}
 }

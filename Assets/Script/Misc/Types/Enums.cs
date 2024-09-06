@@ -169,4 +169,19 @@
         Error,
         Finished
     }
+    public enum BGInfoType
+    {
+        CPCombo,
+        PCombo,
+        Combo,
+        Achievement_101,
+        Achievement_100,
+        Achievement,
+        AchievementClassical,
+        AchievementClassical_100,
+        DXScore,
+        DXScoreDown,
+        None
+
+    }
 }
