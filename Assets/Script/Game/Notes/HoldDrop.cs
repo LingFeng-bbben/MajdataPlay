@@ -336,7 +336,7 @@ namespace MajdataPlay.Game.Notes
 
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
-            objectCounter.ReportResult(this, judgeResult, isBreak);
+            objectCounter.ReportResult(this, result);
             if (!isJudged)
                 objectCounter.NextNote(startPosition);
 

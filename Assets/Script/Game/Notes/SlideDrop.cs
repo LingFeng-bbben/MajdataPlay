@@ -321,8 +321,14 @@ namespace MajdataPlay.Game.Notes
                 ioManager.UnbindSensor(Check, sensor);
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
+                var result = new JudgeResult()
+                {
+                    Result = judgeResult,
+                    Diff = judgeDiff,
+                    IsBreak = isBreak
+                };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
-                objectCounter.ReportResult(this, judgeResult, isBreak);
+                objectCounter.ReportResult(this, result);
                 
                 if (isBreak && judgeResult == JudgeType.Perfect) 
                 { 
@@ -332,7 +338,7 @@ namespace MajdataPlay.Game.Notes
                     audioEffMana.PlayBreakSlideEndSound();
                 }
                 slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
-                PlaySlideOK();
+                PlaySlideOK(result);
             }
             else
             {

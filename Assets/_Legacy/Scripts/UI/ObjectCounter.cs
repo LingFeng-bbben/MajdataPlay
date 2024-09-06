@@ -58,6 +58,9 @@ public class ObjectCounter : MonoBehaviour
     long goodCount = 0;
     long missCount = 0;
 
+    long fast = 0;
+    long late = 0;
+
     long combo = 0; // Combo
     long pCombo = 0; // Perfect Combo
     long cPCombo = 0; // Critical Perfect
@@ -216,12 +219,12 @@ public class ObjectCounter : MonoBehaviour
     }
     internal GameResult GetPlayRecord(SongDetail song,ChartLevel level)
     {
-        var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
-                                   .Select(x => x.Value)
-                                   .Sum();
-        var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
-                                   .Select(x => x.Value)
-                                   .Sum();
+        //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
+        //                           .Select(x => x.Value)
+        //                           .Sum();
+        //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
+        //                           .Select(x => x.Value)
+        //                           .Sum();
         var holdRecord = judgedHoldCount.ToDictionary(
             kv => kv.Key,
             kv => judgedHoldCount[kv.Key] + judgedTouchHoldCount[kv.Key]
@@ -424,10 +427,14 @@ public class ObjectCounter : MonoBehaviour
         accRate[3] = ((totalScore - currentNoteScore.LostScore) / (double)totalScore) * 100 + (currentNoteScore.TotalExtraScore / (double)totalExtraScore);
         accRate[4] = (currentNoteScore.TotalScore / (double)totalScore) * 100 + (currentNoteScore.TotalExtraScore / (double)totalExtraScore);
     }
-    internal void ReportResult(NoteDrop note, JudgeType result,bool isBreak = false)
+    internal void ReportResult(NoteDrop note,in JudgeResult judgeResult)
     {
         var noteType = GetNoteType(note);
-        switch(noteType)
+        var result = judgeResult.Result;
+        var isBreak = judgeResult.IsBreak;
+        
+
+        switch (noteType)
         {
             case SimaiNoteType.Tap:
                 if (isBreak)
@@ -476,8 +483,10 @@ public class ObjectCounter : MonoBehaviour
 
         }
         totalJudgedCount[result]++;
-        if(result != 0)
+
+        if(!judgeResult.IsMiss)
             combo++;
+
         switch (result)
         {
             case JudgeType.Miss:
@@ -506,7 +515,66 @@ public class ObjectCounter : MonoBehaviour
                 goodCount++;
                 break;
         }
+
+        UpdaateFastLate(judgeResult);
         CalAccRate();
+    }
+    void UpdaateFastLate(in JudgeResult judgeResult)
+    {
+        var gameSetting = GameManager.Instance.Setting.Display.FastLateType;
+        var resultValue = (int)judgeResult.Result;
+        var absValue = Math.Abs(7 - resultValue);
+
+        switch (gameSetting)
+        {
+            case JudgeDisplayType.All:
+                if (judgeResult.Diff == 0 || judgeResult.IsMiss)
+                    break;
+                else if (judgeResult.IsFast)
+                    fast++;
+                else
+                    late++;
+                break;
+            case JudgeDisplayType.BelowCP:
+                if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
+                    break;
+                else if (judgeResult.IsFast)
+                    fast++;
+                else
+                    late++;
+                break;
+            case JudgeDisplayType.BelowP_BreakOnly:
+            case JudgeDisplayType.BelowGR_BreakOnly:
+            case JudgeDisplayType.BelowP:
+            case JudgeDisplayType.BelowGR:
+                if (judgeResult.IsMiss || absValue <= 2)
+                    break;
+                else if (judgeResult.IsFast)
+                    fast++;
+                else
+                    late++;
+                break;
+            case JudgeDisplayType.All_BreakOnly:
+                if (judgeResult.Diff == 0 || judgeResult.IsMiss)
+                    break;
+                else if (!judgeResult.IsBreak)
+                    goto case JudgeDisplayType.BelowP;
+                else if (judgeResult.IsFast)
+                    fast++;
+                else
+                    late++;
+                break;
+            case JudgeDisplayType.BelowCP_BreakOnly:
+                if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
+                    break;
+                else if (!judgeResult.IsBreak)
+                    goto case JudgeDisplayType.BelowP;
+                else if (judgeResult.IsFast)
+                    fast++;
+                else
+                    late++;
+                break;
+        }
     }
     internal void NextNote(int pos)
     {
@@ -582,12 +650,12 @@ public class ObjectCounter : MonoBehaviour
     }
     void UpdateJudgeResult()
     {
-        var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
-                                   .Select(x => x.Value)
-                                   .Sum();
-        var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
-                                   .Select(x => x.Value)
-                                   .Sum();
+        //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
+        //                           .Select(x => x.Value)
+        //                           .Sum();
+        //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
+        //                           .Select(x => x.Value)
+        //                           .Sum();
         judgeResultCount.text = $"{cPerfectCount}\n{perfectCount}\n{greatCount}\n{goodCount}\n{missCount}\n\n{fast}\n{late}";
     }
 

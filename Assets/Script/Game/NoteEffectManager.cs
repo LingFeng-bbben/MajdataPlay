@@ -279,7 +279,7 @@ public class NoteEffectManager : MonoBehaviour
         var pos = position - 1;
         var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
 
-        if (!canPlay)
+        if (!canPlay || judgeResult.IsMiss)
         {
             fastLateEffects[pos].SetActive(false);
             return;
@@ -324,7 +324,7 @@ public class NoteEffectManager : MonoBehaviour
     {
         var customSkin = SkinManager.Instance;
         var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
-        if (!canPlay)
+        if (!canPlay || judgeResult.IsMiss)
         {
             obj.SetActive(false);
             Destroy(obj);

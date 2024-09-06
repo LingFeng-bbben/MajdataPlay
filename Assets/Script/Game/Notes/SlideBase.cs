@@ -92,6 +92,7 @@ namespace MajdataPlay.Game.Notes
 
             // By Minepig
             var diff = GetTimeSpanToJudgeTiming();
+            judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             // input latency simulation
@@ -133,6 +134,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var diff = GetTimeSpanToJudgeTiming();
+            judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             var perfect = 0.15f;
@@ -169,16 +171,11 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i <= endIndex; i++)
                 slideBars[i].SetActive(false);
         }
-        protected void PlaySlideOK()
+        protected void PlaySlideOK(in JudgeResult result)
         {
             if (slideOK == null)
                 return;
-            var result = new JudgeResult()
-            {
-                Result = judgeResult,
-                Diff = judgeDiff,
-                IsBreak = isBreak
-            };
+            
             var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)

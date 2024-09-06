@@ -239,7 +239,7 @@ namespace MajdataPlay.Game.Notes
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             if(judgeResult != JudgeType.Miss)
                 audioEffMana.PlayTouchSound();
-            objectCounter.ReportResult(this, judgeResult);
+            objectCounter.ReportResult(this, result);
             objectCounter.NextTouch(sensorPos);
 
             if (isFirework && judgeResult != JudgeType.Miss)

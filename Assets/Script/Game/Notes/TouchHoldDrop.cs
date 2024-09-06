@@ -193,13 +193,13 @@ namespace MajdataPlay.Game.Notes
                 fans[i].transform.position = pos;
             }
         }
-        private void OnDestroy()
+        void EndJudge(ref JudgeType result)
         {
-            ioManager.UnbindSensor(Check, SensorType.C);
-            if (!isJudged) return;
+            if (!isJudged) 
+                return;
             var realityHT = LastFor - 0.45f - judgeDiff / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
-            JudgeType result = judgeResult;
+            result = judgeResult;
             if (realityHT > 0)
             {
                 if (percent >= 1f)
@@ -237,13 +237,24 @@ namespace MajdataPlay.Game.Notes
                         result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 }
             }
-
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
+        }
+        private void OnDestroy()
+        {
+            ioManager.UnbindSensor(Check, SensorType.C);
+            EndJudge(ref judgeResult);
+
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                Diff = judgeDiff
+            };
             objectCounter.ReportResult(this, result);
             if (!isJudged)
                 objectCounter.NextTouch(SensorType.C);
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            if (isFirework && result != JudgeType.Miss)
+            if (isFirework && !result.IsMiss)
             {
                 fireworkEffect.SetTrigger("Fire");
                 firework.transform.position = transform.position;
@@ -255,7 +266,7 @@ namespace MajdataPlay.Game.Notes
 
             PlayJudgeEffect(result);
         }
-        void PlayJudgeEffect(JudgeType judgeResult)
+        void PlayJudgeEffect(in JudgeResult judgeResult)
         {
             var obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
             var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
@@ -272,7 +283,7 @@ namespace MajdataPlay.Game.Notes
             var effects = GameObject.Find("NoteEffects");
             var flAnim = _obj.GetComponent<Animator>();
             GameObject effect;
-            switch (judgeResult)
+            switch (judgeResult.Result)
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
@@ -315,14 +326,7 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
 
-            var result = new JudgeResult()
-            {
-                Result = judgeResult,
-                IsBreak = isBreak,
-                Diff = judgeDiff
-            };
-
-            effectManager.PlayFastLate(_obj, flAnim, result);
+            effectManager.PlayFastLate(_obj, flAnim, judgeResult);
             anim.SetTrigger("touch");
         }
         protected override void PlayHoldEffect()
