@@ -46,7 +46,7 @@
         public int Samplerate { get; set; } = 44100;
         public int AsioDeviceIndex { get; set; } = 0;
         public SFXVolume Volume { get; set; } = new();
-        public SoundBackendType Backend { get; set; } = SoundBackendType.WaveOut;
+        public SoundBackendType Backend { get; set; } = SoundBackendType.Unity;
     }
     public class SFXVolume
     {
@@ -63,5 +63,6 @@
         public bool DisplaySensor { get; set; } = false;
         public bool DisplayFPS { get; set; } = false;
         public bool TryFixAudioSync { get; set; } = true;
+        public float NoteAppearRate { get; set; } = 0.36f;
     }
 }

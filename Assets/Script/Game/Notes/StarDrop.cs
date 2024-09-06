@@ -34,7 +34,8 @@ namespace MajdataPlay.Game.Notes
             var songSpeed = gpManager.CurrentSpeed;
             var judgeTiming = GetTimeSpanToArriveTiming();
             var distance = judgeTiming * speed + 4.8f;
-            var destScale = distance * 0.4f + 0.51f;
+            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             switch (State)
             {
