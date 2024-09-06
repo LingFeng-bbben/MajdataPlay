@@ -19,6 +19,7 @@ namespace MajdataPlay.IO
 
         bool[] COMReport = Enumerable.Repeat(false,35).ToArray();
         Task? recvTask = null;
+        Mutex buttonCheckerMutex = new();
         CancellationTokenSource cancelSource = new();
 
         void Awake()
@@ -54,13 +55,13 @@ namespace MajdataPlay.IO
             if (recvTask != null && !recvTask.IsCompleted)
                 recvTask.Wait();
         }
-
-        void Update()
+        void FixedUpdate()
         {
             if (useDummy)
                 UpdateMousePosition();
             else
                 UpdateSensorState();
+            UpdateButtonState();
         }
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)

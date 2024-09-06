@@ -39,6 +39,36 @@ namespace MajdataPlay.IO
             new Button(RawKey.Numpad7,SensorType.Service),
             new Button(RawKey.Numpad3,SensorType.P2),
         };
+        void UpdateButtonState()
+        {
+            if (!buttonCheckerMutex.WaitOne(4))
+                return;
+            foreach (var keyId in bindingKeys)
+            {
+                var button = buttons.Find(x => x.BindingKey == keyId);
+                if (button == null)
+                {
+                    Debug.LogError($"Key not found:\n{keyId}");
+                    continue;
+                }
+                var oldState = button.Status;
+                var newState = RawInput.IsKeyDown(keyId) ? SensorStatus.On : SensorStatus.Off;
+                if (oldState == newState)
+                    continue;
+                button.Status = newState;
+                Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+                var msg = new InputEventArgs()
+                {
+                    Type = button.Type,
+                    OldStatus = oldState,
+                    Status = newState,
+                    IsButton = true
+                };
+                button.PushEvent(msg);
+                PushEvent(msg);
+            }
+            buttonCheckerMutex.ReleaseMutex();
+        }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var button = buttons.Find(x => x?.Type == sType);
@@ -55,6 +85,8 @@ namespace MajdataPlay.IO
         }
         void OnRawKeyUp(RawKey key)
         {
+            if (!buttonCheckerMutex.WaitOne(4))
+                return;
             if (bindingKeys.All(x => x != key))
                 return;
             var button = buttons.Find(x => x.BindingKey == key);
@@ -76,9 +108,12 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            buttonCheckerMutex.ReleaseMutex();
         }
         void OnRawKeyDown(RawKey key)
         {
+            if (!buttonCheckerMutex.WaitOne(4))
+                return;
             if (bindingKeys.All(x => x != key))
                 return;
             var button = buttons.Find(x => x.BindingKey == key);
@@ -100,6 +135,7 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            buttonCheckerMutex.ReleaseMutex();
         }
     }
 }
