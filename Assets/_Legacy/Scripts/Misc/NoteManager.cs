@@ -93,6 +93,8 @@ public class NoteManager : MonoBehaviour
         }
     }
 
+    public void AddNote(GameObject obj, int index) => noteOrder.Add(obj, index);
+    public void AddTouch(GameObject obj, int index) => touchOrder.Add(obj, index);
     private void FixedUpdate()
     {
         if(transform.childCount == 0 && isNotesLoaded)

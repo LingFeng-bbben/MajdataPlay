@@ -50,8 +50,11 @@ namespace MajdataPlay.Game.Notes
 
             }
 
+            renderer.forceRenderingOff = true;
             if (!isEX)
                 Destroy(exRenderer);
+            else
+                exRenderer.forceRenderingOff = false;
         }
     }
 }
