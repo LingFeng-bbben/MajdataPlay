@@ -237,8 +237,7 @@ public class GamePlayManager : MonoBehaviour
 
         var noteToPlay = AnwserSoundList[i].time;
         var delta = AudioTime - (noteToPlay);
-        //if (AudioTime < 0) delta = -delta;
-        print(noteToPlay);
+
         if (delta > 0)
         {
             if(AnwserSoundList[i].isClock)
