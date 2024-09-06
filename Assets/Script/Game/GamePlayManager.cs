@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Runtime.InteropServices;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
@@ -39,6 +40,15 @@ public class GamePlayManager : MonoBehaviour
 
     private float AudioStartTime = -114514f;
     List<AnwserSoundPoint> AnwserSoundList = new List<AnwserSoundPoint>();
+
+    [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
+    private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
+    float timeSource { get {
+            GetSystemTimePreciseAsFileTime(out var filetime);
+            filetime = filetime - 133701020000000000;
+            //print(filetime);
+            return filetime/10000000f;
+        } }
     // Start is called before the first frame update
     private void Awake()
     {
@@ -197,13 +207,14 @@ public class GamePlayManager : MonoBehaviour
         loadingMask.SetActive(false);
 
         //GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
-        AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
+        Time.timeScale = 1f;
+        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime()+5f;
         isLoading = false;
-        while (Time.unscaledTime - AudioStartTime < 0)
+        while (timeSource - AudioStartTime < 0)
             yield return new WaitForEndOfFrame();
 
         
-        AudioStartTime = Time.unscaledTime;
+        AudioStartTime = timeSource;
         audioSample.Play();
         //AudioStartTime = Time.unscaledTime;
         
@@ -230,14 +241,14 @@ public class GamePlayManager : MonoBehaviour
             return;
 
         var chartOffset = (float)song.First + settingManager.Setting.Judge.AudioOffset;
-        AudioTime = Time.unscaledTime - AudioStartTime - chartOffset;
+        AudioTime = timeSource - AudioStartTime - chartOffset;
 
-        var realTimeDifference = (float)audioSample.GetCurrentTime() - (Time.unscaledTime - AudioStartTime);
+        var realTimeDifference = (float)audioSample.GetCurrentTime() - (timeSource - AudioStartTime);
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
         {
             ErrorText.text = "音频错位了哟\n" + realTimeDifference;
         }
-        else if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
+        else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
         {
             ErrorText.text = "修正音频哟\n" + realTimeDifference;
             AudioStartTime -= realTimeDifference * 0.8f;
