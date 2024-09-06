@@ -192,6 +192,8 @@ public class GamePlayManager : MonoBehaviour
             Debug.LogError(e);
             StopAllCoroutines();
         }
+        loadingText.text = $"\r\nLoading Chart...\r\n\r\n100.00%";
+        yield return new WaitForSeconds(1);
         loadingMask.SetActive(false);
 
         //GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
