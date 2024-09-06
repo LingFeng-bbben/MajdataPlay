@@ -787,7 +787,10 @@ public class NoteLoader : MonoBehaviour
 
         NDCompo.isNoHead = note.isSlideNoHead;
         if(!note.isSlideNoHead)
+        {
             noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+            noteCount++;
+        }
         NDCompo.time = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
@@ -874,7 +877,10 @@ public class NoteLoader : MonoBehaviour
 
         NDCompo.isNoHead = note.isSlideNoHead;
         if (!note.isSlideNoHead)
+        {
             noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+            noteCount++;
+        }
         NDCompo.time = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
