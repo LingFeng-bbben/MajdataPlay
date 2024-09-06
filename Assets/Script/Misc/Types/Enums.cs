@@ -143,7 +143,23 @@
         /// <summary>
         /// None
         /// </summary>
-        Disable
+        Disable,
+        /// <summary>
+        /// CriticalPerfect, Pefect, Great, Good
+        /// </summary>
+        All_BreakOnly,
+        /// <summary>
+        /// Pefect, Great, Good
+        /// </summary>
+        BelowCP_BreakOnly,
+        /// <summary>
+        /// Great, Good
+        /// </summary>
+        BelowP_BreakOnly,
+        /// <summary>
+        /// Good
+        /// </summary>
+        BelowGR_BreakOnly,
     }
     public enum NoteLoaderStatus
     {

@@ -186,19 +186,18 @@ namespace MajdataPlay.Game.Notes
             var resultValue = (int)judgeResult;
             var absValue = Math.Abs(7 - resultValue);
 
-            switch (slideSetting)
+            return slideSetting switch
             {
-                case JudgeDisplayType.All:
-                    return true;
-                case JudgeDisplayType.BelowCP:
-                    return absValue != 0;
-                case JudgeDisplayType.BelowP:
-                    return absValue > 2;
-                case JudgeDisplayType.BelowGR:
-                    return absValue > 5;
-                default:
-                    return false;
-            }
+                JudgeDisplayType.All => true,
+                JudgeDisplayType.BelowCP => resultValue != 7,
+                JudgeDisplayType.BelowP => absValue > 2,
+                JudgeDisplayType.BelowGR => absValue > 5,
+                JudgeDisplayType.All_BreakOnly => isBreak,
+                JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && isBreak,
+                JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && isBreak,
+                JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && isBreak,
+                _ => false
+            };
         }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)

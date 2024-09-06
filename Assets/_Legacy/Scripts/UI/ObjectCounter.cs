@@ -57,7 +57,10 @@ public class ObjectCounter : MonoBehaviour
     long greatCount = 0;
     long goodCount = 0;
     long missCount = 0;
-    long combo = 0;
+
+    long combo = 0; // Combo
+    long pCombo = 0; // Perfect Combo
+    long cPCombo = 0; // Critical Perfect
     Dictionary<JudgeType, int> judgedTapCount;
     Dictionary<JudgeType, int> judgedHoldCount;
     Dictionary<JudgeType, int> judgedTouchCount;

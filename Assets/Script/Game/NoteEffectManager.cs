@@ -301,19 +301,18 @@ public class NoteEffectManager : MonoBehaviour
         var resultValue = (int)result;
         var absValue = Math.Abs(7 - resultValue);
 
-        switch (effectSetting)
+        return effectSetting switch
         {
-            case JudgeDisplayType.All:
-                return true;
-            case JudgeDisplayType.BelowCP:
-                return absValue != 0;
-            case JudgeDisplayType.BelowP:
-                return absValue > 2;
-            case JudgeDisplayType.BelowGR:
-                return absValue > 5;
-            default:
-                return false;
-        }
+            JudgeDisplayType.All => true,
+            JudgeDisplayType.BelowCP => resultValue != 7,
+            JudgeDisplayType.BelowP => absValue > 2,
+            JudgeDisplayType.BelowGR => absValue > 5,
+            JudgeDisplayType.All_BreakOnly => judgeResult.IsBreak,
+            JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && judgeResult.IsBreak,
+            _ => false
+        };
     }
     bool CheckFastLateSetting(in JudgeResult judgeResult)
     {
@@ -327,19 +326,19 @@ public class NoteEffectManager : MonoBehaviour
             flSetting is JudgeDisplayType.Disable ||
             judgeResult.Diff == 0)
             return false;
-        switch(flSetting)
-        {
-            case JudgeDisplayType.All:
-                return true;
-            case JudgeDisplayType.BelowCP:
-                return resultValue != 7;
-            case JudgeDisplayType.BelowP:
-                return absValue > 2;
-            case JudgeDisplayType.BelowGR:
-                return absValue > 5;
-        }
 
-        return false;
+        return flSetting switch
+        {
+            JudgeDisplayType.All => true,
+            JudgeDisplayType.BelowCP => resultValue != 7,
+            JudgeDisplayType.BelowP => absValue > 2,
+            JudgeDisplayType.BelowGR => absValue > 5,
+            JudgeDisplayType.All_BreakOnly => judgeResult.IsBreak,
+            JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && judgeResult.IsBreak,
+            _ => false
+        };
     }
     /// <summary>
     /// Touch，TouchHold
