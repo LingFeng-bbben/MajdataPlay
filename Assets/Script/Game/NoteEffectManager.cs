@@ -105,7 +105,7 @@ public class NoteEffectManager : MonoBehaviour
 
         var isBreak = judgeResult.IsBreak;
         var result = judgeResult.Result;
-        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
 
         switch (result)
         {
@@ -259,7 +259,7 @@ public class NoteEffectManager : MonoBehaviour
             default:
                 break;
         }
-        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
 
         PlayFastLate(_obj, flAnim, judgeResult);
 
@@ -277,7 +277,7 @@ public class NoteEffectManager : MonoBehaviour
     public void PlayFastLate(int position, in JudgeResult judgeResult)
     {
         var pos = position - 1;
-        var canPlay = CheckFastLateSetting(judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
 
         if (!canPlay)
         {
@@ -295,39 +295,13 @@ public class NoteEffectManager : MonoBehaviour
         fastLateAnims[pos].SetTrigger("perfect");
 
     }
-    bool CheckEffectSetting(JudgeDisplayType effectSetting, in JudgeResult judgeResult)
+    public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
     {
         var result = judgeResult.Result;
         var resultValue = (int)result;
         var absValue = Math.Abs(7 - resultValue);
 
-        return effectSetting switch
-        {
-            JudgeDisplayType.All => true,
-            JudgeDisplayType.BelowCP => resultValue != 7,
-            JudgeDisplayType.BelowP => absValue > 2,
-            JudgeDisplayType.BelowGR => absValue > 5,
-            JudgeDisplayType.All_BreakOnly => judgeResult.IsBreak,
-            JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && judgeResult.IsBreak,
-            JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && judgeResult.IsBreak,
-            JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && judgeResult.IsBreak,
-            _ => false
-        };
-    }
-    bool CheckFastLateSetting(in JudgeResult judgeResult)
-    {
-        var flSetting = GameManager.Instance.Setting.Display.FastLateType;
-        var result = judgeResult.Result;
-        var resultValue = (int)result;
-        var absValue = Math.Abs(7 - resultValue);
-
-
-        if (resultValue is 0 || 
-            flSetting is JudgeDisplayType.Disable ||
-            judgeResult.Diff == 0)
-            return false;
-
-        return flSetting switch
+        return setting switch
         {
             JudgeDisplayType.All => true,
             JudgeDisplayType.BelowCP => resultValue != 7,
@@ -349,7 +323,7 @@ public class NoteEffectManager : MonoBehaviour
     public void PlayFastLate(GameObject obj,Animator anim, in JudgeResult judgeResult)
     {
         var customSkin = SkinManager.Instance;
-        var canPlay = CheckFastLateSetting(judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
         if (!canPlay)
         {
             obj.SetActive(false);

@@ -173,31 +173,18 @@ namespace MajdataPlay.Game.Notes
         {
             if (slideOK == null)
                 return;
-            var canPlay = CheckSetting();
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                Diff = judgeDiff,
+                IsBreak = isBreak
+            };
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
                 slideOK.SetActive(true);
             else
                 Destroy(slideOK);
-        }
-        bool CheckSetting()
-        {
-            var slideSetting = GameManager.Instance.Setting.Display.SlideJudgeType;
-            var resultValue = (int)judgeResult;
-            var absValue = Math.Abs(7 - resultValue);
-
-            return slideSetting switch
-            {
-                JudgeDisplayType.All => true,
-                JudgeDisplayType.BelowCP => resultValue != 7,
-                JudgeDisplayType.BelowP => absValue > 2,
-                JudgeDisplayType.BelowGR => absValue > 5,
-                JudgeDisplayType.All_BreakOnly => isBreak,
-                JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && isBreak,
-                JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && isBreak,
-                JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && isBreak,
-                _ => false
-            };
         }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
