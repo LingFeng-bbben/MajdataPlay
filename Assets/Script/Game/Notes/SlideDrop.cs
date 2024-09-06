@@ -173,6 +173,7 @@ namespace MajdataPlay.Game.Notes
         }
         void Update()
         {
+            // ConnSlide
             if (stars.IsEmpty() || stars[0] == null)
             {
                 if (IsFinished)
@@ -351,8 +352,6 @@ namespace MajdataPlay.Game.Notes
                 ApplyStarRotation(slideRotations.LastOrDefault());
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
                     DestroySelf(true);
-                else if (IsFinished && isJudged)
-                    DestroySelf();
             }
             else
             {

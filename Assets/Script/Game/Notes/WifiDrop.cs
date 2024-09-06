@@ -244,8 +244,6 @@ namespace MajdataPlay.Game.Notes
                     stars[i].transform.position = SlidePositionEnd[i];
                     stars[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
-                if (IsFinished && isJudged)
-                    DestroySelf();
             }
             else
             {
