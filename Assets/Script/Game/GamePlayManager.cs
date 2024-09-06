@@ -229,11 +229,12 @@ public class GamePlayManager : MonoBehaviour
             AudioStartTime -= realTimeDifference * 0.8f;
         }
 
+        
+    }
+    void FixedUpdate()
+    {
         if (i >= AnwserSoundList.Count)
             return;
-       
-
-
 
         var noteToPlay = AnwserSoundList[i].time;
         var delta = AudioTime - (noteToPlay);
@@ -241,7 +242,7 @@ public class GamePlayManager : MonoBehaviour
         print(noteToPlay);
         if (delta > 0)
         {
-            if(AnwserSoundList[i].isClock)
+            if (AnwserSoundList[i].isClock)
                 AudioManager.Instance.PlaySFX("clock.wav");
             else
                 AudioManager.Instance.PlaySFX("answer.wav");
