@@ -64,10 +64,15 @@ namespace UnityRawInput
         /// <summary>
         /// Checks whether provided key is currently pressed.
         /// </summary>
-        public static bool IsKeyDown (RawKey key)
+        public static bool IsKeyDown(RawKey key)
         {
-            return pressedKeys.Contains(key);
+            var result = Win32API.GetAsyncKeyState((int)key);
+            return (result & 0x8000) != 0;
         }
+        //public static bool IsKeyDown (RawKey key)
+        //{
+        //    return pressedKeys.Contains(key);
+        //}
 
         private static void SetHooks ()
         {

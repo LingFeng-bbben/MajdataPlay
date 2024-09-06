@@ -3,6 +3,7 @@ using MajdataPlay.Game.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -173,6 +174,7 @@ namespace MajdataPlay.Game.Notes
         }
         void Update()
         {
+            // ConnSlide
             if (stars.IsEmpty() || stars[0] == null)
             {
                 if (IsFinished)
@@ -240,11 +242,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             var queue = judgeQueues[0];
             isChecking = true;
-            if (ConnectInfo.Parent != null && queue.Length < table.JudgeQueue.Length)
-            {
-                if (!ConnectInfo.ParentFinished)
-                    ConnectInfo.Parent.GetComponent<SlideDrop>().ForceFinish();
-            }
+            
             
             var first = queue.First();
             JudgeArea? second = null;
@@ -256,6 +254,7 @@ namespace MajdataPlay.Game.Notes
             {
                 var sensor = ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
+
             }
 
             if (first.IsFinished && !isSoundPlayed && (ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide))
@@ -279,6 +278,7 @@ namespace MajdataPlay.Game.Notes
                     HideBar(first.SlideIndex);
                     judgeQueues[0] = queue.Skip(2).ToArray();
                     isChecking = false;
+                    SetParentFinish();
                     return;
                 }
                 else if (second.On)
@@ -286,6 +286,7 @@ namespace MajdataPlay.Game.Notes
                     HideBar(first.SlideIndex);
                     judgeQueues[0] = queue.Skip(1).ToArray();
                     isChecking = false;
+                    SetParentFinish();
                     return;
                 }
             }
@@ -295,9 +296,18 @@ namespace MajdataPlay.Game.Notes
                 HideBar(first.SlideIndex);
                 judgeQueues[0] = queue.Skip(1).ToArray();
                 isChecking = false;
+                SetParentFinish();
                 return;
             }
             isChecking = false;
+        }
+        void SetParentFinish()
+        {
+            if (ConnectInfo.Parent != null && judgeQueues[0].Length < table.JudgeQueue.Length)
+            {
+                if (!ConnectInfo.ParentFinished)
+                    ConnectInfo.Parent.GetComponent<SlideDrop>().ForceFinish();
+            }
         }
         void OnDestroy()
         {
@@ -351,8 +361,6 @@ namespace MajdataPlay.Game.Notes
                 ApplyStarRotation(slideRotations.LastOrDefault());
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
                     DestroySelf(true);
-                else if (IsFinished && isJudged)
-                    DestroySelf();
             }
             else
             {

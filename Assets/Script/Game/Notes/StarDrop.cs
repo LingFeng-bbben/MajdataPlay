@@ -42,9 +42,13 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-
                         if (!isNoHead)
+                        {
                             tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
+                            thisRenderer.forceRenderingOff = false;
+                            if (isEX)
+                                exRenderer.forceRenderingOff = false;
+                        }
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -111,6 +115,11 @@ namespace MajdataPlay.Game.Notes
                 Destroy(renderer);
                 Destroy(exRenderer);
                 return;
+            }
+            else
+            {
+                renderer.forceRenderingOff = true;
+                exRenderer.forceRenderingOff = false;
             }
 
             var skin = SkinManager.Instance.GetStarSkin();

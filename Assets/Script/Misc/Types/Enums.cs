@@ -145,4 +145,12 @@
         /// </summary>
         Disable
     }
+    public enum NoteLoaderStatus
+    {
+        Idle,
+        ParsingNote,
+        Backend,
+        Error,
+        Finished
+    }
 }

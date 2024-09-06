@@ -14,8 +14,6 @@ namespace MajdataPlay.Game.Notes
     public class WifiDrop : SlideBase
     {
 
-        List<int> areaStep = new List<int>();
-
 
         readonly Vector3[] SlidePositionEnd = new Vector3[3];
 
@@ -30,8 +28,7 @@ namespace MajdataPlay.Game.Notes
             base.Start();
             isInitialized = true;
 
-            judgeQueues = SlideTables.FindWifiTable(startPosition);
-            areaStep = NoteLoader.SLIDE_AREA_STEP_MAP["wifi"];
+            judgeQueues = SlideTables.GetWifiTable(startPosition);
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
@@ -160,11 +157,13 @@ namespace MajdataPlay.Game.Notes
                 if (second.IsFinished)
                 {
                     judgeQueue = judgeQueue.Skip(2).ToArray();
+                    HideBar(GetIndex());
                     return;
                 }
                 else if (second.On)
                 {
                     judgeQueue = judgeQueue.Skip(1).ToArray();
+                    HideBar(GetIndex());
                     return;
                 }
             }
@@ -172,14 +171,27 @@ namespace MajdataPlay.Game.Notes
             if (first.IsFinished)
             {
                 judgeQueue = judgeQueue.Skip(1).ToArray();
+                HideBar(GetIndex());
                 return;
             }
-            if (!IsFinished)
-            {
-                var index = areaStep[4 - QueueRemaining];
-                HideBar(index);
-            }
 
+        }
+        int GetIndex()
+        {
+            if(judgeQueues.IsEmpty())
+                return int.MaxValue;
+            else if (judgeQueues[1].IsEmpty())
+            {
+                if (judgeQueues[0].Length <= 1 && judgeQueues[2].Length <= 1)
+                    return 9;
+            }
+            var nums = new int[3];
+            foreach(var (i,queue) in judgeQueues.WithIndex())
+                nums[i] = queue.Length;
+            var max = nums.Max();
+            var index = nums.FindIndex(x => x == max);
+
+            return judgeQueues[index].First().SlideIndex;
         }
         void Update()
         {
@@ -244,8 +256,6 @@ namespace MajdataPlay.Game.Notes
                     stars[i].transform.position = SlidePositionEnd[i];
                     stars[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
-                if (IsFinished && isJudged)
-                    DestroySelf();
             }
             else
             {

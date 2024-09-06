@@ -9,6 +9,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class GamePlayManager : MonoBehaviour
 
     public GameObject notesParent;
     public GameObject tapPrefab;
+    public GameObject loadingMask;
 
     public float noteSpeed = 9f;
     public float touchSpeed = 7.5f;
@@ -171,18 +173,30 @@ public class GamePlayManager : MonoBehaviour
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
         noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.Game.TapSpeed + 0.9975f, -0.985558604f)));
         noteLoader.touchSpeed = settings.Game.TouchSpeed;
-        try
+
+        StartCoroutine(noteLoader.LoadNotes(Chart));
+
+        var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+
+        while (noteLoader.State < NoteLoaderStatus.Finished)
         {
-            noteLoader.LoadNotes(Chart);
+            loadingText.text = $"\r\nLoading Chart...\r\n\r\n{noteLoader.Process * 100:F2}%";
+            yield return 0;
         }
-        catch (Exception ex)
+        
+        if(noteLoader.State == NoteLoaderStatus.Error)
         {
-            ErrorText.text = "加载note时出错了哟\n" + ex.Message;
-            Debug.LogError(ex);
+            var e = noteLoader.Exception;
+            ErrorText.text = "加载note时出错了哟\n" + e.Message;
+            loadingText.text = $"\r\nFailed to load chart\r\n\r\n{e.Message}%";
+            Debug.LogError(e);
             StopAllCoroutines();
         }
+        loadingText.text = $"\r\nLoading Chart...\r\n\r\n100.00%";
+        yield return new WaitForSeconds(1);
+        loadingMask.SetActive(false);
 
-        GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
+        //GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         AudioStartTime = Time.unscaledTime + (float)audioSample.GetCurrentTime()+5f;
         isLoading = false;
         while (Time.unscaledTime - AudioStartTime < 0)
@@ -229,18 +243,19 @@ public class GamePlayManager : MonoBehaviour
             AudioStartTime -= realTimeDifference * 0.8f;
         }
 
+        
+    }
+    void FixedUpdate()
+    {
         if (i >= AnwserSoundList.Count)
             return;
-       
-
-
 
         var noteToPlay = AnwserSoundList[i].time;
         var delta = AudioTime - (noteToPlay);
 
         if (delta > 0)
         {
-            if(AnwserSoundList[i].isClock)
+            if (AnwserSoundList[i].isClock)
                 AudioManager.Instance.PlaySFX("clock.wav");
             else
                 AudioManager.Instance.PlaySFX("answer.wav");

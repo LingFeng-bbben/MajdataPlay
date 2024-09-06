@@ -9,24 +9,29 @@ namespace MajdataPlay.Game.Notes
     {
         public GameObject tapLine;
 
+        protected SpriteRenderer thisRenderer;
+        protected SpriteRenderer exRenderer;
+
         protected override void Start()
         {
             base.Start();
 
-            var spriteRenderer = GetComponent<SpriteRenderer>();
-            var exSpriteRender = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            thisRenderer = GetComponent<SpriteRenderer>();
+            exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
             tapLine = Instantiate(tapLine, noteManager.gameObject.transform);
             tapLine.SetActive(false);
 
-            spriteRenderer.sortingOrder += noteSortOrder;
-            exSpriteRender.sortingOrder += noteSortOrder;
+            thisRenderer.sortingOrder += noteSortOrder;
+            exRenderer.sortingOrder += noteSortOrder;
 
             transform.localScale = new Vector3(0, 0);
         }
         
         protected void FixedUpdate()
         {
+            if (State < NoteStatus.Running)
+                return;
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
             if (!isJudged && isTooLate)
@@ -57,6 +62,11 @@ namespace MajdataPlay.Game.Notes
                     {
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
+
+                        thisRenderer.forceRenderingOff = false;
+                        if (isEX)
+                            exRenderer.forceRenderingOff = false;
+
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -93,7 +103,9 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (arg.Type != sensorPos)
+            if (State < NoteStatus.Running)
+                return;
+            else if (arg.Type != sensorPos)
                 return;
             else if (isJudged || !noteManager.CanJudge(gameObject, startPosition))
                 return;

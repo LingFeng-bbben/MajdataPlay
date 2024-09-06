@@ -7,11 +7,26 @@ using UnityEngine.UI;
 using MajSimaiDecode;
 using MajdataPlay.Types;
 using MajdataPlay.Game.Notes;
+using System.Collections;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 public class NoteLoader : MonoBehaviour
 {
+    public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
+    public Exception Exception { get; private set; } = null;
+    public long NoteLimit { get; set; } = 1000;
+    public double Process { get; set; } = 0;
+
+    long noteCount = 0;
+
     public float noteSpeed = 7f;
     public float touchSpeed = 7.5f;
+
+    NoteManager noteManager;
+    Dictionary<int, int> noteIndex = new();
+    Dictionary<SensorType, int> touchIndex = new();
+    Stopwatch sw = new();
 
     public GameObject tapPrefab;
     public GameObject holdPrefab;
@@ -169,7 +184,7 @@ public class NoteLoader : MonoBehaviour
             {"pq7", new List<int>(){ 0, 3, 8, 12, 15, 18, 22, 25, 28, 32, 35, 39 } },
             {"pq8", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 30, 36 } },
             {"s", new List<int>(){ 0, 3, 8, 11, 17, 21, 24, 30 } },
-            {"wifi", new List<int>(){ 0, 1, 4, 6, 11 } },
+            {"wifi", new List<int>(){ 0, 1, 4, 6, 9} },
             {"L2", new List<int>(){ 0, 2, 7, 15, 21, 26, 32 } },
             {"L3", new List<int>(){ 0, 2, 8, 17, 20, 26, 29, 34 } },
             {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
@@ -185,36 +200,59 @@ public class NoteLoader : MonoBehaviour
 
     private void Start()
     {
-        //Application.targetFrameRate = 120;
-        
-        
+        noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
     }
 
     // Update is called once per frame
     private void Update()
     {
+        Debug.Log($"NoteLoader State:{State}");
     }
 
-    public void LoadNotes(SimaiProcess simaiProcess, float ignoreOffset=0f)
+    public IEnumerator LoadNotes(SimaiProcess simaiProcess, float ignoreOffset=0f)
     {
+        State = NoteLoaderStatus.ParsingNote;
+        noteManager.Refresh();
+        noteIndex.Clear();
+        touchIndex.Clear();
+        
+
+        for (int i = 1; i < 9; i++)
+            noteIndex.Add(i, 0);
+        for (int i = 0; i < 33; i++)
+            touchIndex.Add((SensorType)i, 0);
+
         var loadedData = simaiProcess;
 
 
         CountNoteSum(loadedData);
 
+        var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
+
         var lastNoteTime = loadedData.notelist.Last().time;
 
+        sw.Start();
         foreach (var timing in loadedData.notelist)
         {
-            //try
-            //{
-                if (timing.time < ignoreOffset)
+            if (timing.time < ignoreOffset)
+            {
+                CountNoteCount(timing.noteList);
+                continue;
+            }
+            List<TouchDrop> members = new();
+            for (var i = 0; i < timing.noteList.Count; i++)
+            {
+                noteCount++;
+                Process = (double)noteCount / sum;
+                if (noteCount > NoteLimit)
+                    State = NoteLoaderStatus.Backend;
+                if (sw.ElapsedMilliseconds >= 33)
                 {
-                    CountNoteCount(timing.noteList);
-                    continue;
+                    yield return 0;
+                    sw.Restart();
                 }
-                List<TouchDrop> members = new();
-                for (var i = 0; i < timing.noteList.Count; i++)
+
+                try
                 {
                     var note = timing.noteList[i];
                     if (note.noteType == SimaiNoteType.Tap)
@@ -237,6 +275,8 @@ public class NoteLoader : MonoBehaviour
                             NDCompo = GOnote.GetComponent<TapDrop>();
                         }
 
+                        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+
                         // note的图层顺序
                         NDCompo.noteSortOrder = noteSortOrder;
                         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -251,6 +291,7 @@ public class NoteLoader : MonoBehaviour
                     else if (note.noteType == SimaiNoteType.Hold)
                     {
                         var GOnote = Instantiate(holdPrefab, notes.transform);
+                        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
                         var NDCompo = GOnote.GetComponent<HoldDrop>();
 
                         // note的图层顺序
@@ -268,6 +309,7 @@ public class NoteLoader : MonoBehaviour
                     else if (note.noteType == SimaiNoteType.TouchHold)
                     {
                         var GOnote = Instantiate(touchHoldPrefab, notes.transform);
+                        noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
                         var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
 
                         // note的图层顺序
@@ -282,6 +324,7 @@ public class NoteLoader : MonoBehaviour
                     else if (note.noteType == SimaiNoteType.Touch)
                     {
                         var GOnote = Instantiate(touchPrefab, notes.transform);
+                        noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
                         var NDCompo = GOnote.GetComponent<TouchDrop>();
 
                         // note的图层顺序
@@ -313,8 +356,17 @@ public class NoteLoader : MonoBehaviour
                     else if (note.noteType == SimaiNoteType.Slide)
                         InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
                 }
+                catch(Exception e)
+                {
+                    Exception = e;
+                    State = NoteLoaderStatus.Error;
+                    yield break;
+                }
+                
+            }
 
-
+            try
+            {
                 if (members.Count != 0)
                 {
                     var sensorTypes = members.GroupBy(x => x.GetSensor())
@@ -391,13 +443,17 @@ public class NoteLoader : MonoBehaviour
                     lineDrop.startPosition = startPos;
                     lineDrop.curvLength = endPos - 1;
                 }
-            //}
-            //catch (Exception e)
-            //{
-            //    GameObject.Find("ErrText").GetComponent<Text>().text =
-            //        "在第" + (timing.rawTextPositionY + 1) + "行发现问题：\n" + e.Message;
-            //}
+            }
+            catch (Exception e)
+            {
+                Exception = e;
+                State = NoteLoaderStatus.Error;
+                yield break;
+            }
+
         }
+        State = NoteLoaderStatus.Finished;
+        yield break;
     }
 
 
@@ -730,6 +786,11 @@ public class NoteLoader : MonoBehaviour
         WifiCompo.isBreak = note.isSlideBreak;
 
         NDCompo.isNoHead = note.isSlideNoHead;
+        if(!note.isSlideNoHead)
+        {
+            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+            noteCount++;
+        }
         NDCompo.time = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
@@ -815,6 +876,11 @@ public class NoteLoader : MonoBehaviour
         //if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
 
         NDCompo.isNoHead = note.isSlideNoHead;
+        if (!note.isSlideNoHead)
+        {
+            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+            noteCount++;
+        }
         NDCompo.time = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
