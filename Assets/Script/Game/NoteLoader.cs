@@ -206,7 +206,7 @@ public class NoteLoader : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        Debug.Log($"NoteLoader State:{State}");
+        //Debug.Log($"NoteLoader State:{State}");
     }
 
     public IEnumerator LoadNotes(SimaiProcess simaiProcess, float ignoreOffset=0f)
