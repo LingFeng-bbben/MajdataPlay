@@ -325,9 +325,13 @@ namespace MajdataPlay.Game.Notes
                 default:
                     break;
             }
-
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
             effectManager.PlayFastLate(_obj, flAnim, judgeResult);
-            anim.SetTrigger("touch");
+
+            if (canPlay)
+                anim.SetTrigger("touch");
+            else
+                Destroy(obj);
         }
         protected override void PlayHoldEffect()
         {
