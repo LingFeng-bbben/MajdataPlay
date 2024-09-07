@@ -6,6 +6,9 @@ using MajdataPlay.Utils;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System;
+using MajdataPlay.Extensions;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 #nullable enable
 public class GameManager : MonoBehaviour
 {
@@ -58,10 +61,26 @@ public class GameManager : MonoBehaviour
             Setting = new GameSetting();
             Save();
         }
-        Setting.Display.InnerJudgeDistance = Math.Min(Setting.Display.InnerJudgeDistance,1);
-        Setting.Display.InnerJudgeDistance = Math.Max(Setting.Display.InnerJudgeDistance,0);
-        Setting.Display.OuterJudgeDistance = Math.Min(Setting.Display.OuterJudgeDistance, 1);
-        Setting.Display.OuterJudgeDistance = Math.Max(Setting.Display.OuterJudgeDistance, 0);
+        Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(1, 0);
+        Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(1, 0);
+
+        var fullScreen = Setting.Debug.FullScreen;
+        if (!fullScreen)
+            Screen.fullScreen = false;
+        var resolution = Setting.Display.Resolution.ToLower();
+        if (resolution is not "auto")
+        {
+            var param = resolution.Split("x");
+            int width, height;
+
+            if (param.Length != 2)
+                return;
+            else if (!int.TryParse(param[0], out width) || !int.TryParse(param[1], out height))
+                return;
+            Screen.SetResolution(width, height, fullScreen);
+        }
+        var thiss = Process.GetCurrentProcess();
+        thiss.PriorityClass = ProcessPriorityClass.RealTime;
     }
     void Start()
     {

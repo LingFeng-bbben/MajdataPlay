@@ -69,7 +69,7 @@ public class BGManager : MonoBehaviour
         if (sprite == null) return;
         spriteRender.sprite = sprite;
         //todo:set correct scale
-        var scale = (1080f / sprite.texture.width) / 0.01f;
+        var scale = 1080f / sprite.texture.width;
         gameObject.transform.localScale = new Vector3(scale, scale, scale);
     }
 
@@ -97,10 +97,10 @@ public class BGManager : MonoBehaviour
         videoPlayer.Play();
         videoPlayer.time = gamePlayManager.AudioTime;
 
-        var scale = (videoPlayer.height / (float)videoPlayer.width) / 0.01f;
+        var scale = videoPlayer.height / (float)videoPlayer.width;
         spriteRender.sprite =
             Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
         
-        gameObject.transform.localScale = new Vector3(1f / 0.01f, 1f * scale);
+        gameObject.transform.localScale = new Vector3(1f, 1f * scale);
     }
 }
