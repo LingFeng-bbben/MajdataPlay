@@ -101,7 +101,13 @@ namespace MajdataPlay.Game.Notes
 
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
-                    PlayHoldEffect();
+                {
+                    if (remainingTime == 0)
+                        base.StopHoldEffect();
+                    else
+                        PlayHoldEffect();
+                            
+                }
                 else
                 {
                     playerIdleTime += Time.fixedDeltaTime;
