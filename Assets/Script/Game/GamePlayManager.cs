@@ -14,6 +14,7 @@ using TMPro;
 public class GamePlayManager : MonoBehaviour
 {
     public static GamePlayManager Instance;
+    public MaiScore? HistoryScore { get; private set; }
     public (float,float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
 
     AudioSampleWrap audioSample;
@@ -45,6 +46,7 @@ public class GamePlayManager : MonoBehaviour
         Instance = this;
         print(GameManager.Instance.SelectedIndex);
         song = GameManager.Instance.SongList[GameManager.Instance.SelectedIndex];
+        HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
     }
 
     private void OnPauseButton(object sender,InputEventArgs e)

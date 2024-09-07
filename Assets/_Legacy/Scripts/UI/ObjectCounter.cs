@@ -220,19 +220,19 @@ public class ObjectCounter : MonoBehaviour
                 bgInfoHeader.color = CPComboColor;
                 bgInfoText.color = CPComboColor;
                 bgInfoHeader.text = "CPCombo";
-                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                 break;
             case BGInfoType.PCombo:
                 bgInfoHeader.color = PComboColor;
                 bgInfoText.color = PComboColor;
                 bgInfoHeader.text = "PCombo";
-                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                 break;
             case BGInfoType.Combo:
                 bgInfoHeader.color = ComboColor;
                 bgInfoText.color = ComboColor;
                 bgInfoHeader.text = "Combo";
-                bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                 break;
             case BGInfoType.Achievement_101:
             case BGInfoType.Achievement_100:
@@ -241,14 +241,41 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.AchievementClassical_100:
                 bgInfoHeader.text = "Achievement";
                 bgInfoHeader.color = AchievementGoldColor;
-                bgInfoText.alignment = TextAnchor.MiddleRight;
+                //bgInfoText.alignment = TextAnchor.MiddleRight;
                 break;
             case BGInfoType.DXScore:
             case BGInfoType.DXScoreRank:
                 bgInfoHeader.text = "でらっくす SCORE";
                 bgInfoHeader.color = DXScoreColor;
                 bgInfoText.color = DXScoreColor;
-                bgInfoText.alignment = TextAnchor.MiddleCenter;
+                //bgInfoText.alignment = TextAnchor.MiddleCenter;
+                break;
+            case BGInfoType.S_Board:
+                bgInfoHeader.text = "S  Board";
+                bgInfoHeader.color = AchievementSilverColor;
+                bgInfoText.color = AchievementSilverColor;
+                bgInfoText.text = "4.0000%";
+                //bgInfoText.alignment = TextAnchor.MiddleRight;
+                break;
+            case BGInfoType.SS_Board:
+                bgInfoHeader.text = "SS  Board";
+                bgInfoHeader.color = AchievementGoldColor;
+                bgInfoText.color = AchievementGoldColor;
+                bgInfoText.text = "2.0000%";
+                //bgInfoText.alignment = TextAnchor.MiddleRight;
+                break;
+            case BGInfoType.SSS_Board:
+                bgInfoHeader.text = "SSS  Board";
+                bgInfoHeader.color = AchievementGoldColor;
+                bgInfoText.color = AchievementGoldColor;
+                bgInfoText.text = "1.0000%";
+                //bgInfoText.alignment = TextAnchor.MiddleRight;
+                break;
+            case BGInfoType.MyBest:
+                bgInfoHeader.text = "MyBestScore Board";
+                bgInfoHeader.color = AchievementGoldColor;
+                bgInfoText.color = AchievementGoldColor;
+                bgInfoText.text = "101.0000%";
                 break;
             case BGInfoType.None:
                 bgInfoText.gameObject.SetActive(false);
@@ -659,7 +686,8 @@ public class ObjectCounter : MonoBehaviour
     /// </summary>
     void UpdateMainOutput()
     {
-        switch(GameManager.Instance.Setting.Game.BGInfo)
+        var bgInfo = GameManager.Instance.Setting.Game.BGInfo;
+        switch (bgInfo)
         {
             case BGInfoType.CPCombo:
                 UpdateCombo(cPCombo);
@@ -696,9 +724,40 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.DXScoreRank:
                 UpdateDXScoreRank();
                 break;
+            case BGInfoType.S_Board:
+            case BGInfoType.SS_Board:
+            case BGInfoType.SSS_Board:
+            case BGInfoType.MyBest:
+                UpdateRankBoard(bgInfo);
+                break;
             default:
                 return;
         }
+    }
+    void UpdateRankBoard(in BGInfoType bgInfo)
+    {
+        double rate = -1;
+        switch(bgInfo)
+        {
+            case BGInfoType.S_Board:
+                rate = accRate[2] - 97;
+                break;
+            case BGInfoType.SS_Board:
+                rate = accRate[2] - 99;
+                break;
+            case BGInfoType.SSS_Board:
+                rate = accRate[2] - 100;
+                break;
+            case BGInfoType.MyBest:
+                rate = accRate[2] - GamePlayManager.Instance.HistoryScore.Acc.DX;
+                break;
+            default:
+                return;
+        }
+        if (rate >= 0)
+            bgInfoText.text = $"{rate:F4}%";
+        else
+            bgInfoText.gameObject.SetActive(false);
     }
     void UpdateDXScoreRank()
     {
