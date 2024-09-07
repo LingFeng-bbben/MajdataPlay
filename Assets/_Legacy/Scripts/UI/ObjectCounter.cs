@@ -67,6 +67,7 @@ public class ObjectCounter : MonoBehaviour
     long late = 0;
 
     float diff = 0; // Note judge diff
+    float diffTimer = 3;
 
     public long totalDXScore = 0;
     long lostDXScore = 0;
@@ -277,6 +278,12 @@ public class ObjectCounter : MonoBehaviour
                 bgInfoText.color = AchievementGoldColor;
                 bgInfoText.text = "101.0000%";
                 break;
+            case BGInfoType.Diff:
+                bgInfoHeader.color = ComboColor;
+                bgInfoText.color = ComboColor;
+                bgInfoHeader.text = "Diff";
+                bgInfoText.text = "0";
+                break;
             case BGInfoType.None:
                 bgInfoText.gameObject.SetActive(false);
                 break;
@@ -325,7 +332,8 @@ public class ObjectCounter : MonoBehaviour
             JudgeRecord = judgeRecord,
             Fast = fast,
             Late = late,
-            DXScore = 0,
+            DXScore = totalDXScore + lostDXScore,
+            TotalDXScore = totalDXScore,
             ComboState = ComboState.None
         };
     }
@@ -557,6 +565,12 @@ public class ObjectCounter : MonoBehaviour
         }
         totalJudgedCount[result]++;
 
+        if(noteType != SimaiNoteType.Slide && !judgeResult.IsMiss)
+        {
+            diff = judgeResult.Diff;
+            diffTimer = 3;
+        }
+
         if(!judgeResult.IsMiss)
             combo++;
 
@@ -729,6 +743,19 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.SSS_Board:
             case BGInfoType.MyBest:
                 UpdateRankBoard(bgInfo);
+                break;
+            case BGInfoType.Diff:
+                bgInfoText.text = $"{diff:F2}";
+                var oldColor = bgInfoText.color;
+                var newColor = new Color()
+                {
+                    r = oldColor.r,
+                    g = oldColor.g,
+                    b = oldColor.b,
+                    a = diffTimer.Clamp(1, 0)
+                };
+                bgInfoText.color = newColor;
+                diffTimer -= Time.deltaTime;
                 break;
             default:
                 return;

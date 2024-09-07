@@ -72,8 +72,9 @@ public class ScoreManager: MonoBehaviour
             }
 
             record.Acc = result.Acc > record.Acc ? record.Acc.Update(result.Acc) : record.Acc;
-            // TO-DO
+
             record.DXScore = result.DXScore;
+            record.TotalDXScore = result.TotalDXScore;
 
             record.JudgeDeatil = result.JudgeRecord;
             record.Fast = result.Fast;
