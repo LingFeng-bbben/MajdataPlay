@@ -193,7 +193,7 @@ namespace MajdataPlay.Game.Notes
             var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
             objectCounter.NextNote(startPosition);
-            objectCounter.ReportResult(this, judgeResult, isBreak);
+            objectCounter.ReportResult(this, result);
             
         }
     }

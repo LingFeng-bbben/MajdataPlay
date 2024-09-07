@@ -649,4 +649,16 @@ namespace MajdataPlay.Extensions
                 return !source.IsLeftOf(target);
         }
     }
+    public static class MathExtensions
+    {
+        public static T Clamp<T>(this T source, T max, T min) where T : IComparable<T>
+        {
+            if (source.CompareTo(min) < 0)
+                return min;
+            else if (source.CompareTo(max) > 0)
+                return max;
+            else
+                return source;
+        }
+    }
 }

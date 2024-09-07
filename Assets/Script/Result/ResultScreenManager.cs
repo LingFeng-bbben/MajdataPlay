@@ -1,4 +1,4 @@
-using MajdataPlay.Types;
+ï»¿using MajdataPlay.Types;
 using MajdataPlay.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -52,12 +52,12 @@ public class ResultScreenManager : MonoBehaviour
 
         if (result.Acc.DX < 70)
         {
-            omg.text = "ÄúÊäÁË";
+            omg.text = "æ‚¨è¾“äº†";
             xxlb.GetComponent<Animator>().SetTrigger("Bad");
         }
         else
         {
-            omg.text = "ÄúÓ®ÁË";
+            omg.text = "æ‚¨èµ¢äº†";
             xxlb.GetComponent<Animator>().SetTrigger("Good");
         }
 
@@ -68,7 +68,11 @@ public class ResultScreenManager : MonoBehaviour
 
         accDX.text = $"{result.Acc.DX:F4}%";
         accClassic.text = $"{result.Acc.Classic:F2}%";
-        dxScore.text = result.DXScore.ToString();
+        var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
+        if(dxScoreRank.Rank > 0)
+            dxScore.text = $"âœ§{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+        else
+            dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
 
         perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
         greatCount.text = $"{totalJudgeRecord.Great}";

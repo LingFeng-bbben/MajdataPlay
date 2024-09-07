@@ -17,6 +17,7 @@
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
+        public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
     }
     public class JudgeOptions
     {
@@ -40,6 +41,7 @@
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
+        public string Resolution { get; set; } = "Auto";
     }
     public class SoundOptions
     {
@@ -62,6 +64,7 @@
     {
         public bool DisplaySensor { get; set; } = false;
         public bool DisplayFPS { get; set; } = false;
+        public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = true;
         public float NoteAppearRate { get; set; } = 0.36f;
     }

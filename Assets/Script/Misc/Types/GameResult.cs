@@ -10,6 +10,7 @@ namespace MajdataPlay.Types
         public long Fast { get; init; }
         public long Late { get; init; }
         public long DXScore { get; init; }
+        public long TotalDXScore { get; init; }
         public ComboState ComboState { get; init; }
     }
 }

@@ -13,7 +13,7 @@ namespace MajdataPlay.Types
         public bool IsFast => Diff < 0;
         public bool IsMiss => Result == JudgeType.Miss;
         /// <summary>
-        /// less than zero is "Fast"
+        /// in milliseconds , less than zero is "Fast"
         /// </summary>
         public float Diff { get; init; }
     }

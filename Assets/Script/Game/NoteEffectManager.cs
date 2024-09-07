@@ -105,7 +105,7 @@ public class NoteEffectManager : MonoBehaviour
 
         var isBreak = judgeResult.IsBreak;
         var result = judgeResult.Result;
-        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
 
         switch (result)
         {
@@ -259,7 +259,7 @@ public class NoteEffectManager : MonoBehaviour
             default:
                 break;
         }
-        var canPlay = CheckEffectSetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
 
         PlayFastLate(_obj, flAnim, judgeResult);
 
@@ -277,9 +277,9 @@ public class NoteEffectManager : MonoBehaviour
     public void PlayFastLate(int position, in JudgeResult judgeResult)
     {
         var pos = position - 1;
-        var canPlay = CheckFastLateSetting(judgeResult);
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
 
-        if (!canPlay)
+        if (!canPlay || judgeResult.IsMiss)
         {
             fastLateEffects[pos].SetActive(false);
             return;
@@ -295,51 +295,24 @@ public class NoteEffectManager : MonoBehaviour
         fastLateAnims[pos].SetTrigger("perfect");
 
     }
-    bool CheckEffectSetting(JudgeDisplayType effectSetting, in JudgeResult judgeResult)
+    public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
     {
         var result = judgeResult.Result;
         var resultValue = (int)result;
         var absValue = Math.Abs(7 - resultValue);
 
-        switch (effectSetting)
+        return setting switch
         {
-            case JudgeDisplayType.All:
-                return true;
-            case JudgeDisplayType.BelowCP:
-                return absValue != 0;
-            case JudgeDisplayType.BelowP:
-                return absValue > 2;
-            case JudgeDisplayType.BelowGR:
-                return absValue > 5;
-            default:
-                return false;
-        }
-    }
-    bool CheckFastLateSetting(in JudgeResult judgeResult)
-    {
-        var flSetting = GameManager.Instance.Setting.Display.FastLateType;
-        var result = judgeResult.Result;
-        var resultValue = (int)result;
-        var absValue = Math.Abs(7 - resultValue);
-
-
-        if (resultValue is 0 || 
-            flSetting is JudgeDisplayType.Disable ||
-            judgeResult.Diff == 0)
-            return false;
-        switch(flSetting)
-        {
-            case JudgeDisplayType.All:
-                return true;
-            case JudgeDisplayType.BelowCP:
-                return resultValue != 7;
-            case JudgeDisplayType.BelowP:
-                return absValue > 2;
-            case JudgeDisplayType.BelowGR:
-                return absValue > 5;
-        }
-
-        return false;
+            JudgeDisplayType.All => true,
+            JudgeDisplayType.BelowCP => resultValue != 7,
+            JudgeDisplayType.BelowP => absValue > 2,
+            JudgeDisplayType.BelowGR => absValue > 5,
+            JudgeDisplayType.All_BreakOnly => judgeResult.IsBreak,
+            JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && judgeResult.IsBreak,
+            JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && judgeResult.IsBreak,
+            _ => false
+        };
     }
     /// <summary>
     /// Touch，TouchHold
@@ -350,8 +323,8 @@ public class NoteEffectManager : MonoBehaviour
     public void PlayFastLate(GameObject obj,Animator anim, in JudgeResult judgeResult)
     {
         var customSkin = SkinManager.Instance;
-        var canPlay = CheckFastLateSetting(judgeResult);
-        if (!canPlay)
+        var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType,judgeResult);
+        if (!canPlay || judgeResult.IsMiss)
         {
             obj.SetActive(false);
             Destroy(obj);

@@ -103,7 +103,7 @@ public class SkinManager : MonoBehaviour
             NoteLines = StarLines,
             ExEffects = new Color[]
             {
-                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                new Color(1,1,1), //White
                 new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
                 new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             }

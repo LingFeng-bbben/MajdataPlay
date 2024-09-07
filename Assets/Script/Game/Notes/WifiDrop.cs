@@ -275,7 +275,14 @@ namespace MajdataPlay.Game.Notes
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
 
-            objectCounter.ReportResult(this, judgeResult, isBreak);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                Diff = judgeDiff,
+                IsBreak = isBreak
+            };
+
+            objectCounter.ReportResult(this, result);
             if (isBreak && judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
@@ -284,7 +291,7 @@ namespace MajdataPlay.Game.Notes
                 audioEffMana.PlayBreakSlideEndSound();
             }
             slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
-            PlaySlideOK();
+            PlaySlideOK(result);
 
             isDestroying = true;
         }

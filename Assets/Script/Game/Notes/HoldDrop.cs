@@ -101,7 +101,13 @@ namespace MajdataPlay.Game.Notes
 
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
                 if (on)
-                    PlayHoldEffect();
+                {
+                    if (remainingTime == 0)
+                        base.StopHoldEffect();
+                    else
+                        PlayHoldEffect();
+                            
+                }
                 else
                 {
                     playerIdleTime += Time.fixedDeltaTime;
@@ -336,7 +342,7 @@ namespace MajdataPlay.Game.Notes
 
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
-            objectCounter.ReportResult(this, judgeResult, isBreak);
+            objectCounter.ReportResult(this, result);
             if (!isJudged)
                 objectCounter.NextNote(startPosition);
 

@@ -81,3 +81,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/settings.json
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Nn]otes/*
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Tt]extSprites/*
+/MajPlayRuntime.log

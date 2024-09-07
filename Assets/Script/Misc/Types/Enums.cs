@@ -143,7 +143,23 @@
         /// <summary>
         /// None
         /// </summary>
-        Disable
+        Disable,
+        /// <summary>
+        /// CriticalPerfect, Pefect, Great, Good
+        /// </summary>
+        All_BreakOnly,
+        /// <summary>
+        /// Pefect, Great, Good
+        /// </summary>
+        BelowCP_BreakOnly,
+        /// <summary>
+        /// Great, Good
+        /// </summary>
+        BelowP_BreakOnly,
+        /// <summary>
+        /// Good
+        /// </summary>
+        BelowGR_BreakOnly,
     }
     public enum NoteLoaderStatus
     {
@@ -152,5 +168,25 @@
         Backend,
         Error,
         Finished
+    }
+    public enum BGInfoType
+    {
+        CPCombo,
+        PCombo,
+        Combo,
+        Achievement_101,
+        Achievement_100,
+        Achievement,
+        AchievementClassical,
+        AchievementClassical_100,
+        DXScore,
+        DXScoreRank,
+        S_Board,
+        SS_Board,
+        SSS_Board,
+        MyBest,
+        Diff,
+        None
+
     }
 }
