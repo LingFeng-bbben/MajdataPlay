@@ -491,6 +491,7 @@ public class NoteLoader : MonoBehaviour
                         ObjectCounter.breakSum++;
                     }
                 }
+        ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
     }
 
     private void CountNoteCount(List<SimaiNote> timing)

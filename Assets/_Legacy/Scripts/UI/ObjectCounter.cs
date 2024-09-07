@@ -39,13 +39,10 @@ public class ObjectCounter : MonoBehaviour
     public int touchSum;
     public int breakSum;
     private Text rate;
-    private Text statusAchievement;
 
     Text bgInfoHeader;
     Text bgInfoText;
-    private Text statusCombo;
-    private Text statusDXScore;
-    private Text statusScore;
+
     private Text table;
     private Text judgeResultCount;
 
@@ -71,6 +68,9 @@ public class ObjectCounter : MonoBehaviour
 
     float diff = 0; // Note judge diff
 
+    public long totalDXScore = 0;
+    long lostDXScore = 0;
+
     long combo = 0; // Combo
     long pCombo = 0; // Perfect Combo
     long cPCombo = 0; // Critical Perfect
@@ -92,16 +92,6 @@ public class ObjectCounter : MonoBehaviour
 
         bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
         bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
-
-        statusCombo = GameObject.Find("ComboText").GetComponent<Text>();
-        statusScore = GameObject.Find("ScoreText").GetComponent<Text>();
-        statusAchievement = GameObject.Find("AchievementText").GetComponent<Text>();
-        statusDXScore = GameObject.Find("DXScoreText").GetComponent<Text>();
-
-        statusCombo.gameObject.SetActive(false);
-        statusScore.gameObject.SetActive(false);
-        statusAchievement.gameObject.SetActive(false);
-        statusDXScore.gameObject.SetActive(false);
 
         judgedTapCount = new()
         {
@@ -222,6 +212,7 @@ public class ObjectCounter : MonoBehaviour
             {JudgeType.LateGood, 0 },
             {JudgeType.Miss, 0 },
         };
+
         bgInfoText.gameObject.SetActive(true);
         switch (GameManager.Instance.Setting.Game.BGInfo)
         {
@@ -250,12 +241,14 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.AchievementClassical_100:
                 bgInfoHeader.text = "Achievement";
                 bgInfoHeader.color = AchievementGoldColor;
-                bgInfoHeader.alignment = TextAnchor.MiddleRight;
+                bgInfoText.alignment = TextAnchor.MiddleRight;
                 break;
             case BGInfoType.DXScore:
-            case BGInfoType.DXScoreDown:
+            case BGInfoType.DXScoreRank:
                 bgInfoHeader.text = "でらっくす SCORE";
                 bgInfoHeader.color = DXScoreColor;
+                bgInfoText.color = DXScoreColor;
+                bgInfoText.alignment = TextAnchor.MiddleCenter;
                 break;
             case BGInfoType.None:
                 bgInfoText.gameObject.SetActive(false);
@@ -314,7 +307,6 @@ public class ObjectCounter : MonoBehaviour
     {
         UpdateMainOutput();
         UpdateJudgeResult();
-        //if (FiSumScore() == 0) return;
         UpdateSideOutput();
     }
     NoteScore GetNoteScoreSum()
@@ -548,6 +540,7 @@ public class ObjectCounter : MonoBehaviour
                 combo = 0;
                 cPCombo = 0;
                 pCombo = 0;
+                lostDXScore -= 3;
                 break;
             case JudgeType.Perfect:
                 cPerfectCount++;
@@ -561,6 +554,7 @@ public class ObjectCounter : MonoBehaviour
                 cPCombo = 0;
                 pCombo++;
                 perfectCount++;
+                lostDXScore -= 1;
                 break;
             case JudgeType.LateGreat2:
             case JudgeType.LateGreat1:
@@ -571,18 +565,24 @@ public class ObjectCounter : MonoBehaviour
                 cPCombo = 0;
                 pCombo = 0;
                 greatCount++;
+                lostDXScore -= 2;
                 break;
             case JudgeType.LateGood:
             case JudgeType.FastGood:
                 cPCombo = 0;
                 pCombo = 0;
                 goodCount++;
+                lostDXScore -= 3;
                 break;
         }
 
         UpdaateFastLate(judgeResult);
         CalAccRate();
     }
+    /// <summary>
+    /// 更新Fast/Late统计信息
+    /// </summary>
+    /// <param name="judgeResult"></param>
     void UpdaateFastLate(in JudgeResult judgeResult)
     {
         var gameSetting = GameManager.Instance.Setting.Display.FastLateType;
@@ -640,22 +640,10 @@ public class ObjectCounter : MonoBehaviour
                 break;
         }
     }
-    internal void NextNote(int pos)
-    {
-        notes.noteIndex[pos]++;
-    }
-    internal void NextTouch(SensorType pos) => notes.touchIndex[pos]++;
-    SimaiNoteType GetNoteType(NoteDrop note) => note switch
-    {
-        TapDrop => SimaiNoteType.Tap,
-        StarDrop => SimaiNoteType.Tap,
-        HoldDrop => SimaiNoteType.Hold,
-        SlideDrop => SimaiNoteType.Slide,
-        WifiDrop => SimaiNoteType.Slide,
-        TouchHoldDrop => SimaiNoteType.TouchHold,
-        TouchDrop => SimaiNoteType.Touch,
-        _ => throw new InvalidOperationException()
-    };
+    /// <summary>
+    /// 更新Combo
+    /// </summary>
+    /// <param name="combo"></param>
     void UpdateCombo(long combo)
     {
         if (combo == 0)
@@ -666,7 +654,10 @@ public class ObjectCounter : MonoBehaviour
             bgInfoText.text = $"{combo}";
         }
     }
-    private void UpdateMainOutput()
+    /// <summary>
+    /// 更新BgInfo
+    /// </summary>
+    void UpdateMainOutput()
     {
         switch(GameManager.Instance.Setting.Game.BGInfo)
         {
@@ -700,11 +691,47 @@ public class ObjectCounter : MonoBehaviour
                 UpdateAchievementColor(accRate[1], bgInfoText);
                 break;
             case BGInfoType.DXScore:
-            case BGInfoType.DXScoreDown:
+                bgInfoText.text = $"{lostDXScore}";
+                break;
+            case BGInfoType.DXScoreRank:
+                UpdateDXScoreRank();
+                break;
             default:
                 return;
         }
     }
+    void UpdateDXScoreRank()
+    {
+        var remainingDXScore = totalDXScore + lostDXScore;
+        var dxRank = new DXScoreRank(remainingDXScore, totalDXScore);
+        var num = remainingDXScore - (dxRank.Lower + 1);
+        if (dxRank.Rank == 0)
+        {
+            bgInfoText.gameObject.SetActive(false);
+            return;
+        }
+        else
+            bgInfoText.gameObject.SetActive(true);
+        bgInfoHeader.text = $"✧{dxRank.Rank}";
+        bgInfoText.text = $"+{num}";
+        switch(dxRank.Rank)
+        {
+            case 5:
+            case 4:
+            case 3:
+                bgInfoHeader.color = AchievementGoldColor;
+                bgInfoText.color = AchievementGoldColor;
+                break;
+            case 2:
+            case 1:
+                bgInfoHeader.color = DXScoreColor;
+                bgInfoText.color = DXScoreColor;
+                break;
+        }
+    }
+    /// <summary>
+    /// 更新SubDisplay的JudgeResult
+    /// </summary>
     void UpdateJudgeResult()
     {
         //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
@@ -715,8 +742,10 @@ public class ObjectCounter : MonoBehaviour
         //                           .Sum();
         judgeResultCount.text = $"{cPerfectCount}\n{perfectCount}\n{greatCount}\n{goodCount}\n{missCount}\n\n{fast}\n{late}";
     }
-
-    private void UpdateSideOutput()
+    /// <summary>
+    /// 更新SubDisplay左侧的Note详情
+    /// </summary>
+    void UpdateSideOutput()
     {
         var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
 
@@ -738,14 +767,15 @@ public class ObjectCounter : MonoBehaviour
                     "DELUXE Rate:\n" +
                     $"{accRate[4]:F4} % ";
     }
-
+    /// <summary>
+    /// 游戏结算
+    /// </summary>
     public void CalculateFinalResult()
     {
         CalAccRate();
         GamePlayManager.Instance.EndGame((float)accRate[2]);
     }
-
-    private void UpdateState()
+    void UpdateState()
     {
 // Only define this when debugging (of this feature) is needed.
 // I don't bother compiling this as Debug.
@@ -763,8 +793,12 @@ public class ObjectCounter : MonoBehaviour
         }
 #endif
     }
-
-    private void UpdateAchievementColor(double achievementRate, Text textElement)
+    /// <summary>
+    /// 根据Achievement更新BgInfoHeader的颜色
+    /// </summary>
+    /// <param name="achievementRate"></param>
+    /// <param name="textElement"></param>
+    void UpdateAchievementColor(double achievementRate, Text textElement)
     {
         var newColor = achievementRate switch
         {
@@ -777,86 +811,17 @@ public class ObjectCounter : MonoBehaviour
         if (textElement.color != newColor)
             textElement.color = newColor;
     }
-
-    //public void ComboSetActive(bool isActive)
-    //{
-    //    ComboSetActive((EditorComboIndicator)(isActive ? 1 : 0));
-    //}
-
-    //public void ComboSetActive(EditorComboIndicator newComboMode)
-    //{
-    //    textMode = newComboMode;
-    //    var isActive = textMode > 0;
-    //    var isAccClassic = textMode == EditorComboIndicator.AchievementClassic ||
-    //                       textMode == EditorComboIndicator.AchievementDownClassic;
-    //    var isPtsClassic = textMode == EditorComboIndicator.ScoreClassic;
-    //    var isAccDeluxe = textMode == EditorComboIndicator.AchievementDeluxe ||
-    //                      textMode == EditorComboIndicator.AchievementDownDeluxe;
-    //    var isPtsDeluxe = textMode == EditorComboIndicator.ScoreDeluxe;
-    //    var isPtsNormDeluxe = textMode == EditorComboIndicator.CScoreDedeluxe ||
-    //                          textMode == EditorComboIndicator.CScoreDownDedeluxe;
-    //    var isDefault = !(
-    //        isAccClassic || isPtsClassic ||
-    //        isAccDeluxe || isPtsDeluxe ||
-
-    //        // De-DXfied 
-    //        isPtsNormDeluxe ||
-    //        false
-    //    );
-
-    //    statusCombo.gameObject.SetActive(isActive && isDefault);
-    //    statusScore.gameObject.SetActive(isActive && (isPtsClassic || isPtsNormDeluxe));
-    //    statusAchievement.gameObject.SetActive(isActive && (isAccClassic || isAccDeluxe));
-    //    statusDXScore.gameObject.SetActive(isActive && isPtsDeluxe);
-    //}
-
-    //private int FiSumScore()
-    //{
-    //    return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500;
-    //}
-
-    //private int FiNowScore()
-    //{
-    //    return tapCount * 500 + holdCount * 1000 + slideCount * 1500 + touchCount * 500 + breakCount * 2600;
-    //}
-
-    //private int FiNowBreakScore()
-    //{
-    //    return tapSum * 500 + holdSum * 1000 + slideSum * 1500 + touchSum * 500 + breakSum * 2500 + breakCount * 100;
-    //}
-
-    //private int DxSumScore()
-    //{
-    //    return tapSum * 1 + holdSum * 2 + slideSum * 3 + touchSum * 1 + breakSum * 5;
-    //}
-
-    //private int DxNowScore()
-    //{
-    //    return tapCount * 1 + holdCount * 2 + slideCount * 3 + touchCount * 1 + breakCount * 5;
-    //}
-
-    //private int DxExSumScore()
-    //{
-    //    return (tapSum + holdSum + slideSum + touchSum + breakSum) * 3;
-    //}
-
-    //private int DxExNowScore()
-    //{
-    //    return (tapCount + holdCount + slideCount + touchCount + breakCount) * 3;
-    //}
-
-    //private int DeDxNowScore()
-    //{
-    //    return (int)Math.Round(FiSumScore() * ((float)DxNowScore() / DxSumScore() + BreakRate() / 100f) / 5) * 5;
-    //}
-
-    //private int DeDxNowBreakScore()
-    //{
-    //    return (int)Math.Round(FiSumScore() * (1f + BreakRate() / 100f) / 5) * 5;
-    //}
-
-    //private float BreakRate()
-    //{
-    //    return breakSum > 0 ? (float)breakCount / breakSum : 0f;
-    //}
+    internal void NextNote(int pos) => notes.noteIndex[pos]++;
+    internal void NextTouch(SensorType pos) => notes.touchIndex[pos]++;
+    SimaiNoteType GetNoteType(NoteDrop note) => note switch
+    {
+        TapDrop => SimaiNoteType.Tap,
+        StarDrop => SimaiNoteType.Tap,
+        HoldDrop => SimaiNoteType.Hold,
+        SlideDrop => SimaiNoteType.Slide,
+        WifiDrop => SimaiNoteType.Slide,
+        TouchHoldDrop => SimaiNoteType.TouchHold,
+        TouchDrop => SimaiNoteType.Touch,
+        _ => throw new InvalidOperationException()
+    };
 }

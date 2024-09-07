@@ -2180,7 +2180,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &571068162
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2360,8 +2360,8 @@ MonoBehaviour:
   AchievementGoldColor: {r: 0.8784314, g: 0.7490196, b: 0.49803922, a: 1}
   CPComboColor: {r: 1, g: 0.93850434, b: 0.3150943, a: 1}
   PComboColor: {r: 0.8490566, g: 0.5381211, b: 0, a: 1}
-  ComboColor: {r: 0.79215693, g: 0.24313727, b: 0.4901961, a: 0}
-  DXScoreColor: {r: 0.24705884, g: 0.6901961, b: 0.24705884, a: 0}
+  ComboColor: {r: 0.79215693, g: 0.24313727, b: 0.4901961, a: 1}
+  DXScoreColor: {r: 0.24705884, g: 0.6901961, b: 0.24705884, a: 1}
   tapCount: 0
   holdCount: 0
   slideCount: 0
@@ -2378,6 +2378,7 @@ MonoBehaviour:
   - 101
   - 100
   - 0
+  totalDXScore: 0
 --- !u!4 &620892875
 Transform:
   m_ObjectHideFlags: 0
@@ -2412,7 +2413,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &637779387
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3480,7 +3481,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 1
+  m_Text: 
 --- !u!222 &794615200
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6080,7 +6081,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1744407731
 RectTransform:
   m_ObjectHideFlags: 0

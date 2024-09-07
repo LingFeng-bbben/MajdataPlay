@@ -180,7 +180,12 @@
         AchievementClassical,
         AchievementClassical_100,
         DXScore,
-        DXScoreDown,
+        DXScoreRank,
+        S_Board,
+        SS_Board,
+        SSS_Board,
+        MyBest,
+        Diff,
         None
 
     }
