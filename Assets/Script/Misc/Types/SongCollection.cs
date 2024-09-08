@@ -2,22 +2,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SongCollection : IEnumerable
+namespace MajdataPlay.Types
 {
-    private SongDetail[] songs;
-    public SongCollection(SongDetail[] pArray)
+    public class SongCollection : IEnumerable<SongDetail>
     {
-        songs = new SongDetail[pArray.Length];
+        public int Count => songs.Length;
 
-        for (int i = 0; i < pArray.Length; i++)
+
+        private SongDetail[] songs;
+        public SongCollection(SongDetail[] pArray)
         {
-            songs[i] = pArray[i];
-        }
-    }
+            songs = new SongDetail[pArray.Length];
 
-    // Implementation for the GetEnumerator method.
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return songs.GetEnumerator();
+            for (int i = 0; i < pArray.Length; i++)
+            {
+                songs[i] = pArray[i];
+            }
+        }
+        public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
+
+        // Implementation for the GetEnumerator method.
+        IEnumerator IEnumerable.GetEnumerator() => songs.GetEnumerator();
+        struct Enumerator: IEnumerator<SongDetail>
+        {
+            SongDetail[] songs;
+            public SongDetail Current { get; private set; }
+            object IEnumerator.Current { get => Current; }
+            int index;
+            public Enumerator(in SongDetail[] songs)
+            {
+                this.songs = songs;
+                Current = default;
+                index = 0;
+            }
+            public bool MoveNext() 
+            {
+                if(index >= songs.Length)
+                    return false;
+                Current = songs[index++];
+                return true;
+            }
+            public void Reset() => index = 0;
+            public void Dispose() { }
+        }
     }
 }
