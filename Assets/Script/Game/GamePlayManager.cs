@@ -46,10 +46,11 @@ public class GamePlayManager : MonoBehaviour
     private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
     float timeSource { get {
             GetSystemTimePreciseAsFileTime(out var filetime);
-            filetime = filetime - 133701020000000000;
+            filetime = filetime - fileTimeAtStart;
             //print(filetime);
-            return filetime/10000000f;
+            return (float)(filetime/10000000d);
         } }
+    long fileTimeAtStart = 0;
     // Start is called before the first frame update
     private void Awake()
     {
@@ -57,6 +58,7 @@ public class GamePlayManager : MonoBehaviour
         print(GameManager.Instance.SelectedIndex);
         song = GameManager.Instance.SongList[GameManager.Instance.SelectedIndex];
         HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
+        GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
     }
 
     private void OnPauseButton(object sender,InputEventArgs e)
@@ -77,7 +79,7 @@ public class GamePlayManager : MonoBehaviour
         try
         {
             //TODO: should load from disk instead of memory
-            var maidata = song.InnerMaidata[(int)GameManager.Instance.SelectedDiff];
+            var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
             if (maidata == "" || maidata == null) {
                 BackToList();
                 return;
@@ -216,10 +218,11 @@ public class GamePlayManager : MonoBehaviour
             yield return new WaitForEndOfFrame();
 
         
-        AudioStartTime = timeSource;
-        audioSample.Play();
-        //AudioStartTime = Time.unscaledTime;
         
+        audioSample.Play();
+        AudioStartTime = timeSource;
+        //AudioStartTime = Time.unscaledTime;
+
 
     }
 

@@ -1,4 +1,5 @@
 using MajdataPlay.Types;
+using MajSimaiDecode;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -48,7 +49,7 @@ namespace MajdataPlay.Utils
             }
             return songList;
         }
-        
+
         static Sprite LoadSpriteFromFile(string FilePath)
         {
             Texture2D SpriteTexture = LoadTexture(FilePath);
