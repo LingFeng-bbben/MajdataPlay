@@ -6,18 +6,15 @@ namespace MajdataPlay.Types
 {
     public class SongCollection : IEnumerable<SongDetail>
     {
+        public string Name { get; private set; }
         public int Count => songs.Length;
 
 
         private SongDetail[] songs;
-        public SongCollection(SongDetail[] pArray)
+        public SongCollection(string name,in SongDetail[] pArray)
         {
-            songs = new SongDetail[pArray.Length];
-
-            for (int i = 0; i < pArray.Length; i++)
-            {
-                songs[i] = pArray[i];
-            }
+            songs = pArray;
+            Name = name;
         }
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 
