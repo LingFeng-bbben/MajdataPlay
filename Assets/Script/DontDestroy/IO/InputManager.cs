@@ -87,13 +87,7 @@ namespace MajdataPlay.IO
         }
         public bool CheckAreaStatus(SensorType sType, SensorStatus targetStatus)
         {
-            var sensor = sensors.Find(x => x.Type == sType);
-            var button = buttons.Find(x => x.Type == sType);
-
-            if (sensor == null || button is null)
-                throw new Exception($"{sType} Sensor or Button not found.");
-
-            return sensor.Status == targetStatus || button.Status == targetStatus;
+            return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
         public bool CheckSensorStatus(SensorType target, SensorStatus targetStatus)
         {
@@ -105,7 +99,7 @@ namespace MajdataPlay.IO
         public bool CheckButtonStatus(SensorType target, SensorStatus targetStatus)
         {
             if (target > SensorType.A8)
-                throw new InvalidOperationException("Button index cannot greater than A8");
+                throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
             var button = buttons.Find(x => x.Type == target);
 
             if (button is null)

@@ -32,6 +32,7 @@ namespace MajdataPlay.IO
                     nState = COMReport[16] || COMReport[17] ? SensorStatus.On : SensorStatus.Off;
                 if(oState != nState)
                 {
+                    Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
                     sensor.Status = nState;
                     var msg = new InputEventArgs()
                     {
@@ -49,12 +50,13 @@ namespace MajdataPlay.IO
         {
             var sensor = sensors[(int)type];
             if (sensor == null)
-                throw new Exception($"{type} Sensor or Button not found.");
+                throw new Exception($"{type} Sensor not found.");
             var oState = sensor.Status;
             sensor.Status = nState;
 
             if (oState != nState)
             {
+                Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
                 sensor.Status = nState;
                 var msg = new InputEventArgs()
                 {

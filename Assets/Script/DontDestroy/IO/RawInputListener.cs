@@ -97,6 +97,8 @@ namespace MajdataPlay.IO
             }
             var oldState = button.Status;
             var newState = SensorStatus.Off;
+            if (oldState == newState)
+                return;
             button.Status = newState;
             Debug.Log($"Key \"{button.BindingKey}\": {newState}");
             var msg = new InputEventArgs()
@@ -124,6 +126,8 @@ namespace MajdataPlay.IO
             }
             var oldState = button.Status;
             var newState = SensorStatus.On;
+            if (oldState == newState)
+                return;
             button.Status = newState;
             Debug.Log($"Key \"{button.BindingKey}\": {newState}");
             var msg = new InputEventArgs()
