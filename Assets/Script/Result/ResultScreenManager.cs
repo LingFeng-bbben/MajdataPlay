@@ -63,7 +63,7 @@ public class ResultScreenManager : MonoBehaviour
 
         title.text = song.Title;
         artist.text = song.Artist;
-        designer.text = song.Designer;
+        designer.text = song.Designers[(int)gameManager.SelectedDiff];
         level.text = gameManager.SelectedDiff.ToString() + " "+ song.Levels[(int)gameManager.SelectedDiff];
 
         accDX.text = $"{result.Acc.DX:F4}%";

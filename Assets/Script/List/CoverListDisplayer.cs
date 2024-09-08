@@ -53,7 +53,7 @@ public class CoverListDisplayer : MonoBehaviour
         GameManager.Instance.SelectedDiff = (ChartLevel)selectedDifficulty;
         var songinfo = GameManager.Instance.SongList[desiredListPos];
         var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
         CoverBigDisplayer.SetScore(songScore);
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
         for(int i=0;i<covers.Count;i++)
@@ -85,7 +85,7 @@ public class CoverListDisplayer : MonoBehaviour
         var songinfo = GameManager.Instance.SongList[desiredListPos];
         var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
         CoverBigDisplayer.SetCover(songinfo.SongCover);
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designer, songinfo.Levels[selectedDifficulty]);
+        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
         CoverBigDisplayer.SetScore(songScore);
         GameManager.Instance.SelectedIndex = desiredListPos;
     }

@@ -1,5 +1,9 @@
 using MajdataPlay.Extensions;
+using System;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 #nullable enable
 public class SongDetail
@@ -7,7 +11,7 @@ public class SongDetail
     public string? Id { get; set; }
     public string? Title { get; set; }
     public string? Artist { get; set; }
-    public string? Designer { get; set; }
+    public string?[] Designers { get; set; } = new string[7];
     public string? Description { get; set; }
     public int? ClockCount { get; set; }
     public string[]? Levels { get; set; } = new string[7];
@@ -31,32 +35,39 @@ public class SongDetail
             Description = _description;
             Levels = _levels.ToArray();
         }*/
-    public static SongDetail LoadFromMaidata(string maidatas)
+    public SongDetail(string chartPath,string songPath)
     {
-        var maidata = maidatas.Split('\n');
-        var detail = new SongDetail();
-        var levels = new string[7];
+        var maibyte = File.ReadAllBytes(chartPath);
+        this.Hash = GetHash(maibyte);
+        var maidata = Encoding.UTF8.GetString(maibyte).Split('\n');
         for (int i = 0; i < maidata.Length; i++)
         {
             if (maidata[i].StartsWith("&title="))
-                detail.Title = GetValue(maidata[i]);
+                this.Title = GetValue(maidata[i]);
             else if (maidata[i].StartsWith("&artist="))
-                detail.Artist = GetValue(maidata[i]);
+                this.Artist = GetValue(maidata[i]);
             else if (maidata[i].StartsWith("&des="))
-                detail.Designer = GetValue(maidata[i]);
+            {
+                for(int k=0;k<this.Designers.Length;k++)
+                {
+                    this.Designers[k] = GetValue(maidata[i]);
+                }
+            }
             else if (maidata[i].StartsWith("&freemsg="))
-                detail.Description = GetValue(maidata[i]);
+                this.Description = GetValue(maidata[i]);
             else if (maidata[i].StartsWith("&clock_count="))
-                detail.ClockCount = int.Parse(GetValue(maidata[i]));
+                this.ClockCount = int.Parse(GetValue(maidata[i]));
             else if (maidata[i].StartsWith("&first="))
-                detail.First = double.Parse(GetValue(maidata[i]));
-            else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&inote_"))
+                this.First = double.Parse(GetValue(maidata[i]));
+            else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&inote_") || maidata[i].StartsWith("&des_"))
             {
                 for (int j = 1; j < 8 && i < maidata.Length; j++)
                 {
                     if (maidata[i].StartsWith("&lv_" + j + "="))
-                        levels[j - 1] = GetValue(maidata[i]);
-                    if (maidata[i].StartsWith("&inote_" + j + "="))
+                        this.Levels[j - 1] = GetValue(maidata[i]);
+                    else if (maidata[i].StartsWith("&des_" + j + "="))
+                        this.Designers[j - 1] = GetValue(maidata[i]);
+                    else if (maidata[i].StartsWith("&inote_" + j + "="))
                     {
                         var TheNote = "";
                         //first line behind =
@@ -72,13 +83,11 @@ public class SongDetail
                             TheNote += maidata[i] + "\n";
                         }
 
-                        detail.InnerMaidata[j - 1] = TheNote;
+                        this.InnerMaidata[j - 1] = TheNote;
                     }
                 }
             }
         }
-        detail.Levels = levels;
-        return detail;
     }
     static private string? GetValue(string varline)
     {
@@ -87,6 +96,13 @@ public class SongDetail
             return varline.Substring(varline.FindIndex(o=>o=='=')+1).Replace("\r", "");
         }
         catch { return null; }
+    }
+    private static string GetHash(byte[] file)
+    {
+        var hashComputer = MD5.Create();
+        var chartHash = hashComputer.ComputeHash(file);
+
+        return Convert.ToBase64String(chartHash);
     }
 }
 
