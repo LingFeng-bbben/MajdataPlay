@@ -11,6 +11,18 @@ namespace MajdataPlay.Extensions
     {
         //public static bool IsEmpty(this Array source) => source.Length == 0;
     }
+    public static class ListExtensions
+    {
+        public static bool TryGetElement<T>(this List<T> source,int index,out T? element)
+        {
+            element = default;
+            if (index >= source.Count)
+                return false;
+
+            element = source[index];
+            return true;
+        }
+    }
     public static class ObjectExtensions
     {
         /// <summary>

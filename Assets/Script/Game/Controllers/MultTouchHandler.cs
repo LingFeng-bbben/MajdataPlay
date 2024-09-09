@@ -1,63 +1,33 @@
-using MajdataPlay.Game.Notes;
-using System.Collections.Generic;
+using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Controllers
 {
     public class MultTouchHandler : MonoBehaviour
     {
-        private readonly List<TouchDrop>[] touchSlots = new List<TouchDrop>[33]; // C,A1-8,B1-8,D1-8,E1-8
+        public GameObject BorderPrefab;
+        TouchBorder[] borders = new TouchBorder[33];
 
-        // Start is called before the first frame update
         private void Start()
         {
-            for (var i = 0; i < 33; i++) touchSlots[i] = new List<TouchDrop>();
-        }
-
-        // Update is called once per frame
-        private void Update()
-        {
-        }
-
-        private int getAreaIndex(char area, int pos)
-        {
-            if (area == 'C') return 0;
-            switch (area)
+            for (var i = 0; i < 33; i++)
             {
-                case 'A':
-                    return 0 + pos;
-                case 'B':
-                    return 8 + pos;
-                case 'D':
-                    return 16 + pos;
-                case 'E':
-                    return 24 + pos;
+                var sensorType = (SensorType)i;
+                var obj = Instantiate(BorderPrefab,transform);
+                var border = obj.GetComponent<TouchBorder>();
+                border.AreaPosition = sensorType;
+                borders[i] = border;
             }
-
-            return 0;
         }
-
-        public void clearSlots()
+        public void Register(SensorType area,bool isEach,bool isBreak)
         {
-            for (var i = 0; i < 33; i++) touchSlots[i].Clear();
+            var border = borders[(int)area];
+            border.Add(isBreak, isEach);
         }
-
-        public void registerTouch(TouchDrop obj)
+        public void Unregister(SensorType area)
         {
-            var areaIndex = getAreaIndex(obj.areaPosition, obj.startPosition);
-            obj.setLayer(touchSlots[areaIndex].Count);
-            touchSlots[areaIndex].Add(obj);
-        }
-
-        public void cancelTouch(TouchDrop obj)
-        {
-            var areaIndex = getAreaIndex(obj.areaPosition, obj.startPosition);
-            var touchSlot = touchSlots[areaIndex];
-
-            if (touchSlot.Count != 0)
-                touchSlot.RemoveAt(0);
-
-            foreach (var each in touchSlot) each.layerDown();
+            var border = borders[(int)area];
+            border.Remove();
         }
     }
 }

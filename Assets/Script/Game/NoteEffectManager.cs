@@ -10,6 +10,9 @@ public class NoteEffectManager : MonoBehaviour
     public GameObject touchJudgeEffect;
     public GameObject perfectEffect; // TouchHold
 
+    GameObject fireworkEffect;
+    Animator fireworkEffectAnimator;
+
     private readonly Animator[] judgeAnimators = new Animator[8];
     private readonly GameObject[] judgeEffects = new GameObject[8];
     private readonly Animator[] tapAnimators = new Animator[8];
@@ -59,6 +62,8 @@ public class NoteEffectManager : MonoBehaviour
     }
     void Start()
     {
+        fireworkEffect = GameObject.Find("FireworkEffect");
+        fireworkEffectAnimator = fireworkEffect.GetComponent<Animator>();
         //var originPosition = NoteDrop.GetPositionFromDistance(4.8f, 1);
         var pos = 4.3f * GameManager.Instance.Setting.Display.OuterJudgeDistance;
         var flPos = pos - 0.66f;
@@ -90,7 +95,11 @@ public class NoteEffectManager : MonoBehaviour
                 customSkin.SelectedSkin.CriticalPerfect_Break;
         }
     }
-
+    public void PlayFireworkEffect(in Vector3 position)
+    {
+        fireworkEffectAnimator.SetTrigger("Fire");
+        fireworkEffect.transform.position = position;
+    }
     /// <summary>
     /// Tap, Hold, Star
     /// </summary>
