@@ -9,11 +9,13 @@ public class ListManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        CoverListDisplayer.SetDirList(GameManager.Instance.SongList);
+        CoverListDisplayer.SetSongList();
         LightManager.Instance.SetAllLight(Color.white);
         LightManager.Instance.SetButtonLight(Color.green, 3);
+        LightManager.Instance.SetButtonLight(Color.red, 4);
         LightManager.Instance.SetButtonLight(Color.blue, 2);
         LightManager.Instance.SetButtonLight(Color.blue, 5);
-        CoverListDisplayer.SlideToList(GameManager.Instance.SelectedIndex);
         CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
         AudioManager.Instance.PlaySFX("SelectSong.wav");
         AudioManager.Instance.PlaySFX("selectbgm.mp3",true);
@@ -89,8 +91,23 @@ public class ListManager : MonoBehaviour
                 case SensorType.A1:
                     CoverListDisplayer.SlideDifficulty(1);
                     break;
+                case SensorType.A5:
+                    if (!CoverListDisplayer.isDirList)
+                    {
+                        CoverListDisplayer.SetDirList(GameManager.Instance.SongList);
+                        LightManager.Instance.SetButtonLight(Color.white, 4);
+                        GameManager.Instance.SelectedIndex = 0;
+                    }
+                    break;
                 case SensorType.A4:
-                    SceneManager.LoadSceneAsync(2);
+                    if (CoverListDisplayer.isDirList) {
+                        CoverListDisplayer.SetSongList();
+                        LightManager.Instance.SetButtonLight(Color.red, 4);
+                    }
+                    else
+                    {
+                        SceneManager.LoadSceneAsync(2);
+                    }
                     break;
             }
         }

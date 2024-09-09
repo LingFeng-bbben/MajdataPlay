@@ -2,16 +2,17 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CoverListDisplayer : MonoBehaviour
 {
-    List<string> songlist = new List<string>(3);
     List<GameObject> covers = new List<GameObject>();
     public string soundEffectName;
     public GameObject CoverSmallPrefab;
+    public GameObject DirSmallPrefab;
     public CoverBigDisplayer CoverBigDisplayer;
 
     public int desiredListPos = 0;
@@ -21,17 +22,58 @@ public class CoverListDisplayer : MonoBehaviour
     public float offset;
 
     public int selectedDifficulty = 0;
+    public bool isDirList = true;
+
+    private List<SongCollection> dirs = new List<SongCollection>();
+    private SongCollection songs = new SongCollection();
     // Start is called before the first frame update
     void Awake()
     {
-        foreach (var song in GameManager.Instance.SongList)
+        
+    }
+
+    public void SetDirList(List<SongCollection> _dirs)
+    {
+        foreach(var cover in covers)
+        {
+            Destroy(cover);
+        }
+        covers.Clear();
+        isDirList = true;
+        dirs = _dirs;
+        desiredListPos = GameManager.Instance.SelectedDir;
+        foreach (var dir in _dirs)
+        {
+            var obj = Instantiate(DirSmallPrefab, transform);
+            var coversmall = obj.GetComponent<CoverSmallDisplayer>();
+            //coversmall.SetCover(song.SongCover);
+            coversmall.SetLevelText(dir.Name);
+            covers.Add(obj);
+        }
+        SlideToList(desiredListPos);
+    }
+
+    public void SetSongList()
+    {
+        if (songs.Count == 0) return;
+        foreach (var cover in covers)
+        {
+            Destroy(cover);
+        }
+        covers.Clear();
+        isDirList = false;
+        desiredListPos = GameManager.Instance.SelectedIndex;
+        foreach (var song in songs)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
             var coversmall = obj.GetComponent<CoverSmallDisplayer>();
             coversmall.SetCover(song.SongCover);
+            coversmall.SetLevelText(song.Levels[selectedDifficulty]);
             covers.Add(obj);
         }
+        SlideToList(desiredListPos);
     }
+
 
     public void SlideDifficulty(int delta)
     {
@@ -51,16 +93,20 @@ public class CoverListDisplayer : MonoBehaviour
             selectedDifficulty = 6;
         }
         GameManager.Instance.SelectedDiff = (ChartLevel)selectedDifficulty;
-        var songinfo = GameManager.Instance.SongList[desiredListPos];
-        var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
-        CoverBigDisplayer.SetScore(songScore);
         CoverBigDisplayer.SetDifficulty(selectedDifficulty);
-        for(int i=0;i<covers.Count;i++)
+        if (!isDirList)
         {
-            var text = GameManager.Instance.SongList[i].Levels[selectedDifficulty];
-            if (text == null || text == "") text = "-";
-            covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
+            var songinfo = songs.ToArray()[desiredListPos];
+            var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
+            CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
+            CoverBigDisplayer.SetScore(songScore);
+
+            for (int i = 0; i < covers.Count; i++)
+            {
+                var text = songs.ToArray()[desiredListPos].Levels[selectedDifficulty];
+                if (text == null || text == "") text = "-";
+                covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
+            }
         }
     }
 
@@ -82,12 +128,21 @@ public class CoverListDisplayer : MonoBehaviour
         {
             desiredListPos = 0;
         }
-        var songinfo = GameManager.Instance.SongList[desiredListPos];
-        var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
-        CoverBigDisplayer.SetCover(songinfo.SongCover);
-        CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
-        CoverBigDisplayer.SetScore(songScore);
-        GameManager.Instance.SelectedIndex = desiredListPos;
+        if (!isDirList)
+        {
+            var songinfo = songs.ToArray()[desiredListPos];
+            var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
+            CoverBigDisplayer.SetCover(songinfo.SongCover);
+            CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
+            CoverBigDisplayer.SetScore(songScore);
+            GameManager.Instance.SelectedIndex = desiredListPos;
+        }
+        else {
+            songs = dirs[desiredListPos];
+            CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+            CoverBigDisplayer.SetScore(new MaiScore());
+            GameManager.Instance.SelectedDir = desiredListPos;
+        }
     }
 
     private void Update()
@@ -112,8 +167,12 @@ public class CoverListDisplayer : MonoBehaviour
                 scd.SetOpacity(1f);
             }
         }
+        if (isDirList && Time.frameCount%50==0) {
+            if (coveri >= songs.Count) coveri = 0;
+            CoverBigDisplayer.SetCover(songs.ToArray()[coveri++].SongCover);
+        }
     }
-
+    private int coveri = 0;
 
     Vector3 GetCoverPosition(float radius, float position)
     {

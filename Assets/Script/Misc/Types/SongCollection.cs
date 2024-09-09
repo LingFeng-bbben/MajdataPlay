@@ -16,6 +16,12 @@ namespace MajdataPlay.Types
             songs = pArray;
             Name = name;
         }
+
+        public SongCollection()
+        {
+            songs = new SongDetail[0];
+            Name = null;
+        }
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 
         // Implementation for the GetEnumerator method.

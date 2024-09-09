@@ -26,7 +26,8 @@ public class GameManager : MonoBehaviour
 
     public GameSetting Setting { get; private set; } = new();
     public int SelectedIndex { get; set; } = 0;
-    public List<SongDetail> SongList { get; set; } = new List<SongDetail>();
+    public int SelectedDir { get; set; } = 0;
+    public List<SongCollection> SongList { get; set; } = new List<SongCollection>();
     public static GameResult? LastGameResult { get; set; } = null;
 
     CancellationTokenSource tokenSource = new();
@@ -107,6 +108,8 @@ public class GameManager : MonoBehaviour
     {
         SelectedIndex = Setting.SelectedIndex;
         SelectedDiff = Setting.SelectedDiff;
+        SelectedDir = Setting.SelectedDir;
+
         SongList = SongLoader.ScanMusic();
     }
     private void OnApplicationQuit()
@@ -121,6 +124,7 @@ public class GameManager : MonoBehaviour
     {
         Setting.SelectedDiff = SelectedDiff;
         Setting.SelectedIndex = SelectedIndex;
+        Setting.SelectedDir = SelectedDir;
 
         var json = Serializer.Json.Serialize(Setting,jsonReaderOption);
         File.WriteAllText(SettingPath, json);

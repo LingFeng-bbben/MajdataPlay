@@ -84,6 +84,7 @@ public class SongDetail
 
     public string LoadInnerMaidata(int selectedDifficulty)
     {
+        //TODO: should check hash change here
         var maidata = File.ReadAllLines(MaidataPath);
         for (int i = 0; i < maidata.Length; i++)
         {
