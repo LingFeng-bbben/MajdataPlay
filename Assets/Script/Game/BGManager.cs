@@ -95,7 +95,7 @@ public class BGManager : MonoBehaviour
         while (gamePlayManager.AudioTime <= 0) yield return new WaitForEndOfFrame();
         while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
         videoPlayer.Play();
-        videoPlayer.time = gamePlayManager.AudioTime;
+        //videoPlayer.time = gamePlayManager.AudioTime;
 
         var scale = videoPlayer.height / (float)videoPlayer.width;
         spriteRender.sprite =

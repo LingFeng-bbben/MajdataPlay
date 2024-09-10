@@ -215,6 +215,9 @@ public class GamePlayManager : MonoBehaviour
         yield return new WaitForSeconds(1);
         loadingMask.SetActive(false);
 
+        audioSample.Play();
+        audioSample.Pause();
+
         //GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         Time.timeScale = 1f;
         AudioStartTime = timeSource + (float)audioSample.GetCurrentTime()+5f;
