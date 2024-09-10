@@ -32,8 +32,8 @@ public class SongDetail
 
     public static async Task<SongDetail> ParseAsync(FileInfo[] files)
     {
-        var maidataPath = files.FirstOrDefault(o => o.Name is "maidata.txt").Name;
-        var trackPath = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg").Name;
+        var maidataPath = files.FirstOrDefault(o => o.Name is "maidata.txt").FullName;
+        var trackPath = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg").FullName;
         var videoFile = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4");
         var coverFile = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg");
         var videoPath = string.Empty;

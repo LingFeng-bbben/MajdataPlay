@@ -30,8 +30,18 @@ namespace MajdataPlay.Utils
                 return;
             }
             var rootPath = GameManager.ChartPath;
-            Songs = await GetCollections(rootPath);
-            State = ComponentState.Finished;
+            var task = GetCollections(rootPath);
+            var songs = await task;
+            if (task.IsFaulted)
+            {
+                State = ComponentState.Failed;
+                throw task.AsTask().Exception.InnerException;
+            }
+            else
+            {
+                Songs = songs;
+                State = ComponentState.Finished;
+            }
         }
         static async ValueTask<SongCollection[]> GetCollections(string rootPath)
         {
@@ -50,7 +60,10 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
-            await Task.WhenAll(tasks);
+            var a = Task.WhenAll(tasks);
+            await a;
+            if (a.IsFaulted)
+                throw a.Exception.InnerException;
             foreach (var task in tasks)
                 collections.Add(task.Result);
             return collections.ToArray();
@@ -58,7 +71,7 @@ namespace MajdataPlay.Utils
         static async Task<SongCollection> GetCollection(string rootPath)
         {
             var thisDir = new DirectoryInfo(rootPath);
-            var dirs = thisDir.GetDirectories(rootPath)
+            var dirs = thisDir.GetDirectories()
                               .OrderBy(o => o.CreationTime)
                               .ToList();
             var charts = new List<SongDetail>();
@@ -76,7 +89,10 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(parsingTask);
             }
-            await Task.WhenAll(tasks);
+            var a = Task.WhenAll(tasks);
+            await a;
+            if(a.IsFaulted)
+                throw a.Exception.InnerException;
             foreach (var task in tasks)
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());

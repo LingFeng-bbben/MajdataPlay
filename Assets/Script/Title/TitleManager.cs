@@ -46,6 +46,7 @@ public class TitleManager : MonoBehaviour
         while(animTimer < 2f)
         {
             await UniTask.Yield(PlayerLoopTiming.Update);
+            animTimer += Time.deltaTime;
             if (SongStorage.State == ComponentState.Finished)
             {
                 echoText.text = "Press Any Key"; 
@@ -59,6 +60,7 @@ public class TitleManager : MonoBehaviour
         while(true)
         {
             await UniTask.Yield(PlayerLoopTiming.Update);
+            var state = SongStorage.State;
             if (timer >= 2f)
                 a = -1;
             else if(timer == 0)
@@ -67,9 +69,12 @@ public class TitleManager : MonoBehaviour
             timer = timer.Clamp(2f, 0);
             var newColor = Color.white;
 
-            if (SongStorage.State == ComponentState.Finished)
+            if (state >= ComponentState.Finished)
             {
-                echoText.text = "Press Any Key";
+                if(state == ComponentState.Failed)
+                    echoText.text = "Scan Chart Failed";
+                else
+                    echoText.text = "Press Any Key";
                 if (timer >= 1.8f)
                 {
                     echoText.color = newColor;
@@ -78,9 +83,9 @@ public class TitleManager : MonoBehaviour
             }
             newColor.a = timer / 2f;
             echoText.color = newColor;
-            print(newColor.a);
         }
-        InputManager.Instance.BindAnyArea(OnAreaDown);
+        if(SongStorage.State != ComponentState.Failed)
+            InputManager.Instance.BindAnyArea(OnAreaDown);
     }
     async UniTaskVoid DelayPlayVoice()
     {
