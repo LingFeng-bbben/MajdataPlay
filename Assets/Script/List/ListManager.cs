@@ -1,5 +1,6 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,7 +10,7 @@ public class ListManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        CoverListDisplayer.SetDirList(GameManager.Instance.SongList);
+        CoverListDisplayer.SetDirList(SongStorage.Songs);
         CoverListDisplayer.SetSongList();
         LightManager.Instance.SetAllLight(Color.white);
         LightManager.Instance.SetButtonLight(Color.green, 3);
@@ -94,7 +95,7 @@ public class ListManager : MonoBehaviour
                 case SensorType.A5:
                     if (!CoverListDisplayer.isDirList)
                     {
-                        CoverListDisplayer.SetDirList(GameManager.Instance.SongList);
+                        CoverListDisplayer.SetDirList(SongStorage.Songs);
                         LightManager.Instance.SetButtonLight(Color.white, 4);
                         GameManager.Instance.SelectedIndex = 0;
                     }

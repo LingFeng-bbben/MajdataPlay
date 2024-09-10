@@ -101,6 +101,7 @@
         Loading,
         Parsing,
         Running,
+        Backend,
         Finished
     }
     public enum ChartLevel

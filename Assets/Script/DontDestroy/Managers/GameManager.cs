@@ -27,7 +27,6 @@ public class GameManager : MonoBehaviour
     public GameSetting Setting { get; private set; } = new();
     public int SelectedIndex { get; set; } = 0;
     public int SelectedDir { get; set; } = 0;
-    public List<SongCollection> SongList { get; set; } = new List<SongCollection>();
     public static GameResult? LastGameResult { get; set; } = null;
 
     CancellationTokenSource tokenSource = new();
@@ -48,7 +47,7 @@ public class GameManager : MonoBehaviour
         ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = true
     };
-    private void Awake()
+    void Awake()
     {
         Application.logMessageReceived += (c, trace, type) => 
         {
@@ -110,7 +109,7 @@ public class GameManager : MonoBehaviour
         SelectedDiff = Setting.SelectedDiff;
         SelectedDir = Setting.SelectedDir;
 
-        SongList = SongLoader.ScanMusic();
+        SongStorage.ScanMusicAsync();
     }
     private void OnApplicationQuit()
     {

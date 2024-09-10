@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Types
 {
     public class SongCollection : IEnumerable<SongDetail>
@@ -20,7 +20,7 @@ namespace MajdataPlay.Types
         public SongCollection()
         {
             songs = new SongDetail[0];
-            Name = null;
+            Name = string.Empty;
         }
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 

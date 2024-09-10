@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Runtime.InteropServices;
+using MajdataPlay.Utils;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
@@ -61,7 +62,7 @@ public class GamePlayManager : MonoBehaviour
     {
         Instance = this;
         print(GameManager.Instance.SelectedIndex);
-        song = GameManager.Instance.SongList[GameManager.Instance.SelectedDir].ToArray()[GameManager.Instance.SelectedIndex];
+        song = SongStorage.Songs[GameManager.Instance.SelectedDir].ToArray()[GameManager.Instance.SelectedIndex];
         HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
         GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
     }
