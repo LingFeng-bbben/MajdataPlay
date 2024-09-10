@@ -189,4 +189,9 @@
         None
 
     }
+    public enum RendererStatus
+    {
+        Off,
+        On
+    }
 }

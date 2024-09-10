@@ -36,12 +36,14 @@ namespace MajdataPlay.Game.Notes
         protected ObjectCounter objectCounter;
         protected NoteManager noteManager;
         protected NoteEffectManager effectManager;
+        protected NoteAudioManager audioEffMana;
         protected GameSetting gameSetting = new();
         protected virtual void Start()
         {
             effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
+            audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             gameSetting = GameManager.Instance.Setting;
             judgeTiming = time;
         }
