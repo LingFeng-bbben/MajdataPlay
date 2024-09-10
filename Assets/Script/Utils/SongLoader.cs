@@ -14,40 +14,47 @@ namespace MajdataPlay.Utils
     {
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
-        public static List<SongDetail> ScanMusic()
+        public static List<SongCollection> ScanMusic()
         {
             if (!Directory.Exists(GameManager.ChartPath))
             {
                 Directory.CreateDirectory(GameManager.ChartPath);
-                return new List<SongDetail>();
+                return new List<SongCollection>();
             }
 
-            List<SongDetail> songList = new List<SongDetail>();
+            List<SongCollection> collectionList = new List<SongCollection>();
             var path = GameManager.ChartPath;
             var dirs = new DirectoryInfo(path).GetDirectories();
 
             foreach (var dir in dirs)
             {
-                var files = dir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
-                var videoFile = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4");
-                var coverFile = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg");
+                var songList = new List<SongDetail>();
+                var thedirs = dir.GetDirectories().OrderBy(o=>o.CreationTime).ToList();
+                foreach (var songDir in thedirs)
+                {
+                    var files = songDir.GetFiles();
+                    var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+                    var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                    var videoFile = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4");
+                    var coverFile = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg");
 
 
-                if (maidataFile is null || trackFile is null)
-                    continue;
+                    if (maidataFile is null || trackFile is null)
+                        continue;
 
-                var song = new SongDetail(maidataFile.FullName, trackFile.FullName);
+                    var song = new SongDetail(maidataFile.FullName, trackFile.FullName);
 
-                if (coverFile != null)
-                    song.SongCover = LoadSpriteFromFile(coverFile.FullName);
-                if (videoFile != null)
-                    song.VideoPath = videoFile.FullName;
+                    if (coverFile != null)
+                        song.SongCover = LoadSpriteFromFile(coverFile.FullName);
+                    if (videoFile != null)
+                        song.VideoPath = videoFile.FullName;
 
-                songList.Add(song);
+                    songList.Add(song);
+                }
+                var collection = new SongCollection(dir.Name, songList.ToArray());
+                collectionList.Add(collection);
             }
-            return songList;
+            return collectionList;
         }
 
         static Sprite LoadSpriteFromFile(string FilePath)

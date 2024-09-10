@@ -8,6 +8,7 @@
         public SoundOptions Audio { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
+        public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
     }
     public class GameOptions

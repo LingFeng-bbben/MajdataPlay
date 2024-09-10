@@ -61,7 +61,7 @@ public class GamePlayManager : MonoBehaviour
     {
         Instance = this;
         print(GameManager.Instance.SelectedIndex);
-        song = GameManager.Instance.SongList[GameManager.Instance.SelectedIndex];
+        song = GameManager.Instance.SongList[GameManager.Instance.SelectedDir].ToArray()[GameManager.Instance.SelectedIndex];
         HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
         GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
     }
@@ -83,7 +83,7 @@ public class GamePlayManager : MonoBehaviour
         LightManager.Instance.SetAllLight(Color.white);
         try
         {
-            //TODO: should load from disk instead of memory
+           
             var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
             if (maidata == "" || maidata == null) {
                 BackToList();
