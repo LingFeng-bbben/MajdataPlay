@@ -84,6 +84,8 @@ public class BGManager : MonoBehaviour
         videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
         videoPlayer.playbackSpeed = speed;
         playSpeed = speed;
+        spriteRender.sprite =
+            Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
         videoPlayer.Prepare();
         StartCoroutine(waitFumenStart());
     }
@@ -98,8 +100,7 @@ public class BGManager : MonoBehaviour
         //videoPlayer.time = gamePlayManager.AudioTime;
 
         var scale = videoPlayer.height / (float)videoPlayer.width;
-        spriteRender.sprite =
-            Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
+        
         
         gameObject.transform.localScale = new Vector3(1f, 1f * scale);
     }
