@@ -217,10 +217,22 @@ public class GamePlayManager : MonoBehaviour
             StopAllCoroutines();
         }
         loadingText.text = $"\r\nLoading Chart...\r\n\r\n100.00%";
-
-        await UniTask.Delay(1000);
+        var timer = 1f;
+        var loadingImage = loadingMask.GetComponent<Image>();
+        while(timer > 0)
+        {
+            await UniTask.Yield();
+            timer -= Time.deltaTime;
+            var textColor = Color.white;
+            var maskColor = Color.black;
+            textColor.a = timer / 1f;
+            maskColor.a = (timer / 1f) * 0.75f;
+            loadingImage.color = maskColor;
+            loadingText.color = textColor;
+        }
 
         loadingMask.SetActive(false);
+        loadingText.gameObject.SetActive(false);
 
         Time.timeScale = 1f;
         AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + 5f;
