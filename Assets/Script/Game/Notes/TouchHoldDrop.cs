@@ -39,8 +39,8 @@ namespace MajdataPlay.Game.Notes
         public GameObject tapEffect;
         public GameObject judgeEffect;
 
-        public Sprite board_On;
-        public Sprite board_Off;
+        Sprite board_On;
+        Sprite board_Off;
 
         GameObject[] fans = new GameObject[4];
         readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[4];
