@@ -30,6 +30,7 @@ namespace MajdataPlay.Game.Notes
                     default:
                         return;
                 }
+                _rendererState = value;
             }
         }
         float displayDuration;
