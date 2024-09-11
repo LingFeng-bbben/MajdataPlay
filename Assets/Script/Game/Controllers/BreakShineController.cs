@@ -6,7 +6,7 @@ namespace MajdataPlay.Game.Controllers
 {
     public class BreakShineController : MonoBehaviour
     {
-        public IFlasher? parent = null;
+        public IFlasher? Parent { get; set; } = null;
 
         SpriteRenderer spriteRenderer;
         GamePlayManager gpManager => GamePlayManager.Instance;
@@ -18,7 +18,7 @@ namespace MajdataPlay.Game.Controllers
         // Update is called once per frame
         void Update()
         {
-            if (parent is not null && parent.CanShine)
+            if (Parent is not null && Parent.CanShine)
             {
                 var (brightness, contrast) = gpManager.BreakParams;
                 spriteRenderer.material.SetFloat("_Brightness", brightness);

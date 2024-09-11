@@ -328,7 +328,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     barRenderer.material = breakMaterial;
                     var controller = bar.AddComponent<BreakShineController>();
-                    controller.parent = this;
+                    controller.Parent = this;
                 }
             }
             foreach(var (i, star) in stars.WithIndex())
@@ -340,7 +340,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     starRenderer.material = breakMaterial;
                     var controller = star.AddComponent<BreakShineController>();
-                    controller.parent = this;
+                    controller.Parent = this;
                 }
                 star.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (startPosition - 1)));
                 star.SetActive(false);

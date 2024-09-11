@@ -240,6 +240,7 @@ namespace MajdataPlay.Game.Notes
                         if (isEX) 
                             exRenderer.forceRenderingOff = false;
 
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -491,6 +492,7 @@ namespace MajdataPlay.Game.Notes
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
                 breakShineController = gameObject.AddComponent<BreakShineController>();
+                breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
             }
 

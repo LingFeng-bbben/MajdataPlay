@@ -453,7 +453,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     barRenderer.material = breakMaterial;
                     var controller = bar.AddComponent<BreakShineController>();
-                    controller.parent = this;
+                    controller.Parent = this;
                 }
             }
 
@@ -463,7 +463,7 @@ namespace MajdataPlay.Game.Notes
             {
                 starRenderer.material = breakMaterial;
                 var controller = stars[0].AddComponent<BreakShineController>();
-                controller.parent = this;
+                controller.Parent = this;
             }
 
             if (isJustR)

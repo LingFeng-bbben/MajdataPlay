@@ -66,7 +66,7 @@ namespace MajdataPlay.Game.Notes
                         thisRenderer.forceRenderingOff = false;
                         if (isEX)
                             exRenderer.forceRenderingOff = false;
-
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
