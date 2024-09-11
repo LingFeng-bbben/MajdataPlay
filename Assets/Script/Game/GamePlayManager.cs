@@ -46,14 +46,14 @@ public class GamePlayManager : MonoBehaviour
     private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
     float timeSource 
     {
-        get => Time.unscaledTime;
-        //get 
-        //{
-        //    GetSystemTimePreciseAsFileTime(out var filetime);
-        //    filetime = filetime - fileTimeAtStart;
-        //    //print(filetime);
-        //    return (float)(filetime/10000000d);
-        //} 
+        //get => Time.unscaledTime;
+        get
+        {
+            GetSystemTimePreciseAsFileTime(out var filetime);
+            filetime = filetime - fileTimeAtStart;
+            //print(filetime);
+            return (float)(filetime / 10000000d);
+        }
     }
     long fileTimeAtStart = 0;
     // Start is called before the first frame update
