@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     public int SelectedIndex { get; set; } = 0;
     public int SelectedDir { get; set; } = 0;
     public static GameResult? LastGameResult { get; set; } = null;
+    public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
 
     CancellationTokenSource tokenSource = new();
     Task? logWritebackTask = null;
@@ -152,4 +153,6 @@ public class GameManager : MonoBehaviour
         public string? StackTrace { get; set; }
         public LogType? Type { get; set; }
     }
+    [SerializeField]
+    bool _useUnityTimer = false;
 }
