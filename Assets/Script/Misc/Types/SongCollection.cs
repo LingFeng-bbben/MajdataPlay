@@ -11,6 +11,7 @@ namespace MajdataPlay.Types
 
 
         private SongDetail[] songs;
+        public SongDetail this[int index] => songs[index];
         public SongCollection(string name,in SongDetail[] pArray)
         {
             songs = pArray;

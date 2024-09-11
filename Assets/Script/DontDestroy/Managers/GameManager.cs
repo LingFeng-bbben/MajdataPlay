@@ -25,8 +25,32 @@ public class GameManager : MonoBehaviour
     public static string ScoreDBPath => Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
     public GameSetting Setting { get; private set; } = new();
-    public int SelectedIndex { get; set; } = 0;
-    public int SelectedDir { get; set; } = 0;
+    /// <summary>
+    /// 在List中选中的文件夹
+    /// </summary>
+    public SongCollection Collection { get; private set; } = new();
+    /// <summary>
+    /// 在List中选中的乐曲
+    /// </summary>
+    public SongDetail Song { get; private set; } = new();
+    public int SelectedIndex 
+    { 
+        get => _selectedIndex; 
+        set
+        {
+            Song = Collection[value];
+            _selectedIndex = value;
+        }
+    }
+    public int SelectedDir 
+    {
+        get => _selectedDir; 
+        set
+        {
+            Collection = SongStorage.Songs[value];
+            _selectedDir = value;
+        }
+    }
     public static GameResult? LastGameResult { get; set; } = null;
     public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
 
@@ -104,13 +128,13 @@ public class GameManager : MonoBehaviour
         var thiss = Process.GetCurrentProcess();
         thiss.PriorityClass = ProcessPriorityClass.RealTime;
     }
-    void Start()
+    async void Start()
     {
+        await SongStorage.ScanMusicAsync();
+
+        SelectedDir = Setting.SelectedDir;
         SelectedIndex = Setting.SelectedIndex;
         SelectedDiff = Setting.SelectedDiff;
-        SelectedDir = Setting.SelectedDir;
-
-        SongStorage.ScanMusicAsync();
     }
     private void OnApplicationQuit()
     {
@@ -155,4 +179,6 @@ public class GameManager : MonoBehaviour
     }
     [SerializeField]
     bool _useUnityTimer = false;
+    int _selectedDir = 0;
+    int _selectedIndex = 0;
 }

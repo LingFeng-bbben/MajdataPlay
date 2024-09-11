@@ -121,6 +121,7 @@ namespace MajdataPlay.Game.Notes
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
                 fanRenderers[i].sortingOrder += noteSortOrder;
             }
+            borderRenderer.sortingOrder += noteSortOrder;
 
             for (var i = 0; i < 4; i++)
                 fanRenderers[i].sprite = skin.Fans[i];

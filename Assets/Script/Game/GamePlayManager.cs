@@ -12,6 +12,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using System.Runtime.InteropServices;
 using MajdataPlay.Utils;
+using Cysharp.Threading.Tasks;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
@@ -64,7 +65,7 @@ public class GamePlayManager : MonoBehaviour
     {
         Instance = this;
         print(GameManager.Instance.SelectedIndex);
-        song = SongStorage.Songs[GameManager.Instance.SelectedDir].ToArray()[GameManager.Instance.SelectedIndex];
+        song = GameManager.Instance.Song;
         HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
         GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
     }
@@ -100,9 +101,7 @@ public class GamePlayManager : MonoBehaviour
                 return;
             }
             else
-            {
-                StartCoroutine(DelayPlay());
-            }
+                DelayPlay().Forget();
 
             //Generate ClockSounds
             var countnum = (song.ClockCount == null ? 4 : song.ClockCount);
@@ -171,7 +170,7 @@ public class GamePlayManager : MonoBehaviour
         }
     }
 
-    IEnumerator DelayPlay()
+    async UniTaskVoid DelayPlay()
     {
         isLoading = true;
         var firstBpm = Chart.notelist.First().currentBpm;
@@ -179,9 +178,11 @@ public class GamePlayManager : MonoBehaviour
         var settings = settingManager.Setting;
 
         AudioTime = -5f;
-        yield return new WaitForEndOfFrame();
+
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
         var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
-        if (song.VideoPath != null)
+        if (!string.IsNullOrEmpty(song.VideoPath))
         {
             BGManager.SetBackgroundMovie(song.VideoPath);
         }
@@ -191,7 +192,8 @@ public class GamePlayManager : MonoBehaviour
         }
         BGManager.SetBackgroundDim(settings.Game.BackgroundDim);
 
-        yield return new WaitForEndOfFrame();
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
         noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
         noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(settings.Game.TapSpeed + 0.9975f, -0.985558604f)));
         noteLoader.touchSpeed = settings.Game.TouchSpeed;
@@ -203,7 +205,7 @@ public class GamePlayManager : MonoBehaviour
         while (noteLoader.State < NoteLoaderStatus.Finished)
         {
             loadingText.text = $"\r\nLoading Chart...\r\n\r\n{noteLoader.Process * 100:F2}%";
-            yield return 0;
+            await UniTask.Yield();
         }
         
         if(noteLoader.State == NoteLoaderStatus.Error)
@@ -215,18 +217,20 @@ public class GamePlayManager : MonoBehaviour
             StopAllCoroutines();
         }
         loadingText.text = $"\r\nLoading Chart...\r\n\r\n100.00%";
-        yield return new WaitForSeconds(1);
+
+        await UniTask.Delay(1000);
+
         loadingMask.SetActive(false);
 
-        //GameObject.Find("Notes").GetComponent<NoteManager>().Refresh();
         Time.timeScale = 1f;
-        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime()+5f;
+        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + 5f;
         isLoading = false;
-        while (timeSource - AudioStartTime < 0)
-            yield return new WaitForEndOfFrame();
 
-        
-        
+        while (timeSource - AudioStartTime < 0)
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
+
+
         audioSample.Play();
         AudioStartTime = timeSource;
         //AudioStartTime = Time.unscaledTime;
