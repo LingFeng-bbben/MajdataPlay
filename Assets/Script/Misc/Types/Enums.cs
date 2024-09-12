@@ -76,7 +76,8 @@
         Initialized,
         Scaling,
         Running,
-        End
+        End,
+        Destroyed
     }
     public enum ComboState
     {

@@ -324,7 +324,7 @@ namespace MajdataPlay.Game.Notes
         {
             ioManager.UnbindSensor(Check, SensorType.C);
             EndJudge(ref judgeResult);
-
+            State = NoteStatus.Destroyed;
             var result = new JudgeResult()
             {
                 Result = judgeResult,

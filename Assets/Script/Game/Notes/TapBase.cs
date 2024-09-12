@@ -1,12 +1,14 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Interfaces;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class TapBase : NoteDrop
+    public abstract class TapBase : NoteDrop,IDistanceProvider
     {
+        public float Distance { get; protected set; } = -100;
         public GameObject tapLine;
 
         protected SpriteRenderer thisRenderer;
@@ -79,6 +81,7 @@ namespace MajdataPlay.Game.Notes
                             tapLine.SetActive(true);
                         if (distance < 1.225f)
                         {
+                            Distance = distance;
                             transform.localScale = new Vector3(destScale, destScale);
                             transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
@@ -93,6 +96,7 @@ namespace MajdataPlay.Game.Notes
                     break;
                 case NoteStatus.Running:
                     {
+                        Distance = distance;
                         transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
@@ -177,6 +181,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected virtual void OnDestroy()
         {
+            State = NoteStatus.Destroyed;
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
 

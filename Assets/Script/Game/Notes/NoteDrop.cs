@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher
+    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote
     {
         public int startPosition;
         public float time;

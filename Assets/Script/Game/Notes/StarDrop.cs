@@ -85,6 +85,7 @@ namespace MajdataPlay.Game.Notes
                     break;
                 case NoteStatus.Running:
                     {
+                        Distance = distance;
                         transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);

@@ -244,7 +244,7 @@ namespace MajdataPlay.Game.Notes
             multTouchHandler.Unregister(sensorPos);
             if (!isJudged) 
                 return;
-
+            State = NoteStatus.Destroyed;
             var result = new JudgeResult()
             {
                 Result = judgeResult,

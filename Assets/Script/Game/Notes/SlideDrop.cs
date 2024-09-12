@@ -319,6 +319,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(stars[0]);
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
+            State = NoteStatus.Destroyed;
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var result = new JudgeResult()
