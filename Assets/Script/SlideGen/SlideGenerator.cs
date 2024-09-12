@@ -106,7 +106,7 @@ public class SlideGenerator : MonoBehaviour
         }
         else if(type == ">")
         {
-            var pos = (0.0625f + position * (1 - 0f))*2 * Mathf.PI;
+            var pos = (0.0625f + position * 0.125f)*2 * Mathf.PI;
             var circle = new Vector2(4.8f * Mathf.Sin(pos), 4.8f * Mathf.Cos(pos));
             var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
             return new Vector3(circle.x, circle.y, -angle+180f);
