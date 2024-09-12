@@ -14,6 +14,7 @@ public class SlideGenerator : MonoBehaviour
     public float rad;
     public bool showLine = false;
     public bool generate = false;
+    public float xoffset;
     // Start is called before the first frame update
     void Start()
     {
@@ -110,6 +111,12 @@ public class SlideGenerator : MonoBehaviour
             var circle = new Vector2(4.8f * Mathf.Sin(pos), 4.8f * Mathf.Cos(pos));
             var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
             return new Vector3(circle.x, circle.y, -angle+180f);
+        }else if(type == "qq")
+        {
+            position = position *2*Mathf.PI;
+            var circle = new Vector2(rad * Mathf.Sin(position)+xoffset, rad * Mathf.Cos(position));
+            var angle = Mathf.Rad2Deg * Mathf.Atan2(Mathf.Sin(position), Mathf.Cos(position));
+            return new Vector3(circle.x, circle.y, -angle);
         }
         return new Vector3();
     }
