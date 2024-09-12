@@ -68,8 +68,8 @@ public class GamePlayManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        print(GameManager.Instance.SelectedIndex);
-        song = GameManager.Instance.Song;
+        //print(GameManager.Instance.SelectedIndex);
+        song = GameManager.Instance.Collection.Current;
         HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
         GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
     }

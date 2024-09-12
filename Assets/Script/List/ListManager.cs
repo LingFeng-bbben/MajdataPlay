@@ -97,7 +97,7 @@ public class ListManager : MonoBehaviour
                     {
                         CoverListDisplayer.SetDirList(SongStorage.Songs);
                         LightManager.Instance.SetButtonLight(Color.white, 4);
-                        GameManager.Instance.SelectedIndex = 0;
+                        GameManager.Instance.Collection.Index = 0;
                     }
                     break;
                 case SensorType.A4:

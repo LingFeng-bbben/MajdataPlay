@@ -63,7 +63,7 @@ public class CoverListDisplayer : MonoBehaviour
         }
         covers.Clear();
         isDirList = false;
-        desiredListPos = GameManager.Instance.SelectedIndex;
+        desiredListPos = GameManager.Instance.Collection.Index;
         foreach (var song in songs)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
@@ -136,7 +136,7 @@ public class CoverListDisplayer : MonoBehaviour
             CoverBigDisplayer.SetCover(songinfo.SongCover);
             CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
             CoverBigDisplayer.SetScore(songScore);
-            GameManager.Instance.SelectedIndex = desiredListPos;
+            GameManager.Instance.Collection.Index = desiredListPos;
         }
         else {
             songs = dirs[desiredListPos];

@@ -1,3 +1,5 @@
+using MajdataPlay.Extensions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,23 +8,41 @@ namespace MajdataPlay.Types
 {
     public class SongCollection : IEnumerable<SongDetail>
     {
+        public SongDetail Current => songs[Index];
+        public int Index
+        {
+            get => _index;
+            set
+            {
+                if(IsEmpty)
+                    throw new ArgumentOutOfRangeException("this collection is empty");
+                _index = value.Clamp(songs.Length - 1 ,0);
+            }
+        }
         public string Name { get; private set; }
         public int Count => songs.Length;
+        public bool IsEmpty => songs.Length == 0;
 
-
-        private SongDetail[] songs;
+        SongDetail[] songs;
         public SongDetail this[int index] => songs[index];
         public SongCollection(string name,in SongDetail[] pArray)
         {
             songs = pArray;
             Name = name;
         }
-
         public SongCollection()
         {
             songs = new SongDetail[0];
             Name = string.Empty;
         }
+        public bool MoveNext()
+        {
+            if(Index >= Count - 1)
+                return false;
+            Index++;
+            return true;
+        }
+        public void Move(int diff) => Index = (Index + diff).Clamp(Count - 1, 0);
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 
         // Implementation for the GetEnumerator method.
@@ -49,5 +69,6 @@ namespace MajdataPlay.Types
             public void Reset() => index = 0;
             public void Dispose() { }
         }
+        int _index = 0;
     }
 }

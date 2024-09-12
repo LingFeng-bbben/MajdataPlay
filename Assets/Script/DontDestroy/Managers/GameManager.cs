@@ -29,19 +29,6 @@ public class GameManager : MonoBehaviour
     /// 在List中选中的文件夹
     /// </summary>
     public SongCollection Collection { get; private set; } = new();
-    /// <summary>
-    /// 在List中选中的乐曲
-    /// </summary>
-    public SongDetail Song { get; private set; } = new();
-    public int SelectedIndex 
-    { 
-        get => _selectedIndex; 
-        set
-        {
-            Song = Collection[value];
-            _selectedIndex = value;
-        }
-    }
     public int SelectedDir 
     {
         get => _selectedDir; 
@@ -133,7 +120,7 @@ public class GameManager : MonoBehaviour
         await SongStorage.ScanMusicAsync();
 
         SelectedDir = Setting.SelectedDir;
-        SelectedIndex = Setting.SelectedIndex;
+        Collection.Index = Setting.SelectedIndex;
         SelectedDiff = Setting.SelectedDiff;
     }
     private void OnApplicationQuit()
@@ -147,7 +134,7 @@ public class GameManager : MonoBehaviour
     public void Save()
     {
         Setting.SelectedDiff = SelectedDiff;
-        Setting.SelectedIndex = SelectedIndex;
+        Setting.SelectedIndex = Collection.Index;
         Setting.SelectedDir = SelectedDir;
 
         var json = Serializer.Json.Serialize(Setting,jsonReaderOption);
