@@ -69,11 +69,12 @@ namespace MajdataPlay.Game.Notes
             // 正常情况下应为负值；速度过高将忽略淡入
             fullFadeInTiming = fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
-            fadeInAnimator = GetComponent<Animator>();
+            //fadeInAnimator = GetComponent<Animator>();
+            Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
-            fadeInAnimator.SetTrigger("slide");
-
+            //fadeInAnimator.SetTrigger("slide");
+            SetSlideBarAlpha(0f);
             judgeQueues[0] = table.JudgeQueue;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
@@ -184,27 +185,22 @@ namespace MajdataPlay.Game.Notes
             // Slide淡入期间，不透明度从0到0.55耗时200ms
             var currentSec = gpManager.AudioTime;
             var startiming = currentSec - timeStart;
-            
 
-            if(fadeInTiming > timeStart)
+            if (currentSec > fullFadeInTiming)
             {
-                if(currentSec > fadeInTiming)
-                    SetSlideBarAlpha(1f);
-            }
-            else if(currentSec > timeStart)
                 SetSlideBarAlpha(1f);
-            else if(currentSec > fadeInTiming)
+            }
+            else if (currentSec > fadeInTiming)
             {
-                if (startiming >= -0.05f)
-                {
-                    fadeInAnimator.enabled = false;
-                    SetSlideBarAlpha(1f);
-                }
-                else
-                    fadeInAnimator.enabled = true;
+                var alpha = (currentSec - fadeInTiming) / (fullFadeInTiming - fadeInTiming);
+                SetSlideBarAlpha(alpha);
                 return;
             }
-            fadeInAnimator.enabled = false;
+            else
+            {
+                SetSlideBarAlpha(0f);
+                return;
+            }
 
             stars[0].SetActive(true);
             var timing = currentSec - time;
