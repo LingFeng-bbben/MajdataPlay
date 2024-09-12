@@ -39,10 +39,10 @@ namespace MajdataPlay.Game.Notes
             // 正常情况下应为负值；速度过高将忽略淡入
             fullFadeInTiming = fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
-            fadeInAnimator = GetComponent<Animator>();
+            Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
-            fadeInAnimator.SetTrigger("wifi");
+            //fadeInAnimator.SetTrigger("wifi");
 
             SlidePositionEnd[0] = effectManager.transform.GetChild(0).GetChild(endPosition - 2 < 0 ? 7 : endPosition - 2).position;// R
             SlidePositionEnd[1] = effectManager.transform.GetChild(0).GetChild(endPosition - 1).position;// Center
@@ -199,25 +199,21 @@ namespace MajdataPlay.Game.Notes
             var currentSec = gpManager.AudioTime;
             var startiming = currentSec - timeStart;
 
-            if (fadeInTiming > timeStart)
+            if (currentSec > fullFadeInTiming)
             {
-                if (currentSec > fadeInTiming)
-                    SetSlideBarAlpha(1f);
-            }
-            else if (currentSec > timeStart)
                 SetSlideBarAlpha(1f);
+            }
             else if (currentSec > fadeInTiming)
             {
-                if (startiming >= -0.05f)
-                {
-                    fadeInAnimator.enabled = false;
-                    SetSlideBarAlpha(1f);
-                }
-                else
-                    fadeInAnimator.enabled = true;
+                var alpha = (currentSec - fadeInTiming) / (fullFadeInTiming - fadeInTiming);
+                SetSlideBarAlpha(alpha);
                 return;
             }
-            fadeInAnimator.enabled = false;
+            else
+            {
+                SetSlideBarAlpha(0f);
+                return;
+            }
 
             foreach (var star in stars)
                 star.SetActive(true);

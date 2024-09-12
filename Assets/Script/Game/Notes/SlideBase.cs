@@ -187,7 +187,17 @@ namespace MajdataPlay.Game.Notes
         protected void SetSlideBarAlpha(float alpha)
         {
             foreach (var gm in slideBars)
-                gm.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, alpha);
+            {
+                var sr = gm.GetComponent<SpriteRenderer>();
+                if (alpha <= 0f)
+                {
+                    sr.forceRenderingOff = true;
+                }
+                else {
+                    sr.forceRenderingOff = false;
+                    sr.color = new Color(1f, 1f, 1f, alpha);
+                }
+            }
         }
         protected void TooLateJudge()
         {
