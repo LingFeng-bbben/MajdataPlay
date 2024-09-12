@@ -400,19 +400,12 @@ namespace MajdataPlay.Game.Notes
             foreach (var bars in slideBars)
             {
                 slidePositions.Add(bars.transform.position);
-                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.eulerAngles + new Vector3(0f, 0f, 18f)));
+
+                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
             }
             var endPos = GetPositionFromDistance(4.8f, endPosition);
-            var x = slidePositions.LastOrDefault() - Vector3.zero;
-            var y = endPos - Vector3.zero;
-            var angle = Mathf.Acos(Vector3.Dot(x, y) / (x.magnitude * y.magnitude)) * Mathf.Rad2Deg;
-            var offset = slideRotations.TakeLast(1).First().eulerAngles - slideRotations.TakeLast(2).First().eulerAngles;
-            if (offset.z < 0)
-                angle = -angle;
-
-            var q = slideRotations.LastOrDefault() * Quaternion.Euler(0, 0, angle);
             slidePositions.Add(endPos);
-            slideRotations.Add(q);
+            slideRotations.Add(slideRotations.LastOrDefault());
         }
         protected override void LoadSkin()
         {

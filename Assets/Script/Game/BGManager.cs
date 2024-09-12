@@ -23,6 +23,7 @@ public class BGManager : MonoBehaviour
 
     private void Update()
     {
+        if(videoPlayer.isPlaying)
         videoPlayer.externalReferenceTime = gamePlayManager.AudioTimeNoOffset;
         /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
 
