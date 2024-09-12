@@ -55,11 +55,11 @@ public class SlideGenerator : MonoBehaviour
         if(type == "-")
         {
             var startPoint = GetPositionFromDistance(4.8f, 1);
-            var endPoint = GetPositionFromDistance(4.8f, 3);
+            var endPoint = GetPositionFromDistance(4.8f, 7);
             var lerp = Vector2.Lerp(startPoint, endPoint, position);
             var vect = endPoint - startPoint;
             var angle = Mathf.Rad2Deg*Mathf.Atan2(vect.x, vect.y); 
-            return new Vector3(lerp.x, lerp.y, angle -45f);
+            return new Vector3(lerp.x, lerp.y, -angle-90f);
         }
         else if(type == "q")
         {
