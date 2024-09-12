@@ -52,7 +52,7 @@ public class SlideGenerator : MonoBehaviour
 
     Vector3 GetPointAtPosition(string type,float position)
     {
-        if(type == "1-3")
+        if(type == "-")
         {
             var startPoint = GetPositionFromDistance(4.8f, 1);
             var endPoint = GetPositionFromDistance(4.8f, 3);
@@ -61,33 +61,44 @@ public class SlideGenerator : MonoBehaviour
             var angle = Mathf.Rad2Deg*Mathf.Atan2(vect.x, vect.y); 
             return new Vector3(lerp.x, lerp.y, angle -45f);
         }
-        else if(type == "1q7")
+        else if(type == "q")
         {
-            //10 - 21 - 10
-            if (position < 0.244f)
+            var start = 1;
+            var end = 1;
+            var startPoint = GetPositionFromDistance(4.8f, start);
+            var endPoint = GetPositionFromDistance(rad, 7.5f);
+            var vect = endPoint - startPoint;
+            var curv_part = 0.625f;
+            var line_s = vect.magnitude;
+            var curv_s = Mathf.PI*rad*2f* curv_part;
+            var lineseg = line_s / (line_s + curv_s + line_s);
+            var curvseg = (line_s+ curv_s) / (line_s + curv_s + line_s);
+            
+            if (position < lineseg)
             {
-                var startPoint = GetPositionFromDistance(4.8f, 1);
-                var endPoint = GetPositionFromDistance(rad, 7.5f);
-                var lerp = Vector2.Lerp(startPoint, endPoint, position / 0.244f);
-                var vect = endPoint - startPoint;
+                startPoint = GetPositionFromDistance(4.8f, start);
+                endPoint = GetPositionFromDistance(rad, 7.5f);
+                var lerp = Vector2.Lerp(startPoint, endPoint, position / lineseg);
+                vect = endPoint - startPoint;
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(vect.x, vect.y);
                 return new Vector3(lerp.x, lerp.y, angle+180);
             }
-            else if (position < 0.7560f)
+            else if (position < curvseg)
             {
-                position = ((position-0.7560f)/0.5122f) * 6.28f * -0.875f ;
+                position = ((position- curvseg) /(curvseg-lineseg)) * 2f *Mathf.PI * -curv_part;
+                position += 90f * Mathf.Deg2Rad;
                 var circle = new Vector2(rad * Mathf.Sin(position), rad * Mathf.Cos(position));
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
                 return new Vector3(circle.x,circle.y, -angle);
             }
             else if (position <= 1f)
             {
-                var startPoint = new Vector3(0, rad);
-                var endPoint = GetPositionFromDistance(4.8f, 7);
-                var lerp = Vector2.Lerp(startPoint, endPoint, (position - 0.7560f) / 0.244f);
-                var vect = endPoint - startPoint;
+                startPoint = GetPositionFromDistance(rad, 2.5f);
+                endPoint = GetPositionFromDistance(4.8f, end);
+                var lerp = Vector2.Lerp(startPoint, endPoint, (position - curvseg) / lineseg);
+                vect = endPoint - startPoint;
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(vect.x, vect.y);
-                return new Vector3(lerp.x, lerp.y, angle+90);
+                return new Vector3(lerp.x, lerp.y, angle-90);
             }
             /*position = position * 6.28f;
             var circle = new Vector2(rad*Mathf.Sin(position), rad*Mathf.Cos(position));
