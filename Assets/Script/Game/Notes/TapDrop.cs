@@ -45,7 +45,7 @@ namespace MajdataPlay.Game.Notes
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
                 var controller = gameObject.AddComponent<BreakShineController>();
-                controller.parent = this;
+                controller.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
 
             }

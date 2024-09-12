@@ -319,6 +319,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(stars[0]);
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
+            State = NoteStatus.Destroyed;
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var result = new JudgeResult()
@@ -453,7 +454,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     barRenderer.material = breakMaterial;
                     var controller = bar.AddComponent<BreakShineController>();
-                    controller.parent = this;
+                    controller.Parent = this;
                 }
             }
 
@@ -463,7 +464,7 @@ namespace MajdataPlay.Game.Notes
             {
                 starRenderer.material = breakMaterial;
                 var controller = stars[0].AddComponent<BreakShineController>();
-                controller.parent = this;
+                controller.Parent = this;
             }
 
             if (isJustR)

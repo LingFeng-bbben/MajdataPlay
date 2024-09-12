@@ -97,7 +97,9 @@ public class NoteManager : MonoBehaviour
     public void AddTouch(GameObject obj, int index) => touchOrder.Add(obj, index);
     private void FixedUpdate()
     {
-        if(transform.childCount == 0 && isNotesLoaded)
+        if (GamePlayManager.Instance.State != ComponentState.Running)
+            return;
+        if(transform.childCount == 0)
         {
             Debug.Log("No More Notes");
             GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>().CalculateFinalResult();

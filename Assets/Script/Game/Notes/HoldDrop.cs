@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -6,8 +7,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class HoldDrop : NoteLongDrop
+    public class HoldDrop : NoteLongDrop, IDistanceProvider
     {
+        public float Distance { get; private set; } = -100;
         bool holdAnimStart;
 
         public GameObject tapLine;
@@ -240,6 +242,7 @@ namespace MajdataPlay.Game.Notes
                         if (isEX) 
                             exRenderer.forceRenderingOff = false;
 
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -251,6 +254,7 @@ namespace MajdataPlay.Game.Notes
                         tapLine.SetActive(true);
                     if (distance < 1.225f)
                     {
+                        Distance = distance;
                         transform.localScale = new Vector3(destScale, destScale);
                         thisRenderer.size = new Vector2(1.22f, 1.42f);
                         distance = 1.225f;
@@ -289,7 +293,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         endRenderer.enabled = true;
                     }
-
+                    Distance = distance;
                     var dis = (distance - holdDistance) / 2 + holdDistance;
                     var size = distance - holdDistance + 1.4f;
                     var lineScale = Mathf.Abs(distance / 4.8f);
@@ -309,6 +313,7 @@ namespace MajdataPlay.Game.Notes
 
                     if (IsClassic)
                     {
+                        Distance = endDistance;
                         var scale = Mathf.Abs(endDistance / 4.8f);
                         transform.position = GetPositionFromDistance(endDistance);
                         tapLine.transform.localScale = new Vector3(scale, scale, 1f);
@@ -323,6 +328,7 @@ namespace MajdataPlay.Game.Notes
         }
         void OnDestroy()
         {
+            State = NoteStatus.Destroyed;
             ioManager.UnbindArea(Check, sensorPos);
             if (!isJudged) return;
 
@@ -491,6 +497,7 @@ namespace MajdataPlay.Game.Notes
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
                 breakShineController = gameObject.AddComponent<BreakShineController>();
+                breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
             }
 

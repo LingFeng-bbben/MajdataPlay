@@ -1,5 +1,6 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ public class CoverListDisplayer : MonoBehaviour
     public int selectedDifficulty = 0;
     public bool isDirList = true;
 
-    private List<SongCollection> dirs = new List<SongCollection>();
+    private SongCollection[] dirs = Array.Empty<SongCollection>();
     private SongCollection songs = new SongCollection();
     // Start is called before the first frame update
     void Awake()
@@ -32,7 +33,7 @@ public class CoverListDisplayer : MonoBehaviour
         
     }
 
-    public void SetDirList(List<SongCollection> _dirs)
+    public void SetDirList(SongCollection[] _dirs)
     {
         foreach(var cover in covers)
         {
@@ -62,7 +63,7 @@ public class CoverListDisplayer : MonoBehaviour
         }
         covers.Clear();
         isDirList = false;
-        desiredListPos = GameManager.Instance.SelectedIndex;
+        desiredListPos = GameManager.Instance.Collection.Index;
         foreach (var song in songs)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
@@ -135,7 +136,7 @@ public class CoverListDisplayer : MonoBehaviour
             CoverBigDisplayer.SetCover(songinfo.SongCover);
             CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
             CoverBigDisplayer.SetScore(songScore);
-            GameManager.Instance.SelectedIndex = desiredListPos;
+            GameManager.Instance.Collection.Index = desiredListPos;
         }
         else {
             songs = dirs[desiredListPos];

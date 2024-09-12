@@ -76,7 +76,8 @@
         Initialized,
         Scaling,
         Running,
-        End
+        End,
+        Destroyed
     }
     public enum ComboState
     {
@@ -101,7 +102,9 @@
         Loading,
         Parsing,
         Running,
-        Finished
+        Backend,
+        Finished,
+        Failed
     }
     public enum ChartLevel
     {
