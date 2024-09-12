@@ -37,7 +37,7 @@ public class SlideGenerator : MonoBehaviour
     void GenerateSlides(string type, float step)
     {
 
-        for (float i = step; i < 1f-step; i +=step)
+        for (float i = step; i < 1f; i +=step)
         {
             var result = GetPointAtPosition(type, i);
             var obj = new GameObject("Slide_"+(1f-i));
@@ -103,6 +103,13 @@ public class SlideGenerator : MonoBehaviour
             /*position = position * 6.28f;
             var circle = new Vector2(rad*Mathf.Sin(position), rad*Mathf.Cos(position));
             return circle;*/
+        }
+        else if(type == ">")
+        {
+            var pos = (0.0625f + position * (1 - 0f))*2 * Mathf.PI;
+            var circle = new Vector2(4.8f * Mathf.Sin(pos), 4.8f * Mathf.Cos(pos));
+            var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
+            return new Vector3(circle.x, circle.y, -angle+180f);
         }
         return new Vector3();
     }
