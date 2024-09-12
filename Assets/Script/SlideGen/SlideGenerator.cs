@@ -64,11 +64,11 @@ public class SlideGenerator : MonoBehaviour
         else if(type == "q")
         {
             var start = 1;
-            var end = 1;
+            var end = 2;
             var startPoint = GetPositionFromDistance(4.8f, start);
             var endPoint = GetPositionFromDistance(rad, 7.5f);
             var vect = endPoint - startPoint;
-            var curv_part = 0.625f;
+            var curv_part = 0.5f;
             var line_s = vect.magnitude;
             var curv_s = Mathf.PI*rad*2f* curv_part;
             var lineseg = line_s / (line_s + curv_s + line_s);
@@ -86,19 +86,19 @@ public class SlideGenerator : MonoBehaviour
             else if (position < curvseg)
             {
                 position = ((position- curvseg) /(curvseg-lineseg)) * 2f *Mathf.PI * -curv_part;
-                position += 90f * Mathf.Deg2Rad;
+                position += 135f * Mathf.Deg2Rad;
                 var circle = new Vector2(rad * Mathf.Sin(position), rad * Mathf.Cos(position));
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
                 return new Vector3(circle.x,circle.y, -angle);
             }
             else if (position <= 1f)
             {
-                startPoint = GetPositionFromDistance(rad, 2.5f);
+                startPoint = GetPositionFromDistance(rad, end+1.5f);
                 endPoint = GetPositionFromDistance(4.8f, end);
                 var lerp = Vector2.Lerp(startPoint, endPoint, (position - curvseg) / lineseg);
                 vect = endPoint - startPoint;
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(vect.x, vect.y);
-                return new Vector3(lerp.x, lerp.y, angle-90);
+                return new Vector3(lerp.x, lerp.y, angle-180);
             }
             /*position = position * 6.28f;
             var circle = new Vector2(rad*Mathf.Sin(position), rad*Mathf.Cos(position));
