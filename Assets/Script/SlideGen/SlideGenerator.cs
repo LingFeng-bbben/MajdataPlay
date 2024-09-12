@@ -37,7 +37,7 @@ public class SlideGenerator : MonoBehaviour
     void GenerateSlides(string type, float step)
     {
 
-        for (float i = step; i < 1f-step; i +=step)
+        for (float i = step; i < 1f; i +=step)
         {
             var result = GetPointAtPosition(type, i);
             var obj = new GameObject("Slide_"+(1f-i));
@@ -64,11 +64,11 @@ public class SlideGenerator : MonoBehaviour
         else if(type == "q")
         {
             var start = 1;
-            var end = 3;
+            var end = 4;
             var startPoint = GetPositionFromDistance(4.8f, start);
             var endPoint = GetPositionFromDistance(rad, 7.5f);
             var vect = endPoint - startPoint;
-            var curv_part = 0.375f;
+            var curv_part = 0.25f;
             var line_s = vect.magnitude;
             var curv_s = Mathf.PI*rad*2f* curv_part;
             var lineseg = line_s / (line_s + curv_s + line_s);
@@ -86,7 +86,7 @@ public class SlideGenerator : MonoBehaviour
             else if (position < curvseg)
             {
                 position = ((position- curvseg) /(curvseg-lineseg)) * 2f *Mathf.PI * -curv_part;
-                position += 180f * Mathf.Deg2Rad;
+                position += 225f * Mathf.Deg2Rad;
                 var circle = new Vector2(rad * Mathf.Sin(position), rad * Mathf.Cos(position));
                 var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
                 return new Vector3(circle.x,circle.y, -angle);
