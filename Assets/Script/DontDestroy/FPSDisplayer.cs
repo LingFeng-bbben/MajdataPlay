@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -10,6 +8,7 @@ public class FPSDisplayer : MonoBehaviour
     public static Color BgColor { get; set; } = new Color(0,0,0);
     List<float> data = new();
     TextMeshPro textDisplayer;
+
     float frameTimer = 1;
     void Start()
     {
@@ -30,6 +29,7 @@ public class FPSDisplayer : MonoBehaviour
         {
             var newColor = new Color(1.0f - BgColor.r, 1.0f - BgColor.g, 1.0f - BgColor.b);
             var fpsDelta = data.Sum() / count;
+
             textDisplayer.text = $"FPS\n{1 / fpsDelta:F2}";
             textDisplayer.color = newColor;
             frameTimer = 1;
