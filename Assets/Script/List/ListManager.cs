@@ -113,12 +113,11 @@ public class ListManager : MonoBehaviour
                         SceneManager.LoadSceneAsync(2);
                     }
                     break;
+                case SensorType.A7:
+                    InputManager.Instance.UnbindAnyArea(OnAreaDown);
+                    SceneManager.LoadScene(4);
+                    break;
             }
         }
-    }
-
-    private void OnDestroy()
-    {
-        
     }
 }
