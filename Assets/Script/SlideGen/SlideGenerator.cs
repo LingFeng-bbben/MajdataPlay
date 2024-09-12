@@ -1,0 +1,105 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+public class SlideGenerator : MonoBehaviour
+{
+    LineRenderer lineRenderer;
+    public string type;
+    public Sprite slide;
+    public float step;
+    public float rad;
+    public bool showLine = false;
+    public bool generate = false;
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (showLine)
+        {
+            lineRenderer = GetComponent<LineRenderer>();
+            var positions = new List<Vector3>();
+            for (int i = 0; i <= 100; i++)
+            {
+                positions.Add((Vector2)GetPointAtPosition(type, i / 100f));
+            }
+            lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetPositions(positions.ToArray());
+        }
+        if (generate)
+        {
+            GenerateSlides(type, step);
+        }
+    }
+
+    void GenerateSlides(string type, float step)
+    {
+
+        for (float i = step; i < 1f-step; i +=step)
+        {
+            var result = GetPointAtPosition(type, i);
+            var obj = new GameObject("Slide_"+(1f-i));
+            obj.transform.parent = transform;
+            obj.transform.position = (Vector2)result;
+            obj.transform.rotation = Quaternion.Euler(0, 0, result.z);
+            var rend = obj.AddComponent<SpriteRenderer>();
+            rend.sortingLayerName = "Slides";
+            rend.sprite = slide;
+        }
+    }
+
+    Vector3 GetPointAtPosition(string type,float position)
+    {
+        if(type == "1-3")
+        {
+            var startPoint = GetPositionFromDistance(4.8f, 1);
+            var endPoint = GetPositionFromDistance(4.8f, 3);
+            var lerp = Vector2.Lerp(startPoint, endPoint, position);
+            var vect = endPoint - startPoint;
+            var angle = Mathf.Rad2Deg*Mathf.Atan2(vect.x, vect.y); 
+            return new Vector3(lerp.x, lerp.y, angle -45f);
+        }
+        else if(type == "1q7")
+        {
+            //10 - 21 - 10
+            if (position < 0.244f)
+            {
+                var startPoint = GetPositionFromDistance(4.8f, 1);
+                var endPoint = GetPositionFromDistance(rad, 7.5f);
+                var lerp = Vector2.Lerp(startPoint, endPoint, position / 0.244f);
+                var vect = endPoint - startPoint;
+                var angle = Mathf.Rad2Deg * Mathf.Atan2(vect.x, vect.y);
+                return new Vector3(lerp.x, lerp.y, angle+180);
+            }
+            else if (position < 0.7560f)
+            {
+                position = ((position-0.7560f)/0.5122f) * 6.28f * -0.875f ;
+                var circle = new Vector2(rad * Mathf.Sin(position), rad * Mathf.Cos(position));
+                var angle = Mathf.Rad2Deg * Mathf.Atan2(circle.x, circle.y);
+                return new Vector3(circle.x,circle.y, -angle);
+            }
+            else if (position <= 1f)
+            {
+                var startPoint = new Vector3(0, rad);
+                var endPoint = GetPositionFromDistance(4.8f, 7);
+                var lerp = Vector2.Lerp(startPoint, endPoint, (position - 0.7560f) / 0.244f);
+                var vect = endPoint - startPoint;
+                var angle = Mathf.Rad2Deg * Mathf.Atan2(vect.x, vect.y);
+                return new Vector3(lerp.x, lerp.y, angle+90);
+            }
+            /*position = position * 6.28f;
+            var circle = new Vector2(rad*Mathf.Sin(position), rad*Mathf.Cos(position));
+            return circle;*/
+        }
+        return new Vector3();
+    }
+
+     Vector3 GetPositionFromDistance(float distance, float position)
+    {
+        return new Vector3(
+            distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
+            distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
+    }
+}
