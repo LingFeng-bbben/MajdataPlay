@@ -107,6 +107,9 @@ public class ListManager : MonoBehaviour
                     }
                     else
                     {
+                        InputManager.Instance.UnbindAnyArea(OnAreaDown);
+                        AudioManager.Instance.StopSFX("SelectSong.wav");
+                        AudioManager.Instance.StopSFX("selectbgm.mp3");
                         SceneManager.LoadSceneAsync(2);
                     }
                     break;
@@ -116,8 +119,6 @@ public class ListManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        InputManager.Instance.UnbindAnyArea(OnAreaDown);
-        AudioManager.Instance.StopSFX("SelectSong.wav");
-        AudioManager.Instance.StopSFX("selectbgm.mp3");
+        
     }
 }

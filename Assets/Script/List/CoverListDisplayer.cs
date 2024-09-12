@@ -104,7 +104,7 @@ public class CoverListDisplayer : MonoBehaviour
 
             for (int i = 0; i < covers.Count; i++)
             {
-                var text = songs.ToArray()[desiredListPos].Levels[selectedDifficulty];
+                var text = songs.ToArray()[i].Levels[selectedDifficulty];
                 if (text == null || text == "") text = "-";
                 covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
             }

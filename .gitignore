@@ -82,3 +82,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Nn]otes/*
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Tt]extSprites/*
 /MajPlayRuntime.log
+Assets/Font/GenJyuuGothicX-Medium SDF.asset
+Assets/Font/SourceHanSans-Medium SDF.asset
+Assets/Font/GenJyuuGothicScore.asset

@@ -98,8 +98,8 @@ public class GameManager : MonoBehaviour
         Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(1, 0);
 
         var fullScreen = Setting.Debug.FullScreen;
-        if (!fullScreen)
-            Screen.fullScreen = false;
+        Screen.fullScreen = fullScreen;
+
         var resolution = Setting.Display.Resolution.ToLower();
         if (resolution is not "auto")
         {
