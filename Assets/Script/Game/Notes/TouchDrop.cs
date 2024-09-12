@@ -30,6 +30,7 @@ namespace MajdataPlay.Game.Notes
                     default:
                         return;
                 }
+                _rendererState = value;
             }
         }
         float displayDuration;
@@ -243,7 +244,7 @@ namespace MajdataPlay.Game.Notes
             multTouchHandler.Unregister(sensorPos);
             if (!isJudged) 
                 return;
-
+            State = NoteStatus.Destroyed;
             var result = new JudgeResult()
             {
                 Result = judgeResult,

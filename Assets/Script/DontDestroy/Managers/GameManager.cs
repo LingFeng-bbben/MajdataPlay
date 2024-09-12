@@ -25,9 +25,21 @@ public class GameManager : MonoBehaviour
     public static string ScoreDBPath => Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
     public GameSetting Setting { get; private set; } = new();
-    public int SelectedIndex { get; set; } = 0;
-    public List<SongDetail> SongList { get; set; } = new List<SongDetail>();
+    /// <summary>
+    /// 在List中选中的文件夹
+    /// </summary>
+    public SongCollection Collection { get; private set; } = new();
+    public int SelectedDir 
+    {
+        get => _selectedDir; 
+        set
+        {
+            Collection = SongStorage.Songs[value];
+            _selectedDir = value;
+        }
+    }
     public static GameResult? LastGameResult { get; set; } = null;
+    public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
 
     CancellationTokenSource tokenSource = new();
     Task? logWritebackTask = null;
@@ -47,7 +59,7 @@ public class GameManager : MonoBehaviour
         ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = true
     };
-    private void Awake()
+    void Awake()
     {
         Application.logMessageReceived += (c, trace, type) => 
         {
@@ -86,8 +98,8 @@ public class GameManager : MonoBehaviour
         Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(1, 0);
 
         var fullScreen = Setting.Debug.FullScreen;
-        if (!fullScreen)
-            Screen.fullScreen = false;
+        Screen.fullScreen = fullScreen;
+
         var resolution = Setting.Display.Resolution.ToLower();
         if (resolution is not "auto")
         {
@@ -103,11 +115,13 @@ public class GameManager : MonoBehaviour
         var thiss = Process.GetCurrentProcess();
         thiss.PriorityClass = ProcessPriorityClass.RealTime;
     }
-    void Start()
+    async void Start()
     {
-        SelectedIndex = Setting.SelectedIndex;
+        await SongStorage.ScanMusicAsync();
+
+        SelectedDir = Setting.SelectedDir;
+        Collection.Index = Setting.SelectedIndex;
         SelectedDiff = Setting.SelectedDiff;
-        SongList = SongLoader.ScanMusic();
     }
     private void OnApplicationQuit()
     {
@@ -120,7 +134,8 @@ public class GameManager : MonoBehaviour
     public void Save()
     {
         Setting.SelectedDiff = SelectedDiff;
-        Setting.SelectedIndex = SelectedIndex;
+        Setting.SelectedIndex = Collection.Index;
+        Setting.SelectedDir = SelectedDir;
 
         var json = Serializer.Json.Serialize(Setting,jsonReaderOption);
         File.WriteAllText(SettingPath, json);
@@ -149,4 +164,8 @@ public class GameManager : MonoBehaviour
         public string? StackTrace { get; set; }
         public LogType? Type { get; set; }
     }
+    [SerializeField]
+    bool _useUnityTimer = false;
+    int _selectedDir = 0;
+    int _selectedIndex = 0;
 }

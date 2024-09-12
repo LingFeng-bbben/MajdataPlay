@@ -10,11 +10,15 @@ using MajdataPlay.Game.Notes;
 using System.Collections;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
-
+using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
+using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
+#nullable enable
 public class NoteLoader : MonoBehaviour
 {
     public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
-    public Exception Exception { get; private set; } = null;
     public long NoteLimit { get; set; } = 1000;
     public double Process { get; set; } = 0;
 
@@ -26,7 +30,6 @@ public class NoteLoader : MonoBehaviour
     NoteManager noteManager;
     Dictionary<int, int> noteIndex = new();
     Dictionary<SensorType, int> touchIndex = new();
-    Stopwatch sw = new();
 
     public GameObject tapPrefab;
     public GameObject holdPrefab;
@@ -209,211 +212,114 @@ public class NoteLoader : MonoBehaviour
         //Debug.Log($"NoteLoader State:{State}");
     }
 
-    public IEnumerator LoadNotes(SimaiProcess simaiProcess, float ignoreOffset=0f)
+    public async UniTask LoadNotes(SimaiProcess simaiProcess)
     {
-        State = NoteLoaderStatus.ParsingNote;
-        noteManager.Refresh();
-        noteIndex.Clear();
-        touchIndex.Clear();
-        
-
-        for (int i = 1; i < 9; i++)
-            noteIndex.Add(i, 0);
-        for (int i = 0; i < 33; i++)
-            touchIndex.Add((SensorType)i, 0);
-
-        var loadedData = simaiProcess;
-
-
-        CountNoteSum(loadedData);
-
-        var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
-
-        var lastNoteTime = loadedData.notelist.Last().time;
-
-        sw.Start();
-        foreach (var timing in loadedData.notelist)
+        List<Task> touchTasks = new();
+        try
         {
-            if (timing.time < ignoreOffset)
+            State = NoteLoaderStatus.ParsingNote;
+            noteManager.Refresh();
+            noteIndex.Clear();
+            touchIndex.Clear();
+
+            for (int i = 1; i < 9; i++)
+                noteIndex.Add(i, 0);
+            for (int i = 0; i < 33; i++)
+                touchIndex.Add((SensorType)i, 0);
+
+            var loadedData = simaiProcess;
+
+
+            await CountNoteSumAsync(loadedData);
+
+            var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
+
+            var lastNoteTime = loadedData.notelist.Last().time;
+
+            foreach (var timing in loadedData.notelist)
             {
-                CountNoteCount(timing.noteList);
-                continue;
-            }
-            List<TouchDrop> members = new();
-            for (var i = 0; i < timing.noteList.Count; i++)
-            {
-                noteCount++;
-                Process = (double)noteCount / sum;
-                if (noteCount > NoteLimit)
-                    State = NoteLoaderStatus.Backend;
-                if (sw.ElapsedMilliseconds >= 33)
+                var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch && 
+                                                             o.noteType != SimaiNoteType.TouchHold);
+                int? num = null;
+                IDistanceProvider? provider = null;
+                IStatefulNote? noteA = null;
+                IStatefulNote? noteB = null;
+                List<TouchDrop> members = new();
+                foreach(var (i,note) in timing.noteList.WithIndex())
                 {
-                    yield return 0;
-                    sw.Restart();
+                    noteCount++;
+                    Process = (double)noteCount / sum;
+                    if (noteCount % 30 == 0)
+                        await UniTask.Yield();
+
+                    switch (note.noteType)
+                    {
+                        case SimaiNoteType.Tap:
+                            {
+                                var obj = InstantiateTap(note, timing);
+                                if(eachNotes.Count > 1 && i < 2)
+                                {
+                                    if (num is null)
+                                        num = 0;
+                                    else if(num != 0)
+                                        break;
+
+                                    if (provider is null)
+                                        provider = obj;
+                                    if (noteA is null)
+                                        noteA = obj;
+                                    else
+                                        noteB = obj;
+                                }
+                            }
+                            break;
+                        case SimaiNoteType.Hold:
+                            {
+                                var obj = InstantiateHold(note, timing);
+                                if (eachNotes.Count > 1 && i < 2)
+                                {
+                                    if (num is null)
+                                        num = 1;
+                                    else if (num != 1)
+                                        break;
+
+                                    if (provider is null)
+                                        provider = obj;
+                                    if (noteA is null)
+                                        noteA = obj;
+                                    else
+                                        noteB = obj;
+                                }
+                            }
+                            break;
+                        case SimaiNoteType.TouchHold:
+                            InstantiateTouchHold(note, timing);
+                            break;
+                        case SimaiNoteType.Touch:
+                            InstantiateTouch(note, timing, members);
+                            break;
+                        case SimaiNoteType.Slide:
+                            InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
+                            break;
+                    }
                 }
-
-                try
-                {
-                    var note = timing.noteList[i];
-                    if (note.noteType == SimaiNoteType.Tap)
-                    {
-                        GameObject GOnote = null;
-                        TapBase NDCompo = null;
-
-                        if (note.isForceStar)
-                        {
-                            GOnote = Instantiate(starPrefab, notes.transform);
-                            var _NDCompo = GOnote.GetComponent<StarDrop>();
-                            _NDCompo.tapLine = starLine;
-                            _NDCompo.isFakeStarRotate = note.isFakeRotate;
-                            _NDCompo.isFakeStar = true;
-                            NDCompo = _NDCompo;
-                        }
-                        else
-                        {
-                            GOnote = Instantiate(tapPrefab, notes.transform);
-                            NDCompo = GOnote.GetComponent<TapDrop>();
-                        }
-
-                        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-
-                        // note的图层顺序
-                        NDCompo.noteSortOrder = noteSortOrder;
-                        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-                        if (timing.noteList.Count > 1) NDCompo.isEach = true;
-                        NDCompo.isBreak = note.isBreak;
-                        NDCompo.isEX = note.isEx;
-                        NDCompo.time = (float)timing.time;
-                        NDCompo.startPosition = note.startPosition;
-                        NDCompo.speed = noteSpeed * timing.HSpeed;
-                    }
-                    else if (note.noteType == SimaiNoteType.Hold)
-                    {
-                        var GOnote = Instantiate(holdPrefab, notes.transform);
-                        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-                        var NDCompo = GOnote.GetComponent<HoldDrop>();
-
-                        // note的图层顺序
-                        NDCompo.noteSortOrder = noteSortOrder;
-                        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-                        if (timing.noteList.Count > 1) NDCompo.isEach = true;
-                        NDCompo.time = (float)timing.time;
-                        NDCompo.LastFor = (float)note.holdTime;
-                        NDCompo.startPosition = note.startPosition;
-                        NDCompo.speed = noteSpeed * timing.HSpeed;
-                        NDCompo.isEX = note.isEx;
-                        NDCompo.isBreak = note.isBreak;
-                    }
-                    else if (note.noteType == SimaiNoteType.TouchHold)
-                    {
-                        var GOnote = Instantiate(touchHoldPrefab, notes.transform);
-                        noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
-                        var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
-
-                        // note的图层顺序
-                        NDCompo.noteSortOrder = noteSortOrder;
-                        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-                        NDCompo.time = (float)timing.time;
-                        NDCompo.LastFor = (float)note.holdTime;
-                        NDCompo.speed = touchSpeed * timing.HSpeed;
-                        NDCompo.isFirework = note.isHanabi;
-                    }
-                    else if (note.noteType == SimaiNoteType.Touch)
-                    {
-                        var GOnote = Instantiate(touchPrefab, notes.transform);
-                        noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
-                        var NDCompo = GOnote.GetComponent<TouchDrop>();
-
-                        // note的图层顺序
-                        NDCompo.noteSortOrder = noteSortOrder;
-                        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-                        NDCompo.time = (float)timing.time;
-                        NDCompo.areaPosition = note.touchArea;
-                        NDCompo.startPosition = note.startPosition;
-
-                        if (timing.noteList.Count > 1)
-                        {
-                            NDCompo.isEach = true;
-                            members.Add(NDCompo);
-                        }
-                        NDCompo.speed = touchSpeed * timing.HSpeed;
-                        NDCompo.isFirework = note.isHanabi;
-                        NDCompo.GroupInfo = null;
-                    }
-
-                    else if (note.noteType == SimaiNoteType.Slide)
-                        InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
-                }
-                catch(Exception e)
-                {
-                    Exception = e;
-                    State = NoteLoaderStatus.Error;
-                    yield break;
-                }
-                
-            }
-
-            try
-            {
                 if (members.Count != 0)
-                {
-                    var sensorTypes = members.GroupBy(x => x.GetSensor())
-                                             .Select(x => x.Key)
-                                             .ToList();
-                    List<List<SensorType>> sensorGroups = new();
+                    touchTasks.Add(AllocTouchGroup(members));
 
-                    while (sensorTypes.Count > 0)
-                    {
-                        var sensorType = sensorTypes[0];
-                        var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
-                        var groupMap = TOUCH_GROUPS[sensorType];
-                        existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
-
-                        var groupMembers = existsGroup.SelectMany(x => x)
-                                                      .ToList();
-                        var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
-
-                        groupMembers.AddRange(newMembers);
-                        groupMembers.Add(sensorType);
-                        var newGroup = groupMembers.GroupBy(x => x)
-                                                   .Select(x => x.Key)
-                                                   .ToList();
-
-                        foreach (var newMember in newGroup)
-                            sensorTypes.Remove(newMember);
-                        foreach (var oldGroup in existsGroup)
-                            sensorGroups.Remove(oldGroup);
-
-                        sensorGroups.Add(newGroup);
-                    }
-                    List<TouchGroup> touchGroups = new();
-                    var memberMapping = members.ToDictionary(x => x.GetSensor());
-                    foreach (var group in sensorGroups)
-                    {
-                        touchGroups.Add(new TouchGroup()
-                        {
-                            Members = group.Select(x => memberMapping[x]).ToArray()
-                        });
-                    }
-                    foreach (var member in members)
-                        member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
-                }
-
-                var eachNotes = timing.noteList.FindAll(o =>
-                    o.noteType != SimaiNoteType.Touch && o.noteType != SimaiNoteType.TouchHold);
                 if (eachNotes.Count > 1) //有多个非touchnote
                 {
                     var startPos = eachNotes[0].startPosition;
                     var endPos = eachNotes[1].startPosition;
                     endPos = endPos - startPos;
-                    if (endPos == 0) continue;
-
+                    if (endPos == 0) 
+                        continue;
+                    
                     var line = Instantiate(eachLine, notes.transform);
                     var lineDrop = line.GetComponent<EachLineDrop>();
+
+                    lineDrop.DistanceProvider = provider;
+                    lineDrop.NoteA = noteA;
+                    lineDrop.NoteB = noteB;
 
                     lineDrop.time = (float)timing.time;
                     lineDrop.speed = noteSpeed * timing.HSpeed;
@@ -436,89 +342,202 @@ public class NoteLoader : MonoBehaviour
                     lineDrop.curvLength = endPos - 1;
                 }
             }
-            catch (Exception e)
-            {
-                Exception = e;
-                State = NoteLoaderStatus.Error;
-                yield break;
-            }
 
+            var allTask = Task.WhenAll(touchTasks);
+            while(!allTask.IsCompleted)
+            {
+                await UniTask.Yield();
+                if(allTask.IsFaulted)
+                    throw allTask.Exception.InnerException;
+            }
+        }
+        catch(Exception e)
+        {
+            State = NoteLoaderStatus.Error;
+            throw e;
         }
         State = NoteLoaderStatus.Finished;
-        yield break;
+    }
+    TapBase InstantiateTap(in SimaiNote note,in SimaiTimingPoint timing)
+    {
+        GameObject? GOnote = null;
+        TapBase? NDCompo = null;
+
+        if (note.isForceStar)
+        {
+            GOnote = Instantiate(starPrefab, notes.transform);
+            var _NDCompo = GOnote.GetComponent<StarDrop>();
+            _NDCompo.tapLine = starLine;
+            _NDCompo.isFakeStarRotate = note.isFakeRotate;
+            _NDCompo.isFakeStar = true;
+            NDCompo = _NDCompo;
+        }
+        else
+        {
+            GOnote = Instantiate(tapPrefab, notes.transform);
+            NDCompo = GOnote.GetComponent<TapDrop>();
+        }
+
+        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+
+        // note的图层顺序
+        NDCompo.noteSortOrder = noteSortOrder;
+        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+        if (timing.noteList.Count > 1) NDCompo.isEach = true;
+        NDCompo.isBreak = note.isBreak;
+        NDCompo.isEX = note.isEx;
+        NDCompo.time = (float)timing.time;
+        NDCompo.startPosition = note.startPosition;
+        NDCompo.speed = noteSpeed * timing.HSpeed;
+
+        return NDCompo;
+    }
+    HoldDrop InstantiateHold(in SimaiNote note, in SimaiTimingPoint timing)
+    {
+        var GOnote = Instantiate(holdPrefab, notes.transform);
+        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+        var NDCompo = GOnote.GetComponent<HoldDrop>();
+
+        // note的图层顺序
+        NDCompo.noteSortOrder = noteSortOrder;
+        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+        if (timing.noteList.Count > 1) NDCompo.isEach = true;
+        NDCompo.time = (float)timing.time;
+        NDCompo.LastFor = (float)note.holdTime;
+        NDCompo.startPosition = note.startPosition;
+        NDCompo.speed = noteSpeed * timing.HSpeed;
+        NDCompo.isEX = note.isEx;
+        NDCompo.isBreak = note.isBreak;
+
+        return NDCompo;
+    }
+    void InstantiateTouch(in SimaiNote note, 
+                          in SimaiTimingPoint timing,
+                          in List<TouchDrop> members)
+    {
+        var GOnote = Instantiate(touchPrefab, notes.transform);
+        noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
+        var NDCompo = GOnote.GetComponent<TouchDrop>();
+
+        // note的图层顺序
+        NDCompo.noteSortOrder = noteSortOrder;
+        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+        NDCompo.time = (float)timing.time;
+        NDCompo.areaPosition = note.touchArea;
+        NDCompo.startPosition = note.startPosition;
+
+        if (timing.noteList.Count > 1)
+        {
+            NDCompo.isEach = true;
+            members.Add(NDCompo);
+        }
+        NDCompo.speed = touchSpeed * timing.HSpeed;
+        NDCompo.isFirework = note.isHanabi;
+        NDCompo.GroupInfo = null;
+    }
+    void InstantiateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
+    {
+        var GOnote = Instantiate(touchHoldPrefab, notes.transform);
+        noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
+        var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
+
+        // note的图层顺序
+        NDCompo.noteSortOrder = noteSortOrder;
+        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+        NDCompo.time = (float)timing.time;
+        NDCompo.LastFor = (float)note.holdTime;
+        NDCompo.speed = touchSpeed * timing.HSpeed;
+        NDCompo.isFirework = note.isHanabi;
+    }
+    async Task AllocTouchGroup(List<TouchDrop> members)
+    {
+        await Task.Run(() =>
+        {
+            var sensorTypes = members.GroupBy(x => x.GetSensor())
+                                             .Select(x => x.Key)
+                                             .ToList();
+            List<List<SensorType>> sensorGroups = new();
+
+            while (sensorTypes.Count > 0)
+            {
+                var sensorType = sensorTypes[0];
+                var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
+                var groupMap = TOUCH_GROUPS[sensorType];
+                existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
+
+                var groupMembers = existsGroup.SelectMany(x => x)
+                                              .ToList();
+                var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
+
+                groupMembers.AddRange(newMembers);
+                groupMembers.Add(sensorType);
+                var newGroup = groupMembers.GroupBy(x => x)
+                                           .Select(x => x.Key)
+                                           .ToList();
+
+                foreach (var newMember in newGroup)
+                    sensorTypes.Remove(newMember);
+                foreach (var oldGroup in existsGroup)
+                    sensorGroups.Remove(oldGroup);
+
+                sensorGroups.Add(newGroup);
+            }
+            List<TouchGroup> touchGroups = new();
+            var memberMapping = members.ToDictionary(x => x.GetSensor());
+            foreach (var group in sensorGroups)
+            {
+                touchGroups.Add(new TouchGroup()
+                {
+                    Members = group.Select(x => memberMapping[x]).ToArray()
+                });
+            }
+            foreach (var member in members)
+                member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
+        });
     }
 
-
-    private void CountNoteSum(SimaiProcess json)
+    private async ValueTask CountNoteSumAsync(SimaiProcess json)
     {
-        foreach (var timing in json.notelist)
-            foreach (var note in timing.noteList)
-                if (!note.isBreak)
-                {
-                    if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapSum++;
-                    if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdSum++;
-                    if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdSum++;
-                    if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchSum++;
-                    if (note.noteType == SimaiNoteType.Slide)
+        await Task.Run(() =>
+        {
+            foreach (var timing in json.notelist)
+                foreach (var note in timing.noteList)
+                    if (!note.isBreak)
                     {
-                        if (!note.isSlideNoHead) ObjectCounter.tapSum++;
-                        if (note.isSlideBreak)
-                            ObjectCounter.breakSum++;
+                        if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapSum++;
+                        if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdSum++;
+                        if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdSum++;
+                        if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchSum++;
+                        if (note.noteType == SimaiNoteType.Slide)
+                        {
+                            if (!note.isSlideNoHead) ObjectCounter.tapSum++;
+                            if (note.isSlideBreak)
+                                ObjectCounter.breakSum++;
+                            else
+                                ObjectCounter.slideSum++;
+                        }
+                    }
+                    else
+                    {
+                        if (note.noteType == SimaiNoteType.Slide)
+                        {
+                            if (!note.isSlideNoHead) ObjectCounter.breakSum++;
+                            if (note.isSlideBreak)
+                                ObjectCounter.breakSum++;
+                            else
+                                ObjectCounter.slideSum++;
+                        }
                         else
-                            ObjectCounter.slideSum++;
-                    }
-                }
-                else
-                {
-                    if (note.noteType == SimaiNoteType.Slide)
-                    {
-                        if (!note.isSlideNoHead) ObjectCounter.breakSum++;
-                        if (note.isSlideBreak)
+                        {
                             ObjectCounter.breakSum++;
-                        else
-                            ObjectCounter.slideSum++;
+                        }
                     }
-                    else
-                    {
-                        ObjectCounter.breakSum++;
-                    }
-                }
-        ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
-    }
-
-    private void CountNoteCount(List<SimaiNote> timing)
-    {
-        foreach (var note in timing)
-            if (!note.isBreak)
-            {
-                if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapCount++;
-                if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdCount++;
-                if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdCount++;
-                if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchCount++;
-                if (note.noteType == SimaiNoteType.Slide)
-                {
-                    if (!note.isSlideNoHead) ObjectCounter.tapCount++;
-                    if (note.isSlideBreak)
-                        ObjectCounter.breakCount++;
-                    else
-                        ObjectCounter.slideCount++;
-                }
-            }
-            else
-            {
-                if (note.noteType == SimaiNoteType.Slide)
-                {
-                    if (!note.isSlideNoHead) ObjectCounter.breakCount++;
-                    if (note.isSlideBreak)
-                        ObjectCounter.breakCount++;
-                    else
-                        ObjectCounter.slideCount++;
-                }
-                else
-                {
-                    ObjectCounter.breakCount++;
-                }
-            }
+            ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
+        });
     }
 
     private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
@@ -908,6 +927,12 @@ public class NoteLoader : MonoBehaviour
         return slide;
     }
 
+    /// <summary>
+    /// 判断Slide SlideOK是否需要镜像翻转
+    /// </summary>
+    /// <param name="content"></param>
+    /// <param name="endPos"></param>
+    /// <returns></returns>
     private bool detectJustType(string content, out int endPos)
     {
         // > < ^ V w

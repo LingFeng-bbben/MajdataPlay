@@ -1,3 +1,5 @@
+using MajdataPlay.Interfaces;
+using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -9,8 +11,9 @@ namespace MajdataPlay.Game.Notes
         public int curvLength = 1;
         public float speed = 1;
 
-        public GameObject obj1;
-        public GameObject obj2;
+        public IDistanceProvider? DistanceProvider { get; set; }
+        public IStatefulNote? NoteA { get; set; }
+        public IStatefulNote? NoteB { get; set; }
 
         public Sprite[] curvSprites;
         private SpriteRenderer sr;
@@ -31,15 +34,28 @@ namespace MajdataPlay.Game.Notes
         private void Update()
         {
             var timing = gpManager.AudioTime - time;
-            var distance = timing * speed + 4.8f;
+            float distance;
+
+            if (DistanceProvider is not null)
+                distance = DistanceProvider.Distance;
+            else
+                distance = timing * speed + 4.8f;
             var destScale = distance * 0.4f + 0.51f;
-            if (timing > 0) Destroy(gameObject);
-            if (distance < 1.225f)
+            if(NoteA is not null && NoteB is not null)
+            {
+                if(NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
+                    Destroy(gameObject);
+            }
+            else if (timing > 0)
+                Destroy(gameObject);
+
+            if (distance <= 1.225f)
             {
                 distance = 1.225f;
                 if (destScale > 0.3f) sr.forceRenderingOff = false;
             }
-
+            if (destScale > 0.3f) 
+                sr.forceRenderingOff = false;
             var lineScale = Mathf.Abs(distance / 4.8f);
             transform.localScale = new Vector3(lineScale, lineScale, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
