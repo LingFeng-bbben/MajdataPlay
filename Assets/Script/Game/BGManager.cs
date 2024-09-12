@@ -9,18 +9,13 @@ public class BGManager : MonoBehaviour
     private float playSpeed;
     private GamePlayManager gamePlayManager;
 
-    private float smoothRDelta;
-
     private SpriteRenderer spriteRender;
 
     private VideoPlayer videoPlayer;
 
-    private float originalScaleX;
-
     // Start is called before the first frame update
     private void Start()
     {
-        originalScaleX = gameObject.transform.localScale.x;
         spriteRender = GetComponent<SpriteRenderer>();
         videoPlayer = GetComponent<VideoPlayer>();
         gamePlayManager = GamePlayManager.Instance;
@@ -28,25 +23,15 @@ public class BGManager : MonoBehaviour
 
     private void Update()
     {
-        //videoPlayer.externalReferenceTime = provider.AudioTime;
-        var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTime;
-        smoothRDelta += (Time.unscaledDeltaTime - smoothRDelta) * 0.01f;
-        if (gamePlayManager.AudioTime < 0) return;
-        var realSpeed = Time.deltaTime / smoothRDelta;
-
-        if (Time.captureFramerate != 0)
-        {
-            //print("speed="+realSpeed+" delta="+delta);
-            videoPlayer.playbackSpeed = realSpeed - delta;
-            return;
-        }
+        videoPlayer.externalReferenceTime = gamePlayManager.AudioTimeNoOffset;
+        /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
 
         if (delta < -0.01f)
             videoPlayer.playbackSpeed = playSpeed + 0.2f;
         else if (delta > 0.01f)
             videoPlayer.playbackSpeed = playSpeed - 0.2f;
         else
-            videoPlayer.playbackSpeed = playSpeed;
+            videoPlayer.playbackSpeed = playSpeed;*/
     }
 
     public void PauseVideo()
@@ -60,9 +45,6 @@ public class BGManager : MonoBehaviour
         playSpeed = speed;
         videoPlayer.Play();
     }
-
-    //Moved to songloader
-    //public void LoadBGFromPath(string path, float speed)
 
     public void SetBackgroundPic(Sprite sprite)
     {
@@ -93,11 +75,12 @@ public class BGManager : MonoBehaviour
     private IEnumerator waitFumenStart()
     {
         
-        //videoPlayer.timeReference = VideoTimeReference.ExternalTime;
-        while (gamePlayManager.AudioTime <= 0) yield return new WaitForEndOfFrame();
+        videoPlayer.timeReference = VideoTimeReference.ExternalTime;
+        
+        while (gamePlayManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
         while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
         videoPlayer.Play();
-        //videoPlayer.time = gamePlayManager.AudioTime;
+        //videoPlayer.time = gamePlayManager.AudioTimeNoOffset;
 
         var scale = videoPlayer.height / (float)videoPlayer.width;
         

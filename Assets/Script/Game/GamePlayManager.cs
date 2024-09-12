@@ -40,6 +40,7 @@ public class GamePlayManager : MonoBehaviour
     public float touchSpeed = 7.5f;
 
     public float AudioTime = -114514f;
+    public float AudioTimeNoOffset = -114514f;
     public bool isStart => audioSample.GetPlayState();
 
     public float CurrentSpeed = 1f;
@@ -297,6 +298,7 @@ public class GamePlayManager : MonoBehaviour
 
         var chartOffset = (float)song.First + gameSetting.Judge.AudioOffset;
         AudioTime = timeSource - AudioStartTime - chartOffset;
+        AudioTimeNoOffset = timeSource - AudioStartTime;
 
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (timeSource - AudioStartTime);
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
