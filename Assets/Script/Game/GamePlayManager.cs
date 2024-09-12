@@ -262,6 +262,9 @@ public class GamePlayManager : MonoBehaviour
         Time.timeScale = 1f;
         AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + 5f;
 
+        audioSample.Play();
+        audioSample.Pause();
+
         State = ComponentState.Running;
 
         while (timeSource - AudioStartTime < 0)
