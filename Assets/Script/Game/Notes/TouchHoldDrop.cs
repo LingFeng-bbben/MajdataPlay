@@ -159,11 +159,8 @@ namespace MajdataPlay.Game.Notes
                 result = JudgeType.LateGood;
             else
                 result = JudgeType.Miss;
-            if (isFast)
-                judgeDiff = 0;
-            else
-                judgeDiff = diff;
 
+            judgeDiff = isFast ? -diff : diff;
             judgeResult = result;
             isJudged = true;
             PlayHoldEffect();
@@ -278,7 +275,8 @@ namespace MajdataPlay.Game.Notes
         {
             if (!isJudged) 
                 return;
-            var realityHT = LastFor - 0.45f - judgeDiff / 1000f;
+            var offset = (int)judgeResult > 7 ? 0 : judgeDiff;
+            var realityHT = LastFor - 0.45f - offset / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
             result = judgeResult;
             if (realityHT > 0)
