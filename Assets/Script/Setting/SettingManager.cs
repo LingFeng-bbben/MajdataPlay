@@ -1,4 +1,5 @@
 using MajdataPlay.Extensions;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
 using System.Linq;
@@ -8,6 +9,7 @@ namespace MajdataPlay.Scenes
 {
     public class SettingManager : MonoBehaviour
     {
+        public int Index { get; private set; } = 0;
         public GameSetting Setting => GameManager.Instance.Setting;
 
         public GameObject menuPrefab;
@@ -27,6 +29,15 @@ namespace MajdataPlay.Scenes
                 menus[i] = menu;
                 menu.SubOptionObject = property.GetValue(Setting);
             }
+            foreach(var (i, menu) in menus.WithIndex())
+            {
+                if (i != Index)
+                    menu.gameObject.SetActive(false);
+            }
+        }
+        void OnAreaDown(object sender, InputEventArgs e)
+        {
+
         }
     }
 }

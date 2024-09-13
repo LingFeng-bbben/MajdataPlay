@@ -1,4 +1,6 @@
 using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ namespace MajdataPlay.Scenes
 {
     public class Menu : MonoBehaviour
     {
+        public int SelectedIndex { get; private set; } = 0;
         /// <summary>
         /// ×Ó¼¶Option<para>Æ©ÈçGameSetting.Game</para>
         /// </summary>
@@ -28,11 +31,33 @@ namespace MajdataPlay.Scenes
                 options[i] = option;
                 option.PropertyInfo = property;
                 option.OptionObject = SubOptionObject;
+                option.Parent = this;
+                option.Index = i;
             }
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A4);
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A1);
         }
-        void Update()
+        void OnDisable()
         {
-
+            SelectedIndex = 0;
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A1);
+        }
+        void OnAreaDown(object sender, InputEventArgs e)
+        {
+            if (!e.IsClick)
+                return;
+            switch(e.Type)
+            {
+                case SensorType.A1:
+                    SelectedIndex = (--SelectedIndex).Clamp(options.Length - 1, 0);
+                    break;
+                case SensorType.A4:
+                    SelectedIndex = (++SelectedIndex).Clamp(options.Length - 1, 0);
+                    break;
+                default:
+                    return;
+            }
         }
     }
 }
