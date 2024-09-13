@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Extensions;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -53,7 +54,7 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// a timing of slide start
         /// </summary>
-        public float timeStart;
+        public float startTiming;
         public int sortIndex;
         public bool isJustR;
         public float fadeInTiming;
@@ -75,6 +76,7 @@ namespace MajdataPlay.Game.Notes
         
         protected bool isInitialized = false; //防止重复初始化
         protected bool isDestroying = false; // 防止重复销毁
+        protected float maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
@@ -259,6 +261,31 @@ namespace MajdataPlay.Game.Notes
                     Destroy(star);
             }
             stars = Array.Empty<GameObject>();
+        }
+        protected async UniTaskVoid FadeIn()
+        {
+            fadeInTiming = Math.Max(fadeInTiming,CurrentSec);
+            var num = startTiming - 0.05f;
+            float interval = (num - fadeInTiming).Clamp(0.2f, 0);
+            float fullFadeInTiming = fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
+
+            while (CurrentSec < fullFadeInTiming) 
+            {
+                var diff = (fullFadeInTiming - CurrentSec).Clamp(interval, 0);
+                float alpha = 0;
+
+                if(interval != 0)
+                    alpha = 1 - (diff / interval);
+                alpha *= maxFadeInAlpha;
+                SetSlideBarAlpha(alpha);
+                print(alpha);
+                print(fullFadeInTiming - CurrentSec);
+                await UniTask.Yield();
+            }
+            SetSlideBarAlpha(maxFadeInAlpha);
+            while (CurrentSec < num)
+                await UniTask.Yield();
+            SetSlideBarAlpha(1f);
         }
     }
 }

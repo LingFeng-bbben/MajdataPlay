@@ -387,7 +387,7 @@ public class NoteLoader : MonoBehaviour
         if (timing.noteList.Count > 1) NDCompo.isEach = true;
         NDCompo.isBreak = note.isBreak;
         NDCompo.isEX = note.isEx;
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
 
@@ -404,7 +404,7 @@ public class NoteLoader : MonoBehaviour
         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
         if (timing.noteList.Count > 1) NDCompo.isEach = true;
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.LastFor = (float)note.holdTime;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
@@ -425,7 +425,7 @@ public class NoteLoader : MonoBehaviour
         NDCompo.noteSortOrder = noteSortOrder;
         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.areaPosition = note.touchArea;
         NDCompo.startPosition = note.startPosition;
 
@@ -448,7 +448,7 @@ public class NoteLoader : MonoBehaviour
         NDCompo.noteSortOrder = noteSortOrder;
         noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.LastFor = (float)note.holdTime;
         NDCompo.speed = touchSpeed * timing.HSpeed;
         NDCompo.isFirework = note.isHanabi;
@@ -803,16 +803,16 @@ public class NoteLoader : MonoBehaviour
             noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
             noteCount++;
         }
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
 
         WifiCompo.isJustR = detectJustType(note.noteContent, out endPos);
         WifiCompo.endPosition = endPos;
         WifiCompo.speed = noteSpeed * timing.HSpeed;
-        WifiCompo.timeStart = (float)timing.time;
+        WifiCompo.startTiming = (float)timing.time;
         WifiCompo.startPosition = note.startPosition;
-        WifiCompo.time = (float)note.slideStartTime;
+        WifiCompo.timing = (float)note.slideStartTime;
         WifiCompo.LastFor = (float)note.slideTime;
         WifiCompo.sortIndex = slideLayer;
         WifiCompo.stars = new GameObject[3] 
@@ -893,7 +893,7 @@ public class NoteLoader : MonoBehaviour
             noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
             noteCount++;
         }
-        NDCompo.time = (float)timing.time;
+        NDCompo.timing = (float)timing.time;
         NDCompo.startPosition = note.startPosition;
         NDCompo.speed = noteSpeed * timing.HSpeed;
 
@@ -915,10 +915,10 @@ public class NoteLoader : MonoBehaviour
             SliCompo.isSpecialFlip = isMirror;
         }
         SliCompo.speed = noteSpeed * timing.HSpeed;
-        SliCompo.timeStart = (float)timing.time;
+        SliCompo.startTiming = (float)timing.time;
         SliCompo.startPosition = note.startPosition;
         SliCompo.stars = new GameObject[] { slide_star };
-        SliCompo.time = (float)note.slideStartTime;
+        SliCompo.timing = (float)note.slideStartTime;
         SliCompo.LastFor = (float)note.slideTime;
         //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
         SliCompo.sortIndex = slideLayer;

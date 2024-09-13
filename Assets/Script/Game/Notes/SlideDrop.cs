@@ -64,7 +64,7 @@ namespace MajdataPlay.Game.Notes
             // 在8.0速时应当提前300ms显示Slide
             fadeInTiming = -3.926913f / speed;
             fadeInTiming += gameSetting.Game.SlideFadeInOffset;
-            fadeInTiming += timeStart;
+            fadeInTiming += startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
             fullFadeInTiming = fadeInTiming + 0.2f;
@@ -104,14 +104,14 @@ namespace MajdataPlay.Game.Notes
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     var parent = ConnectInfo.Parent!.GetComponent<SlideDrop>();
-                    time = parent.time + parent.LastFor;
+                    timing = parent.timing + parent.LastFor;
                 }
             }
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = time + LastFor * (1 - percent);
+                judgeTiming = timing + LastFor * (1 - percent);
                 lastWaitTime = LastFor *  percent;
             }
 
@@ -122,15 +122,16 @@ namespace MajdataPlay.Game.Notes
 
             foreach (var sensor in judgeAreas)
                 ioManager.BindSensor(Check, sensor);
+            FadeIn().Forget();
         }
         void FixedUpdate()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = gpManager.AudioTime - time;
-            var startTiming = gpManager.AudioTime - timeStart;
-            var tooLateTiming = time + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
+            var timing = gpManager.AudioTime - base.timing;
+            var startTiming = gpManager.AudioTime - base.startTiming;
+            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
             var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
 
             if (!canCheck)
@@ -182,28 +183,9 @@ namespace MajdataPlay.Game.Notes
                     DestroySelf();
                 return;
             }
-            // Slide淡入期间，不透明度从0到0.55耗时200ms
-            var currentSec = gpManager.AudioTime;
-            var startiming = currentSec - timeStart;
-
-            if (currentSec > fullFadeInTiming)
-            {
-                SetSlideBarAlpha(1f);
-            }
-            else if (currentSec > fadeInTiming)
-            {
-                var alpha = (currentSec - fadeInTiming) / (fullFadeInTiming - fadeInTiming);
-                SetSlideBarAlpha(alpha);
-                return;
-            }
-            else
-            {
-                SetSlideBarAlpha(0f);
-                return;
-            }
 
             stars[0].SetActive(true);
-            var timing = currentSec - time;
+            var timing = CurrentSec - base.timing;
             if (timing <= 0f)
             {
                 CanShine = true;
@@ -213,7 +195,7 @@ namespace MajdataPlay.Game.Notes
                 else
                 {
                     // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    alpha = 1f - -timing / (time - timeStart);
+                    alpha = 1f - -timing / (base.timing - startTiming);
                     alpha = alpha > 1f ? 1f : alpha;
                     alpha = alpha < 0f ? 0f : alpha;
                 }

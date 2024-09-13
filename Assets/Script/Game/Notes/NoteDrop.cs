@@ -10,7 +10,7 @@ namespace MajdataPlay.Game.Notes
     public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote
     {
         public int startPosition;
-        public float time;
+        public float timing;
         public int noteSortOrder;
         public float speed = 7;
         public bool isEach;
@@ -23,6 +23,7 @@ namespace MajdataPlay.Game.Notes
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         public bool CanShine { get; protected set; } = false;
         public float JudgeTiming { get => judgeTiming + gameSetting.Judge.JudgeOffset; }
+        protected float CurrentSec => gpManager.AudioTime;
 
 
         protected bool isJudged = false;
@@ -46,7 +47,7 @@ namespace MajdataPlay.Game.Notes
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
             audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             gameSetting = GameManager.Instance.Setting;
-            judgeTiming = time;
+            judgeTiming = timing;
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
@@ -57,7 +58,7 @@ namespace MajdataPlay.Game.Notes
         /// 当前时刻在判定线后方，结果为正数
         /// <para>当前时刻在判定线前方，结果为负数</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => gpManager.AudioTime - time;
+        protected float GetTimeSpanToArriveTiming() => gpManager.AudioTime - timing;
         /// <summary>
         /// 获取当前时刻距离正解帧的长度
         /// </summary>

@@ -409,7 +409,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var releaseTiming = gpManager.AudioTime;
-            var diff = (time + LastFor) - releaseTiming;
+            var diff = (timing + LastFor) - releaseTiming;
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
 
