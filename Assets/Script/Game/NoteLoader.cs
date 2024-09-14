@@ -926,7 +926,78 @@ public class NoteLoader : MonoBehaviour
         //slideLayer += 5;
         return slide;
     }
+    void InstantiateDynamicSlide(SimaiTimingPoint timing, SimaiNote note)
+    {
 
+    }
+    void BuildSlidePath()
+    {
+
+    }
+    SlideCode[] ParseSlideCode(string slideBody)
+    {
+        var body = $"A{slideBody}";
+        if (body[2] is '!' or '?')
+            body = body.Remove(2,1);
+        if (body[^1] == 'b')
+            body = body[0..^1];
+        List<SlideCode> codes = new();
+
+        char? lastPrefix = null;
+        foreach(var c in body)
+        {
+            switch(c)
+            {
+                case 'A':
+                case 'B':
+                case 'P':
+                case 'Q':
+                case 'K':
+                    lastPrefix = c;
+                    continue;
+                case 'C':
+                    lastPrefix = null;
+                    codes.Add(new SlideCode()
+                    {
+                        Command = SlideCommand.C,
+                        Param = null,
+                        Type = SlideCodeType.Node
+                    });
+                    continue;
+            }
+            if (lastPrefix is null || !char.IsNumber(c))
+                throw new InvaildSlideCodeException($"\"{body}\" is not a valid slide code");
+            var prefix = (char)lastPrefix;
+            var param = (int)char.GetNumericValue(c);
+            var type = prefix switch
+            {
+                'A' => SlideCodeType.Node,
+                'B' => SlideCodeType.Node,
+                'C' => SlideCodeType.Node,
+                'P' => SlideCodeType.Track,
+                'Q' => SlideCodeType.Track,
+                'K' => SlideCodeType.Node,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var cmd = prefix switch
+            {
+                'A' => SlideCommand.A,
+                'B' => SlideCommand.B,
+                'C' => SlideCommand.C,
+                'P' => SlideCommand.P,
+                'Q' => SlideCommand.Q,
+                'K' => SlideCommand.K,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            codes.Add(new SlideCode()
+            {
+                Command = cmd,
+                Param = param,
+                Type = type
+            });
+        }
+        return codes.ToArray();
+    }
     /// <summary>
     /// 判断Slide SlideOK是否需要镜像翻转
     /// </summary>

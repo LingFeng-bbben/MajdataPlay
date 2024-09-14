@@ -197,4 +197,12 @@
         Off,
         On
     }
+    public enum SlideCommand
+    {
+        A,B,C,P,Q,K
+    }
+    public enum SlideCodeType
+    {
+        Node,Track
+    }
 }
