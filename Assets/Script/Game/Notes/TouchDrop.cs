@@ -209,7 +209,7 @@ namespace MajdataPlay.Game.Notes
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(1, 0);
+                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetfanColor(newColor);
                     }

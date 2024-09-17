@@ -355,7 +355,7 @@ public class ObjectCounter : MonoBehaviour
         long lostExtraScoreClassic = 0;
         int baseScore = 500;
 
-        foreach(var type in new SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch })
+        foreach(var type in new SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch,SimaiNoteType.TouchHold })
         {
             switch (type)
             {
@@ -368,6 +368,9 @@ public class ObjectCounter : MonoBehaviour
                     baseScore = 1500;
                     break;
                 case SimaiNoteType.TouchHold:
+                    collection = judgedTouchHoldCount;
+                    baseScore = 1000;
+                    break;
                 case SimaiNoteType.Hold:
                     collection = judgedHoldCount;
                     baseScore = 1000;
@@ -500,7 +503,7 @@ public class ObjectCounter : MonoBehaviour
         var currentNoteScore = GetNoteScoreSum();
 
         totalScore = (tapSum + touchSum) * 500 + holdSum * 1000 + slideSum * 1500 + breakSum * 2500;
-        totalExtraScore = breakSum * 100;
+        totalExtraScore = Math.Max(breakSum * 100,1);
 
         accRate[0] = ((currentNoteScore.TotalScore + currentNoteScore.TotalExtraScoreClassic) / (double)totalScore) * 100;
         accRate[1] = ((totalScore + currentNoteScore.TotalExtraScoreClassic - currentNoteScore.LostScore) / (double)totalScore) * 100;
@@ -752,7 +755,7 @@ public class ObjectCounter : MonoBehaviour
                     r = oldColor.r,
                     g = oldColor.g,
                     b = oldColor.b,
-                    a = diffTimer.Clamp(1, 0)
+                    a = diffTimer.Clamp(0, 1)
                 };
                 bgInfoText.color = newColor;
                 diffTimer -= Time.deltaTime;

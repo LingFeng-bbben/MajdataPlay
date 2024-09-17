@@ -66,7 +66,7 @@ public class TitleManager : MonoBehaviour
             else if(timer == 0)
                 a = 1;
             timer += Time.deltaTime * a;
-            timer = timer.Clamp(2f, 0);
+            timer = timer.Clamp(0, 2f);
             var newColor = Color.white;
 
             if (state >= ComponentState.Finished)

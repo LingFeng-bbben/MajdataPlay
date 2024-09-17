@@ -16,7 +16,7 @@ namespace MajdataPlay.Types
             {
                 if(IsEmpty)
                     throw new ArgumentOutOfRangeException("this collection is empty");
-                _index = value.Clamp(songs.Length - 1 ,0);
+                _index = value.Clamp(0, songs.Length - 1);
             }
         }
         public string Name { get; private set; }
@@ -42,7 +42,7 @@ namespace MajdataPlay.Types
             Index++;
             return true;
         }
-        public void Move(int diff) => Index = (Index + diff).Clamp(Count - 1, 0);
+        public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 
         // Implementation for the GetEnumerator method.

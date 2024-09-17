@@ -266,12 +266,12 @@ namespace MajdataPlay.Game.Notes
         {
             fadeInTiming = Math.Max(fadeInTiming,CurrentSec);
             var num = startTiming - 0.05f;
-            float interval = (num - fadeInTiming).Clamp(0.2f, 0);
+            float interval = (num - fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
             while (CurrentSec < fullFadeInTiming) 
             {
-                var diff = (fullFadeInTiming - CurrentSec).Clamp(interval, 0);
+                var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);
                 float alpha = 0;
 
                 if(interval != 0)

@@ -229,7 +229,7 @@ namespace MajdataPlay.Game.Notes
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(1, 0);
+                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetfanColor(newColor);
                     }
@@ -257,7 +257,7 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.End:
                     {
                         var value = 0.91f * (1 - (LastFor - timing) / LastFor);
-                        var alpha = value.Clamp(1f, 0);
+                        var alpha = value.Clamp(0, 1f);
                         mask.alphaCutoff = alpha;
                     }
                     return;

@@ -94,8 +94,8 @@ public class GameManager : MonoBehaviour
             Setting = new GameSetting();
             Save();
         }
-        Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(1, 0);
-        Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(1, 0);
+        Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
+        Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 
         var fullScreen = Setting.Debug.FullScreen;
         Screen.fullScreen = fullScreen;
