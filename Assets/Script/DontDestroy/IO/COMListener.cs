@@ -51,6 +51,20 @@ namespace MajdataPlay.IO
                         else
                         {
                             serial.Open();
+                            //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+                            serial.Write("{RSET}");
+                            serial.Write("{HALT}");
+                            //send ratio
+                            for(byte a = 0x41; a <= 0x62; a++)
+                            {
+                                serial.Write("{L"+(char)a+"r2}");
+                            }
+                            //send sensitivity
+                            //adx have another method to set sens, so we dont do it here
+                            /*for (byte a = 0x41; a <= 0x62; a++)
+                            {
+                                serial.Write("{L" + (char)a + "k"+sens+"}");
+                            }*/
                             serial.Write("{STAT}");
                         }
                     }
