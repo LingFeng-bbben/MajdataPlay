@@ -2,6 +2,7 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -195,11 +196,9 @@ namespace MajdataPlay.Game.Notes
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
 
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, result);
-            
         }
     }
 }

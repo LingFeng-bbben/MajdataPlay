@@ -23,11 +23,11 @@ namespace MajdataPlay.Game.Notes
 
         public override void Initialize()
         {
-            if (isInitialized)
+            if (IsInitialized)
                 return;
             base.Start();
-            isInitialized = true;
-
+            State = NoteStatus.Initialized;
+            ConnectInfo.StartTiming = timing;
             judgeQueues = SlideTables.GetWifiTable(startPosition);
 
             // 计算Slide淡入时机
@@ -248,11 +248,11 @@ namespace MajdataPlay.Game.Notes
         }
         void OnDestroy()
         {
-            if (isDestroying)
+            if (IsDestroyed)
                 return;
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
-
+            State = NoteStatus.Destroyed;
             var result = new JudgeResult()
             {
                 Result = judgeResult,
@@ -264,14 +264,11 @@ namespace MajdataPlay.Game.Notes
             if (isBreak && judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                 anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                 audioEffMana.PlayBreakSlideEndSound();
             }
             slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
             PlaySlideOK(result);
-
-            isDestroying = true;
         }
         protected override void LoadSkin()
         {

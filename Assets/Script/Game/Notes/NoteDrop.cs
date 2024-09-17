@@ -17,6 +17,8 @@ namespace MajdataPlay.Game.Notes
         public bool isBreak = false;
         public bool isEX = false;
 
+        public bool IsInitialized => State >= NoteStatus.Initialized;
+        public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
         protected GamePlayManager gpManager => GamePlayManager.Instance;
         protected InputManager ioManager => InputManager.Instance;

@@ -708,16 +708,17 @@ public class NoteLoader : MonoBehaviour
             }
         }
 
-        GameObject parent = null;
+        IConnectableSlide? parent = null;
         List<SlideDrop> subSlides = new();
         float totalLen = (float)subSlide.Select(x => x.slideTime).Sum();
+        float startTiming = (float)subSlide[0].slideStartTime;
         float totalSlideLen = 0;
         for (var i = 0; i <= subSlide.Count - 1; i++)
         {
             bool isConn = subSlide.Count != 1;
             bool isGroupHead = i == 0;
             bool isGroupEnd = i == subSlide.Count - 1;
-            if (note.noteContent.Contains('w')) //wifi
+            if (note.noteContent!.Contains('w')) //wifi
             {
                 if (isConn)
                     throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
@@ -725,16 +726,17 @@ public class NoteLoader : MonoBehaviour
             }
             else
             {
-                ConnSlideInfo info = new ConnSlideInfo()
+                var info = new ConnSlideInfo()
                 {
                     TotalLength = totalLen,
                     IsGroupPart = isConn,
                     IsGroupPartHead = isGroupHead,
                     IsGroupPartEnd = isGroupEnd,
-                    Parent = parent
+                    Parent = parent,
+                    StartTiming = startTiming
                 };
                 parent = InstantiateSlide(timing, subSlide[i], info);
-                subSlides.Add(parent.GetComponent<SlideDrop>());
+                subSlides.Add(parent.GameObject.GetComponent<SlideDrop>());
             }
         }
         subSlides.ForEach(s =>
@@ -827,7 +829,7 @@ public class NoteLoader : MonoBehaviour
         return slideWifi;
     }
 
-    private GameObject InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
+    private IConnectableSlide InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
     {
         var GOnote = Instantiate(starPrefab, notes.transform);
         var NDCompo = GOnote.GetComponent<StarDrop>();
@@ -924,7 +926,7 @@ public class NoteLoader : MonoBehaviour
         SliCompo.sortIndex = slideLayer;
         slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
         //slideLayer += 5;
-        return slide;
+        return SliCompo;
     }
 
     /// <summary>

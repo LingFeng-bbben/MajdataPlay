@@ -1,4 +1,6 @@
 ﻿using MajdataPlay.Game.Notes;
+using MajdataPlay.Interfaces;
+using System;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Types
@@ -26,6 +28,10 @@ namespace MajdataPlay.Types
         /// </summary>
         public bool IsGroupPart { get; set; }
         /// <summary>
+        /// 指示Group第一条Slide的启动时刻
+        /// </summary>
+        public float StartTiming { get; set; }
+        /// <summary>
         /// 指示该Slide是否位于Group的尾部
         /// </summary>
         public bool IsGroupPartEnd
@@ -36,7 +42,7 @@ namespace MajdataPlay.Types
         /// <summary>
         /// 获取位于该Slide前方的Slide的GameObject对象
         /// </summary>
-        public GameObject? Parent { get; set; } = null;
+        public IConnectableSlide? Parent { get; set; } = null;
         /// <summary>
         /// null
         /// </summary>
@@ -55,10 +61,10 @@ namespace MajdataPlay.Types
         {
             get
             {
-                if (Parent == null)
-                    return true;
+                if (Parent is null)
+                    throw new NullReferenceException();
                 else
-                    return Parent.GetComponent<SlideDrop>().IsFinished;
+                    return Parent.IsFinished;
             }
         }
         /// <summary>
@@ -68,10 +74,10 @@ namespace MajdataPlay.Types
         {
             get
             {
-                if (Parent == null)
-                    return false;
+                if (Parent is null)
+                    throw new NullReferenceException();
                 else
-                    return Parent.GetComponent<SlideDrop>().IsPendingFinish;
+                    return Parent.IsPendingFinish;
             }
         }
         bool _isGroupPartEnd = false;
