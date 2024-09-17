@@ -581,7 +581,7 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.B2,28),
                     BuildJudgeArea(SensorType.B1,32),
                     BuildJudgeArea(SensorType.B8,35),
-                    BuildJudgeArea(SensorType.A7,39,true,true),
+                    BuildJudgeArea(SensorType.A7,40,true,true),
                 },
                 Const = 0.08167f
             },

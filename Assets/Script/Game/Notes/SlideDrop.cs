@@ -223,25 +223,28 @@ namespace MajdataPlay.Game.Notes
             
             
             var first = queue.First();
+            var fType = first.GetSensorTypes();
+
             JudgeArea? second = null;
 
             if (queue.Length >= 2)
                 second = queue[1];
-            var fType = first.GetSensorTypes();
+            
             foreach (var t in fType)
             {
                 var sensor = ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
-
             }
 
-            if (first.IsFinished && !isSoundPlayed && (ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide))
+            if(!isSoundPlayed && ConnectInfo.IsGroupPartHead)
             {
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-                audioEffMana.PlaySlideSound(isBreak);
-                isSoundPlayed = true;
+                if(first.On)
+                {
+                    audioEffMana.PlaySlideSound(isBreak);
+                    isSoundPlayed = true;
+                }
             }
-
+            
             if (second is not null && (first.CanSkip || first.On))
             {
                 var sType = second.GetSensorTypes();
