@@ -351,14 +351,14 @@ public class GamePlayManager : MonoBehaviour
         audioSample = null;
         //AudioManager.Instance.UnLoadMusic();
         InputManager.Instance.UnbindAnyArea(OnPauseButton);
-        StartCoroutine(delayBackToList());
+        DelayBackToList().Forget();
 
     }
-    IEnumerator delayBackToList()
+    async UniTaskVoid DelayBackToList()
     {
-        yield return new WaitForEndOfFrame();
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
         GameObject.Find("Notes").GetComponent<NoteManager>().DestroyAllNotes();
-        yield return new WaitForEndOfFrame();
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
         SceneManager.LoadScene(1);
     }
 
@@ -369,12 +369,12 @@ public class GamePlayManager : MonoBehaviour
         var objectCounter = FindFirstObjectByType<ObjectCounter?>();
         if(objectCounter != null)
             GameManager.LastGameResult = objectCounter.GetPlayRecord(song,GameManager.Instance.SelectedDiff);
-        StartCoroutine(delayEndGame());
+        DelayEndGame().Forget();
     }
 
-    IEnumerator delayEndGame()
+    async UniTaskVoid DelayEndGame()
     {
-        yield return new WaitForSeconds(2f);
+        await UniTask.Delay(2000);
         audioSample.Pause();
         audioSample = null;
         InputManager.Instance.UnbindAnyArea(OnPauseButton);
