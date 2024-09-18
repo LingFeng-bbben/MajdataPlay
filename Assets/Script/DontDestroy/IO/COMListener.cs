@@ -29,7 +29,11 @@ namespace MajdataPlay.IO
                             int count = serial.BytesToRead;
                             var buf = new byte[count];
                             serial.Read(buf, 0, count);
-                            if (buf.Length > 0)
+                            if (buf.Length < 9)
+                            {
+                                continue;
+                            }
+                            else
                             {
 
                                 if (buf[0] == '(')
@@ -46,7 +50,7 @@ namespace MajdataPlay.IO
                                     }
                                 }
 
-                            }
+                            } 
                         }
                         else
                         {
