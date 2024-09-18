@@ -160,7 +160,6 @@ namespace MajdataPlay.Game.Notes
             else
                 result = JudgeType.Miss;
 
-            judgeDiff = isFast ? -diff : diff;
             judgeResult = result;
             isJudged = true;
             PlayHoldEffect();
