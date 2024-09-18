@@ -13,12 +13,14 @@ namespace MajdataPlay.Types
             }
             set { soundProvider.IsLoop = value; }
         }
+        bool isDestroyed = false;
 
-        private PausableSoundProvider soundProvider;
+        PausableSoundProvider soundProvider;
         public NAudioAudioSample(PausableSoundProvider pausableSound)
         {
             soundProvider = pausableSound;
         }
+        ~NAudioAudioSample() => Dispose();
         public override bool GetPlayState()
         {
             return soundProvider.IsPlaying;
@@ -48,6 +50,13 @@ namespace MajdataPlay.Types
         public override void SetVolume(float volume)
         {
             soundProvider.SetVolume(volume);
+        }
+        public override void Dispose()
+        {
+            if(isDestroyed)
+                return;
+            soundProvider.Dispose();
+            isDestroyed = true;
         }
     }
 }

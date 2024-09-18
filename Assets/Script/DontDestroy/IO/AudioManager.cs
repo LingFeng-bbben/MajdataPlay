@@ -110,7 +110,7 @@ namespace MajdataPlay.IO
                     var path = SFXFilePath + file;
                     if (File.Exists(path))
                     {
-                        var provider = new PausableSoundProvider(new CachedSound(path));
+                        var provider = new PausableSoundProvider(new CachedSound(path),mixer);
                         SFXSamples.Add(file, new NAudioAudioSample(provider));
                         mixer.AddMixerInput(provider);
                     }
@@ -125,7 +125,7 @@ namespace MajdataPlay.IO
                     var path = VoiceFilePath + file;
                     if (File.Exists(path))
                     {
-                        var provider = new PausableSoundProvider(new CachedSound(path));
+                        var provider = new PausableSoundProvider(new CachedSound(path),mixer);
                         SFXSamples.Add(file, new NAudioAudioSample(provider));
                         mixer.AddMixerInput(provider);
                     }
@@ -227,7 +227,7 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    var provider = new PausableSoundProvider(new CachedSound(path));
+                    var provider = new PausableSoundProvider(new CachedSound(path), mixer);
                     mixer.AddMixerInput(provider);
                     return new NAudioAudioSample(provider);
                 }
