@@ -11,7 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class WifiDrop : SlideBase
+    public sealed class WifiDrop : SlideBase
     {
 
 
@@ -96,9 +96,9 @@ namespace MajdataPlay.Game.Notes
                 {
                     HideAllBar();
                     if (IsClassic)
-                        Judge_Classic();
+                        Judge_Classic(gpManager.ThisFrameSec);
                     else
-                        Judge();
+                        Judge(gpManager.ThisFrameSec);
                 }
                 else if (isTooLate)
                     TooLateJudge();

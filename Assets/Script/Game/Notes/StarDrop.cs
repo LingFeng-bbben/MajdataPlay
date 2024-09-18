@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class StarDrop : TapBase
+    public sealed class StarDrop : TapBase
     {
         public float rotateSpeed = 1f;
 

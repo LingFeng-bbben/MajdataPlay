@@ -17,7 +17,11 @@ using System.Threading.Tasks;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
-    public static GamePlayManager Instance;
+    /// <summary>
+    /// 当前逻辑帧的时刻<para>Unit: Second</para>
+    /// </summary>
+    public float ThisFrameSec { get; private set; } = 0;
+    public static GamePlayManager Instance { get; private set; }
     public ComponentState State { get; private set; } = ComponentState.Idle;
     public MaiScore? HistoryScore { get; private set; }
     public (float,float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
@@ -315,6 +319,7 @@ public class GamePlayManager : MonoBehaviour
     }
     void FixedUpdate()
     {
+        ThisFrameSec = AudioTime;
         if (i >= AnwserSoundList.Count)
             return;
 

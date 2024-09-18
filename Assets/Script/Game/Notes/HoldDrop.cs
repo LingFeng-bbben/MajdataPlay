@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class HoldDrop : NoteLongDrop, IDistanceProvider
+    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider
     {
         public float Distance { get; private set; } = -100;
         bool holdAnimStart;
@@ -151,7 +151,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else
                     ioManager.SetBusy(arg);
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -160,7 +160,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        void Judge()
+        protected override void Judge(float currentSec)
         {
 
             const int JUDGE_GOOD_AREA = 150;
@@ -175,7 +175,8 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            //var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);

@@ -51,6 +51,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
+        protected abstract void Judge(float currentSec);
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度
         /// </summary>
@@ -67,6 +68,7 @@ namespace MajdataPlay.Game.Notes
         /// <para>当前时刻在正解帧前方，结果为负数</para>
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => gpManager.AudioTime - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
         public static Vector3 GetPositionFromDistance(float distance, int position)
         {

@@ -83,7 +83,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         protected IEnumerable<SensorType> judgeAreas;
         public abstract void Initialize();
-        protected void Judge()
+        protected override void Judge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
@@ -93,7 +93,7 @@ namespace MajdataPlay.Game.Notes
             var stayTime = lastWaitTime; // 停留时间
 
             // By Minepig
-            var diff = GetTimeSpanToJudgeTiming();
+            var diff = currentSec - JudgeTiming;
             judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
@@ -128,14 +128,14 @@ namespace MajdataPlay.Game.Notes
             else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
         }
-        protected void Judge_Classic()
+        protected void Judge_Classic(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
             else if (isJudged)
                 return;
 
-            var diff = GetTimeSpanToJudgeTiming();
+            var diff = currentSec - JudgeTiming;
             judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
