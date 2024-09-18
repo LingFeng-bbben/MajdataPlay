@@ -13,5 +13,9 @@ namespace MajdataPlay.Utils
         {
 
         }
+        public static void NodeEntryNode()
+        {
+
+        }
     }
 }

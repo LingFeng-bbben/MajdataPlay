@@ -11,5 +11,17 @@ namespace MajdataPlay.Types
         public SlideCommand Command { get; init; }
         public int? Param { get; init; }
         public SlideCodeType Type { get; init; }
+
+        public SlideNode ToNode()
+        {
+            if(Type != SlideCodeType.Node)
+                throw new InvalidOperationException("cannot cast Track to SlideNode");
+
+            return new SlideNode()
+            {
+                Node = Command,
+                Index = Param ?? 0
+            };
+        }
     }
 }
