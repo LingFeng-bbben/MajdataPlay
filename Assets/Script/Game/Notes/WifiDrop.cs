@@ -140,9 +140,8 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
-            if (first.IsFinished && !isSoundPlayed)
+            if (!isSoundPlayed && first.On)
             {
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                 audioEffMana.PlaySlideSound(isBreak);
                 isSoundPlayed = true;
             }

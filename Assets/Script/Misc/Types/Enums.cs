@@ -104,7 +104,7 @@
         Running,
         Backend,
         Finished,
-        Failed
+        Failed,
     }
     public enum ChartLevel
     {
@@ -196,5 +196,34 @@
     {
         Off,
         On
+    }
+    public enum SFXSampleType
+    {
+        ALL_PERFECT,
+        ANSWER,
+        BREAK,
+        BREAK_SLIDE,
+        BREAK_SLIDE_START,
+        CLOCK,
+        HANABI,
+        JUDGE,
+        JUDGE_BREAK,
+        JUDGE_BREAK_SLIDE,
+        JUDGE_EX,
+        SLIDE,
+        TOUCH,
+        TOUCH_HOLD_RISER,
+        TRACK_START,
+        GOOD,
+        GREAT,
+        TITLE_BGM,
+        RESULT_BGM,
+        SELECT_BGM,
+        // xxlb voices
+        MAJDATA_PLAY,
+        SELECT_SONG,
+        SUGOI,
+        DONT_TOUCH_ME
+
     }
 }

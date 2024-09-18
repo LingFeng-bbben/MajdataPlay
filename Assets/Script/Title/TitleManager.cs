@@ -90,8 +90,8 @@ public class TitleManager : MonoBehaviour
     async UniTaskVoid DelayPlayVoice()
     {
         await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-        AudioManager.Instance.PlaySFX("MajdataPlay.wav");
-        AudioManager.Instance.PlaySFX("titlebgm.mp3");
+        AudioManager.Instance.PlaySFX(SFXSampleType.MAJDATA_PLAY);
+        AudioManager.Instance.PlaySFX(SFXSampleType.TITLE_BGM);
     }
     void NextScene()
     {
@@ -100,7 +100,7 @@ public class TitleManager : MonoBehaviour
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-        AudioManager.Instance.StopSFX("titlebgm.mp3");
-        AudioManager.Instance.StopSFX("MajdataPlay.wav");
+        AudioManager.Instance.StopSFX(SFXSampleType.TITLE_BGM);
+        AudioManager.Instance.StopSFX(SFXSampleType.MAJDATA_PLAY);
     }
 }

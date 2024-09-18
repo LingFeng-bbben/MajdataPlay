@@ -224,7 +224,7 @@ namespace MajdataPlay.Game.Notes
             
             var first = queue.First();
             var fType = first.GetSensorTypes();
-
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
             JudgeArea? second = null;
 
             if (queue.Length >= 2)
@@ -236,7 +236,7 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
-            if(!isSoundPlayed && ConnectInfo.IsGroupPartHead)
+            if(!isSoundPlayed && canPlaySFX)
             {
                 if(first.On)
                 {

@@ -99,7 +99,7 @@ public class NoteManager : MonoBehaviour
     {
         if (GamePlayManager.Instance.State != ComponentState.Running)
             return;
-        if(transform.childCount == 0)
+        if(transform.childCount == 0 && GamePlayManager.Instance.State != ComponentState.Finished)
         {
             Debug.Log("No More Notes");
             GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>().CalculateFinalResult();

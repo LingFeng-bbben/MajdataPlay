@@ -98,7 +98,7 @@ namespace MajdataPlay.Game.Notes
                         return;
                 }
 
-                if (!gpManager.isStart) // 忽略暂停
+                if (!gpManager.IsStart) // 忽略暂停
                     return;
 
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
