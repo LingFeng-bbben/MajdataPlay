@@ -165,29 +165,14 @@ namespace MajdataPlay.IO
             var backend = GameManager.Instance.Setting.Audio.Backend;
             if (File.Exists(path))
             {
-                if (backend == SoundBackendType.Unity)
+                switch(backend)
                 {
-                    if (File.Exists(path))
-                    {
-                        path = "file://" + path;
-                        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
-                        {
-                            var handle = www.SendWebRequest();
-                            while (!handle.isDone) ;
-                            AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
-                            return new UnityAudioSample(myClip, gameObject);
-                        }
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    var provider = new PausableSoundProvider(new CachedSound(path), mixer);
-                    mixer.AddMixerInput(provider);
-                    return new NAudioAudioSample(provider);
+                    case SoundBackendType.Unity:
+                        return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                    default:
+                        var provider = new PausableSoundProvider(new CachedSound(path), mixer);
+                        mixer.AddMixerInput(provider);
+                        return new NAudioAudioSample(provider);
                 }
             }
             else
@@ -196,11 +181,6 @@ namespace MajdataPlay.IO
                 return null;
             }
         }
-        public void UnLoadMusic(AudioSampleWrap sample)
-        {
-            throw new NotImplementedException();
-        }
-
         public void PlaySFX(in SFXSampleType sfxType, bool isLoop = false)
         {
             var psp = SFXSamples[(int)sfxType];
