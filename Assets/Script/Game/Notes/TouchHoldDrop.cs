@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TouchHoldDrop : NoteLongDrop
+    public sealed class TouchHoldDrop : NoteLongDrop
     {
         public RendererStatus RendererState
         {
@@ -104,7 +104,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else
                     ioManager.SetBusy(arg);
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -130,7 +130,7 @@ namespace MajdataPlay.Game.Notes
             board_On = skin.Boader;
             board_Off = skin.Off;
         }
-        void Judge()
+        protected override void Judge(float currentSec)
         {
 
             const float JUDGE_GOOD_AREA = 316.667f;
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
@@ -160,7 +160,6 @@ namespace MajdataPlay.Game.Notes
             else
                 result = JudgeType.Miss;
 
-            judgeDiff = isFast ? -diff : diff;
             judgeResult = result;
             isJudged = true;
             PlayHoldEffect();
@@ -183,7 +182,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (remainingTime <= 0.2f) // 忽略尾部12帧
                     return;
-                else if (!gpManager.isStart) // 忽略暂停
+                else if (!gpManager.IsStart) // 忽略暂停
                     return;
 
                 var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);

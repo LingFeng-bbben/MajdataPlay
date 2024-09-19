@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TapDrop : TapBase
+    public sealed class TapDrop : TapBase
     {
         protected override void Start()
         {

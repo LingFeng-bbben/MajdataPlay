@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace MajdataPlay.Types
 {
@@ -25,6 +27,7 @@ namespace MajdataPlay.Types
             audioSource.loop = false;
             audioSource.bypassEffects = true;
         }
+        ~UnityAudioSample() => Dispose();
 
         public override void PlayOneShot()
         {
@@ -54,6 +57,22 @@ namespace MajdataPlay.Types
         public override void Pause()
         {
             audioSource.Pause();
+        }
+        public override void Dispose()
+        {
+            audioSource.Stop();
+            audioClip.UnloadAudioData();
+            Object.Destroy(audioSource);
+        }
+        public static UnityAudioSample ReadFromFile(string filePath,GameObject gameObject)
+        {
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
+            {
+                www.SendWebRequest();
+                while (!www.isDone) ;
+                var myClip = DownloadHandlerAudioClip.GetContent(www);
+                return new UnityAudioSample(myClip, gameObject);
+            }
         }
     }
 }

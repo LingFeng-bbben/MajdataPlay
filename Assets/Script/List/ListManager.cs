@@ -18,8 +18,8 @@ public class ListManager : MonoBehaviour
         LightManager.Instance.SetButtonLight(Color.blue, 2);
         LightManager.Instance.SetButtonLight(Color.blue, 5);
         CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
-        AudioManager.Instance.PlaySFX("SelectSong.wav");
-        AudioManager.Instance.PlaySFX("selectbgm.mp3",true);
+        AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_SONG);
+        AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_BGM, true);
         InputManager.Instance.BindAnyArea(OnAreaDown);
     }
 
@@ -71,7 +71,7 @@ public class ListManager : MonoBehaviour
                 case SensorType.A4:
                 case SensorType.A5:
                 case SensorType.D5:
-                    AudioManager.Instance.PlaySFX("DontTouchMe.wav");
+                    AudioManager.Instance.PlaySFX(SFXSampleType.DONT_TOUCH_ME);
                     XxlbAnimation.instance.PlayTouchAnimation();
                     break;
             }
@@ -108,17 +108,12 @@ public class ListManager : MonoBehaviour
                     else
                     {
                         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        AudioManager.Instance.StopSFX("SelectSong.wav");
-                        AudioManager.Instance.StopSFX("selectbgm.mp3");
+                        AudioManager.Instance.StopSFX(SFXSampleType.SELECT_SONG);
+                        AudioManager.Instance.StopSFX(SFXSampleType.SELECT_BGM);
                         SceneManager.LoadSceneAsync(2);
                     }
                     break;
             }
         }
-    }
-
-    private void OnDestroy()
-    {
-        
     }
 }

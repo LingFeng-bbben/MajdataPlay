@@ -1,52 +1,51 @@
-using System.Collections.Generic;
 using UnityEngine;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System;
 using System.IO;
-using UnityEngine.Networking;
+using System.Collections.Generic;
 using MajdataPlay.Types;
-
+using MajdataPlay.Extensions;
+using NAudio.CoreAudioApi;
+#nullable enable
 namespace MajdataPlay.IO
 {
     public class AudioManager : MonoBehaviour
     {
-        public static AudioManager Instance;
+        public static AudioManager Instance { get; private set; }
         readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
         readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
         readonly string[] SFXFileNames = new string[]
         {
-        "all_perfect.wav",
-        "answer.wav",
-        "break.wav",
-        "break_slide.wav",
-        "break_slide_start.wav",
-        "clock.wav",
-        "hanabi.wav",
-        "judge.wav",
-        "judge_break.wav",
-        "judge_break_slide.wav",
-        "judge_ex.wav",
-        "slide.wav",
-        "touch.wav",
-        "touchHold_riser.wav",
-        "track_start.wav",
-        "good.wav",
-        "great.wav",
-        "titlebgm.mp3",
-        "resultbgm.mp3",
-        "selectbgm.mp3"
+            "all_perfect.wav",
+            "answer.wav",
+            "break.wav",
+            "break_slide.wav",
+            "break_slide_start.wav",
+            "clock.wav",
+            "hanabi.wav",
+            "judge.wav",
+            "judge_break.wav",
+            "judge_break_slide.wav",
+            "judge_ex.wav",
+            "slide.wav",
+            "touch.wav",
+            "touchHold_riser.wav",
+            "track_start.wav",
+            "good.wav",
+            "great.wav",
+            "titlebgm.mp3",
+            "resultbgm.mp3",
+            "selectbgm.mp3"
         };
         readonly string[] VoiceFileNames = new string[]
         {
-        "MajdataPlay.wav",
-        "SelectSong.wav",
-        "Sugoi.wav",
-        "DontTouchMe.wav"
+            "MajdataPlay.wav",
+            "SelectSong.wav",
+            "Sugoi.wav",
+            "DontTouchMe.wav"
         };
-        private Dictionary<string, AudioSampleWrap> SFXSamples = new Dictionary<string, AudioSampleWrap>();
-        private AsioOut asioOut;
-        private WaveOutEvent waveOut;
+        private List<AudioSampleWrap?> SFXSamples = new();
+        IWavePlayer? audioOutputDevice = null;
         private MixingSampleProvider mixer;
         public bool PlayDebug;
         private void Awake()
@@ -54,182 +53,147 @@ namespace MajdataPlay.IO
             Instance = this;
             DontDestroyOnLoad(this);
         }
-        // Start is called before the first frame update
         void Start()
         {
             var backend = GameManager.Instance.Setting.Audio.Backend;
-            if (backend == SoundBackendType.Unity)
+            var sampleRate = GameManager.Instance.Setting.Audio.Samplerate;
+            if (backend != SoundBackendType.Unity)
             {
-                foreach (var file in SFXFileNames)
-                {
-                    var path = "file://" + SFXFilePath + file;
-                    if (File.Exists(SFXFilePath + file))
-                    {
-                        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
-                        {
-                            www.SendWebRequest();
-                            while (!www.isDone) ;
-                            AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
-                            SFXSamples.Add(file, new UnityAudioSample(myClip, gameObject));
-
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning(path + " dos not exists");
-                    }
-                }
-                foreach (var file in VoiceFileNames)
-                {
-                    var path = "file://" + VoiceFilePath + file;
-                    if (File.Exists(VoiceFilePath + file))
-                    {
-                        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
-                        {
-                            www.SendWebRequest();
-                            while (!www.isDone) ;
-                            AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
-                            SFXSamples.Add(file, new UnityAudioSample(myClip, gameObject));
-
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning(path + " dos not exists");
-                    }
-                }
-            }
-            else
-            {
-                var sampleRate = GameManager.Instance.Setting.Audio.Samplerate;
                 var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
                 mixer = new MixingSampleProvider(waveformat);
                 mixer.ReadFully = true;
-                foreach (var file in SFXFileNames)
-                {
-                    var path = SFXFilePath + file;
-                    if (File.Exists(path))
+            }
+            InitSFXSample(SFXFileNames,SFXFilePath);
+            InitSFXSample(VoiceFileNames,VoiceFilePath);
+            var deviceIndex = GameManager.Instance.Setting.Audio.AsioDeviceIndex;
+            switch (backend)
+            {
+                case SoundBackendType.Asio:
                     {
-                        var provider = new PausableSoundProvider(new CachedSound(path));
-                        SFXSamples.Add(file, new NAudioAudioSample(provider));
-                        mixer.AddMixerInput(provider);
+                        var devices = AsioOut.GetDriverNames();
+                        if (devices.IsEmpty() || deviceIndex >= devices.Length)
+                        {
+                            Debug.LogError("No Asio Output Device");
+                            return;
+                        }
+                        var asioOut = new AsioOut(devices[deviceIndex]);
+                        print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
+                        audioOutputDevice = asioOut;
+                        audioOutputDevice.Init(mixer);
+                        audioOutputDevice.Play();
                     }
-                    else
+                    break;
+                case SoundBackendType.WaveOut:
                     {
-                        Debug.LogWarning(path + " dos not exists");
+                        print("Starting WaveOut... with " + sampleRate);
+                        var waveOut = new WaveOutEvent();
+                        waveOut.NumberOfBuffers = 12;
+                        audioOutputDevice = waveOut;
+                        audioOutputDevice.Init(mixer, false);
+                        audioOutputDevice.Play();
                     }
-                }
-
-                foreach (var file in VoiceFileNames)
-                {
-                    var path = VoiceFilePath + file;
-                    if (File.Exists(path))
+                    break;
+                case SoundBackendType.Wasapi:
                     {
-                        var provider = new PausableSoundProvider(new CachedSound(path));
-                        SFXSamples.Add(file, new NAudioAudioSample(provider));
-                        mixer.AddMixerInput(provider);
+                        print("Starting Wasapi... with " + sampleRate);
+                        var wasapi = new WasapiOut(AudioClientShareMode.Shared, 0);
+                        wasapi.Init(mixer);
+                        audioOutputDevice = wasapi;
+                        audioOutputDevice.Play();
                     }
-                    else
-                    {
-                        Debug.LogWarning(path + " dos not exists");
-                    }
-                }
-                if (backend == SoundBackendType.Asio)
-                {
-                    var devices = AsioOut.GetDriverNames();
-                    foreach(var device in devices) { print(device); }
-                    asioOut = new AsioOut(devices[GameManager.Instance.Setting.Audio.AsioDeviceIndex]);
-                    print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
-                    asioOut.Init(mixer);
-                    asioOut.Play();
-                }
-                if (backend == SoundBackendType.WaveOut)
-                {
-                    print("Starting WaveOut... with " + sampleRate);
-                    waveOut = new WaveOutEvent();
-                    waveOut.NumberOfBuffers = 12;
-                    waveOut.Init(mixer, false);
-                    waveOut.Play();
-                }
+                    break;
             }
             if (PlayDebug)
                 InputManager.Instance.BindAnyArea(OnAnyAreaDown);
             ReadVolumeFromSettings();
+        }
+        void InitSFXSample(string[] fileNameList,string rootPath)
+        {
+            foreach (var filePath in fileNameList)
+            {
+                var path = Path.Combine(rootPath, filePath);
+                if (!File.Exists(path))
+                {
+                    SFXSamples.Add(null);
+                    Debug.LogWarning(path + " dos not exists");
+                    continue;
+                }
+
+                switch(GameManager.Instance.Setting.Audio.Backend)
+                {
+                    case SoundBackendType.Unity:
+                        SFXSamples.Add(UnityAudioSample.ReadFromFile($"file://{path}", gameObject));
+                        break;
+                    case SoundBackendType.Wasapi:
+                    case SoundBackendType.WaveOut:
+                    case SoundBackendType.Asio:
+                        var provider = new PausableSoundProvider(new CachedSound(path), mixer);
+                        SFXSamples.Add(new NAudioAudioSample(provider));
+                        mixer.AddMixerInput(provider);
+                        break;
+                }
+            }
         }
         void OnAnyAreaDown(object sender, InputEventArgs e)
         {
             if (e.Status != SensorStatus.On)
                 return;
             if(e.IsButton)
-                SFXSamples["answer.wav"].PlayOneShot();
+                PlaySFX(SFXSampleType.ANSWER);
             else
-                SFXSamples["touch.wav"].PlayOneShot();
+                PlaySFX(SFXSampleType.TOUCH);
         }
 
         private void OnDestroy()
         {
-            asioOut?.Stop();
-            asioOut?.Dispose();
-            waveOut?.Stop();
-            waveOut?.Dispose();
+            if(audioOutputDevice is not null)
+            {
+                audioOutputDevice.Stop();
+                audioOutputDevice.Dispose();
+            }
         }
 
         public void ReadVolumeFromSettings()
         {
             var setting = GameManager.Instance.Setting;
-            SFXSamples["answer.wav"].SetVolume(setting.Audio.Volume.Anwser);
-            SFXSamples["all_perfect.wav"].SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples["break.wav"].SetVolume(setting.Audio.Volume.Break);
-            SFXSamples["break_slide.wav"].SetVolume(setting.Audio.Volume.Break);
-            SFXSamples["break_slide_start.wav"].SetVolume(setting.Audio.Volume.Slide);
-            SFXSamples["clock.wav"].SetVolume(setting.Audio.Volume.Anwser);
-            SFXSamples["hanabi.wav"].SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples["judge.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["judge_break.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["judge_break_slide.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["judge_ex.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["slide.wav"].SetVolume(setting.Audio.Volume.Slide);
-            SFXSamples["touch.wav"].SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples["touchHold_riser.wav"].SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples["track_start.wav"].SetVolume(setting.Audio.Volume.BGM);
-            SFXSamples["good.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["great.wav"].SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples["titlebgm.mp3"].SetVolume(setting.Audio.Volume.BGM);
+            SFXSamples[(int)SFXSampleType.ANSWER]?.SetVolume(setting.Audio.Volume.Anwser);
+            SFXSamples[(int)SFXSampleType.ALL_PERFECT]?.SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples[(int)SFXSampleType.BREAK]?.SetVolume(setting.Audio.Volume.Break);
+            SFXSamples[(int)SFXSampleType.BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Break);
+            SFXSamples[(int)SFXSampleType.BREAK_SLIDE_START]?.SetVolume(setting.Audio.Volume.Slide);
+            SFXSamples[(int)SFXSampleType.CLOCK]?.SetVolume(setting.Audio.Volume.Anwser);
+            SFXSamples[(int)SFXSampleType.HANABI]?.SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples[(int)SFXSampleType.JUDGE]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.JUDGE_BREAK]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.JUDGE_BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.JUDGE_EX]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.SLIDE]?.SetVolume(setting.Audio.Volume.Slide);
+            SFXSamples[(int)SFXSampleType.TOUCH]?.SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples[(int)SFXSampleType.TOUCH_HOLD_RISER]?.SetVolume(setting.Audio.Volume.Touch);
+            SFXSamples[(int)SFXSampleType.TRACK_START]?.SetVolume(setting.Audio.Volume.BGM);
+            SFXSamples[(int)SFXSampleType.GOOD]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.GREAT]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.TITLE_BGM]?.SetVolume(setting.Audio.Volume.BGM);
 
-            SFXSamples["MajdataPlay.wav"].SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples["SelectSong.wav"].SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples["Sugoi.wav"].SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples["DontTouchMe.wav"].SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples[(int)SFXSampleType.MAJDATA_PLAY]?.SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples[(int)SFXSampleType.SELECT_SONG]?.SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples[(int)SFXSampleType.SUGOI]?.SetVolume(setting.Audio.Volume.Voice);
+            SFXSamples[(int)SFXSampleType.DONT_TOUCH_ME]?.SetVolume(setting.Audio.Volume.Voice);
         }
 
-        public AudioSampleWrap LoadMusic(string path)
+        public AudioSampleWrap? LoadMusic(string path)
         {
             var backend = GameManager.Instance.Setting.Audio.Backend;
             if (File.Exists(path))
             {
-                if (backend == SoundBackendType.Unity)
+                switch(backend)
                 {
-                    if (File.Exists(path))
-                    {
-                        path = "file://" + path;
-                        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.UNKNOWN))
-                        {
-                            var handle = www.SendWebRequest();
-                            while (!handle.isDone) ;
-                            AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
-                            return new UnityAudioSample(myClip, gameObject);
-                        }
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    var provider = new PausableSoundProvider(new CachedSound(path));
-                    mixer.AddMixerInput(provider);
-                    return new NAudioAudioSample(provider);
+                    case SoundBackendType.Unity:
+                        return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                    default:
+                        var provider = new PausableSoundProvider(new CachedSound(path), mixer);
+                        mixer.AddMixerInput(provider);
+                        return new NAudioAudioSample(provider);
                 }
             }
             else
@@ -238,32 +202,29 @@ namespace MajdataPlay.IO
                 return null;
             }
         }
-        public void UnLoadMusic(AudioSampleWrap sample)
+        public void PlaySFX(in SFXSampleType sfxType, bool isLoop = false)
         {
-            throw new NotImplementedException();
-        }
-
-        public void PlaySFX(string name,bool isLoop=false)
-        {
-            AudioSampleWrap psp = null;
-            if (SFXSamples.TryGetValue(name, out psp)) { 
+            var psp = SFXSamples[(int)sfxType];
+            if (psp is not null) 
+            { 
                 psp.PlayOneShot();
                 psp.IsLoop = isLoop;
             }   
             else
                 Debug.LogError("No such SFX");
         }
-        public void StopSFX(string name)
+        public void StopSFX(in SFXSampleType sfxType)
         {
-            AudioSampleWrap psp = null;
-            if (SFXSamples.TryGetValue(name, out psp))
+            var psp = SFXSamples[(int)sfxType];
+            if (psp is not null)
                 psp.Pause();
             else
                 Debug.LogError("No such SFX");
         }
         public void OpenAsioPannel()
         {
-            asioOut?.ShowControlPanel();
+            if(audioOutputDevice is AsioOut asioOut)
+                asioOut.ShowControlPanel();
         }
     }
 }

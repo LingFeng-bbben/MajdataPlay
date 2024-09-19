@@ -51,6 +51,54 @@ namespace MajdataPlay.Game.Notes
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
+        protected virtual void Judge(float currentSec)
+        {
+            const int JUDGE_GOOD_AREA = 150;
+            const int JUDGE_GREAT_AREA = 100;
+            const int JUDGE_PERFECT_AREA = 50;
+
+            const float JUDGE_SEG_PERFECT1 = 16.66667f;
+            const float JUDGE_SEG_PERFECT2 = 33.33334f;
+            const float JUDGE_SEG_GREAT1 = 66.66667f;
+            const float JUDGE_SEG_GREAT2 = 83.33334f;
+
+            if (isJudged)
+                return;
+
+            //var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
+            var isFast = timing < 0;
+            judgeDiff = timing * 1000;
+            var diff = MathF.Abs(timing * 1000);
+
+            JudgeType result;
+            if (diff > JUDGE_GOOD_AREA && isFast)
+                return;
+            else if (diff < JUDGE_SEG_PERFECT1)
+                result = JudgeType.Perfect;
+            else if (diff < JUDGE_SEG_PERFECT2)
+                result = JudgeType.LatePerfect1;
+            else if (diff < JUDGE_PERFECT_AREA)
+                result = JudgeType.LatePerfect2;
+            else if (diff < JUDGE_SEG_GREAT1)
+                result = JudgeType.LateGreat;
+            else if (diff < JUDGE_SEG_GREAT2)
+                result = JudgeType.LateGreat1;
+            else if (diff < JUDGE_GREAT_AREA)
+                result = JudgeType.LateGreat;
+            else if (diff < JUDGE_GOOD_AREA)
+                result = JudgeType.LateGood;
+            else
+                result = JudgeType.Miss;
+
+            if (result != JudgeType.Miss && isFast)
+                result = 14 - result;
+            if (result != JudgeType.Miss && isEX)
+                result = JudgeType.Perfect;
+
+            judgeResult = result;
+            isJudged = true;
+        }
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度
         /// </summary>
@@ -67,6 +115,7 @@ namespace MajdataPlay.Game.Notes
         /// <para>当前时刻在正解帧前方，结果为负数</para>
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => gpManager.AudioTime - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
         public static Vector3 GetPositionFromDistance(float distance, int position)
         {

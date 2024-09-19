@@ -1,11 +1,15 @@
 ﻿using MajdataPlay.Types;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using System;
 
 namespace MajdataPlay.IO
 {
-    public class PausableSoundProvider : ISampleProvider
+    public class PausableSoundProvider : ISampleProvider, IDisposable
     {
-        private readonly CachedSoundSampleProvider cachedSound;
+        bool isDestroyed = false;
+        readonly CachedSoundSampleProvider cachedSound;
+        readonly MixingSampleProvider mixer;
         public long Position => cachedSound.Position;
         public float Volume => cachedSound.Volume;
         public bool IsLoop
@@ -17,14 +21,17 @@ namespace MajdataPlay.IO
             set { cachedSound.isLoop = value; }
         }
         public bool IsPlaying { get; set; } = false;
-        public PausableSoundProvider(CachedSoundSampleProvider cachedSound)
+        public PausableSoundProvider(CachedSoundSampleProvider cachedSound, MixingSampleProvider mixer)
         {
             this.cachedSound = cachedSound;
+            this.mixer = mixer;
         }
-        public PausableSoundProvider(CachedSound cachedSound)
+        public PausableSoundProvider(CachedSound cachedSound, MixingSampleProvider mixer)
         {
             this.cachedSound = new CachedSoundSampleProvider(cachedSound);
+            this.mixer = mixer;
         }
+        ~PausableSoundProvider() => Dispose();
         public int Read(float[] buffer, int offset, int count)
         {
             if (IsPlaying)
@@ -70,5 +77,13 @@ namespace MajdataPlay.IO
             cachedSound.Volume = volume;
         }
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
+        public void Dispose()
+        {
+            if (isDestroyed)
+                return;
+            mixer.RemoveMixerInput(this);
+            isDestroyed = true;
+
+        }
     }
 }

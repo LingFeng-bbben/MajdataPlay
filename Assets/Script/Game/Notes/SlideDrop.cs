@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class SlideDrop : SlideBase
+    public sealed class SlideDrop : SlideBase
     {
         public bool isMirror;
         public bool isSpecialFlip; // fixes known star problem
@@ -157,9 +157,9 @@ namespace MajdataPlay.Game.Notes
                     {
                         HideAllBar();
                         if(IsClassic)
-                            Judge_Classic();
+                            Judge_Classic(gpManager.ThisFrameSec);
                         else
-                            Judge();
+                            Judge(gpManager.ThisFrameSec);
                         return;
                     }
                     else if(isTooLate)
@@ -224,7 +224,7 @@ namespace MajdataPlay.Game.Notes
             
             var first = queue.First();
             var fType = first.GetSensorTypes();
-
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
             JudgeArea? second = null;
 
             if (queue.Length >= 2)
@@ -236,7 +236,7 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
-            if(!isSoundPlayed && ConnectInfo.IsGroupPartHead)
+            if(!isSoundPlayed && canPlaySFX)
             {
                 if(first.On)
                 {
