@@ -96,12 +96,9 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Wasapi:
                     {
                         print("Starting Wasapi... with " + sampleRate);
-                        var deviceEnumerator = new MMDeviceEnumerator();
-                        var defaultDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-                        var wasapi = new WasapiOut(defaultDevice, AudioClientShareMode.Exclusive, true, 10);
+                        var wasapi = new WasapiOut(AudioClientShareMode.Shared, 0);
                         wasapi.Init(mixer);
                         audioOutputDevice = wasapi;
-                        audioOutputDevice.Init(mixer, false);
                         audioOutputDevice.Play();
                     }
                     break;
