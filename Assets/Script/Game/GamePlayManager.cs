@@ -276,7 +276,11 @@ public class GamePlayManager : MonoBehaviour
             await sfxGeneratingTask;
         
         Time.timeScale = 1f;
-        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + 5f;
+        var firstClockTiming = AnwserSoundList[0].time;
+        float extraTime = 5f;
+        if(firstClockTiming < -5f)
+            extraTime += (-(float)firstClockTiming - 5f) + 2f;
+        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + extraTime;
         StartToPlayAnswer();
         audioSample.Play();
         audioSample.Pause();
