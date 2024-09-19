@@ -11,9 +11,9 @@ namespace MajdataPlay.Scenes
 {
     public class Menu : MonoBehaviour
     {
-        public int SelectedIndex { get; private set; } = 0;
+        public int SelectedIndex => _selectedIndex;
         /// <summary>
-        /// ×Ó¼¶Option<para>Æ©ÈçGameSetting.Game</para>
+        /// Optionå¯¹è±¡<para>e.g. GameSetting.Game</para>
         /// </summary>
         public object SubOptionObject { get; set; }
         public GameObject optionPrefab;
@@ -39,7 +39,12 @@ namespace MajdataPlay.Scenes
         }
         void OnDisable()
         {
-            SelectedIndex = 0;
+            _selectedIndex = 0;
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A1);
+        }
+        void OnDestroy()
+        {
             InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
             InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A1);
         }
@@ -50,14 +55,16 @@ namespace MajdataPlay.Scenes
             switch(e.Type)
             {
                 case SensorType.A1:
-                    SelectedIndex = (--SelectedIndex).Clamp(options.Length - 1, 0);
+                    _selectedIndex = (--_selectedIndex).Clamp(0, options.Length - 1);
                     break;
                 case SensorType.A4:
-                    SelectedIndex = (++SelectedIndex).Clamp(options.Length - 1, 0);
+                    _selectedIndex = (++_selectedIndex).Clamp(0, options.Length - 1);
                     break;
                 default:
                     return;
             }
         }
+        [SerializeField]
+        int _selectedIndex = 0;
     }
 }

@@ -9,7 +9,7 @@ public class SkinManager : MonoBehaviour
     public static SkinManager Instance { get; private set; }
 
     public CustomSkin SelectedSkin { get; set; }
-
+    public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
     List<CustomSkin> loadedSkins = new();
 
     public Sprite HoldEnd;

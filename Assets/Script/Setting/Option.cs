@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Types;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
+using Unity.Collections;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes
@@ -15,19 +20,125 @@ namespace MajdataPlay.Scenes
         TextMeshPro nameText;
         [SerializeField]
         TextMeshPro valueText;
+        [ReadOnly]
+        [SerializeField]
+        int current = 0; // 当前选项的位置
+        int maxOptionIndex = 0;
+        [ReadOnly]
+        [SerializeField]
+        object[] options = Array.Empty<object>(); // 可用的选项
+
+        float step = 1;
+        bool isNum = false;
+        bool isFloat = false;
+        bool isReadOnly = false;
+        float? maxValue = null;
 
         int lastIndex = 0;
         void Start()
         {
             nameText.text = PropertyInfo.Name;
             valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+            InitOptions();
             UpdatePosition();
+
+            if (Parent.SelectedIndex == Index)
+            {
+                InputManager.Instance.BindArea(OnAreaDown, SensorType.A3);
+                InputManager.Instance.BindArea(OnAreaDown, SensorType.A4);
+            }
+            else
+            {
+                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
+                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+            }
+        }
+        void InitOptions()
+        {
+            var type = PropertyInfo.PropertyType;
+            isFloat = type.IsFloatType();
+            isNum = type.IsIntType() || isFloat;
+            
+            if (type.IsEnum)
+            {
+                var values = Enum.GetValues(type);
+                maxOptionIndex = values.Length - 1;
+                options = new object[values.Length];
+                for (int i = 0; i < values.Length; i++)
+                    options[i] = values.GetValue(i);
+                var obj = PropertyInfo.GetValue(OptionObject);
+                current = options.FindIndex(x => x == obj);
+            }
+            else if(type == typeof(bool))
+            {
+                options = new object[2] { true,false };
+                var obj = PropertyInfo.GetValue(OptionObject);
+                maxOptionIndex = 1;
+                current = options.FindIndex(x => x == obj);
+            }
+            else if (isNum)
+            {
+                switch (PropertyInfo.Name)
+                {
+                    case "Answer":
+                    case "BGM":
+                    case "Judge":
+                    case "Slide":
+                    case "Break":
+                    case "Touch":
+                    case "Voice":
+                    case "OuterJudgeDistance":
+                    case "InnerJudgeDistance":
+                    case "BackgroundDim":
+                        maxValue = 1;
+                        step = 0.05f;
+                        break;
+                    case "TouchSpeed":
+                    case "TapSpeed":
+                        maxValue = null;
+                        step = 0.25f;
+                        break;
+                    default:
+                        maxValue = null;
+                        step = 0.01f;
+                        break;
+                }
+            }
+            else // string
+            {
+                switch(PropertyInfo.Name)
+                {
+                    case "Resplution":
+                        isReadOnly = true;
+                        break;
+                    case "Skin":
+                        var skinManager = SkinManager.Instance;
+                        var skins = skinManager.LoadedSkins;
+                        var currentSkin = skinManager.SelectedSkin;
+                        options = skins;
+                        maxOptionIndex = options.Length - 1;
+                        current = options.FindIndex(x => x == currentSkin);
+                        break;
+                }
+            }
         }
         void Update()
         {
-            if (lastIndex == Parent.SelectedIndex)
+            var currentIndex = Parent.SelectedIndex;
+            if (lastIndex == currentIndex)
                 return;
-            lastIndex = Parent.SelectedIndex;
+
+            if (currentIndex == Index)
+            {
+                InputManager.Instance.BindArea(OnAreaDown, SensorType.A2);
+                InputManager.Instance.BindArea(OnAreaDown, SensorType.A3);
+            }
+            else
+            {
+                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A2);
+                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
+            }
+            lastIndex = currentIndex;
             UpdatePosition();
         }
         void UpdatePosition()
@@ -37,6 +148,66 @@ namespace MajdataPlay.Scenes
             var pos = GetPosition(diff);
             transform.localPosition = pos;
             transform.localScale = scale;
+        }
+        void UpdateOption()
+        {
+            valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+        }
+        void Up()
+        {
+            if(isNum) // 数值类
+            {
+                var valueObj = PropertyInfo.GetValue(OptionObject);
+                var value = (float)valueObj;
+                value += step;
+                if (maxValue is not null) //有上限
+                    value = value.Clamp(0, (float)maxValue);
+                PropertyInfo.SetValue(OptionObject, value);
+            }
+            else //非数值类
+            {
+                current++;
+                current = current.Clamp(0, maxOptionIndex);
+                PropertyInfo.SetValue(OptionObject, options[current]);
+            }
+        }
+        void Down()
+        {
+            if (isNum) // 数值类
+            {
+                var valueObj = PropertyInfo.GetValue(OptionObject);
+                var value = (float)valueObj;
+                value -= step;
+                if (maxValue is not null) //有上限
+                    value = value.Clamp(0, (float)maxValue);
+                PropertyInfo.SetValue(OptionObject, value);
+            }
+            else //非数值类
+            {
+                current--;
+                current = current.Clamp(0, maxOptionIndex);
+                PropertyInfo.SetValue(OptionObject, options[current]);
+            }
+        }
+        void OnAreaDown(object sender, InputEventArgs e)
+        {
+            if (!e.IsClick)
+                return;
+            switch(e.Type)
+            {
+                case SensorType.A2:
+                    Up();
+                    break;
+                case SensorType.A3:
+                    Down();
+                    break;
+            }
+            UpdateOption();
+        }
+        void OnDestroy()
+        {
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
         }
         Vector3 GetScale(int diff)
         {
