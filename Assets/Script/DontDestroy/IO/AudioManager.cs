@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 using MajdataPlay.Types;
 using MajdataPlay.Extensions;
+using NAudio.CoreAudioApi;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -92,6 +93,18 @@ namespace MajdataPlay.IO
                         audioOutputDevice.Play();
                     }
                     break;
+                case SoundBackendType.Wasapi:
+                    {
+                        print("Starting Wasapi... with " + sampleRate);
+                        var deviceEnumerator = new MMDeviceEnumerator();
+                        var defaultDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                        var wasapi = new WasapiOut(defaultDevice, AudioClientShareMode.Exclusive, true, 10);
+                        wasapi.Init(mixer);
+                        audioOutputDevice = wasapi;
+                        audioOutputDevice.Init(mixer, false);
+                        audioOutputDevice.Play();
+                    }
+                    break;
             }
             if (PlayDebug)
                 InputManager.Instance.BindAnyArea(OnAnyAreaDown);
@@ -114,6 +127,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Unity:
                         SFXSamples.Add(UnityAudioSample.ReadFromFile($"file://{path}", gameObject));
                         break;
+                    case SoundBackendType.Wasapi:
                     case SoundBackendType.WaveOut:
                     case SoundBackendType.Asio:
                         var provider = new PausableSoundProvider(new CachedSound(path), mixer);
