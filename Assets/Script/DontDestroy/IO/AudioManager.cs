@@ -1,17 +1,16 @@
-using System.Collections.Generic;
 using UnityEngine;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System;
 using System.IO;
-using UnityEngine.Networking;
+using System.Collections.Generic;
 using MajdataPlay.Types;
+using MajdataPlay.Extensions;
 #nullable enable
 namespace MajdataPlay.IO
 {
     public class AudioManager : MonoBehaviour
     {
-        public static AudioManager Instance;
+        public static AudioManager Instance { get; private set; }
         readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
         readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
         readonly string[] SFXFileNames = new string[]
@@ -45,8 +44,7 @@ namespace MajdataPlay.IO
             "DontTouchMe.wav"
         };
         private List<AudioSampleWrap?> SFXSamples = new();
-        private AsioOut asioOut;
-        private WaveOutEvent waveOut;
+        IWavePlayer? audioOutputDevice = null;
         private MixingSampleProvider mixer;
         public bool PlayDebug;
         private void Awake()
@@ -66,22 +64,33 @@ namespace MajdataPlay.IO
             }
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
-            switch(backend)
+            var deviceIndex = GameManager.Instance.Setting.Audio.AsioDeviceIndex;
+            switch (backend)
             {
                 case SoundBackendType.Asio:
-                    var devices = AsioOut.GetDriverNames();
-                    foreach (var device in devices) { print(device); }
-                    asioOut = new AsioOut(devices[GameManager.Instance.Setting.Audio.AsioDeviceIndex]);
-                    print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
-                    asioOut.Init(mixer);
-                    asioOut.Play();
+                    {
+                        var devices = AsioOut.GetDriverNames();
+                        if (devices.IsEmpty() || deviceIndex >= devices.Length)
+                        {
+                            Debug.LogError("No Asio Output Device");
+                            return;
+                        }
+                        var asioOut = new AsioOut(devices[deviceIndex]);
+                        print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
+                        audioOutputDevice = asioOut;
+                        audioOutputDevice.Init(mixer);
+                        audioOutputDevice.Play();
+                    }
                     break;
                 case SoundBackendType.WaveOut:
-                    print("Starting WaveOut... with " + sampleRate);
-                    waveOut = new WaveOutEvent();
-                    waveOut.NumberOfBuffers = 12;
-                    waveOut.Init(mixer, false);
-                    waveOut.Play();
+                    {
+                        print("Starting WaveOut... with " + sampleRate);
+                        var waveOut = new WaveOutEvent();
+                        waveOut.NumberOfBuffers = 12;
+                        audioOutputDevice = waveOut;
+                        audioOutputDevice.Init(mixer, false);
+                        audioOutputDevice.Play();
+                    }
                     break;
             }
             if (PlayDebug)
@@ -126,10 +135,11 @@ namespace MajdataPlay.IO
 
         private void OnDestroy()
         {
-            asioOut?.Stop();
-            asioOut?.Dispose();
-            waveOut?.Stop();
-            waveOut?.Dispose();
+            if(audioOutputDevice is not null)
+            {
+                audioOutputDevice.Stop();
+                audioOutputDevice.Dispose();
+            }
         }
 
         public void ReadVolumeFromSettings()
@@ -202,7 +212,8 @@ namespace MajdataPlay.IO
         }
         public void OpenAsioPannel()
         {
-            asioOut?.ShowControlPanel();
+            if(audioOutputDevice is AsioOut asioOut)
+                asioOut.ShowControlPanel();
         }
     }
 }
