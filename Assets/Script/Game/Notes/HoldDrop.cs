@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class HoldDrop : NoteLongDrop, IDistanceProvider
+    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider
     {
         public float Distance { get; private set; } = -100;
         bool holdAnimStart;
@@ -98,7 +98,7 @@ namespace MajdataPlay.Game.Notes
                         return;
                 }
 
-                if (!gpManager.isStart) // 忽略暂停
+                if (!gpManager.IsStart) // 忽略暂停
                     return;
 
                 var on = ioManager.CheckAreaStatus(sensorPos, SensorStatus.On);
@@ -151,7 +151,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else
                     ioManager.SetBusy(arg);
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -160,60 +160,18 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        void Judge()
+        protected override void Judge(float currentSec)
         {
-
-            const int JUDGE_GOOD_AREA = 150;
-            const int JUDGE_GREAT_AREA = 100;
-            const int JUDGE_PERFECT_AREA = 50;
-
-            const float JUDGE_SEG_PERFECT1 = 16.66667f;
-            const float JUDGE_SEG_PERFECT2 = 33.33334f;
-            const float JUDGE_SEG_GREAT1 = 66.66667f;
-            const float JUDGE_SEG_GREAT2 = 83.33334f;
-
-            if (isJudged)
+            base.Judge(currentSec);
+            if (!isJudged)
                 return;
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var isFast = timing < 0;
-            judgeDiff = timing * 1000;
-            var diff = MathF.Abs(timing * 1000);
-
-            JudgeType result;
-            if (diff > JUDGE_GOOD_AREA && isFast)
-                return;
-            else if (diff < JUDGE_SEG_PERFECT1)
-                result = JudgeType.Perfect;
-            else if (diff < JUDGE_SEG_PERFECT2)
-                result = JudgeType.LatePerfect1;
-            else if (diff < JUDGE_PERFECT_AREA)
-                result = JudgeType.LatePerfect2;
-            else if (diff < JUDGE_SEG_GREAT1)
-                result = JudgeType.LateGreat;
-            else if (diff < JUDGE_SEG_GREAT2)
-                result = JudgeType.LateGreat1;
-            else if (diff < JUDGE_GREAT_AREA)
-                result = JudgeType.LateGreat;
-            else if (diff < JUDGE_GOOD_AREA)
-                result = JudgeType.LateGood;
-            else
-                result = JudgeType.Miss;
-
-            if (result != JudgeType.Miss && isFast)
-                result = 14 - result;
-            if (result != JudgeType.Miss && isEX)
-                result = JudgeType.Perfect;
-            if (isFast)
-                judgeDiff = 0;
-            else
-                judgeDiff = diff;
-
-            judgeResult = result;
-            isJudged = true;
-
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(isBreak, isEX, result);
+            audioEffMana.PlayTapSound(new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                IsEX = isEX,
+                Diff = judgeDiff
+            });
             PlayHoldEffect();
         }
         // Update is called once per frame
@@ -337,15 +295,16 @@ namespace MajdataPlay.Game.Notes
             else
                 EndJudge(ref judgeResult);
 
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(false, false, judgeResult);
+            
             var result = new JudgeResult()
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
 
+            audioEffMana.PlayTapSound(result);
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
             objectCounter.ReportResult(this, result);
@@ -359,7 +318,8 @@ namespace MajdataPlay.Game.Notes
             if (!isJudged)
                 return;
 
-            var realityHT = LastFor - 0.3f - judgeDiff / 1000f;
+            var offset = (int)judgeResult > 7 ? 0 : judgeDiff;
+            var realityHT = LastFor - 0.3f - offset / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
             result = judgeResult;
             if (realityHT > 0)
@@ -409,7 +369,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var releaseTiming = gpManager.AudioTime;
-            var diff = (time + LastFor) - releaseTiming;
+            var diff = (timing + LastFor) - releaseTiming;
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
 

@@ -119,7 +119,7 @@ public class CoverListDisplayer : MonoBehaviour
     
     public void SlideToList(int pos)
     {
-        AudioManager.Instance.PlaySFX(soundEffectName);
+        AudioManager.Instance.PlaySFX(SFXSampleType.JUDGE);
         desiredListPos = pos;
         if (desiredListPos >= covers.Count)
         {

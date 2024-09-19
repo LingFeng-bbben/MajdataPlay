@@ -14,15 +14,20 @@ using System.Runtime.InteropServices;
 using MajdataPlay.Utils;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
+using System.Threading;
 #nullable enable
 public class GamePlayManager : MonoBehaviour
 {
-    public static GamePlayManager Instance;
+    /// <summary>
+    /// 当前逻辑帧的时刻<para>Unit: Second</para>
+    /// </summary>
+    public float ThisFrameSec { get; private set; } = 0;
+    public static GamePlayManager Instance { get; private set; }
     public ComponentState State { get; private set; } = ComponentState.Idle;
     public MaiScore? HistoryScore { get; private set; }
     public (float,float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
 
-    AudioSampleWrap audioSample;
+    AudioSampleWrap? audioSample = null;
     SimaiProcess Chart;
     SongDetail song;
 
@@ -40,11 +45,13 @@ public class GamePlayManager : MonoBehaviour
     public float touchSpeed = 7.5f;
 
     public float AudioTime = -114514f;
-    public bool isStart => audioSample.GetPlayState();
+    public float AudioTimeNoOffset = -114514f;
+    public bool IsStart => audioSample?.GetPlayState() ?? false;
 
     public float CurrentSpeed = 1f;
 
     private float AudioStartTime = -114514f;
+    CancellationTokenSource allTaskTokenSource = new();
     List<AnwserSoundPoint> AnwserSoundList = new List<AnwserSoundPoint>();
 
     [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
@@ -86,7 +93,14 @@ public class GamePlayManager : MonoBehaviour
     {
         State = ComponentState.Loading;
         InputManager.Instance.BindAnyArea(OnPauseButton);
-        audioSample = AudioManager.Instance.LoadMusic(song.TrackPath);
+        audioSample = AudioManager.Instance.LoadMusic(song.TrackPath ?? string.Empty);
+        if (audioSample is null)
+        {
+            var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+            loadingText.text = "\r\nFailed to load chart\r\n\r\nAudio track not found.";
+            loadingText.color = Color.red;
+            return;
+        }
         audioSample.SetVolume(gameSetting.Audio.Volume.BGM);
         ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
         LightManager.Instance.SetAllLight(Color.white);
@@ -245,6 +259,8 @@ public class GamePlayManager : MonoBehaviour
     }
     async UniTaskVoid DelayPlay()
     {
+        if (audioSample is null)
+            return;
         AudioTime = -5f;
 
         await InitBackground();
@@ -260,8 +276,12 @@ public class GamePlayManager : MonoBehaviour
             await sfxGeneratingTask;
         
         Time.timeScale = 1f;
-        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + 5f;
-
+        var firstClockTiming = AnwserSoundList[0].time;
+        float extraTime = 5f;
+        if(firstClockTiming < -5f)
+            extraTime += (-(float)firstClockTiming - 5f) + 2f;
+        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + extraTime;
+        StartToPlayAnswer();
         audioSample.Play();
         audioSample.Pause();
 
@@ -278,15 +298,16 @@ public class GamePlayManager : MonoBehaviour
     private void OnDestroy()
     {
         print("GPManagerDestroy");
+        DisposeAudioTrack();
         audioSample = null;
-        State = ComponentState.Idle;
+        State = ComponentState.Finished;
+        allTaskTokenSource.Cancel();
         GC.Collect();
     }
-    int i = 0;
     // Update is called once per frame
     void Update()
     {
-        if (audioSample == null)
+        if (audioSample is null)
             return;
         else if (State != ComponentState.Running)
             return;
@@ -294,9 +315,9 @@ public class GamePlayManager : MonoBehaviour
         //AudioTime = (float)audioSample.GetCurrentTime();
         if (AudioStartTime == -114514f) 
             return;
-
         var chartOffset = (float)song.First + gameSetting.Judge.AudioOffset;
         AudioTime = timeSource - AudioStartTime - chartOffset;
+        AudioTimeNoOffset = timeSource - AudioStartTime;
 
         var realTimeDifference = (float)audioSample.GetCurrentTime() - (timeSource - AudioStartTime);
         if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
@@ -313,45 +334,59 @@ public class GamePlayManager : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (i >= AnwserSoundList.Count)
-            return;
-
-        var noteToPlay = AnwserSoundList[i].time;
-        var delta = AudioTime - (noteToPlay);
-
-        if (delta > 0)
-        {
-            if (AnwserSoundList[i].isClock)
-                AudioManager.Instance.PlaySFX("clock.wav");
-            else
-                AudioManager.Instance.PlaySFX("answer.wav");
-            AnwserSoundList[i].isPlayed = true;
-            i++;
-        }
+        ThisFrameSec = AudioTime;
     }
+    async void StartToPlayAnswer()
+    {
+        int i = 0;
+        await Task.Run(async () =>
+        {
+            while(!allTaskTokenSource.IsCancellationRequested)
+            {
+                if (i >= AnwserSoundList.Count)
+                    return;
 
+                var noteToPlay = AnwserSoundList[i].time;
+                var delta = AudioTime - (noteToPlay);
+
+                if (delta > 0)
+                {
+                    if (AnwserSoundList[i].isClock)
+                        AudioManager.Instance.PlaySFX(SFXSampleType.CLOCK);
+                    else
+                        AudioManager.Instance.PlaySFX(SFXSampleType.ANSWER);
+                    AnwserSoundList[i].isPlayed = true;
+                    i++;
+                }
+                await Task.Delay(1);
+            }
+        });
+    }
     public float GetFrame()
     {
         var _audioTime = AudioTime * 1000;
 
         return _audioTime / 16.6667f;
     }
-
+    void DisposeAudioTrack()
+    {
+        if (audioSample is not null)
+            audioSample.Dispose();
+    }
     public void BackToList()
     {
         StopAllCoroutines();
-        audioSample.Pause();
-        audioSample = null;
+        DisposeAudioTrack();
         //AudioManager.Instance.UnLoadMusic();
         InputManager.Instance.UnbindAnyArea(OnPauseButton);
-        StartCoroutine(delayBackToList());
+        DelayBackToList().Forget();
 
     }
-    IEnumerator delayBackToList()
+    async UniTaskVoid DelayBackToList()
     {
-        yield return new WaitForEndOfFrame();
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
         GameObject.Find("Notes").GetComponent<NoteManager>().DestroyAllNotes();
-        yield return new WaitForEndOfFrame();
+        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
         SceneManager.LoadScene(1);
     }
 
@@ -362,14 +397,14 @@ public class GamePlayManager : MonoBehaviour
         var objectCounter = FindFirstObjectByType<ObjectCounter?>();
         if(objectCounter != null)
             GameManager.LastGameResult = objectCounter.GetPlayRecord(song,GameManager.Instance.SelectedDiff);
-        StartCoroutine(delayEndGame());
+        DelayEndGame().Forget();
+        State = ComponentState.Finished;
     }
 
-    IEnumerator delayEndGame()
+    async UniTaskVoid DelayEndGame()
     {
-        yield return new WaitForSeconds(2f);
-        audioSample.Pause();
-        audioSample = null;
+        await UniTask.Delay(2000);
+        DisposeAudioTrack();
         InputManager.Instance.UnbindAnyArea(OnPauseButton);
         SceneManager.LoadScene(3);
     }

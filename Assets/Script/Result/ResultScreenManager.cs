@@ -70,7 +70,7 @@ public class ResultScreenManager : MonoBehaviour
         accClassic.text = $"{result.Acc.Classic:F2}%";
         var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
         if(dxScoreRank.Rank > 0)
-            dxScore.text = $"✧{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+            dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
         else
             dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
 
@@ -102,8 +102,8 @@ public class ResultScreenManager : MonoBehaviour
         
 
         InputManager.Instance.BindAnyArea(OnAreaDown);
-        AudioManager.Instance.PlaySFX("Sugoi.wav");
-        AudioManager.Instance.PlaySFX("resultbgm.mp3", true);
+        AudioManager.Instance.PlaySFX(SFXSampleType.SUGOI);
+        AudioManager.Instance.PlaySFX(SFXSampleType.RESULT_BGM, true);
         ScoreManager.Instance.SaveScore(result,result.ChartLevel);
     }
     string BuildSubDisplayText(JudgeDetail judgeRecord)
@@ -192,8 +192,8 @@ public class ResultScreenManager : MonoBehaviour
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-        AudioManager.Instance.StopSFX("Sugoi.wav");
-        AudioManager.Instance.StopSFX("resultbgm.mp3");
+        AudioManager.Instance.StopSFX(SFXSampleType.SUGOI);
+        AudioManager.Instance.StopSFX(SFXSampleType.RESULT_BGM);
     }
     readonly ref struct UnpackJudgeInfo
     {

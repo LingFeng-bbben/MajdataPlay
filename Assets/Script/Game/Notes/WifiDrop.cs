@@ -11,7 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class WifiDrop : SlideBase
+    public sealed class WifiDrop : SlideBase
     {
 
 
@@ -34,15 +34,16 @@ namespace MajdataPlay.Game.Notes
             // 在8.0速时应当提前300ms显示Slide
             fadeInTiming = -3.926913f / speed;
             fadeInTiming += gameSetting.Game.SlideFadeInOffset;
-            fadeInTiming += timeStart;
+            fadeInTiming += startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
             fullFadeInTiming = fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
-            fadeInAnimator = GetComponent<Animator>();
+            Destroy(GetComponent<Animator>());
+            maxFadeInAlpha = 1f;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
-            fadeInAnimator.SetTrigger("wifi");
+            //fadeInAnimator.SetTrigger("wifi");
 
             SlidePositionEnd[0] = effectManager.transform.GetChild(0).GetChild(endPosition - 2 < 0 ? 7 : endPosition - 2).position;// R
             SlidePositionEnd[1] = effectManager.transform.GetChild(0).GetChild(endPosition - 1).position;// Center
@@ -65,7 +66,7 @@ namespace MajdataPlay.Game.Notes
             Initialize();
 
             var wifiConst = 0.162870f;
-            judgeTiming = time + (LastFor * (1 - wifiConst));
+            judgeTiming = timing + (LastFor * (1 - wifiConst));
             lastWaitTime = LastFor * wifiConst;
 
             judgeAreas = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
@@ -74,15 +75,16 @@ namespace MajdataPlay.Game.Notes
 
             foreach (var sensor in judgeAreas)
                 ioManager.BindSensor(Check, sensor);
+            FadeIn().Forget();
         }
         private void FixedUpdate()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = gpManager.AudioTime - time;
-            var startTiming = gpManager.AudioTime - timeStart;
-            var tooLateTiming = time + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset, 0);
+            var timing = gpManager.AudioTime - base.timing;
+            var startTiming = gpManager.AudioTime - base.startTiming;
+            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
@@ -94,9 +96,9 @@ namespace MajdataPlay.Game.Notes
                 {
                     HideAllBar();
                     if (IsClassic)
-                        Judge_Classic();
+                        Judge_Classic(gpManager.ThisFrameSec);
                     else
-                        Judge();
+                        Judge(gpManager.ThisFrameSec);
                 }
                 else if (isTooLate)
                     TooLateJudge();
@@ -138,9 +140,8 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
-            if (first.IsFinished && !isSoundPlayed)
+            if (!isSoundPlayed && first.On)
             {
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                 audioEffMana.PlaySlideSound(isBreak);
                 isSoundPlayed = true;
             }
@@ -195,39 +196,15 @@ namespace MajdataPlay.Game.Notes
         }
         void Update()
         {
-            // Wifi Slide淡入期间，不透明度从0到1耗时200ms
-            var currentSec = gpManager.AudioTime;
-            var startiming = currentSec - timeStart;
-
-            if (fadeInTiming > timeStart)
-            {
-                if (currentSec > fadeInTiming)
-                    SetSlideBarAlpha(1f);
-            }
-            else if (currentSec > timeStart)
-                SetSlideBarAlpha(1f);
-            else if (currentSec > fadeInTiming)
-            {
-                if (startiming >= -0.05f)
-                {
-                    fadeInAnimator.enabled = false;
-                    SetSlideBarAlpha(1f);
-                }
-                else
-                    fadeInAnimator.enabled = true;
-                return;
-            }
-            fadeInAnimator.enabled = false;
-
             foreach (var star in stars)
                 star.SetActive(true);
 
-            var timing = gpManager.AudioTime - time;
+            var timing = CurrentSec - base.timing;
             if (timing <= 0f)
             {
                 CanShine = true;
                 float alpha;
-                alpha = 1f - -timing / (time - timeStart);
+                alpha = 1f - -timing / (base.timing - startTiming);
                 alpha = alpha > 1f ? 1f : alpha;
                 alpha = alpha < 0f ? 0f : alpha;
 
@@ -244,7 +221,7 @@ namespace MajdataPlay.Game.Notes
         }
         void UpdateStar()
         {
-            var timing = gpManager.AudioTime - time;
+            var timing = gpManager.AudioTime - base.timing;
             var process = (LastFor - timing) / LastFor;
             process = 1f - process;
 
@@ -279,6 +256,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 Diff = judgeDiff,
+                IsEX = isEX,
                 IsBreak = isBreak
             };
 
@@ -286,7 +264,6 @@ namespace MajdataPlay.Game.Notes
             if (isBreak && judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                 anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                 audioEffMana.PlayBreakSlideEndSound();
             }

@@ -13,8 +13,9 @@ public class LightManager : MonoBehaviour
     bool useDummy = true;
     SpriteRenderer[] DummyLights;
     SerialPort serial;
-    List<byte> templateAll = new List<byte>()    {0xE0, 0x11, 0x01, 0x08, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    List<byte> templateAll = new List<byte>()    {0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
     List<byte> templateSingle = new List<byte>() {0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
+    List<byte> templateUpdate = new List<byte>() { 0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F };
     private void Awake()
     {
         Instance = this; 
@@ -67,6 +68,7 @@ public class LightManager : MonoBehaviour
         bytes[10] = (byte)(color.b * 255);
         bytes.Add(CalculateCheckSum(bytes));
         Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
+        UpdateLightSerial();
     }
     void SetButtonLightSerial(Color color,int button)
     {
@@ -77,6 +79,12 @@ public class LightManager : MonoBehaviour
         bytes[8] = (byte)(color.b * 255);
         bytes.Add(CalculateCheckSum(bytes));
         Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
+        UpdateLightSerial();
+    }
+
+    void UpdateLightSerial()
+    {
+        Task.Run(() => { serial.Write(templateUpdate.ToArray(), 0, templateUpdate.Count); });
     }
 
     public void SetAllLight(Color lightColor)

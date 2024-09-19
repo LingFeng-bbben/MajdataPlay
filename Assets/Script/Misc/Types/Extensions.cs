@@ -664,7 +664,7 @@ namespace MajdataPlay.Extensions
     }
     public static class MathExtensions
     {
-        public static T Clamp<T>(this T source,in T max,in T min) where T : IComparable<T>
+        public static T Clamp<T>(this T source, in T min, in T max) where T : IComparable<T>
         {
             if (source.CompareTo(min) < 0)
                 return min;

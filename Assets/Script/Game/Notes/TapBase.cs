@@ -121,7 +121,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
 
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -130,7 +130,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        protected void Judge()
+        protected override void Judge(float currentSec)
         {
 
             const int JUDGE_GOOD_AREA = 150;
@@ -145,7 +145,8 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            //var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
@@ -189,14 +190,14 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
 
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
 
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
+            audioEffMana.PlayTapSound(result);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, result);
             

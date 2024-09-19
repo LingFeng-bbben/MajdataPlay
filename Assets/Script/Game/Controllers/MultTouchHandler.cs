@@ -1,3 +1,4 @@
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable

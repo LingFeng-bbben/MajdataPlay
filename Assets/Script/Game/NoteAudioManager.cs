@@ -1,19 +1,33 @@
 using MajdataPlay.Types;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using MajdataPlay.IO;
 
 public class NoteAudioManager : MonoBehaviour
 {
     AudioManager audioManager =>AudioManager.Instance;
-    public void PlayTapSound(bool isBreak,bool isEx, JudgeType judge)
+    public void PlayTapSound(in JudgeResult judgeResult)
     {
-        switch (judge)
+        var isBreak = judgeResult.IsBreak;
+        var isEx = judgeResult.IsEX;
+
+        if (judgeResult.IsMiss)
+            return;
+        else if(isBreak)
+        {
+            PlayBreakTapSound(judgeResult);
+            return;
+        }
+        else if (isEx)
+        {
+            audioManager.PlaySFX(SFXSampleType.JUDGE_EX);
+            return;
+        }
+
+        switch (judgeResult.Result)
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
-                audioManager.PlaySFX("good.wav");
+                audioManager.PlaySFX(SFXSampleType.GOOD);
                 break;
             case JudgeType.LateGreat:
             case JudgeType.LateGreat1:
@@ -21,66 +35,79 @@ public class NoteAudioManager : MonoBehaviour
             case JudgeType.FastGreat2:
             case JudgeType.FastGreat1:
             case JudgeType.FastGreat:
-                audioManager.PlaySFX("great.wav");
+                audioManager.PlaySFX(SFXSampleType.GREAT);
                 break;
             case JudgeType.LatePerfect2:
             case JudgeType.FastPerfect2:
             case JudgeType.LatePerfect1:
             case JudgeType.FastPerfect1:
-                audioManager.PlaySFX("judge.wav");
+                audioManager.PlaySFX(SFXSampleType.JUDGE);
                 break;
             case JudgeType.Perfect:
                 if(isBreak)
-                    audioManager.PlaySFX("break.wav");
+                    audioManager.PlaySFX(SFXSampleType.BREAK);
                 else
-                    audioManager.PlaySFX("judge.wav");
-                break;
-            default:
-                
+                    audioManager.PlaySFX(SFXSampleType.JUDGE);
                 break;
         }
-        if (judge != JudgeType.Miss && isBreak)
+    }
+    void PlayBreakTapSound(in JudgeResult judgeResult)
+    {
+        switch (judgeResult.Result)
         {
-            audioManager.PlaySFX("judge_break.wav");
-        }
-        if (judge != JudgeType.Miss && isEx)
-        {
-            audioManager.PlaySFX("judge_ex.wav");
+            case JudgeType.LateGood:
+            case JudgeType.FastGood:
+            case JudgeType.LateGreat:
+            case JudgeType.LateGreat1:
+            case JudgeType.LateGreat2:
+            case JudgeType.FastGreat2:
+            case JudgeType.FastGreat1:
+            case JudgeType.FastGreat:
+            case JudgeType.LatePerfect2:
+            case JudgeType.FastPerfect2:
+            case JudgeType.LatePerfect1:
+            case JudgeType.FastPerfect1:
+                audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
+                break;
+            case JudgeType.Perfect:
+                audioManager.PlaySFX(SFXSampleType.BREAK);
+                audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
+                break;
         }
     }
 
     public void PlayTouchSound()
     {
-        audioManager.PlaySFX("touch.wav");
+        audioManager.PlaySFX(SFXSampleType.TOUCH);
     }
 
     public void PlayHanabiSound()
     {
-        audioManager.PlaySFX("hanabi.wav");
+        audioManager.PlaySFX(SFXSampleType.HANABI);
     }
     public void PlayTouchHoldSound()
     {
-        audioManager.PlaySFX("touchHold_riser.wav");
+        audioManager.PlaySFX(SFXSampleType.TOUCH_HOLD_RISER);
     }
     public void StopTouchHoldSound()
     {
-        audioManager.StopSFX("touchHold_riser.wav");
+        audioManager.StopSFX(SFXSampleType.TOUCH_HOLD_RISER);
     }
 
     public void PlaySlideSound(bool isBreak)
     {
         if (isBreak)
         {
-            audioManager.PlaySFX("break_slide_start.wav");
+            audioManager.PlaySFX(SFXSampleType.BREAK_SLIDE_START);
         }
         else
         {
-            audioManager.PlaySFX("slide.wav");
+            audioManager.PlaySFX(SFXSampleType.SLIDE);
         }
     }
 
     public void PlayBreakSlideEndSound()
     {
-        audioManager.PlaySFX("break_slide.wav");
+        audioManager.PlaySFX(SFXSampleType.BREAK_SLIDE);
     }
 }

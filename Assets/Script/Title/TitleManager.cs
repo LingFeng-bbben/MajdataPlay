@@ -66,7 +66,7 @@ public class TitleManager : MonoBehaviour
             else if(timer == 0)
                 a = 1;
             timer += Time.deltaTime * a;
-            timer = timer.Clamp(2f, 0);
+            timer = timer.Clamp(0, 2f);
             var newColor = Color.white;
 
             if (state >= ComponentState.Finished)
@@ -90,8 +90,8 @@ public class TitleManager : MonoBehaviour
     async UniTaskVoid DelayPlayVoice()
     {
         await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-        AudioManager.Instance.PlaySFX("MajdataPlay.wav");
-        AudioManager.Instance.PlaySFX("titlebgm.mp3");
+        AudioManager.Instance.PlaySFX(SFXSampleType.MAJDATA_PLAY);
+        AudioManager.Instance.PlaySFX(SFXSampleType.TITLE_BGM);
     }
     void NextScene()
     {
@@ -100,7 +100,7 @@ public class TitleManager : MonoBehaviour
     private void OnDestroy()
     {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-        AudioManager.Instance.StopSFX("titlebgm.mp3");
-        AudioManager.Instance.StopSFX("MajdataPlay.wav");
+        AudioManager.Instance.StopSFX(SFXSampleType.TITLE_BGM);
+        AudioManager.Instance.StopSFX(SFXSampleType.MAJDATA_PLAY);
     }
 }

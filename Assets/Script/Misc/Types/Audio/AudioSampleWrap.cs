@@ -1,6 +1,8 @@
-﻿namespace MajdataPlay.Types
+﻿using System;
+
+namespace MajdataPlay.Types
 {
-    public abstract class AudioSampleWrap
+    public abstract class AudioSampleWrap : IDisposable
     {
         public abstract bool IsLoop { get; set; }
         public abstract bool GetPlayState();
@@ -10,5 +12,6 @@
         public abstract double GetCurrentTime();
         public abstract void SetCurrentTime(float time);
         public abstract void SetVolume(float volume);
+        public abstract void Dispose();
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TouchDrop : TouchBase
+    public sealed class TouchDrop : TouchBase
     {
         public RendererStatus RendererState 
         {
@@ -118,7 +118,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else
                     ioManager.SetBusy(arg);
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -150,7 +150,7 @@ namespace MajdataPlay.Game.Notes
             else if (isJudged)
                 Destroy(gameObject);
         }
-        void Judge()
+        protected override void Judge(float currentSec)
         {
 
             const float JUDGE_GOOD_AREA = 316.667f;
@@ -162,7 +162,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
@@ -209,7 +209,7 @@ namespace MajdataPlay.Game.Notes
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(1, 0);
+                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetfanColor(newColor);
                     }
@@ -249,6 +249,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 Diff = judgeDiff,
+                IsEX = isEX,
                 IsBreak = isBreak
             };
             

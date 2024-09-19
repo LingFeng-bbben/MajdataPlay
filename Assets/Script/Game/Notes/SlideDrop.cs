@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class SlideDrop : SlideBase
+    public sealed class SlideDrop : SlideBase
     {
         public bool isMirror;
         public bool isSpecialFlip; // fixes known star problem
@@ -64,16 +64,17 @@ namespace MajdataPlay.Game.Notes
             // 在8.0速时应当提前300ms显示Slide
             fadeInTiming = -3.926913f / speed;
             fadeInTiming += gameSetting.Game.SlideFadeInOffset;
-            fadeInTiming += timeStart;
+            fadeInTiming += startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
             fullFadeInTiming = fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
-            fadeInAnimator = GetComponent<Animator>();
+            //fadeInAnimator = GetComponent<Animator>();
+            Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
-            fadeInAnimator.SetTrigger("slide");
-
+            //fadeInAnimator.SetTrigger("slide");
+            SetSlideBarAlpha(0f);
             judgeQueues[0] = table.JudgeQueue;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
@@ -103,14 +104,14 @@ namespace MajdataPlay.Game.Notes
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     var parent = ConnectInfo.Parent!.GetComponent<SlideDrop>();
-                    time = parent.time + parent.LastFor;
+                    timing = parent.timing + parent.LastFor;
                 }
             }
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = time + LastFor * (1 - percent);
+                judgeTiming = timing + LastFor * (1 - percent);
                 lastWaitTime = LastFor *  percent;
             }
 
@@ -121,15 +122,16 @@ namespace MajdataPlay.Game.Notes
 
             foreach (var sensor in judgeAreas)
                 ioManager.BindSensor(Check, sensor);
+            FadeIn().Forget();
         }
         void FixedUpdate()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = gpManager.AudioTime - time;
-            var startTiming = gpManager.AudioTime - timeStart;
-            var tooLateTiming = time + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
+            var timing = gpManager.AudioTime - base.timing;
+            var startTiming = gpManager.AudioTime - base.startTiming;
+            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
             var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
 
             if (!canCheck)
@@ -155,9 +157,9 @@ namespace MajdataPlay.Game.Notes
                     {
                         HideAllBar();
                         if(IsClassic)
-                            Judge_Classic();
+                            Judge_Classic(gpManager.ThisFrameSec);
                         else
-                            Judge();
+                            Judge(gpManager.ThisFrameSec);
                         return;
                     }
                     else if(isTooLate)
@@ -181,33 +183,9 @@ namespace MajdataPlay.Game.Notes
                     DestroySelf();
                 return;
             }
-            // Slide淡入期间，不透明度从0到0.55耗时200ms
-            var currentSec = gpManager.AudioTime;
-            var startiming = currentSec - timeStart;
-            
-
-            if(fadeInTiming > timeStart)
-            {
-                if(currentSec > fadeInTiming)
-                    SetSlideBarAlpha(1f);
-            }
-            else if(currentSec > timeStart)
-                SetSlideBarAlpha(1f);
-            else if(currentSec > fadeInTiming)
-            {
-                if (startiming >= -0.05f)
-                {
-                    fadeInAnimator.enabled = false;
-                    SetSlideBarAlpha(1f);
-                }
-                else
-                    fadeInAnimator.enabled = true;
-                return;
-            }
-            fadeInAnimator.enabled = false;
 
             stars[0].SetActive(true);
-            var timing = currentSec - time;
+            var timing = CurrentSec - base.timing;
             if (timing <= 0f)
             {
                 CanShine = true;
@@ -217,7 +195,7 @@ namespace MajdataPlay.Game.Notes
                 else
                 {
                     // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    alpha = 1f - -timing / (time - timeStart);
+                    alpha = 1f - -timing / (base.timing - startTiming);
                     alpha = alpha > 1f ? 1f : alpha;
                     alpha = alpha < 0f ? 0f : alpha;
                 }
@@ -245,25 +223,28 @@ namespace MajdataPlay.Game.Notes
             
             
             var first = queue.First();
+            var fType = first.GetSensorTypes();
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
             JudgeArea? second = null;
 
             if (queue.Length >= 2)
                 second = queue[1];
-            var fType = first.GetSensorTypes();
+            
             foreach (var t in fType)
             {
                 var sensor = ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
-
             }
 
-            if (first.IsFinished && !isSoundPlayed && (ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide))
+            if(!isSoundPlayed && canPlaySFX)
             {
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-                audioEffMana.PlaySlideSound(isBreak);
-                isSoundPlayed = true;
+                if(first.On)
+                {
+                    audioEffMana.PlaySlideSound(isBreak);
+                    isSoundPlayed = true;
+                }
             }
-
+            
             if (second is not null && (first.CanSkip || first.On))
             {
                 var sType = second.GetSensorTypes();
@@ -326,6 +307,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     Result = judgeResult,
                     Diff = judgeDiff,
+                    IsEX = isEX,
                     IsBreak = isBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
@@ -334,7 +316,6 @@ namespace MajdataPlay.Game.Notes
                 if (isBreak && judgeResult == JudgeType.Perfect) 
                 { 
                     var anim = slideOK.GetComponent<Animator>();
-                    var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                     anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                     audioEffMana.PlayBreakSlideEndSound();
                 }
@@ -404,19 +385,12 @@ namespace MajdataPlay.Game.Notes
             foreach (var bars in slideBars)
             {
                 slidePositions.Add(bars.transform.position);
-                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.eulerAngles + new Vector3(0f, 0f, 18f)));
+
+                slideRotations.Add(Quaternion.Euler(bars.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
             }
             var endPos = GetPositionFromDistance(4.8f, endPosition);
-            var x = slidePositions.LastOrDefault() - Vector3.zero;
-            var y = endPos - Vector3.zero;
-            var angle = Mathf.Acos(Vector3.Dot(x, y) / (x.magnitude * y.magnitude)) * Mathf.Rad2Deg;
-            var offset = slideRotations.TakeLast(1).First().eulerAngles - slideRotations.TakeLast(2).First().eulerAngles;
-            if (offset.z < 0)
-                angle = -angle;
-
-            var q = slideRotations.LastOrDefault() * Quaternion.Euler(0, 0, angle);
             slidePositions.Add(endPos);
-            slideRotations.Add(q);
+            slideRotations.Add(slideRotations.LastOrDefault());
         }
         protected override void LoadSkin()
         {

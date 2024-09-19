@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TouchHoldDrop : NoteLongDrop
+    public sealed class TouchHoldDrop : NoteLongDrop
     {
         public RendererStatus RendererState
         {
@@ -104,7 +104,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else
                     ioManager.SetBusy(arg);
-                Judge();
+                Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
@@ -130,7 +130,7 @@ namespace MajdataPlay.Game.Notes
             board_On = skin.Boader;
             board_Off = skin.Off;
         }
-        void Judge()
+        protected override void Judge(float currentSec)
         {
 
             const float JUDGE_GOOD_AREA = 316.667f;
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game.Notes
             if (isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
@@ -159,10 +159,6 @@ namespace MajdataPlay.Game.Notes
                 result = JudgeType.LateGood;
             else
                 result = JudgeType.Miss;
-            if (isFast)
-                judgeDiff = 0;
-            else
-                judgeDiff = diff;
 
             judgeResult = result;
             isJudged = true;
@@ -186,7 +182,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (remainingTime <= 0.2f) // 忽略尾部12帧
                     return;
-                else if (!gpManager.isStart) // 忽略暂停
+                else if (!gpManager.IsStart) // 忽略暂停
                     return;
 
                 var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);
@@ -232,7 +228,7 @@ namespace MajdataPlay.Game.Notes
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(1, 0);
+                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetfanColor(newColor);
                     }
@@ -260,7 +256,7 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.End:
                     {
                         var value = 0.91f * (1 - (LastFor - timing) / LastFor);
-                        var alpha = value.Clamp(1f, 0);
+                        var alpha = value.Clamp(0, 1f);
                         mask.alphaCutoff = alpha;
                     }
                     return;
@@ -278,7 +274,8 @@ namespace MajdataPlay.Game.Notes
         {
             if (!isJudged) 
                 return;
-            var realityHT = LastFor - 0.45f - judgeDiff / 1000f;
+            var offset = (int)judgeResult > 7 ? 0 : judgeDiff;
+            var realityHT = LastFor - 0.45f - offset / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
             result = judgeResult;
             if (realityHT > 0)
@@ -329,6 +326,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
             objectCounter.ReportResult(this, result);
@@ -339,7 +337,7 @@ namespace MajdataPlay.Game.Notes
                 effectManager.PlayFireworkEffect(transform.position);
                 audioEffMana.PlayHanabiSound();
             }
-            audioEffMana.PlayTapSound(false,false,judgeResult);
+            audioEffMana.PlayTapSound(result);
             audioEffMana.StopTouchHoldSound();
 
             PlayJudgeEffect(result);
@@ -414,14 +412,12 @@ namespace MajdataPlay.Game.Notes
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
         }
