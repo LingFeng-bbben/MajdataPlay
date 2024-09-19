@@ -1,15 +1,29 @@
 using MajdataPlay.Types;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using MajdataPlay.IO;
 
 public class NoteAudioManager : MonoBehaviour
 {
     AudioManager audioManager =>AudioManager.Instance;
-    public void PlayTapSound(bool isBreak,bool isEx, JudgeType judge)
+    public void PlayTapSound(in JudgeResult judgeResult)
     {
-        switch (judge)
+        var isBreak = judgeResult.IsBreak;
+        var isEx = judgeResult.IsEX;
+
+        if (judgeResult.IsMiss)
+            return;
+        else if(isBreak)
+        {
+            PlayBreakTapSound(judgeResult);
+            return;
+        }
+        else if (isEx)
+        {
+            audioManager.PlaySFX(SFXSampleType.JUDGE_EX);
+            return;
+        }
+
+        switch (judgeResult.Result)
         {
             case JudgeType.LateGood:
             case JudgeType.FastGood:
@@ -35,17 +49,30 @@ public class NoteAudioManager : MonoBehaviour
                 else
                     audioManager.PlaySFX(SFXSampleType.JUDGE);
                 break;
-            default:
-                
+        }
+    }
+    void PlayBreakTapSound(in JudgeResult judgeResult)
+    {
+        switch (judgeResult.Result)
+        {
+            case JudgeType.LateGood:
+            case JudgeType.FastGood:
+            case JudgeType.LateGreat:
+            case JudgeType.LateGreat1:
+            case JudgeType.LateGreat2:
+            case JudgeType.FastGreat2:
+            case JudgeType.FastGreat1:
+            case JudgeType.FastGreat:
+            case JudgeType.LatePerfect2:
+            case JudgeType.FastPerfect2:
+            case JudgeType.LatePerfect1:
+            case JudgeType.FastPerfect1:
+                audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
                 break;
-        }
-        if (judge != JudgeType.Miss && isBreak)
-        {
-            audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
-        }
-        if (judge != JudgeType.Miss && isEx)
-        {
-            audioManager.PlaySFX(SFXSampleType.JUDGE_EX);
+            case JudgeType.Perfect:
+                audioManager.PlaySFX(SFXSampleType.BREAK);
+                audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
+                break;
         }
     }
 

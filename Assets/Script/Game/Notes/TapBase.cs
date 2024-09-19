@@ -190,14 +190,14 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
 
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
 
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(isBreak,isEX, judgeResult);
+            audioEffMana.PlayTapSound(result);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, result);
             

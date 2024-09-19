@@ -256,6 +256,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 Diff = judgeDiff,
+                IsEX = isEX,
                 IsBreak = isBreak
             };
 
@@ -263,7 +264,6 @@ namespace MajdataPlay.Game.Notes
             if (isBreak && judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
-                var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                 anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                 audioEffMana.PlayBreakSlideEndSound();
             }

@@ -10,6 +10,7 @@ namespace MajdataPlay.Types
     {
         public JudgeType Result { get; init; }
         public bool IsBreak { get; init; }
+        public bool IsEX { get; init; }
         public bool IsFast => Diff < 0;
         public bool IsMiss => Result == JudgeType.Miss;
         /// <summary>

@@ -249,6 +249,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 Diff = judgeDiff,
+                IsEX = isEX,
                 IsBreak = isBreak
             };
             

@@ -326,6 +326,7 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
             objectCounter.ReportResult(this, result);
@@ -336,7 +337,7 @@ namespace MajdataPlay.Game.Notes
                 effectManager.PlayFireworkEffect(transform.position);
                 audioEffMana.PlayHanabiSound();
             }
-            audioEffMana.PlayTapSound(false,false,judgeResult);
+            audioEffMana.PlayTapSound(result);
             audioEffMana.StopTouchHoldSound();
 
             PlayJudgeEffect(result);
@@ -411,14 +412,12 @@ namespace MajdataPlay.Game.Notes
         protected override void PlayHoldEffect()
         {
             base.PlayHoldEffect();
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
         protected override void StopHoldEffect()
         {
             base.StopHoldEffect();
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
             audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
         }

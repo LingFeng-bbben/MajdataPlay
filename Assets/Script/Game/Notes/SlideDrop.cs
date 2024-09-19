@@ -307,6 +307,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     Result = judgeResult,
                     Diff = judgeDiff,
+                    IsEX = isEX,
                     IsBreak = isBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
@@ -315,7 +316,6 @@ namespace MajdataPlay.Game.Notes
                 if (isBreak && judgeResult == JudgeType.Perfect) 
                 { 
                     var anim = slideOK.GetComponent<Animator>();
-                    var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
                     anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
                     audioEffMana.PlayBreakSlideEndSound();
                 }

@@ -165,7 +165,13 @@ namespace MajdataPlay.Game.Notes
             base.Judge(currentSec);
             if (!isJudged)
                 return;
-            audioEffMana.PlayTapSound(isBreak, isEX, judgeResult);
+            audioEffMana.PlayTapSound(new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                IsEX = isEX,
+                Diff = judgeDiff
+            });
             PlayHoldEffect();
         }
         // Update is called once per frame
@@ -289,15 +295,16 @@ namespace MajdataPlay.Game.Notes
             else
                 EndJudge(ref judgeResult);
 
-            var audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            audioEffMana.PlayTapSound(false, false, judgeResult);
+            
             var result = new JudgeResult()
             {
                 Result = judgeResult,
                 IsBreak = isBreak,
+                IsEX = isEX,
                 Diff = judgeDiff
             };
 
+            audioEffMana.PlayTapSound(result);
             effectManager.PlayEffect(startPosition, result);
             effectManager.PlayFastLate(startPosition, result);
             objectCounter.ReportResult(this, result);
