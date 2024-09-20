@@ -158,7 +158,10 @@ public class SongDetail
     }
 
     public async Task<Sprite> GetSpriteAsync() {
-        if (SongCover != null) return SongCover;
+        if (SongCover != null) {
+            Debug.Log("Memory Cache Hit");
+            return SongCover; 
+        }
         if (CoverPath is null or "") return null;
         if (isOnline) {
            Debug.Log("Try load cover online"+CoverPath);
