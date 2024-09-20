@@ -129,7 +129,7 @@ namespace MajdataPlay.Utils
                         isOnline = true,
                         MaidataPath = apiroot + "/Maidata/" + song.Id,
                         TrackPath = apiroot + "/Track/" + song.Id,
-                        //TODO: add logic for imagefull
+                        BGPath = apiroot + "/ImageFull/" + song.Id,
                         CoverPath = apiroot + "/Image/" + song.Id,
                         Hash = song.Id.ToString(),
 

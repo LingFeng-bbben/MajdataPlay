@@ -25,6 +25,7 @@ public class SongDetail
     public string? TrackPath { get; init; }
     public string? MaidataPath {  get; init; }
     public string? CoverPath { get; init; }
+    public string? BGPath { get; init; }
     private Sprite? SongCover;
     public double First { get; set; }
     public string Hash { get; set; } = string.Empty;
@@ -177,12 +178,27 @@ public class SongDetail
         var dir = GameManager.ChartPath + "/MajnetPlayed/" + Hash;
         Directory.CreateDirectory(dir);
         var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true});
-        var track = await client.GetByteArrayAsync(TrackPath);
-        File.WriteAllBytes(dir + "/track.mp3", track);
-        var maidata = await client.GetByteArrayAsync(MaidataPath);
-        File.WriteAllBytes(dir + "/maidata.txt", maidata);
-        var bg = await client.GetByteArrayAsync(CoverPath);
-        File.WriteAllBytes(dir + "/bg.png", bg);
+        
+        var trackp = dir + "/track.mp3";
+        if (!File.Exists(trackp))
+        {
+            var track = await client.GetByteArrayAsync(TrackPath);
+            File.WriteAllBytes(trackp, track);
+        }
+
+        var maidatap = dir + "/maidata.txt";
+        if (!File.Exists(maidatap))
+        {
+            var maidata = await client.GetByteArrayAsync(MaidataPath);
+            File.WriteAllBytes(maidatap, maidata);
+        }
+
+        var bgp = dir + "/bg.png";
+        if (!File.Exists(bgp))
+        {
+            var bg = await client.GetByteArrayAsync(BGPath);
+            File.WriteAllBytes(bgp, bg);
+        }
 
         var info = new DirectoryInfo(dir);
         return await ParseAsync(info.GetFiles());
