@@ -30,6 +30,7 @@ namespace MajdataPlay.Scenes
 
         float step = 1;
         bool isNum = false;
+        bool isBound = false;
         bool isFloat = false;
         bool isReadOnly = false;
         float? maxValue = null;
@@ -43,15 +44,9 @@ namespace MajdataPlay.Scenes
             UpdatePosition();
 
             if (Parent.SelectedIndex == Index)
-            {
-                InputManager.Instance.BindArea(OnAreaDown, SensorType.A3);
-                InputManager.Instance.BindArea(OnAreaDown, SensorType.A4);
-            }
+                BindArea();
             else
-            {
-                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
-                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
-            }
+                UnbindArea();
         }
         void InitOptions()
         {
@@ -129,15 +124,9 @@ namespace MajdataPlay.Scenes
                 return;
 
             if (currentIndex == Index)
-            {
-                InputManager.Instance.BindArea(OnAreaDown, SensorType.A2);
-                InputManager.Instance.BindArea(OnAreaDown, SensorType.A3);
-            }
+                BindArea();
             else
-            {
-                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A2);
-                InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
-            }
+                UnbindArea();
             lastIndex = currentIndex;
             UpdatePosition();
         }
@@ -193,12 +182,14 @@ namespace MajdataPlay.Scenes
         {
             if (!e.IsClick)
                 return;
+            else if (e.IsButton)
+                return;
             switch(e.Type)
             {
-                case SensorType.A2:
+                case SensorType.B4:
                     Up();
                     break;
-                case SensorType.A3:
+                case SensorType.B5:
                     Down();
                     break;
             }
@@ -206,19 +197,39 @@ namespace MajdataPlay.Scenes
         }
         void OnDestroy()
         {
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+            UnbindArea();
+        }
+        void OnDisable()
+        {
+            UnbindArea();
+        }
+        void OnEnable()
+        {
+            BindArea();
+        }
+        void BindArea()
+        {
+            if (isBound)
+                return;
+            isBound = true;
+            InputManager.Instance.BindSensor(OnAreaDown, SensorType.B4);
+            InputManager.Instance.BindSensor(OnAreaDown, SensorType.B5);
+        }
+        void UnbindArea()
+        {
+            if (!isBound)
+                return;
+            isBound = false;
+            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
+            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B5);
         }
         Vector3 GetScale(int diff)
         {
             switch(diff)
             {
-                case 2:
-                case -2:
-                    return new Vector3(0.632f, 0.632f, 0.632f);
                 case 1:
                 case -1:
-                    return new Vector3(0.738f, 0.738f, 0.738f);
+                    return new Vector3(0.7f, 0.7f, 0.7f);
                 case 0:
                     return new Vector3(1, 1, 1);
                 default:
@@ -229,18 +240,14 @@ namespace MajdataPlay.Scenes
         {
             switch (diff)
             {
-                case 2:
-                    return new Vector3(0, 368, 0);
-                case -2:
-                    return new Vector3(0, -368, 0);
                 case 1:
-                    return new Vector3(0, 200, 0);
+                    return new Vector3(-365, 0, 0);
                 case -1:
-                    return new Vector3(0, -200, 0);
+                    return new Vector3(365, 0, 0);
                 case 0:
                     return new Vector3(0, 0, 0);
                 default:
-                    return new Vector3(0,1000,0);
+                    return new Vector3(1000,0,0);
             }
         }
     }

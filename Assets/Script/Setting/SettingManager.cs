@@ -37,23 +37,20 @@ namespace MajdataPlay.Scenes
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i] = menu;
                 menu.SubOptionObject = _property.GetValue(root);
+                menu.Name = _property.Name;
             }
             foreach(var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)
                     menu.gameObject.SetActive(false);
             }
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A1);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A8);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A5);
+            BindArea();
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
             if (!e.IsClick)
                 return;
-            else if (!e.IsButton)
-                return;
-            else if (e.Type == SensorType.A5)
+            else if (e.Type is SensorType.A5 or SensorType.A4)
             {
                 SceneManager.LoadScene(1);
                 return;
@@ -81,11 +78,23 @@ namespace MajdataPlay.Scenes
                     menu.gameObject.SetActive(false);
             }
         }
+        void BindArea()
+        {
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A1);
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A8);
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A5);
+            InputManager.Instance.BindArea(OnAreaDown, SensorType.A4);
+        }
+        void UnbindArea()
+        {
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A1);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A8);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A5);
+            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+        }
         private void OnDestroy()
         {
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A1);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A8);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A5);
+            UnbindArea();
             GC.Collect();
         }
     }
