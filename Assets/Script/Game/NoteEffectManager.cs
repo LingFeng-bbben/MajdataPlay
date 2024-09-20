@@ -116,6 +116,9 @@ public class NoteEffectManager : MonoBehaviour
         var result = judgeResult.Result;
         var canPlay = CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
 
+        if (!canPlay)
+            return;
+
         switch (result)
         {
             case JudgeType.LateGood:
@@ -192,8 +195,6 @@ public class NoteEffectManager : MonoBehaviour
                 break;
         }
 
-        if (!canPlay)
-            return;
         if (isBreak && result == JudgeType.Perfect)
             judgeAnimators[pos].SetTrigger("break");
         else
