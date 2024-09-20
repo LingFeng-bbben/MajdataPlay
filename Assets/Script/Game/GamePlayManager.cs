@@ -93,6 +93,24 @@ public class GamePlayManager : MonoBehaviour
     {
         State = ComponentState.Loading;
         InputManager.Instance.BindAnyArea(OnPauseButton);
+        DumpOnlineChart().Forget();
+    }
+
+    async UniTask DumpOnlineChart()
+    {
+        if (song.isOnline) {
+            var dumpTask = song.DumpToLocal();
+            while (!dumpTask.IsCompleted)
+            {
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            }
+            song = dumpTask.Result;
+        }
+        await LoadAudioAndChart();
+    }
+
+    async UniTask LoadAudioAndChart()
+    {
         audioSample = AudioManager.Instance.LoadMusic(song.TrackPath ?? string.Empty);
         if (audioSample is null)
         {
@@ -106,13 +124,14 @@ public class GamePlayManager : MonoBehaviour
         LightManager.Instance.SetAllLight(Color.white);
         try
         {
-           
+
             var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
-            if (maidata == "" || maidata == null) {
+            if (maidata == "" || maidata == null)
+            {
                 BackToList();
                 return;
             }
-                
+
             Chart = new SimaiProcess(maidata);
             if (Chart.notelist.Count == 0)
             {
@@ -193,6 +212,7 @@ public class GamePlayManager : MonoBehaviour
             Debug.LogError(ex);
         }
     }
+
     /// <summary>
     /// 背景加载
     /// </summary>
@@ -205,7 +225,14 @@ public class GamePlayManager : MonoBehaviour
         if (!string.IsNullOrEmpty(song.VideoPath))
             BGManager.SetBackgroundMovie(song.VideoPath);
         else
-            BGManager.SetBackgroundPic(song.GetSpriteAsync().Result);
+        {
+            var task = song.GetSpriteAsync();
+            while (!task.IsCompleted) {
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            }
+            BGManager.SetBackgroundPic(task.Result);
+        }
+            
 
         BGManager.SetBackgroundDim(gameSetting.Game.BackgroundDim);
     }

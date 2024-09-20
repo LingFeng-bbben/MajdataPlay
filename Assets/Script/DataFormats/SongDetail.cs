@@ -4,6 +4,7 @@ using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -167,5 +168,24 @@ public class SongDetail
         }
         
     }
+
+    //TODO: add callback for progress
+    public async Task<SongDetail> DumpToLocal()
+    {
+        if (!isOnline) return this;
+        var dir = GameManager.ChartPath + "/MajnetPlayed/" + Hash;
+        Directory.CreateDirectory(dir);
+        var client = new HttpClient(new HttpClientHandler() { UseProxy = true, UseDefaultCredentials = true });
+        var track = await client.GetByteArrayAsync(TrackPath);
+        File.WriteAllBytes(dir + "/track.mp3", track);
+        var maidata = await client.GetByteArrayAsync(MaidataPath);
+        File.WriteAllBytes(dir + "/maidata.txt", maidata);
+        var bg = await client.GetByteArrayAsync(CoverPath);
+        File.WriteAllBytes(dir + "/bg.png", bg);
+
+        var info = new DirectoryInfo(dir);
+        return await ParseAsync(info.GetFiles());
+    }
+
 }
 

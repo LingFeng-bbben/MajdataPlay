@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System;
+using Cysharp.Threading.Tasks;
 
 public class ResultScreenManager : MonoBehaviour
 {
@@ -84,7 +85,7 @@ public class ResultScreenManager : MonoBehaviour
 
         subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
-        coverImg.sprite = song.GetSpriteAsync().Result;
+        LoadCover(song).Forget();
 
         var breakJudgeInfo = UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 
@@ -106,6 +107,17 @@ public class ResultScreenManager : MonoBehaviour
         AudioManager.Instance.PlaySFX(SFXSampleType.RESULT_BGM, true);
         ScoreManager.Instance.SaveScore(result,result.ChartLevel);
     }
+
+    async UniTask LoadCover(SongDetail song)
+    {
+        var task = song.GetSpriteAsync();
+        while (!task.IsCompleted)
+        {
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+        }
+        coverImg.sprite = task.Result;
+    }
+
     string BuildSubDisplayText(JudgeDetail judgeRecord)
     {
         var tapJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);

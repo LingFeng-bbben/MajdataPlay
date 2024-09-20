@@ -63,6 +63,7 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
+            //TODO:Add this to setting
             tasks.Add(GetOnlineCollection("http://majdata.net/api3/api"));
             var a = Task.WhenAll(tasks);
             await a;
@@ -124,6 +125,7 @@ namespace MajdataPlay.Utils
                         isOnline = true,
                         MaidataPath = apiroot + "/Maidata/" + song.Id,
                         TrackPath = apiroot + "/Track/" + song.Id,
+                        //TODO: add logic for imagefull
                         CoverPath = apiroot + "/Image/" + song.Id,
                         Hash = song.Id.ToString(),
 

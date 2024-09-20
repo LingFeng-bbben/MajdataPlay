@@ -278,8 +278,8 @@ namespace MajdataPlay.Game.Notes
                     alpha = 1 - (diff / interval);
                 alpha *= maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
-                print(alpha);
-                print(fullFadeInTiming - CurrentSec);
+                //print(alpha);
+                //print(fullFadeInTiming - CurrentSec);
                 await UniTask.Yield();
             }
             SetSlideBarAlpha(maxFadeInAlpha);
