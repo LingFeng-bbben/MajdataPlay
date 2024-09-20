@@ -61,6 +61,8 @@ namespace MajdataPlay.Scenes
                 return;
             else if (e.Type is SensorType.A5 or SensorType.A4)
             {
+                //refresh some setting here
+                AudioManager.Instance.ReadVolumeFromSettings();
                 SceneManager.LoadScene(1);
                 return;
             }
