@@ -620,14 +620,14 @@ public class ObjectCounter : MonoBehaviour
                 break;
         }
 
-        UpdaateFastLate(judgeResult);
+        UpdateFastLate(judgeResult);
         CalAccRate();
     }
     /// <summary>
     /// 更新Fast/Late统计信息
     /// </summary>
     /// <param name="judgeResult"></param>
-    void UpdaateFastLate(in JudgeResult judgeResult)
+    void UpdateFastLate(in JudgeResult judgeResult)
     {
         var gameSetting = GameManager.Instance.Setting.Display.FastLateType;
         var resultValue = (int)judgeResult.Result;
@@ -651,10 +651,12 @@ public class ObjectCounter : MonoBehaviour
                 else
                     late++;
                 break;
+                //默认只统计Great、Good的Fast/Late
             case JudgeDisplayType.BelowP_BreakOnly:
             case JudgeDisplayType.BelowGR_BreakOnly:
             case JudgeDisplayType.BelowP:
             case JudgeDisplayType.BelowGR:
+            case JudgeDisplayType.Disable:
                 if (judgeResult.IsMiss || absValue <= 2)
                     break;
                 else if (judgeResult.IsFast)
