@@ -17,6 +17,7 @@ public class ListManager : MonoBehaviour
         LightManager.Instance.SetButtonLight(Color.red, 4);
         LightManager.Instance.SetButtonLight(Color.blue, 2);
         LightManager.Instance.SetButtonLight(Color.blue, 5);
+        LightManager.Instance.SetButtonLight(Color.yellow, 6);
         CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
         AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_SONG);
         AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_BGM, true);
