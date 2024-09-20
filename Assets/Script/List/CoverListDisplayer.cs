@@ -43,6 +43,7 @@ public class CoverListDisplayer : MonoBehaviour
         isDirList = true;
         dirs = _dirs;
         desiredListPos = GameManager.Instance.SelectedDir;
+        listPosReal = desiredListPos;
         foreach (var dir in _dirs)
         {
             var obj = Instantiate(DirSmallPrefab, transform);
@@ -50,6 +51,7 @@ public class CoverListDisplayer : MonoBehaviour
             //coversmall.SetCover(song.SongCover);
             coversmall.SetLevelText(dir.Name);
             covers.Add(obj);
+            obj.SetActive(false);
         }
         SlideToList(desiredListPos);
     }
@@ -64,13 +66,16 @@ public class CoverListDisplayer : MonoBehaviour
         covers.Clear();
         isDirList = false;
         desiredListPos = GameManager.Instance.Collection.Index;
+        listPosReal = desiredListPos;
         foreach (var song in songs)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
             var coversmall = obj.GetComponent<CoverSmallDisplayer>();
-            coversmall.SetCover(song.SongCover);
+            coversmall.SetOpacity(0f);
+            coversmall.SetCover(song);
             coversmall.SetLevelText(song.Levels[selectedDifficulty]);
             covers.Add(obj);
+            obj.SetActive(false);
         }
         SlideToList(desiredListPos);
     }
@@ -133,7 +138,7 @@ public class CoverListDisplayer : MonoBehaviour
         {
             var songinfo = songs.ToArray()[desiredListPos];
             var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
-            CoverBigDisplayer.SetCover(songinfo.SongCover);
+            CoverBigDisplayer.SetCover(songinfo);
             CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
             CoverBigDisplayer.SetScore(songScore);
             GameManager.Instance.Collection.Index = desiredListPos;
@@ -170,7 +175,7 @@ public class CoverListDisplayer : MonoBehaviour
         }
         if (isDirList && Time.frameCount%50==0) {
             if (coveri >= songs.Count) coveri = 0;
-            CoverBigDisplayer.SetCover(songs.ToArray()[coveri++].SongCover);
+            CoverBigDisplayer.SetCover(songs.ToArray()[coveri++]);
         }
     }
     private int coveri = 0;

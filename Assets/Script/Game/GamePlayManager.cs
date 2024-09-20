@@ -205,7 +205,7 @@ public class GamePlayManager : MonoBehaviour
         if (!string.IsNullOrEmpty(song.VideoPath))
             BGManager.SetBackgroundMovie(song.VideoPath);
         else
-            BGManager.SetBackgroundPic(song.SongCover);
+            BGManager.SetBackgroundPic(song.GetSpriteAsync().Result);
 
         BGManager.SetBackgroundDim(gameSetting.Game.BackgroundDim);
     }

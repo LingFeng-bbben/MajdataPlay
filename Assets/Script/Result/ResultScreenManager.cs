@@ -84,7 +84,7 @@ public class ResultScreenManager : MonoBehaviour
 
         subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
-        coverImg.sprite = song.SongCover;
+        coverImg.sprite = song.GetSpriteAsync().Result;
 
         var breakJudgeInfo = UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 

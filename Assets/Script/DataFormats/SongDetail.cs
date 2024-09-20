@@ -8,27 +8,26 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UIElements;
 #nullable enable
 public class SongDetail
 {
-    public string? Id { get; set; }
     public string? Title { get; set; }
     public string? Artist { get; set; }
     public string?[] Designers { get; set; } = new string[7];
     public string? Description { get; set; }
     public int? ClockCount { get; set; }
     public string[]? Levels { get; set; } = new string[7];
-    //public string? Uploader { get; set; }
-    //public long? Timestamp { get; set; }
-
-    //public string?[] InnerMaidata { get; set; } = new string[7];
-    public string? VideoPath { get; set; }
-    public string? TrackPath { get; set; }
-    public string? MaidataPath {  get; set; }
-    public Sprite? SongCover { get; set; }
-    public double First {  get; set; }
+    public string? VideoPath { get;  init; }
+    public string? TrackPath { get; init; }
+    public string? MaidataPath {  get; init; }
+    public string? CoverPath { get; init; }
+    private Sprite? SongCover;
+    public double First { get; set; }
     public string Hash { get; set; } = string.Empty;
+
+    public bool isOnline { get; set; } = false;
 
     public static async Task<SongDetail> ParseAsync(FileInfo[] files)
     {
@@ -47,7 +46,7 @@ public class SongDetail
         double first = 0;
         string[] designers = new string[7];
         string[] levels = new string[7];
-        Sprite? songCover = null;
+        string? coverPath = null;
         
         
 
@@ -86,7 +85,7 @@ public class SongDetail
             }
         });
         if (coverFile != null)
-            songCover = SpriteLoader.Load(coverFile.FullName);
+            coverPath = coverFile.FullName;
         if (videoFile != null)
             videoPath = videoFile.FullName;
         return new SongDetail()
@@ -99,9 +98,9 @@ public class SongDetail
             Levels = levels,
             First = first,
             Hash = hash,
-            SongCover = songCover,
             VideoPath = videoPath,
             TrackPath = trackPath,
+            CoverPath = coverPath,
             MaidataPath = maidataPath
         };
     }
@@ -153,6 +152,20 @@ public class SongDetail
             }
         }
         return string.Empty;
+    }
+
+    public async Task<Sprite> GetSpriteAsync() {
+        if (SongCover != null) return SongCover;
+        if (CoverPath is null or "") return null;
+        if (isOnline) {
+           Debug.Log("Try load cover online"+CoverPath);
+           SongCover = await SpriteLoader.LoadOnlineAsync(CoverPath);
+            return SongCover;
+        } else {
+            SongCover = await SpriteLoader.LoadAsync(CoverPath);
+            return SongCover;
+        }
+        
     }
 }
 

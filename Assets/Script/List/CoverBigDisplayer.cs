@@ -48,10 +48,22 @@ public class CoverBigDisplayer : MonoBehaviour
         }
 
     }
-    public void SetCover(Sprite sp)
+    public void SetCover(SongDetail detail)
     {
-        Cover.sprite = sp;
+        StopAllCoroutines();
+        StartCoroutine(SetCoverAsync(detail));
     }
+
+    IEnumerator SetCoverAsync(SongDetail detail)
+    {
+        var spriteTask = detail.GetSpriteAsync();
+        //TODO:set the cover to be now loading?
+        while (!spriteTask.IsCompleted) { 
+            yield return new WaitForEndOfFrame();
+        }
+        Cover.sprite = spriteTask.Result;
+    }
+
     public void SetMeta(string _Title,string _Artist,string _Charter, string _Level)
     {
         Title.text = _Title;

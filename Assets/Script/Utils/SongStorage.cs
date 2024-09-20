@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -60,6 +63,7 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
+            tasks.Add(GetOnlineCollection("http://majdata.net/api3/api"));
             var a = Task.WhenAll(tasks);
             await a;
             if (a.IsFaulted)
@@ -96,6 +100,47 @@ namespace MajdataPlay.Utils
             foreach (var task in tasks)
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());
+        }
+
+        static async Task<SongCollection> GetOnlineCollection(string apiroot)
+        {
+            if (apiroot is null or "") return null;
+
+            var listurl = apiroot + "/SongList";
+            Debug.Log("Loading Online Charts from:" + listurl);
+            try
+            {
+                var client = new HttpClient(new HttpClientHandler() { UseProxy = true,UseDefaultCredentials=true});
+                var liststr = await client.GetStringAsync(listurl);
+                var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr);
+                var gameList = new List<SongDetail>();
+                foreach (var song in list)
+                {
+                    var songDetail = new SongDetail()
+                    {
+                        Title = song.Title,
+                        Artist = song.Artist,
+                        Levels = song.Levels.ToArray(),
+                        isOnline = true,
+                        MaidataPath = apiroot + "/Maidata/" + song.Id,
+                        TrackPath = apiroot + "/Track/" + song.Id,
+                        CoverPath = apiroot + "/Image/" + song.Id,
+                        Hash = song.Id.ToString(),
+
+                    };
+                    for (int i = 0; i < songDetail.Designers.Count(); i++)
+                    {
+                        songDetail.Designers[i] = song.Uploader + "@" + song.Designer;
+                    }
+                    gameList.Add(songDetail);
+                }
+                Debug.Log("Loaded Online Charts List:" + gameList.Count);
+                return new SongCollection("MajNet", gameList.ToArray());
+            }catch(Exception e)
+            {
+                Debug.LogError(e);
+                return null;
+            }
         }
     }
 }
