@@ -151,6 +151,7 @@ namespace MajdataPlay.Scenes
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var value = (float)valueObj;
                 value += step;
+                value = MathF.Round(value, 3);
                 if (maxValue is not null) //有上限
                     value = value.Clamp(0, (float)maxValue);
                 PropertyInfo.SetValue(OptionObject, value);
@@ -177,6 +178,7 @@ namespace MajdataPlay.Scenes
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var value = (float)valueObj;
                 value -= step;
+                value = MathF.Round(value, 3);
                 if (maxValue is not null) //有上限
                     value = value.Clamp(0, (float)maxValue);
                 PropertyInfo.SetValue(OptionObject, value);
