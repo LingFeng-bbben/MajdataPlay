@@ -21,6 +21,9 @@ public class ObjectCounter : MonoBehaviour
     public Color ComboColor;
     public Color DXScoreColor;
 
+    public Color EarlyDiffColor;
+    public Color LateDiffColor;
+
     public bool AllFinished => tapCount == tapSum && 
         holdCount == holdSum && 
         slideCount == slideSum && 
@@ -281,8 +284,8 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.Diff:
                 bgInfoHeader.color = ComboColor;
                 bgInfoText.color = ComboColor;
-                bgInfoHeader.text = "Diff";
-                bgInfoText.text = "0";
+                bgInfoHeader.text = "";
+                bgInfoText.text = "";
                 break;
             case BGInfoType.None:
                 bgInfoText.gameObject.SetActive(false);
@@ -750,6 +753,16 @@ public class ObjectCounter : MonoBehaviour
             case BGInfoType.Diff:
                 bgInfoText.text = $"{diff:F2}";
                 var oldColor = bgInfoText.color;
+                if (diff < 0)
+                {
+                    oldColor = EarlyDiffColor;
+                    bgInfoHeader.text = "FAST";
+                }
+                else
+                {
+                    oldColor = LateDiffColor;
+                    bgInfoHeader.text = "LATE";
+                }
                 var newColor = new Color()
                 {
                     r = oldColor.r,
@@ -757,8 +770,9 @@ public class ObjectCounter : MonoBehaviour
                     b = oldColor.b,
                     a = diffTimer.Clamp(0, 1)
                 };
+                bgInfoHeader.color = newColor;
                 bgInfoText.color = newColor;
-                diffTimer -= Time.deltaTime;
+                diffTimer -= Time.deltaTime * 3;
                 break;
             default:
                 return;
