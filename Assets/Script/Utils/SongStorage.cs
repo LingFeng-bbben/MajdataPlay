@@ -64,13 +64,16 @@ namespace MajdataPlay.Utils
                 tasks.Add(GetCollection(path));
             }
             //TODO:Add this to setting
-            tasks.Add(GetOnlineCollection("http://majdata.net/api3/api"));
+            tasks.Add(GetOnlineCollection(GameManager.Instance.Setting.Online.ApiEndpoint));
             var a = Task.WhenAll(tasks);
             await a;
             if (a.IsFaulted)
                 throw a.Exception.InnerException;
             foreach (var task in tasks)
-                collections.Add(task.Result);
+            {
+                if(task.Result!=null)
+                    collections.Add(task.Result);
+            }
             return collections.ToArray();
         }
         static async Task<SongCollection> GetCollection(string rootPath)

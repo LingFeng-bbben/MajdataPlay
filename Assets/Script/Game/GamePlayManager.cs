@@ -99,6 +99,9 @@ public class GamePlayManager : MonoBehaviour
     async UniTask DumpOnlineChart()
     {
         if (song.isOnline) {
+            LightManager.Instance.SetAllLight(Color.red);
+            var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+            loadingText.text = "Downloading...";
             var dumpTask = song.DumpToLocal();
             while (!dumpTask.IsCompleted)
             {
@@ -131,6 +134,9 @@ public class GamePlayManager : MonoBehaviour
                 BackToList();
                 return;
             }
+
+            var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+            loadingText.text = "Deserialization...";
 
             Chart = new SimaiProcess(maidata);
             if (Chart.notelist.Count == 0)

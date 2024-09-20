@@ -7,6 +7,7 @@
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
+        public OnlineOptions Online { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
@@ -60,6 +61,10 @@
         public float Break { get; set; } = 0.3f;
         public float Touch { get; set; } = 0.3f;
         public float Voice { get; set; } = 1f;
+    }
+    public class OnlineOptions
+    {
+        public string ApiEndpoint { get; set; } = "";
     }
     public class DebugOptions
     {

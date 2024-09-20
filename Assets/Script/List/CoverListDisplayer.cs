@@ -43,7 +43,6 @@ public class CoverListDisplayer : MonoBehaviour
         isDirList = true;
         dirs = _dirs;
         desiredListPos = GameManager.Instance.SelectedDir;
-        listPosReal = desiredListPos;
         foreach (var dir in _dirs)
         {
             var obj = Instantiate(DirSmallPrefab, transform);
@@ -53,6 +52,8 @@ public class CoverListDisplayer : MonoBehaviour
             covers.Add(obj);
             obj.SetActive(false);
         }
+        if (desiredListPos > covers.Count) desiredListPos = 0;
+        listPosReal = desiredListPos;
         SlideToList(desiredListPos);
     }
 
@@ -66,7 +67,6 @@ public class CoverListDisplayer : MonoBehaviour
         covers.Clear();
         isDirList = false;
         desiredListPos = GameManager.Instance.Collection.Index;
-        listPosReal = desiredListPos;
         foreach (var song in songs)
         {
             var obj = Instantiate(CoverSmallPrefab, transform);
@@ -77,6 +77,8 @@ public class CoverListDisplayer : MonoBehaviour
             covers.Add(obj);
             obj.SetActive(false);
         }
+        if (desiredListPos > covers.Count) desiredListPos = 0;
+        listPosReal = desiredListPos;
         SlideToList(desiredListPos);
     }
 
