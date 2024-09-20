@@ -4,6 +4,7 @@ using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -175,7 +176,7 @@ public class SongDetail
         if (!isOnline) return this;
         var dir = GameManager.ChartPath + "/MajnetPlayed/" + Hash;
         Directory.CreateDirectory(dir);
-        var client = new HttpClient(new HttpClientHandler() { UseProxy = true, UseDefaultCredentials = true });
+        var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true});
         var track = await client.GetByteArrayAsync(TrackPath);
         File.WriteAllBytes(dir + "/track.mp3", track);
         var maidata = await client.GetByteArrayAsync(MaidataPath);

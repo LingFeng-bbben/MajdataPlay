@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace MajdataPlay.Utils
 
         public static async Task<Sprite> LoadOnlineAsync(string Url)
         {
-            var client = new HttpClient(new HttpClientHandler() { UseProxy = true, UseDefaultCredentials = true });
+            var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true});
             var bytes = await client.GetByteArrayAsync(Url);
             var texture = new Texture2D(0, 0);
             texture.LoadImage(bytes);

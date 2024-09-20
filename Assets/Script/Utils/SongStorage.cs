@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -114,7 +115,7 @@ namespace MajdataPlay.Utils
             Debug.Log("Loading Online Charts from:" + listurl);
             try
             {
-                var client = new HttpClient(new HttpClientHandler() { UseProxy = true,UseDefaultCredentials=true});
+                var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true});
                 var liststr = await client.GetStringAsync(listurl);
                 var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr);
                 var gameList = new List<SongDetail>();
