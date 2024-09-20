@@ -3,6 +3,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TMPro;
 using Unity.Collections;
@@ -69,7 +70,7 @@ namespace MajdataPlay.Scenes
                 options = new object[2] { true,false };
                 var obj = PropertyInfo.GetValue(OptionObject);
                 maxOptionIndex = 1;
-                current = options.FindIndex(x => x == obj);
+                current = (bool)obj ? 0 : 1;
             }
             else if (isNum)
             {
@@ -108,11 +109,12 @@ namespace MajdataPlay.Scenes
                         break;
                     case "Skin":
                         var skinManager = SkinManager.Instance;
-                        var skins = skinManager.LoadedSkins;
+                        var skinNames = skinManager.LoadedSkins.Select(x => x.Name)
+                                                               .ToArray();
                         var currentSkin = skinManager.SelectedSkin;
-                        options = skins;
+                        options = skinNames;
                         maxOptionIndex = options.Length - 1;
-                        current = options.FindIndex(x => x == currentSkin);
+                        current = skinNames.FindIndex(x => x == currentSkin.Name);
                         break;
                 }
             }
@@ -158,6 +160,14 @@ namespace MajdataPlay.Scenes
                 current++;
                 current = current.Clamp(0, maxOptionIndex);
                 PropertyInfo.SetValue(OptionObject, options[current]);
+                switch(PropertyInfo.Name)
+                {
+                    case "Skin":
+                        var skins = SkinManager.Instance.LoadedSkins;
+                        var newSkin = skins.Find(x => x.Name == options[current].ToString());
+                        SkinManager.Instance.SelectedSkin = newSkin;
+                        break;
+                }
             }
         }
         void Down()
