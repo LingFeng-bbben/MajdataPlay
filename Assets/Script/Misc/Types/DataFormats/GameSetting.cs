@@ -54,7 +54,7 @@
     }
     public class SFXVolume
     {
-        public float Anwser { get; set; } = 0.8f;
+        public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
         public float Judge { get; set; } = 0.3f;
         public float Slide { get; set; } = 0.3f;
