@@ -44,6 +44,15 @@ namespace MajdataPlay.Setting
                 if (i != Index)
                     menu.gameObject.SetActive(false);
             }
+
+            LightManager.Instance.SetAllLight(Color.white);
+            LightManager.Instance.SetButtonLight(Color.green, 3);
+            LightManager.Instance.SetButtonLight(Color.red, 4);
+            LightManager.Instance.SetButtonLight(Color.blue, 2);
+            LightManager.Instance.SetButtonLight(Color.blue, 5);
+            LightManager.Instance.SetButtonLight(Color.blue, 0);
+            LightManager.Instance.SetButtonLight(Color.blue, 7);
+
             BindArea();
         }
         void OnAreaDown(object sender, InputEventArgs e)
@@ -52,6 +61,8 @@ namespace MajdataPlay.Setting
                 return;
             else if (e.Type is SensorType.A5 or SensorType.A4)
             {
+                //refresh some setting here
+                AudioManager.Instance.ReadVolumeFromSettings();
                 SceneManager.LoadScene(1);
                 return;
             }

@@ -553,6 +553,7 @@ MonoBehaviour:
   noteSpeed: 7
   touchSpeed: 7.5
   AudioTime: 0
+  AudioTimeNoOffset: 0
   CurrentSpeed: 1
 --- !u!4 &187050633
 Transform:
@@ -2362,6 +2363,8 @@ MonoBehaviour:
   PComboColor: {r: 0.8490566, g: 0.5381211, b: 0, a: 1}
   ComboColor: {r: 0.79215693, g: 0.24313727, b: 0.4901961, a: 1}
   DXScoreColor: {r: 0.24705884, g: 0.6901961, b: 0.24705884, a: 1}
+  EarlyDiffColor: {r: 0.19787577, g: 0.4161803, b: 0.72327036, a: 1}
+  LateDiffColor: {r: 0.66666657, g: 0.20335416, b: 0.23115267, a: 1}
   tapCount: 0
   holdCount: 0
   slideCount: 0

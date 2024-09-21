@@ -10,10 +10,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class TitleManager : MonoBehaviour
+namespace MajdataPlay.Title
 {
-    public TextMeshProUGUI echoText;
-    public Animator fadeInAnim;
+    public class TitleManager : MonoBehaviour
+    {
+        public TextMeshProUGUI echoText;
+        public Animator fadeInAnim;
 
     // Start is called before the first frame update
     void Start()
@@ -113,12 +115,9 @@ public class TitleManager : MonoBehaviour
     }
     void NextScene()
     {
-        SceneManager.LoadSceneAsync(1);
-    }
-    private void OnDestroy()
-    {
         InputManager.Instance.UnbindAnyArea(OnAreaDown);
         AudioManager.Instance.StopSFX(SFXSampleType.TITLE_BGM);
         AudioManager.Instance.StopSFX(SFXSampleType.MAJDATA_PLAY);
+        SceneManager.LoadSceneAsync(1);
     }
 }

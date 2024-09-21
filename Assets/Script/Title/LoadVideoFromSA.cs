@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 
-public class LoadVideoFromSA : MonoBehaviour
+namespace MajdataPlay.Title
 {
-    public VideoPlayer player;
-    public string videopath;
-    // Start is called before the first frame update
-    void Start()
+    public class LoadVideoFromSA : MonoBehaviour
     {
-        player = GetComponent<VideoPlayer>();
-        player.url = Application.streamingAssetsPath + videopath;
-        player.Play();
-    }
+        public VideoPlayer player;
+        public string videopath;
+        // Start is called before the first frame update
+        void Start()
+        {
+            player = GetComponent<VideoPlayer>();
+            player.url = Application.streamingAssetsPath + videopath;
+            player.Play();
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
     }
 }

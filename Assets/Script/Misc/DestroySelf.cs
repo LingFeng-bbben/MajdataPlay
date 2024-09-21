@@ -1,17 +1,14 @@
 ﻿using UnityEngine;
 
-public class DestroySelf : MonoBehaviour
+namespace MajdataPlay.Misc
 {
-    public bool ifDestroy;
-
-    // Start is called before the first frame update
-    private void Start()
+    public class DestroySelf : MonoBehaviour
     {
-    }
+        public bool ifDestroy;
 
-    // Update is called once per frame
-    private void Update()
-    {
-        if (ifDestroy) Destroy(gameObject);
+        private void Update()
+        {
+            if (ifDestroy) Destroy(gameObject);
+        }
     }
 }
