@@ -60,8 +60,9 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
-            //TODO:Add this to setting
-            tasks.Add(GetOnlineCollection(GameManager.Instance.Setting.Online.ApiEndpoint));
+            if(GameManager.Instance.Setting.Online.Enable)
+                tasks.Add(GetOnlineCollection(GameManager.Instance.Setting.Online.ApiEndpoint));
+
             var a = Task.WhenAll(tasks);
             await a;
             if (a.IsFaulted)

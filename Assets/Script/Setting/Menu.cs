@@ -4,20 +4,22 @@ using MajdataPlay.Types;
 using System;
 using TMPro;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Setting
 {
     public class Menu : MonoBehaviour
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public int SelectedIndex => _selectedIndex;
         /// <summary>
         /// Option对象<para>e.g. GameSetting.Game</para>
         /// </summary>
         public object SubOptionObject { get; set; }
         public GameObject optionPrefab;
+
         Option[] options = Array.Empty<Option>();
         bool isBound = false;
+        SettingManager manager;
         void Start()
         {
             var type = SubOptionObject.GetType();
@@ -35,6 +37,7 @@ namespace MajdataPlay.Setting
             }
             titleText.text = Name;
             BindArea();
+            manager = FindObjectOfType<SettingManager>();
         }
         void OnEnable()
         {
@@ -56,30 +59,39 @@ namespace MajdataPlay.Setting
             switch(e.Type)
             {
                 case SensorType.A6:
-                    _selectedIndex = (--_selectedIndex).Clamp(0, options.Length - 1);
+                    _selectedIndex--;
+                    if (_selectedIndex < 0)
+                        manager.PreviousMenu();
+                    _selectedIndex = _selectedIndex.Clamp(0, options.Length - 1);
                     break;
                 case SensorType.A3:
-                    _selectedIndex = (++_selectedIndex).Clamp(0, options.Length - 1);
+                    _selectedIndex++;
+                    if (_selectedIndex > options.Length - 1)
+                        manager.NextMenu();
+
+                    _selectedIndex = _selectedIndex.Clamp(0, options.Length - 1);
                     break;
                 default:
                     return;
             }
         }
+        public void ToLast() => _selectedIndex = options.Length - 1;
+        public void ToFirst() => _selectedIndex = 0;
         void BindArea()
         {
             if (isBound)
                 return;
             isBound = true;
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A3);
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A6);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A3);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A6);
         }
         void UnbindArea()
         {
             if (!isBound)
                 return;
             isBound = false;
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A3);
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A6);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A3);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A6);
         }
         [SerializeField]
         int _selectedIndex = 0;

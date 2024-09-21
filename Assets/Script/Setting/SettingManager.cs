@@ -20,7 +20,7 @@ namespace MajdataPlay.Setting
         {
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                             .SkipLast(3)
+                             .SkipLast(4)
                              .ToArray();
             menus = new Menu[properties.Length];
             foreach(var (i, property) in properties.WithIndex())
@@ -71,18 +71,34 @@ namespace MajdataPlay.Setting
             switch(e.Type)
             {
                 case SensorType.A1:
-                    Index = (++Index).Clamp(0, menus.Length - 1);
-                    UpdateMenu();
+                    NextMenu();
                     break;
                 case SensorType.A8:
-                    Index = (--Index).Clamp(0, menus.Length - 1);
-                    UpdateMenu();
+                    PreviousMenu();
                     break;
             }
         }
-        void UpdateMenu()
+        public void PreviousMenu()
         {
+            var oldIndex = Index;
+            Index = (--Index).Clamp(0, menus.Length - 1);
+            UpdateMenu(oldIndex,Index);
+        }
+        public void NextMenu()
+        {
+            var oldIndex = Index;
+            Index = (++Index).Clamp(0, menus.Length - 1);
+            UpdateMenu(oldIndex, Index);
+        }
+        void UpdateMenu(int oldIndex,int newIndex)
+        {
+            if (oldIndex == newIndex)
+                return;
             menus[Index].gameObject.SetActive(true);
+            if (newIndex > oldIndex)
+                menus[Index].ToFirst();
+            else
+                menus[Index].ToLast();
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)
@@ -91,17 +107,17 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A1);
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A8);
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A5);
-            InputManager.Instance.BindArea(OnAreaDown, SensorType.A4);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A1);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A8);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A5);
+            InputManager.Instance.BindButton(OnAreaDown, SensorType.A4);
         }
         void UnbindArea()
         {
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A1);
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A8);
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A5);
-            InputManager.Instance.UnbindArea(OnAreaDown, SensorType.A4);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A1);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A8);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A5);
+            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A4);
         }
         private void OnDestroy()
         {

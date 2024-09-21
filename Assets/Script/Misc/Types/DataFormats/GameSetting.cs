@@ -64,6 +64,7 @@
     }
     public class OnlineOptions
     {
+        public bool Enable { get; set; } = false;
         public string ApiEndpoint { get; set; } = "";
     }
     public class DebugOptions

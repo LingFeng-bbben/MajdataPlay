@@ -33,6 +33,7 @@ namespace MajdataPlay.Setting
         bool isBound = false;
         bool isFloat = false;
         bool isReadOnly = false;
+        bool isTriggering = false;
         float? maxValue = null;
 
         int lastIndex = 0;
@@ -95,7 +96,7 @@ namespace MajdataPlay.Setting
                         break;
                     default:
                         maxValue = null;
-                        step = 0.01f;
+                        step = 0.001f;
                         break;
                 }
             }
@@ -191,15 +192,27 @@ namespace MajdataPlay.Setting
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsClick)
+            if (isReadOnly)
+                return;
+            else if(e.Status == SensorStatus.Off)
+            {
+                isTriggering = false;
+                return;
+            }
+            else if (!e.IsClick)
                 return;
             else if (e.IsButton)
                 return;
-            switch(e.Type)
+            else if (isTriggering)
+                return;
+            isTriggering = true;
+            switch (e.Type)
             {
+                case SensorType.E4:
                 case SensorType.B4:
                     Up();
                     break;
+                case SensorType.E6:
                 case SensorType.B5:
                     Down();
                     break;
@@ -222,9 +235,15 @@ namespace MajdataPlay.Setting
         {
             if (isBound)
                 return;
+            else if (Parent == null)
+                return;
+            else if (Parent.SelectedIndex != Index)
+                return;
             isBound = true;
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B4);
+            InputManager.Instance.BindSensor(OnAreaDown, SensorType.E4);
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B5);
+            InputManager.Instance.BindSensor(OnAreaDown, SensorType.E6);
         }
         void UnbindArea()
         {
@@ -232,7 +251,9 @@ namespace MajdataPlay.Setting
                 return;
             isBound = false;
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
+            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E4);
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B5);
+            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E6);
         }
         Vector3 GetScale(int diff)
         {
