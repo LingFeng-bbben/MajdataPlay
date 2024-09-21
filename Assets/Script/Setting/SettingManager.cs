@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MajdataPlay.Scenes
+namespace MajdataPlay.Setting
 {
     public class SettingManager : MonoBehaviour
     {

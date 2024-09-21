@@ -1,9 +1,7 @@
-using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,7 +9,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Runtime.InteropServices;
-using MajdataPlay.Utils;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Threading;
@@ -274,7 +271,8 @@ public class GamePlayManager : MonoBehaviour
         }
         if (!sfxGeneratingTask.IsCompleted)
             await sfxGeneratingTask;
-        
+
+        GC.Collect();
         Time.timeScale = 1f;
         var firstClockTiming = AnwserSoundList[0].time;
         float extraTime = 5f;

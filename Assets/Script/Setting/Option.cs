@@ -2,14 +2,13 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TMPro;
 using Unity.Collections;
 using UnityEngine;
 
-namespace MajdataPlay.Scenes
+namespace MajdataPlay.Setting
 {
     public class Option : MonoBehaviour
     {

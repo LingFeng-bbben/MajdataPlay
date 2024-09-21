@@ -2,13 +2,10 @@ using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 
-namespace MajdataPlay.Scenes
+namespace MajdataPlay.Setting
 {
     public class Menu : MonoBehaviour
     {
