@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using MajSimaiDecode;
 using System;
@@ -16,6 +17,7 @@ namespace MajdataPlay.Utils
 {
     public static class SongStorage
     {
+        public static bool IsEmpty => Songs.IsEmpty() || Songs.All(x => x.Count == 0);
         public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;

@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -42,6 +43,7 @@ public class TitleManager : MonoBehaviour
     }
     async UniTaskVoid WaitForScanningTask()
     {
+        bool isEmpty = false;
         float animTimer = 0;
         while(animTimer < 2f)
         {
@@ -49,9 +51,18 @@ public class TitleManager : MonoBehaviour
             animTimer += Time.deltaTime;
             if (SongStorage.State == ComponentState.Finished)
             {
-                echoText.text = "Press Any Key"; 
-                InputManager.Instance.BindAnyArea(OnAreaDown);
-                return;
+                if (SongStorage.IsEmpty)
+                {
+                    isEmpty = true;
+                    echoText.text = "No Charts";
+                    return;
+                }
+                else
+                {
+                    echoText.text = "Press Any Key";
+                    InputManager.Instance.BindAnyArea(OnAreaDown);
+                    return;
+                }
             }
         }
         fadeInAnim.enabled = false;
@@ -73,6 +84,11 @@ public class TitleManager : MonoBehaviour
             {
                 if(state == ComponentState.Failed)
                     echoText.text = "Scan Chart Failed";
+                else if(SongStorage.IsEmpty)
+                {
+                    isEmpty = true;
+                    echoText.text = "No Charts";
+                }
                 else
                     echoText.text = "Press Any Key";
                 if (timer >= 1.8f)
@@ -84,7 +100,9 @@ public class TitleManager : MonoBehaviour
             newColor.a = timer / 2f;
             echoText.color = newColor;
         }
-        if(SongStorage.State != ComponentState.Failed)
+        if (isEmpty)
+            return;
+        else if(SongStorage.State != ComponentState.Failed)
             InputManager.Instance.BindAnyArea(OnAreaDown);
     }
     async UniTaskVoid DelayPlayVoice()
