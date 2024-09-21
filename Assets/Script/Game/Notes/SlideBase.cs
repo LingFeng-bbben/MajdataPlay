@@ -9,11 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Game.Notes
 {
     public abstract class SlideBase : NoteLongDrop
     {
+        public IConnectableSlide? Parent => ConnectInfo.Parent;
         public ConnSlideInfo ConnectInfo { get; set; } = new()
         {
             IsGroupPart = false,
@@ -74,8 +75,6 @@ namespace MajdataPlay.Game.Notes
         protected bool canCheck = false;
         protected bool isChecking = false;
         
-        protected bool isInitialized = false; //防止重复初始化
-        protected bool isDestroying = false; // 防止重复销毁
         protected float maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
         /// <summary>
         /// 存储Slide Queue中会经过的区域
@@ -123,8 +122,9 @@ namespace MajdataPlay.Game.Notes
             judgeResult = judge ?? JudgeType.Miss;
             isJudged = true;
 
-            if (GetTimeSpanToArriveTiming() < 0)
-                lastWaitTime = MathF.Abs(GetTimeSpanToArriveTiming()) / 2;
+            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            if (remainingStartTime < 0)
+                lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
         }
@@ -161,8 +161,9 @@ namespace MajdataPlay.Game.Notes
             judgeResult = judge ?? JudgeType.Miss;
             isJudged = true;
 
-            if (GetTimeSpanToArriveTiming() < 0)
-                lastWaitTime = MathF.Abs(GetTimeSpanToArriveTiming()) / 2;
+            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            if (remainingStartTime < 0)
+                lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
                 lastWaitTime = 0;
         }
@@ -228,8 +229,8 @@ namespace MajdataPlay.Game.Notes
                 DestroyStars();
             else
             {
-                if (ConnectInfo.Parent != null)
-                    Destroy(ConnectInfo.Parent);
+                if (Parent is not null && !Parent.IsDestroyed)
+                    Destroy(Parent.GameObject);
 
                 foreach (GameObject obj in slideBars)
                     obj.SetActive(false);
@@ -242,7 +243,7 @@ namespace MajdataPlay.Game.Notes
         /// Connection Slide
         /// <para>强制完成该Slide</para>
         /// </summary>
-        protected void ForceFinish()
+        public void ForceFinish()
         {
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
@@ -278,8 +279,6 @@ namespace MajdataPlay.Game.Notes
                     alpha = 1 - (diff / interval);
                 alpha *= maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
-                print(alpha);
-                print(fullFadeInTiming - CurrentSec);
                 await UniTask.Yield();
             }
             SetSlideBarAlpha(maxFadeInAlpha);

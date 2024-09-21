@@ -1,17 +1,18 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class SlideDrop : SlideBase
+    public sealed class SlideDrop : SlideBase,IConnectableSlide
     {
+        public GameObject GameObject => gameObject;
         public bool isMirror;
         public bool isSpecialFlip; // fixes known star problem
         
@@ -26,10 +27,10 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         public override void Initialize()
         {
-            if (isInitialized)
+            if (IsInitialized)
                 return;
             base.Start();
-            isInitialized = true;
+            State = NoteStatus.Initialized;
             var slideTable = SlideTables.FindTableByName(slideType);
             if (slideTable is null)
                 throw new MissingComponentException($"Slide table of \"{slideType}\" is not found");
@@ -81,8 +82,6 @@ namespace MajdataPlay.Game.Notes
                 judgeQueues[0].LastOrDefault().SetIsLast();
             else if (ConnectInfo.IsConnSlide)
                 judgeQueues[0].LastOrDefault().SetNonLast();
-
-
         }
         public float GetSlideLength()
         {
@@ -103,7 +102,9 @@ namespace MajdataPlay.Game.Notes
                 LastFor = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * GetSlideLength();
                 if (!ConnectInfo.IsGroupPartHead)
                 {
-                    var parent = ConnectInfo.Parent!.GetComponent<SlideDrop>();
+                    if (Parent is null)
+                        throw new NullReferenceException();
+                    var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     timing = parent.timing + parent.LastFor;
                 }
             }
@@ -284,23 +285,23 @@ namespace MajdataPlay.Game.Notes
         }
         void SetParentFinish()
         {
-            if (ConnectInfo.Parent != null && judgeQueues[0].Length < table.JudgeQueue.Length)
+            if (Parent is not null)
             {
-                if (!ConnectInfo.ParentFinished)
-                    ConnectInfo.Parent.GetComponent<SlideDrop>().ForceFinish();
+                if(judgeQueues[0].Length < table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                    Parent.ForceFinish();
             }
         }
         void OnDestroy()
         {
-            if (isDestroying)
+            if (IsDestroyed)
                 return;
-            if (ConnectInfo.Parent != null)
-                Destroy(ConnectInfo.Parent);
+            if (Parent is not null && !Parent.IsDestroyed)
+                Destroy(Parent.GameObject);
             if (!stars.IsEmpty() && stars[0] != null)
                 Destroy(stars[0]);
+            State = NoteStatus.Destroyed;
             foreach (var sensor in judgeAreas)
                 ioManager.UnbindSensor(Check, sensor);
-            State = NoteStatus.Destroyed;
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var result = new JudgeResult()
@@ -327,7 +328,6 @@ namespace MajdataPlay.Game.Notes
                 // 如果不是组内最后一个 那么也要将判定条删掉
                 Destroy(slideOK);
             }
-            isDestroying = true;
         }
         /// <summary>
         /// 更新引导Star状态

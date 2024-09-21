@@ -2,6 +2,7 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -200,7 +201,6 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.PlayTapSound(result);
             objectCounter.NextNote(startPosition);
             objectCounter.ReportResult(this, result);
-            
         }
     }
 }
