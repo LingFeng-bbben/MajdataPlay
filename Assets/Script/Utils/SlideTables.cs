@@ -2,11 +2,8 @@
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay.Utils
 {
     public static class SlideTables
     {
@@ -284,7 +281,7 @@ namespace MajdataPlay.Types
                     BuildJudgeArea(SensorType.A1,35,true,true)
                 },
                 Const = 0.073445f
-                
+
             },
             new SlideTable()
             {
@@ -638,7 +635,7 @@ namespace MajdataPlay.Types
         {
             List<JudgeArea[]> queue = new();
             var raw = WIFISLIDE_JUDGE_QUEUE;
-            foreach(var line in raw)
+            foreach (var line in raw)
             {
                 List<JudgeArea> rows = new();
                 foreach (var row in line)
@@ -650,7 +647,7 @@ namespace MajdataPlay.Types
 
             if (diff != 0)
             {
-                foreach(var line in _queue)
+                foreach (var line in _queue)
                     foreach (var area in line)
                         area.Diff(diff);
             }

@@ -10,45 +10,48 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
-#nullable enable
-public class NoteLoader : MonoBehaviour
+
+namespace MajdataPlay.Game
 {
-    public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
-    public long NoteLimit { get; set; } = 1000;
-    public double Process { get; set; } = 0;
+#nullable enable
+    public class NoteLoader : MonoBehaviour
+    {
+        public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
+        public long NoteLimit { get; set; } = 1000;
+        public double Process { get; set; } = 0;
 
-    long noteCount = 0;
+        long noteCount = 0;
 
-    public float noteSpeed = 7f;
-    public float touchSpeed = 7.5f;
+        public float noteSpeed = 7f;
+        public float touchSpeed = 7.5f;
 
-    NoteManager noteManager;
-    Dictionary<int, int> noteIndex = new();
-    Dictionary<SensorType, int> touchIndex = new();
+        NoteManager noteManager;
+        Dictionary<int, int> noteIndex = new();
+        Dictionary<SensorType, int> touchIndex = new();
 
-    public GameObject tapPrefab;
-    public GameObject holdPrefab;
-    public GameObject starPrefab;
-    public GameObject touchHoldPrefab;
-    public GameObject touchPrefab;
-    public GameObject eachLine;
-    public GameObject starLine;
-    public GameObject notes;
-    public GameObject star_slidePrefab;
-    public GameObject[] slidePrefab;
-    public Material breakMaterial;
-    public RuntimeAnimatorController BreakShine;
-    public RuntimeAnimatorController JudgeBreakShine;
-    public RuntimeAnimatorController HoldShine;
+        public GameObject tapPrefab;
+        public GameObject holdPrefab;
+        public GameObject starPrefab;
+        public GameObject touchHoldPrefab;
+        public GameObject touchPrefab;
+        public GameObject eachLine;
+        public GameObject starLine;
+        public GameObject notes;
+        public GameObject star_slidePrefab;
+        public GameObject[] slidePrefab;
+        public Material breakMaterial;
+        public RuntimeAnimatorController BreakShine;
+        public RuntimeAnimatorController JudgeBreakShine;
+        public RuntimeAnimatorController HoldShine;
 
-    private SkinManager customSkin;
+        private SkinManager customSkin;
 
-    private ObjectCounter ObjectCounter;
+        private ObjectCounter ObjectCounter;
 
-    private int slideLayer = -1;
-    private int noteSortOrder = 0;
+        private int slideLayer = -1;
+        private int noteSortOrder = 0;
 
-    private static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
+        private static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
     {
         {SimaiNoteType.Tap, 2 },
         {SimaiNoteType.Hold, 3 },
@@ -56,7 +59,7 @@ public class NoteLoader : MonoBehaviour
         {SimaiNoteType.Touch, 7 },
         {SimaiNoteType.TouchHold, 6 },
     };
-    private static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
+        private static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
     {
         {"line3", 0 },
         {"line4", 1 },
@@ -102,7 +105,7 @@ public class NoteLoader : MonoBehaviour
         {"L5", 40 },
     };
 
-    static readonly Dictionary<SensorType, SensorType[]> TOUCH_GROUPS = new()
+        static readonly Dictionary<SensorType, SensorType[]> TOUCH_GROUPS = new()
     {
         { SensorType.A1, new SensorType[]{ SensorType.D1, SensorType.D2, SensorType.E1, SensorType.E2 } },
         { SensorType.A2, new SensorType[]{ SensorType.D2, SensorType.D3, SensorType.E2, SensorType.E3 } },
@@ -143,7 +146,7 @@ public class NoteLoader : MonoBehaviour
         { SensorType.C, new SensorType[]{ SensorType.B1, SensorType.B2, SensorType.B3, SensorType.B4, SensorType.B5, SensorType.B6, SensorType.B7, SensorType.B8} },
     };
 
-    public static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
+        public static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
         {
             {"line3", new List<int>(){ 0, 2, 8, 13 } },
             {"line4", new List<int>(){ 0, 3, 8, 12, 18 } },
@@ -188,1058 +191,1059 @@ public class NoteLoader : MonoBehaviour
             {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
             {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
         };
-    // Start is called before the first frame update
+        // Start is called before the first frame update
 
-    private void Awake()
-    {
-        ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-        customSkin = SkinManager.Instance;
-    }
-
-    private void Start()
-    {
-        noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
-    }
-
-    // Update is called once per frame
-    private void Update()
-    {
-        //Debug.Log($"NoteLoader State:{State}");
-    }
-
-    public async UniTask LoadNotes(SimaiProcess simaiProcess)
-    {
-        List<Task> touchTasks = new();
-        try
+        private void Awake()
         {
-            State = NoteLoaderStatus.ParsingNote;
-            noteManager.Refresh();
-            noteIndex.Clear();
-            touchIndex.Clear();
+            ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
+            customSkin = SkinManager.Instance;
+        }
 
-            for (int i = 1; i < 9; i++)
-                noteIndex.Add(i, 0);
-            for (int i = 0; i < 33; i++)
-                touchIndex.Add((SensorType)i, 0);
+        private void Start()
+        {
+            noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
+        }
 
-            var loadedData = simaiProcess;
+        // Update is called once per frame
+        private void Update()
+        {
+            //Debug.Log($"NoteLoader State:{State}");
+        }
 
-
-            await CountNoteSumAsync(loadedData);
-
-            var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
-
-            var lastNoteTime = loadedData.notelist.Last().time;
-
-            foreach (var timing in loadedData.notelist)
+        public async UniTask LoadNotes(SimaiProcess simaiProcess)
+        {
+            List<Task> touchTasks = new();
+            try
             {
-                var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch && 
-                                                             o.noteType != SimaiNoteType.TouchHold);
-                int? num = null;
-                IDistanceProvider? provider = null;
-                IStatefulNote? noteA = null;
-                IStatefulNote? noteB = null;
-                List<TouchDrop> members = new();
-                foreach(var (i,note) in timing.noteList.WithIndex())
+                State = NoteLoaderStatus.ParsingNote;
+                noteManager.Refresh();
+                noteIndex.Clear();
+                touchIndex.Clear();
+
+                for (int i = 1; i < 9; i++)
+                    noteIndex.Add(i, 0);
+                for (int i = 0; i < 33; i++)
+                    touchIndex.Add((SensorType)i, 0);
+
+                var loadedData = simaiProcess;
+
+
+                await CountNoteSumAsync(loadedData);
+
+                var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
+
+                var lastNoteTime = loadedData.notelist.Last().time;
+
+                foreach (var timing in loadedData.notelist)
                 {
-                    noteCount++;
-                    Process = (double)noteCount / sum;
-                    if (noteCount % 30 == 0)
-                        await UniTask.Yield();
-
-                    switch (note.noteType)
+                    var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch &&
+                                                                 o.noteType != SimaiNoteType.TouchHold);
+                    int? num = null;
+                    IDistanceProvider? provider = null;
+                    IStatefulNote? noteA = null;
+                    IStatefulNote? noteB = null;
+                    List<TouchDrop> members = new();
+                    foreach (var (i, note) in timing.noteList.WithIndex())
                     {
-                        case SimaiNoteType.Tap:
-                            {
-                                var obj = InstantiateTap(note, timing);
-                                if(eachNotes.Count > 1 && i < 2)
-                                {
-                                    if (num is null)
-                                        num = 0;
-                                    else if(num != 0)
-                                        break;
+                        noteCount++;
+                        Process = (double)noteCount / sum;
+                        if (noteCount % 30 == 0)
+                            await UniTask.Yield();
 
-                                    if (provider is null)
-                                        provider = obj;
-                                    if (noteA is null)
-                                        noteA = obj;
-                                    else
-                                        noteB = obj;
-                                }
-                            }
-                            break;
-                        case SimaiNoteType.Hold:
-                            {
-                                var obj = InstantiateHold(note, timing);
-                                if (eachNotes.Count > 1 && i < 2)
+                        switch (note.noteType)
+                        {
+                            case SimaiNoteType.Tap:
                                 {
-                                    if (num is null)
-                                        num = 1;
-                                    else if (num != 1)
-                                        break;
+                                    var obj = InstantiateTap(note, timing);
+                                    if (eachNotes.Count > 1 && i < 2)
+                                    {
+                                        if (num is null)
+                                            num = 0;
+                                        else if (num != 0)
+                                            break;
 
-                                    if (provider is null)
-                                        provider = obj;
-                                    if (noteA is null)
-                                        noteA = obj;
-                                    else
-                                        noteB = obj;
+                                        if (provider is null)
+                                            provider = obj;
+                                        if (noteA is null)
+                                            noteA = obj;
+                                        else
+                                            noteB = obj;
+                                    }
                                 }
-                            }
-                            break;
-                        case SimaiNoteType.TouchHold:
-                            InstantiateTouchHold(note, timing);
-                            break;
-                        case SimaiNoteType.Touch:
-                            InstantiateTouch(note, timing, members);
-                            break;
-                        case SimaiNoteType.Slide:
-                            InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
-                            break;
+                                break;
+                            case SimaiNoteType.Hold:
+                                {
+                                    var obj = InstantiateHold(note, timing);
+                                    if (eachNotes.Count > 1 && i < 2)
+                                    {
+                                        if (num is null)
+                                            num = 1;
+                                        else if (num != 1)
+                                            break;
+
+                                        if (provider is null)
+                                            provider = obj;
+                                        if (noteA is null)
+                                            noteA = obj;
+                                        else
+                                            noteB = obj;
+                                    }
+                                }
+                                break;
+                            case SimaiNoteType.TouchHold:
+                                InstantiateTouchHold(note, timing);
+                                break;
+                            case SimaiNoteType.Touch:
+                                InstantiateTouch(note, timing, members);
+                                break;
+                            case SimaiNoteType.Slide:
+                                InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
+                                break;
+                        }
                     }
-                }
-                if (members.Count != 0)
-                    touchTasks.Add(AllocTouchGroup(members));
+                    if (members.Count != 0)
+                        touchTasks.Add(AllocTouchGroup(members));
 
-                if (eachNotes.Count > 1) //有多个非touchnote
-                {
-                    var startPos = eachNotes[0].startPosition;
-                    var endPos = eachNotes[1].startPosition;
-                    endPos = endPos - startPos;
-                    if (endPos == 0) 
-                        continue;
-                    
-                    var line = Instantiate(eachLine, notes.transform);
-                    var lineDrop = line.GetComponent<EachLineDrop>();
-
-                    lineDrop.DistanceProvider = provider;
-                    lineDrop.NoteA = noteA;
-                    lineDrop.NoteB = noteB;
-
-                    lineDrop.time = (float)timing.time;
-                    lineDrop.speed = noteSpeed * timing.HSpeed;
-
-                    endPos = endPos < 0 ? endPos + 8 : endPos;
-                    endPos = endPos > 8 ? endPos - 8 : endPos;
-                    endPos++;
-
-                    if (endPos > 4)
+                    if (eachNotes.Count > 1) //有多个非touchnote
                     {
-                        startPos = eachNotes[1].startPosition;
-                        endPos = eachNotes[0].startPosition;
+                        var startPos = eachNotes[0].startPosition;
+                        var endPos = eachNotes[1].startPosition;
                         endPos = endPos - startPos;
+                        if (endPos == 0)
+                            continue;
+
+                        var line = Instantiate(eachLine, notes.transform);
+                        var lineDrop = line.GetComponent<EachLineDrop>();
+
+                        lineDrop.DistanceProvider = provider;
+                        lineDrop.NoteA = noteA;
+                        lineDrop.NoteB = noteB;
+
+                        lineDrop.time = (float)timing.time;
+                        lineDrop.speed = noteSpeed * timing.HSpeed;
+
                         endPos = endPos < 0 ? endPos + 8 : endPos;
                         endPos = endPos > 8 ? endPos - 8 : endPos;
                         endPos++;
-                    }
 
-                    lineDrop.startPosition = startPos;
-                    lineDrop.curvLength = endPos - 1;
+                        if (endPos > 4)
+                        {
+                            startPos = eachNotes[1].startPosition;
+                            endPos = eachNotes[0].startPosition;
+                            endPos = endPos - startPos;
+                            endPos = endPos < 0 ? endPos + 8 : endPos;
+                            endPos = endPos > 8 ? endPos - 8 : endPos;
+                            endPos++;
+                        }
+
+                        lineDrop.startPosition = startPos;
+                        lineDrop.curvLength = endPos - 1;
+                    }
+                }
+
+                var allTask = Task.WhenAll(touchTasks);
+                while (!allTask.IsCompleted)
+                {
+                    await UniTask.Yield();
+                    if (allTask.IsFaulted)
+                        throw allTask.Exception.InnerException;
                 }
             }
-
-            var allTask = Task.WhenAll(touchTasks);
-            while(!allTask.IsCompleted)
+            catch (Exception e)
             {
-                await UniTask.Yield();
-                if(allTask.IsFaulted)
-                    throw allTask.Exception.InnerException;
+                State = NoteLoaderStatus.Error;
+                throw e;
             }
+            State = NoteLoaderStatus.Finished;
         }
-        catch(Exception e)
+        TapBase InstantiateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
-            State = NoteLoaderStatus.Error;
-            throw e;
-        }
-        State = NoteLoaderStatus.Finished;
-    }
-    TapBase InstantiateTap(in SimaiNote note,in SimaiTimingPoint timing)
-    {
-        GameObject? GOnote = null;
-        TapBase? NDCompo = null;
+            GameObject? GOnote = null;
+            TapBase? NDCompo = null;
 
-        if (note.isForceStar)
-        {
-            GOnote = Instantiate(starPrefab, notes.transform);
-            var _NDCompo = GOnote.GetComponent<StarDrop>();
-            _NDCompo.tapLine = starLine;
-            _NDCompo.isFakeStarRotate = note.isFakeRotate;
-            _NDCompo.isFakeStar = true;
-            NDCompo = _NDCompo;
-        }
-        else
-        {
-            GOnote = Instantiate(tapPrefab, notes.transform);
-            NDCompo = GOnote.GetComponent<TapDrop>();
-        }
-
-        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        if (timing.noteList.Count > 1) NDCompo.isEach = true;
-        NDCompo.isBreak = note.isBreak;
-        NDCompo.isEX = note.isEx;
-        NDCompo.timing = (float)timing.time;
-        NDCompo.startPosition = note.startPosition;
-        NDCompo.speed = noteSpeed * timing.HSpeed;
-
-        return NDCompo;
-    }
-    HoldDrop InstantiateHold(in SimaiNote note, in SimaiTimingPoint timing)
-    {
-        var GOnote = Instantiate(holdPrefab, notes.transform);
-        noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-        var NDCompo = GOnote.GetComponent<HoldDrop>();
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        if (timing.noteList.Count > 1) NDCompo.isEach = true;
-        NDCompo.timing = (float)timing.time;
-        NDCompo.LastFor = (float)note.holdTime;
-        NDCompo.startPosition = note.startPosition;
-        NDCompo.speed = noteSpeed * timing.HSpeed;
-        NDCompo.isEX = note.isEx;
-        NDCompo.isBreak = note.isBreak;
-
-        return NDCompo;
-    }
-    void InstantiateTouch(in SimaiNote note, 
-                          in SimaiTimingPoint timing,
-                          in List<TouchDrop> members)
-    {
-        var GOnote = Instantiate(touchPrefab, notes.transform);
-        noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
-        var NDCompo = GOnote.GetComponent<TouchDrop>();
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        NDCompo.timing = (float)timing.time;
-        NDCompo.areaPosition = note.touchArea;
-        NDCompo.startPosition = note.startPosition;
-
-        if (timing.noteList.Count > 1)
-        {
-            NDCompo.isEach = true;
-            members.Add(NDCompo);
-        }
-        NDCompo.speed = touchSpeed * timing.HSpeed;
-        NDCompo.isFirework = note.isHanabi;
-        NDCompo.GroupInfo = null;
-    }
-    void InstantiateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
-    {
-        var GOnote = Instantiate(touchHoldPrefab, notes.transform);
-        noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
-        var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        NDCompo.timing = (float)timing.time;
-        NDCompo.LastFor = (float)note.holdTime;
-        NDCompo.speed = touchSpeed * timing.HSpeed;
-        NDCompo.isFirework = note.isHanabi;
-    }
-    async Task AllocTouchGroup(List<TouchDrop> members)
-    {
-        await Task.Run(() =>
-        {
-            var sensorTypes = members.GroupBy(x => x.GetSensor())
-                                             .Select(x => x.Key)
-                                             .ToList();
-            List<List<SensorType>> sensorGroups = new();
-
-            while (sensorTypes.Count > 0)
+            if (note.isForceStar)
             {
-                var sensorType = sensorTypes[0];
-                var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
-                var groupMap = TOUCH_GROUPS[sensorType];
-                existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
-
-                var groupMembers = existsGroup.SelectMany(x => x)
-                                              .ToList();
-                var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
-
-                groupMembers.AddRange(newMembers);
-                groupMembers.Add(sensorType);
-                var newGroup = groupMembers.GroupBy(x => x)
-                                           .Select(x => x.Key)
-                                           .ToList();
-
-                foreach (var newMember in newGroup)
-                    sensorTypes.Remove(newMember);
-                foreach (var oldGroup in existsGroup)
-                    sensorGroups.Remove(oldGroup);
-
-                sensorGroups.Add(newGroup);
+                GOnote = Instantiate(starPrefab, notes.transform);
+                var _NDCompo = GOnote.GetComponent<StarDrop>();
+                _NDCompo.tapLine = starLine;
+                _NDCompo.isFakeStarRotate = note.isFakeRotate;
+                _NDCompo.isFakeStar = true;
+                NDCompo = _NDCompo;
             }
-            List<TouchGroup> touchGroups = new();
-            var memberMapping = members.ToDictionary(x => x.GetSensor());
-            foreach (var group in sensorGroups)
+            else
             {
-                touchGroups.Add(new TouchGroup()
+                GOnote = Instantiate(tapPrefab, notes.transform);
+                NDCompo = GOnote.GetComponent<TapDrop>();
+            }
+
+            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            if (timing.noteList.Count > 1) NDCompo.isEach = true;
+            NDCompo.isBreak = note.isBreak;
+            NDCompo.isEX = note.isEx;
+            NDCompo.timing = (float)timing.time;
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.speed = noteSpeed * timing.HSpeed;
+
+            return NDCompo;
+        }
+        HoldDrop InstantiateHold(in SimaiNote note, in SimaiTimingPoint timing)
+        {
+            var GOnote = Instantiate(holdPrefab, notes.transform);
+            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+            var NDCompo = GOnote.GetComponent<HoldDrop>();
+
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            if (timing.noteList.Count > 1) NDCompo.isEach = true;
+            NDCompo.timing = (float)timing.time;
+            NDCompo.LastFor = (float)note.holdTime;
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.speed = noteSpeed * timing.HSpeed;
+            NDCompo.isEX = note.isEx;
+            NDCompo.isBreak = note.isBreak;
+
+            return NDCompo;
+        }
+        void InstantiateTouch(in SimaiNote note,
+                              in SimaiTimingPoint timing,
+                              in List<TouchDrop> members)
+        {
+            var GOnote = Instantiate(touchPrefab, notes.transform);
+            noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
+            var NDCompo = GOnote.GetComponent<TouchDrop>();
+
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            NDCompo.timing = (float)timing.time;
+            NDCompo.areaPosition = note.touchArea;
+            NDCompo.startPosition = note.startPosition;
+
+            if (timing.noteList.Count > 1)
+            {
+                NDCompo.isEach = true;
+                members.Add(NDCompo);
+            }
+            NDCompo.speed = touchSpeed * timing.HSpeed;
+            NDCompo.isFirework = note.isHanabi;
+            NDCompo.GroupInfo = null;
+        }
+        void InstantiateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
+        {
+            var GOnote = Instantiate(touchHoldPrefab, notes.transform);
+            noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
+            var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
+
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            NDCompo.timing = (float)timing.time;
+            NDCompo.LastFor = (float)note.holdTime;
+            NDCompo.speed = touchSpeed * timing.HSpeed;
+            NDCompo.isFirework = note.isHanabi;
+        }
+        async Task AllocTouchGroup(List<TouchDrop> members)
+        {
+            await Task.Run(() =>
+            {
+                var sensorTypes = members.GroupBy(x => x.GetSensor())
+                                                 .Select(x => x.Key)
+                                                 .ToList();
+                List<List<SensorType>> sensorGroups = new();
+
+                while (sensorTypes.Count > 0)
                 {
-                    Members = group.Select(x => memberMapping[x]).ToArray()
-                });
-            }
-            foreach (var member in members)
-                member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
-        });
-    }
+                    var sensorType = sensorTypes[0];
+                    var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
+                    var groupMap = TOUCH_GROUPS[sensorType];
+                    existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
 
-    private async ValueTask CountNoteSumAsync(SimaiProcess json)
-    {
-        await Task.Run(() =>
+                    var groupMembers = existsGroup.SelectMany(x => x)
+                                                  .ToList();
+                    var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
+
+                    groupMembers.AddRange(newMembers);
+                    groupMembers.Add(sensorType);
+                    var newGroup = groupMembers.GroupBy(x => x)
+                                               .Select(x => x.Key)
+                                               .ToList();
+
+                    foreach (var newMember in newGroup)
+                        sensorTypes.Remove(newMember);
+                    foreach (var oldGroup in existsGroup)
+                        sensorGroups.Remove(oldGroup);
+
+                    sensorGroups.Add(newGroup);
+                }
+                List<TouchGroup> touchGroups = new();
+                var memberMapping = members.ToDictionary(x => x.GetSensor());
+                foreach (var group in sensorGroups)
+                {
+                    touchGroups.Add(new TouchGroup()
+                    {
+                        Members = group.Select(x => memberMapping[x]).ToArray()
+                    });
+                }
+                foreach (var member in members)
+                    member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
+            });
+        }
+
+        private async ValueTask CountNoteSumAsync(SimaiProcess json)
         {
-            foreach (var timing in json.notelist)
-                foreach (var note in timing.noteList)
-                    if (!note.isBreak)
-                    {
-                        if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapSum++;
-                        if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdSum++;
-                        if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdSum++;
-                        if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchSum++;
-                        if (note.noteType == SimaiNoteType.Slide)
+            await Task.Run(() =>
+            {
+                foreach (var timing in json.notelist)
+                    foreach (var note in timing.noteList)
+                        if (!note.isBreak)
                         {
-                            if (!note.isSlideNoHead) ObjectCounter.tapSum++;
-                            if (note.isSlideBreak)
-                                ObjectCounter.breakSum++;
-                            else
-                                ObjectCounter.slideSum++;
-                        }
-                    }
-                    else
-                    {
-                        if (note.noteType == SimaiNoteType.Slide)
-                        {
-                            if (!note.isSlideNoHead) ObjectCounter.breakSum++;
-                            if (note.isSlideBreak)
-                                ObjectCounter.breakSum++;
-                            else
-                                ObjectCounter.slideSum++;
+                            if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapSum++;
+                            if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdSum++;
+                            if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdSum++;
+                            if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchSum++;
+                            if (note.noteType == SimaiNoteType.Slide)
+                            {
+                                if (!note.isSlideNoHead) ObjectCounter.tapSum++;
+                                if (note.isSlideBreak)
+                                    ObjectCounter.breakSum++;
+                                else
+                                    ObjectCounter.slideSum++;
+                            }
                         }
                         else
                         {
-                            ObjectCounter.breakSum++;
+                            if (note.noteType == SimaiNoteType.Slide)
+                            {
+                                if (!note.isSlideNoHead) ObjectCounter.breakSum++;
+                                if (note.isSlideBreak)
+                                    ObjectCounter.breakSum++;
+                                else
+                                    ObjectCounter.slideSum++;
+                            }
+                            else
+                            {
+                                ObjectCounter.breakSum++;
+                            }
                         }
-                    }
-            ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
-        });
-    }
-
-    private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
-    {
-        int charIntParse(char c)
-        {
-            return c - '0';
+                ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
+            });
         }
 
-        var subSlide = new List<SimaiNote>();
-        var subBarCount = new List<int>();
-        var sumBarCount = 0;
-
-        var noteContent = note.noteContent;
-        var latestStartIndex = charIntParse(noteContent[0]); // 存储上一个Slide的结尾 也就是下一个Slide的起点
-        var ptr = 1; // 指向目前处理的字符
-
-        var specTimeFlag = 0; // 表示此组合slide是指定总时长 还是指定每一段的时长
-        // 0-目前还没有读取 1-读取到了一个未指定时长的段落 2-读取到了一个指定时长的段落 3-（期望）读取到了最后一个时长指定
-
-        while (ptr < noteContent.Length)
-            if (!char.IsNumber(noteContent[ptr]))
+        private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
+        {
+            int charIntParse(char c)
             {
-                // 读取到字符
-                var slideTypeChar = noteContent[ptr++].ToString();
-
-                var slidePart = new SimaiNote();
-                slidePart.noteType = SimaiNoteType.Slide;
-                slidePart.startPosition = latestStartIndex;
-                if (slideTypeChar == "V")
-                {
-                    // 转折星星
-                    var middlePos = noteContent[ptr++];
-                    var endPos = noteContent[ptr++];
-
-                    slidePart.noteContent = latestStartIndex + slideTypeChar + middlePos + endPos;
-                    latestStartIndex = charIntParse(endPos);
-                }
-                else
-                {
-                    // 其他普通星星
-                    // 额外检查pp和qq
-                    if (noteContent[ptr] == slideTypeChar[0]) slideTypeChar += noteContent[ptr++];
-                    var endPos = noteContent[ptr++];
-
-                    slidePart.noteContent = latestStartIndex + slideTypeChar + endPos;
-                    latestStartIndex = charIntParse(endPos);
-                }
-
-                if (noteContent[ptr] == '[')
-                {
-                    // 如果指定了速度
-                    if (specTimeFlag == 0)
-                        // 之前未读取过
-                        specTimeFlag = 2;
-                    else if (specTimeFlag == 1)
-                        // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
-                        specTimeFlag = 3;
-                    else if (specTimeFlag == 3)
-                        // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
-                        throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
-
-                    while (ptr < noteContent.Length && noteContent[ptr] != ']')
-                        slidePart.noteContent += noteContent[ptr++];
-                    slidePart.noteContent += noteContent[ptr++];
-                }
-                else
-                {
-                    // 没有指定速度
-                    if (specTimeFlag == 0)
-                        // 之前未读取过
-                        specTimeFlag = 1;
-                    else if (specTimeFlag == 2 || specTimeFlag == 3)
-                        // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
-                        throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
-                }
-
-                string slideShape = detectShapeFromText(slidePart.noteContent);
-                if (slideShape.StartsWith("-"))
-                {
-                    slideShape = slideShape.Substring(1);
-                }
-                int slideIndex = SLIDE_PREFAB_MAP[slideShape];
-                if (slideIndex < 0) slideIndex = -slideIndex;
-
-                var barCount = slidePrefab[slideIndex].transform.childCount;
-                subBarCount.Add(barCount);
-                sumBarCount += barCount;
-
-                subSlide.Add(slidePart);
-            }
-            else
-            {
-                // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
-                throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+                return c - '0';
             }
 
-        subSlide.ForEach(o =>
-        {
-            o.isBreak = note.isBreak;
-            o.isEx = note.isEx;
-            o.isSlideBreak = note.isSlideBreak;
-            o.isSlideNoHead = true;
-        });
-        subSlide[0].isSlideNoHead = note.isSlideNoHead;
+            var subSlide = new List<SimaiNote>();
+            var subBarCount = new List<int>();
+            var sumBarCount = 0;
 
-        if (specTimeFlag == 1 || specTimeFlag == 0)
-            // 如果到结束还是1 那说明没有一个指定了时长 报错
-            throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
-        // 此时 flag为2表示每条指定语法 为3表示整体指定语法
+            var noteContent = note.noteContent;
+            var latestStartIndex = charIntParse(noteContent[0]); // 存储上一个Slide的结尾 也就是下一个Slide的起点
+            var ptr = 1; // 指向目前处理的字符
 
-        if (specTimeFlag == 3)
-        {
-            // 整体指定语法 使用slideTime来计算
-            var tempBarCount = 0;
-            for (var i = 0; i < subSlide.Count; i++)
-            {
-                subSlide[i].slideStartTime = note.slideStartTime + (double)tempBarCount / sumBarCount * note.slideTime;
-                subSlide[i].slideTime = (double)subBarCount[i] / sumBarCount * note.slideTime;
-                tempBarCount += subBarCount[i];
-            }
-        }
-        else
-        {
-            // 每条指定语法
+            var specTimeFlag = 0; // 表示此组合slide是指定总时长 还是指定每一段的时长
+                                  // 0-目前还没有读取 1-读取到了一个未指定时长的段落 2-读取到了一个指定时长的段落 3-（期望）读取到了最后一个时长指定
 
-            // 获取时长的子函数
-            double getTimeFromBeats(string noteText, float currentBpm)
-            {
-                var startIndex = noteText.IndexOf('[');
-                var overIndex = noteText.IndexOf(']');
-                var innerString = noteText.Substring(startIndex + 1, overIndex - startIndex - 1);
-                var timeOneBeat = 1d / (currentBpm / 60d);
-                if (innerString.Count(o => o == '#') == 1)
+            while (ptr < noteContent.Length)
+                if (!char.IsNumber(noteContent[ptr]))
                 {
-                    var times = innerString.Split('#');
-                    if (times[1].Contains(':'))
+                    // 读取到字符
+                    var slideTypeChar = noteContent[ptr++].ToString();
+
+                    var slidePart = new SimaiNote();
+                    slidePart.noteType = SimaiNoteType.Slide;
+                    slidePart.startPosition = latestStartIndex;
+                    if (slideTypeChar == "V")
                     {
-                        innerString = times[1];
-                        timeOneBeat = 1d / (double.Parse(times[0]) / 60d);
+                        // 转折星星
+                        var middlePos = noteContent[ptr++];
+                        var endPos = noteContent[ptr++];
+
+                        slidePart.noteContent = latestStartIndex + slideTypeChar + middlePos + endPos;
+                        latestStartIndex = charIntParse(endPos);
                     }
                     else
                     {
-                        return double.Parse(times[1]);
+                        // 其他普通星星
+                        // 额外检查pp和qq
+                        if (noteContent[ptr] == slideTypeChar[0]) slideTypeChar += noteContent[ptr++];
+                        var endPos = noteContent[ptr++];
+
+                        slidePart.noteContent = latestStartIndex + slideTypeChar + endPos;
+                        latestStartIndex = charIntParse(endPos);
                     }
-                }
 
-                if (innerString.Count(o => o == '#') == 2)
+                    if (noteContent[ptr] == '[')
+                    {
+                        // 如果指定了速度
+                        if (specTimeFlag == 0)
+                            // 之前未读取过
+                            specTimeFlag = 2;
+                        else if (specTimeFlag == 1)
+                            // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
+                            specTimeFlag = 3;
+                        else if (specTimeFlag == 3)
+                            // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
+                            throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
+
+                        while (ptr < noteContent.Length && noteContent[ptr] != ']')
+                            slidePart.noteContent += noteContent[ptr++];
+                        slidePart.noteContent += noteContent[ptr++];
+                    }
+                    else
+                    {
+                        // 没有指定速度
+                        if (specTimeFlag == 0)
+                            // 之前未读取过
+                            specTimeFlag = 1;
+                        else if (specTimeFlag == 2 || specTimeFlag == 3)
+                            // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
+                            throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
+                    }
+
+                    string slideShape = detectShapeFromText(slidePart.noteContent);
+                    if (slideShape.StartsWith("-"))
+                    {
+                        slideShape = slideShape.Substring(1);
+                    }
+                    int slideIndex = SLIDE_PREFAB_MAP[slideShape];
+                    if (slideIndex < 0) slideIndex = -slideIndex;
+
+                    var barCount = slidePrefab[slideIndex].transform.childCount;
+                    subBarCount.Add(barCount);
+                    sumBarCount += barCount;
+
+                    subSlide.Add(slidePart);
+                }
+                else
                 {
-                    var times = innerString.Split('#');
-                    return double.Parse(times[2]);
+                    // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
+                    throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
                 }
 
-                var numbers = innerString.Split(':');
-                var divide = int.Parse(numbers[0]);
-                var count = int.Parse(numbers[1]);
-
-
-                return timeOneBeat * 4d / divide * count;
-            }
-
-            double tempSlideTime = 0;
-            for (var i = 0; i < subSlide.Count; i++)
+            subSlide.ForEach(o =>
             {
-                subSlide[i].slideStartTime = note.slideStartTime + tempSlideTime;
-                subSlide[i].slideTime = getTimeFromBeats(subSlide[i].noteContent, timing.currentBpm);
-                tempSlideTime += subSlide[i].slideTime;
-            }
-        }
+                o.isBreak = note.isBreak;
+                o.isEx = note.isEx;
+                o.isSlideBreak = note.isSlideBreak;
+                o.isSlideNoHead = true;
+            });
+            subSlide[0].isSlideNoHead = note.isSlideNoHead;
 
-        GameObject parent = null;
-        List<SlideDrop> subSlides = new();
-        float totalLen = (float)subSlide.Select(x => x.slideTime).Sum();
-        float totalSlideLen = 0;
-        for (var i = 0; i <= subSlide.Count - 1; i++)
-        {
-            bool isConn = subSlide.Count != 1;
-            bool isGroupHead = i == 0;
-            bool isGroupEnd = i == subSlide.Count - 1;
-            if (note.noteContent.Contains('w')) //wifi
+            if (specTimeFlag == 1 || specTimeFlag == 0)
+                // 如果到结束还是1 那说明没有一个指定了时长 报错
+                throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+            // 此时 flag为2表示每条指定语法 为3表示整体指定语法
+
+            if (specTimeFlag == 3)
             {
-                if (isConn)
-                    throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
-                InstantiateWifi(timing, subSlide[i]);
+                // 整体指定语法 使用slideTime来计算
+                var tempBarCount = 0;
+                for (var i = 0; i < subSlide.Count; i++)
+                {
+                    subSlide[i].slideStartTime = note.slideStartTime + (double)tempBarCount / sumBarCount * note.slideTime;
+                    subSlide[i].slideTime = (double)subBarCount[i] / sumBarCount * note.slideTime;
+                    tempBarCount += subBarCount[i];
+                }
             }
             else
             {
-                ConnSlideInfo info = new ConnSlideInfo()
+                // 每条指定语法
+
+                // 获取时长的子函数
+                double getTimeFromBeats(string noteText, float currentBpm)
                 {
-                    TotalLength = totalLen,
-                    IsGroupPart = isConn,
-                    IsGroupPartHead = isGroupHead,
-                    IsGroupPartEnd = isGroupEnd,
-                    Parent = parent
-                };
-                parent = InstantiateSlide(timing, subSlide[i], info);
-                subSlides.Add(parent.GetComponent<SlideDrop>());
+                    var startIndex = noteText.IndexOf('[');
+                    var overIndex = noteText.IndexOf(']');
+                    var innerString = noteText.Substring(startIndex + 1, overIndex - startIndex - 1);
+                    var timeOneBeat = 1d / (currentBpm / 60d);
+                    if (innerString.Count(o => o == '#') == 1)
+                    {
+                        var times = innerString.Split('#');
+                        if (times[1].Contains(':'))
+                        {
+                            innerString = times[1];
+                            timeOneBeat = 1d / (double.Parse(times[0]) / 60d);
+                        }
+                        else
+                        {
+                            return double.Parse(times[1]);
+                        }
+                    }
+
+                    if (innerString.Count(o => o == '#') == 2)
+                    {
+                        var times = innerString.Split('#');
+                        return double.Parse(times[2]);
+                    }
+
+                    var numbers = innerString.Split(':');
+                    var divide = int.Parse(numbers[0]);
+                    var count = int.Parse(numbers[1]);
+
+
+                    return timeOneBeat * 4d / divide * count;
+                }
+
+                double tempSlideTime = 0;
+                for (var i = 0; i < subSlide.Count; i++)
+                {
+                    subSlide[i].slideStartTime = note.slideStartTime + tempSlideTime;
+                    subSlide[i].slideTime = getTimeFromBeats(subSlide[i].noteContent, timing.currentBpm);
+                    tempSlideTime += subSlide[i].slideTime;
+                }
             }
-        }
-        subSlides.ForEach(s =>
-        {
-            s.Initialize();
-            totalSlideLen += s.GetSlideLength();
-        });
-        subSlides.ForEach(s => s.ConnectInfo.TotalSlideLen = totalSlideLen);
-    }
 
-    private GameObject InstantiateWifi(SimaiTimingPoint timing, SimaiNote note)
-    {
-        var str = note.noteContent.Substring(0, 3);
-        var digits = str.Split('w');
-        var startPos = int.Parse(digits[0]);
-        var endPos = int.Parse(digits[1]);
-        endPos = endPos - startPos;
-        endPos = endPos < 0 ? endPos + 8 : endPos;
-        endPos = endPos > 8 ? endPos - 8 : endPos;
-        endPos++;
-
-        var GOnote = Instantiate(starPrefab, notes.transform);
-        var NDCompo = GOnote.GetComponent<StarDrop>();
-
-
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        NDCompo.rotateSpeed = (float)note.slideTime;
-        NDCompo.isEX = note.isEx;
-        NDCompo.isBreak = note.isBreak;
-
-        var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform);
-        slideWifi.SetActive(false);
-        NDCompo.slide = slideWifi;
-        var WifiCompo = slideWifi.GetComponent<WifiDrop>();
-
-        if (timing.noteList.Count > 1)
-        {
-            NDCompo.isEach = true;
-            NDCompo.isDouble = false;
-            if (timing.noteList.FindAll(
-                    o => o.noteType == SimaiNoteType.Slide).Count
-                > 1)
-                WifiCompo.isEach = true;
-            var count = timing.noteList.FindAll(
-                o => o.noteType == SimaiNoteType.Slide &&
-                     o.startPosition == note.startPosition).Count;
-            if (count > 1) //有同起点
+            GameObject parent = null;
+            List<SlideDrop> subSlides = new();
+            float totalLen = (float)subSlide.Select(x => x.slideTime).Sum();
+            float totalSlideLen = 0;
+            for (var i = 0; i <= subSlide.Count - 1; i++)
             {
-                NDCompo.isDouble = true;
-                if (count == timing.noteList.Count)
-                    NDCompo.isEach = false;
+                bool isConn = subSlide.Count != 1;
+                bool isGroupHead = i == 0;
+                bool isGroupEnd = i == subSlide.Count - 1;
+                if (note.noteContent.Contains('w')) //wifi
+                {
+                    if (isConn)
+                        throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
+                    InstantiateWifi(timing, subSlide[i]);
+                }
                 else
-                    NDCompo.isEach = true;
+                {
+                    ConnSlideInfo info = new ConnSlideInfo()
+                    {
+                        TotalLength = totalLen,
+                        IsGroupPart = isConn,
+                        IsGroupPartHead = isGroupHead,
+                        IsGroupPartEnd = isGroupEnd,
+                        Parent = parent
+                    };
+                    parent = InstantiateSlide(timing, subSlide[i], info);
+                    subSlides.Add(parent.GetComponent<SlideDrop>());
+                }
             }
-        }
-
-        WifiCompo.isBreak = note.isSlideBreak;
-
-        NDCompo.isNoHead = note.isSlideNoHead;
-        if(!note.isSlideNoHead)
-        {
-            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-            noteCount++;
-        }
-        NDCompo.timing = (float)timing.time;
-        NDCompo.startPosition = note.startPosition;
-        NDCompo.speed = noteSpeed * timing.HSpeed;
-
-        WifiCompo.isJustR = detectJustType(note.noteContent, out endPos);
-        WifiCompo.endPosition = endPos;
-        WifiCompo.speed = noteSpeed * timing.HSpeed;
-        WifiCompo.startTiming = (float)timing.time;
-        WifiCompo.startPosition = note.startPosition;
-        WifiCompo.timing = (float)note.slideStartTime;
-        WifiCompo.LastFor = (float)note.slideTime;
-        WifiCompo.sortIndex = slideLayer;
-        WifiCompo.stars = new GameObject[3] 
-        {
-            Instantiate(star_slidePrefab, notes.transform),
-            Instantiate(star_slidePrefab, notes.transform),
-            Instantiate(star_slidePrefab, notes.transform)
-        };
-        slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
-        //slideLayer += 5;
-
-        return slideWifi;
-    }
-
-    private GameObject InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
-    {
-        var GOnote = Instantiate(starPrefab, notes.transform);
-        var NDCompo = GOnote.GetComponent<StarDrop>();
-
-        // note的图层顺序
-        NDCompo.noteSortOrder = noteSortOrder;
-        noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
-        NDCompo.rotateSpeed = (float)note.slideTime;
-        NDCompo.isEX = note.isEx;
-        NDCompo.isBreak = note.isBreak;
-
-        string slideShape = detectShapeFromText(note.noteContent);
-        var isMirror = false;
-        if (slideShape.StartsWith("-"))
-        {
-            isMirror = true;
-            slideShape = slideShape.Substring(1);
-        }
-        int slideIndex = SLIDE_PREFAB_MAP[slideShape];
-
-        var slide = Instantiate(slidePrefab[slideIndex], notes.transform);
-        var slide_star = Instantiate(star_slidePrefab, notes.transform);
-        //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
-        slide_star.SetActive(false);
-        slide.SetActive(false);
-        NDCompo.slide = slide;
-        var SliCompo = slide.AddComponent<SlideDrop>();
-
-        SliCompo.slideType = slideShape;
-
-        if (timing.noteList.Count > 1)
-        {
-            NDCompo.isEach = true;
-            if (timing.noteList.FindAll(
-                    o => o.noteType == SimaiNoteType.Slide).Count
-                > 1)
+            subSlides.ForEach(s =>
             {
-                SliCompo.isEach = true;
-                //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Each;
-            }
-
-            var count = timing.noteList.FindAll(
-                o => o.noteType == SimaiNoteType.Slide &&
-                     o.startPosition == note.startPosition).Count;
-            if (count > 1)
-            {
-                NDCompo.isDouble = true;
-                if (count == timing.noteList.Count)
-                    NDCompo.isEach = false;
-                else
-                    NDCompo.isEach = true;
-            }
+                s.Initialize();
+                totalSlideLen += s.GetSlideLength();
+            });
+            subSlides.ForEach(s => s.ConnectInfo.TotalSlideLen = totalSlideLen);
         }
 
-        SliCompo.ConnectInfo = info;
-        SliCompo.isBreak = note.isSlideBreak;
-        //if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
-
-        NDCompo.isNoHead = note.isSlideNoHead;
-        if (!note.isSlideNoHead)
+        private GameObject InstantiateWifi(SimaiTimingPoint timing, SimaiNote note)
         {
-            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-            noteCount++;
-        }
-        NDCompo.timing = (float)timing.time;
-        NDCompo.startPosition = note.startPosition;
-        NDCompo.speed = noteSpeed * timing.HSpeed;
-
-
-        SliCompo.isMirror = isMirror;
-        SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
-        SliCompo.endPosition = endPos;
-        if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
-        {
-            // known slide sprite issue
-            //    1 2 3 4 5 6 7 8
-            // p  X X X X X X O O
-            // q  X O O X X X X X
-            var pqEndPos = slideIndex - 26;
-            SliCompo.isSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
-        }
-        else
-        {
-            SliCompo.isSpecialFlip = isMirror;
-        }
-        SliCompo.speed = noteSpeed * timing.HSpeed;
-        SliCompo.startTiming = (float)timing.time;
-        SliCompo.startPosition = note.startPosition;
-        SliCompo.stars = new GameObject[] { slide_star };
-        SliCompo.timing = (float)note.slideStartTime;
-        SliCompo.LastFor = (float)note.slideTime;
-        //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
-        SliCompo.sortIndex = slideLayer;
-        slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
-        //slideLayer += 5;
-        return slide;
-    }
-
-    /// <summary>
-    /// 判断Slide SlideOK是否需要镜像翻转
-    /// </summary>
-    /// <param name="content"></param>
-    /// <param name="endPos"></param>
-    /// <returns></returns>
-    private bool detectJustType(string content, out int endPos)
-    {
-        // > < ^ V w
-        if (content.Contains('>'))
-        {
-            var str = content.Substring(0, 3);
-            var digits = str.Split('>');
-            var startPos = int.Parse(digits[0]);
-            endPos = int.Parse(digits[1]);
-            if (isUpperHalf(startPos))
-                return true;
-            return false;
-        }
-
-        if (content.Contains('<'))
-        {
-            var str = content.Substring(0, 3);
-            var digits = str.Split('<');
-            var startPos = int.Parse(digits[0]);
-            endPos = int.Parse(digits[1]);
-            if (!isUpperHalf(startPos))
-                return true;
-            return false;
-        }
-
-        if (content.Contains('^'))
-        {
-            var str = content.Substring(0, 3);
-            var digits = str.Split('^');
-            var startPos = int.Parse(digits[0]);
-            endPos = int.Parse(digits[1]);
-            endPos = endPos - startPos;
-            endPos = endPos < 0 ? endPos + 8 : endPos;
-            endPos = endPos > 8 ? endPos - 8 : endPos;
-
-            if (endPos < 4)
-            {
-                endPos = int.Parse(digits[1]);
-                return true;
-            }
-            if (endPos > 4)
-            {
-                endPos = int.Parse(digits[1]);
-                return false;
-            }
-        }
-        else if (content.Contains('V'))
-        {
-            var str = content.Substring(0, 4);
-            var digits = str.Split('V');
-            endPos = int.Parse(digits[1][1].ToString());
-
-            if (isRightHalf(endPos))
-                return true;
-            return false;
-        }
-        else if (content.Contains('w'))
-        {
-            var str = content.Substring(0, 3);
-            endPos = int.Parse(str.Substring(2, 1));
-            if (isUpperHalf(endPos))
-                return true;
-            return false;
-        }
-        else
-        {
-            //int endPos;
-            if (content.Contains("qq") || content.Contains("pp"))
-                endPos = int.Parse(content.Substring(3, 1));
-            else
-                endPos = int.Parse(content.Substring(2, 1));
-            if (isRightHalf(endPos))
-                return true;
-            return false;
-        }
-        return true;
-    }
-
-    private string detectShapeFromText(string content)
-    {
-        int getRelativeEndPos(int startPos, int endPos)
-        {
-            endPos = endPos - startPos;
-            endPos = endPos < 0 ? endPos + 8 : endPos;
-            endPos = endPos > 8 ? endPos - 8 : endPos;
-            return endPos + 1;
-        }
-
-        //print(content);
-        if (content.Contains('-'))
-        {
-            // line
-            var str = content.Substring(0, 3); //something like "8-6"
-            var digits = str.Split('-');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
-            return "line" + endPos;
-        }
-
-        if (content.Contains('>'))
-        {
-            // circle 默认顺时针
-            var str = content.Substring(0, 3);
-            var digits = str.Split('>');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (isUpperHalf(startPos))
-            {
-                return "circle" + endPos;
-            }
-
-            endPos = MirrorKeys(endPos);
-            return "-circle" + endPos; //Mirror
-        }
-
-        if (content.Contains('<'))
-        {
-            // circle 默认顺时针
-            var str = content.Substring(0, 3);
-            var digits = str.Split('<');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (!isUpperHalf(startPos))
-            {
-                return "circle" + endPos;
-            }
-
-            endPos = MirrorKeys(endPos);
-            return "-circle" + endPos; //Mirror
-        }
-
-        if (content.Contains('^'))
-        {
-            var str = content.Substring(0, 3);
-            var digits = str.Split('^');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-
-            if (endPos == 1 || endPos == 5)
-            {
-                throw new Exception("^星星不合法\n^スライドエラー");
-            }
-
-            if (endPos < 5)
-            {
-                return "circle" + endPos;
-            }
-            if (endPos > 5)
-            {
-                return "-circle" + MirrorKeys(endPos);
-            }
-        }
-
-        if (content.Contains('v'))
-        {
-            // v
-            var str = content.Substring(0, 3);
-            var digits = str.Split('v');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
-            return "v" + endPos;
-        }
-
-        if (content.Contains("pp"))
-        {
-            // ppqq 默认为pp
-            var str = content.Substring(0, 4);
-            var digits = str.Split('p');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[2]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            return "ppqq" + endPos;
-        }
-
-        if (content.Contains("qq"))
-        {
-            // ppqq 默认为pp
-            var str = content.Substring(0, 4);
-            var digits = str.Split('q');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[2]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            endPos = MirrorKeys(endPos);
-            return "-ppqq" + endPos;
-        }
-
-        if (content.Contains('p'))
-        {
-            // pq 默认为p
-            var str = content.Substring(0, 3);
-            var digits = str.Split('p');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            return "pq" + endPos;
-        }
-
-        if (content.Contains('q'))
-        {
-            // pq 默认为p
-            var str = content.Substring(0, 3);
-            var digits = str.Split('q');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            endPos = MirrorKeys(endPos);
-            return "-pq" + endPos;
-        }
-
-        if (content.Contains('s'))
-        {
-            // s
-            var str = content.Substring(0, 3);
-            var digits = str.Split('s');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
-            return "s";
-        }
-
-        if (content.Contains('z'))
-        {
-            // s镜像
-            var str = content.Substring(0, 3);
-            var digits = str.Split('z');
-            var startPos = int.Parse(digits[0]);
-            var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
-            return "-s";
-        }
-
-        if (content.Contains('V'))
-        {
-            // L
-            var str = content.Substring(0, 4);
-            var digits = str.Split('V');
-            var startPos = int.Parse(digits[0]);
-            var turnPos = int.Parse(digits[1][0].ToString());
-            var endPos = int.Parse(digits[1][1].ToString());
-
-            turnPos = getRelativeEndPos(startPos, turnPos);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (turnPos == 7)
-            {
-                if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                return "L" + endPos;
-            }
-
-            if (turnPos == 3)
-            {
-                if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                return "-L" + MirrorKeys(endPos);
-            }
-
-            throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
-        }
-
-        if (content.Contains('w'))
-        {
-            // wifi
-            var str = content.Substring(0, 3);
+            var str = note.noteContent.Substring(0, 3);
             var digits = str.Split('w');
             var startPos = int.Parse(digits[0]);
             var endPos = int.Parse(digits[1]);
-            endPos = getRelativeEndPos(startPos, endPos);
-            if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
-            return "wifi";
+            endPos = endPos - startPos;
+            endPos = endPos < 0 ? endPos + 8 : endPos;
+            endPos = endPos > 8 ? endPos - 8 : endPos;
+            endPos++;
+
+            var GOnote = Instantiate(starPrefab, notes.transform);
+            var NDCompo = GOnote.GetComponent<StarDrop>();
+
+
+
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            NDCompo.rotateSpeed = (float)note.slideTime;
+            NDCompo.isEX = note.isEx;
+            NDCompo.isBreak = note.isBreak;
+
+            var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform);
+            slideWifi.SetActive(false);
+            NDCompo.slide = slideWifi;
+            var WifiCompo = slideWifi.GetComponent<WifiDrop>();
+
+            if (timing.noteList.Count > 1)
+            {
+                NDCompo.isEach = true;
+                NDCompo.isDouble = false;
+                if (timing.noteList.FindAll(
+                        o => o.noteType == SimaiNoteType.Slide).Count
+                    > 1)
+                    WifiCompo.isEach = true;
+                var count = timing.noteList.FindAll(
+                    o => o.noteType == SimaiNoteType.Slide &&
+                         o.startPosition == note.startPosition).Count;
+                if (count > 1) //有同起点
+                {
+                    NDCompo.isDouble = true;
+                    if (count == timing.noteList.Count)
+                        NDCompo.isEach = false;
+                    else
+                        NDCompo.isEach = true;
+                }
+            }
+
+            WifiCompo.isBreak = note.isSlideBreak;
+
+            NDCompo.isNoHead = note.isSlideNoHead;
+            if (!note.isSlideNoHead)
+            {
+                noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+                noteCount++;
+            }
+            NDCompo.timing = (float)timing.time;
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.speed = noteSpeed * timing.HSpeed;
+
+            WifiCompo.isJustR = detectJustType(note.noteContent, out endPos);
+            WifiCompo.endPosition = endPos;
+            WifiCompo.speed = noteSpeed * timing.HSpeed;
+            WifiCompo.startTiming = (float)timing.time;
+            WifiCompo.startPosition = note.startPosition;
+            WifiCompo.timing = (float)note.slideStartTime;
+            WifiCompo.LastFor = (float)note.slideTime;
+            WifiCompo.sortIndex = slideLayer;
+            WifiCompo.stars = new GameObject[3]
+            {
+            Instantiate(star_slidePrefab, notes.transform),
+            Instantiate(star_slidePrefab, notes.transform),
+            Instantiate(star_slidePrefab, notes.transform)
+            };
+            slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
+            //slideLayer += 5;
+
+            return slideWifi;
         }
 
-        return "";
-    }
+        private GameObject InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
+        {
+            var GOnote = Instantiate(starPrefab, notes.transform);
+            var NDCompo = GOnote.GetComponent<StarDrop>();
 
-    private bool isUpperHalf(int key)
-    {
-        if (key == 7) return true;
-        if (key == 8) return true;
-        if (key == 1) return true;
-        if (key == 2) return true;
+            // note的图层顺序
+            NDCompo.noteSortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-        return false;
-    }
+            NDCompo.rotateSpeed = (float)note.slideTime;
+            NDCompo.isEX = note.isEx;
+            NDCompo.isBreak = note.isBreak;
 
-    private bool isRightHalf(int key)
-    {
-        if (key == 1) return true;
-        if (key == 2) return true;
-        if (key == 3) return true;
-        if (key == 4) return true;
+            string slideShape = detectShapeFromText(note.noteContent);
+            var isMirror = false;
+            if (slideShape.StartsWith("-"))
+            {
+                isMirror = true;
+                slideShape = slideShape.Substring(1);
+            }
+            int slideIndex = SLIDE_PREFAB_MAP[slideShape];
 
-        return false;
-    }
+            var slide = Instantiate(slidePrefab[slideIndex], notes.transform);
+            var slide_star = Instantiate(star_slidePrefab, notes.transform);
+            //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
+            slide_star.SetActive(false);
+            slide.SetActive(false);
+            NDCompo.slide = slide;
+            var SliCompo = slide.AddComponent<SlideDrop>();
 
-    private int MirrorKeys(int key)
-    {
-        if (key == 1) return 1;
-        if (key == 2) return 8;
-        if (key == 3) return 7;
-        if (key == 4) return 6;
+            SliCompo.slideType = slideShape;
 
-        if (key == 5) return 5;
-        if (key == 6) return 4;
-        if (key == 7) return 3;
-        if (key == 8) return 2;
-        throw new Exception("Keys out of range: " + key);
+            if (timing.noteList.Count > 1)
+            {
+                NDCompo.isEach = true;
+                if (timing.noteList.FindAll(
+                        o => o.noteType == SimaiNoteType.Slide).Count
+                    > 1)
+                {
+                    SliCompo.isEach = true;
+                    //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Each;
+                }
+
+                var count = timing.noteList.FindAll(
+                    o => o.noteType == SimaiNoteType.Slide &&
+                         o.startPosition == note.startPosition).Count;
+                if (count > 1)
+                {
+                    NDCompo.isDouble = true;
+                    if (count == timing.noteList.Count)
+                        NDCompo.isEach = false;
+                    else
+                        NDCompo.isEach = true;
+                }
+            }
+
+            SliCompo.ConnectInfo = info;
+            SliCompo.isBreak = note.isSlideBreak;
+            //if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
+
+            NDCompo.isNoHead = note.isSlideNoHead;
+            if (!note.isSlideNoHead)
+            {
+                noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+                noteCount++;
+            }
+            NDCompo.timing = (float)timing.time;
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.speed = noteSpeed * timing.HSpeed;
+
+
+            SliCompo.isMirror = isMirror;
+            SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
+            SliCompo.endPosition = endPos;
+            if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
+            {
+                // known slide sprite issue
+                //    1 2 3 4 5 6 7 8
+                // p  X X X X X X O O
+                // q  X O O X X X X X
+                var pqEndPos = slideIndex - 26;
+                SliCompo.isSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
+            }
+            else
+            {
+                SliCompo.isSpecialFlip = isMirror;
+            }
+            SliCompo.speed = noteSpeed * timing.HSpeed;
+            SliCompo.startTiming = (float)timing.time;
+            SliCompo.startPosition = note.startPosition;
+            SliCompo.stars = new GameObject[] { slide_star };
+            SliCompo.timing = (float)note.slideStartTime;
+            SliCompo.LastFor = (float)note.slideTime;
+            //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
+            SliCompo.sortIndex = slideLayer;
+            slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+            //slideLayer += 5;
+            return slide;
+        }
+
+        /// <summary>
+        /// 判断Slide SlideOK是否需要镜像翻转
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="endPos"></param>
+        /// <returns></returns>
+        private bool detectJustType(string content, out int endPos)
+        {
+            // > < ^ V w
+            if (content.Contains('>'))
+            {
+                var str = content.Substring(0, 3);
+                var digits = str.Split('>');
+                var startPos = int.Parse(digits[0]);
+                endPos = int.Parse(digits[1]);
+                if (isUpperHalf(startPos))
+                    return true;
+                return false;
+            }
+
+            if (content.Contains('<'))
+            {
+                var str = content.Substring(0, 3);
+                var digits = str.Split('<');
+                var startPos = int.Parse(digits[0]);
+                endPos = int.Parse(digits[1]);
+                if (!isUpperHalf(startPos))
+                    return true;
+                return false;
+            }
+
+            if (content.Contains('^'))
+            {
+                var str = content.Substring(0, 3);
+                var digits = str.Split('^');
+                var startPos = int.Parse(digits[0]);
+                endPos = int.Parse(digits[1]);
+                endPos = endPos - startPos;
+                endPos = endPos < 0 ? endPos + 8 : endPos;
+                endPos = endPos > 8 ? endPos - 8 : endPos;
+
+                if (endPos < 4)
+                {
+                    endPos = int.Parse(digits[1]);
+                    return true;
+                }
+                if (endPos > 4)
+                {
+                    endPos = int.Parse(digits[1]);
+                    return false;
+                }
+            }
+            else if (content.Contains('V'))
+            {
+                var str = content.Substring(0, 4);
+                var digits = str.Split('V');
+                endPos = int.Parse(digits[1][1].ToString());
+
+                if (isRightHalf(endPos))
+                    return true;
+                return false;
+            }
+            else if (content.Contains('w'))
+            {
+                var str = content.Substring(0, 3);
+                endPos = int.Parse(str.Substring(2, 1));
+                if (isUpperHalf(endPos))
+                    return true;
+                return false;
+            }
+            else
+            {
+                //int endPos;
+                if (content.Contains("qq") || content.Contains("pp"))
+                    endPos = int.Parse(content.Substring(3, 1));
+                else
+                    endPos = int.Parse(content.Substring(2, 1));
+                if (isRightHalf(endPos))
+                    return true;
+                return false;
+            }
+            return true;
+        }
+
+        private string detectShapeFromText(string content)
+        {
+            int getRelativeEndPos(int startPos, int endPos)
+            {
+                endPos = endPos - startPos;
+                endPos = endPos < 0 ? endPos + 8 : endPos;
+                endPos = endPos > 8 ? endPos - 8 : endPos;
+                return endPos + 1;
+            }
+
+            //print(content);
+            if (content.Contains('-'))
+            {
+                // line
+                var str = content.Substring(0, 3); //something like "8-6"
+                var digits = str.Split('-');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
+                return "line" + endPos;
+            }
+
+            if (content.Contains('>'))
+            {
+                // circle 默认顺时针
+                var str = content.Substring(0, 3);
+                var digits = str.Split('>');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (isUpperHalf(startPos))
+                {
+                    return "circle" + endPos;
+                }
+
+                endPos = MirrorKeys(endPos);
+                return "-circle" + endPos; //Mirror
+            }
+
+            if (content.Contains('<'))
+            {
+                // circle 默认顺时针
+                var str = content.Substring(0, 3);
+                var digits = str.Split('<');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (!isUpperHalf(startPos))
+                {
+                    return "circle" + endPos;
+                }
+
+                endPos = MirrorKeys(endPos);
+                return "-circle" + endPos; //Mirror
+            }
+
+            if (content.Contains('^'))
+            {
+                var str = content.Substring(0, 3);
+                var digits = str.Split('^');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+
+                if (endPos == 1 || endPos == 5)
+                {
+                    throw new Exception("^星星不合法\n^スライドエラー");
+                }
+
+                if (endPos < 5)
+                {
+                    return "circle" + endPos;
+                }
+                if (endPos > 5)
+                {
+                    return "-circle" + MirrorKeys(endPos);
+                }
+            }
+
+            if (content.Contains('v'))
+            {
+                // v
+                var str = content.Substring(0, 3);
+                var digits = str.Split('v');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
+                return "v" + endPos;
+            }
+
+            if (content.Contains("pp"))
+            {
+                // ppqq 默认为pp
+                var str = content.Substring(0, 4);
+                var digits = str.Split('p');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[2]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                return "ppqq" + endPos;
+            }
+
+            if (content.Contains("qq"))
+            {
+                // ppqq 默认为pp
+                var str = content.Substring(0, 4);
+                var digits = str.Split('q');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[2]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                endPos = MirrorKeys(endPos);
+                return "-ppqq" + endPos;
+            }
+
+            if (content.Contains('p'))
+            {
+                // pq 默认为p
+                var str = content.Substring(0, 3);
+                var digits = str.Split('p');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                return "pq" + endPos;
+            }
+
+            if (content.Contains('q'))
+            {
+                // pq 默认为p
+                var str = content.Substring(0, 3);
+                var digits = str.Split('q');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                endPos = MirrorKeys(endPos);
+                return "-pq" + endPos;
+            }
+
+            if (content.Contains('s'))
+            {
+                // s
+                var str = content.Substring(0, 3);
+                var digits = str.Split('s');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
+                return "s";
+            }
+
+            if (content.Contains('z'))
+            {
+                // s镜像
+                var str = content.Substring(0, 3);
+                var digits = str.Split('z');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
+                return "-s";
+            }
+
+            if (content.Contains('V'))
+            {
+                // L
+                var str = content.Substring(0, 4);
+                var digits = str.Split('V');
+                var startPos = int.Parse(digits[0]);
+                var turnPos = int.Parse(digits[1][0].ToString());
+                var endPos = int.Parse(digits[1][1].ToString());
+
+                turnPos = getRelativeEndPos(startPos, turnPos);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (turnPos == 7)
+                {
+                    if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                    return "L" + endPos;
+                }
+
+                if (turnPos == 3)
+                {
+                    if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                    return "-L" + MirrorKeys(endPos);
+                }
+
+                throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
+            }
+
+            if (content.Contains('w'))
+            {
+                // wifi
+                var str = content.Substring(0, 3);
+                var digits = str.Split('w');
+                var startPos = int.Parse(digits[0]);
+                var endPos = int.Parse(digits[1]);
+                endPos = getRelativeEndPos(startPos, endPos);
+                if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
+                return "wifi";
+            }
+
+            return "";
+        }
+
+        private bool isUpperHalf(int key)
+        {
+            if (key == 7) return true;
+            if (key == 8) return true;
+            if (key == 1) return true;
+            if (key == 2) return true;
+
+            return false;
+        }
+
+        private bool isRightHalf(int key)
+        {
+            if (key == 1) return true;
+            if (key == 2) return true;
+            if (key == 3) return true;
+            if (key == 4) return true;
+
+            return false;
+        }
+
+        private int MirrorKeys(int key)
+        {
+            if (key == 1) return 1;
+            if (key == 2) return 8;
+            if (key == 3) return 7;
+            if (key == 4) return 6;
+
+            if (key == 5) return 5;
+            if (key == 6) return 4;
+            if (key == 7) return 3;
+            if (key == 8) return 2;
+            throw new Exception("Keys out of range: " + key);
+        }
     }
 }

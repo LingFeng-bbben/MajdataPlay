@@ -1,25 +1,28 @@
 ﻿using UnityEngine;
 
-public class Floating : MonoBehaviour
+namespace MajdataPlay.Misc
 {
-    public float rotate;
-    public float wx;
-    public float wy;
-    private RectTransform rectTransform;
-
-    private Vector3 startPos;
-
-    // Start is called before the first frame update
-    private void Start()
+    public class Floating : MonoBehaviour
     {
-        rectTransform = GetComponent<RectTransform>();
-        startPos = rectTransform.localPosition;
-    }
+        public float rotate;
+        public float wx;
+        public float wy;
+        private RectTransform rectTransform;
 
-    // Update is called once per frame
-    private void Update()
-    {
-        rectTransform.Rotate(new Vector3(0f, 0f, rotate));
-        rectTransform.localPosition = startPos + new Vector3(Mathf.Sin(Time.time * wx), Mathf.Sin(Time.time * wy));
+        private Vector3 startPos;
+
+        // Start is called before the first frame update
+        private void Start()
+        {
+            rectTransform = GetComponent<RectTransform>();
+            startPos = rectTransform.localPosition;
+        }
+
+        // Update is called once per frame
+        private void Update()
+        {
+            rectTransform.Rotate(new Vector3(0f, 0f, rotate));
+            rectTransform.localPosition = startPos + new Vector3(Mathf.Sin(Time.time * wx), Mathf.Sin(Time.time * wy));
+        }
     }
 }

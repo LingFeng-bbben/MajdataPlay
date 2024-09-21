@@ -2,41 +2,44 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TImeDisplayer : MonoBehaviour
+namespace MajdataPlay.Game
 {
-    private Text text;
-
-    private GamePlayManager gamePlayManager;
-
-    // Start is called before the first frame update
-    private void Start()
+    public class TimeDisplayer : MonoBehaviour
     {
-        text = GetComponent<Text>();
-        gamePlayManager = GamePlayManager.Instance;
-    }
+        private Text text;
 
-    // Update is called once per frame
+        private GamePlayManager gamePlayManager;
 
-    private void Update()
-    {
-        // Lock AudioTime variable for real
-        var ctime = gamePlayManager.AudioTime;
-        var timenowInt = (int)ctime;
-        var minute = timenowInt / 60;
-        var second = timenowInt - 60 * minute;
-        double mili = (ctime - timenowInt) * 10000;
-
-        // Make timing display "cleaner" on negative timing.
-        if (ctime < 0)
+        // Start is called before the first frame update
+        private void Start()
         {
-            minute = Math.Abs(minute);
-            second = Math.Abs(second);
-            mili = Math.Abs(mili);
-            text.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
+            text = GetComponent<Text>();
+            gamePlayManager = GamePlayManager.Instance;
         }
-        else
+
+        // Update is called once per frame
+
+        private void Update()
         {
-            text.text = string.Format("{0}:{1:00}.{2:0000}", minute, second, mili);
+            // Lock AudioTime variable for real
+            var ctime = gamePlayManager.AudioTime;
+            var timenowInt = (int)ctime;
+            var minute = timenowInt / 60;
+            var second = timenowInt - 60 * minute;
+            double mili = (ctime - timenowInt) * 10000;
+
+            // Make timing display "cleaner" on negative timing.
+            if (ctime < 0)
+            {
+                minute = Math.Abs(minute);
+                second = Math.Abs(second);
+                mili = Math.Abs(mili);
+                text.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
+            }
+            else
+            {
+                text.text = string.Format("{0}:{1:00}.{2:0000}", minute, second, mili);
+            }
         }
     }
 }

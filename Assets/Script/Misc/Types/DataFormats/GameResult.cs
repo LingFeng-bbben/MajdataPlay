@@ -1,5 +1,4 @@
-﻿
-namespace MajdataPlay.Types
+﻿namespace MajdataPlay.Types
 {
     public readonly struct GameResult
     {

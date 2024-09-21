@@ -1,20 +1,15 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.Types;
-using MajSimaiDecode;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -29,7 +24,7 @@ namespace MajdataPlay.Utils
             if (!Directory.Exists(GameManager.ChartPath))
             {
                 Directory.CreateDirectory(GameManager.ChartPath);
-                Directory.CreateDirectory(Path.Combine(GameManager.ChartPath,"default"));
+                Directory.CreateDirectory(Path.Combine(GameManager.ChartPath, "default"));
                 State = ComponentState.Finished;
                 return;
             }
@@ -72,7 +67,7 @@ namespace MajdataPlay.Utils
                 throw a.Exception.InnerException;
             foreach (var task in tasks)
             {
-                if(task.Result!=null)
+                if (task.Result != null)
                     collections.Add(task.Result);
             }
             return collections.ToArray();
@@ -100,7 +95,7 @@ namespace MajdataPlay.Utils
             }
             var a = Task.WhenAll(tasks);
             await a;
-            if(a.IsFaulted)
+            if (a.IsFaulted)
                 throw a.Exception.InnerException;
             foreach (var task in tasks)
                 charts.Add(task.Result);
@@ -109,15 +104,24 @@ namespace MajdataPlay.Utils
 
         static async Task<SongCollection> GetOnlineCollection(string apiroot)
         {
-            if (apiroot is null or "") return null;
+            var collection = SongCollection.Empty("MajNet");
+            if (string.IsNullOrEmpty(apiroot)) 
+                return collection;
 
             var listurl = apiroot + "/SongList";
             Debug.Log("Loading Online Charts from:" + listurl);
             try
             {
-                var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true});
+                var client = new HttpClient(new HttpClientHandler() 
+                { 
+                    Proxy = WebRequest.GetSystemWebProxy(), 
+                    UseProxy = true 
+                });
                 var liststr = await client.GetStringAsync(listurl);
                 var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr);
+                if (list is null || list.IsEmpty())
+                    return collection;
+
                 var gameList = new List<SongDetail>();
                 foreach (var song in list)
                 {
@@ -142,10 +146,11 @@ namespace MajdataPlay.Utils
                 }
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
                 return new SongCollection("MajNet", gameList.ToArray());
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Debug.LogError(e);
-                return null;
+                return collection;
             }
         }
     }

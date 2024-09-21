@@ -1,9 +1,8 @@
-﻿using MajdataPlay.Types;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 
-namespace MajdataPlay.IO
+namespace MajdataPlay.Types
 {
     public class PausableSoundProvider : ISampleProvider, IDisposable
     {
