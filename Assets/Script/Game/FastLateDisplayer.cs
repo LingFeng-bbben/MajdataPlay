@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
@@ -28,6 +24,14 @@ namespace MajdataPlay.Game
         public void Reset()
         {
             effectObject.SetActive(false);
+        }
+        public void Play(in JudgeResult judgeResult)
+        {
+            effectObject.SetActive(true);
+            if (judgeResult.IsFast)
+                textRenderer.sprite = fastSprite;
+            else
+                textRenderer.sprite = lateSprite;
         }
     }
 }

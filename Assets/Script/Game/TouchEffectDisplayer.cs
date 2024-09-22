@@ -1,43 +1,48 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using UnityEngine;
-#nullable enable
+
 namespace MajdataPlay.Game
 {
-    public sealed class TapEffectDisplayer: MonoBehaviour
+    public sealed class TouchEffectDisplayer: MonoBehaviour
     {
-        [SerializeField]
-        GameObject perfectDisplayer;
-        [SerializeField]
-        GameObject greatDisplayer;
-        [SerializeField]
-        GameObject goodDisplayer;
+        public SensorType SensorPos { get; set; } = SensorType.C;
 
         [SerializeField]
-        Animator perfectAnim;
+        GameObject effectObject;
         [SerializeField]
-        Animator greatAnim;
+        GameObject textObject;
         [SerializeField]
-        Animator goodAnim;
+        GameObject fastLateObject;
+
+        [SerializeField]
+        Animator effectAnim;
 
         [SerializeField]
         JudgeTextDisplayer judgeTextDisplayer;
         [SerializeField]
         FastLateDisplayer fastLateDisplayer;
-
         void Start()
         {
-            Reset();
+            var distance = TouchBase.GetDistance(SensorPos.GetGroup());
+            var rotation = TouchBase.GetRoation(TouchBase.GetAreaPos(SensorPos), SensorPos);
+            transform.rotation = rotation;
+
+            var effectPos = effectObject.transform.position;
+            effectPos.y += distance;
+            effectObject.transform.position = effectPos;
+            var textPos = textObject.transform.position;
+            textPos.y += distance;
+            textObject.transform.position = textPos;
+            var fastLatePos = fastLateObject.transform.position;
+            fastLatePos.y += distance;
+            fastLateObject.transform.position = fastLatePos;
         }
         public void Reset()
         {
-            perfectDisplayer.SetActive(false);
-            greatDisplayer.SetActive(false);
-            goodDisplayer.SetActive(false);
+            effectObject.SetActive(false);
         }
-        /// <summary>
-        /// 将Effect、Text和FastLate设置为非活动状态
-        /// </summary>
         public void ResetAll()
         {
             Reset();
@@ -46,24 +51,17 @@ namespace MajdataPlay.Game
         }
         public void PlayEffect(in JudgeResult judgeResult)
         {
-            var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Result;
             if (!judgeResult.IsMiss)
                 Reset();
             else
                 return;
+            effectObject.SetActive(true);
             switch (result)
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    if (isBreak)
-                    {
-                        perfectDisplayer.SetActive(true);
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("bGood");
-                    }
-                    else
-                        goodDisplayer.SetActive(true);
+                    effectAnim.SetTrigger("good");
                     break;
                 case JudgeType.LateGreat:
                 case JudgeType.LateGreat1:
@@ -71,29 +69,14 @@ namespace MajdataPlay.Game
                 case JudgeType.FastGreat2:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat:
-                    if (isBreak)
-                    {
-                        perfectDisplayer.SetActive(true);
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("bGreat");
-                    }
-                    else
-                    {
-                        greatDisplayer.SetActive(true);
-                        greatAnim.SetTrigger("great");
-                    }
+                    effectAnim.SetTrigger("great");
                     break;
                 case JudgeType.LatePerfect2:
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
                 case JudgeType.Perfect:
-                    perfectDisplayer.SetActive(true);
-                    if (isBreak)
-                    {
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("break");
-                    }
+                    effectAnim.SetTrigger("perfect");
                     break;
                 default:
                     break;
@@ -101,8 +84,8 @@ namespace MajdataPlay.Game
         }
         public void PlayResult(in JudgeResult judgeResult)
         {
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
-            if(!canPlay)
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
+            if (!canPlay)
             {
                 judgeTextDisplayer.Reset();
                 return;

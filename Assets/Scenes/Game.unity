@@ -2284,6 +2284,7 @@ GameObject:
   m_Component:
   - component: {fileID: 592746511}
   - component: {fileID: 592746510}
+  - component: {fileID: 592746512}
   m_Layer: 0
   m_Name: NoteEffects
   m_TagString: Untagged
@@ -2326,6 +2327,19 @@ Transform:
   - {fileID: 661799825}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &592746512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 592746509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c47eaae69381f904294a20c7553af634, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tapEffectPrefab: {fileID: 168526653925081510, guid: d7b45f83b7b4735418ff3170d6612a0c, type: 3}
 --- !u!1 &620892873
 GameObject:
   m_ObjectHideFlags: 0

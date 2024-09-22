@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
@@ -20,6 +16,7 @@ namespace MajdataPlay.Game
         SpriteRenderer breakRenderer;
 
         Sprite breakSprite;
+        Sprite cPerfectSprite;
         Sprite perfectSprite;
         Sprite greatSprite;
         Sprite goodSprite;
@@ -31,13 +28,15 @@ namespace MajdataPlay.Game
             if(GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
             {
                 breakSprite = skin.CP_Break;
-                perfectSprite = skin.CriticalPerfect;
+                cPerfectSprite = skin.CriticalPerfect;
             }
             else
             {
                 breakSprite = skin.P_Break;
-                perfectSprite = skin.Perfect;
+                cPerfectSprite = skin.Perfect;
             }
+            breakRenderer.sprite = breakSprite;
+            perfectSprite = skin.Perfect;
             greatSprite = skin.Great;
             goodSprite = skin.Good;
             missSprite = skin.Miss;
@@ -45,6 +44,44 @@ namespace MajdataPlay.Game
         public void Reset()
         {
             effectObject.SetActive(false);
+        }
+        public void Play(in JudgeResult judgeResult)
+        {
+            effectObject.SetActive(true);
+            var isBreak = judgeResult.IsBreak;
+            var result = judgeResult.Result;
+
+            switch (result)
+            {
+                case JudgeType.LateGood:
+                case JudgeType.FastGood:
+                    textRenderer.sprite = goodSprite;
+                    break;
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat2:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat:
+                    textRenderer.sprite = greatSprite;
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                    textRenderer.sprite = perfectSprite;
+                    break;
+                case JudgeType.Perfect:
+                    textRenderer.sprite = cPerfectSprite;
+                    break;
+                default:
+                    textRenderer.sprite = missSprite;
+                    break;
+            }
+            if (isBreak && result == JudgeType.Perfect)
+                animator.SetTrigger("break");
+            else
+                animator.SetTrigger("perfect");
         }
     }
 }
