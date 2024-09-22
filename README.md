@@ -6,19 +6,25 @@
 
 ## How to use
 
-By default, the app use SoundBackend=2 for unity audio, this provide somehow acceptable latency.
+By default, the app use unity audio, this provide somehow acceptable latency.
 
 However, for best performance, you will need an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
 
 If you encounter desync issues, try to tweak the sound control pannel: Turn off all audio enhancements and allow exclusive control.
 
-For the big iPod, you need to ensure the touch sensors are connected to COM3.
+For the big iPod, you need to ensure the touch sensors are connected to COM3, and the lights are connected to COM21.
 
-Put your songs in `MaiCharts\` folder, and you are good to go.
+Put your songs folder in `MaiCharts\` folder, and you are good to go. You will need to group your songs by folder.
+
+## Online Charts
+
+Fill in the api endpoint for downloading charts online. More online functions comming soon.
 
 ## Adjusting settings
 
-Navigate to `settings.json`
+~Navigate to `settings.json`~
+
+You can use the in-game UI for most settings now.
 
 ```Json
 {
