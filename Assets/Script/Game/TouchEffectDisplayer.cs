@@ -32,9 +32,11 @@ namespace MajdataPlay.Game
             var effectPos = effectObject.transform.position;
             effectPos.y += distance;
             effectObject.transform.position = effectPos;
+
             var textPos = textObject.transform.position;
             textPos.y += distance;
             textObject.transform.position = textPos;
+
             var fastLatePos = fastLateObject.transform.position;
             fastLatePos.y += distance;
             fastLateObject.transform.position = fastLatePos;
