@@ -35,6 +35,7 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+        public char areaPosition;
         public bool isFirework;
         public GameObject tapEffect;
         public GameObject judgeEffect;
@@ -54,8 +55,6 @@ namespace MajdataPlay.Game.Notes
         SpriteMask mask;
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
-
-        JudgeTextSkin judgeText;
 
         // Start is called before the first frame update
         protected override void Start()
@@ -86,11 +85,12 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             border.SetActive(false);
 
-            sensorPos = SensorType.C;
-            var customSkin = SkinManager.Instance;
-            judgeText = customSkin.GetJudgeTextSkin();
+            sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
+            var pos = TouchBase.GetAreaPos(sensorPos);
+            transform.position = pos;
+            holdEffect.transform.position = pos;
             SetFansPosition(0.4f);
-            ioManager.BindSensor(Check, SensorType.C);
+            ioManager.BindSensor(Check, sensorPos);
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
         }
@@ -164,7 +164,7 @@ namespace MajdataPlay.Game.Notes
             isJudged = true;
             PlayHoldEffect();
         }
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             var remainingTime = GetRemainingTime();
             var timing = GetTimeSpanToJudgeTiming();
@@ -185,7 +185,7 @@ namespace MajdataPlay.Game.Notes
                 else if (!gpManager.IsStart) // 忽略暂停
                     return;
 
-                var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);
+                var on = ioManager.CheckSensorStatus(sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
                 else
@@ -204,7 +204,7 @@ namespace MajdataPlay.Game.Notes
             }
         }
         // Update is called once per frame
-        private void Update()
+        void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
 
@@ -267,7 +267,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 var pos = (0.226f + distance) * GetAngle(i);
-                fans[i].transform.position = pos;
+                fans[i].transform.localPosition = pos;
             }
         }
         void EndJudge(ref JudgeType result)
@@ -317,9 +317,9 @@ namespace MajdataPlay.Game.Notes
             }
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
         }
-        private void OnDestroy()
+        void OnDestroy()
         {
-            ioManager.UnbindSensor(Check, SensorType.C);
+            ioManager.UnbindSensor(Check, sensorPos);
             EndJudge(ref judgeResult);
             State = NoteStatus.Destroyed;
             var result = new JudgeResult()

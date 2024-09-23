@@ -1,11 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -86,6 +81,11 @@ namespace MajdataPlay.Game
             effectDisplayer.PlayResult(judgeResult);
             effectDisplayer.PlayFastLate(judgeResult);
         }
+        /// <summary>
+        /// TouchHold
+        /// </summary>
+        /// <param name="judgeResult"></param>
+        /// <param name="sensorPos"></param>
         public void PlayTouchHoldEffect(in JudgeResult judgeResult, SensorType sensorPos)
         {
             var effectDisplayer = touchHoldEffects[(int)sensorPos];
@@ -101,14 +101,6 @@ namespace MajdataPlay.Game
         {
             var effectDisplayer = tapEffects[keyIndex - 1];
             effectDisplayer.Reset();
-        }
-        /// <summary>
-        /// Touch
-        /// </summary>
-        /// <param name="sensorPos"></param>
-        public void Reset(SensorType sensorPos)
-        {
-
         }
     }
 }

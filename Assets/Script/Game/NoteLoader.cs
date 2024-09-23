@@ -44,8 +44,6 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController JudgeBreakShine;
         public RuntimeAnimatorController HoldShine;
 
-        private SkinManager customSkin;
-
         private ObjectCounter ObjectCounter;
 
         private int slideLayer = -1;
@@ -196,20 +194,12 @@ namespace MajdataPlay.Game
         private void Awake()
         {
             ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            customSkin = SkinManager.Instance;
         }
 
         private void Start()
         {
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
         }
-
-        // Update is called once per frame
-        private void Update()
-        {
-            //Debug.Log($"NoteLoader State:{State}");
-        }
-
         public async UniTask LoadNotes(SimaiProcess simaiProcess)
         {
             List<Task> touchTasks = new();
@@ -446,6 +436,8 @@ namespace MajdataPlay.Game
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.areaPosition = note.touchArea;
             NDCompo.timing = (float)timing.time;
             NDCompo.LastFor = (float)note.holdTime;
             NDCompo.speed = touchSpeed * timing.HSpeed;
