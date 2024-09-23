@@ -7,6 +7,7 @@ namespace MajdataPlay.Game
 {
     public sealed class TouchEffectDisplayer: MonoBehaviour
     {
+        public float DistanceRatio { get; set; } = 1f;
         public SensorType SensorPos { get; set; } = SensorType.C;
 
         [SerializeField]
@@ -27,19 +28,21 @@ namespace MajdataPlay.Game
         {
             var distance = TouchBase.GetDistance(SensorPos.GetGroup());
             var rotation = TouchBase.GetRoation(TouchBase.GetAreaPos(SensorPos), SensorPos);
+            var textDistance = distance - (0.66f * (2 - DistanceRatio));
+            var fastLateDistance = textDistance - 0.56f;
             transform.rotation = rotation;
 
-            var effectPos = effectObject.transform.position;
+            var effectPos = effectObject.transform.localPosition;
             effectPos.y += distance;
-            effectObject.transform.position = effectPos;
+            effectObject.transform.localPosition = effectPos;
 
-            var textPos = textObject.transform.position;
-            textPos.y += distance;
-            textObject.transform.position = textPos;
+            var textPos = textObject.transform.localPosition;
+            textPos.y = textDistance;
+            textObject.transform.localPosition = textPos;
 
-            var fastLatePos = fastLateObject.transform.position;
-            fastLatePos.y += distance;
-            fastLateObject.transform.position = fastLatePos;
+            var fastLatePos = fastLateObject.transform.localPosition;
+            fastLatePos.y = fastLateDistance;
+            fastLateObject.transform.localPosition = fastLatePos;
         }
         public void Reset()
         {

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
@@ -6,6 +7,40 @@ namespace MajdataPlay.Game
 {
     public sealed class TapEffectDisplayer: MonoBehaviour
     {
+        public Vector3 Position => perfectDisplayer.transform.position;
+        public Vector3 LocalPosition
+        {
+            get => perfectDisplayer.transform.localPosition;
+            set
+            {
+                perfectDisplayer.transform.localPosition = value;
+                greatDisplayer.transform.localPosition = value;
+                goodDisplayer.transform.localPosition = value;
+                var effectPosition = value;
+                var textDistance = 1f * (2 - DistanceRatio);
+                var fastLateDistance = textDistance + 0.66f;
+
+                Vector3 textPosition;
+                Vector3 fastLatePosition;
+                if (effectPosition.magnitude == 0)
+                {
+                    textPosition = effectPosition.GetPoint(new Vector3(0, -0.01f, 0), -textDistance);
+                    fastLatePosition = effectPosition.GetPoint(new Vector3(0, -0.01f, 0) ,- fastLateDistance);
+                }
+                else
+                {
+                    textPosition = effectPosition.GetPoint(-textDistance);
+                    fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
+                }
+                
+                judgeTextDisplayer.LocalPosition = textPosition;
+                fastLateDisplayer.LocalPosition = fastLatePosition;
+            }
+        }
+        /// <summary>
+        /// 用于调整Text、Fast/Late的显示位置
+        /// </summary>
+        public float DistanceRatio { get; set; } = 1f;
         [SerializeField]
         GameObject perfectDisplayer;
         [SerializeField]
@@ -28,6 +63,24 @@ namespace MajdataPlay.Game
         void Start()
         {
             Reset();
+            var effectPosition = perfectDisplayer.transform.localPosition;
+            var textDistance = 1f * (2 - DistanceRatio);
+            var fastLateDistance = textDistance + 0.66f;
+
+            Vector3 textPosition;
+            Vector3 fastLatePosition;
+            if (effectPosition.magnitude == 0)
+            {
+                textPosition = effectPosition.GetPoint(new Vector3(0, -0.01f, 0), -textDistance);
+                fastLatePosition = effectPosition.GetPoint(new Vector3(0, -0.01f, 0), -fastLateDistance);
+            }
+            else
+            {
+                textPosition = effectPosition.GetPoint(-textDistance);
+                fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
+            }
+            judgeTextDisplayer.LocalPosition = textPosition;
+            fastLateDisplayer.LocalPosition = fastLatePosition;
         }
         public void Reset()
         {

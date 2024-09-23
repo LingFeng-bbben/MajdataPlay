@@ -5,6 +5,16 @@ namespace MajdataPlay.Game
 {
     public sealed class FastLateDisplayer: MonoBehaviour
     {
+        public Vector3 Position
+        {
+            get => effectObject.transform.position;
+            set => effectObject.transform.position = value;
+        }
+        public Vector3 LocalPosition
+        {
+            get => effectObject.transform.localPosition;
+            set => effectObject.transform.localPosition = value;
+        }
         [SerializeField]
         GameObject effectObject;
         [SerializeField]
@@ -27,11 +37,17 @@ namespace MajdataPlay.Game
         }
         public void Play(in JudgeResult judgeResult)
         {
+            if (judgeResult.IsMiss || judgeResult.Diff == 0)
+                return;
             effectObject.SetActive(true);
             if (judgeResult.IsFast)
                 textRenderer.sprite = fastSprite;
             else
                 textRenderer.sprite = lateSprite;
+            if (judgeResult.IsBreak)
+                animator.SetTrigger("break");
+            else
+                animator.SetTrigger("perfect");
         }
     }
 }

@@ -253,7 +253,7 @@ namespace MajdataPlay.Game.Notes
                 IsBreak = isBreak
             };
             
-            effectManager.PlayTouchEffect(transform,sensorPos, result);
+            effectManager.PlayTouchEffect(sensorPos, result);
 
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
                 GroupInfo.JudgeResult = judgeResult;

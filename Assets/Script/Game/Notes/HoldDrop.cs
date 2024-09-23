@@ -306,7 +306,7 @@ namespace MajdataPlay.Game.Notes
 
             audioEffMana.PlayTapSound(result);
             effectManager.PlayEffect(startPosition, result);
-            effectManager.PlayFastLate(startPosition, result);
+            //effectManager.PlayFastLate(startPosition, result);
             objectCounter.ReportResult(this, result);
             if (!isJudged)
                 objectCounter.NextNote(startPosition);

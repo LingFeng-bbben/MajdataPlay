@@ -5,6 +5,16 @@ namespace MajdataPlay.Game
 {
     public sealed class JudgeTextDisplayer: MonoBehaviour
     {
+        public Vector3 Position
+        {
+            get => effectObject.transform.position;
+            set => effectObject.transform.position = value;
+        }
+        public Vector3 LocalPosition
+        {
+            get => effectObject.transform.localPosition;
+            set => effectObject.transform.localPosition = value;
+        }
         [SerializeField]
         GameObject effectObject;
         [SerializeField]

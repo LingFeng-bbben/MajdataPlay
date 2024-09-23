@@ -196,7 +196,7 @@ namespace MajdataPlay.Game.Notes
             };
 
             effectManager.PlayEffect(startPosition, result);
-            effectManager.PlayFastLate(startPosition, result);
+            //effectManager.PlayFastLate(startPosition, result);
 
             audioEffMana.PlayTapSound(result);
             objectCounter.NextNote(startPosition);

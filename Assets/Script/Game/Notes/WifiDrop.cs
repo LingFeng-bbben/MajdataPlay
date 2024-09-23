@@ -45,10 +45,11 @@ namespace MajdataPlay.Game.Notes
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
+            var sensorPos = (SensorType)(endPosition - 1);
 
-            SlidePositionEnd[0] = effectManager.transform.GetChild(0).GetChild(endPosition - 2 < 0 ? 7 : endPosition - 2).position;// R
-            SlidePositionEnd[1] = effectManager.transform.GetChild(0).GetChild(endPosition - 1).position;// Center
-            SlidePositionEnd[2] = effectManager.transform.GetChild(0).GetChild(endPosition >= 8 ? 0 : endPosition).position; // L
+            SlidePositionEnd[0] = GetPositionFromDistance(4.8f, sensorPos.Diff(-1).GetIndex());// R
+            SlidePositionEnd[1] = GetPositionFromDistance(4.8f, endPosition);// Center
+            SlidePositionEnd[2] = GetPositionFromDistance(4.8f, sensorPos.Diff(1).GetIndex()); // L
             SlidePositionStart = GetPositionFromDistance(4.8f);
 
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
