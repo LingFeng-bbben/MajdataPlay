@@ -74,5 +74,6 @@
         public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = true;
         public float NoteAppearRate { get; set; } = 0.36f;
+        public bool DisableGCInGameing { get; set; } = false;
     }
 }
