@@ -110,7 +110,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (arg.Type != type)
                 return;
-            else if (isJudged || !noteManager.CanJudge(gameObject, type))
+            else if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
             else if (arg.IsClick)
             {
@@ -137,6 +137,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         isJudged = true;
                         judgeResult = (JudgeType)GroupInfo.JudgeResult;
+                        judgeDiff = GroupInfo.JudgeDiff;
                         Destroy(gameObject);
                     }
                 }
@@ -253,15 +254,18 @@ namespace MajdataPlay.Game.Notes
                 IsBreak = isBreak
             };
             
-            effectManager.PlayTouchEffect(transform,sensorPos, result);
+            effectManager.PlayTouchEffect(sensorPos, result);
 
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
+            {
                 GroupInfo.JudgeResult = judgeResult;
+                GroupInfo.JudgeDiff = judgeDiff;
+            }
 
             if(judgeResult != JudgeType.Miss)
                 audioEffMana.PlayTouchSound();
             objectCounter.ReportResult(this, result);
-            objectCounter.NextTouch(sensorPos);
+            noteManager.NextTouch(QueueInfo);
 
             if (isFirework && judgeResult != JudgeType.Miss)
             {

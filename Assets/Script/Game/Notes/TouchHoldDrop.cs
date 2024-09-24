@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -6,8 +7,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchHoldDrop : NoteLongDrop
+    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>
     {
+        public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -35,6 +37,7 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+        public char areaPosition;
         public bool isFirework;
         public GameObject tapEffect;
         public GameObject judgeEffect;
@@ -54,8 +57,6 @@ namespace MajdataPlay.Game.Notes
         SpriteMask mask;
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
-
-        JudgeTextSkin judgeText;
 
         // Start is called before the first frame update
         protected override void Start()
@@ -86,17 +87,18 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             border.SetActive(false);
 
-            sensorPos = SensorType.C;
-            var customSkin = SkinManager.Instance;
-            judgeText = customSkin.GetJudgeTextSkin();
+            sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
+            var pos = TouchBase.GetAreaPos(sensorPos);
+            transform.position = pos;
+            holdEffect.transform.position = pos;
             SetFansPosition(0.4f);
-            ioManager.BindSensor(Check, SensorType.C);
+            ioManager.BindSensor(Check, sensorPos);
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (isJudged || !noteManager.CanJudge(gameObject, sensorPos))
+            if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
             else if (arg.IsClick)
             {
@@ -108,8 +110,8 @@ namespace MajdataPlay.Game.Notes
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
-                    ioManager.UnbindSensor(Check, SensorType.C);
-                    objectCounter.NextTouch(SensorType.C);
+                    ioManager.UnbindSensor(Check, sensorPos);
+                    noteManager.NextTouch(QueueInfo);
                 }
             }
         }
@@ -164,7 +166,7 @@ namespace MajdataPlay.Game.Notes
             isJudged = true;
             PlayHoldEffect();
         }
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             var remainingTime = GetRemainingTime();
             var timing = GetTimeSpanToJudgeTiming();
@@ -185,7 +187,7 @@ namespace MajdataPlay.Game.Notes
                 else if (!gpManager.IsStart) // 忽略暂停
                     return;
 
-                var on = ioManager.CheckSensorStatus(SensorType.C, SensorStatus.On);
+                var on = ioManager.CheckSensorStatus(sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
                 else
@@ -200,11 +202,11 @@ namespace MajdataPlay.Game.Notes
                 judgeResult = JudgeType.Miss;
                 ioManager.UnbindSensor(Check, SensorType.C);
                 isJudged = true;
-                objectCounter.NextTouch(SensorType.C);
+                noteManager.NextTouch(QueueInfo);
             }
         }
         // Update is called once per frame
-        private void Update()
+        void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
 
@@ -267,7 +269,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 var pos = (0.226f + distance) * GetAngle(i);
-                fans[i].transform.position = pos;
+                fans[i].transform.localPosition = pos;
             }
         }
         void EndJudge(ref JudgeType result)
@@ -317,9 +319,9 @@ namespace MajdataPlay.Game.Notes
             }
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
         }
-        private void OnDestroy()
+        void OnDestroy()
         {
-            ioManager.UnbindSensor(Check, SensorType.C);
+            ioManager.UnbindSensor(Check, sensorPos);
             EndJudge(ref judgeResult);
             State = NoteStatus.Destroyed;
             var result = new JudgeResult()
@@ -331,7 +333,7 @@ namespace MajdataPlay.Game.Notes
             };
             objectCounter.ReportResult(this, result);
             if (!isJudged)
-                objectCounter.NextTouch(SensorType.C);
+                noteManager.NextTouch(QueueInfo);
             if (isFirework && !result.IsMiss)
             {
                 effectManager.PlayFireworkEffect(transform.position);
@@ -340,74 +342,7 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.PlayTapSound(result);
             audioEffMana.StopTouchHoldSound();
 
-            PlayJudgeEffect(result);
-        }
-        void PlayJudgeEffect(in JudgeResult judgeResult)
-        {
-            var obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
-            var _obj = Instantiate(judgeEffect, Vector3.zero, transform.rotation);
-            var judgeObj = obj.transform.GetChild(0);
-            var flObj = _obj.transform.GetChild(0);
-            var distance = -0.6f;
-
-            judgeObj.transform.position = new Vector3(0, distance, 0);
-            flObj.transform.position = new Vector3(0, distance - 0.48f, 0);
-            flObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
-            judgeObj.GetChild(0).transform.rotation = Quaternion.Euler(Vector3.zero);
-            var anim = obj.GetComponent<Animator>();
-
-            var effects = GameObject.Find("NoteEffects");
-            var flAnim = _obj.GetComponent<Animator>();
-            GameObject effect;
-            switch (judgeResult.Result)
-            {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Good;
-                    effect = Instantiate(effects.transform.GetChild(3).GetChild(0), transform.position, transform.rotation).gameObject;
-                    effect.SetActive(true);
-                    break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Great;
-                    //transform.Rotate(0, 0f, 30f);
-                    effect = Instantiate(effects.transform.GetChild(2).GetChild(0), transform.position, transform.rotation).gameObject;
-                    effect.SetActive(true);
-                    effect.gameObject.GetComponent<Animator>().SetTrigger("great");
-                    break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
-                    transform.Rotate(0, 180f, 90f);
-                    Instantiate(tapEffect, transform.position, transform.rotation);
-                    break;
-                case JudgeType.Perfect:
-                    if (GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
-                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.CriticalPerfect;
-                    else
-                        judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Perfect;
-                    transform.Rotate(0, 180f, 90f);
-                    Instantiate(tapEffect, transform.position, transform.rotation);
-                    break;
-                case JudgeType.Miss:
-                    judgeObj.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = judgeText.Miss;
-                    break;
-                default:
-                    break;
-            }
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
-            effectManager.PlayFastLate(_obj, flAnim, judgeResult);
-
-            if (canPlay)
-                anim.SetTrigger("touch");
-            else
-                Destroy(obj);
+            effectManager.PlayTouchHoldEffect(sensorPos, result);
         }
         protected override void PlayHoldEffect()
         {

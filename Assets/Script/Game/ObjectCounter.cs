@@ -917,8 +917,6 @@ namespace MajdataPlay.Game
             if (textElement.color != newColor)
                 textElement.color = newColor;
         }
-        internal void NextNote(int pos) => notes.noteIndex[pos]++;
-        internal void NextTouch(SensorType pos) => notes.touchIndex[pos]++;
         SimaiNoteType GetNoteType(NoteDrop note) => note switch
         {
             TapDrop => SimaiNoteType.Tap,

@@ -44,107 +44,105 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController JudgeBreakShine;
         public RuntimeAnimatorController HoldShine;
 
-        private SkinManager customSkin;
-
         private ObjectCounter ObjectCounter;
 
         private int slideLayer = -1;
         private int noteSortOrder = 0;
 
-        private static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
-    {
-        {SimaiNoteType.Tap, 2 },
-        {SimaiNoteType.Hold, 3 },
-        {SimaiNoteType.Slide, 2 },
-        {SimaiNoteType.Touch, 7 },
-        {SimaiNoteType.TouchHold, 6 },
-    };
-        private static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
-    {
-        {"line3", 0 },
-        {"line4", 1 },
-        {"line5", 2 },
-        {"line6", 3 },
-        {"line7", 4 },
-        {"circle1", 5 },
-        {"circle2", 6 },
-        {"circle3", 7 },
-        {"circle4", 8 },
-        {"circle5", 9 },
-        {"circle6", 10 },
-        {"circle7", 11 },
-        {"circle8", 12 },
-        {"v1", 41 },
-        {"v2", 13 },
-        {"v3", 14 },
-        {"v4", 15 },
-        {"v6", 16 },
-        {"v7", 17 },
-        {"v8", 18 },
-        {"ppqq1", 19 },
-        {"ppqq2", 20 },
-        {"ppqq3", 21 },
-        {"ppqq4", 22 },
-        {"ppqq5", 23 },
-        {"ppqq6", 24 },
-        {"ppqq7", 25 },
-        {"ppqq8", 26 },
-        {"pq1", 27 },
-        {"pq2", 28 },
-        {"pq3", 29 },
-        {"pq4", 30 },
-        {"pq5", 31 },
-        {"pq6", 32 },
-        {"pq7", 33 },
-        {"pq8", 34 },
-        {"s", 35 },
-        {"wifi", 36 },
-        {"L2", 37 },
-        {"L3", 38 },
-        {"L4", 39 },
-        {"L5", 40 },
-    };
+        static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
+        {
+            {SimaiNoteType.Tap, 2 },
+            {SimaiNoteType.Hold, 3 },
+            {SimaiNoteType.Slide, 2 },
+            {SimaiNoteType.Touch, 7 },
+            {SimaiNoteType.TouchHold, 6 },
+        };
+        static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
+        {
+            {"line3", 0 },
+            {"line4", 1 },
+            {"line5", 2 },
+            {"line6", 3 },
+            {"line7", 4 },
+            {"circle1", 5 },
+            {"circle2", 6 },
+            {"circle3", 7 },
+            {"circle4", 8 },
+            {"circle5", 9 },
+            {"circle6", 10 },
+            {"circle7", 11 },
+            {"circle8", 12 },
+            {"v1", 41 },
+            {"v2", 13 },
+            {"v3", 14 },
+            {"v4", 15 },
+            {"v6", 16 },
+            {"v7", 17 },
+            {"v8", 18 },
+            {"ppqq1", 19 },
+            {"ppqq2", 20 },
+            {"ppqq3", 21 },
+            {"ppqq4", 22 },
+            {"ppqq5", 23 },
+            {"ppqq6", 24 },
+            {"ppqq7", 25 },
+            {"ppqq8", 26 },
+            {"pq1", 27 },
+            {"pq2", 28 },
+            {"pq3", 29 },
+            {"pq4", 30 },
+            {"pq5", 31 },
+            {"pq6", 32 },
+            {"pq7", 33 },
+            {"pq8", 34 },
+            {"s", 35 },
+            {"wifi", 36 },
+            {"L2", 37 },
+            {"L3", 38 },
+            {"L4", 39 },
+            {"L5", 40 },
+        };
 
         static readonly Dictionary<SensorType, SensorType[]> TOUCH_GROUPS = new()
-    {
-        { SensorType.A1, new SensorType[]{ SensorType.D1, SensorType.D2, SensorType.E1, SensorType.E2 } },
-        { SensorType.A2, new SensorType[]{ SensorType.D2, SensorType.D3, SensorType.E2, SensorType.E3 } },
-        { SensorType.A3, new SensorType[]{ SensorType.D3, SensorType.D4, SensorType.E3, SensorType.E4 } },
-        { SensorType.A4, new SensorType[]{ SensorType.D4, SensorType.D5, SensorType.E4, SensorType.E5 } },
-        { SensorType.A5, new SensorType[]{ SensorType.D5, SensorType.D6, SensorType.E5, SensorType.E6 } },
-        { SensorType.A6, new SensorType[]{ SensorType.D6, SensorType.D7, SensorType.E6, SensorType.E7 } },
-        { SensorType.A7, new SensorType[]{ SensorType.D7, SensorType.D8, SensorType.E7, SensorType.E8 } },
-        { SensorType.A8, new SensorType[]{ SensorType.D8, SensorType.D1, SensorType.E8, SensorType.E1 } },
+        {
+            { SensorType.A1, new SensorType[]{ SensorType.D1, SensorType.D2, SensorType.E1, SensorType.E2 } },
+            { SensorType.A2, new SensorType[]{ SensorType.D2, SensorType.D3, SensorType.E2, SensorType.E3 } },
+            { SensorType.A3, new SensorType[]{ SensorType.D3, SensorType.D4, SensorType.E3, SensorType.E4 } },
+            { SensorType.A4, new SensorType[]{ SensorType.D4, SensorType.D5, SensorType.E4, SensorType.E5 } },
+            { SensorType.A5, new SensorType[]{ SensorType.D5, SensorType.D6, SensorType.E5, SensorType.E6 } },
+            { SensorType.A6, new SensorType[]{ SensorType.D6, SensorType.D7, SensorType.E6, SensorType.E7 } },
+            { SensorType.A7, new SensorType[]{ SensorType.D7, SensorType.D8, SensorType.E7, SensorType.E8 } },
+            { SensorType.A8, new SensorType[]{ SensorType.D8, SensorType.D1, SensorType.E8, SensorType.E1 } },
 
-        { SensorType.D1, new SensorType[]{ SensorType.A1, SensorType.A8, SensorType.E1 } },
-        { SensorType.D2, new SensorType[]{ SensorType.A2, SensorType.A1, SensorType.E2 } },
-        { SensorType.D3, new SensorType[]{ SensorType.A3, SensorType.A2, SensorType.E3 } },
-        { SensorType.D4, new SensorType[]{ SensorType.A4, SensorType.A3, SensorType.E4 } },
-        { SensorType.D5, new SensorType[]{ SensorType.A5, SensorType.A4, SensorType.E5 } },
-        { SensorType.D6, new SensorType[]{ SensorType.A6, SensorType.A5, SensorType.E6 } },
-        { SensorType.D7, new SensorType[]{ SensorType.A7, SensorType.A6, SensorType.E7 } },
-        { SensorType.D8, new SensorType[]{ SensorType.A8, SensorType.A7, SensorType.E8 } },
+            { SensorType.D1, new SensorType[]{ SensorType.A1, SensorType.A8, SensorType.E1 } },
+            { SensorType.D2, new SensorType[]{ SensorType.A2, SensorType.A1, SensorType.E2 } },
+            { SensorType.D3, new SensorType[]{ SensorType.A3, SensorType.A2, SensorType.E3 } },
+            { SensorType.D4, new SensorType[]{ SensorType.A4, SensorType.A3, SensorType.E4 } },
+            { SensorType.D5, new SensorType[]{ SensorType.A5, SensorType.A4, SensorType.E5 } },
+            { SensorType.D6, new SensorType[]{ SensorType.A6, SensorType.A5, SensorType.E6 } },
+            { SensorType.D7, new SensorType[]{ SensorType.A7, SensorType.A6, SensorType.E7 } },
+            { SensorType.D8, new SensorType[]{ SensorType.A8, SensorType.A7, SensorType.E8 } },
 
-        { SensorType.E1, new SensorType[]{ SensorType.D1, SensorType.A1, SensorType.A8, SensorType.B1, SensorType.B8 } },
-        { SensorType.E2, new SensorType[]{ SensorType.D2, SensorType.A2, SensorType.A1, SensorType.B2, SensorType.B1 } },
-        { SensorType.E3, new SensorType[]{ SensorType.D3, SensorType.A3, SensorType.A2, SensorType.B3, SensorType.B2 } },
-        { SensorType.E4, new SensorType[]{ SensorType.D4, SensorType.A4, SensorType.A3, SensorType.B4, SensorType.B3 } },
-        { SensorType.E5, new SensorType[]{ SensorType.D5, SensorType.A5, SensorType.A4, SensorType.B5, SensorType.B4 } },
-        { SensorType.E6, new SensorType[]{ SensorType.D6, SensorType.A6, SensorType.A5, SensorType.B6, SensorType.B5 } },
-        { SensorType.E7, new SensorType[]{ SensorType.D7, SensorType.A7, SensorType.A6, SensorType.B7, SensorType.B6 } },
-        { SensorType.E8, new SensorType[]{ SensorType.D8, SensorType.A8, SensorType.A7, SensorType.B8, SensorType.B7 } },
+            { SensorType.E1, new SensorType[]{ SensorType.D1, SensorType.A1, SensorType.A8, SensorType.B1, SensorType.B8 } },
+            { SensorType.E2, new SensorType[]{ SensorType.D2, SensorType.A2, SensorType.A1, SensorType.B2, SensorType.B1 } },
+            { SensorType.E3, new SensorType[]{ SensorType.D3, SensorType.A3, SensorType.A2, SensorType.B3, SensorType.B2 } },
+            { SensorType.E4, new SensorType[]{ SensorType.D4, SensorType.A4, SensorType.A3, SensorType.B4, SensorType.B3 } },
+            { SensorType.E5, new SensorType[]{ SensorType.D5, SensorType.A5, SensorType.A4, SensorType.B5, SensorType.B4 } },
+            { SensorType.E6, new SensorType[]{ SensorType.D6, SensorType.A6, SensorType.A5, SensorType.B6, SensorType.B5 } },
+            { SensorType.E7, new SensorType[]{ SensorType.D7, SensorType.A7, SensorType.A6, SensorType.B7, SensorType.B6 } },
+            { SensorType.E8, new SensorType[]{ SensorType.D8, SensorType.A8, SensorType.A7, SensorType.B8, SensorType.B7 } },
 
-        { SensorType.B1, new SensorType[]{ SensorType.E1, SensorType.E2, SensorType.B8, SensorType.B2, SensorType.A1, SensorType.C } },
-        { SensorType.B2, new SensorType[]{ SensorType.E2, SensorType.E3, SensorType.B1, SensorType.B3, SensorType.A2, SensorType.C } },
-        { SensorType.B3, new SensorType[]{ SensorType.E3, SensorType.E4, SensorType.B2, SensorType.B4, SensorType.A3, SensorType.C } },
-        { SensorType.B4, new SensorType[]{ SensorType.E4, SensorType.E5, SensorType.B3, SensorType.B5, SensorType.A4, SensorType.C } },
-        { SensorType.B5, new SensorType[]{ SensorType.E5, SensorType.E6, SensorType.B4, SensorType.B6, SensorType.A5, SensorType.C } },
-        { SensorType.B6, new SensorType[]{ SensorType.E6, SensorType.E7, SensorType.B5, SensorType.B7, SensorType.A6, SensorType.C } },
-        { SensorType.B7, new SensorType[]{ SensorType.E7, SensorType.E8, SensorType.B6, SensorType.B8, SensorType.A7, SensorType.C } },
-        { SensorType.B8, new SensorType[]{ SensorType.E8, SensorType.E1, SensorType.B7, SensorType.B1, SensorType.A8, SensorType.C } },
+            { SensorType.B1, new SensorType[]{ SensorType.E1, SensorType.E2, SensorType.B8, SensorType.B2, SensorType.A1, SensorType.C } },
+            { SensorType.B2, new SensorType[]{ SensorType.E2, SensorType.E3, SensorType.B1, SensorType.B3, SensorType.A2, SensorType.C } },
+            { SensorType.B3, new SensorType[]{ SensorType.E3, SensorType.E4, SensorType.B2, SensorType.B4, SensorType.A3, SensorType.C } },
+            { SensorType.B4, new SensorType[]{ SensorType.E4, SensorType.E5, SensorType.B3, SensorType.B5, SensorType.A4, SensorType.C } },
+            { SensorType.B5, new SensorType[]{ SensorType.E5, SensorType.E6, SensorType.B4, SensorType.B6, SensorType.A5, SensorType.C } },
+            { SensorType.B6, new SensorType[]{ SensorType.E6, SensorType.E7, SensorType.B5, SensorType.B7, SensorType.A6, SensorType.C } },
+            { SensorType.B7, new SensorType[]{ SensorType.E7, SensorType.E8, SensorType.B6, SensorType.B8, SensorType.A7, SensorType.C } },
+            { SensorType.B8, new SensorType[]{ SensorType.E8, SensorType.E1, SensorType.B7, SensorType.B1, SensorType.A8, SensorType.C } },
 
-        { SensorType.C, new SensorType[]{ SensorType.B1, SensorType.B2, SensorType.B3, SensorType.B4, SensorType.B5, SensorType.B6, SensorType.B7, SensorType.B8} },
-    };
+            { SensorType.C, new SensorType[]{ SensorType.B1, SensorType.B2, SensorType.B3, SensorType.B4, SensorType.B5, SensorType.B6, SensorType.B7, SensorType.B8} },
+        };
 
         public static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
         {
@@ -191,32 +189,23 @@ namespace MajdataPlay.Game
             {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
             {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
         };
-        // Start is called before the first frame update
 
         private void Awake()
         {
             ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            customSkin = SkinManager.Instance;
         }
 
         private void Start()
         {
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
         }
-
-        // Update is called once per frame
-        private void Update()
-        {
-            //Debug.Log($"NoteLoader State:{State}");
-        }
-
         public async UniTask LoadNotes(SimaiProcess simaiProcess)
         {
             List<Task> touchTasks = new();
             try
             {
                 State = NoteLoaderStatus.ParsingNote;
-                noteManager.Refresh();
+                noteManager.ResetCounter();
                 noteIndex.Clear();
                 touchIndex.Clear();
 
@@ -230,7 +219,11 @@ namespace MajdataPlay.Game
 
                 await CountNoteSumAsync(loadedData);
 
-                var sum = ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.breakSum + ObjectCounter.slideSum;
+                var sum = ObjectCounter.tapSum + 
+                          ObjectCounter.holdSum + 
+                          ObjectCounter.touchSum + 
+                          ObjectCounter.breakSum + 
+                          ObjectCounter.slideSum;
 
                 var lastNoteTime = loadedData.notelist.Last().time;
 
@@ -239,6 +232,7 @@ namespace MajdataPlay.Game
                     var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch &&
                                                                  o.noteType != SimaiNoteType.TouchHold);
                     int? num = null;
+                    touchTasks.Clear();
                     IDistanceProvider? provider = null;
                     IStatefulNote? noteA = null;
                     IStatefulNote? noteB = null;
@@ -375,9 +369,11 @@ namespace MajdataPlay.Game
                 GOnote = Instantiate(tapPrefab, notes.transform);
                 NDCompo = GOnote.GetComponent<TapDrop>();
             }
-
-            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
-
+            NDCompo.QueueInfo = new TapQueueInfo()
+            {
+                Index = noteIndex[note.startPosition]++,
+                KeyIndex = note.startPosition
+            };
             // note的图层顺序
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -394,9 +390,13 @@ namespace MajdataPlay.Game
         HoldDrop InstantiateHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
             var GOnote = Instantiate(holdPrefab, notes.transform);
-            noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
             var NDCompo = GOnote.GetComponent<HoldDrop>();
 
+            NDCompo.QueueInfo = new TapQueueInfo()
+            {
+                Index = noteIndex[note.startPosition]++,
+                KeyIndex = note.startPosition
+            };
             // note的图层顺序
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -416,9 +416,14 @@ namespace MajdataPlay.Game
                               in List<TouchDrop> members)
         {
             var GOnote = Instantiate(touchPrefab, notes.transform);
-            noteManager.AddTouch(GOnote, touchIndex[TouchBase.GetSensor(note.touchArea, note.startPosition)]++);
             var NDCompo = GOnote.GetComponent<TouchDrop>();
+            var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
 
+            NDCompo.QueueInfo = new TouchQueueInfo()
+            {
+                SensorPos = sensorPos,
+                Index = touchIndex[sensorPos]++
+            };
             // note的图层顺序
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -439,13 +444,20 @@ namespace MajdataPlay.Game
         void InstantiateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
             var GOnote = Instantiate(touchHoldPrefab, notes.transform);
-            noteManager.AddTouch(GOnote, touchIndex[SensorType.C]++);
             var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
+            var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
 
+            NDCompo.QueueInfo = new TouchQueueInfo()
+            {
+                SensorPos = sensorPos,
+                Index = touchIndex[sensorPos]++
+            };
             // note的图层顺序
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
+            NDCompo.startPosition = note.startPosition;
+            NDCompo.areaPosition = note.touchArea;
             NDCompo.timing = (float)timing.time;
             NDCompo.LastFor = (float)note.holdTime;
             NDCompo.speed = touchSpeed * timing.HSpeed;
@@ -800,7 +812,11 @@ namespace MajdataPlay.Game
             NDCompo.isNoHead = note.isSlideNoHead;
             if (!note.isSlideNoHead)
             {
-                noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+                NDCompo.QueueInfo = new TapQueueInfo()
+                {
+                    Index = noteIndex[note.startPosition]++,
+                    KeyIndex = note.startPosition
+                };
                 noteCount++;
             }
             NDCompo.timing = (float)timing.time;
@@ -890,7 +906,11 @@ namespace MajdataPlay.Game
             NDCompo.isNoHead = note.isSlideNoHead;
             if (!note.isSlideNoHead)
             {
-                noteManager.AddNote(GOnote, noteIndex[note.startPosition]++);
+                NDCompo.QueueInfo = new TapQueueInfo()
+                {
+                    Index = noteIndex[note.startPosition]++,
+                    KeyIndex = note.startPosition
+                };
                 noteCount++;
             }
             NDCompo.timing = (float)timing.time;

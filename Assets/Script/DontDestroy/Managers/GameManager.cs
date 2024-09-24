@@ -11,6 +11,7 @@ using Debug = UnityEngine.Debug;
 using System.Threading.Tasks;
 using System.Threading;
 using MajdataPlay.Utils;
+using UnityEngine.Scripting;
 
 namespace MajdataPlay
 {
@@ -143,6 +144,26 @@ namespace MajdataPlay
 
             var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
             File.WriteAllText(SettingPath, json);
+        }
+        public void EnableGC()
+        {
+            if (!Setting.Debug.DisableGCInGameing)
+                return;
+#if !UNITY_EDITOR
+            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+            Debug.LogWarning("GC has been enabled");
+#endif
+            GC.Collect();
+        }
+        public void DisableGC() 
+        {
+            if (!Setting.Debug.DisableGCInGameing)
+                return;
+            GC.Collect();
+#if !UNITY_EDITOR
+            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            Debug.LogWarning("GC has been disabled");
+#endif
         }
         async Task LogWriteback()
         {

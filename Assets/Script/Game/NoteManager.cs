@@ -10,83 +10,41 @@ namespace MajdataPlay.Game
     public class NoteManager : MonoBehaviour
     {
         public List<GameObject> notes = new();
-        public Dictionary<GameObject, int> noteOrder = new();
-        public Dictionary<int, int> noteIndex = new();
+        Dictionary<int, int> noteCurrentIndex = new();
+        Dictionary<SensorType, int> touchCurrentIndex = new();
 
-        public Dictionary<GameObject, int> touchOrder = new();
-        public Dictionary<SensorType, int> touchIndex = new();
 
-        private bool isNotesLoaded = false;
-        // Start is called before the first frame update
-        void Start()
+        public void ResetCounter()
         {
-            //Application.targetFrameRate = 30;
-
-        }
-        public void Refresh()
-        {
-            var count = transform.childCount;
-            ResetCounter();
-            for (int i = 0; i < count; i++)
-            {
-                var child = transform.GetChild(i);
-                var tap = child.GetComponent<TapDrop>();
-                var hold = child.GetComponent<HoldDrop>();
-                var star = child.GetComponent<StarDrop>();
-                var touch = child.GetComponent<TouchDrop>();
-                var touchHold = child.GetComponent<TouchHoldDrop>();
-
-                if (tap != null)
-                    noteOrder.Add(tap.gameObject, noteIndex[tap.startPosition]++);
-                else if (hold != null)
-                    noteOrder.Add(hold.gameObject, noteIndex[hold.startPosition]++);
-                else if (star != null && !star.isNoHead)
-                    noteOrder.Add(star.gameObject, noteIndex[star.startPosition]++);
-                else if (touch != null)
-                    touchOrder.Add(touch.gameObject, touchIndex[touch.GetSensor()]++);
-                else if (touchHold != null)
-                    touchOrder.Add(touchHold.gameObject, touchIndex[SensorType.C]++);
-
-                notes.Add(child.gameObject);
-            }
-            ResetCounter();
-            isNotesLoaded = true;
-        }
-        void ResetCounter()
-        {
-            noteIndex.Clear();
-            touchIndex.Clear();
+            noteCurrentIndex.Clear();
+            touchCurrentIndex.Clear();
             //八条轨道 判定到此轨道上的第几个note了
             for (int i = 1; i < 9; i++)
-                noteIndex.Add(i, 0);
-            var sensorParent = GameObject.Find("IOManager");
-            var count = sensorParent.transform.childCount;
-            for (int i = 0; i < count; i++)
-                touchIndex.Add(sensorParent.transform
-                                           .GetChild(i)
-                                           .GetComponent<Sensor>().Type, 0);
+                noteCurrentIndex.Add(i, 0);
+            for (int i = 0; i < 33; i++)
+                touchCurrentIndex.Add((SensorType)i, 0);
         }
-        public int GetOrder(GameObject obj) => noteOrder[obj];
-        public bool CanJudge(GameObject obj, int pos)
+        public bool CanJudge(in TapQueueInfo queueInfo)
         {
-            if (!noteOrder.ContainsKey(obj))
+            if (!noteCurrentIndex.ContainsKey(queueInfo.KeyIndex))
                 return false;
-            var index = noteOrder[obj];
-            var nowIndex = noteIndex[pos];
+            var index = queueInfo.Index;
+            var currentIndex = noteCurrentIndex[queueInfo.KeyIndex];
 
-            return index <= nowIndex;
+            return index <= currentIndex;
         }
 
-        public bool CanJudge(GameObject obj, SensorType t)
+        public bool CanJudge(in TouchQueueInfo queueInfo)
         {
-            if (!touchOrder.ContainsKey(obj))
+            if (!touchCurrentIndex.ContainsKey(queueInfo.SensorPos))
                 return false;
-            var index = touchOrder[obj];
-            var nowIndex = touchIndex[t];
+            var index = queueInfo.Index;
+            var currentIndex = touchCurrentIndex[queueInfo.SensorPos];
 
-            return index <= nowIndex;
+            return index <= currentIndex;
         }
-
+        public void NextNote(in TapQueueInfo queueInfo) => noteCurrentIndex[queueInfo.KeyIndex]++;
+        public void NextTouch(in TouchQueueInfo queueInfo) => touchCurrentIndex[queueInfo.SensorPos]++;
         public void DestroyAllNotes()
         {
             foreach (var note in notes)
@@ -95,9 +53,6 @@ namespace MajdataPlay.Game
                     Destroy(note);
             }
         }
-
-        public void AddNote(GameObject obj, int index) => noteOrder.Add(obj, index);
-        public void AddTouch(GameObject obj, int index) => touchOrder.Add(obj, index);
         private void FixedUpdate()
         {
             if (GamePlayManager.Instance.State != ComponentState.Running)

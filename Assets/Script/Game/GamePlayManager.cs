@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Threading;
+using UnityEngine.Scripting;
 
 namespace MajdataPlay.Game
 {
@@ -302,25 +303,25 @@ namespace MajdataPlay.Game
             await InitBackground();
             var noteLoaderTask = LoadNotes().AsTask();
 
-        while(!noteLoaderTask.IsCompleted)
-        {
-            if(noteLoaderTask.IsFaulted)
-                throw noteLoaderTask.Exception;
-            await UniTask.Yield();
-        }
-        if (!sfxGeneratingTask.IsCompleted)
-            await sfxGeneratingTask;
+            while (!noteLoaderTask.IsCompleted)
+            {
+                if (noteLoaderTask.IsFaulted)
+                    throw noteLoaderTask.Exception;
+                await UniTask.Yield();
+            }
+            if (!sfxGeneratingTask.IsCompleted)
+                await sfxGeneratingTask;
 
-        GC.Collect();
-        Time.timeScale = 1f;
-        var firstClockTiming = AnwserSoundList[0].time;
-        float extraTime = 5f;
-        if(firstClockTiming < -5f)
-            extraTime += (-(float)firstClockTiming - 5f) + 2f;
-        AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + extraTime;
-        StartToPlayAnswer();
-        audioSample.Play();
-        audioSample.Pause();
+            GameManager.Instance.DisableGC();
+            Time.timeScale = 1f;
+            var firstClockTiming = AnwserSoundList[0].time;
+            float extraTime = 5f;
+            if (firstClockTiming < -5f)
+                extraTime += (-(float)firstClockTiming - 5f) + 2f;
+            AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + extraTime;
+            StartToPlayAnswer();
+            audioSample.Play();
+            audioSample.Pause();
 
             State = ComponentState.Running;
 
@@ -339,7 +340,7 @@ namespace MajdataPlay.Game
             audioSample = null;
             State = ComponentState.Finished;
             allTaskTokenSource.Cancel();
-            GC.Collect();
+            GameManager.Instance.EnableGC();
         }
         // Update is called once per frame
         void Update()
@@ -416,6 +417,7 @@ namespace MajdataPlay.Game
             DisposeAudioTrack();
             //AudioManager.Instance.UnLoadMusic();
             InputManager.Instance.UnbindAnyArea(OnPauseButton);
+            GameManager.Instance.EnableGC();
             DelayBackToList().Forget();
 
         }
@@ -434,6 +436,7 @@ namespace MajdataPlay.Game
             var objectCounter = FindFirstObjectByType<ObjectCounter?>();
             if (objectCounter != null)
                 GameManager.LastGameResult = objectCounter.GetPlayRecord(song, GameManager.Instance.SelectedDiff);
+            GameManager.Instance.EnableGC();
             DelayEndGame().Forget();
             State = ComponentState.Finished;
         }
