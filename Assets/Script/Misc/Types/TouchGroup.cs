@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Interfaces;
 using System;
 using System.Linq;
 
@@ -12,7 +12,7 @@ namespace MajdataPlay.Types
             {
                 if (Members.Length == 0)
                     return 0f;
-                var finished = Members.Where(x => x == null);
+                var finished = Members.Where(x => x.State == NoteStatus.Destroyed);
                 return finished.Count() / (float)Members.Length;
             }
         }
@@ -27,7 +27,8 @@ namespace MajdataPlay.Types
                     _judgeResult = value;
             }
         }
-        public TouchDrop[] Members { get; set; } = Array.Empty<TouchDrop>();
+        public float JudgeDiff { get; set; } = 0;
+        public IStatefulNote[] Members { get; set; } = Array.Empty<IStatefulNote>();
         JudgeType? _judgeResult = null;
     }
 }

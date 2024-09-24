@@ -38,7 +38,10 @@ namespace MajdataPlay.Game
         public void Play(in JudgeResult judgeResult)
         {
             if (judgeResult.IsMiss || judgeResult.Diff == 0)
+            {
+                Reset();
                 return;
+            }
             effectObject.SetActive(true);
             if (judgeResult.IsFast)
                 textRenderer.sprite = fastSprite;

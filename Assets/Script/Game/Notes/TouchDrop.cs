@@ -137,6 +137,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         isJudged = true;
                         judgeResult = (JudgeType)GroupInfo.JudgeResult;
+                        judgeDiff = GroupInfo.JudgeDiff;
                         Destroy(gameObject);
                     }
                 }
@@ -256,7 +257,10 @@ namespace MajdataPlay.Game.Notes
             effectManager.PlayTouchEffect(sensorPos, result);
 
             if (GroupInfo is not null && judgeResult != JudgeType.Miss)
+            {
                 GroupInfo.JudgeResult = judgeResult;
+                GroupInfo.JudgeDiff = judgeDiff;
+            }
 
             if(judgeResult != JudgeType.Miss)
                 audioEffMana.PlayTouchSound();
