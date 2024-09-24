@@ -2,7 +2,6 @@ using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using Unity.Collections;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
