@@ -291,7 +291,7 @@ namespace MajdataPlay.Game
                                 InstantiateTouch(note, timing, members);
                                 break;
                             case SimaiNoteType.Slide:
-                                InstantiateSlideGroup(timing, note, i, lastNoteTime); // 星星组
+                                InstantiateSlideGroup(timing, note); // 星星组
                                 break;
                         }
                     }
@@ -349,6 +349,64 @@ namespace MajdataPlay.Game
                 throw e;
             }
             State = NoteLoaderStatus.Finished;
+        }
+        TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
+        {
+            var noteTiming = (float)timing.time;
+            var speed = noteSpeed * timing.HSpeed;
+            var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+            var appearDiff = (((scaleRate * 1.225f) - 1) * 4.8f * speed) / scaleRate;
+            var appearTiming = noteTiming + appearDiff;
+            var sortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            return new()
+            {
+                StartPos = note.startPosition,
+                Timing = noteTiming,
+                AppearTiming = appearTiming,
+                NoteSortOrder = sortOrder,
+                Speed = speed,
+                IsEach = timing.noteList.Count > 1,
+                IsBreak = note.isBreak,
+                IsEX = note.isEx,
+                IsStar = note.isForceStar,
+                IsFakeStar = note.isForceStar,
+                IsFakeStarRotate = note.isFakeRotate,
+                QueueInfo = new TapQueueInfo()
+                {
+                    Index = noteIndex[note.startPosition]++,
+                    KeyIndex = note.startPosition
+                }
+            };
+        }
+        HoldPoolingInfo CreateHold(in SimaiNote note, in SimaiTimingPoint timing)
+        {
+            var noteTiming = (float)timing.time;
+            var speed = noteSpeed * timing.HSpeed;
+            var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+            var appearDiff = (((scaleRate * 1.225f) - 1) * 4.8f * speed) / scaleRate;
+            var appearTiming = noteTiming + appearDiff;
+            var sortOrder = noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            return new()
+            {
+                StartPos = note.startPosition,
+                Timing = noteTiming,
+                LastFor = (float)note.holdTime,
+                AppearTiming = appearTiming,
+                NoteSortOrder = sortOrder,
+                Speed = speed,
+                IsEach = timing.noteList.Count > 1,
+                IsBreak = note.isBreak,
+                IsEX = note.isEx,
+                QueueInfo = new TapQueueInfo()
+                {
+                    Index = noteIndex[note.startPosition]++,
+                    KeyIndex = note.startPosition
+                }
+            };
         }
         TapBase InstantiateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
@@ -550,7 +608,7 @@ namespace MajdataPlay.Game
             });
         }
 
-        private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note, int sort, double lastNoteTime)
+        private void InstantiateSlideGroup(SimaiTimingPoint timing, SimaiNote note)
         {
             int charIntParse(char c)
             {
@@ -843,10 +901,10 @@ namespace MajdataPlay.Game
             return slideWifi;
         }
 
-    private IConnectableSlide InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
-    {
-        var GOnote = Instantiate(starPrefab, notes.transform);
-        var NDCompo = GOnote.GetComponent<StarDrop>();
+        private IConnectableSlide InstantiateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
+        {
+            var GOnote = Instantiate(starPrefab, notes.transform);
+            var NDCompo = GOnote.GetComponent<StarDrop>();
 
             // note的图层顺序
             NDCompo.noteSortOrder = noteSortOrder;
@@ -878,12 +936,9 @@ namespace MajdataPlay.Game
             if (timing.noteList.Count > 1)
             {
                 NDCompo.isEach = true;
-                if (timing.noteList.FindAll(
-                        o => o.noteType == SimaiNoteType.Slide).Count
-                    > 1)
+                if (timing.noteList.FindAll(o => o.noteType == SimaiNoteType.Slide).Count > 1)
                 {
                     SliCompo.isEach = true;
-                    //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Each;
                 }
 
                 var count = timing.noteList.FindAll(
@@ -901,7 +956,6 @@ namespace MajdataPlay.Game
 
             SliCompo.ConnectInfo = info;
             SliCompo.isBreak = note.isSlideBreak;
-            //if (note.isSlideBreak) slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star_Break;
 
             NDCompo.isNoHead = note.isSlideNoHead;
             if (!note.isSlideNoHead)
@@ -918,34 +972,34 @@ namespace MajdataPlay.Game
             NDCompo.speed = noteSpeed * timing.HSpeed;
 
 
-        SliCompo.isMirror = isMirror;
-        SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
-        SliCompo.endPosition = endPos;
-        if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
-        {
-            // known slide sprite issue
-            //    1 2 3 4 5 6 7 8
-            // p  X X X X X X O O
-            // q  X O O X X X X X
-            var pqEndPos = slideIndex - 26;
-            SliCompo.isSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
+            SliCompo.isMirror = isMirror;
+            SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
+            SliCompo.endPosition = endPos;
+            if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
+            {
+                // known slide sprite issue
+                //    1 2 3 4 5 6 7 8
+                // p  X X X X X X O O
+                // q  X O O X X X X X
+                var pqEndPos = slideIndex - 26;
+                SliCompo.isSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
+            }
+            else
+            {
+                SliCompo.isSpecialFlip = isMirror;
+            }
+            SliCompo.speed = noteSpeed * timing.HSpeed;
+            SliCompo.startTiming = (float)timing.time;
+            SliCompo.startPosition = note.startPosition;
+            SliCompo.stars = new GameObject[] { slide_star };
+            SliCompo.timing = (float)note.slideStartTime;
+            SliCompo.LastFor = (float)note.slideTime;
+            //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
+            SliCompo.sortIndex = slideLayer;
+            slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+            //slideLayer += 5;
+            return SliCompo;
         }
-        else
-        {
-            SliCompo.isSpecialFlip = isMirror;
-        }
-        SliCompo.speed = noteSpeed * timing.HSpeed;
-        SliCompo.startTiming = (float)timing.time;
-        SliCompo.startPosition = note.startPosition;
-        SliCompo.stars = new GameObject[] { slide_star };
-        SliCompo.timing = (float)note.slideStartTime;
-        SliCompo.LastFor = (float)note.slideTime;
-        //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
-        SliCompo.sortIndex = slideLayer;
-        slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
-        //slideLayer += 5;
-        return SliCompo;
-    }
 
         /// <summary>
         /// 判断Slide SlideOK是否需要镜像翻转

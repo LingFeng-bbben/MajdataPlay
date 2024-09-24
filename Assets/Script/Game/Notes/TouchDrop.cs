@@ -260,6 +260,7 @@ namespace MajdataPlay.Game.Notes
             {
                 GroupInfo.JudgeResult = judgeResult;
                 GroupInfo.JudgeDiff = judgeDiff;
+                GroupInfo.RegisterResult(judgeResult);
             }
 
             if(judgeResult != JudgeType.Miss)

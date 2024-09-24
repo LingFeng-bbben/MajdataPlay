@@ -14,6 +14,7 @@ namespace MajdataPlay.Types
         public bool IsFakeStar { get; init; }
         public bool IsFakeStarRotate { get; init; }
         public float RotateSpeed { get; init; } = 1f;
+        public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;
         public GameObject? Slide { get; init; } = null;
     }
 }

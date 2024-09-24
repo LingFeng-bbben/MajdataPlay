@@ -9,5 +9,6 @@ namespace MajdataPlay.Types
     public class HoldPoolingInfo: NotePoolingInfo
     {
         public float LastFor { get; init; }
+        public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;
     }
 }

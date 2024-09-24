@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Interfaces;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace MajdataPlay.Types
 {
@@ -12,8 +12,7 @@ namespace MajdataPlay.Types
             {
                 if (Members.Length == 0)
                     return 0f;
-                var finished = Members.Where(x => x.State == NoteStatus.Destroyed);
-                return finished.Count() / (float)Members.Length;
+                return results.Count / (float)Members.Length;
             }
         }
         public JudgeType? JudgeResult
@@ -29,6 +28,15 @@ namespace MajdataPlay.Types
         }
         public float JudgeDiff { get; set; } = 0;
         public IStatefulNote[] Members { get; set; } = Array.Empty<IStatefulNote>();
+        List<JudgeType> results = new();
+
+        public void RegisterResult(in JudgeType result)
+        {
+            if (result == JudgeType.Miss)
+                return;
+            results.Add(result);
+        }
+
         JudgeType? _judgeResult = null;
     }
 }
