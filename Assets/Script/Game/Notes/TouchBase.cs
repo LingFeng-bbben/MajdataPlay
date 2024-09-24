@@ -2,18 +2,19 @@
 using MajdataPlay.Types;
 using MajdataPlay.Extensions;
 using System;
+using MajdataPlay.Interfaces;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class TouchBase : NoteDrop
+    public abstract class TouchBase : NoteDrop, INoteQueueMember<TouchQueueInfo>
     {
+        public TouchGroup? GroupInfo { get; set; }
+        public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public char areaPosition;
         public bool isFirework;
 
         public GameObject tapEffect;
         public GameObject judgeEffect;
-
-        public TouchGroup GroupInfo;
 
         protected Quaternion GetRoation()
         {

@@ -7,8 +7,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider
+    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>
     {
+        public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
         public float Distance { get; private set; } = -100;
         bool holdAnimStart;
 
@@ -128,7 +129,7 @@ namespace MajdataPlay.Game.Notes
                 judgeDiff = 150;
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
-                objectCounter.NextNote(startPosition);
+                noteManager.NextNote(QueueInfo);
                 if (IsClassic)
                 {
                     Destroy(tapLine);
@@ -143,7 +144,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (arg.Type != sensorPos)
                 return;
-            else if (isJudged || !noteManager.CanJudge(gameObject, startPosition))
+            else if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
             if (arg.IsClick)
             {
@@ -156,7 +157,7 @@ namespace MajdataPlay.Game.Notes
                 if (isJudged)
                 {
                     ioManager.UnbindArea(Check, sensorPos);
-                    objectCounter.NextNote(startPosition);
+                    noteManager.NextNote(QueueInfo);
                 }
             }
         }
@@ -309,7 +310,7 @@ namespace MajdataPlay.Game.Notes
             //effectManager.PlayFastLate(startPosition, result);
             objectCounter.ReportResult(this, result);
             if (!isJudged)
-                objectCounter.NextNote(startPosition);
+                noteManager.NextNote(QueueInfo);
 
             
         }

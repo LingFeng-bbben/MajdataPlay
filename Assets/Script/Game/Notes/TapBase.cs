@@ -7,8 +7,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class TapBase : NoteDrop,IDistanceProvider
+    public abstract class TapBase : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>
     {
+        public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
         public float Distance { get; protected set; } = -100;
         public GameObject tapLine;
 
@@ -112,7 +113,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (arg.Type != sensorPos)
                 return;
-            else if (isJudged || !noteManager.CanJudge(gameObject, startPosition))
+            else if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
 
             if (arg.IsClick)
@@ -197,9 +198,9 @@ namespace MajdataPlay.Game.Notes
 
             effectManager.PlayEffect(startPosition, result);
             //effectManager.PlayFastLate(startPosition, result);
-
+            
             audioEffMana.PlayTapSound(result);
-            objectCounter.NextNote(startPosition);
+            noteManager.NextNote(QueueInfo);
             objectCounter.ReportResult(this, result);
         }
     }

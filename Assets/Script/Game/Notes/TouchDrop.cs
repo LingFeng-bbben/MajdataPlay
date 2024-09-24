@@ -110,7 +110,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (arg.Type != type)
                 return;
-            else if (isJudged || !noteManager.CanJudge(gameObject, type))
+            else if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
             else if (arg.IsClick)
             {
@@ -261,7 +261,7 @@ namespace MajdataPlay.Game.Notes
             if(judgeResult != JudgeType.Miss)
                 audioEffMana.PlayTouchSound();
             objectCounter.ReportResult(this, result);
-            objectCounter.NextTouch(sensorPos);
+            noteManager.NextTouch(QueueInfo);
 
             if (isFirework && judgeResult != JudgeType.Miss)
             {

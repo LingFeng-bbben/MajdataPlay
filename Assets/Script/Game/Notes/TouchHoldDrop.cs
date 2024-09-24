@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -6,8 +7,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchHoldDrop : NoteLongDrop
+    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>
     {
+        public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -96,7 +98,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (isJudged || !noteManager.CanJudge(gameObject, sensorPos))
+            if (isJudged || !noteManager.CanJudge(QueueInfo))
                 return;
             else if (arg.IsClick)
             {
@@ -108,8 +110,8 @@ namespace MajdataPlay.Game.Notes
                 ioManager.SetIdle(arg);
                 if (isJudged)
                 {
-                    ioManager.UnbindSensor(Check, SensorType.C);
-                    objectCounter.NextTouch(SensorType.C);
+                    ioManager.UnbindSensor(Check, sensorPos);
+                    noteManager.NextTouch(QueueInfo);
                 }
             }
         }
@@ -200,7 +202,7 @@ namespace MajdataPlay.Game.Notes
                 judgeResult = JudgeType.Miss;
                 ioManager.UnbindSensor(Check, SensorType.C);
                 isJudged = true;
-                objectCounter.NextTouch(SensorType.C);
+                noteManager.NextTouch(QueueInfo);
             }
         }
         // Update is called once per frame
@@ -331,7 +333,7 @@ namespace MajdataPlay.Game.Notes
             };
             objectCounter.ReportResult(this, result);
             if (!isJudged)
-                objectCounter.NextTouch(SensorType.C);
+                noteManager.NextTouch(QueueInfo);
             if (isFirework && !result.IsMiss)
             {
                 effectManager.PlayFireworkEffect(transform.position);
