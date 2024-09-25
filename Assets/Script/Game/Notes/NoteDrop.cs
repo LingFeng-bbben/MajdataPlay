@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote
+    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider
     {
         public int startPosition;
         public float timing;
@@ -16,6 +16,7 @@ namespace MajdataPlay.Game.Notes
         public bool isBreak = false;
         public bool isEX = false;
 
+        public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;

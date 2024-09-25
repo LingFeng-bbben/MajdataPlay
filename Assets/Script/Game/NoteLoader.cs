@@ -45,6 +45,7 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController HoldShine;
 
         private ObjectCounter ObjectCounter;
+        NotePoolManager poolManager;
 
         private int slideLayer = -1;
         private int noteSortOrder = 0;
@@ -197,7 +198,9 @@ namespace MajdataPlay.Game
 
         private void Start()
         {
-            noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
+            var notes = GameObject.Find("Notes");
+            noteManager = notes.GetComponent<NoteManager>();
+            poolManager = notes.GetComponent<NotePoolManager>();
         }
         public async UniTask LoadNotes(SimaiProcess simaiProcess)
         {
@@ -332,6 +335,161 @@ namespace MajdataPlay.Game
 
                         lineDrop.startPosition = startPos;
                         lineDrop.curvLength = endPos - 1;
+                    }
+                }
+
+                var allTask = Task.WhenAll(touchTasks);
+                while (!allTask.IsCompleted)
+                {
+                    await UniTask.Yield();
+                    if (allTask.IsFaulted)
+                        throw allTask.Exception.InnerException;
+                }
+            }
+            catch (Exception e)
+            {
+                State = NoteLoaderStatus.Error;
+                throw e;
+            }
+            State = NoteLoaderStatus.Finished;
+        }
+        public async UniTask LoadNotesIntoPool(SimaiProcess simaiProcess)
+        {
+            List<Task> touchTasks = new();
+            try
+            {
+                State = NoteLoaderStatus.ParsingNote;
+                noteManager.ResetCounter();
+                noteIndex.Clear();
+                touchIndex.Clear();
+
+                for (int i = 1; i < 9; i++)
+                    noteIndex.Add(i, 0);
+                for (int i = 0; i < 33; i++)
+                    touchIndex.Add((SensorType)i, 0);
+
+                var loadedData = simaiProcess;
+
+
+                await CountNoteSumAsync(loadedData);
+
+                var sum = ObjectCounter.tapSum +
+                          ObjectCounter.holdSum +
+                          ObjectCounter.touchSum +
+                          ObjectCounter.breakSum +
+                          ObjectCounter.slideSum;
+
+                var lastNoteTime = loadedData.notelist.Last().time;
+
+                foreach (var timing in loadedData.notelist)
+                {
+                    var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch &&
+                                                                 o.noteType != SimaiNoteType.TouchHold);
+                    int? num = null;
+                    touchTasks.Clear();
+                    //IDistanceProvider? provider = null;
+                    //IStatefulNote? noteA = null;
+                    //IStatefulNote? noteB = null;
+                    NotePoolingInfo? noteA = null;
+                    NotePoolingInfo? noteB = null;
+                    List<TouchDrop> members = new();
+                    foreach (var (i, note) in timing.noteList.WithIndex())
+                    {
+                        noteCount++;
+                        Process = (double)noteCount / sum;
+                        if (noteCount % 30 == 0)
+                            await UniTask.Yield();
+
+                        switch (note.noteType)
+                        {
+                            case SimaiNoteType.Tap:
+                                {
+                                    var obj = CreateTap(note, timing);
+                                    if (eachNotes.Count > 1 && i < 2)
+                                    {
+                                        if (num is null)
+                                            num = 0;
+                                        else if (num != 0)
+                                            break;
+
+                                        if (noteA is null)
+                                            noteA = obj;
+                                        else
+                                            noteB = obj;
+                                    }
+                                    poolManager.AddTap(obj);
+                                }
+                                break;
+                            case SimaiNoteType.Hold:
+                                {
+                                    var obj = CreateHold(note, timing);
+                                    if (eachNotes.Count > 1 && i < 2)
+                                    {
+                                        if (num is null)
+                                            num = 1;
+                                        else if (num != 1)
+                                            break;
+
+                                        if (noteA is null)
+                                            noteA = obj;
+                                        else
+                                            noteB = obj;
+                                    }
+                                    poolManager.AddHold(obj);
+                                }
+                                break;
+                            case SimaiNoteType.TouchHold:
+                                InstantiateTouchHold(note, timing);
+                                break;
+                            case SimaiNoteType.Touch:
+                                InstantiateTouch(note, timing, members);
+                                break;
+                            case SimaiNoteType.Slide:
+                                InstantiateSlideGroup(timing, note); // 星星组
+                                break;
+                        }
+                    }
+                    if (members.Count != 0)
+                        touchTasks.Add(AllocTouchGroup(members));
+
+                    if (eachNotes.Count > 1) //有多个非touchnote
+                    {
+                        var startPos = eachNotes[0].startPosition;
+                        var endPos = eachNotes[1].startPosition;
+                        endPos = endPos - startPos;
+                        if (endPos == 0)
+                            continue;
+                        var time = (float)timing.time;
+                        var speed = noteSpeed * timing.HSpeed;
+                        var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+                        var appearDiff = (((scaleRate * 1.225f) - 1) * 4.8f * speed) / scaleRate;
+                        var appearTiming = time + appearDiff;
+
+                        endPos = endPos < 0 ? endPos + 8 : endPos;
+                        endPos = endPos > 8 ? endPos - 8 : endPos;
+                        endPos++;
+
+                        if (endPos > 4)
+                        {
+                            startPos = eachNotes[1].startPosition;
+                            endPos = eachNotes[0].startPosition;
+                            endPos = endPos - startPos;
+                            endPos = endPos < 0 ? endPos + 8 : endPos;
+                            endPos = endPos > 8 ? endPos - 8 : endPos;
+                            endPos++;
+                        }
+
+                        var startPosition = startPos;
+                        var curvLength = endPos - 1;
+                        poolManager.AddEachLine(new EachLinePoolingInfo()
+                        {
+                            StartPos = startPosition,
+                            Timing = time,
+                            AppearTiming = appearTiming,
+                            CurvLength = curvLength,
+                            MemberA = noteA,
+                            MemberB = noteB
+                        });
                     }
                 }
 
