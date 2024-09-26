@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Notes;
+using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace MajdataPlay.Game
 
         NotePool<TapPoolingInfo, TapQueueInfo> tapPool;
         NotePool<HoldPoolingInfo, TapQueueInfo> holdPool;
+        SlideLauncherPool starPool;
         EachLinePool eachLinePool;
 
         [SerializeField]
@@ -27,11 +29,16 @@ namespace MajdataPlay.Game
 
         GamePlayManager gpManager;
         List<TapPoolingInfo> tapInfos = new();
+        List<TapPoolingInfo> starInfos = new();
         List<HoldPoolingInfo> holdInfos = new();
         List<EachLinePoolingInfo> eachLineInfos = new();
         public void Initialize()
         {
-            
+            tapPool = new (tapPrefab, transform,tapInfos.ToArray(),128);
+            holdPool = new (holdPrefab, transform,holdInfos.ToArray(),64);
+            starPool = new (starPrefab, transform,starInfos.ToArray(),128);
+            eachLinePool = new (eachLinePrefab, transform, eachLineInfos.ToArray(),64);
+            State = ComponentState.Running;
         }
         void Start()
         {
@@ -44,11 +51,15 @@ namespace MajdataPlay.Game
             var currentSec = gpManager.AudioTime;
             tapPool.Update(currentSec);
             holdPool.Update(currentSec);
+            starPool.Update(currentSec);
             eachLinePool.Update(currentSec);
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {
-            tapInfos.Add(tapInfo);
+            if (tapInfo.IsStar)
+                starInfos.Add(tapInfo);
+            else
+                tapInfos.Add(tapInfo);
         }
         public void AddHold(HoldPoolingInfo holdInfo)
         {
@@ -57,6 +68,24 @@ namespace MajdataPlay.Game
         public void AddEachLine(EachLinePoolingInfo eachLineInfo)
         {
             eachLineInfos.Add(eachLineInfo);
+        }
+        public void Collect<TNote>(TNote endNote) where TNote: NoteDrop
+        {
+            switch(endNote)
+            {
+                case TapDrop tap:
+                    tapPool.Collect(tap);
+                    break;
+                case HoldDrop hold:
+                    holdPool.Collect(hold);
+                    break;
+                case StarDrop star:
+                    starPool.Collect(star);
+                    break;
+                case EachLineDrop eachLine:
+                    eachLinePool.Collect(eachLine);
+                    break;
+            }
         }
     }
 }

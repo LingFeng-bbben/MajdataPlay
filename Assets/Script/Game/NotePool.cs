@@ -14,25 +14,22 @@ namespace MajdataPlay.Game
         public int Capacity { get; private set; } = 64;
 
         protected TimingPoint<TInfo>?[] timingPoints;
-        protected List<IPoolableNote<TInfo, TMember>> idleNotes = new(64);
-        protected List<IPoolableNote<TInfo, TMember>> inUseNotes = new(64);
+        protected List<IPoolableNote<TInfo, TMember>> idleNotes;
+        protected List<IPoolableNote<TInfo, TMember>> inUseNotes;
         
-        public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos,int capacity): this(prefab, parent, noteInfos)
+        public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos,int capacity)
         {
             Capacity = capacity;
             idleNotes = new(capacity);
             inUseNotes = new(capacity);
-        }
-        public NotePool(GameObject prefab,Transform parent, TInfo[] noteInfos)
-        {
-            for (int i = 0; i < Capacity; i++)
+            for (int i = 0; i < capacity; i++)
             {
-                var obj = GameObject.Instantiate(prefab,parent);
+                var obj = GameObject.Instantiate(prefab, parent);
                 obj.SetActive(false);
                 var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
-                if(noteObj is null)
+                if (noteObj is null)
                     throw new NotSupportedException();
-                idleNotes[i] = noteObj;
+                idleNotes.Add(noteObj);
             }
             var timingPoints = noteInfos.GroupBy(x => x.AppearTiming)
                                         .OrderBy(x => x.Key);
@@ -45,6 +42,10 @@ namespace MajdataPlay.Game
                     Infos = timingPoint.ToArray()
                 };
             }
+        }
+        public NotePool(GameObject prefab,Transform parent, TInfo[] noteInfos) : this(prefab, parent, noteInfos,64)
+        {
+            
         }
         public virtual void Update(float currentSec)
         {
@@ -85,6 +86,7 @@ namespace MajdataPlay.Game
             info.Instance = obj;
             inUseNotes.Add(idleNote);
             idleNotes.RemoveAt(0);
+            idleNote.Initialize(info);
             return true;
         }
         public virtual void Collect(IPoolableNote<TInfo, TMember> endNote)

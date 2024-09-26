@@ -8,8 +8,8 @@ namespace MajdataPlay.Types
 {
     public class EachLinePoolingInfo : NotePoolingInfo
     {
-        public NotePoolingInfo? MemberA { get; init; }
-        public NotePoolingInfo? MemberB { get; init; }
+        public NotePoolingInfo? MemberA { get; init; } = null;
+        public NotePoolingInfo? MemberB { get; init; } = null;
         public int CurvLength { get; init; }
     }
 }

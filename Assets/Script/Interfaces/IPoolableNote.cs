@@ -6,6 +6,6 @@ namespace MajdataPlay.Interfaces
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {
         public void Initialize(TInfo poolingInfo);
-        public void End();
+        public void End(bool forceEnd);
     }
 }

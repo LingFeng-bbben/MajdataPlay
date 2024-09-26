@@ -316,7 +316,7 @@ namespace MajdataPlay.Game
                         lineDrop.NoteA = noteA;
                         lineDrop.NoteB = noteB;
 
-                        lineDrop.time = (float)timing.time;
+                        lineDrop.timing = (float)timing.time;
                         lineDrop.speed = noteSpeed * timing.HSpeed;
 
                         endPos = endPos < 0 ? endPos + 8 : endPos;
@@ -506,6 +506,7 @@ namespace MajdataPlay.Game
                 State = NoteLoaderStatus.Error;
                 throw e;
             }
+            poolManager.Initialize();
             State = NoteLoaderStatus.Finished;
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
@@ -530,7 +531,7 @@ namespace MajdataPlay.Game
                 IsEX = note.isEx,
                 IsStar = note.isForceStar,
                 IsFakeStar = note.isForceStar,
-                IsFakeStarRotate = note.isFakeRotate,
+                IsForceRotate = note.isFakeRotate,
                 QueueInfo = new TapQueueInfo()
                 {
                     Index = noteIndex[note.startPosition]++,
@@ -576,8 +577,8 @@ namespace MajdataPlay.Game
                 GOnote = Instantiate(starPrefab, notes.transform);
                 var _NDCompo = GOnote.GetComponent<StarDrop>();
                 _NDCompo.tapLine = starLine;
-                _NDCompo.isFakeStarRotate = note.isFakeRotate;
-                _NDCompo.isFakeStar = true;
+                _NDCompo.IsForceRotate = note.isFakeRotate;
+                _NDCompo.IsFakeStar = true;
                 NDCompo = _NDCompo;
             }
             else
@@ -993,19 +994,19 @@ namespace MajdataPlay.Game
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-            NDCompo.rotateSpeed = (float)note.slideTime;
+            NDCompo.RotateSpeed = (float)note.slideTime;
             NDCompo.isEX = note.isEx;
             NDCompo.isBreak = note.isBreak;
 
             var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform);
             slideWifi.SetActive(false);
-            NDCompo.slide = slideWifi;
+            NDCompo.SlideObject = slideWifi;
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
 
             if (timing.noteList.Count > 1)
             {
                 NDCompo.isEach = true;
-                NDCompo.isDouble = false;
+                NDCompo.IsDouble = false;
                 if (timing.noteList.FindAll(
                         o => o.noteType == SimaiNoteType.Slide).Count
                     > 1)
@@ -1015,7 +1016,7 @@ namespace MajdataPlay.Game
                          o.startPosition == note.startPosition).Count;
                 if (count > 1) //有同起点
                 {
-                    NDCompo.isDouble = true;
+                    NDCompo.IsDouble = true;
                     if (count == timing.noteList.Count)
                         NDCompo.isEach = false;
                     else
@@ -1025,7 +1026,7 @@ namespace MajdataPlay.Game
 
             WifiCompo.isBreak = note.isSlideBreak;
 
-            NDCompo.isNoHead = note.isSlideNoHead;
+            NDCompo.IsNoHead = note.isSlideNoHead;
             if (!note.isSlideNoHead)
             {
                 NDCompo.QueueInfo = new TapQueueInfo()
@@ -1068,7 +1069,7 @@ namespace MajdataPlay.Game
             NDCompo.noteSortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-            NDCompo.rotateSpeed = (float)note.slideTime;
+            NDCompo.RotateSpeed = (float)note.slideTime;
             NDCompo.isEX = note.isEx;
             NDCompo.isBreak = note.isBreak;
 
@@ -1086,7 +1087,7 @@ namespace MajdataPlay.Game
             //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
             slide_star.SetActive(false);
             slide.SetActive(false);
-            NDCompo.slide = slide;
+            NDCompo.SlideObject = slide;
             var SliCompo = slide.AddComponent<SlideDrop>();
 
             SliCompo.slideType = slideShape;
@@ -1104,7 +1105,7 @@ namespace MajdataPlay.Game
                          o.startPosition == note.startPosition).Count;
                 if (count > 1)
                 {
-                    NDCompo.isDouble = true;
+                    NDCompo.IsDouble = true;
                     if (count == timing.noteList.Count)
                         NDCompo.isEach = false;
                     else
@@ -1115,7 +1116,7 @@ namespace MajdataPlay.Game
             SliCompo.ConnectInfo = info;
             SliCompo.isBreak = note.isSlideBreak;
 
-            NDCompo.isNoHead = note.isSlideNoHead;
+            NDCompo.IsNoHead = note.isSlideNoHead;
             if (!note.isSlideNoHead)
             {
                 NDCompo.QueueInfo = new TapQueueInfo()

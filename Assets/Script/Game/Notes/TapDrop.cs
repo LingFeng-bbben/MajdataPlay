@@ -6,18 +6,18 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TapDrop : TapBase
+    public sealed class TapDrop : TapBase, IPoolableNote<TapPoolingInfo, TapQueueInfo>
     {
-        protected override void Start()
-        {
-            base.Start();
+        //protected override void Start()
+        //{
+        //    base.Start();
 
-            LoadSkin();
+        //    LoadSkin();
 
-            sensorPos = (SensorType)(startPosition - 1);
-            ioManager.BindArea(Check, sensorPos);
-            State = NoteStatus.Initialized;
-        }
+        //    sensorPos = (SensorType)(startPosition - 1);
+        //    ioManager.BindArea(Check, sensorPos);
+        //    State = NoteStatus.Initialized;
+        //}
         protected override void LoadSkin()
         {
             var skin = SkinManager.Instance.GetTapSkin();
@@ -50,11 +50,22 @@ namespace MajdataPlay.Game.Notes
 
             }
 
-            renderer.forceRenderingOff = true;
-            if (!isEX)
-                Destroy(exRenderer);
-            else
-                exRenderer.forceRenderingOff = false;
+            RendererState = RendererStatus.Off;
+        }
+        public override void Initialize(TapPoolingInfo poolingInfo)
+        {
+            base.Initialize(poolingInfo);
+
+            LoadSkin();
+            sensorPos = (SensorType)(startPosition - 1);
+            ioManager.BindArea(Check, sensorPos);
+            State = NoteStatus.Initialized;
+        }
+        public override void End(bool forceEnd = false)
+        {
+            base.End(forceEnd);
+            RendererState = RendererStatus.Off;
+            notePoolManager.Collect(this);
         }
     }
 }

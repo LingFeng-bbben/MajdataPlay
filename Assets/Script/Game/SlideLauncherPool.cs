@@ -1,18 +1,19 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using System;
 using UnityEngine;
+
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public class EachLinePool : NotePool<EachLinePoolingInfo,NoteQueueInfo>
+    public class SlideLauncherPool : NotePool<TapPoolingInfo,TapQueueInfo>
     {
-        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos,capacity)
+        public SlideLauncherPool(GameObject prefab, Transform parent, TapPoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {
 
         }
-        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos): base(prefab, parent, noteInfos)
+        public SlideLauncherPool(GameObject prefab, Transform parent, TapPoolingInfo[] noteInfos) : base(prefab, parent, noteInfos)
         {
 
         }
@@ -33,7 +34,7 @@ namespace MajdataPlay.Game
                 }
             }
         }
-        bool Dequeue(EachLinePoolingInfo?[] infos)
+        bool Dequeue(TapPoolingInfo?[] infos)
         {
             foreach (var (i, info) in infos.WithIndex())
             {
@@ -45,21 +46,17 @@ namespace MajdataPlay.Game
             }
             return true;
         }
-        bool Dequeue(EachLinePoolingInfo info)
+        bool Dequeue(TapPoolingInfo info)
         {
-            var noteA = info.MemberA?.Instance;
-            var noteB = info.MemberB?.Instance;
             if (idleNotes.IsEmpty())
-                return false;
-            else if (noteA is null && noteB is null)
                 return false;
             var idleNote = idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;
-            var eachLine = obj.GetComponent<EachLineDrop>();
-            eachLine.DistanceProvider = (noteA ?? noteB)?.GetComponent<IDistanceProvider>();
-            eachLine.NoteA = noteA?.GetComponent<IStatefulNote>();
-            eachLine.NoteB = noteB?.GetComponent<IStatefulNote>();
+            var launcher = obj.GetComponent<ISlideLauncher>();
+            if (launcher is null)
+                throw new NullReferenceException("This type does not implement ISlideLauncher");
+            launcher.SlideObject = info.Slide;
             inUseNotes.Add(idleNote);
             idleNotes.RemoveAt(0);
             idleNote.Initialize(info);

@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -8,16 +9,17 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchDrop : TouchBase
+    public sealed class TouchDrop : TouchBase , IRendererContainer
     {
         public RendererStatus RendererState 
         {
             get => _rendererState;
-            private set
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
-                switch(value)
+
+                switch (value)
                 {
                     case RendererStatus.Off:
                         foreach (var renderer in fanRenderers)

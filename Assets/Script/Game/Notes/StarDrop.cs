@@ -1,34 +1,63 @@
 ﻿using MajdataPlay.Game.Controllers;
-using MajdataPlay.IO;
+using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using System;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class StarDrop : TapBase
+    public sealed class StarDrop : TapBase, ISlideLauncher, IPoolableNote<TapPoolingInfo, TapQueueInfo>
     {
-        public float rotateSpeed = 1f;
+        public float RotateSpeed { get; set; } = 1f;
+        public bool IsDouble { get; set; } = false;
+        public bool IsNoHead { get; set; } = false;
+        public bool IsFakeStar { get; set; } = false;
+        public bool IsForceRotate { get; set; } = false;
 
-        public bool isDouble;
-        public bool isNoHead;
-        public bool isFakeStar = false;
-        public bool isFakeStarRotate = false;
+        public GameObject? SlideObject { get; set; }
+        //protected override void Start()
+        //{
+        //    base.Start();
 
-        public GameObject slide;
-        protected override void Start()
+        //    if (SlideObject is null)
+        //        throw new NullReferenceException("Slide launcher has no slide reference");
+        //    LoadSkin();
+
+        //    if (!IsNoHead)
+        //    {
+        //        sensorPos = (SensorType)(startPosition - 1);
+        //        ioManager.BindArea(Check, sensorPos);
+        //    }
+        //    State = NoteStatus.Initialized;
+        //}
+        public override void Initialize(TapPoolingInfo poolingInfo)
         {
-            base.Start();
+            base.Initialize(poolingInfo);
 
+            RotateSpeed = poolingInfo.RotateSpeed;
+            IsDouble = poolingInfo.IsDouble;
+            IsFakeStar = poolingInfo.IsFakeStar;
+            IsForceRotate = poolingInfo.IsForceRotate;
+            SlideObject = poolingInfo.Slide;
+            if (SlideObject is null)
+                throw new NullReferenceException("Slide launcher has no slide reference");
             LoadSkin();
-
-            if (!isNoHead)
+            if (!IsNoHead)
             {
                 sensorPos = (SensorType)(startPosition - 1);
                 ioManager.BindArea(Check, sensorPos);
             }
             State = NoteStatus.Initialized;
         }
-        // Update is called once per frame
+        public override void End(bool forceEnd = false)
+        {
+            if (!IsNoHead || IsFakeStar)
+                base.End(forceEnd);
+            else
+                State = NoteStatus.Destroyed;
+            RendererState = RendererStatus.Off;
+            notePoolManager.Collect(this);
+        }
         protected override void Update()
         {
             var songSpeed = gpManager.CurrentSpeed;
@@ -42,12 +71,10 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        if (!isNoHead)
+                        if (!IsNoHead)
                         {
                             tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                            thisRenderer.forceRenderingOff = false;
-                            if (isEX)
-                                exRenderer.forceRenderingOff = false;
+                            RendererState = RendererStatus.On;
                         }
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
@@ -57,7 +84,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 case NoteStatus.Scaling:
                     {
-                        if (destScale > 0.3f && !isNoHead)
+                        if (destScale > 0.3f && !IsNoHead)
                             tapLine.SetActive(true);
                         if (distance < 1.225f)
                         {
@@ -68,13 +95,12 @@ namespace MajdataPlay.Game.Notes
                         }
                         else
                         {
-                            if (!isFakeStar && !slide.activeSelf)
+                            if (!IsFakeStar && !SlideObject!.activeSelf)
                             {
-                                slide.SetActive(true);
-                                if (isNoHead)
+                                SlideObject.SetActive(true);
+                                if (IsNoHead)
                                 {
-                                    Destroy(tapLine);
-                                    Destroy(gameObject);
+                                    End();
                                     return;
                                 }
                             }
@@ -92,17 +118,14 @@ namespace MajdataPlay.Game.Notes
                         tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
                     break;
+                default:
+                    return;
             }
 
-            if (gpManager.IsStart && !isFakeStar && gameSetting.Game.StarRotation)
-                transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / rotateSpeed);
-            else if (isFakeStarRotate)
+            if (gpManager.IsStart && !IsFakeStar && gameSetting.Game.StarRotation)
+                transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / RotateSpeed);
+            else if (IsForceRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);
-        }
-        protected override void OnDestroy()
-        {
-            if (!isNoHead || isFakeStar)
-                base.OnDestroy();
         }
         protected override void LoadSkin()
         {
@@ -110,24 +133,13 @@ namespace MajdataPlay.Game.Notes
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
 
-            if (isNoHead)
-            {
-                Destroy(tapLineRenderer);
-                Destroy(renderer);
-                Destroy(exRenderer);
-                return;
-            }
-            else
-            {
-                renderer.forceRenderingOff = true;
-                exRenderer.forceRenderingOff = false;
-            }
+            RendererState = RendererStatus.Off;
 
             var skin = SkinManager.Instance.GetStarSkin();
             exRenderer.color = skin.ExEffects[0];
 
 
-            if (isDouble)
+            if (IsDouble)
             {
                 renderer.sprite = skin.Double;
                 exRenderer.sprite = skin.ExDouble;
@@ -165,10 +177,6 @@ namespace MajdataPlay.Game.Notes
                     exRenderer.color = skin.ExEffects[2];
                 }
             }
-
-            if (!isEX)
-                Destroy(exRenderer);
-
         }
     }
 }

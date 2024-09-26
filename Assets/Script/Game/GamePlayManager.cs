@@ -258,7 +258,8 @@ namespace MajdataPlay.Game
             noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(gameSetting.Game.TapSpeed + 0.9975f, -0.985558604f)));
             noteLoader.touchSpeed = gameSetting.Game.TouchSpeed;
 
-            var loaderTask = noteLoader.LoadNotes(Chart);
+            //var loaderTask = noteLoader.LoadNotes(Chart);
+            var loaderTask = noteLoader.LoadNotesIntoPool(Chart);
             var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
             var timer = 1f;
             var loadingImage = loadingMask.GetComponent<Image>();

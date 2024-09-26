@@ -7,16 +7,17 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>
+    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer
     {
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
             get => _rendererState;
-            private set
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
+
                 switch (value)
                 {
                     case RendererStatus.Off:
