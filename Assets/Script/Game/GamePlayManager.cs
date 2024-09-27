@@ -409,15 +409,19 @@ namespace MajdataPlay.Game
         void DisposeAudioTrack()
         {
             if (audioSample is not null)
+            {
+                audioSample.Pause();
                 audioSample.Dispose();
+                audioSample = null;
+            }
         }
         public void BackToList()
         {
+            InputManager.Instance.UnbindAnyArea(OnPauseButton);
+            GameManager.Instance.EnableGC();
             StopAllCoroutines();
             DisposeAudioTrack();
             //AudioManager.Instance.UnLoadMusic();
-            InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            GameManager.Instance.EnableGC();
             DelayBackToList().Forget();
 
         }

@@ -2,12 +2,17 @@
 using NAudio.Wave;
 using System.Linq;
 using NAudio.Wave.SampleProviders;
+using System.Runtime.InteropServices;
+using System;
 
 namespace MajdataPlay.Types
 {
-    public class CachedSound
+    public unsafe class CachedSound: IDisposable
     {
-        public float[] AudioData { get; private set; }
+        bool isDestroyed = false;
+        public int Length { get; private set; }
+        public Span<float> AudioData => new Span<float>(audioData, Length);
+        float* audioData;
         public WaveFormat WaveFormat { get; private set; }
         //this might take time
         public CachedSound(string audioFileName)
@@ -23,8 +28,20 @@ namespace MajdataPlay.Types
                 {
                     wholeFile.AddRange(readBuffer.Take(samplesRead));
                 }
-                AudioData = wholeFile.ToArray();
+                Length = wholeFile.Count;
+                audioData = (float*)Marshal.AllocHGlobal(sizeof(float) * Length);
+                var dataSpan = new Span<float>(audioData, Length);
+                for (var i = 0; i < Length; i++)
+                    dataSpan[i] = wholeFile[i];
             }
+        }
+        ~CachedSound() => Dispose();
+        public void Dispose()
+        {
+            if (isDestroyed)
+                return;
+            isDestroyed = true;
+            Marshal.FreeHGlobal((IntPtr)audioData);
         }
     }
 }
