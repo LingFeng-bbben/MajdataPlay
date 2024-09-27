@@ -1,11 +1,13 @@
 ﻿using NAudio.Wave;
 using System;
+using UnityEngine.UIElements;
 
 namespace MajdataPlay.Types
 {
-    public class CachedSoundSampleProvider : ISampleProvider
+    public class CachedSoundSampleProvider : ISampleProvider, IDisposable
     {
-        private readonly CachedSound cachedSound;
+        private CachedSound cachedSound;
+        bool isDisposed = false;
         public long Position { get; set; } = 0;
         public float Volume { get; set; } = 1f;
         public bool isLoop { get; set; } = false;
@@ -16,7 +18,7 @@ namespace MajdataPlay.Types
         int lastLoopOffset = 0;
         public int Read(float[] buffer, int offset, int count)
         {
-            var availableSamples = cachedSound.AudioData.Length - Position;
+            var availableSamples = cachedSound.Length - Position;
             var samplesToCopy = Math.Min(availableSamples, count);
 
             Console.WriteLine(samplesToCopy);
@@ -25,11 +27,15 @@ namespace MajdataPlay.Types
             {
                 lastLoopOffset = offset;
                 Position = 0;
-                Array.Copy(cachedSound.AudioData, Position, buffer, offset - lastLoopOffset, availableSamples);
+                var buf = new float[availableSamples];
+                cachedSound.Read(buf, (int)Position, (int)availableSamples);
+                Array.Copy(buf, 0, buffer, offset - lastLoopOffset, availableSamples);
             }
             else
             {
-                Array.Copy(cachedSound.AudioData, Position, buffer, offset, samplesToCopy);
+                var buf = new float[availableSamples];
+                cachedSound.Read(buf, (int)Position, (int)availableSamples);
+                Array.Copy(buf, 0, buffer, offset, samplesToCopy);
             }
             if (Volume != 1f)
             {
@@ -42,5 +48,13 @@ namespace MajdataPlay.Types
             return buffer.Length;
         }
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
+        ~CachedSoundSampleProvider() => Dispose();
+        public void Dispose()
+        {
+            if(isDisposed) return;
+            cachedSound.Dispose();
+            cachedSound = null;
+            isDisposed = true;
+        }
     }
 }

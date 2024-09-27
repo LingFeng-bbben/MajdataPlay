@@ -28,7 +28,7 @@ namespace MajdataPlay.Game
         public MaiScore? HistoryScore { get; private set; }
         public (float, float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
 
-        AudioSampleWrap? audioSample = null;
+        private AudioSampleWrap? audioSample = null;
         SimaiProcess Chart;
         SongDetail song;
 
@@ -413,11 +413,12 @@ namespace MajdataPlay.Game
         }
         public void BackToList()
         {
+            InputManager.Instance.UnbindAnyArea(OnPauseButton);
+            GameManager.Instance.EnableGC();
             StopAllCoroutines();
             DisposeAudioTrack();
             //AudioManager.Instance.UnLoadMusic();
-            InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            GameManager.Instance.EnableGC();
+            
             DelayBackToList().Forget();
 
         }

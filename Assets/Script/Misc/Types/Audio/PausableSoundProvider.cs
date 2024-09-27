@@ -7,7 +7,7 @@ namespace MajdataPlay.Types
     public class PausableSoundProvider : ISampleProvider, IDisposable
     {
         bool isDestroyed = false;
-        readonly CachedSoundSampleProvider cachedSound;
+        private CachedSoundSampleProvider cachedSound;
         readonly MixingSampleProvider mixer;
         public long Position => cachedSound.Position;
         public float Volume => cachedSound.Volume;
@@ -24,11 +24,13 @@ namespace MajdataPlay.Types
         {
             this.cachedSound = cachedSound;
             this.mixer = mixer;
+            mixer.AddMixerInput(this);
         }
         public PausableSoundProvider(CachedSound cachedSound, MixingSampleProvider mixer)
         {
             this.cachedSound = new CachedSoundSampleProvider(cachedSound);
             this.mixer = mixer;
+            mixer.AddMixerInput(this);
         }
         ~PausableSoundProvider() => Dispose();
         public int Read(float[] buffer, int offset, int count)
@@ -81,6 +83,8 @@ namespace MajdataPlay.Types
             if (isDestroyed)
                 return;
             mixer.RemoveMixerInput(this);
+            cachedSound.Dispose();
+            cachedSound =null;
             isDestroyed = true;
 
         }
