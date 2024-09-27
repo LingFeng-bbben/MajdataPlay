@@ -35,6 +35,7 @@ namespace MajdataPlay.Game.Notes
             base.Initialize(poolingInfo);
 
             RotateSpeed = poolingInfo.RotateSpeed;
+            IsNoHead = poolingInfo.IsNoHead;
             IsDouble = poolingInfo.IsDouble;
             IsFakeStar = poolingInfo.IsFakeStar;
             IsForceRotate = poolingInfo.IsForceRotate;

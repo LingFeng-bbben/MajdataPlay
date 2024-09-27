@@ -63,6 +63,8 @@ namespace MajdataPlay.Game
             inUseNotes.Add(idleNote);
             idleNotes.RemoveAt(0);
             idleNote.Initialize(info);
+            if (!obj.activeSelf)
+                obj.SetActive(true);
             return true;
         }
     }

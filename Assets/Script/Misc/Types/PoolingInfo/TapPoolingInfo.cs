@@ -10,6 +10,7 @@ namespace MajdataPlay.Types
     public sealed class TapPoolingInfo : NotePoolingInfo
     {
         public bool IsStar { get; init; }
+        public bool IsNoHead { get; init; }
         public bool IsDouble { get; init; }
         public bool IsFakeStar { get; init; }
         public bool IsForceRotate { get; init; }
