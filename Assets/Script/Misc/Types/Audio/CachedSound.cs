@@ -21,18 +21,27 @@ namespace MajdataPlay.Types
             {
                 var resampler = new WdlResamplingSampleProvider(audioFileReader, GameManager.Instance.Setting.Audio.Samplerate);
                 WaveFormat = resampler.WaveFormat;
-                var wholeFile = new List<float>();
+                Length = 0;
                 var readBuffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];
+                var buffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];
+                int totalRead = 0;
                 int samplesRead;
                 while ((samplesRead = resampler.Read(readBuffer, 0, readBuffer.Length)) > 0)
                 {
-                    wholeFile.AddRange(readBuffer.Take(samplesRead));
+                    var startIndex = totalRead;
+                    totalRead += samplesRead;
+                    if(totalRead > buffer.Length)
+                    {
+                        var _buffer = new float[totalRead];
+                        buffer.CopyTo(_buffer.AsSpan());
+                        buffer = _buffer;
+                    }
+                    for (int i = startIndex; i < totalRead; i++)
+                        buffer[i] = readBuffer[i - startIndex];
                 }
-                Length = wholeFile.Count;
+                Length = buffer.Length;
                 audioData = (float*)Marshal.AllocHGlobal(sizeof(float) * Length);
-                var dataSpan = new Span<float>(audioData, Length);
-                for (var i = 0; i < Length; i++)
-                    dataSpan[i] = wholeFile[i];
+                buffer.CopyTo(AudioData);
             }
         }
         ~CachedSound() => Dispose();
