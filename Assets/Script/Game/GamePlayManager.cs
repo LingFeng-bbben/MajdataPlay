@@ -409,7 +409,11 @@ namespace MajdataPlay.Game
         void DisposeAudioTrack()
         {
             if (audioSample is not null)
+            {
+                audioSample.Pause();
                 audioSample.Dispose();
+                audioSample = null;
+            }
         }
         public void BackToList()
         {

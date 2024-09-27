@@ -1,13 +1,13 @@
 ﻿using NAudio.Wave;
 using System;
-using UnityEngine.UIElements;
+#nullable enable
 
 namespace MajdataPlay.Types
 {
     public class CachedSoundSampleProvider : ISampleProvider, IDisposable
     {
-        private CachedSound cachedSound;
-        bool isDisposed = false;
+        bool isDestroyed = false;
+        CachedSound? cachedSound;
         public long Position { get; set; } = 0;
         public float Volume { get; set; } = 1f;
         public bool isLoop { get; set; } = false;
@@ -15,6 +15,7 @@ namespace MajdataPlay.Types
         {
             this.cachedSound = cachedSound;
         }
+        ~CachedSoundSampleProvider() => Dispose();
         int lastLoopOffset = 0;
         public int Read(float[] buffer, int offset, int count)
         {
@@ -27,15 +28,21 @@ namespace MajdataPlay.Types
             {
                 lastLoopOffset = offset;
                 Position = 0;
-                var buf = new float[availableSamples];
-                cachedSound.Read(buf, (int)Position, (int)availableSamples);
-                Array.Copy(buf, 0, buffer, offset - lastLoopOffset, availableSamples);
+                var data = cachedSound.AudioData;
+                for(int copyedLen = 0;copyedLen < availableSamples;copyedLen++)
+                {
+                    buffer[(offset-lastLoopOffset) + copyedLen] = data[(int)Position + copyedLen];
+                }
+                //Array.Copy(cachedSound.AudioData, Position, buffer, offset - lastLoopOffset, availableSamples);
             }
             else
             {
-                var buf = new float[availableSamples];
-                cachedSound.Read(buf, (int)Position, (int)availableSamples);
-                Array.Copy(buf, 0, buffer, offset, samplesToCopy);
+                var data = cachedSound.AudioData;
+                for (int copyedLen = 0; copyedLen < samplesToCopy; copyedLen++)
+                {
+                    buffer[offset + copyedLen] = data[(int)Position + copyedLen];
+                }
+                //Array.Copy(cachedSound.AudioData, Position, buffer, offset, samplesToCopy);
             }
             if (Volume != 1f)
             {
@@ -48,13 +55,13 @@ namespace MajdataPlay.Types
             return buffer.Length;
         }
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
-        ~CachedSoundSampleProvider() => Dispose();
         public void Dispose()
         {
-            if(isDisposed) return;
+            if (isDestroyed)
+                return;
+            isDestroyed = true;
             cachedSound.Dispose();
             cachedSound = null;
-            isDisposed = true;
         }
     }
 }

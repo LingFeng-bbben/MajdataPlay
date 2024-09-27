@@ -82,9 +82,10 @@ namespace MajdataPlay.Types
         {
             if (isDestroyed)
                 return;
+            isDestroyed = true;
             mixer.RemoveMixerInput(this);
             cachedSound.Dispose();
-            cachedSound =null;
+            cachedSound = null;
             isDestroyed = true;
 
         }
