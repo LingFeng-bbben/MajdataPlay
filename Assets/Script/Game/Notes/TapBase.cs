@@ -100,7 +100,7 @@ namespace MajdataPlay.Game.Notes
         
         protected void FixedUpdate()
         {
-            if (State < NoteStatus.Running)
+            if (State < NoteStatus.Running|| IsDestroyed)
                 return;
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
@@ -188,10 +188,7 @@ namespace MajdataPlay.Game.Notes
                 Judge(gpManager.ThisFrameSec);
                 ioManager.SetIdle(arg);
                 if (isJudged)
-                {
-                    Destroy(tapLine);
-                    Destroy(gameObject);
-                }
+                    End();
             }
         }
         protected override void Judge(float currentSec)

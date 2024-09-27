@@ -514,7 +514,7 @@ namespace MajdataPlay.Game
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
             var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
-            var appearDiff = (((scaleRate * 1.225f) - 1) * 4.8f * speed) / scaleRate;
+            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];

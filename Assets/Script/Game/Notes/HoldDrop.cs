@@ -137,7 +137,7 @@ namespace MajdataPlay.Game.Notes
         }
         private void FixedUpdate()
         {
-            if (State < NoteStatus.Running)
+            if (State < NoteStatus.Running || IsDestroyed)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
