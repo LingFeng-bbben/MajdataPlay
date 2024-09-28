@@ -4,12 +4,14 @@ using System.Linq;
 using NAudio.Wave.SampleProviders;
 using System.Runtime.InteropServices;
 using System;
+using MajdataPlay.Interfaces;
 
 namespace MajdataPlay.Types
 {
-    public unsafe class CachedSound: IDisposable
+    public unsafe class CachedSound: IDisposable, INAudioSample
     {
         bool isDestroyed = false;
+        public TimeSpan TrackLen { get; private set; }
         public int Length { get; private set; }
         public Span<float> AudioData => new Span<float>(audioData, Length);
         float* audioData;
@@ -27,7 +29,6 @@ namespace MajdataPlay.Types
                 var buffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];
                 int totalRead = 0;
                 int samplesRead;
-                int pos = 0;
                 while ((samplesRead = resampler.Read(readBuffer, 0, readBuffer.Length)) > 0)
                 {
                     var startIndex = totalRead;
@@ -44,6 +45,7 @@ namespace MajdataPlay.Types
                 Length = buffer.Length;
                 audioData = (float*)Marshal.AllocHGlobal(sizeof(float) * Length);
                 buffer.CopyTo(AudioData);
+                TrackLen = audioFileReader.TotalTime;
             }
         }
         ~CachedSound() => Dispose();

@@ -127,7 +127,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Wasapi:
                     case SoundBackendType.WaveOut:
                     case SoundBackendType.Asio:
-                        var provider = new PausableSoundProvider(new CachedSound(path), mixer);
+                        var provider = new CachedSampleProvider(new CachedSound(path), mixer);
                         SFXSamples.Add(new NAudioAudioSample(provider));
                         break;
                 }
@@ -190,7 +190,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Unity:
                         return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
                     default:
-                        var provider = new PausableSoundProvider(new CachedSound(path), mixer);
+                        var provider = new CachedSampleProvider(new CachedSound(path), mixer);
                         return new NAudioAudioSample(provider);
                 }
             }
