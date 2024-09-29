@@ -186,7 +186,7 @@ namespace MajdataPlay.Game.Notes
                     ioManager.SetBusy(arg);
 
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
                     End();
             }

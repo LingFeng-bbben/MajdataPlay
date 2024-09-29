@@ -110,6 +110,7 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            SetIdle(msg);
             buttonCheckerMutex.ReleaseMutex();
         }
         void OnRawKeyDown(RawKey key)

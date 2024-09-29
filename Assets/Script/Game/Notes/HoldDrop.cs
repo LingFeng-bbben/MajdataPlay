@@ -70,8 +70,14 @@ namespace MajdataPlay.Game.Notes
             isJudged = false;
             Distance = -100;
             LastFor = poolingInfo.LastFor;
+            sensorPos = (SensorType)(startPosition - 1);
             if (State == NoteStatus.Start)
                 Start();
+            else
+            {
+                ioManager.BindArea(Check, sensorPos);
+                LoadSkin();
+            }
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
@@ -155,7 +161,6 @@ namespace MajdataPlay.Game.Notes
                     if (endTiming >= 0.333334f)
                     {
                         End();
-
                         return;
                     }
                 }
@@ -226,7 +231,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     ioManager.UnbindArea(Check, sensorPos);

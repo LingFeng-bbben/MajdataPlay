@@ -108,7 +108,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     ioManager.UnbindSensor(Check, sensorPos);
