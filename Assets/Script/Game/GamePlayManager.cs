@@ -28,7 +28,7 @@ namespace MajdataPlay.Game
         public MaiScore? HistoryScore { get; private set; }
         public (float, float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
 
-        AudioSampleWrap? audioSample = null;
+        private AudioSampleWrap? audioSample = null;
         SimaiProcess Chart;
         SongDetail song;
 
@@ -47,7 +47,7 @@ namespace MajdataPlay.Game
 
         public float AudioTime = -114514f;
         public float AudioTimeNoOffset = -114514f;
-        public bool IsStart => audioSample?.GetPlayState() ?? false;
+        public bool IsStart => audioSample?.IsPlaying ?? false;
 
         public float CurrentSpeed = 1f;
 
@@ -319,7 +319,7 @@ namespace MajdataPlay.Game
             float extraTime = 5f;
             if (firstClockTiming < -5f)
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
-            AudioStartTime = timeSource + (float)audioSample.GetCurrentTime() + extraTime;
+            AudioStartTime = timeSource + (float)audioSample.CurrentSec + extraTime;
             StartToPlayAnswer();
             audioSample.Play();
             audioSample.Pause();
@@ -358,7 +358,7 @@ namespace MajdataPlay.Game
             AudioTime = timeSource - AudioStartTime - chartOffset;
             AudioTimeNoOffset = timeSource - AudioStartTime;
 
-            var realTimeDifference = (float)audioSample.GetCurrentTime() - (timeSource - AudioStartTime);
+            var realTimeDifference = (float)audioSample.CurrentSec - (timeSource - AudioStartTime);
             if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
             {
                 ErrorText.text = "音频错位了哟\n" + realTimeDifference;
@@ -410,15 +410,20 @@ namespace MajdataPlay.Game
         void DisposeAudioTrack()
         {
             if (audioSample is not null)
+            {
+                audioSample.Pause();
                 audioSample.Dispose();
+                audioSample = null;
+            }
         }
         public void BackToList()
         {
+            InputManager.Instance.UnbindAnyArea(OnPauseButton);
+            GameManager.Instance.EnableGC();
             StopAllCoroutines();
             DisposeAudioTrack();
             //AudioManager.Instance.UnLoadMusic();
-            InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            GameManager.Instance.EnableGC();
+            
             DelayBackToList().Forget();
 
         }
