@@ -913,6 +913,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tapEffectPrefab: {fileID: 168526653925081510, guid: d7b45f83b7b4735418ff3170d6612a0c, type: 3}
   touchEffectPrefab: {fileID: 4052947365030852655, guid: e983e32249b1ccd4194518cc44c0139d, type: 3}
+  holdEffectPrefab: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
 --- !u!1 &620892873
 GameObject:
   m_ObjectHideFlags: 0

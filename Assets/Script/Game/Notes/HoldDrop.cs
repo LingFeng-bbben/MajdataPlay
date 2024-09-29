@@ -106,7 +106,7 @@ namespace MajdataPlay.Game.Notes
                 Diff = judgeDiff
             };
             RendererState = RendererStatus.Off;
-            base.StopHoldEffect();
+            effectManager.ResetHoldEffect(startPosition);
             audioEffMana.PlayTapSound(result);
             effectManager.PlayEffect(startPosition, result);
             objectCounter.ReportResult(this, result);
@@ -119,10 +119,7 @@ namespace MajdataPlay.Game.Notes
             base.Start();
             var notes = noteManager.gameObject.transform;
 
-            holdEffect = Instantiate(holdEffect, notes);
             tapLine = Instantiate(tapLine, notes);
-
-            holdEffect.SetActive(false);
             tapLine.SetActive(false);
 
             tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
@@ -190,7 +187,7 @@ namespace MajdataPlay.Game.Notes
                 if (on)
                 {
                     if (remainingTime == 0)
-                        base.StopHoldEffect();
+                        effectManager.ResetHoldEffect(startPosition);
                     else
                         PlayHoldEffect();
                             
@@ -201,9 +198,7 @@ namespace MajdataPlay.Game.Notes
                     StopHoldEffect();
 
                     if (IsClassic)
-                    {
                         End();
-                    }
                 }
             }
             else if (isTooLate) // 头部Miss
@@ -272,7 +267,6 @@ namespace MajdataPlay.Game.Notes
                     {
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = transform.rotation;
-                        holdEffect.transform.position = GetPositionFromDistance(4.8f);
                         thisRenderer.size = new Vector2(1.22f, 1.4f);
 
                         RendererState = RendererStatus.On;
@@ -439,9 +433,9 @@ namespace MajdataPlay.Game.Notes
             if (endNum > num) // 取最差判定
                 result = endResult;
         }
-        protected override void PlayHoldEffect()
+        void PlayHoldEffect()
         {
-            base.PlayHoldEffect();
+            effectManager.PlayHoldEffect(startPosition, judgeResult);
             effectManager.ResetEffect(startPosition);
             if (LastFor <= 0.3)
                 return;
@@ -459,9 +453,9 @@ namespace MajdataPlay.Game.Notes
                 thisRenderer.sprite = holdOnSprite;
             }
         }
-        protected override void StopHoldEffect()
+        void StopHoldEffect()
         {
-            base.StopHoldEffect();
+            effectManager.ResetHoldEffect(startPosition);
             holdAnimStart = false;
             shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
@@ -491,6 +485,7 @@ namespace MajdataPlay.Game.Notes
             endRenderer.sprite = skin.Ends[0];
             breakShineController.enabled = false;
             renderer.material = skin.DefaultMaterial;
+            tapLineRenderer.sprite = skin.NoteLines[0];
 
             if (isEach)
             {

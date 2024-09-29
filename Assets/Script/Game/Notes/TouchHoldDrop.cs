@@ -67,9 +67,6 @@ namespace MajdataPlay.Game.Notes
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
-            holdEffect = Instantiate(holdEffect, noteManager.transform);
-            holdEffect.SetActive(false);
-
             fans[0] = transform.GetChild(5).gameObject;
             fans[1] = transform.GetChild(4).gameObject;
             fans[2] = transform.GetChild(3).gameObject;
@@ -91,7 +88,6 @@ namespace MajdataPlay.Game.Notes
             sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
             var pos = TouchBase.GetAreaPos(sensorPos);
             transform.position = pos;
-            holdEffect.transform.position = pos;
             SetFansPosition(0.4f);
             ioManager.BindSensor(Check, sensorPos);
             State = NoteStatus.Initialized;
@@ -174,11 +170,8 @@ namespace MajdataPlay.Game.Notes
             var isTooLate = timing > 0.316667f;
 
             if (remainingTime == 0 && isJudged)
-            {
-                Destroy(holdEffect);
                 Destroy(gameObject);
-            }
-            
+
             if (isJudged)
             {
                 if (timing <= 0.25f) // 忽略头部15帧
@@ -344,16 +337,17 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.StopTouchHoldSound();
 
             effectManager.PlayTouchHoldEffect(sensorPos, result);
+            effectManager.ResetHoldEffect(sensorPos);
         }
-        protected override void PlayHoldEffect()
+        void PlayHoldEffect()
         {
-            base.PlayHoldEffect();
+            effectManager.PlayHoldEffect(sensorPos, judgeResult);
             audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
-        protected override void StopHoldEffect()
+        void StopHoldEffect()
         {
-            base.StopHoldEffect();
+            effectManager.ResetHoldEffect(sensorPos);
             audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
         }
