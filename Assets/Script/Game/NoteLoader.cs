@@ -691,7 +691,7 @@ namespace MajdataPlay.Game
                               in SimaiTimingPoint timing,
                               in List<TouchDrop> members)
         {
-            var GOnote = Instantiate(touchPrefab, notes.transform);
+            var GOnote = Instantiate(touchPrefab, notes.transform.GetChild(4));
             var NDCompo = GOnote.GetComponent<TouchDrop>();
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
 
@@ -719,7 +719,7 @@ namespace MajdataPlay.Game
         }
         void InstantiateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
-            var GOnote = Instantiate(touchHoldPrefab, notes.transform);
+            var GOnote = Instantiate(touchHoldPrefab, notes.transform.GetChild(5));
             var NDCompo = GOnote.GetComponent<TouchHoldDrop>();
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
 
@@ -1437,8 +1437,8 @@ namespace MajdataPlay.Game
             }
             int slideIndex = SLIDE_PREFAB_MAP[slideShape];
 
-            var slide = Instantiate(slidePrefab[slideIndex], notes.transform);
-            var slide_star = Instantiate(star_slidePrefab, notes.transform);
+            var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
+            var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
             slide_star.SetActive(false);
             slide.SetActive(false);
@@ -1497,7 +1497,7 @@ namespace MajdataPlay.Game
             endPos = endPos > 8 ? endPos - 8 : endPos;
             endPos++;
 
-            var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform);
+            var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform.GetChild(3));
             slideWifi.SetActive(false);
             poolManager.AddTap(CreateStar(note, timing, slideWifi));
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
@@ -1522,9 +1522,9 @@ namespace MajdataPlay.Game
             WifiCompo.sortIndex = slideLayer;
             WifiCompo.stars = new GameObject[3]
             {
-                Instantiate(star_slidePrefab, notes.transform),
-                Instantiate(star_slidePrefab, notes.transform),
-                Instantiate(star_slidePrefab, notes.transform)
+                Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
+                Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
+                Instantiate(star_slidePrefab, notes.transform.GetChild(3))
             };
             slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
             //slideLayer += 5;

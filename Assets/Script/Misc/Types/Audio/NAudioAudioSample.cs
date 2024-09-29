@@ -30,7 +30,6 @@ namespace MajdataPlay.Types
         public NAudioAudioSample(INAudioSampleProvider pausableSound)
         {
             sampleProvider = pausableSound;
-            Debug.Log($"TrackLen: {Length}");
         }
         ~NAudioAudioSample() => Dispose();
         public override void Play()

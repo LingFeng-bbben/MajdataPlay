@@ -1,11 +1,6 @@
 ﻿using MajdataPlay.Game.Notes;
-using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -35,10 +30,14 @@ namespace MajdataPlay.Game
         List<EachLinePoolingInfo> eachLineInfos = new();
         public void Initialize()
         {
-            tapPool = new (tapPrefab, transform,tapInfos.ToArray(),128);
-            holdPool = new (holdPrefab, transform,holdInfos.ToArray(),64);
-            starPool = new (starPrefab, transform,starInfos.ToArray(),128);
-            eachLinePool = new (eachLinePrefab, transform, eachLineInfos.ToArray(),64);
+            var tapParent = transform.GetChild(0);
+            var holdParent = transform.GetChild(1);
+            var starParent = transform.GetChild(2);
+            var eachLineParent = transform.GetChild(6);
+            tapPool = new (tapPrefab, tapParent, tapInfos.ToArray(),128);
+            holdPool = new (holdPrefab, holdParent, holdInfos.ToArray(),64);
+            starPool = new (starPrefab, starParent, starInfos.ToArray(),128);
+            eachLinePool = new (eachLinePrefab, eachLineParent, eachLineInfos.ToArray(),64);
             State = ComponentState.Running;
         }
         void Start()
@@ -87,6 +86,13 @@ namespace MajdataPlay.Game
                     eachLinePool.Collect(eachLine);
                     break;
             }
+        }
+        void OnDestroy()
+        {
+            tapPool.Destroy();
+            holdPool.Destroy();
+            starPool.Destroy();
+            eachLinePool.Destroy();
         }
     }
 }

@@ -119,7 +119,7 @@ namespace MajdataPlay.Game.Notes
             base.Start();
             var notes = noteManager.gameObject.transform;
 
-            tapLine = Instantiate(tapLine, notes);
+            tapLine = Instantiate(tapLine, notes.GetChild(7));
             tapLine.SetActive(false);
 
             tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();

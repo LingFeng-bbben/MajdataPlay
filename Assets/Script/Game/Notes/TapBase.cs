@@ -88,7 +88,7 @@ namespace MajdataPlay.Game.Notes
             thisRenderer = GetComponent<SpriteRenderer>();
             exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-            tapLine = Instantiate(tapLine, noteManager.gameObject.transform);
+            tapLine = Instantiate(tapLine, noteManager.gameObject.transform.GetChild(7));
             tapLine.SetActive(false);
             tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
 
