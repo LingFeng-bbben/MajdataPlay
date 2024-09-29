@@ -39,7 +39,7 @@ namespace MajdataPlay.Game.Notes
         public float speed = 1;
         public Sprite[] curvSprites;
         private SpriteRenderer sr;
-
+        GameSetting gameSetting = new();
         private GamePlayManager gpManager;
         NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
@@ -53,7 +53,7 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
             sr.sprite = curvSprites[curvLength - 1];
-            transform.localScale = new Vector3(0.225f, 0.225f, 1f);
+            transform.localScale = new Vector3(0.255f, 0.255f, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
         }
@@ -74,7 +74,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             gpManager = GamePlayManager.Instance;
             poolManager = FindObjectOfType<NotePoolManager>();
-
+            gameSetting = GameManager.Instance.Setting;
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
             RendererState = RendererStatus.Off;
@@ -90,8 +90,9 @@ namespace MajdataPlay.Game.Notes
                 distance = DistanceProvider.Distance;
             else
                 distance = timing * speed + 4.8f;
-            var destScale = distance * 0.4f + 0.51f;
-            if(NoteA is not null && NoteB is not null)
+            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+            if (NoteA is not null && NoteB is not null)
             {
                 if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
                 {
@@ -106,11 +107,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             if (distance <= 1.225f)
-            {
                 distance = 1.225f;
-                if (destScale > 0.3f)
-                    RendererState = RendererStatus.On;
-            }
             if (destScale > 0.3f)
                 RendererState = RendererStatus.On;
             var lineScale = Mathf.Abs(distance / 4.8f);

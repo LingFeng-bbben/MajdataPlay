@@ -405,6 +405,7 @@ namespace MajdataPlay.Game
                             case SimaiNoteType.Tap:
                                 {
                                     var obj = CreateTap(note, timing);
+                                    poolManager.AddTap(obj);
                                     if (eachNotes.Count > 1 && i < 2)
                                     {
                                         if (num is null)
@@ -417,12 +418,12 @@ namespace MajdataPlay.Game
                                         else
                                             noteB = obj;
                                     }
-                                    poolManager.AddTap(obj);
                                 }
                                 break;
                             case SimaiNoteType.Hold:
                                 {
                                     var obj = CreateHold(note, timing);
+                                    poolManager.AddHold(obj);
                                     if (eachNotes.Count > 1 && i < 2)
                                     {
                                         if (num is null)
@@ -435,7 +436,6 @@ namespace MajdataPlay.Game
                                         else
                                             noteB = obj;
                                     }
-                                    poolManager.AddHold(obj);
                                 }
                                 break;
                             case SimaiNoteType.TouchHold:
