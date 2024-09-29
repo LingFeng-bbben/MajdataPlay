@@ -51,6 +51,7 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer thisRenderer;
         SpriteRenderer tapLineRenderer;
 
+        NotePoolManager poolManager;
         BreakShineController? breakShineController = null;
 
         public void Initialize(HoldPoolingInfo poolingInfo)
@@ -103,6 +104,7 @@ namespace MajdataPlay.Game.Notes
             audioEffMana.PlayTapSound(result);
             effectManager.PlayEffect(startPosition, result);
             objectCounter.ReportResult(this, result);
+            poolManager.Collect(this);
         }
         protected override void Start()
         {
@@ -122,6 +124,7 @@ namespace MajdataPlay.Game.Notes
             thisRenderer = GetComponent<SpriteRenderer>();
             endRenderer = transform.GetChild(1).GetComponent<SpriteRenderer>();
             shineAnimator = gameObject.GetComponent<Animator>();
+            poolManager = FindObjectOfType<NotePoolManager>();
 
             LoadSkin();
 
@@ -205,11 +208,7 @@ namespace MajdataPlay.Game.Notes
                 isJudged = true;
                 noteManager.NextNote(QueueInfo);
                 if (IsClassic)
-                {
-                    Destroy(tapLine);
-                    Destroy(holdEffect);
-                    Destroy(gameObject);
-                }
+                    End();
             }
         }
         protected override void Check(object sender, InputEventArgs arg)
@@ -445,11 +444,10 @@ namespace MajdataPlay.Game.Notes
             {
                 holdAnimStart = true;
                 shineAnimator.enabled = true;
-                var sprRenderer = GetComponent<SpriteRenderer>();
                 
-                if(breakShineController != null)
+                if(breakShineController is not null && breakShineController.enabled)
                 {
-                    Destroy(breakShineController);
+                    breakShineController.enabled = false;
                     thisRenderer.material.SetFloat("_Brightness", 1);
                     thisRenderer.material.SetFloat("_Contrast", 1);
                 }
@@ -463,9 +461,9 @@ namespace MajdataPlay.Game.Notes
             shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
             sprRenderer.sprite = holdOffSprite;
-            if (breakShineController != null)
+            if (breakShineController is not null && breakShineController.enabled)
             {
-                Destroy(breakShineController);
+                breakShineController.enabled = false;
                 thisRenderer.material.SetFloat("_Brightness", 1);
                 thisRenderer.material.SetFloat("_Contrast", 1);
             }
@@ -477,6 +475,7 @@ namespace MajdataPlay.Game.Notes
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            breakShineController = gameObject.AddComponent<BreakShineController>();
 
             holdSprite = skin.Normal;
             holdOnSprite = skin.Normal_On;
@@ -485,6 +484,8 @@ namespace MajdataPlay.Game.Notes
             exRenderer.sprite = skin.Ex;
             exRenderer.color = skin.ExEffects[0];
             endRenderer.sprite = skin.Ends[0];
+            breakShineController.enabled = false;
+            renderer.material = skin.DefaultMaterial;
 
             if (isEach)
             {
@@ -502,7 +503,7 @@ namespace MajdataPlay.Game.Notes
                 endRenderer.sprite = skin.Ends[2];
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
-                breakShineController = gameObject.AddComponent<BreakShineController>();
+                breakShineController.enabled = true;
                 breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
             }

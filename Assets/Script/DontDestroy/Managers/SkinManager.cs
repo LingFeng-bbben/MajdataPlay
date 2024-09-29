@@ -23,6 +23,7 @@ namespace MajdataPlay
         public Sprite[] TapLines;
         public Sprite[] StarLines;
         public Material BreakMaterial;
+        public Material DefaultMaterial;
         public RuntimeAnimatorController JustBreak;
 
         private void Awake()
@@ -78,13 +79,14 @@ namespace MajdataPlay
                 Break = SelectedSkin.Tap_Break,
                 Ex = SelectedSkin.Tap_Ex,
 
+                DefaultMaterial = DefaultMaterial,
                 BreakMaterial = BreakMaterial,
                 NoteLines = TapLines,
                 ExEffects = new Color[]
                 {
-                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
                 }
             };
         }
@@ -101,13 +103,14 @@ namespace MajdataPlay
                 Ex = SelectedSkin.Star_Ex,
                 ExDouble = SelectedSkin.Star_Ex_Double,
 
+                DefaultMaterial = DefaultMaterial,
                 BreakMaterial = BreakMaterial,
                 NoteLines = StarLines,
                 ExEffects = new Color[]
                 {
-                new Color(1,1,1), //White
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(1,1,1), //White
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
                 }
             };
         }
@@ -124,19 +127,20 @@ namespace MajdataPlay
                 Break_On = SelectedSkin.Hold_Break_On,
                 Ex = SelectedSkin.Hold_Ex,
 
+                DefaultMaterial = DefaultMaterial,
                 BreakMaterial = BreakMaterial,
                 NoteLines = TapLines,
                 Ends = new Sprite[3]
                 {
-                HoldEnd,
-                HoldEachEnd,
-                HoldBreakEnd
+                    HoldEnd,
+                    HoldEachEnd,
+                    HoldBreakEnd
                 },
                 ExEffects = new Color[]
                 {
-                new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
                 }
             };
         }
@@ -168,10 +172,10 @@ namespace MajdataPlay
             {
                 Fans = new Sprite[4]
                 {
-                SelectedSkin.TouchHold[0],
-                SelectedSkin.TouchHold[1],
-                SelectedSkin.TouchHold[2],
-                SelectedSkin.TouchHold[3],
+                    SelectedSkin.TouchHold[0],
+                    SelectedSkin.TouchHold[1],
+                    SelectedSkin.TouchHold[2],
+                    SelectedSkin.TouchHold[3],
                 },
                 Boader = SelectedSkin.TouchHold[4],
                 Point = SelectedSkin.TouchPoint,

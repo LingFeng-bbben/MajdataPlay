@@ -28,6 +28,7 @@ namespace MajdataPlay.Game.Notes
         public IStatefulNote? NoteA { get; set; }
         public IStatefulNote? NoteB { get; set; }
         public NoteStatus State { get; set; } = NoteStatus.Start;
+        public bool IsDestroyed => State == NoteStatus.Destroyed;
         public NoteQueueInfo QueueInfo => TapQueueInfo.Default;
         public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
@@ -40,7 +41,7 @@ namespace MajdataPlay.Game.Notes
         private SpriteRenderer sr;
 
         private GamePlayManager gpManager;
-
+        NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -52,30 +53,36 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
             sr.sprite = curvSprites[curvLength - 1];
+            transform.localScale = new Vector3(0.225f, 0.225f, 1f);
+            transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.Destroyed;
+            RendererState = RendererStatus.Off;
             if (forceEnd)
                 return;
-            RendererState = RendererStatus.Off;
             NoteA = null;
             NoteB = null;
             DistanceProvider = null;
+            poolManager.Collect(this);
         }
         private void Start()
         {
             if (IsInitialized)
                 return;
             gpManager = GamePlayManager.Instance;
+            poolManager = FindObjectOfType<NotePoolManager>();
 
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
-            sr.forceRenderingOff = true;
+            RendererState = RendererStatus.Off;
         }
         private void Update()
         {
+            if (State < NoteStatus.Initialized || IsDestroyed)
+                return;
             var timing = gpManager.AudioTime - this.timing;
             float distance;
 
@@ -86,19 +93,26 @@ namespace MajdataPlay.Game.Notes
             var destScale = distance * 0.4f + 0.51f;
             if(NoteA is not null && NoteB is not null)
             {
-                if(NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
-                    Destroy(gameObject);
+                if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
+                {
+                    End();
+                    return;
+                }
             }
             else if (timing > 0)
-                Destroy(gameObject);
+            {
+                End();
+                return;
+            }
 
             if (distance <= 1.225f)
             {
                 distance = 1.225f;
-                if (destScale > 0.3f) sr.forceRenderingOff = false;
+                if (destScale > 0.3f)
+                    RendererState = RendererStatus.On;
             }
-            if (destScale > 0.3f) 
-                sr.forceRenderingOff = false;
+            if (destScale > 0.3f)
+                RendererState = RendererStatus.On;
             var lineScale = Mathf.Abs(distance / 4.8f);
             transform.localScale = new Vector3(lineScale, lineScale, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));

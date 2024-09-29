@@ -28,7 +28,7 @@ namespace MajdataPlay.Game
                 if (timeDiff > -0.15f)
                 {
                     if (!Dequeue(tp.Infos))
-                        return;
+                        continue;
                     timingPoints[i] = null;
                 }
             }

@@ -133,12 +133,15 @@ namespace MajdataPlay.Game.Notes
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            var breakShineController = gameObject.AddComponent<BreakShineController>();
 
             RendererState = RendererStatus.Off;
 
             var skin = SkinManager.Instance.GetStarSkin();
+            renderer.material = skin.DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
-
+            tapLineRenderer.sprite = skin.NoteLines[0];
+            breakShineController.enabled = false;
 
             if (IsDouble)
             {
@@ -154,8 +157,10 @@ namespace MajdataPlay.Game.Notes
                 if (isBreak)
                 {
                     renderer.sprite = skin.BreakDouble;
+                    renderer.material = skin.BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    gameObject.AddComponent<BreakShineController>();
+                    breakShineController.enabled = true;
+                    breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }
@@ -173,8 +178,10 @@ namespace MajdataPlay.Game.Notes
                 if (isBreak)
                 {
                     renderer.sprite = skin.Break;
+                    renderer.material = skin.BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    gameObject.AddComponent<BreakShineController>();
+                    breakShineController.enabled = true;
+                    breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }

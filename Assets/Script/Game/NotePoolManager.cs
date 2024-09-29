@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Game.Notes;
+using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
@@ -69,7 +70,7 @@ namespace MajdataPlay.Game
         {
             eachLineInfos.Add(eachLineInfo);
         }
-        public void Collect<TNote>(TNote endNote) where TNote: NoteDrop
+        public void Collect<TNote>(TNote endNote)
         {
             switch(endNote)
             {
