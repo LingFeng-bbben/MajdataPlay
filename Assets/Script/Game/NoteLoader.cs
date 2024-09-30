@@ -392,7 +392,7 @@ namespace MajdataPlay.Game
                     //IStatefulNote? noteB = null;
                     NotePoolingInfo? noteA = null;
                     NotePoolingInfo? noteB = null;
-                    List<TouchDrop> members = new();
+                    List<TouchPoolingInfo> members = new();
                     foreach (var (i, note) in timing.noteList.WithIndex())
                     {
                         noteCount++;
@@ -439,10 +439,10 @@ namespace MajdataPlay.Game
                                 }
                                 break;
                             case SimaiNoteType.TouchHold:
-                                InstantiateTouchHold(note, timing);
+                                poolManager.AddTouchHold(CreateTouchHold(note, timing));
                                 break;
                             case SimaiNoteType.Touch:
-                                InstantiateTouch(note, timing, members);
+                                poolManager.AddTouch(CreateTouch(note, timing, members));
                                 break;
                             case SimaiNoteType.Slide:
                                 CreateSlideGroup(timing, note); // 星星组
@@ -626,6 +626,82 @@ namespace MajdataPlay.Game
                 QueueInfo = queueInfo ?? TapQueueInfo.Default
             };
         }
+        TouchPoolingInfo CreateTouch(in SimaiNote note,
+                                     in SimaiTimingPoint timing,
+                                     in List<TouchPoolingInfo> members)
+        {
+            var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
+            var queueInfo = new TouchQueueInfo()
+            {
+                SensorPos = sensorPos,
+                Index = touchIndex[sensorPos]++
+            };
+            var noteTiming = (float)timing.time;
+            var areaPosition = note.touchArea;
+            var startPosition = note.startPosition;
+            var isEach = timing.noteList.Count > 1;
+            var speed = touchSpeed * timing.HSpeed;
+            var isFirework = note.isHanabi;
+            var noteSortOrder = this.noteSortOrder;
+            var moveDuration = 0.8f * (3.209385682f * Mathf.Pow(speed, -0.9549621752f));
+            var appearTiming = noteTiming - moveDuration;
+            this.noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            var poolingInfo = new TouchPoolingInfo()
+            {
+                SensorPos = sensorPos,
+                Timing = noteTiming,
+                AppearTiming = appearTiming,
+                AreaPos = areaPosition,
+                StartPos = startPosition,
+                Speed = speed,
+                IsFirework = isFirework,
+                IsEach = isEach,
+                IsBreak = false,
+                IsEX = false,
+                NoteSortOrder = noteSortOrder,
+                QueueInfo = queueInfo,
+            };
+            if (isEach)
+                members.Add(poolingInfo);
+            return poolingInfo;
+        }
+        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
+        {
+            var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
+
+            var queueInfo = new TouchQueueInfo()
+            {
+                SensorPos = sensorPos,
+                Index = touchIndex[sensorPos]++
+            };
+            var startPosition = note.startPosition;
+            var areaPosition = note.touchArea;
+            var noteTiming = (float)timing.time;
+            var lastFor = (float)note.holdTime;
+            var speed = touchSpeed * timing.HSpeed;
+            var isFirework = note.isHanabi;
+            var moveDuration = 0.8f * (3.209385682f * Mathf.Pow(speed, -0.9549621752f));
+            var appearTiming = noteTiming - moveDuration;
+            var noteSortOrder = this.noteSortOrder;
+            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+
+            return new TouchHoldPoolingInfo()
+            {
+                SensorPos = sensorPos,
+                Timing = noteTiming,
+                AppearTiming = appearTiming,
+                AreaPos = areaPosition,
+                StartPos = startPosition,
+                Speed = speed,
+                IsFirework = isFirework,
+                IsEach = false,
+                IsBreak = false,
+                IsEX = false,
+                LastFor = lastFor,
+                NoteSortOrder = noteSortOrder,
+                QueueInfo = queueInfo,
+            };
+        }
         TapBase InstantiateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
             GameObject? GOnote = null;
@@ -739,13 +815,59 @@ namespace MajdataPlay.Game
             NDCompo.speed = touchSpeed * timing.HSpeed;
             NDCompo.isFirework = note.isHanabi;
         }
+        async Task AllocTouchGroup(List<TouchPoolingInfo> members)
+        {
+            await Task.Run(() =>
+            {
+                var sensorTypes = members.GroupBy(x => x.SensorPos)
+                                         .Select(x => x.Key)
+                                         .ToList();
+                List<List<SensorType>> sensorGroups = new();
+
+                while (sensorTypes.Count > 0)
+                {
+                    var sensorType = sensorTypes[0];
+                    var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
+                    var groupMap = TOUCH_GROUPS[sensorType];
+                    existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
+
+                    var groupMembers = existsGroup.SelectMany(x => x)
+                                                  .ToList();
+                    var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
+
+                    groupMembers.AddRange(newMembers);
+                    groupMembers.Add(sensorType);
+                    var newGroup = groupMembers.GroupBy(x => x)
+                                               .Select(x => x.Key)
+                                               .ToList();
+
+                    foreach (var newMember in newGroup)
+                        sensorTypes.Remove(newMember);
+                    foreach (var oldGroup in existsGroup)
+                        sensorGroups.Remove(oldGroup);
+
+                    sensorGroups.Add(newGroup);
+                }
+                List<TouchGroup> touchGroups = new();
+                var memberMapping = members.ToDictionary(x => x.SensorPos);
+                foreach (var group in sensorGroups)
+                {
+                    touchGroups.Add(new TouchGroup()
+                    {
+                        Members = group.Select(x => memberMapping[x]).ToArray()
+                    });
+                }
+                foreach (var member in members)
+                    member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
+            });
+        }
         async Task AllocTouchGroup(List<TouchDrop> members)
         {
             await Task.Run(() =>
             {
                 var sensorTypes = members.GroupBy(x => x.GetSensor())
-                                                 .Select(x => x.Key)
-                                                 .ToList();
+                                         .Select(x => x.Key)
+                                         .ToList();
                 List<List<SensorType>> sensorGroups = new();
 
                 while (sensorTypes.Count > 0)

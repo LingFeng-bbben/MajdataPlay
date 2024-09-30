@@ -27,7 +27,7 @@ namespace MajdataPlay.Types
             }
         }
         public float JudgeDiff { get; set; } = 0;
-        public IStatefulNote[] Members { get; set; } = Array.Empty<IStatefulNote>();
+        public object[] Members { get; set; } = Array.Empty<IStatefulNote>();
         List<JudgeType> results = new();
 
         public void RegisterResult(in JudgeType result)

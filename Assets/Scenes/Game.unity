@@ -3262,6 +3262,8 @@ MonoBehaviour:
   tapPrefab: {fileID: 7955322054321000439, guid: de312956ab0060a49a3f3585e600c39a, type: 3}
   starPrefab: {fileID: 3599915660479470153, guid: 279b1bd0701d99f4183a5258db1374b2, type: 3}
   holdPrefab: {fileID: 7566527781932749496, guid: 558452b6e8eb68f44b4f035c27e37c25, type: 3}
+  touchPrefab: {fileID: 3167371522221019254, guid: 93aa98f79a99f9e48a495e74f4fab299, type: 3}
+  touchHoldPrefab: {fileID: 4570065832926722978, guid: 741b480205f5f7343aa547639a92b489, type: 3}
   eachLinePrefab: {fileID: 278292873598720211, guid: 54e5879f47df2a248b91a3e19dfe8599, type: 3}
 --- !u!1 &1877497681
 GameObject:
