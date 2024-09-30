@@ -49,7 +49,10 @@ namespace MajdataPlay.Game
         bool Dequeue(TapPoolingInfo info)
         {
             if (idleNotes.IsEmpty())
+            {
+                Debug.LogWarning($"No more SlideLauncher can use");
                 return false;
+            }
             var idleNote = idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;

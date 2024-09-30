@@ -107,6 +107,12 @@ namespace MajdataPlay.Game
                 case EachLineDrop eachLine:
                     eachLinePool.Collect(eachLine);
                     break;
+                case TouchDrop touch:
+                    touchPool.Collect(touch);
+                    break;
+                case TouchHoldDrop touchHold:
+                    touchHoldPool.Collect(touchHold);
+                    break;
             }
         }
         void OnDestroy()

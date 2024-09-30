@@ -59,6 +59,7 @@ namespace MajdataPlay.Game.Notes
         SpriteMask mask;
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
+        NotePoolManager notePoolManager;
 
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
@@ -135,6 +136,7 @@ namespace MajdataPlay.Game.Notes
 
             effectManager.PlayTouchHoldEffect(sensorPos, result);
             effectManager.ResetHoldEffect(sensorPos);
+            notePoolManager.Collect(this);
         }
         protected override void Start()
         {
@@ -153,6 +155,8 @@ namespace MajdataPlay.Game.Notes
             pointRenderer = point.GetComponent<SpriteRenderer>();
             borderRenderer = border.GetComponent<SpriteRenderer>();
             mask = transform.GetChild(0).GetComponent<SpriteMask>();
+
+            notePoolManager = FindObjectOfType<NotePoolManager>();
 
             LoadSkin();
 

@@ -80,7 +80,10 @@ namespace MajdataPlay.Game
         {
 
             if (idleNotes.IsEmpty())
+            {
+                Debug.LogWarning($"No more Note can use");
                 return false;
+            }
             var idleNote = idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;

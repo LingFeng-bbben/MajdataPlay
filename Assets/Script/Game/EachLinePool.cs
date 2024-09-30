@@ -50,7 +50,10 @@ namespace MajdataPlay.Game
             var noteA = info.MemberA?.Instance;
             var noteB = info.MemberB?.Instance;
             if (idleNotes.IsEmpty())
+            {
+                Debug.LogWarning($"No more EachLine can use");
                 return false;
+            }
             else if (noteA is null && noteB is null)
                 return false;
             var idleNote = idleNotes[0];
