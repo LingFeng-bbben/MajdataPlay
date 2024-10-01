@@ -141,6 +141,7 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            SetIdle(msg);
             buttonCheckerMutex.ReleaseMutex();
         }
     }
