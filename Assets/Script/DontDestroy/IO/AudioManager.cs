@@ -211,8 +211,8 @@ namespace MajdataPlay.IO
                 switch (backend)
                 {
                     case SoundBackendType.Unity:
-                        await UniTask.SwitchToMainThread();
-                        return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                        //await UniTask.SwitchToMainThread();
+                        return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     default:
                         var provider = new CachedSampleProvider(new CachedSound(path), mixer);
                         return new NAudioAudioSample(provider);
