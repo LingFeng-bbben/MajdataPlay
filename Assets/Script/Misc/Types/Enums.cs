@@ -224,6 +224,9 @@
         SELECT_SONG,
         SUGOI,
         DONT_TOUCH_ME
+    }
+    public enum MajText
+    {
 
     }
 }
