@@ -13,6 +13,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Threading;
 using UnityEngine.Scripting;
+using System.IO;
 
 namespace MajdataPlay.Game
 {
@@ -71,7 +72,8 @@ namespace MajdataPlay.Game
             }
         }
         long fileTimeAtStart = 0;
-        Task sfxGeneratingTask;
+        TextMeshPro loadingText;
+        Image loadingImage;
 
         private void Awake()
         {
@@ -94,7 +96,10 @@ namespace MajdataPlay.Game
         void Start()
         {
             State = ComponentState.Loading;
+            loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+            loadingImage = loadingMask.GetComponent<Image>();
             InputManager.Instance.BindAnyArea(OnPauseButton);
+            ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
             DumpOnlineChart().Forget();
         }
 
@@ -103,7 +108,6 @@ namespace MajdataPlay.Game
             if (song.isOnline)
             {
                 LightManager.Instance.SetAllLight(Color.red);
-                var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
                 loadingText.text = "Downloading...";
                 var dumpTask = song.DumpToLocal();
                 while (!dumpTask.IsCompleted)
@@ -112,114 +116,126 @@ namespace MajdataPlay.Game
                 }
                 song = dumpTask.Result;
             }
-            await LoadAudioAndChart();
-        }
-
-        async UniTask LoadAudioAndChart()
-        {
-            audioSample = AudioManager.Instance.LoadMusic(song.TrackPath ?? string.Empty);
-            if (audioSample is null)
+            var loadingTask =  UniTask.WhenAll(LoadAudioTrack(), LoadChart());
+            var task = loadingTask.AsTask();
+            while (!task.IsCompleted)
+                await UniTask.Yield();
+            if(task.IsFaulted)
             {
-                var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
-                loadingText.text = "\r\nFailed to load chart\r\n\r\nAudio track not found.";
-                loadingText.color = Color.red;
-                return;
+                foreach (var e in task.Exception.InnerExceptions)
+                {
+                    switch(e)
+                    {
+                        case InvalidAudioTrackException audioE:
+                            State = ComponentState.Failed;
+                            loadingText.text = $"\r\nFailed to load chart\r\n\r\n{audioE.Message}";
+                            loadingText.color = Color.red;
+                            Debug.LogError(audioE);
+                            return;
+                        case TaskCanceledException:
+                            return;
+                        default:
+                            State = ComponentState.Failed;
+                            ErrorText.text = "加载note时出错了哟\n" + e.Message;
+                            Debug.LogError(e);
+                            return;
+                    }
+                }
             }
+
+            DelayPlay().Forget();
+        }
+        async UniTask LoadAudioTrack()
+        {
+            var trackPath = song.TrackPath ?? string.Empty;
+            if(!File.Exists(trackPath))
+                throw new InvalidAudioTrackException("Audio track not found", trackPath);
+            audioSample = await AudioManager.Instance.LoadMusicAsync(trackPath);
+            await UniTask.Yield();
+            if (audioSample is null)
+                throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             audioSample.SetVolume(gameSetting.Audio.Volume.BGM);
-            ErrorText = GameObject.Find("ErrText").GetComponent<Text>();
             LightManager.Instance.SetAllLight(Color.white);
-            try
+        }
+        async UniTask LoadChart()
+        {
+            var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
+            loadingText.text = "Deserialization...";
+            if (string.IsNullOrEmpty(maidata))
             {
+                BackToList();
+                throw new TaskCanceledException("Empty chart");
+            }
+            Chart = new SimaiProcess(maidata);
+            if (Chart.notelist.Count == 0)
+            {
+                BackToList();
+                throw new TaskCanceledException("Empty chart");
+            }
 
-                var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
-                if (maidata == "" || maidata == null)
+            await Task.Run(() =>
+            {
+                //Generate ClockSounds
+                var countnum = song.ClockCount == null ? 4 : song.ClockCount;
+                var firstBpm = Chart.notelist.FirstOrDefault().currentBpm;
+                var interval = 60 / firstBpm;
+                if (Chart.notelist.Any(o => o.time < countnum * interval))
                 {
-                    BackToList();
-                    return;
-                }
-
-                var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
-                loadingText.text = "Deserialization...";
-
-                Chart = new SimaiProcess(maidata);
-                if (Chart.notelist.Count == 0)
-                {
-                    BackToList();
-                    return;
-                }
-                else
-                    DelayPlay().Forget();
-
-                sfxGeneratingTask = Task.Run(() =>
-                {
-                    //Generate ClockSounds
-                    var countnum = song.ClockCount == null ? 4 : song.ClockCount;
-                    var firstBpm = Chart.notelist.FirstOrDefault().currentBpm;
-                    var interval = 60 / firstBpm;
-                    if (Chart.notelist.Any(o => o.time < countnum * interval))
+                    //if there is something in first measure, we add clock before the bgm
+                    for (int i = 0; i < countnum; i++)
                     {
-                        //if there is something in first measure, we add clock before the bgm
-                        for (int i = 0; i < countnum; i++)
-                        {
-                            AnwserSoundList.Add(new AnwserSoundPoint()
-                            {
-                                time = -(i + 1) * interval,
-                                isClock = true,
-                                isPlayed = false
-                            });
-                        }
-                    }
-                    else
-                    {
-                        //if nothing there, we can add it with bgm
-                        for (int i = 0; i < countnum; i++)
-                        {
-                            AnwserSoundList.Add(new AnwserSoundPoint()
-                            {
-                                time = i * interval,
-                                isClock = true,
-                                isPlayed = false
-                            });
-                        }
-                    }
-
-
-                    //Generate AnwserSounds
-                    foreach (var timingPoint in Chart.notelist)
-                    {
-                        if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
-
                         AnwserSoundList.Add(new AnwserSoundPoint()
                         {
-                            time = timingPoint.time,
-                            isClock = false,
+                            time = -(i + 1) * interval,
+                            isClock = true,
                             isPlayed = false
                         });
-                        var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
-                        if (holds.Count == 0) continue;
-                        foreach (var hold in holds)
-                        {
-                            var newtime = timingPoint.time + hold.holdTime;
-                            if (!Chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
-                                !AnwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
-                                )
-                                AnwserSoundList.Add(new AnwserSoundPoint()
-                                {
-                                    time = newtime,
-                                    isClock = false,
-                                    isPlayed = false
-                                });
-                        }
                     }
-                    AnwserSoundList = AnwserSoundList.OrderBy(o => o.time).ToList();
-                });
-            }
-            catch (Exception ex)
-            {
-                State = ComponentState.Failed;
-                ErrorText.text = "加载note时出错了哟\n" + ex.Message;
-                Debug.LogError(ex);
-            }
+                }
+                else
+                {
+                    //if nothing there, we can add it with bgm
+                    for (int i = 0; i < countnum; i++)
+                    {
+                        AnwserSoundList.Add(new AnwserSoundPoint()
+                        {
+                            time = i * interval,
+                            isClock = true,
+                            isPlayed = false
+                        });
+                    }
+                }
+
+
+                //Generate AnwserSounds
+                foreach (var timingPoint in Chart.notelist)
+                {
+                    if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
+
+                    AnwserSoundList.Add(new AnwserSoundPoint()
+                    {
+                        time = timingPoint.time,
+                        isClock = false,
+                        isPlayed = false
+                    });
+                    var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
+                    if (holds.Count == 0) continue;
+                    foreach (var hold in holds)
+                    {
+                        var newtime = timingPoint.time + hold.holdTime;
+                        if (!Chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
+                            !AnwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
+                            )
+                            AnwserSoundList.Add(new AnwserSoundPoint()
+                            {
+                                time = newtime,
+                                isClock = false,
+                                isPlayed = false
+                            });
+                    }
+                }
+                AnwserSoundList = AnwserSoundList.OrderBy(o => o.time).ToList();
+            });
         }
 
         /// <summary>
@@ -260,9 +276,7 @@ namespace MajdataPlay.Game
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = noteLoader.LoadNotesIntoPool(Chart);
-            var loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
             var timer = 1f;
-            var loadingImage = loadingMask.GetComponent<Image>();
 
             while (noteLoader.State < NoteLoaderStatus.Finished)
             {
@@ -310,8 +324,6 @@ namespace MajdataPlay.Game
                     throw noteLoaderTask.Exception;
                 await UniTask.Yield();
             }
-            if (!sfxGeneratingTask.IsCompleted)
-                await sfxGeneratingTask;
 
             GameManager.Instance.DisableGC();
             Time.timeScale = 1f;
