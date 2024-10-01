@@ -43,6 +43,7 @@ namespace MajdataPlay.IO
                     };
                     sensor.PushEvent(msg);
                     PushEvent(msg);
+                    SetIdle(msg);
                 }
             }
         }
@@ -67,6 +68,7 @@ namespace MajdataPlay.IO
                 };
                 sensor.PushEvent(msg);
                 PushEvent(msg);
+                SetIdle(msg);
             }
         }
         public void BindSensor(EventHandler<InputEventArgs> checker, SensorType sType)

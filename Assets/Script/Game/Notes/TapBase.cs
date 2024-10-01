@@ -2,29 +2,95 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class TapBase : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>
+    public abstract class TapBase : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer
     {
+        public RendererStatus RendererState
+        {
+            get => _rendererState;
+            set 
+            {
+                if (State < NoteStatus.Initialized)
+                    return;
+
+                switch(value)
+                {
+                    case RendererStatus.Off:
+                        thisRenderer.forceRenderingOff = true;
+                        exRenderer.forceRenderingOff = true;
+                        tapLineRenderer.forceRenderingOff = true;
+                        break;
+                    case RendererStatus.On:
+                        thisRenderer.forceRenderingOff = false;
+                        exRenderer.forceRenderingOff = !isEX;
+                        tapLineRenderer.forceRenderingOff = false;
+                        break;
+                }
+            }
+        }
         public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
         public float Distance { get; protected set; } = -100;
         public GameObject tapLine;
 
         protected SpriteRenderer thisRenderer;
         protected SpriteRenderer exRenderer;
+        protected SpriteRenderer tapLineRenderer;
+        protected NotePoolManager notePoolManager;
 
+        public virtual void Initialize(TapPoolingInfo poolingInfo)
+        {
+            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+                return;
+            startPosition = poolingInfo.StartPos;
+            timing = poolingInfo.Timing;
+            judgeTiming = timing;
+            noteSortOrder = poolingInfo.NoteSortOrder;
+            speed = poolingInfo.Speed;
+            isEach = poolingInfo.IsEach;
+            isBreak = poolingInfo.IsBreak;
+            isEX = poolingInfo.IsEX;
+            QueueInfo = poolingInfo.QueueInfo;
+            isJudged = false;
+            Distance = -100;
+            if (State == NoteStatus.Start)
+                Start();
+            State = NoteStatus.Initialized;
+        }
+        public virtual void End(bool forceEnd = false)
+        {
+            State = NoteStatus.Destroyed;
+            ioManager.UnbindArea(Check, sensorPos);
+            if (!isJudged || forceEnd) 
+                return;
+
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                IsEX = isEX,
+                Diff = judgeDiff
+            };
+            // TODO: TapLine
+            effectManager.PlayEffect(startPosition, result);
+            audioEffMana.PlayTapSound(result);
+            noteManager.NextNote(QueueInfo);
+            objectCounter.ReportResult(this, result);
+        }
         protected override void Start()
         {
+            if (IsInitialized)
+                return;
             base.Start();
-
+            notePoolManager = FindObjectOfType<NotePoolManager>();
             thisRenderer = GetComponent<SpriteRenderer>();
             exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
 
-            tapLine = Instantiate(tapLine, noteManager.gameObject.transform);
+            tapLine = Instantiate(tapLine, noteManager.gameObject.transform.GetChild(7));
             tapLine.SetActive(false);
+            tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
 
             thisRenderer.sortingOrder += noteSortOrder;
             exRenderer.sortingOrder += noteSortOrder;
@@ -34,7 +100,7 @@ namespace MajdataPlay.Game.Notes
         
         protected void FixedUpdate()
         {
-            if (State < NoteStatus.Running)
+            if (State < NoteStatus.Running|| IsDestroyed)
                 return;
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
@@ -42,14 +108,10 @@ namespace MajdataPlay.Game.Notes
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
-                Destroy(tapLine);
-                Destroy(gameObject);
+                End();
             }
             else if (isJudged)
-            {
-                Destroy(tapLine);
-                Destroy(gameObject);
-            }
+                End();
         }
         // Update is called once per frame
         protected virtual void Update()
@@ -67,9 +129,7 @@ namespace MajdataPlay.Game.Notes
                         transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
                         tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
 
-                        thisRenderer.forceRenderingOff = false;
-                        if (isEX)
-                            exRenderer.forceRenderingOff = false;
+                        RendererState = RendererStatus.On;
                         CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
@@ -105,6 +165,8 @@ namespace MajdataPlay.Game.Notes
                         tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
                     break;
+                default:
+                    return;
             }
         }
         protected override void Check(object sender, InputEventArgs arg)
@@ -124,12 +186,9 @@ namespace MajdataPlay.Game.Notes
                     ioManager.SetBusy(arg);
 
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
-                {
-                    Destroy(tapLine);
-                    Destroy(gameObject);
-                }
+                    End();
             }
         }
         protected override void Judge(float currentSec)
@@ -182,26 +241,6 @@ namespace MajdataPlay.Game.Notes
             isJudged = true;
             
         }
-        protected virtual void OnDestroy()
-        {
-            State = NoteStatus.Destroyed;
-            ioManager.UnbindArea(Check, sensorPos);
-            if (!isJudged) return;
-
-            var result = new JudgeResult()
-            {
-                Result = judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
-                Diff = judgeDiff
-            };
-
-            effectManager.PlayEffect(startPosition, result);
-            //effectManager.PlayFastLate(startPosition, result);
-            
-            audioEffMana.PlayTapSound(result);
-            noteManager.NextNote(QueueInfo);
-            objectCounter.ReportResult(this, result);
-        }
+        RendererStatus _rendererState = RendererStatus.Off;
     }
 }

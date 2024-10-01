@@ -50,15 +50,13 @@ namespace MajdataPlay.Game
         private Text table;
         private Text judgeResultCount;
 
-        NoteManager notes;
-
         public double[] accRate = new double[5]
         {
-        0.00,    // classic acc (+)
-        100.00,  // classic acc (-)
-        101.0000,// acc 101(-)
-        100.0000,// acc 100(-)
-        0.0000,  // acc (+)
+            0.00,    // classic acc (+)
+            100.00,  // classic acc (-)
+            101.0000,// acc 101(-)
+            100.0000,// acc 100(-)
+            0.0000,  // acc (+)
         };
 
         long cPerfectCount = 0;
@@ -90,7 +88,6 @@ namespace MajdataPlay.Game
         // Start is called before the first frame update
         private void Start()
         {
-            notes = GameObject.Find("Notes").GetComponent<NoteManager>();
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
             rate = GameObject.Find("ObjectRate").GetComponent<Text>();

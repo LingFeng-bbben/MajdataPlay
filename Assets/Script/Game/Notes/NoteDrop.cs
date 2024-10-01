@@ -2,12 +2,11 @@ using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using Unity.Collections;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote
+    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider
     {
         public int startPosition;
         public float timing;
@@ -17,6 +16,7 @@ namespace MajdataPlay.Game.Notes
         public bool isBreak = false;
         public bool isEX = false;
 
+        public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
@@ -130,7 +130,6 @@ namespace MajdataPlay.Game.Notes
     public abstract class NoteLongDrop : NoteDrop
     {
         public float LastFor = 1f;
-        public GameObject holdEffect;
 
         protected float playerIdleTime = 0;
         
@@ -143,41 +142,5 @@ namespace MajdataPlay.Game.Notes
         /// </returns>
         protected float GetRemainingTime() => MathF.Max(LastFor - GetTimeSpanToJudgeTiming(), 0);
         protected float GetRemainingTimeWithoutOffset() => MathF.Max(LastFor - GetTimeSpanToArriveTiming(), 0);
-        protected virtual void PlayHoldEffect()
-        {
-            var material = holdEffect.GetComponent<ParticleSystemRenderer>().material;
-            switch (judgeResult)
-            {
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
-                    material.SetColor("_Color", new Color(1f, 0.93f, 0.61f)); // Yellow
-                    break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    material.SetColor("_Color", new Color(1f, 0.70f, 0.94f)); // Pink
-                    break;
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
-                    material.SetColor("_Color", new Color(0.56f, 1f, 0.59f)); // Green
-                    break;
-                case JudgeType.Miss:
-                    material.SetColor("_Color", new Color(1f, 1f, 1f)); // White
-                    break;
-                default:
-                    break;
-            }
-            holdEffect.SetActive(true);
-        }
-        protected virtual void StopHoldEffect()
-        {
-            holdEffect.SetActive(false);
-        }
     }
 }

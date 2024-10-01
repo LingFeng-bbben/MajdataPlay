@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
+using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -17,6 +19,18 @@ namespace MajdataPlay.Types
             }
             set { audioSource.loop = value; }
         }
+        public override double CurrentSec 
+        { 
+            get => audioSource.time; 
+            set => audioSource.time = (float)value; 
+        }
+        public override float Volume 
+        { 
+            get => audioSource.volume; 
+            set => audioSource.volume = value.Clamp(0,1); 
+        }
+        public override TimeSpan Length => TimeSpan.FromSeconds(audioClip.length);
+        public override bool IsPlaying => audioSource.isPlaying;
         public UnityAudioSample(AudioClip audioClip, GameObject gameObject)
         {
             this.audioClip = audioClip;
@@ -34,22 +48,7 @@ namespace MajdataPlay.Types
             audioSource.time = 0;
             audioSource.Play();
         }
-        public override bool GetPlayState()
-        {
-            return audioSource.isPlaying;
-        }
-        public override void SetVolume(float volume)
-        {
-            audioSource.volume = volume;
-        }
-        public override double GetCurrentTime()
-        {
-            return audioSource.time;
-        }
-        public override void SetCurrentTime(float time)
-        {
-            audioSource.time = time;
-        }
+        public override void SetVolume(float volume) => Volume = volume;
         public override void Play()
         {
             audioSource.Play();
@@ -58,11 +57,16 @@ namespace MajdataPlay.Types
         {
             audioSource.Pause();
         }
+        public override void Stop()
+        {
+            audioSource.Stop();
+            audioSource.time = 0;
+        }
         public override void Dispose()
         {
             audioSource.Stop();
             audioClip.UnloadAudioData();
-            Object.Destroy(audioSource);
+            UnityEngine.Object.Destroy(audioSource);
         }
         public static UnityAudioSample ReadFromFile(string filePath,GameObject gameObject)
         {
@@ -70,6 +74,15 @@ namespace MajdataPlay.Types
             {
                 www.SendWebRequest();
                 while (!www.isDone) ;
+                var myClip = DownloadHandlerAudioClip.GetContent(www);
+                return new UnityAudioSample(myClip, gameObject);
+            }
+        }
+        public static async UniTask<UnityAudioSample> ReadFromFileAsync(string filePath, GameObject gameObject)
+        {
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
+            {
+                await www.SendWebRequest();
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
                 return new UnityAudioSample(myClip, gameObject);
             }

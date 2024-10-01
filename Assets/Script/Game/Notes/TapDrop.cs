@@ -6,30 +6,33 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TapDrop : TapBase
+    public sealed class TapDrop : TapBase, IPoolableNote<TapPoolingInfo, TapQueueInfo>
     {
-        protected override void Start()
-        {
-            base.Start();
+        //protected override void Start()
+        //{
+        //    base.Start();
 
-            LoadSkin();
+        //    LoadSkin();
 
-            sensorPos = (SensorType)(startPosition - 1);
-            ioManager.BindArea(Check, sensorPos);
-            State = NoteStatus.Initialized;
-        }
+        //    sensorPos = (SensorType)(startPosition - 1);
+        //    ioManager.BindArea(Check, sensorPos);
+        //    State = NoteStatus.Initialized;
+        //}
         protected override void LoadSkin()
         {
             var skin = SkinManager.Instance.GetTapSkin();
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            var breakShineController = gameObject.AddComponent<BreakShineController>();
 
             renderer.sprite = skin.Normal;
+            renderer.material = skin.DefaultMaterial;
             exRenderer.sprite = skin.Ex;
             exRenderer.color = skin.ExEffects[0];
-            
-                
+            tapLineRenderer.sprite = skin.NoteLines[0];
+            breakShineController.enabled = false;
+
 
             if (isEach)
             {
@@ -44,17 +47,28 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Break;
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
-                var controller = gameObject.AddComponent<BreakShineController>();
-                controller.Parent = this;
+                breakShineController.enabled = true;
+                breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
 
             }
 
-            renderer.forceRenderingOff = true;
-            if (!isEX)
-                Destroy(exRenderer);
-            else
-                exRenderer.forceRenderingOff = false;
+            RendererState = RendererStatus.Off;
+        }
+        public override void Initialize(TapPoolingInfo poolingInfo)
+        {
+            base.Initialize(poolingInfo);
+
+            LoadSkin();
+            sensorPos = (SensorType)(startPosition - 1);
+            ioManager.BindArea(Check, sensorPos);
+            State = NoteStatus.Initialized;
+        }
+        public override void End(bool forceEnd = false)
+        {
+            base.End(forceEnd);
+            RendererState = RendererStatus.Off;
+            notePoolManager.Collect(this);
         }
     }
 }

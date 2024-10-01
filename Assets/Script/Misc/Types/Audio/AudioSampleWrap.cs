@@ -1,16 +1,19 @@
-﻿using System;
+﻿using MajdataPlay.Interfaces;
+using System;
 
 namespace MajdataPlay.Types
 {
-    public abstract class AudioSampleWrap : IDisposable
+    public abstract class AudioSampleWrap : IDisposable, IPausableSoundProvider
     {
+        public abstract bool IsPlaying { get; }
+        public abstract float Volume { get; set; }
+        public abstract double CurrentSec { get; set; }
+        public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }
-        public abstract bool GetPlayState();
         public abstract void Play();
         public abstract void Pause();
+        public abstract void Stop();
         public abstract void PlayOneShot();
-        public abstract double GetCurrentTime();
-        public abstract void SetCurrentTime(float time);
         public abstract void SetVolume(float volume);
         public abstract void Dispose();
     }

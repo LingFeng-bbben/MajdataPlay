@@ -19,7 +19,7 @@ namespace MajdataPlay.Types
         public Sprite ExDouble { get; init; }
 
         public Material BreakMaterial { get; init; }
-
+        public Material DefaultMaterial { get; init; }
         public Sprite[] NoteLines { get; init; }
         public Color[] ExEffects { get; init; }
     }

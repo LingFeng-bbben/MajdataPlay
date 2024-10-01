@@ -34,6 +34,22 @@ namespace MajdataPlay.Game
         {
             effectPool.Play(judgeResult, position);
         }
+        public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
+        {
+            effectPool.PlayHoldEffect(judgeType, keyIndex);
+        }
+        public void PlayHoldEffect( SensorType sensorPos, in JudgeType judgeType)
+        {
+            effectPool.PlayHoldEffect(judgeType, sensorPos);
+        }
+        public void ResetHoldEffect(int keyIndex)
+        {
+            effectPool.ResetHoldEffect(keyIndex);
+        }
+        public void ResetHoldEffect(SensorType sensorPos)
+        {
+            effectPool.ResetHoldEffect(sensorPos);
+        }
         public void PlayTouchEffect(SensorType sensorPos, in JudgeResult judgeResult)
         {
             effectPool.Play(judgeResult, sensorPos);

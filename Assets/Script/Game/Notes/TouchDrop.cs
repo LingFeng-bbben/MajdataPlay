@@ -1,23 +1,24 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Security.Claims;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchDrop : TouchBase
+    public sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>
     {
         public RendererStatus RendererState 
         {
             get => _rendererState;
-            private set
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
-                switch(value)
+
+                switch (value)
                 {
                     case RendererStatus.Off:
                         foreach (var renderer in fanRenderers)
@@ -45,16 +46,100 @@ namespace MajdataPlay.Game.Notes
         GameObject justBorder;
         SpriteRenderer justBorderRenderer;
         MultTouchHandler multTouchHandler;
-        
+        NotePoolManager notePoolManager;
 
-        // Start is called before the first frame update
+        public void Initialize(TouchPoolingInfo poolingInfo)
+        {
+            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+                return;
+
+            startPosition = poolingInfo.StartPos;
+            areaPosition = poolingInfo.AreaPos;
+            timing = poolingInfo.Timing;
+            judgeTiming = timing;
+            noteSortOrder = poolingInfo.NoteSortOrder;
+            speed = poolingInfo.Speed;
+            isEach = poolingInfo.IsEach;
+            isBreak = poolingInfo.IsBreak;
+            isEX = poolingInfo.IsEX;
+            QueueInfo = poolingInfo.QueueInfo;
+            isJudged = false;
+            isFirework = poolingInfo.IsFirework;
+            GroupInfo = poolingInfo.GroupInfo;
+            sensorPos = poolingInfo.SensorPos;
+            if (State == NoteStatus.Start)
+                Start();
+            else
+            {
+                wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                moveDuration = 0.8f * wholeDuration;
+                displayDuration = 0.2f * wholeDuration;
+
+                LoadSkin();
+
+                transform.position = GetAreaPos(startPosition, areaPosition);
+                point.SetActive(false);
+                justBorder.SetActive(false);
+
+                SetfanColor(new Color(1f, 1f, 1f, 0f));
+                ioManager.BindSensor(Check, GetSensor());
+                sensorPos = GetSensor();
+                SetFansPosition(0.4f);
+                State = NoteStatus.Initialized;
+                RendererState = RendererStatus.Off;
+            }
+        }
+        public void End(bool forceEnd = false)
+        {
+            ioManager.UnbindSensor(Check, GetSensor());
+            multTouchHandler.Unregister(sensorPos);
+            State = NoteStatus.Destroyed;
+            if (!isJudged || forceEnd)
+                return;
+            
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                Diff = judgeDiff,
+                IsEX = isEX,
+                IsBreak = isBreak
+            };
+            // disable SpriteRenderer
+            RendererState = RendererStatus.Off;
+            point.SetActive(false);
+            justBorder.SetActive(false);
+
+            effectManager.PlayTouchEffect(sensorPos, result);
+
+            if (GroupInfo is not null && judgeResult != JudgeType.Miss)
+            {
+                GroupInfo.JudgeResult = judgeResult;
+                GroupInfo.JudgeDiff = judgeDiff;
+                GroupInfo.RegisterResult(judgeResult);
+            }
+
+            if (judgeResult != JudgeType.Miss)
+                audioEffMana.PlayTouchSound();
+            objectCounter.ReportResult(this, result);
+            noteManager.NextTouch(QueueInfo);
+
+            if (isFirework && judgeResult != JudgeType.Miss)
+            {
+                effectManager.PlayFireworkEffect(transform.position);
+                audioEffMana.PlayHanabiSound();
+            }
+            notePoolManager.Collect(this);
+        }
         protected override void Start()
         {
+            if (IsInitialized)
+                return;
             base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
+            notePoolManager = FindObjectOfType<NotePoolManager>();
             multTouchHandler = GameObject.Find("MultTouchHandler").GetComponent<MultTouchHandler>();
             
             fans[0] = transform.GetChild(3).gameObject;
@@ -74,7 +159,6 @@ namespace MajdataPlay.Game.Notes
             justBorder.SetActive(false);
             
             SetfanColor(new Color(1f, 1f, 1f, 0f));
-            var customSkin = SkinManager.Instance;
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
             SetFansPosition(0.4f);
@@ -119,15 +203,15 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
-                {
-                    Destroy(gameObject);
-                }
+                    End();
             }
         }
         private void FixedUpdate()
         {
+            if (State < NoteStatus.Running || IsDestroyed)
+                return;
             var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
             if (!isJudged && !isTooLate)
             {
@@ -138,7 +222,7 @@ namespace MajdataPlay.Game.Notes
                         isJudged = true;
                         judgeResult = (JudgeType)GroupInfo.JudgeResult;
                         judgeDiff = GroupInfo.JudgeDiff;
-                        Destroy(gameObject);
+                        End();
                     }
                 }
             }
@@ -146,10 +230,10 @@ namespace MajdataPlay.Game.Notes
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
-                Destroy(gameObject);
+                End();
             }
             else if (isJudged)
-                Destroy(gameObject);
+                End();
         }
         protected override void Judge(float currentSec)
         {
@@ -184,8 +268,7 @@ namespace MajdataPlay.Game.Notes
             judgeResult = result;
             isJudged = true;
         }
-        // Update is called once per frame
-        private void Update()
+        void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
             
@@ -239,42 +322,6 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
         }
-        private void OnDestroy()
-        {
-            ioManager.UnbindSensor(Check, GetSensor());
-            multTouchHandler.Unregister(sensorPos);
-            if (!isJudged) 
-                return;
-            State = NoteStatus.Destroyed;
-            var result = new JudgeResult()
-            {
-                Result = judgeResult,
-                Diff = judgeDiff,
-                IsEX = isEX,
-                IsBreak = isBreak
-            };
-            
-            effectManager.PlayTouchEffect(sensorPos, result);
-
-            if (GroupInfo is not null && judgeResult != JudgeType.Miss)
-            {
-                GroupInfo.JudgeResult = judgeResult;
-                GroupInfo.JudgeDiff = judgeDiff;
-            }
-
-            if(judgeResult != JudgeType.Miss)
-                audioEffMana.PlayTouchSound();
-            objectCounter.ReportResult(this, result);
-            noteManager.NextTouch(QueueInfo);
-
-            if (isFirework && judgeResult != JudgeType.Miss)
-            {
-                effectManager.PlayFireworkEffect(transform.position);
-                audioEffMana.PlayHanabiSound();
-            }
-            
-        }
-
         void SetFansPosition(in float distance)
         {
             for (var i = 0; i < 4; i++)
@@ -292,11 +339,11 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var fan in fanRenderers) fan.color = color;
         }
-
         private void SetfanSprite(Sprite sprite)
         {
             for (var i = 0; i < 4; i++) fanRenderers[i].sprite = sprite;
         }
+
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }
