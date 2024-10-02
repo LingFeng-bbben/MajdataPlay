@@ -12,6 +12,11 @@ namespace MajdataPlay.Game
         private SpriteRenderer spriteRender;
 
         private VideoPlayer videoPlayer;
+        public static BGManager Instance;
+        private void Awake()
+        {
+            Instance = this;
+        }
 
         // Start is called before the first frame update
         private void Start()
@@ -33,6 +38,11 @@ namespace MajdataPlay.Game
                 videoPlayer.playbackSpeed = playSpeed - 0.2f;
             else
                 videoPlayer.playbackSpeed = playSpeed;*/
+        }
+
+        public void CancelTimeRef()
+        {
+            videoPlayer.timeReference = VideoTimeReference.Freerun;
         }
 
         public void PauseVideo()

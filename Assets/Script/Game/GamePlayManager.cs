@@ -438,6 +438,7 @@ namespace MajdataPlay.Game
                 GameManager.LastGameResult = objectCounter.GetPlayRecord(song, GameManager.Instance.SelectedDiff);
             GameManager.Instance.EnableGC();
             DelayEndGame().Forget();
+            BGManager.Instance.CancelTimeRef();
             State = ComponentState.Finished;
         }
 
