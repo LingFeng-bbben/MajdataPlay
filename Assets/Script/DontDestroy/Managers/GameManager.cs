@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using UnityEngine.UI;
 
 namespace MajdataPlay
 {
@@ -58,9 +59,9 @@ namespace MajdataPlay
         {
 
             Converters =
-        {
-            new JsonStringEnumConverter()
-        },
+            {
+                new JsonStringEnumConverter()
+            },
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };

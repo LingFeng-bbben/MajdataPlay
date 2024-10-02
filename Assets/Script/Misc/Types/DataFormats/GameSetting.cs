@@ -56,7 +56,7 @@
     {
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
-        public float Judge { get; set; } = 0.3f;
+        public float Tap { get; set; } = 0.3f;
         public float Slide { get; set; } = 0.3f;
         public float Break { get; set; } = 0.3f;
         public float Touch { get; set; } = 0.3f;
