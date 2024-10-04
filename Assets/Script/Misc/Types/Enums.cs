@@ -230,6 +230,10 @@
         SCAN_CHART_FAILED,
         NO_CHARTS,
         PRESS_ANY_KEY,
+        DOWNLOADING,
+        LOAD_CHART_FAILED,
+        DESERIALIZATION,
+        LOADING_CHART,
         // Setting UI
         GAME,
         JUDGE,
@@ -273,7 +277,7 @@
         BACKGROUND_DIM_DESC,
         STAR_ROTATION_DESC,
         BGINFO_DESC,
-        AUDI_OFFSET_DESC,
+        AUDIO_OFFSET_DESC,
         JUDGE_OFFSET_DESC,
         MODE_DESC,
 
@@ -285,7 +289,7 @@
         SLIDE_JUDGE_TYPE_DESC,
         OUTER_JUDGE_DISTANCE_DESC,
         INNER_JUDGE_DISTANCE_DESC,
-        ANSWER_VO_DESCL,
+        ANSWER_VOL_DESCL,
         BGM_VOL_DESC,
         TAP_VOL_DESC,
         SLIDE_VOL_DESC,
