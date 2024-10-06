@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 #nullable enable
 namespace MajdataPlay.Types
@@ -7,7 +8,7 @@ namespace MajdataPlay.Types
     {
         public string Code { get; init; } = string.Empty;
         public string Author { get; init; } = string.Empty;
-        public Dictionary<MajText, string> MappingTable { get; init; } = new();
+        public LangTable[] MappingTable { get; init; } = Array.Empty<LangTable>();
 
         public static Language Default => new();
     }
