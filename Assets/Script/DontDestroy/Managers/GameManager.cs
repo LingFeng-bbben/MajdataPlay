@@ -13,6 +13,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
+using UnityEngine.Scripting;
 
 namespace MajdataPlay
 {
@@ -33,7 +34,7 @@ namespace MajdataPlay
 
         public GameSetting Setting { get; private set; } = new();
         /// <summary>
-        /// ÔÚListÖÐÑ¡ÖÐµÄÎÄ¼þ¼Ð
+        /// ï¿½ï¿½Listï¿½ï¿½Ñ¡ï¿½Ðµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
         /// </summary>
         public SongCollection Collection { get; private set; } = new();
         public int SelectedDir
@@ -52,7 +53,7 @@ namespace MajdataPlay
         Task? logWritebackTask = null;
         Queue<GameLog> logQueue = new();
         /// <summary>
-        /// Íæ¼ÒÑ¡ÔñµÄÆ×ÃæÄÑ¶È
+        /// ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¶ï¿½
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
 
