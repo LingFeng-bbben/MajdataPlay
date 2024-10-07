@@ -254,7 +254,7 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            if (isBound)
+            if (isBound || isReadOnly)
                 return;
             else if (Parent == null)
                 return;
@@ -268,7 +268,7 @@ namespace MajdataPlay.Setting
         }
         void UnbindArea()
         {
-            if (!isBound)
+            if (!isBound || isReadOnly)
                 return;
             isBound = false;
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
