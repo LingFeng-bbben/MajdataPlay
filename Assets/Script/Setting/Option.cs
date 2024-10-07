@@ -111,7 +111,7 @@ namespace MajdataPlay.Setting
             {
                 switch(PropertyInfo.Name)
                 {
-                    case "Resplution":
+                    case "Resolution":
                         isReadOnly = true;
                         break;
                     case "Skin":

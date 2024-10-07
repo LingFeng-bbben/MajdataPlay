@@ -273,6 +273,8 @@
         OUTER_JUDGE_DISTANCE_DESC,
         INNER_JUDGE_DISTANCE,
         INNER_JUDGE_DISTANCE_DESC,
+        RESOLUTION,
+        RESOLUTION_DESC,
         // SoundOptions
         ANSWER_VOL,
         ANSWER_VOL_DESC,
