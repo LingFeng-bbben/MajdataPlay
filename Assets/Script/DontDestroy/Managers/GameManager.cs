@@ -12,6 +12,7 @@ using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace MajdataPlay
 {
@@ -121,7 +122,16 @@ namespace MajdataPlay
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
             Localization.Initialize();
-            Localization.SetLang(Setting.Game.Language);
+            var availableLangs = Localization.Available;
+            if (availableLangs.IsEmpty())
+                return;
+            var lang = availableLangs.Find(x => x.ToString() == Setting.Game.Language);
+            if (lang is null)
+            {
+                lang = availableLangs.First();
+                Setting.Game.Language = lang.ToString();
+            }
+            Localization.Current = lang;
         }
         async void Start()
         {

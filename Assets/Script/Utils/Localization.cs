@@ -54,7 +54,12 @@ namespace MajdataPlay.Utils
                 else
                     continue;
             }
-            Available = loadedLangs.ToArray();
+            if (loadedLangs.IsEmpty())
+                return;
+            var grouped = loadedLangs.GroupBy(x => x.ToString());
+            Available = new Language[grouped.Count()];
+            foreach(var (i, grouping) in grouped.WithIndex())
+                Available[i] = grouping.First();
         }
         /// <summary>
         /// Set language by code and author<para>such like: "zh-CN - Majdata"</para>

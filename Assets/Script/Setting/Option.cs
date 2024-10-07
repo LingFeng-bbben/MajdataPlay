@@ -120,6 +120,14 @@ namespace MajdataPlay.Setting
                         break;
                     case "Language":
                         var availableLangs = Localization.Available;
+                        if(availableLangs.IsEmpty())
+                        {
+                            current = 0;
+                            options = new object[] { "Unavailable" };
+                            maxOptionIndex = 0;
+                            isReadOnly = true;
+                            return;
+                        }
                         var langNames = availableLangs.Select(x => x.ToString())
                                                       .ToArray();
                         var currentLang = Localization.Current;

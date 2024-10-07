@@ -103,6 +103,16 @@
       "Content": ""
     },
     {
+      "Type": "LANGUAGE",
+      "Origin": "Language",
+      "Content": "语言"
+    },
+    {
+      "Type": "LANGUAGE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
       "Type": "STAR_ROTATION",
       "Origin": "StarRotation",
       "Content": "Star旋转"
@@ -351,6 +361,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Disable",
       "Content": "禁用"
+    },
+    {
+      "Type": "UNAVAILABLE",
+      "Origin": "Unavailable",
+      "Content": "不可用"
     }
   ]
 }

@@ -287,6 +287,7 @@
         VOICE_VOL,
         VOICE_VOL_DESC,
         // Undefined
-        OTHER_MAJTEXT
+        OTHER_MAJTEXT,
+        UNAVAILABLE
     }
 }
