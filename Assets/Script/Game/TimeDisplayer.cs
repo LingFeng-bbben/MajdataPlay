@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace MajdataPlay.Game
 {
-    public class TmeDisplayer : MonoBehaviour
+    public class TimeDisplayer : MonoBehaviour
     {
         private Text text;
 
