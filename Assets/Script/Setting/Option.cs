@@ -8,7 +8,7 @@ using System.Reflection;
 using TMPro;
 using Unity.Collections;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Setting
 {
     public class Option : MonoBehaviour
@@ -50,6 +50,11 @@ namespace MajdataPlay.Setting
                 BindArea();
             else
                 UnbindArea();
+        }
+        void OnLangChanged(object? sender,Language newLanguage)
+        {
+            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            UpdateOption();
         }
         void InitOptions()
         {
@@ -262,13 +267,20 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            if (isBound || isReadOnly)
+            if (isBound)
                 return;
+            else if(isReadOnly)
+            {
+                isBound = true;
+                Localization.OnLanguageChanged += OnLangChanged;
+                return;
+            }
             else if (Parent == null)
                 return;
             else if (Parent.SelectedIndex != Index)
                 return;
             isBound = true;
+            Localization.OnLanguageChanged += OnLangChanged;
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B4);
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.E4);
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B5);
@@ -276,8 +288,14 @@ namespace MajdataPlay.Setting
         }
         void UnbindArea()
         {
-            if (!isBound || isReadOnly)
+            if (!isBound)
                 return;
+            else if (isReadOnly)
+            {
+                isBound = false; 
+                Localization.OnLanguageChanged -= OnLangChanged;
+                return;
+            }
             isBound = false;
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E4);
