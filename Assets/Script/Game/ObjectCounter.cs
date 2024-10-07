@@ -853,12 +853,12 @@ namespace MajdataPlay.Game
                         $"{accRate[4]:F4} % ";
         }
         /// <summary>
-        /// 游戏结算
+        /// 计算最终达成率
         /// </summary>
-        public void CalculateFinalResult()
+        public float CalculateFinalResult()
         {
             CalAccRate();
-            GamePlayManager.Instance.EndGame((float)accRate[2]);
+            return (float)accRate[2];
         }
         void UpdateState()
         {

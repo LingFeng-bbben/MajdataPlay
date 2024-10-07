@@ -13,8 +13,6 @@ namespace MajdataPlay.Game
         Dictionary<int, int> noteCurrentIndex = new();
         Dictionary<SensorType, int> touchCurrentIndex = new();
 
-        ObjectCounter objectCounter;
-
         public void ResetCounter()
         {
             noteCurrentIndex.Clear();
@@ -51,20 +49,6 @@ namespace MajdataPlay.Game
             {
                 if (note != null)
                     Destroy(note);
-            }
-        }
-        void Start()
-        {
-            objectCounter = FindObjectOfType<ObjectCounter>();
-        }
-        void Update()
-        {
-            if (GamePlayManager.Instance.State != ComponentState.Running)
-                return;
-            if (objectCounter.AllFinished && GamePlayManager.Instance.State != ComponentState.Finished)
-            {
-                Debug.Log("No More Notes");
-                objectCounter.CalculateFinalResult();
             }
         }
     }
