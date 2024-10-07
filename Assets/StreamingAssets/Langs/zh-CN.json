@@ -213,6 +213,26 @@
       "Content": ""
     },
     {
+      "Type": "BREAK_JUDGE_TYPE",
+      "Origin": "BreakJudgeType",
+      "Content": "Break判定显示等级"
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE",
+      "Origin": "BreakFastLateType",
+      "Content": "Break Fast/Late显示等级"
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
       "Type": "OUTER_JUDGE_DISTANCE",
       "Origin": "OuterJudgeDistance",
       "Content": "内圈判定显示距离"
@@ -301,6 +321,36 @@
       "Type": "VOICE_VOL_DESC",
       "Origin": "",
       "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "All",
+      "Content": "全部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowCP",
+      "Content": "Critical以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowP",
+      "Content": "Perfect以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowGR",
+      "Content": "Great以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "MissOnly",
+      "Content": "仅Miss"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Disable",
+      "Content": "禁用"
     }
   ]
 }

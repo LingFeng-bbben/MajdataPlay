@@ -41,9 +41,10 @@ namespace MajdataPlay.Setting
         void Start()
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
-            valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+            //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
             InitOptions();
             UpdatePosition();
+            UpdateOption();
 
             if (Parent.SelectedIndex == Index)
                 BindArea();
@@ -64,7 +65,7 @@ namespace MajdataPlay.Setting
                 for (int i = 0; i < values.Length; i++)
                     options[i] = values.GetValue(i);
                 var obj = PropertyInfo.GetValue(OptionObject);
-                current = options.FindIndex(x => x == obj);
+                current = options.FindIndex(x => (int)x == (int)obj);
             }
             else if(type == typeof(bool))
             {

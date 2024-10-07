@@ -128,11 +128,11 @@
     public enum JudgeDisplayType
     {
         /// <summary>
-        /// CriticalPerfect, Pefect, Great, Good
+        /// CriticalPerfect, Perfect, Great, Good
         /// </summary>
         All,
         /// <summary>
-        /// Pefect, Great, Good
+        /// Perfect, Great, Good
         /// </summary>
         BelowCP,
         /// <summary>
@@ -144,25 +144,13 @@
         /// </summary>
         BelowGR,
         /// <summary>
+        /// Miss
+        /// </summary>
+        MissOnly,
+        /// <summary>
         /// None
         /// </summary>
         Disable,
-        /// <summary>
-        /// CriticalPerfect, Pefect, Great, Good
-        /// </summary>
-        All_BreakOnly,
-        /// <summary>
-        /// Pefect, Great, Good
-        /// </summary>
-        BelowCP_BreakOnly,
-        /// <summary>
-        /// Great, Good
-        /// </summary>
-        BelowP_BreakOnly,
-        /// <summary>
-        /// Good
-        /// </summary>
-        BelowGR_BreakOnly,
     }
     public enum NoteLoaderStatus
     {
@@ -275,6 +263,10 @@
         TOUCH_JUDGE_TYPE_DESC,
         SLIDE_JUDGE_TYPE,
         SLIDE_JUDGE_TYPE_DESC,
+        BREAK_JUDGE_TYPE,
+        BREAK_JUDGE_TYPE_DESC,
+        BREAK_FAST_LATE_TYPE,
+        BREAK_FAST_LATE_TYPE_DESC,
         OUTER_JUDGE_DISTANCE,
         OUTER_JUDGE_DISTANCE_DESC,
         INNER_JUDGE_DISTANCE,
@@ -294,5 +286,7 @@
         TOUCH_VOL_DESC,
         VOICE_VOL,
         VOICE_VOL_DESC,
+        // Undefined
+        OTHER_MAJTEXT
     }
 }

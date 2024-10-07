@@ -154,8 +154,13 @@ namespace MajdataPlay.Game
         }
         public void PlayResult(in JudgeResult judgeResult)
         {
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
-            if(!canPlay)
+            bool canPlay;
+            if (judgeResult.IsBreak)
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakJudgeType, judgeResult);
+            else
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.NoteJudgeType, judgeResult);
+
+            if (!canPlay)
             {
                 judgeTextDisplayer.Reset();
                 return;
@@ -164,7 +169,11 @@ namespace MajdataPlay.Game
         }
         public void PlayFastLate(in JudgeResult judgeResult)
         {
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType, judgeResult);
+            bool canPlay;
+            if (judgeResult.IsBreak)
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakFastLateType, judgeResult);
+            else
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType, judgeResult);
             if (!canPlay)
             {
                 fastLateDisplayer.Reset();

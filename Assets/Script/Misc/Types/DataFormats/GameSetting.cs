@@ -36,6 +36,8 @@
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType SlideJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType BreakJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType BreakFastLateType { get; set; } = JudgeDisplayType.Disable;
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>
