@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -39,7 +40,7 @@ namespace MajdataPlay.Setting
         int lastIndex = 0;
         void Start()
         {
-            nameText.text = PropertyInfo.Name;
+            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
             valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
             InitOptions();
             UpdatePosition();
@@ -116,6 +117,15 @@ namespace MajdataPlay.Setting
                         maxOptionIndex = options.Length - 1;
                         current = skinNames.FindIndex(x => x == currentSkin.Name);
                         break;
+                    case "Language":
+                        var availableLangs = Localization.Available;
+                        var langNames = availableLangs.Select(x => x.ToString())
+                                                      .ToArray();
+                        var currentLang = Localization.Current;
+                        options = langNames;
+                        maxOptionIndex = options.Length - 1;
+                        current = availableLangs.FindIndex(x => x == currentLang);
+                        break;
                 }
             }
         }
@@ -142,7 +152,9 @@ namespace MajdataPlay.Setting
         }
         void UpdateOption()
         {
-            valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+            var origin = PropertyInfo.GetValue(OptionObject).ToString();
+            var localizedText = Localization.GetLocalizedText(origin);
+            valueText.text = localizedText;
         }
         void Up()
         {
@@ -188,6 +200,14 @@ namespace MajdataPlay.Setting
                 current--;
                 current = current.Clamp(0, maxOptionIndex);
                 PropertyInfo.SetValue(OptionObject, options[current]);
+                switch (PropertyInfo.Name)
+                {
+                    case "Skin":
+                        var skins = SkinManager.Instance.LoadedSkins;
+                        var newSkin = skins.Find(x => x.Name == options[current].ToString());
+                        SkinManager.Instance.SelectedSkin = newSkin;
+                        break;
+                }
             }
         }
         void OnAreaDown(object sender, InputEventArgs e)

@@ -1,9 +1,11 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using TMPro;
 using UnityEngine;
+using static UnityEngine.UI.Image;
 #nullable enable
 namespace MajdataPlay.Setting
 {
@@ -35,7 +37,8 @@ namespace MajdataPlay.Setting
                 option.Parent = this;
                 option.Index = i;
             }
-            titleText.text = Name;
+            var localizedText = Localization.GetLocalizedText(Name);
+            titleText.text = localizedText;
             BindArea();
             manager = FindObjectOfType<SettingManager>();
         }

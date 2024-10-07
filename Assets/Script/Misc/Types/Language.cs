@@ -9,7 +9,10 @@ namespace MajdataPlay.Types
         public string Code { get; init; } = string.Empty;
         public string Author { get; init; } = string.Empty;
         public LangTable[] MappingTable { get; init; } = Array.Empty<LangTable>();
-
+        public override string ToString()
+        {
+            return $"{Code} - {Author}";
+        }
         public static Language Default => new();
     }
 }

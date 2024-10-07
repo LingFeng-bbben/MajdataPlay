@@ -58,12 +58,12 @@ namespace MajdataPlay.Title
                     if (SongStorage.IsEmpty)
                     {
                         isEmpty = true;
-                        echoText.text = "No Charts";
+                        echoText.text = Localization.GetLocalizedText("No Charts");
                         return;
                     }
                     else
                     {
-                        echoText.text = "Press Any Key";
+                        echoText.text = Localization.GetLocalizedText("Press Any Key");
                         InputManager.Instance.BindAnyArea(OnAreaDown);
                         return;
                     }
@@ -88,14 +88,14 @@ namespace MajdataPlay.Title
                 if (state >= ComponentState.Finished)
                 {
                     if (state == ComponentState.Failed)
-                        echoText.text = "Scan Chart Failed";
+                        echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
                     else if (SongStorage.IsEmpty)
                     {
                         isEmpty = true;
-                        echoText.text = "No Charts";
+                        echoText.text = Localization.GetLocalizedText("No Charts");
                     }
                     else
-                        echoText.text = "Press Any Key";
+                        echoText.text = Localization.GetLocalizedText("Press Any Key");
 
                     if (timer >= 1.8f)
                     {

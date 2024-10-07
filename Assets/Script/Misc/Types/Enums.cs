@@ -268,7 +268,7 @@
         DISPLAY_CRITICAL_PERFECT,
         DISPLAY_CRITICAL_PERFECT_DESC,
         FAST_LATE_TYPE,
-        FASTLATE_TYPE_DESC,
+        FAST_LATE_TYPE_DESC,
         NOTE_JUDGE_TYPE,
         NOTE_JUDGE_TYPE_DESC,
         TOUCH_JUDGE_TYPE,
@@ -281,7 +281,7 @@
         INNER_JUDGE_DISTANCE_DESC,
         // SoundOptions
         ANSWER_VOL,
-        ANSWER_VOL_DESCL,
+        ANSWER_VOL_DESC,
         BGM_VOL,
         BGM_VOL_DESC,
         TAP_VOL,

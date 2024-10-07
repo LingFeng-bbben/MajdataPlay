@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
@@ -54,7 +55,7 @@ namespace MajdataPlay.Utils
                         result = JsonSerializer.Deserialize<T>(json);
                     return true;
                 }
-                catch
+                catch(Exception e)
                 {
                     result = default;
                     return false;

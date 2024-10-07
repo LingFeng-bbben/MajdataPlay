@@ -120,6 +120,8 @@ namespace MajdataPlay
             }
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
+            Localization.Initialize();
+            Localization.SetLang(Setting.Game.Language);
         }
         async void Start()
         {

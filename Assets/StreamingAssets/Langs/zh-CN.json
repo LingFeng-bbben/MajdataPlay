@@ -4,37 +4,37 @@
   "MappingTable": [
     {
       "Type": "SCAN_CHART_FAILED",
-      "Origin": "SCAN_CHART_FAILED",
+      "Origin": "Scan Chart Failed",
       "Content": "扫描谱面时出现问题"
     },
     {
       "Type": "NO_CHARTS",
-      "Origin": "NO_CHARTS",
+      "Origin": "No Charts",
       "Content": "没有可用的谱面"
     },
     {
       "Type": "PRESS_ANY_KEY",
-      "Origin": "PRESS_ANY_KEY",
+      "Origin": "Press Any Key",
       "Content": "请按任意键继续"
     },
     {
       "Type": "DOWNLOADING",
-      "Origin": "DOWNLOADING",
+      "Origin": "Downloading",
       "Content": "正在从服务器下载资源"
     },
     {
       "Type": "LOAD_CHART_FAILED",
-      "Origin": "LOAD_CHART_FAILED",
+      "Origin": "Failed to load chart",
       "Content": "加载谱面时发生错误"
     },
     {
       "Type": "DESERIALIZATION",
-      "Origin": "DESERIALIZATION",
+      "Origin": "Deserialization",
       "Content": "正在加载谱面"
     },
     {
       "Type": "LOADING_CHART",
-      "Origin": "LOADING_CHART",
+      "Origin": "Loading Chart",
       "Content": "正在吃绝赞"
     },
     {
@@ -115,7 +115,7 @@
     {
       "Type": "BGINFO",
       "Origin": "BGInfo",
-      "Content": ""
+      "Content": "游戏时中央信息"
     },
     {
       "Type": "BGINFO_DESC",

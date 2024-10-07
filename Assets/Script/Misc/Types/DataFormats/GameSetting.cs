@@ -19,6 +19,7 @@
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
+        public string Language { get; set; } = string.Empty;
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
     }
     public class JudgeOptions
