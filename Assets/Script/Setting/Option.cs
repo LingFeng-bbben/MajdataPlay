@@ -131,6 +131,7 @@ namespace MajdataPlay.Setting
                             options = new object[] { "Unavailable" };
                             maxOptionIndex = 0;
                             isReadOnly = true;
+                            PropertyInfo.SetValue(OptionObject, "Unavailable");
                             return;
                         }
                         var langNames = availableLangs.Select(x => x.ToString())
