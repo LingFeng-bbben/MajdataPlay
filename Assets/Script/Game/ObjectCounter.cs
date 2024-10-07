@@ -630,7 +630,11 @@ namespace MajdataPlay.Game
     /// <param name="judgeResult"></param>
     void UpdateFastLate(in JudgeResult judgeResult)
     {
-        var gameSetting = GameManager.Instance.Setting.Display.FastLateType;
+        JudgeDisplayType gameSetting;
+        if (judgeResult.IsBreak)
+            gameSetting = GameManager.Instance.Setting.Display.BreakFastLateType;
+        else
+            gameSetting = GameManager.Instance.Setting.Display.FastLateType;
         var resultValue = (int)judgeResult.Result;
         var absValue = Math.Abs(7 - resultValue);
 
@@ -652,34 +656,12 @@ namespace MajdataPlay.Game
                 else
                     late++;
                 break;
-                //默认只统计Great、Good的Fast/Late
-            case JudgeDisplayType.BelowP_BreakOnly:
-            case JudgeDisplayType.BelowGR_BreakOnly:
+            //默认只统计Great、Good的Fast/Late
             case JudgeDisplayType.BelowP:
             case JudgeDisplayType.BelowGR:
             case JudgeDisplayType.Disable:
                 if (judgeResult.IsMiss || absValue <= 2)
                     break;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            case JudgeDisplayType.All_BreakOnly:
-                if (judgeResult.Diff == 0 || judgeResult.IsMiss)
-                    break;
-                else if (!judgeResult.IsBreak)
-                    goto case JudgeDisplayType.BelowP;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            case JudgeDisplayType.BelowCP_BreakOnly:
-                if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
-                    break;
-                else if (!judgeResult.IsBreak)
-                    goto case JudgeDisplayType.BelowP;
                 else if (judgeResult.IsFast)
                     fast++;
                 else

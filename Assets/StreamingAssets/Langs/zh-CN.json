@@ -1,0 +1,456 @@
+{
+  "Code": "zh-CN",
+  "Author": "Majdata",
+  "MappingTable": [
+    {
+      "Type": "SCAN_CHART_FAILED",
+      "Origin": "Scan Chart Failed",
+      "Content": "扫描谱面时出现问题"
+    },
+    {
+      "Type": "NO_CHARTS",
+      "Origin": "No Charts",
+      "Content": "没有可用的谱面"
+    },
+    {
+      "Type": "PRESS_ANY_KEY",
+      "Origin": "Press Any Key",
+      "Content": "请按任意键继续"
+    },
+    {
+      "Type": "DOWNLOADING",
+      "Origin": "Downloading",
+      "Content": "正在从服务器下载资源"
+    },
+    {
+      "Type": "LOAD_CHART_FAILED",
+      "Origin": "Failed to load chart",
+      "Content": "加载谱面时发生错误"
+    },
+    {
+      "Type": "DESERIALIZATION",
+      "Origin": "Deserialization",
+      "Content": "正在加载谱面"
+    },
+    {
+      "Type": "LOADING_CHART",
+      "Origin": "Loading Chart",
+      "Content": "正在吃绝赞"
+    },
+    {
+      "Type": "GAME",
+      "Origin": "Game",
+      "Content": "游戏设定"
+    },
+    {
+      "Type": "JUDGE",
+      "Origin": "Judge",
+      "Content": "判定设定"
+    },
+    {
+      "Type": "DISPLAY",
+      "Origin": "Display",
+      "Content": "显示设定"
+    },
+    {
+      "Type": "AUDIO",
+      "Origin": "Audio",
+      "Content": "音频设定"
+    },
+    {
+      "Type": "VOLUME",
+      "Origin": "Volume",
+      "Content": "音量设定"
+    },
+    {
+      "Type": "DEBUG",
+      "Origin": "Debug",
+      "Content": "调试"
+    },
+    {
+      "Type": "TAP_SPEED",
+      "Origin": "TapSpeed",
+      "Content": "Tap速度"
+    },
+    {
+      "Type": "TAP_SPEED_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_SPEED",
+      "Origin": "TouchSpeed",
+      "Content": "Touch速度"
+    },
+    {
+      "Type": "TOUCH_SPEED_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET",
+      "Origin": "SlideFadeInOffset",
+      "Content": "Slide淡入偏移"
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BACKGROUND_DIM",
+      "Origin": "BackgroundDim",
+      "Content": "背景亮度"
+    },
+    {
+      "Type": "BACKGROUND_DIM_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "LANGUAGE",
+      "Origin": "Language",
+      "Content": "语言"
+    },
+    {
+      "Type": "LANGUAGE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "STAR_ROTATION",
+      "Origin": "StarRotation",
+      "Content": "Star旋转"
+    },
+    {
+      "Type": "STAR_ROTATION_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BGINFO",
+      "Origin": "BGInfo",
+      "Content": "游戏时中央信息"
+    },
+    {
+      "Type": "BGINFO_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "AUDIO_OFFSET",
+      "Origin": "AudioOffset",
+      "Content": "音频偏移"
+    },
+    {
+      "Type": "AUDIO_OFFSET_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "JUDGE_OFFSET",
+      "Origin": "JudgeOffset",
+      "Content": "判定偏移"
+    },
+    {
+      "Type": "JUDGE_OFFSET_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "MODE",
+      "Origin": "Mode",
+      "Content": "判定模式"
+    },
+    {
+      "Type": "MODE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_SKIN",
+      "Origin": "Skin",
+      "Content": "Note皮肤"
+    },
+    {
+      "Type": "NOTE_SKIN_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT",
+      "Origin": "DisplayCriticalPerfect",
+      "Content": "显示Critical判定"
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "FAST_LATE_TYPE",
+      "Origin": "FastLateType",
+      "Content": "Fast/Late显示等级"
+    },
+    {
+      "Type": "FAST_LATE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE",
+      "Origin": "NoteJudgeType",
+      "Content": "Note判定显示等级"
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE",
+      "Origin": "TouchJudgeType",
+      "Content": "Touch判定显示等级"
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE",
+      "Origin": "SlideJudgeType",
+      "Content": "Slide判定显示等级"
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE",
+      "Origin": "BreakJudgeType",
+      "Content": "Break判定显示等级"
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE",
+      "Origin": "BreakFastLateType",
+      "Content": "Break Fast/Late显示等级"
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE",
+      "Origin": "OuterJudgeDistance",
+      "Content": "内圈判定显示距离"
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE",
+      "Origin": "InnerJudgeDistance",
+      "Content": "外圈判定显示距离"
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "RESOLUTION",
+      "Origin": "Resolution",
+      "Content": "分辨率"
+    },
+    {
+      "Type": "RESOLUTION_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "ANSWER_VOL",
+      "Origin": "Answer",
+      "Content": "正解音"
+    },
+    {
+      "Type": "ANSWER_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BGM_VOL",
+      "Origin": "BGM",
+      "Content": "背景音乐"
+    },
+    {
+      "Type": "BGM_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TAP_VOL",
+      "Origin": "Tap",
+      "Content": "Tap/Hold判定音"
+    },
+    {
+      "Type": "TAP_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_VOL",
+      "Origin": "Slide",
+      "Content": "Slide判定音"
+    },
+    {
+      "Type": "SLIDE_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_VOL",
+      "Origin": "Break",
+      "Content": "Break判定音"
+    },
+    {
+      "Type": "BREAK_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_VOL",
+      "Origin": "Touch",
+      "Content": "Touch判定音"
+    },
+    {
+      "Type": "TOUCH_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "VOICE_VOL",
+      "Origin": "Voice",
+      "Content": "小小蓝白"
+    },
+    {
+      "Type": "VOICE_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_SENSOR",
+      "Origin": "DisplaySensor",
+      "Content": "显示被触发的传感器"
+    },
+    {
+      "Type": "DISPLAY_SENSOR_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_FPS",
+      "Origin": "DisplayFPS",
+      "Content": "显示帧率"
+    },
+    {
+      "Type": "DISPLAY_FPS_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "FULLSCREEN",
+      "Origin": "FullScreen",
+      "Content": "强制全屏"
+    },
+    {
+      "Type": "FULLSCREEN_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC",
+      "Origin": "TryFixAudioSync",
+      "Content": "音频卡顿时修正时间"
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE",
+      "Origin": "NoteAppearRate",
+      "Content": "Note淡入偏移"
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING",
+      "Origin": "DisableGCInGameing",
+      "Content": "在游玩时关闭GC"
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "All",
+      "Content": "全部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowCP",
+      "Content": "Critical以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowP",
+      "Content": "Perfect以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowGR",
+      "Content": "Great以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "MissOnly",
+      "Content": "仅Miss"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Disable",
+      "Content": "禁用"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "True",
+      "Content": "是"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "False",
+      "Content": "否"
+    },
+    {
+      "Type": "UNAVAILABLE",
+      "Origin": "Unavailable",
+      "Content": "不可用"
+    }
+  ]
+}

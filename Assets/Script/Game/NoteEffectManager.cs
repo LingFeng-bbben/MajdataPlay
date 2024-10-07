@@ -70,10 +70,7 @@ namespace MajdataPlay.Game
                 JudgeDisplayType.BelowCP => resultValue != 7,
                 JudgeDisplayType.BelowP => absValue > 2,
                 JudgeDisplayType.BelowGR => absValue > 5,
-                JudgeDisplayType.All_BreakOnly => judgeResult.IsBreak,
-                JudgeDisplayType.BelowCP_BreakOnly => absValue != 0 && judgeResult.IsBreak,
-                JudgeDisplayType.BelowP_BreakOnly => absValue > 2 && judgeResult.IsBreak,
-                JudgeDisplayType.BelowGR_BreakOnly => absValue > 5 && judgeResult.IsBreak,
+                JudgeDisplayType.MissOnly => judgeResult.IsMiss,
                 _ => false
             };
         }

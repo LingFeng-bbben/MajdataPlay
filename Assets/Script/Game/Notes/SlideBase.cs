@@ -179,7 +179,11 @@ namespace MajdataPlay.Game.Notes
             if (slideOK == null)
                 return;
             
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
+            bool canPlay;
+            if(result.IsBreak)
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakJudgeType, result);
+            else
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
                 slideOK.SetActive(true);

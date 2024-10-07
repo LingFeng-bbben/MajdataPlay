@@ -1,9 +1,11 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using TMPro;
 using UnityEngine;
+using static UnityEngine.UI.Image;
 #nullable enable
 namespace MajdataPlay.Setting
 {
@@ -35,7 +37,8 @@ namespace MajdataPlay.Setting
                 option.Parent = this;
                 option.Index = i;
             }
-            titleText.text = Name;
+            var localizedText = Localization.GetLocalizedText(Name);
+            titleText.text = localizedText;
             BindArea();
             manager = FindObjectOfType<SettingManager>();
         }
@@ -51,6 +54,11 @@ namespace MajdataPlay.Setting
         void OnDestroy()
         {
             UnbindArea();
+        }
+        void OnLangChanged(object? sender, Language newLanguage)
+        {
+            var localizedText = Localization.GetLocalizedText(Name);
+            titleText.text = localizedText;
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
@@ -82,6 +90,7 @@ namespace MajdataPlay.Setting
             if (isBound)
                 return;
             isBound = true;
+            Localization.OnLanguageChanged += OnLangChanged;
             InputManager.Instance.BindButton(OnAreaDown, SensorType.A3);
             InputManager.Instance.BindButton(OnAreaDown, SensorType.A6);
         }
@@ -90,6 +99,7 @@ namespace MajdataPlay.Setting
             if (!isBound)
                 return;
             isBound = false;
+            Localization.OnLanguageChanged -= OnLangChanged;
             InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A3);
             InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A6);
         }

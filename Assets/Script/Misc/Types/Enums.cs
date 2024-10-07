@@ -128,11 +128,11 @@
     public enum JudgeDisplayType
     {
         /// <summary>
-        /// CriticalPerfect, Pefect, Great, Good
+        /// CriticalPerfect, Perfect, Great, Good
         /// </summary>
         All,
         /// <summary>
-        /// Pefect, Great, Good
+        /// Perfect, Great, Good
         /// </summary>
         BelowCP,
         /// <summary>
@@ -144,25 +144,13 @@
         /// </summary>
         BelowGR,
         /// <summary>
+        /// Miss
+        /// </summary>
+        MissOnly,
+        /// <summary>
         /// None
         /// </summary>
         Disable,
-        /// <summary>
-        /// CriticalPerfect, Pefect, Great, Good
-        /// </summary>
-        All_BreakOnly,
-        /// <summary>
-        /// Pefect, Great, Good
-        /// </summary>
-        BelowCP_BreakOnly,
-        /// <summary>
-        /// Great, Good
-        /// </summary>
-        BelowP_BreakOnly,
-        /// <summary>
-        /// Good
-        /// </summary>
-        BelowGR_BreakOnly,
     }
     public enum NoteLoaderStatus
     {
@@ -224,6 +212,99 @@
         SELECT_SONG,
         SUGOI,
         DONT_TOUCH_ME
-
+    }
+    public enum MajText
+    {
+        SCAN_CHART_FAILED,
+        NO_CHARTS,
+        PRESS_ANY_KEY,
+        DOWNLOADING,
+        LOAD_CHART_FAILED,
+        DESERIALIZATION,
+        LOADING_CHART,
+        // Setting UI
+        GAME,
+        JUDGE,
+        DISPLAY,
+        AUDIO,
+        VOLUME,
+        DEBUG,
+        ONLINE,
+        // GameOptions
+        TAP_SPEED,
+        TAP_SPEED_DESC,
+        TOUCH_SPEED,
+        TOUCH_SPEED_DESC,
+        SLIDE_FADEIN_OFFSET,
+        SLIDE_FADEIN_OFFSET_DESC,
+        BACKGROUND_DIM,
+        BACKGROUND_DIM_DESC,
+        STAR_ROTATION,
+        STAR_ROTATION_DESC,
+        LANGUAGE,
+        LANGUAGE_DESC,
+        BGINFO,
+        BGINFO_DESC,
+        // JudgeOptions
+        AUDIO_OFFSET,
+        AUDIO_OFFSET_DESC,
+        JUDGE_OFFSET,
+        JUDGE_OFFSET_DESC,
+        MODE,
+        MODE_DESC,
+        //DisplayOptions
+        NOTE_SKIN,
+        NOTE_SKIN_DESC,
+        DISPLAY_CRITICAL_PERFECT,
+        DISPLAY_CRITICAL_PERFECT_DESC,
+        FAST_LATE_TYPE,
+        FAST_LATE_TYPE_DESC,
+        NOTE_JUDGE_TYPE,
+        NOTE_JUDGE_TYPE_DESC,
+        TOUCH_JUDGE_TYPE,
+        TOUCH_JUDGE_TYPE_DESC,
+        SLIDE_JUDGE_TYPE,
+        SLIDE_JUDGE_TYPE_DESC,
+        BREAK_JUDGE_TYPE,
+        BREAK_JUDGE_TYPE_DESC,
+        BREAK_FAST_LATE_TYPE,
+        BREAK_FAST_LATE_TYPE_DESC,
+        OUTER_JUDGE_DISTANCE,
+        OUTER_JUDGE_DISTANCE_DESC,
+        INNER_JUDGE_DISTANCE,
+        INNER_JUDGE_DISTANCE_DESC,
+        RESOLUTION,
+        RESOLUTION_DESC,
+        // SoundOptions
+        ANSWER_VOL,
+        ANSWER_VOL_DESC,
+        BGM_VOL,
+        BGM_VOL_DESC,
+        TAP_VOL,
+        TAP_VOL_DESC,
+        SLIDE_VOL,
+        SLIDE_VOL_DESC,
+        BREAK_VOL,
+        BREAK_VOL_DESC,
+        TOUCH_VOL,
+        TOUCH_VOL_DESC,
+        VOICE_VOL,
+        VOICE_VOL_DESC,
+        // DebugOptions
+        DISPLAY_SENSOR,
+        DISPLAY_SENSOR_DESC,
+        DISPLAY_FPS,
+        DISPLAY_FPS_DESC,
+        FULLSCREEN,
+        FULLSCREEN_DESC,
+        TRY_FIX_AUDIO_SYNC,
+        TRY_FIX_AUDIO_SYNC_DESC,
+        NOTE_APPEAR_RATE,
+        NOTE_APPEAR_RATE_DESC,
+        DISABLE_GC_IN_GAMING,
+        DISABLE_GC_IN_GAMING_DESC,
+        // Undefined
+        OTHER_MAJTEXT,
+        UNAVAILABLE
     }
 }

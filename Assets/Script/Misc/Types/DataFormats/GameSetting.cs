@@ -19,6 +19,7 @@
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
+        public string Language { get; set; } = string.Empty;
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
     }
     public class JudgeOptions
@@ -35,6 +36,8 @@
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType SlideJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType BreakJudgeType { get; set; } = JudgeDisplayType.All;
+        public JudgeDisplayType BreakFastLateType { get; set; } = JudgeDisplayType.Disable;
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>
@@ -56,7 +59,7 @@
     {
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
-        public float Judge { get; set; } = 0.3f;
+        public float Tap { get; set; } = 0.3f;
         public float Slide { get; set; } = 0.3f;
         public float Break { get; set; } = 0.3f;
         public float Touch { get; set; } = 0.3f;

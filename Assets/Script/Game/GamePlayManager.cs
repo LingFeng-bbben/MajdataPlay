@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using UnityEngine.Scripting;
 using System.IO;
+using MajdataPlay.Utils;
 
 namespace MajdataPlay.Game
 {
@@ -108,7 +109,7 @@ namespace MajdataPlay.Game
             if (song.isOnline)
             {
                 LightManager.Instance.SetAllLight(Color.red);
-                loadingText.text = "Downloading...";
+                loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
                 var dumpTask = song.DumpToLocal();
                 while (!dumpTask.IsCompleted)
                 {
@@ -128,7 +129,7 @@ namespace MajdataPlay.Game
                     {
                         case InvalidAudioTrackException audioE:
                             State = ComponentState.Failed;
-                            loadingText.text = $"\r\nFailed to load chart\r\n\r\n{audioE.Message}";
+                            loadingText.text = $"\r\n{Localization.GetLocalizedText("Failed to load chart")}\r\n\r\n{audioE.Message}";
                             loadingText.color = Color.red;
                             Debug.LogError(audioE);
                             return;
@@ -160,7 +161,7 @@ namespace MajdataPlay.Game
         async UniTask LoadChart()
         {
             var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
-            loadingText.text = "Deserialization...";
+            loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
             if (string.IsNullOrEmpty(maidata))
             {
                 BackToList();
@@ -284,15 +285,15 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     ErrorText.text = "加载note时出错了哟\n" + e.Message;
-                    loadingText.text = $"\r\nFailed to load chart\r\n\r\n{e.Message}%";
+                    loadingText.text = $"\r\n{Localization.GetLocalizedText("Failed to load chart")}\r\n\r\n{e.Message}%";
                     Debug.LogError(e);
                     StopAllCoroutines();
                     throw e;
                 }
-                loadingText.text = $"\r\nLoading Chart...\r\n\r\n{noteLoader.Process * 100:F2}%";
+                loadingText.text = $"\r\n{Localization.GetLocalizedText("Loading Chart")}...\r\n\r\n{noteLoader.Process * 100:F2}%";
                 await UniTask.Yield();
             }
-            loadingText.text = $"\r\nLoading Chart...\r\n\r\n100.00%";
+            loadingText.text = $"\r\n{Localization.GetLocalizedText("Loading Chart")}...\r\n\r\n100.00%";
 
             while (timer > 0)
             {

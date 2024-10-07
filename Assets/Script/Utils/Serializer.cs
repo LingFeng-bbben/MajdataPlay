@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using YamlDotNet.Serialization;
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -53,7 +55,7 @@ namespace MajdataPlay.Utils
                         result = JsonSerializer.Deserialize<T>(json);
                     return true;
                 }
-                catch
+                catch(Exception e)
                 {
                     result = default;
                     return false;
@@ -81,6 +83,19 @@ namespace MajdataPlay.Utils
                 {
                     return (false, default);
                 }
+            }
+        }
+        public static class Yaml
+        {
+            public static string Serialize<T>(T obj)
+            {
+                var serializer = new SerializerBuilder().Build();
+                return serializer.Serialize(obj);
+            }
+            public static T? Deserialize<T>(string yaml)
+            {
+                var deserializer = new DeserializerBuilder().Build();
+                return deserializer.Deserialize<T>(yaml);
             }
         }
     }
