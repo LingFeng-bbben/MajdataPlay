@@ -63,6 +63,11 @@
       "Content": "音量设定"
     },
     {
+      "Type": "DEBUG",
+      "Origin": "Debug",
+      "Content": "调试"
+    },
+    {
       "Type": "TAP_SPEED",
       "Origin": "TapSpeed",
       "Content": "Tap速度"
@@ -333,6 +338,66 @@
       "Content": ""
     },
     {
+      "Type": "DISPLAY_SENSOR",
+      "Origin": "DisplaySensor",
+      "Content": "显示被触发的传感器"
+    },
+    {
+      "Type": "DISPLAY_SENSOR_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_FPS",
+      "Origin": "DisplayFPS",
+      "Content": "显示帧率"
+    },
+    {
+      "Type": "DISPLAY_FPS_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "FULLSCREEN",
+      "Origin": "FullScreen",
+      "Content": "强制全屏"
+    },
+    {
+      "Type": "FULLSCREEN_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC",
+      "Origin": "TryFixAudioSync",
+      "Content": "音频卡顿时修正时间"
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE",
+      "Origin": "NoteAppearRate",
+      "Content": "Note淡入偏移"
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING",
+      "Origin": "DisableGCInGameing",
+      "Content": "在游玩时关闭GC"
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
       "Type": "OTHER_MAJTEXT",
       "Origin": "All",
       "Content": "全部"
@@ -361,6 +426,16 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Disable",
       "Content": "禁用"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "True",
+      "Content": "是"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "False",
+      "Content": "否"
     },
     {
       "Type": "UNAVAILABLE",

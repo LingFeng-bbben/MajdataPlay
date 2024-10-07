@@ -241,6 +241,8 @@
         BACKGROUND_DIM_DESC,
         STAR_ROTATION,
         STAR_ROTATION_DESC,
+        LANGUAGE,
+        LANGUAGE_DESC,
         BGINFO,
         BGINFO_DESC,
         // JudgeOptions
@@ -286,6 +288,19 @@
         TOUCH_VOL_DESC,
         VOICE_VOL,
         VOICE_VOL_DESC,
+        // DebugOptions
+        DISPLAY_SENSOR,
+        DISPLAY_SENSOR_DESC,
+        DISPLAY_FPS,
+        DISPLAY_FPS_DESC,
+        FULLSCREEN,
+        FULLSCREEN_DESC,
+        TRY_FIX_AUDIO_SYNC,
+        TRY_FIX_AUDIO_SYNC_DESC,
+        NOTE_APPEAR_RATE,
+        NOTE_APPEAR_RATE_DESC,
+        DISABLE_GC_IN_GAMING,
+        DISABLE_GC_IN_GAMING_DESC,
         // Undefined
         OTHER_MAJTEXT,
         UNAVAILABLE
