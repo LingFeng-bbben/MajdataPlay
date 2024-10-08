@@ -53,11 +53,14 @@ namespace MajdataPlay.Types
 
         public Sprite Touch { get; private set; }
         public Sprite Touch_Each { get; private set; }
+        public Sprite Touch_Break { get; private set; }
         public Sprite TouchPoint { get; private set; }
         public Sprite TouchPoint_Each { get; private set; }
+        public Sprite TouchPoint_Break { get; private set; }
         public Sprite TouchJust { get; private set; }
         public Sprite[] TouchBorder { get; private set; } = new Sprite[2];
         public Sprite[] TouchBorder_Each { get; private set; } = new Sprite[2];
+        public Sprite[] TouchBorder_Break { get; private set; } = new Sprite[2];
 
         public Sprite[] TouchHold { get; private set; } = new Sprite[5];
         public Sprite TouchHold_Off { get; private set; }
@@ -213,8 +216,10 @@ namespace MajdataPlay.Types
 
             Touch = SpriteLoader.Load(skinCollectionPath + "/touch.png");
             Touch_Each = SpriteLoader.Load(skinCollectionPath + "/touch_each.png");
+            Touch_Break = SpriteLoader.Load(skinCollectionPath + "/touch_break.png");
             TouchPoint = SpriteLoader.Load(skinCollectionPath + "/touch_point.png");
             TouchPoint_Each = SpriteLoader.Load(skinCollectionPath + "/touch_point_each.png");
+            TouchPoint_Break = SpriteLoader.Load(skinCollectionPath + "/touch_break_point.png");
 
             TouchJust = SpriteLoader.Load(skinCollectionPath + "/touch_just.png");
 
@@ -222,6 +227,8 @@ namespace MajdataPlay.Types
             TouchBorder[1] = SpriteLoader.Load(skinCollectionPath + "/touch_border_3.png");
             TouchBorder_Each[0] = SpriteLoader.Load(skinCollectionPath + "/touch_border_2_each.png");
             TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/touch_border_3_each.png");
+            TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/touch_break_border_2.png");
+            TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/touch_break_border_3.png");
 
             for (var i = 0; i < 4; i++) TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/touchhold_" + i + ".png");
             TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/touchhold_border.png");

@@ -26,6 +26,7 @@ namespace MajdataPlay.Game
         /// </summary>
         public float ThisFrameSec { get; private set; } = 0;
         public static GamePlayManager Instance { get; private set; }
+        public float FirstNoteAppearTiming { get; set; } = 0f;
         public ComponentState State { get; private set; } = ComponentState.Idle;
         public MaiScore? HistoryScore { get; private set; }
         public (float, float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
@@ -329,6 +330,8 @@ namespace MajdataPlay.Game
             float extraTime = 5f;
             if (firstClockTiming < -5f)
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
+            if (FirstNoteAppearTiming != 0)
+                extraTime += -(FirstNoteAppearTiming + 4f);
             AudioStartTime = timeSource + (float)audioSample.CurrentSec + extraTime;
             StartToPlayAnswer();
             audioSample.Play();

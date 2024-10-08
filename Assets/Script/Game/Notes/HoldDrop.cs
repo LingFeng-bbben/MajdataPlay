@@ -474,7 +474,8 @@ namespace MajdataPlay.Game.Notes
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
-            breakShineController = gameObject.AddComponent<BreakShineController>();
+            if(breakShineController is null)
+                breakShineController = gameObject.AddComponent<BreakShineController>();
 
             holdSprite = skin.Normal;
             holdOnSprite = skin.Normal_On;

@@ -34,8 +34,17 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+        /// <summary>
+        /// Undefined
+        /// </summary>
         float displayDuration;
+        /// <summary>
+        /// Touch淡入结束，开始移动
+        /// </summary>
         float moveDuration;
+        /// <summary>
+        /// Touch开始淡入的时刻
+        /// </summary>
         float wholeDuration;
 
         readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[4];
@@ -174,7 +183,12 @@ namespace MajdataPlay.Game.Notes
                 fanRenderers[i].sortingOrder += noteSortOrder;
             }
 
-            if (isEach)
+            if(isBreak)
+            {
+                SetfanSprite(skin.Break);
+                pointRenderer.sprite = skin.Point_Break;
+            }
+            else if (isEach)
             {
                 SetfanSprite(skin.Each);
                 pointRenderer.sprite = skin.Point_Each;

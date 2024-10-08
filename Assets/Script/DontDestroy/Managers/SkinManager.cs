@@ -188,13 +188,15 @@ namespace MajdataPlay
             {
                 Normal = SelectedSkin.Touch,
                 Each = SelectedSkin.Touch_Each,
+                Break = SelectedSkin.Touch_Break,
                 Point_Normal = SelectedSkin.TouchPoint,
                 Point_Each = SelectedSkin.TouchPoint_Each,
+                Point_Break = SelectedSkin.TouchPoint_Break,
                 Border_Each = SelectedSkin.TouchBorder_Each,
                 Border_Normal = SelectedSkin.TouchBorder,
+                Border_Break = SelectedSkin.TouchBorder_Break,
                 JustBorder = SelectedSkin.TouchJust
             };
         }
-
     }
 }
