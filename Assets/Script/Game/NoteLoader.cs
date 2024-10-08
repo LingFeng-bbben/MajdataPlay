@@ -914,8 +914,16 @@ namespace MajdataPlay.Game
             SliCompo.timing = (float)note.slideStartTime;
             SliCompo.LastFor = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
-            SliCompo.sortIndex = slideLayer;
-            slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+            if(GameManager.Instance.Setting.Judge.Mode == JudgeMode.Classic)
+            {
+                slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
+                SliCompo.sortIndex = slideLayer;
+            }
+            else
+            {
+                SliCompo.sortIndex = slideLayer;
+                slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+            }
             //slideLayer += 5;
             return SliCompo;
         }
@@ -952,14 +960,22 @@ namespace MajdataPlay.Game
             WifiCompo.startPosition = note.startPosition;
             WifiCompo.timing = (float)note.slideStartTime;
             WifiCompo.LastFor = (float)note.slideTime;
-            WifiCompo.sortIndex = slideLayer;
             WifiCompo.stars = new GameObject[3]
             {
                 Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
                 Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
                 Instantiate(star_slidePrefab, notes.transform.GetChild(3))
             };
-            slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
+            if (GameManager.Instance.Setting.Judge.Mode == JudgeMode.Classic)
+            {
+                slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
+                WifiCompo.sortIndex = slideLayer;
+            }
+            else
+            {
+                WifiCompo.sortIndex = slideLayer;
+                slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
+            }
             //slideLayer += 5;
 
             return slideWifi;
