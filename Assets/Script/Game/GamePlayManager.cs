@@ -396,6 +396,8 @@ namespace MajdataPlay.Game
             AudioTimeNoOffset = timeSource - AudioStartTime;
 
             var realTimeDifference = (float)audioSample.CurrentSec - (timeSource - AudioStartTime);
+            if (!audioSample.IsPlaying)
+                return;
             if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
             {
                 errorText.text = "音频错位了哟\n" + realTimeDifference;
