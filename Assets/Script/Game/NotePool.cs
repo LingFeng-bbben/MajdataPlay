@@ -102,9 +102,15 @@ namespace MajdataPlay.Game
         public virtual void Destroy()
         {
             foreach (var note in idleNotes)
+            {
+                note.End(true);
                 GameObject.Destroy(note.GameObject);
+            }
             foreach (var note in inUseNotes)
+            {
+                note.End(true);
                 GameObject.Destroy(note.GameObject);
+            }
         }
         protected class TimingPoint<T> where T: NotePoolingInfo
         {
