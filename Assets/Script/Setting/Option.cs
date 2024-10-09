@@ -45,7 +45,7 @@ namespace MajdataPlay.Setting
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
             //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
-            descriptionText.text = $"{Localization.GetLocalizedText(PropertyInfo.Name)}_MAJSETTING_DESC";
+            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
             InitOptions();
             UpdatePosition();
             UpdateOption();
@@ -58,7 +58,7 @@ namespace MajdataPlay.Setting
         void OnLangChanged(object? sender,Language newLanguage)
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
-            descriptionText.text = $"{Localization.GetLocalizedText(PropertyInfo.Name)}_MAJSETTING_DESC";
+            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
             UpdateOption();
         }
         void InitOptions()
