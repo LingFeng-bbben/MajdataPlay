@@ -102,11 +102,11 @@ namespace MajdataPlay.Game.Notes
         public void End(bool forceEnd = false)
         {
             ioManager.UnbindSensor(Check, GetSensor());
-            multTouchHandler.Unregister(sensorPos);
             State = NoteStatus.Destroyed;
             if (!isJudged || forceEnd)
                 return;
-            
+
+            multTouchHandler.Unregister(sensorPos);
             var result = new JudgeResult()
             {
                 Result = judgeResult,

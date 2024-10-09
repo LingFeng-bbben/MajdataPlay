@@ -74,8 +74,8 @@
     },
     {
       "Type": "TAP_SPEED_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "TapSpeed_MAJSETTING_DESC",
+      "Content": "控制Tap、Hold、Star的下落速度"
     },
     {
       "Type": "TOUCH_SPEED",
@@ -84,8 +84,8 @@
     },
     {
       "Type": "TOUCH_SPEED_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "TouchSpeed_MAJSETTING_DESC",
+      "Content": "控制Touch、TouchHold的淡入速度"
     },
     {
       "Type": "SLIDE_FADEIN_OFFSET",
@@ -94,8 +94,8 @@
     },
     {
       "Type": "SLIDE_FADEIN_OFFSET_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
+      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入；单位为秒"
     },
     {
       "Type": "BACKGROUND_DIM",
@@ -104,8 +104,8 @@
     },
     {
       "Type": "BACKGROUND_DIM_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "BackgroundDim_MAJSETTING_DESC",
+      "Content": "控制背景的明亮度\n数值越大越暗"
     },
     {
       "Type": "LANGUAGE",
@@ -114,8 +114,8 @@
     },
     {
       "Type": "LANGUAGE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Language_MAJSETTING_DESC",
+      "Content": "我也不知道这是干嘛的"
     },
     {
       "Type": "STAR_ROTATION",
@@ -124,8 +124,8 @@
     },
     {
       "Type": "STAR_ROTATION_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "StarRotation_MAJSETTING_DESC",
+      "Content": "开启后，Star将根据Slide的速度进行旋转"
     },
     {
       "Type": "BGINFO",
@@ -134,8 +134,8 @@
     },
     {
       "Type": "BGINFO_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "BGInfo_MAJSETTING_DESC",
+      "Content": "调整屏幕中央显示的信息"
     },
     {
       "Type": "AUDIO_OFFSET",
@@ -144,8 +144,8 @@
     },
     {
       "Type": "AUDIO_OFFSET_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "AudioOffset_MAJSETTING_DESC",
+      "Content": "音押，当你觉得谱面对不上音频时可以调整该项\nFast较多往左调，Late较多往右调"
     },
     {
       "Type": "JUDGE_OFFSET",
@@ -154,8 +154,8 @@
     },
     {
       "Type": "JUDGE_OFFSET_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "JudgeOffset_MAJSETTING_DESC",
+      "Content": "目押，当你觉得设备存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调"
     },
     {
       "Type": "MODE",
@@ -164,8 +164,8 @@
     },
     {
       "Type": "MODE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Mode_MAJSETTING_DESC",
+      "Content": "此项会影响Hold、Slide的判定行为"
     },
     {
       "Type": "NOTE_SKIN",
@@ -174,8 +174,8 @@
     },
     {
       "Type": "NOTE_SKIN_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Skin_MAJSETTING_DESC",
+      "Content": "更换Note使用的皮肤"
     },
     {
       "Type": "DISPLAY_CRITICAL_PERFECT",
@@ -184,8 +184,8 @@
     },
     {
       "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
+      "Content": "开启后，将会显示Critical判定"
     },
     {
       "Type": "FAST_LATE_TYPE",
@@ -194,8 +194,8 @@
     },
     {
       "Type": "FAST_LATE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "FastLateType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
       "Type": "NOTE_JUDGE_TYPE",
@@ -204,8 +204,8 @@
     },
     {
       "Type": "NOTE_JUDGE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "NoteJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
       "Type": "TOUCH_JUDGE_TYPE",
@@ -214,8 +214,8 @@
     },
     {
       "Type": "TOUCH_JUDGE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "TouchJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
       "Type": "SLIDE_JUDGE_TYPE",
@@ -224,8 +224,8 @@
     },
     {
       "Type": "SLIDE_JUDGE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "SlideJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
       "Type": "BREAK_JUDGE_TYPE",
@@ -234,8 +234,8 @@
     },
     {
       "Type": "BREAK_JUDGE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "BreakJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
       "Type": "BREAK_FAST_LATE_TYPE",
@@ -244,8 +244,18 @@
     },
     {
       "Type": "BREAK_FAST_LATE_TYPE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "BreakFastLateType_MAJSETTING_DESC",
+      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+    },
+    {
+      "Type": "SLIDE_SORT_ORDER",
+      "Origin": "SlideSortOrder",
+      "Content": "Slide排列顺序"
+    },
+    {
+      "Type": "SLIDE_SORT_ORDER_DESC",
+      "Origin": "SlideSortOrder_MAJSETTING_DESC",
+      "Content": "Classic: 旧Slide在新Slide下方\nModern: 旧Slide在新Slide上方"
     },
     {
       "Type": "OUTER_JUDGE_DISTANCE",
@@ -254,8 +264,8 @@
     },
     {
       "Type": "OUTER_JUDGE_DISTANCE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
+      "Content": "调整Touch判定结果的显示位置\n数值越小越靠近中心"
     },
     {
       "Type": "INNER_JUDGE_DISTANCE",
@@ -264,8 +274,8 @@
     },
     {
       "Type": "INNER_JUDGE_DISTANCE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
+      "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {
       "Type": "RESOLUTION",
@@ -274,8 +284,8 @@
     },
     {
       "Type": "RESOLUTION_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Resolution_MAJSETTING_DESC",
+      "Content": "不可调整"
     },
     {
       "Type": "ANSWER_VOL",
@@ -284,8 +294,8 @@
     },
     {
       "Type": "ANSWER_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Answer_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "BGM_VOL",
@@ -294,8 +304,8 @@
     },
     {
       "Type": "BGM_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "BGM_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "TAP_VOL",
@@ -304,8 +314,8 @@
     },
     {
       "Type": "TAP_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Tap_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "SLIDE_VOL",
@@ -314,8 +324,8 @@
     },
     {
       "Type": "SLIDE_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Slide_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "BREAK_VOL",
@@ -324,8 +334,8 @@
     },
     {
       "Type": "BREAK_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Break_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "TOUCH_VOL",
@@ -334,8 +344,8 @@
     },
     {
       "Type": "TOUCH_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Touch_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "VOICE_VOL",
@@ -344,8 +354,8 @@
     },
     {
       "Type": "VOICE_VOL_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "Voice_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "DISPLAY_SENSOR",
@@ -354,8 +364,8 @@
     },
     {
       "Type": "DISPLAY_SENSOR_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "DisplaySensor_MAJSETTING_DESC",
+      "Content": "开启后，被触发的传感器会被渲染"
     },
     {
       "Type": "DISPLAY_FPS",
@@ -364,8 +374,8 @@
     },
     {
       "Type": "DISPLAY_FPS_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "DisplayFPS_MAJSETTING_DESC",
+      "Content": "开启后，会在屏幕右上角显示当前帧率"
     },
     {
       "Type": "FULLSCREEN",
@@ -374,8 +384,8 @@
     },
     {
       "Type": "FULLSCREEN_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "FullScreen_MAJSETTING_DESC",
+      "Content": "Nothing"
     },
     {
       "Type": "TRY_FIX_AUDIO_SYNC",
@@ -384,8 +394,8 @@
     },
     {
       "Type": "TRY_FIX_AUDIO_SYNC_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "TryFixAudioSync_MAJSETTING_DESC",
+      "Content": "开启后，当发生音频卡顿时\n会尝试修正Note与音频的时间轴"
     },
     {
       "Type": "NOTE_APPEAR_RATE",
@@ -394,8 +404,8 @@
     },
     {
       "Type": "NOTE_APPEAR_RATE_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "NoteAppearRate_MAJSETTING_DESC",
+      "Content": "调整Tap、Hold、Star的淡入行为"
     },
     {
       "Type": "DISABLE_GC_IN_GAMING",
@@ -404,8 +414,8 @@
     },
     {
       "Type": "DISABLE_GC_IN_GAMING_DESC",
-      "Origin": "",
-      "Content": ""
+      "Origin": "DisableGCInGameing_MAJSETTING_DESC",
+      "Content": "开启后，有可能解决音频卡顿的问题"
     },
     {
       "Type": "OTHER_MAJTEXT",

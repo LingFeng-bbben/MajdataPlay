@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using UnityEngine;
 using YamlDotNet.Serialization;
 #nullable enable
 namespace MajdataPlay.Utils
@@ -57,6 +58,7 @@ namespace MajdataPlay.Utils
                 }
                 catch(Exception e)
                 {
+                    Debug.LogException(e);
                     result = default;
                     return false;
                 }
