@@ -915,7 +915,7 @@ namespace MajdataPlay.Game
             SliCompo.timing = (float)note.slideStartTime;
             SliCompo.LastFor = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
-            if(GameManager.Instance.Setting.Judge.Mode == JudgeMode.Classic)
+            if(GameManager.Instance.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.sortIndex = slideLayer;
@@ -970,7 +970,7 @@ namespace MajdataPlay.Game
                 centerStar,
                 leftStar
             };
-            if (GameManager.Instance.Setting.Judge.Mode == JudgeMode.Classic)
+            if (GameManager.Instance.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
                 WifiCompo.sortIndex = slideLayer;
