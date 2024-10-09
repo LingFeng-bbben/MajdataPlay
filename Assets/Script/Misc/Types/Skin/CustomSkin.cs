@@ -63,6 +63,7 @@ namespace MajdataPlay.Types
         public Sprite[] TouchBorder_Break { get; private set; } = new Sprite[2];
 
         public Sprite[] TouchHold { get; private set; } = new Sprite[5];
+        public Sprite[] TouchHold_Break { get; private set; } = new Sprite[5];
         public Sprite TouchHold_Off { get; private set; }
 
         public Sprite Outline { get; private set; }
@@ -230,8 +231,13 @@ namespace MajdataPlay.Types
             TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/touch_break_border_2.png");
             TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/touch_break_border_3.png");
 
-            for (var i = 0; i < 4; i++) TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/touchhold_" + i + ".png");
+            for (var i = 0; i < 4; i++)
+            {
+                TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/touchhold_" + i + ".png");
+                TouchHold_Break[i] = SpriteLoader.Load(skinCollectionPath + "/touchhold_break_" + i + ".png");
+            }
             TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/touchhold_border.png");
+            TouchHold_Break[4] = SpriteLoader.Load(skinCollectionPath + "/touchhold_break_border.png");
             TouchHold_Off = SpriteLoader.Load(skinCollectionPath + "/touchhold_off.png");
         }
     }

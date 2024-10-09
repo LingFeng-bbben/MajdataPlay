@@ -541,6 +541,7 @@ namespace MajdataPlay.Game
             var lastFor = (float)note.holdTime;
             var speed = touchSpeed * timing.HSpeed;
             var isFirework = note.isHanabi;
+            var isBreak = note.isBreak;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
             var noteSortOrder = this.noteSortOrder;
@@ -558,7 +559,7 @@ namespace MajdataPlay.Game
                 Speed = speed,
                 IsFirework = isFirework,
                 IsEach = false,
-                IsBreak = false,
+                IsBreak = isBreak,
                 IsEX = false,
                 LastFor = lastFor,
                 NoteSortOrder = noteSortOrder,
