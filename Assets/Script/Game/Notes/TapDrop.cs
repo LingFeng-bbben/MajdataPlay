@@ -68,6 +68,8 @@ namespace MajdataPlay.Game.Notes
         public override void End(bool forceEnd = false)
         {
             base.End(forceEnd);
+            if (forceEnd)
+                return;
             RendererState = RendererStatus.Off;
             notePoolManager.Collect(this);
         }

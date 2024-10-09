@@ -56,6 +56,8 @@ namespace MajdataPlay.Game.Notes
                 base.End(forceEnd);
             else
                 State = NoteStatus.Destroyed;
+            if (forceEnd)
+                return;
             RendererState = RendererStatus.Off;
             notePoolManager.Collect(this);
         }

@@ -103,13 +103,27 @@ namespace MajdataPlay.Game
         {
             foreach (var note in idleNotes)
             {
-                note.End(true);
-                GameObject.Destroy(note.GameObject);
+                try
+                {
+                    note.End(true);
+                    GameObject.Destroy(note.GameObject);
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError($"Cannot destroy note:\n{e}");
+                }
             }
             foreach (var note in inUseNotes)
             {
-                note.End(true);
-                GameObject.Destroy(note.GameObject);
+                try
+                {
+                    note.End(true);
+                    GameObject.Destroy(note.GameObject);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Cannot destroy note:\n{e}");
+                }
             }
         }
         protected class TimingPoint<T> where T: NotePoolingInfo
