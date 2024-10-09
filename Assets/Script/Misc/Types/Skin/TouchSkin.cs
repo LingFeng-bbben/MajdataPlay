@@ -18,6 +18,9 @@ namespace MajdataPlay.Types
         public Sprite[] Border_Normal { get; init; }
         public Sprite[] Border_Each { get; init; }
         public Sprite[] Border_Break { get; init; }
+
+        public Material BreakMaterial { get; init; }
+        public Material DefaultMaterial { get; init; }
         public Sprite JustBorder { get; init; }
     }
 }

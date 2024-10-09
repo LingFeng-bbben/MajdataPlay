@@ -195,6 +195,8 @@ namespace MajdataPlay
                 Border_Each = SelectedSkin.TouchBorder_Each,
                 Border_Normal = SelectedSkin.TouchBorder,
                 Border_Break = SelectedSkin.TouchBorder_Break,
+                DefaultMaterial = DefaultMaterial,
+                BreakMaterial = BreakMaterial,
                 JustBorder = SelectedSkin.TouchJust
             };
         }

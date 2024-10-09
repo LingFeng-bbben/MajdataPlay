@@ -75,7 +75,9 @@ namespace MajdataPlay.Game.Notes
                 IsEX = isEX,
                 Diff = judgeDiff
             };
-            // TODO: TapLine
+            CanShine = false;
+            if (breakShineController is not null)
+                breakShineController.enabled = false;
             effectManager.PlayEffect(startPosition, result);
             audioEffMana.PlayTapSound(result);
             noteManager.NextNote(QueueInfo);
