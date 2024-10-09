@@ -126,7 +126,7 @@ namespace MajdataPlay.Title
             InputManager.Instance.UnbindAnyArea(OnAreaDown);
             AudioManager.Instance.StopSFX(SFXSampleType.TITLE_BGM);
             AudioManager.Instance.StopSFX(SFXSampleType.MAJDATA_PLAY);
-            SceneManager.LoadSceneAsync(1);
+            SceneSwitcher.Instance.SwitchScene(1);
         }
     }
 }

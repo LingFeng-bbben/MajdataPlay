@@ -66,6 +66,8 @@ namespace MajdataPlay.Types
         public Sprite[] TouchHold_Break { get; private set; } = new Sprite[5];
         public Sprite TouchHold_Off { get; private set; }
 
+        public Sprite LoadingSplash { get; private set; }
+
         public Sprite Outline { get; private set; }
         public CustomSkin(string skinCollectionPath)
         {
@@ -239,6 +241,8 @@ namespace MajdataPlay.Types
             TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/touchhold_border.png");
             TouchHold_Break[4] = SpriteLoader.Load(skinCollectionPath + "/touchhold_break_border.png");
             TouchHold_Off = SpriteLoader.Load(skinCollectionPath + "/touchhold_off.png");
+
+            LoadingSplash = SpriteLoader.Load(skinCollectionPath + "/now_loading.png");
         }
     }
 }
