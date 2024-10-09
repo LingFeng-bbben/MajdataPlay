@@ -40,7 +40,7 @@ namespace MajdataPlay.Game.Notes
             IsFakeStar = poolingInfo.IsFakeStar;
             IsForceRotate = poolingInfo.IsForceRotate;
             SlideObject = poolingInfo.Slide;
-            if (SlideObject is null)
+            if (SlideObject is null && !IsFakeStar)
                 throw new NullReferenceException("Slide launcher has no slide reference");
             LoadSkin();
             if (!IsNoHead)
