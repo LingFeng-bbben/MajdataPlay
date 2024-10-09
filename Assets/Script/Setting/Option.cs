@@ -17,10 +17,13 @@ namespace MajdataPlay.Setting
         public Menu Parent { get; set; }
         public PropertyInfo PropertyInfo { get; set; }
         public object OptionObject { get; set; }
+
         [SerializeField]
         TextMeshPro nameText;
         [SerializeField]
         TextMeshPro valueText;
+        [SerializeField]
+        TextMeshPro descriptionText;
         [ReadOnly]
         [SerializeField]
         int current = 0; // 当前选项的位置
@@ -42,6 +45,7 @@ namespace MajdataPlay.Setting
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
             //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
+            descriptionText.text = $"{Localization.GetLocalizedText(PropertyInfo.Name)}_MAJSETTING_DESC";
             InitOptions();
             UpdatePosition();
             UpdateOption();
@@ -54,6 +58,7 @@ namespace MajdataPlay.Setting
         void OnLangChanged(object? sender,Language newLanguage)
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            descriptionText.text = $"{Localization.GetLocalizedText(PropertyInfo.Name)}_MAJSETTING_DESC";
             UpdateOption();
         }
         void InitOptions()
