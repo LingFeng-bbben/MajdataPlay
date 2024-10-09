@@ -127,7 +127,7 @@ namespace MajdataPlay.Game
                     {
                         case InvalidAudioTrackException audioE:
                             State = ComponentState.Failed;
-                            loadingText.text = $"\r\n{Localization.GetLocalizedText("Failed to load chart")}\r\n\r\n{audioE.Message}";
+                            loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioE.Message}";
                             loadingText.color = Color.red;
                             Debug.LogError(audioE);
                             return;
@@ -283,15 +283,15 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     errorText.text = "加载note时出错了哟\n" + e.Message;
-                    loadingText.text = $"\r\n{Localization.GetLocalizedText("Failed to load chart")}\r\n\r\n{e.Message}%";
+                    loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%";
                     Debug.LogError(e);
                     StopAllCoroutines();
                     throw e;
                 }
-                loadingText.text = $"\r\n{Localization.GetLocalizedText("Loading Chart")}...\r\n\r\n{noteLoader.Process * 100:F2}%";
+                loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n{noteLoader.Process * 100:F2}%";
                 await UniTask.Yield();
             }
-            loadingText.text = $"\r\n{Localization.GetLocalizedText("Loading Chart")}...\r\n\r\n100.00%";
+            loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%";
 
             while (timer > 0)
             {
