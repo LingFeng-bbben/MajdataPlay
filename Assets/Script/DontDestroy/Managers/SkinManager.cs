@@ -177,9 +177,20 @@ namespace MajdataPlay
                     SelectedSkin.TouchHold[2],
                     SelectedSkin.TouchHold[3],
                 },
+                Fans_Break = new Sprite[4]
+                {
+                    SelectedSkin.TouchHold_Break[0],
+                    SelectedSkin.TouchHold_Break[1],
+                    SelectedSkin.TouchHold_Break[2],
+                    SelectedSkin.TouchHold_Break[3],
+                },
                 Boader = SelectedSkin.TouchHold[4],
+                Boader_Break = SelectedSkin.TouchHold_Break[4],
                 Point = SelectedSkin.TouchPoint,
-                Off = SelectedSkin.TouchHold_Off
+                Point_Break = SelectedSkin.TouchPoint_Break,
+                Off = SelectedSkin.TouchHold_Off,
+                DefaultMaterial = DefaultMaterial,
+                BreakMaterial = BreakMaterial,
             };
         }
         public TouchSkin GetTouchSkin()
@@ -188,13 +199,17 @@ namespace MajdataPlay
             {
                 Normal = SelectedSkin.Touch,
                 Each = SelectedSkin.Touch_Each,
+                Break = SelectedSkin.Touch_Break,
                 Point_Normal = SelectedSkin.TouchPoint,
                 Point_Each = SelectedSkin.TouchPoint_Each,
+                Point_Break = SelectedSkin.TouchPoint_Break,
                 Border_Each = SelectedSkin.TouchBorder_Each,
                 Border_Normal = SelectedSkin.TouchBorder,
+                Border_Break = SelectedSkin.TouchBorder_Break,
+                DefaultMaterial = DefaultMaterial,
+                BreakMaterial = BreakMaterial,
                 JustBorder = SelectedSkin.TouchJust
             };
         }
-
     }
 }

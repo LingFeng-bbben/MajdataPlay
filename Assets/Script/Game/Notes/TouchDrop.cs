@@ -34,8 +34,17 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+        /// <summary>
+        /// Undefined
+        /// </summary>
         float displayDuration;
+        /// <summary>
+        /// Touch淡入结束，开始移动
+        /// </summary>
         float moveDuration;
+        /// <summary>
+        /// Touch开始淡入的时刻
+        /// </summary>
         float wholeDuration;
 
         readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[4];
@@ -47,6 +56,7 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer justBorderRenderer;
         MultTouchHandler multTouchHandler;
         NotePoolManager notePoolManager;
+        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
         public void Initialize(TouchPoolingInfo poolingInfo)
         {
@@ -81,7 +91,7 @@ namespace MajdataPlay.Game.Notes
                 point.SetActive(false);
                 justBorder.SetActive(false);
 
-                SetfanColor(new Color(1f, 1f, 1f, 0f));
+                SetFansColor(new Color(1f, 1f, 1f, 0f));
                 ioManager.BindSensor(Check, GetSensor());
                 sensorPos = GetSensor();
                 SetFansPosition(0.4f);
@@ -106,6 +116,8 @@ namespace MajdataPlay.Game.Notes
             };
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
+            DisableBreakShine();
+            CanShine = false;
             point.SetActive(false);
             justBorder.SetActive(false);
 
@@ -153,12 +165,11 @@ namespace MajdataPlay.Game.Notes
             justBorderRenderer = justBorder.GetComponent<SpriteRenderer>();
 
             LoadSkin();
-
             transform.position = GetAreaPos(startPosition, areaPosition);
             point.SetActive(false);
             justBorder.SetActive(false);
             
-            SetfanColor(new Color(1f, 1f, 1f, 0f));
+            SetFansColor(new Color(1f, 1f, 1f, 0f));
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
             SetFansPosition(0.4f);
@@ -172,16 +183,33 @@ namespace MajdataPlay.Game.Notes
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
                 fanRenderers[i].sortingOrder += noteSortOrder;
+                var controller = breakShineControllers[i];
+                if(controller is null)
+                {
+                    controller = gameObject.AddComponent<BreakShineController>();
+                    controller.enabled = false;
+                    controller.Parent = this;
+                    controller.Renderer = fanRenderers[i];
+                    breakShineControllers[i] = controller;
+                }
             }
-
-            if (isEach)
+            DisableBreakShine();
+            SetFansMaterial(skin.DefaultMaterial);
+            if (isBreak)
             {
-                SetfanSprite(skin.Each);
+                EnableBreakShine();
+                SetFansSprite(skin.Break);
+                SetFansMaterial(skin.BreakMaterial);
+                pointRenderer.sprite = skin.Point_Break;
+            }
+            else if (isEach)
+            {
+                SetFansSprite(skin.Each);
                 pointRenderer.sprite = skin.Point_Each;
             }
             else
             {
-                SetfanSprite(skin.Normal);
+                SetFansSprite(skin.Normal);
                 pointRenderer.sprite = skin.Point_Normal;
             }
 
@@ -280,6 +308,7 @@ namespace MajdataPlay.Game.Notes
                         multTouchHandler.Register(sensorPos,isEach,isBreak);
                         RendererState = RendererStatus.On;
                         point.SetActive(true);
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -289,13 +318,13 @@ namespace MajdataPlay.Game.Notes
                         var newColor = Color.white;
                         if (-timing < moveDuration)
                         {
-                            SetfanColor(Color.white);
+                            SetFansColor(Color.white);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
                         var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
-                        SetfanColor(newColor);
+                        SetFansColor(newColor);
                     }
                     return;
                 case NoteStatus.Running:
@@ -330,18 +359,42 @@ namespace MajdataPlay.Game.Notes
                 fans[i].transform.localPosition = pos;
             }
         }
-        private Vector3 GetAngle(int index)
+        Vector3 GetAngle(int index)
         {
             var angle = index * (Mathf.PI / 2);
             return new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
         }
-        private void SetfanColor(Color color)
+        void SetFansColor(Color color)
         {
             foreach (var fan in fanRenderers) fan.color = color;
         }
-        private void SetfanSprite(Sprite sprite)
+        void SetFansSprite(Sprite sprite)
         {
-            for (var i = 0; i < 4; i++) fanRenderers[i].sprite = sprite;
+            for (var i = 0; i < 4; i++) 
+                fanRenderers[i].sprite = sprite;
+        }
+        void SetFansMaterial(Material material)
+        {
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].material = material;
+        }
+        void DisableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = false;
+            }
+        }
+        void EnableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = true;
+            }
         }
 
         RendererStatus _rendererState = RendererStatus.Off;

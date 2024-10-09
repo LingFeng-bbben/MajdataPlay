@@ -558,14 +558,29 @@ namespace MajdataPlay.Game
                     }
                     break;
                 case SimaiNoteType.Touch:
-                    judgedTouchCount[result]++;
-                    touchCount++;
+                    if (isBreak)
+                    {
+                        judgedBreakCount[result]++;
+                        breakCount++;
+                    }
+                    else
+                    {
+                        judgedTouchCount[result]++;
+                        touchCount++;
+                    }
                     break;
                 case SimaiNoteType.TouchHold:
-                    judgedTouchHoldCount[result]++;
-                    holdCount++;
+                    if (isBreak)
+                    {
+                        judgedBreakCount[result]++;
+                        breakCount++;
+                    }
+                    else
+                    {
+                        judgedTouchHoldCount[result]++;
+                        holdCount++;
+                    }
                     break;
-
             }
             totalJudgedCount[result]++;
 

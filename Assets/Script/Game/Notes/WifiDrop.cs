@@ -20,7 +20,7 @@ namespace MajdataPlay.Game.Notes
 
         readonly SpriteRenderer[] starRenderers = new SpriteRenderer[3];
 
-        private Vector3 SlidePositionStart;
+        Vector3[] SlidePositionStart = new Vector3[3];
 
         public override void Initialize()
         {
@@ -46,11 +46,24 @@ namespace MajdataPlay.Game.Notes
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
             var sensorPos = (SensorType)(endPosition - 1);
-
-            SlidePositionEnd[0] = GetPositionFromDistance(4.8f, sensorPos.Diff(-1).GetIndex());// R
+            var rIndex = sensorPos.Diff(-1).GetIndex();
+            var lIndex = sensorPos.Diff(1).GetIndex();
+            SlidePositionEnd[0] = GetPositionFromDistance(4.8f, rIndex);// R
             SlidePositionEnd[1] = GetPositionFromDistance(4.8f, endPosition);// Center
-            SlidePositionEnd[2] = GetPositionFromDistance(4.8f, sensorPos.Diff(1).GetIndex()); // L
-            SlidePositionStart = GetPositionFromDistance(4.8f);
+            SlidePositionEnd[2] = GetPositionFromDistance(4.8f, lIndex); // L
+
+            if(IsClassic)
+            {
+                SlidePositionStart[0] = GetPositionFromDistance(4.55f,startPosition + 0.11f);
+                SlidePositionStart[1] = GetPositionFromDistance(4.8f);
+                SlidePositionStart[2] = GetPositionFromDistance(4.55f, startPosition - 0.13f);
+            }
+            else
+            {
+                SlidePositionStart[0] = GetPositionFromDistance(4.8f);
+                SlidePositionStart[1] = GetPositionFromDistance(4.8f);
+                SlidePositionStart[2] = GetPositionFromDistance(4.8f);
+            }
 
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
 
@@ -214,7 +227,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     starRenderers[i].color = new Color(1, 1, 1, alpha);
                     stars[i].transform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-                    stars[i].transform.position = SlidePositionStart;
+                    stars[i].transform.position = SlidePositionStart[i];
                 }
             }
             else
@@ -242,7 +255,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     starRenderers[i].color = Color.white;
                     stars[i].transform.position =
-                        (SlidePositionEnd[i] - SlidePositionStart) * process + SlidePositionStart; //TODO add some runhua
+                        (SlidePositionEnd[i] - SlidePositionStart[i]) * process + SlidePositionStart[i]; //TODO add some runhua
                     stars[i].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
             }
@@ -321,6 +334,11 @@ namespace MajdataPlay.Game.Notes
                 }
                 star.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (startPosition - 1)));
                 star.SetActive(false);
+            }
+            if(IsClassic)
+            {
+                starRenderers[0].sortingOrder = -1;
+                starRenderers[2].sortingOrder = -1;
             }
 
             if (isJustR)

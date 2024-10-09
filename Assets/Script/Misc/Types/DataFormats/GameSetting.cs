@@ -38,6 +38,7 @@
         public JudgeDisplayType SlideJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType BreakJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType BreakFastLateType { get; set; } = JudgeDisplayType.Disable;
+        public JudgeMode SlideSortOrder { get; set; } = JudgeMode.Modern;
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Interfaces;
+﻿using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
@@ -35,6 +36,7 @@ namespace MajdataPlay.Game.Notes
         public float Distance { get; protected set; } = -100;
         public GameObject tapLine;
 
+        protected BreakShineController? breakShineController = null;
         protected SpriteRenderer thisRenderer;
         protected SpriteRenderer exRenderer;
         protected SpriteRenderer tapLineRenderer;
@@ -73,7 +75,9 @@ namespace MajdataPlay.Game.Notes
                 IsEX = isEX,
                 Diff = judgeDiff
             };
-            // TODO: TapLine
+            CanShine = false;
+            if (breakShineController is not null)
+                breakShineController.enabled = false;
             effectManager.PlayEffect(startPosition, result);
             audioEffMana.PlayTapSound(result);
             noteManager.NextNote(QueueInfo);

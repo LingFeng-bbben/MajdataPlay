@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -60,6 +61,7 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
         NotePoolManager notePoolManager;
+        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
@@ -119,7 +121,8 @@ namespace MajdataPlay.Game.Notes
                 IsEX = isEX,
                 Diff = judgeDiff
             };
-
+            DisableBreakShine();
+            CanShine = false;
             point.SetActive(false);
             RendererState = RendererStatus.Off;
 
@@ -199,14 +202,37 @@ namespace MajdataPlay.Game.Notes
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
                 fanRenderers[i].sortingOrder += noteSortOrder;
+                var controller = breakShineControllers[i];
+                if (controller is null)
+                {
+                    controller = gameObject.AddComponent<BreakShineController>();
+                    controller.enabled = false;
+                    controller.Parent = this;
+                    controller.Renderer = fanRenderers[i];
+                    breakShineControllers[i] = controller;
+                }
             }
             borderRenderer.sortingOrder += noteSortOrder;
-
-            for (var i = 0; i < 4; i++)
-                fanRenderers[i].sprite = skin.Fans[i];
-            borderRenderer.sprite = skin.Boader; // TouchHold Border
-            pointRenderer.sprite = skin.Point;
-            board_On = skin.Boader;
+            DisableBreakShine();
+            SetFansMaterial(skin.DefaultMaterial);
+            if(isBreak)
+            {
+                EnableBreakShine();
+                for (var i = 0; i < 4; i++)
+                    fanRenderers[i].sprite = skin.Fans_Break[i];
+                borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
+                pointRenderer.sprite = skin.Point_Break;
+                board_On = skin.Boader_Break;
+                SetFansMaterial(skin.BreakMaterial);
+            }
+            else
+            {
+                for (var i = 0; i < 4; i++)
+                    fanRenderers[i].sprite = skin.Fans[i];
+                borderRenderer.sprite = skin.Boader; // TouchHold Border
+                pointRenderer.sprite = skin.Point;
+                board_On = skin.Boader;
+            }
             board_Off = skin.Off;
         }
         protected override void Judge(float currentSec)
@@ -292,6 +318,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         point.SetActive(true);
                         RendererState = RendererStatus.On;
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -396,12 +423,32 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
+            if(isBreak)
+            {
+                foreach(var fanRenderer in fanRenderers)
+                {
+                    fanRenderer.material.SetFloat("_Brightness", 1);
+                    fanRenderer.material.SetFloat("_Contrast", 1);
+                }
+                DisableBreakShine();
+            }
+            CanShine = false;
             effectManager.PlayHoldEffect(sensorPos, judgeResult);
             audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
         void StopHoldEffect()
         {
+            if (isBreak)
+            {
+                foreach (var fanRenderer in fanRenderers)
+                {
+                    fanRenderer.material.SetFloat("_Brightness", 1);
+                    fanRenderer.material.SetFloat("_Contrast", 1);
+                }
+                DisableBreakShine();
+            }
+            CanShine = false;
             effectManager.ResetHoldEffect(sensorPos);
             audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
@@ -415,8 +462,30 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var fan in fanRenderers) fan.color = color;
         }
+        void SetFansMaterial(Material material)
+        {
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].material = material;
+        }
+        void DisableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = false;
+            }
+        }
+        void EnableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = true;
+            }
+        }
 
-        
 
         RendererStatus _rendererState = RendererStatus.Off;
     }
