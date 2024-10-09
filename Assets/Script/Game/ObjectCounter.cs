@@ -636,9 +636,10 @@ namespace MajdataPlay.Game
                     break;
             }
 
-        UpdateFastLate(judgeResult);
-        CalAccRate();
-    }
+            XxlbAnimationController.instance.Dance(result);
+            UpdateFastLate(judgeResult);
+            CalAccRate();
+        }
     /// <summary>
     /// 更新Fast/Late统计信息
     /// </summary>

@@ -7,6 +7,13 @@
       "dependencies": {},
       "hash": "75f68222d0a4bd2b468dbf3e6a17a191d28041ab"
     },
+    "com.pimdewitte.unitymainthreaddispatcher": {
+      "version": "https://github.com/PimDeWitte/UnityMainThreadDispatcher.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "7512c2b85ef0cef92090df77ec5fd530bb199852"
+    },
     "com.unity.2d.animation": {
       "version": "9.1.2",
       "depth": 1,

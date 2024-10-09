@@ -15,6 +15,7 @@ using System.Threading;
 using UnityEngine.Scripting;
 using System.IO;
 using MajdataPlay.Utils;
+using PimDeWitte.UnityMainThreadDispatcher;
 
 namespace MajdataPlay.Game
 {
@@ -421,7 +422,13 @@ namespace MajdataPlay.Game
                     if (delta > 0)
                     {
                         if (AnwserSoundList[i].isClock)
+                        {
                             AudioManager.Instance.PlaySFX(SFXSampleType.CLOCK);
+                            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                            {
+                                XxlbAnimationController.instance.Stepping();
+                            });
+                        }
                         else
                             AudioManager.Instance.PlaySFX(SFXSampleType.ANSWER);
                         AnwserSoundList[i].isPlayed = true;
