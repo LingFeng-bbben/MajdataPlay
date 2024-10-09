@@ -125,6 +125,12 @@ namespace MajdataPlay.Game.Notes
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
+        public static Vector3 GetPositionFromDistance(float distance, float position)
+        {
+            return new Vector3(
+                distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
+                distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
+        }
     }
 
     public abstract class NoteLongDrop : NoteDrop

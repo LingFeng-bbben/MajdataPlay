@@ -960,11 +960,14 @@ namespace MajdataPlay.Game
             WifiCompo.startPosition = note.startPosition;
             WifiCompo.timing = (float)note.slideStartTime;
             WifiCompo.LastFor = (float)note.slideTime;
+            var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             WifiCompo.stars = new GameObject[3]
             {
-                Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
-                Instantiate(star_slidePrefab, notes.transform.GetChild(3)),
-                Instantiate(star_slidePrefab, notes.transform.GetChild(3))
+                rightStar,
+                centerStar,
+                leftStar
             };
             if (GameManager.Instance.Setting.Judge.Mode == JudgeMode.Classic)
             {
