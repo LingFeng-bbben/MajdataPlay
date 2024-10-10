@@ -14,12 +14,13 @@ namespace MajdataPlay.List
         {
             CoverListDisplayer.SetDirList(SongStorage.Songs);
             CoverListDisplayer.SetSongList();
-            LightManager.Instance.SetAllLight(Color.white);
+            //LightManager.Instance.SetAllLight(Color.white);
             LightManager.Instance.SetButtonLight(Color.green, 3);
             LightManager.Instance.SetButtonLight(Color.red, 4);
             LightManager.Instance.SetButtonLight(Color.blue, 2);
             LightManager.Instance.SetButtonLight(Color.blue, 5);
             LightManager.Instance.SetButtonLight(Color.yellow, 6);
+            LightManager.Instance.SetButtonLight(Color.yellow, 1);
             CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
             AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_SONG);
             AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_BGM, true);
@@ -94,6 +95,10 @@ namespace MajdataPlay.List
                         break;
                     case SensorType.A1:
                         CoverListDisplayer.SlideDifficulty(1);
+                        break;
+                    case SensorType.A2:
+                        InputManager.Instance.UnbindAnyArea(OnAreaDown);
+                        SceneSwitcher.Instance.SwitchScene(5);
                         break;
                     case SensorType.A5:
                         if (!CoverListDisplayer.isDirList)
