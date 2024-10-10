@@ -6331,12 +6331,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4665331194688685791}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd9e6647bfff7542acb0200ab74bdd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CubismFadeMotionList: {fileID: 0}
+  CubismFadeMotionList: {fileID: 11400000, guid: 5e3a3aff69e69494aa43f2815878c006, type: 2}
 --- !u!114 &875626687275562248
 MonoBehaviour:
   m_ObjectHideFlags: 0
