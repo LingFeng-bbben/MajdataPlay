@@ -13,9 +13,6 @@ namespace MajdataPlay.Game.Notes
         public char areaPosition;
         public bool isFirework;
 
-        public GameObject tapEffect;
-        public GameObject judgeEffect;
-
         protected Quaternion GetRoation()
         {
             if (sensorPos == SensorType.C)

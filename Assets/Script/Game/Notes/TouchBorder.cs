@@ -14,7 +14,7 @@ namespace MajdataPlay.Game.Notes
 
         GameObject two, three;
         SpriteRenderer twoRenderer, threeRenderer;
-        Sprite[] normal, each;
+        Sprite[] normal, each,bReak;
         void Start()
         {
             var index = AreaPosition.GetIndex();
@@ -35,6 +35,7 @@ namespace MajdataPlay.Game.Notes
             var skin = SkinManager.Instance.GetTouchSkin();
             normal = skin.Border_Normal;
             each = skin.Border_Each;
+            bReak = skin.Border_Break;
 
             twoRenderer.sprite = normal[0];
             threeRenderer.sprite = normal[1];
@@ -76,13 +77,24 @@ namespace MajdataPlay.Game.Notes
 
             two.SetActive(true);
             twoRenderer.forceRenderingOff = false;
-            twoRenderer.sprite = first.IsEach ? each[0] : normal[0];
+            if (first.IsBreak)
+                twoRenderer.sprite = bReak[0];
+            else if (first.IsEach)
+                twoRenderer.sprite = each[0];
+            else
+                twoRenderer.sprite = normal[0];
 
             if (second is not null)
             {
+                var _second = (NoteRegister)second;
                 three.SetActive(true);
                 threeRenderer.forceRenderingOff = false;
-                threeRenderer.sprite = ((NoteRegister)second).IsEach ? each[1] : normal[1];
+                if (_second.IsBreak)
+                    threeRenderer.sprite = bReak[1];
+                else if (_second.IsEach)
+                    threeRenderer.sprite = each[1];
+                else
+                    threeRenderer.sprite = normal[1];
             }
             else
             {

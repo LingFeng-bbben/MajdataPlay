@@ -1,22 +1,25 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>
+    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer,IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>
     {
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
             get => _rendererState;
-            private set
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
+
                 switch (value)
                 {
                     case RendererStatus.Off:
@@ -57,17 +60,93 @@ namespace MajdataPlay.Game.Notes
         SpriteMask mask;
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
+        NotePoolManager notePoolManager;
+        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
-        // Start is called before the first frame update
+        public void Initialize(TouchHoldPoolingInfo poolingInfo)
+        {
+            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+                return;
+
+            startPosition = poolingInfo.StartPos;
+            areaPosition = poolingInfo.AreaPos;
+            timing = poolingInfo.Timing;
+            judgeTiming = timing;
+            noteSortOrder = poolingInfo.NoteSortOrder;
+            speed = poolingInfo.Speed;
+            isEach = poolingInfo.IsEach;
+            isBreak = poolingInfo.IsBreak;
+            isEX = poolingInfo.IsEX;
+            QueueInfo = poolingInfo.QueueInfo;
+            isJudged = false;
+            LastFor = poolingInfo.LastFor;
+            isFirework = poolingInfo.IsFirework;
+            sensorPos = poolingInfo.SensorPos;
+            if (State == NoteStatus.Start)
+                Start();
+            else
+            {
+                wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                moveDuration = 0.8f * wholeDuration;
+                displayDuration = 0.2f * wholeDuration;
+
+                LoadSkin();
+
+                SetfanColor(new Color(1f, 1f, 1f, 0f));
+                mask.enabled = false;
+                mask.alphaCutoff = 0;
+                point.SetActive(false);
+                border.SetActive(false);
+
+                sensorPos = TouchBase.GetSensor(areaPosition, startPosition);
+                var pos = TouchBase.GetAreaPos(sensorPos);
+                transform.position = pos;
+                SetFansPosition(0.4f);
+                ioManager.BindSensor(Check, sensorPos);
+                State = NoteStatus.Initialized;
+                RendererState = RendererStatus.Off;
+            }
+        }
+        public void End(bool forceEnd = false)
+        {
+            ioManager.UnbindSensor(Check, sensorPos);
+            State = NoteStatus.Destroyed;
+            if (forceEnd)
+                return;
+            EndJudge(ref judgeResult);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                IsBreak = isBreak,
+                IsEX = isEX,
+                Diff = judgeDiff
+            };
+            DisableBreakShine();
+            CanShine = false;
+            point.SetActive(false);
+            RendererState = RendererStatus.Off;
+
+            objectCounter.ReportResult(this, result);
+            if (!isJudged)
+                noteManager.NextTouch(QueueInfo);
+            if (isFirework && !result.IsMiss)
+            {
+                effectManager.PlayFireworkEffect(transform.position);
+                audioEffMana.PlayHanabiSound();
+            }
+            audioEffMana.PlayTapSound(result);
+            audioEffMana.StopTouchHoldSound();
+
+            effectManager.PlayTouchHoldEffect(sensorPos, result);
+            effectManager.ResetHoldEffect(sensorPos);
+            notePoolManager.Collect(this);
+        }
         protected override void Start()
         {
             base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
-
-            holdEffect = Instantiate(holdEffect, noteManager.transform);
-            holdEffect.SetActive(false);
 
             fans[0] = transform.GetChild(5).gameObject;
             fans[1] = transform.GetChild(4).gameObject;
@@ -80,6 +159,8 @@ namespace MajdataPlay.Game.Notes
             borderRenderer = border.GetComponent<SpriteRenderer>();
             mask = transform.GetChild(0).GetComponent<SpriteMask>();
 
+            notePoolManager = FindObjectOfType<NotePoolManager>();
+
             LoadSkin();
 
             SetfanColor(new Color(1f, 1f, 1f, 0f));
@@ -90,7 +171,6 @@ namespace MajdataPlay.Game.Notes
             sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
             var pos = TouchBase.GetAreaPos(sensorPos);
             transform.position = pos;
-            holdEffect.transform.position = pos;
             SetFansPosition(0.4f);
             ioManager.BindSensor(Check, sensorPos);
             State = NoteStatus.Initialized;
@@ -107,7 +187,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
                 {
                     ioManager.UnbindSensor(Check, sensorPos);
@@ -122,14 +202,37 @@ namespace MajdataPlay.Game.Notes
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
                 fanRenderers[i].sortingOrder += noteSortOrder;
+                var controller = breakShineControllers[i];
+                if (controller is null)
+                {
+                    controller = gameObject.AddComponent<BreakShineController>();
+                    controller.enabled = false;
+                    controller.Parent = this;
+                    controller.Renderer = fanRenderers[i];
+                    breakShineControllers[i] = controller;
+                }
             }
             borderRenderer.sortingOrder += noteSortOrder;
-
-            for (var i = 0; i < 4; i++)
-                fanRenderers[i].sprite = skin.Fans[i];
-            borderRenderer.sprite = skin.Boader; // TouchHold Border
-            pointRenderer.sprite = skin.Point;
-            board_On = skin.Boader;
+            DisableBreakShine();
+            SetFansMaterial(skin.DefaultMaterial);
+            if(isBreak)
+            {
+                EnableBreakShine();
+                for (var i = 0; i < 4; i++)
+                    fanRenderers[i].sprite = skin.Fans_Break[i];
+                borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
+                pointRenderer.sprite = skin.Point_Break;
+                board_On = skin.Boader_Break;
+                SetFansMaterial(skin.BreakMaterial);
+            }
+            else
+            {
+                for (var i = 0; i < 4; i++)
+                    fanRenderers[i].sprite = skin.Fans[i];
+                borderRenderer.sprite = skin.Boader; // TouchHold Border
+                pointRenderer.sprite = skin.Point;
+                board_On = skin.Boader;
+            }
             board_Off = skin.Off;
         }
         protected override void Judge(float currentSec)
@@ -168,16 +271,15 @@ namespace MajdataPlay.Game.Notes
         }
         void FixedUpdate()
         {
+            if (State < NoteStatus.Running || IsDestroyed)
+                return;
             var remainingTime = GetRemainingTime();
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.316667f;
 
             if (remainingTime == 0 && isJudged)
-            {
-                Destroy(holdEffect);
-                Destroy(gameObject);
-            }
-            
+                End();
+
             if (isJudged)
             {
                 if (timing <= 0.25f) // 忽略头部15帧
@@ -205,7 +307,6 @@ namespace MajdataPlay.Game.Notes
                 noteManager.NextTouch(QueueInfo);
             }
         }
-        // Update is called once per frame
         void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
@@ -217,6 +318,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         point.SetActive(true);
                         RendererState = RendererStatus.On;
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -319,40 +421,35 @@ namespace MajdataPlay.Game.Notes
             }
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
         }
-        void OnDestroy()
+        void PlayHoldEffect()
         {
-            ioManager.UnbindSensor(Check, sensorPos);
-            EndJudge(ref judgeResult);
-            State = NoteStatus.Destroyed;
-            var result = new JudgeResult()
+            if(isBreak)
             {
-                Result = judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
-                Diff = judgeDiff
-            };
-            objectCounter.ReportResult(this, result);
-            if (!isJudged)
-                noteManager.NextTouch(QueueInfo);
-            if (isFirework && !result.IsMiss)
-            {
-                effectManager.PlayFireworkEffect(transform.position);
-                audioEffMana.PlayHanabiSound();
+                foreach(var fanRenderer in fanRenderers)
+                {
+                    fanRenderer.material.SetFloat("_Brightness", 1);
+                    fanRenderer.material.SetFloat("_Contrast", 1);
+                }
+                DisableBreakShine();
             }
-            audioEffMana.PlayTapSound(result);
-            audioEffMana.StopTouchHoldSound();
-
-            effectManager.PlayTouchHoldEffect(sensorPos, result);
-        }
-        protected override void PlayHoldEffect()
-        {
-            base.PlayHoldEffect();
+            CanShine = false;
+            effectManager.PlayHoldEffect(sensorPos, judgeResult);
             audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
-        protected override void StopHoldEffect()
+        void StopHoldEffect()
         {
-            base.StopHoldEffect();
+            if (isBreak)
+            {
+                foreach (var fanRenderer in fanRenderers)
+                {
+                    fanRenderer.material.SetFloat("_Brightness", 1);
+                    fanRenderer.material.SetFloat("_Contrast", 1);
+                }
+                DisableBreakShine();
+            }
+            CanShine = false;
+            effectManager.ResetHoldEffect(sensorPos);
             audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
         }
@@ -365,6 +462,31 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var fan in fanRenderers) fan.color = color;
         }
+        void SetFansMaterial(Material material)
+        {
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].material = material;
+        }
+        void DisableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = false;
+            }
+        }
+        void EnableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = true;
+            }
+        }
+
+
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }

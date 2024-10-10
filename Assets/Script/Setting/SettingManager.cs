@@ -63,7 +63,7 @@ namespace MajdataPlay.Setting
             {
                 //refresh some setting here
                 AudioManager.Instance.ReadVolumeFromSettings();
-                SceneManager.LoadScene(1);
+                SceneSwitcher.Instance.SwitchScene(1);
                 return;
             }
             
@@ -94,11 +94,12 @@ namespace MajdataPlay.Setting
         {
             if (oldIndex == newIndex)
                 return;
-            menus[Index].gameObject.SetActive(true);
+            
             if (newIndex > oldIndex)
                 menus[Index].ToFirst();
             else
                 menus[Index].ToLast();
+            menus[Index].gameObject.SetActive(true);
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)

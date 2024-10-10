@@ -56,6 +56,9 @@ TagManager:
   - name: Slides
     uniqueID: 3147299915
     locked: 0
+  - name: SlideStars
+    uniqueID: 3467038923
+    locked: 0
   - name: TapLines
     uniqueID: 2323657797
     locked: 0

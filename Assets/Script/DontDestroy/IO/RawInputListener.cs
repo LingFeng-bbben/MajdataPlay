@@ -66,6 +66,7 @@ namespace MajdataPlay.IO
                 };
                 button.PushEvent(msg);
                 PushEvent(msg);
+                SetIdle(msg);
             }
             buttonCheckerMutex.ReleaseMutex();
         }
@@ -110,6 +111,7 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            SetIdle(msg);
             buttonCheckerMutex.ReleaseMutex();
         }
         void OnRawKeyDown(RawKey key)
@@ -139,6 +141,7 @@ namespace MajdataPlay.IO
             };
             button.PushEvent(msg);
             PushEvent(msg);
+            SetIdle(msg);
             buttonCheckerMutex.ReleaseMutex();
         }
     }

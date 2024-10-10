@@ -1,0 +1,456 @@
+{
+  "Code": "ja-JP",
+  "Author": "Majdata",
+  "MappingTable": [
+    {
+      "Type": "SCAN_CHART_FAILED",
+      "Origin": "Scan Chart Failed",
+      "Content": "譜面スキャンエラー"
+    },
+    {
+      "Type": "NO_CHARTS",
+      "Origin": "No Charts",
+      "Content": "譜面がない"
+    },
+    {
+      "Type": "PRESS_ANY_KEY",
+      "Origin": "Press Any Key",
+      "Content": "TOUCH TO START"
+    },
+    {
+      "Type": "DOWNLOADING",
+      "Origin": "Downloading",
+      "Content": "ダウンロード中"
+    },
+    {
+      "Type": "LOAD_CHART_FAILED",
+      "Origin": "Failed to load chart",
+      "Content": "譜面読み込みエラー"
+    },
+    {
+      "Type": "DESERIALIZATION",
+      "Origin": "Deserialization",
+      "Content": "譜面ロード中"
+    },
+    {
+      "Type": "LOADING_CHART",
+      "Origin": "Loading Chart",
+      "Content": "譜面読み込む中"
+    },
+    {
+      "Type": "GAME",
+      "Origin": "Game",
+      "Content": "ゲーム"
+    },
+    {
+      "Type": "JUDGE",
+      "Origin": "Judge",
+      "Content": "判定"
+    },
+    {
+      "Type": "DISPLAY",
+      "Origin": "Display",
+      "Content": "表示"
+    },
+    {
+      "Type": "AUDIO",
+      "Origin": "Audio",
+      "Content": "オーディオ"
+    },
+    {
+      "Type": "VOLUME",
+      "Origin": "Volume",
+      "Content": "音量"
+    },
+    {
+      "Type": "DEBUG",
+      "Origin": "Debug",
+      "Content": "デバッグ"
+    },
+    {
+      "Type": "TAP_SPEED",
+      "Origin": "TapSpeed",
+      "Content": "Tap速さ"
+    },
+    {
+      "Type": "TAP_SPEED_DESC",
+      "Origin": "",
+      "Content": "タップの速さを設定"
+    },
+    {
+      "Type": "TOUCH_SPEED",
+      "Origin": "TouchSpeed",
+      "Content": "Touch速さ"
+    },
+    {
+      "Type": "TOUCH_SPEED_DESC",
+      "Origin": "",
+      "Content": "タッチの速さを設定"
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET",
+      "Origin": "SlideFadeInOffset",
+      "Content": "Slideタイミング補正"
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET_DESC",
+      "Origin": "",
+      "Content": "スライド現れるタイミングを設定"
+    },
+    {
+      "Type": "BACKGROUND_DIM",
+      "Origin": "BackgroundDim",
+      "Content": "背景の明るさ"
+    },
+    {
+      "Type": "BACKGROUND_DIM_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "LANGUAGE",
+      "Origin": "Language",
+      "Content": "言語"
+    },
+    {
+      "Type": "LANGUAGE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "STAR_ROTATION",
+      "Origin": "StarRotation",
+      "Content": "Star回し"
+    },
+    {
+      "Type": "STAR_ROTATION_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BGINFO",
+      "Origin": "BGInfo",
+      "Content": "中心ディスプレイ"
+    },
+    {
+      "Type": "BGINFO_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "AUDIO_OFFSET",
+      "Origin": "AudioOffset",
+      "Content": "判定調整A（音）"
+    },
+    {
+      "Type": "AUDIO_OFFSET_DESC",
+      "Origin": "",
+      "Content": "FAST = -\nLATE = +"
+    },
+    {
+      "Type": "JUDGE_OFFSET",
+      "Origin": "JudgeOffset",
+      "Content": "判定調整B（視）"
+    },
+    {
+      "Type": "JUDGE_OFFSET_DESC",
+      "Origin": "",
+      "Content": "FAST = -\nLATE = +"
+    },
+    {
+      "Type": "MODE",
+      "Origin": "Mode",
+      "Content": "判定モード"
+    },
+    {
+      "Type": "MODE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_SKIN",
+      "Origin": "Skin",
+      "Content": "スキン"
+    },
+    {
+      "Type": "NOTE_SKIN_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT",
+      "Origin": "DisplayCriticalPerfect",
+      "Content": "Critical判定"
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "FAST_LATE_TYPE",
+      "Origin": "FastLateType",
+      "Content": "Fast/Late種類"
+    },
+    {
+      "Type": "FAST_LATE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE",
+      "Origin": "NoteJudgeType",
+      "Content": "Note判定ディスプレイ種類"
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE",
+      "Origin": "TouchJudgeType",
+      "Content": "Touch判定ディスプレイ種類"
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE",
+      "Origin": "SlideJudgeType",
+      "Content": "Slide判定ディスプレイ種類"
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE",
+      "Origin": "BreakJudgeType",
+      "Content": "Break判定ディスプレイ種類"
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE",
+      "Origin": "BreakFastLateType",
+      "Content": "Break Fast/Late ディスプレイ種類"
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE",
+      "Origin": "OuterJudgeDistance",
+      "Content": "内側判定距離"
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE",
+      "Origin": "InnerJudgeDistance",
+      "Content": "外側判定距離"
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "RESOLUTION",
+      "Origin": "Resolution",
+      "Content": "解像度"
+    },
+    {
+      "Type": "RESOLUTION_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "ANSWER_VOL",
+      "Origin": "Answer",
+      "Content": "正解音"
+    },
+    {
+      "Type": "ANSWER_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BGM_VOL",
+      "Origin": "BGM",
+      "Content": "音楽"
+    },
+    {
+      "Type": "BGM_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TAP_VOL",
+      "Origin": "Tap",
+      "Content": "Tap/Hold判定音"
+    },
+    {
+      "Type": "TAP_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_VOL",
+      "Origin": "Slide",
+      "Content": "Slide判定音"
+    },
+    {
+      "Type": "SLIDE_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_VOL",
+      "Origin": "Break",
+      "Content": "Break判定音"
+    },
+    {
+      "Type": "BREAK_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_VOL",
+      "Origin": "Touch",
+      "Content": "Touch判定音"
+    },
+    {
+      "Type": "TOUCH_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "VOICE_VOL",
+      "Origin": "Voice",
+      "Content": "ボイス"
+    },
+    {
+      "Type": "VOICE_VOL_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_SENSOR",
+      "Origin": "DisplaySensor",
+      "Content": "センサーディスプレイ"
+    },
+    {
+      "Type": "DISPLAY_SENSOR_DESC",
+      "Origin": "",
+      "Content": "センサーの状況を表示します"
+    },
+    {
+      "Type": "DISPLAY_FPS",
+      "Origin": "DisplayFPS",
+      "Content": "FPSディスプレイ"
+    },
+    {
+      "Type": "DISPLAY_FPS_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "FULLSCREEN",
+      "Origin": "FullScreen",
+      "Content": "フルスクリーン"
+    },
+    {
+      "Type": "FULLSCREEN_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC",
+      "Origin": "TryFixAudioSync",
+      "Content": "音ラッグを直す"
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE",
+      "Origin": "NoteAppearRate",
+      "Content": "Noteフェードイン"
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING",
+      "Origin": "DisableGCInGameing",
+      "Content": "GCをオフする"
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING_DESC",
+      "Origin": "",
+      "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "All",
+      "Content": "全部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowCP",
+      "Content": "Critical以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowP",
+      "Content": "Perfect以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowGR",
+      "Content": "Great以下"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "MissOnly",
+      "Content": "Missだけ"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Disable",
+      "Content": "無効"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "True",
+      "Content": "有効"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "False",
+      "Content": "無効"
+    },
+    {
+      "Type": "UNAVAILABLE",
+      "Origin": "Unavailable",
+      "Content": "利用不可"
+    }
+  ]
+}

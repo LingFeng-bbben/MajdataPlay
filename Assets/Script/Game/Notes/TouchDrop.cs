@@ -1,23 +1,24 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using System;
-using System.Security.Claims;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchDrop : TouchBase
+    public sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>
     {
         public RendererStatus RendererState 
         {
             get => _rendererState;
-            private set
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
-                switch(value)
+
+                switch (value)
                 {
                     case RendererStatus.Off:
                         foreach (var renderer in fanRenderers)
@@ -33,8 +34,17 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+        /// <summary>
+        /// Undefined
+        /// </summary>
         float displayDuration;
+        /// <summary>
+        /// Touch淡入结束，开始移动
+        /// </summary>
         float moveDuration;
+        /// <summary>
+        /// Touch开始淡入的时刻
+        /// </summary>
         float wholeDuration;
 
         readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[4];
@@ -45,16 +55,103 @@ namespace MajdataPlay.Game.Notes
         GameObject justBorder;
         SpriteRenderer justBorderRenderer;
         MultTouchHandler multTouchHandler;
-        
+        NotePoolManager notePoolManager;
+        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
-        // Start is called before the first frame update
+        public void Initialize(TouchPoolingInfo poolingInfo)
+        {
+            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+                return;
+
+            startPosition = poolingInfo.StartPos;
+            areaPosition = poolingInfo.AreaPos;
+            timing = poolingInfo.Timing;
+            judgeTiming = timing;
+            noteSortOrder = poolingInfo.NoteSortOrder;
+            speed = poolingInfo.Speed;
+            isEach = poolingInfo.IsEach;
+            isBreak = poolingInfo.IsBreak;
+            isEX = poolingInfo.IsEX;
+            QueueInfo = poolingInfo.QueueInfo;
+            isJudged = false;
+            isFirework = poolingInfo.IsFirework;
+            GroupInfo = poolingInfo.GroupInfo;
+            sensorPos = poolingInfo.SensorPos;
+            if (State == NoteStatus.Start)
+                Start();
+            else
+            {
+                wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                moveDuration = 0.8f * wholeDuration;
+                displayDuration = 0.2f * wholeDuration;
+
+                LoadSkin();
+
+                transform.position = GetAreaPos(startPosition, areaPosition);
+                point.SetActive(false);
+                justBorder.SetActive(false);
+
+                SetFansColor(new Color(1f, 1f, 1f, 0f));
+                ioManager.BindSensor(Check, GetSensor());
+                sensorPos = GetSensor();
+                SetFansPosition(0.4f);
+                State = NoteStatus.Initialized;
+                RendererState = RendererStatus.Off;
+            }
+        }
+        public void End(bool forceEnd = false)
+        {
+            ioManager.UnbindSensor(Check, GetSensor());
+            State = NoteStatus.Destroyed;
+            if (!isJudged || forceEnd)
+                return;
+
+            multTouchHandler.Unregister(sensorPos);
+            var result = new JudgeResult()
+            {
+                Result = judgeResult,
+                Diff = judgeDiff,
+                IsEX = isEX,
+                IsBreak = isBreak
+            };
+            // disable SpriteRenderer
+            RendererState = RendererStatus.Off;
+            DisableBreakShine();
+            CanShine = false;
+            point.SetActive(false);
+            justBorder.SetActive(false);
+
+            effectManager.PlayTouchEffect(sensorPos, result);
+
+            if (GroupInfo is not null && judgeResult != JudgeType.Miss)
+            {
+                GroupInfo.JudgeResult = judgeResult;
+                GroupInfo.JudgeDiff = judgeDiff;
+                GroupInfo.RegisterResult(judgeResult);
+            }
+
+            if (judgeResult != JudgeType.Miss)
+                audioEffMana.PlayTouchSound();
+            objectCounter.ReportResult(this, result);
+            noteManager.NextTouch(QueueInfo);
+
+            if (isFirework && judgeResult != JudgeType.Miss)
+            {
+                effectManager.PlayFireworkEffect(transform.position);
+                audioEffMana.PlayHanabiSound();
+            }
+            notePoolManager.Collect(this);
+        }
         protected override void Start()
         {
+            if (IsInitialized)
+                return;
             base.Start();
             wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
+            notePoolManager = FindObjectOfType<NotePoolManager>();
             multTouchHandler = GameObject.Find("MultTouchHandler").GetComponent<MultTouchHandler>();
             
             fans[0] = transform.GetChild(3).gameObject;
@@ -68,13 +165,11 @@ namespace MajdataPlay.Game.Notes
             justBorderRenderer = justBorder.GetComponent<SpriteRenderer>();
 
             LoadSkin();
-
             transform.position = GetAreaPos(startPosition, areaPosition);
             point.SetActive(false);
             justBorder.SetActive(false);
             
-            SetfanColor(new Color(1f, 1f, 1f, 0f));
-            var customSkin = SkinManager.Instance;
+            SetFansColor(new Color(1f, 1f, 1f, 0f));
             ioManager.BindSensor(Check, GetSensor());
             sensorPos = GetSensor();
             SetFansPosition(0.4f);
@@ -88,16 +183,33 @@ namespace MajdataPlay.Game.Notes
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
                 fanRenderers[i].sortingOrder += noteSortOrder;
+                var controller = breakShineControllers[i];
+                if(controller is null)
+                {
+                    controller = gameObject.AddComponent<BreakShineController>();
+                    controller.enabled = false;
+                    controller.Parent = this;
+                    controller.Renderer = fanRenderers[i];
+                    breakShineControllers[i] = controller;
+                }
             }
-
-            if (isEach)
+            DisableBreakShine();
+            SetFansMaterial(skin.DefaultMaterial);
+            if (isBreak)
             {
-                SetfanSprite(skin.Each);
+                EnableBreakShine();
+                SetFansSprite(skin.Break);
+                SetFansMaterial(skin.BreakMaterial);
+                pointRenderer.sprite = skin.Point_Break;
+            }
+            else if (isEach)
+            {
+                SetFansSprite(skin.Each);
                 pointRenderer.sprite = skin.Point_Each;
             }
             else
             {
-                SetfanSprite(skin.Normal);
+                SetFansSprite(skin.Normal);
                 pointRenderer.sprite = skin.Point_Normal;
             }
 
@@ -119,15 +231,15 @@ namespace MajdataPlay.Game.Notes
                 else
                     ioManager.SetBusy(arg);
                 Judge(gpManager.ThisFrameSec);
-                ioManager.SetIdle(arg);
+                //ioManager.SetIdle(arg);
                 if (isJudged)
-                {
-                    Destroy(gameObject);
-                }
+                    End();
             }
         }
         private void FixedUpdate()
         {
+            if (State < NoteStatus.Running || IsDestroyed)
+                return;
             var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
             if (!isJudged && !isTooLate)
             {
@@ -138,7 +250,7 @@ namespace MajdataPlay.Game.Notes
                         isJudged = true;
                         judgeResult = (JudgeType)GroupInfo.JudgeResult;
                         judgeDiff = GroupInfo.JudgeDiff;
-                        Destroy(gameObject);
+                        End();
                     }
                 }
             }
@@ -146,10 +258,10 @@ namespace MajdataPlay.Game.Notes
             {
                 judgeResult = JudgeType.Miss;
                 isJudged = true;
-                Destroy(gameObject);
+                End();
             }
             else if (isJudged)
-                Destroy(gameObject);
+                End();
         }
         protected override void Judge(float currentSec)
         {
@@ -184,8 +296,7 @@ namespace MajdataPlay.Game.Notes
             judgeResult = result;
             isJudged = true;
         }
-        // Update is called once per frame
-        private void Update()
+        void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
             
@@ -197,6 +308,7 @@ namespace MajdataPlay.Game.Notes
                         multTouchHandler.Register(sensorPos,isEach,isBreak);
                         RendererState = RendererStatus.On;
                         point.SetActive(true);
+                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -206,13 +318,13 @@ namespace MajdataPlay.Game.Notes
                         var newColor = Color.white;
                         if (-timing < moveDuration)
                         {
-                            SetfanColor(Color.white);
+                            SetFansColor(Color.white);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
                         var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
-                        SetfanColor(newColor);
+                        SetFansColor(newColor);
                     }
                     return;
                 case NoteStatus.Running:
@@ -239,42 +351,6 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
         }
-        private void OnDestroy()
-        {
-            ioManager.UnbindSensor(Check, GetSensor());
-            multTouchHandler.Unregister(sensorPos);
-            if (!isJudged) 
-                return;
-            State = NoteStatus.Destroyed;
-            var result = new JudgeResult()
-            {
-                Result = judgeResult,
-                Diff = judgeDiff,
-                IsEX = isEX,
-                IsBreak = isBreak
-            };
-            
-            effectManager.PlayTouchEffect(sensorPos, result);
-
-            if (GroupInfo is not null && judgeResult != JudgeType.Miss)
-            {
-                GroupInfo.JudgeResult = judgeResult;
-                GroupInfo.JudgeDiff = judgeDiff;
-            }
-
-            if(judgeResult != JudgeType.Miss)
-                audioEffMana.PlayTouchSound();
-            objectCounter.ReportResult(this, result);
-            noteManager.NextTouch(QueueInfo);
-
-            if (isFirework && judgeResult != JudgeType.Miss)
-            {
-                effectManager.PlayFireworkEffect(transform.position);
-                audioEffMana.PlayHanabiSound();
-            }
-            
-        }
-
         void SetFansPosition(in float distance)
         {
             for (var i = 0; i < 4; i++)
@@ -283,20 +359,44 @@ namespace MajdataPlay.Game.Notes
                 fans[i].transform.localPosition = pos;
             }
         }
-        private Vector3 GetAngle(int index)
+        Vector3 GetAngle(int index)
         {
             var angle = index * (Mathf.PI / 2);
             return new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
         }
-        private void SetfanColor(Color color)
+        void SetFansColor(Color color)
         {
             foreach (var fan in fanRenderers) fan.color = color;
         }
-
-        private void SetfanSprite(Sprite sprite)
+        void SetFansSprite(Sprite sprite)
         {
-            for (var i = 0; i < 4; i++) fanRenderers[i].sprite = sprite;
+            for (var i = 0; i < 4; i++) 
+                fanRenderers[i].sprite = sprite;
         }
+        void SetFansMaterial(Material material)
+        {
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].material = material;
+        }
+        void DisableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = false;
+            }
+        }
+        void EnableBreakShine()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var controller = breakShineControllers[i];
+                if (controller is not null)
+                    controller.enabled = true;
+            }
+        }
+
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }

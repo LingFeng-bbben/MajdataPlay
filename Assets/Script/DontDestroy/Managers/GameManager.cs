@@ -1,16 +1,18 @@
-using System.Collections.Generic;
-using UnityEngine;
-using System.IO;
 using MajdataPlay.Types;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System;
+using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
-using System.Diagnostics;
-using Debug = UnityEngine.Debug;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
-using MajdataPlay.Utils;
+using System.Text.Json.Serialization;
+using System.Diagnostics;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+using UnityEngine.UI;
+using System.Linq;
 using UnityEngine.Scripting;
 
 namespace MajdataPlay
@@ -20,18 +22,19 @@ namespace MajdataPlay
     {
         public static GameManager Instance { get; private set; }
         public CancellationToken AllTaskToken { get => tokenSource.Token; }
-
-        public static string AssestsPath => Path.Combine(Application.dataPath, "../");
-        public static string ChartPath => Path.Combine(AssestsPath, "MaiCharts");
-        public static string SettingPath => Path.Combine(AssestsPath, "settings.json");
-        public static string SkinPath => Path.Combine(AssestsPath, "Skins");
-        public static string CachePath => Path.Combine(AssestsPath, "Cache");
-        public static string LogPath => Path.Combine(AssestsPath, $"MajPlayRuntime.log");
-        public static string ScoreDBPath => Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
+        
+        public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
+        public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
+        public static string SettingPath { get; } = Path.Combine(AssestsPath, "settings.json");
+        public static string SkinPath { get; } = Path.Combine(AssestsPath, "Skins");
+        public static string CachePath { get; } = Path.Combine(AssestsPath, "Cache");
+        public static string LogPath { get; } = Path.Combine(AssestsPath, $"MajPlayRuntime.log");
+        public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
+        public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
         public GameSetting Setting { get; private set; } = new();
         /// <summary>
-        /// ÔÚListÖÐÑ¡ÖÐµÄÎÄ¼þ¼Ð
+        /// ï¿½ï¿½Listï¿½ï¿½Ñ¡ï¿½Ðµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
         /// </summary>
         public SongCollection Collection { get; private set; } = new();
         public int SelectedDir
@@ -50,7 +53,7 @@ namespace MajdataPlay
         Task? logWritebackTask = null;
         Queue<GameLog> logQueue = new();
         /// <summary>
-        /// Íæ¼ÒÑ¡ÔñµÄÆ×ÃæÄÑ¶È
+        /// ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¶ï¿½
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
 
@@ -58,9 +61,9 @@ namespace MajdataPlay
         {
 
             Converters =
-        {
-            new JsonStringEnumConverter()
-        },
+            {
+                new JsonStringEnumConverter()
+            },
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
@@ -119,6 +122,17 @@ namespace MajdataPlay
             }
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
+            Localization.Initialize();
+            var availableLangs = Localization.Available;
+            if (availableLangs.IsEmpty())
+                return;
+            var lang = availableLangs.Find(x => x.ToString() == Setting.Game.Language);
+            if (lang is null)
+            {
+                lang = availableLangs.First();
+                Setting.Game.Language = lang.ToString();
+            }
+            Localization.Current = lang;
         }
         async void Start()
         {

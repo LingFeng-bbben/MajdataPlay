@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using MajdataPlay.Types;
 using MajdataPlay.Extensions;
 using NAudio.CoreAudioApi;
+using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -162,16 +164,16 @@ namespace MajdataPlay.IO
             SFXSamples[(int)SFXSampleType.BREAK_SLIDE_START]?.SetVolume(setting.Audio.Volume.Slide);
             SFXSamples[(int)SFXSampleType.CLOCK]?.SetVolume(setting.Audio.Volume.Answer);
             SFXSamples[(int)SFXSampleType.HANABI]?.SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples[(int)SFXSampleType.JUDGE]?.SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples[(int)SFXSampleType.JUDGE_BREAK]?.SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples[(int)SFXSampleType.JUDGE_BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples[(int)SFXSampleType.JUDGE_EX]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.JUDGE]?.SetVolume(setting.Audio.Volume.Tap);
+            SFXSamples[(int)SFXSampleType.JUDGE_BREAK]?.SetVolume(setting.Audio.Volume.Tap);
+            SFXSamples[(int)SFXSampleType.JUDGE_BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Tap);
+            SFXSamples[(int)SFXSampleType.JUDGE_EX]?.SetVolume(setting.Audio.Volume.Tap);
             SFXSamples[(int)SFXSampleType.SLIDE]?.SetVolume(setting.Audio.Volume.Slide);
             SFXSamples[(int)SFXSampleType.TOUCH]?.SetVolume(setting.Audio.Volume.Touch);
             SFXSamples[(int)SFXSampleType.TOUCH_HOLD_RISER]?.SetVolume(setting.Audio.Volume.Touch);
             SFXSamples[(int)SFXSampleType.TRACK_START]?.SetVolume(setting.Audio.Volume.BGM);
-            SFXSamples[(int)SFXSampleType.GOOD]?.SetVolume(setting.Audio.Volume.Judge);
-            SFXSamples[(int)SFXSampleType.GREAT]?.SetVolume(setting.Audio.Volume.Judge);
+            SFXSamples[(int)SFXSampleType.GOOD]?.SetVolume(setting.Audio.Volume.Tap);
+            SFXSamples[(int)SFXSampleType.GREAT]?.SetVolume(setting.Audio.Volume.Tap);
             SFXSamples[(int)SFXSampleType.TITLE_BGM]?.SetVolume(setting.Audio.Volume.BGM);
 
             SFXSamples[(int)SFXSampleType.MAJDATA_PLAY]?.SetVolume(setting.Audio.Volume.Voice);
@@ -189,6 +191,28 @@ namespace MajdataPlay.IO
                 {
                     case SoundBackendType.Unity:
                         return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                    default:
+                        var provider = new CachedSampleProvider(new CachedSound(path), mixer);
+                        return new NAudioAudioSample(provider);
+                }
+            }
+            else
+            {
+                Debug.LogWarning(path + " dos not exists");
+                return null;
+            }
+        }
+        public async UniTask<AudioSampleWrap?> LoadMusicAsync(string path)
+        {
+            await UniTask.SwitchToThreadPool();
+            var backend = GameManager.Instance.Setting.Audio.Backend;
+            if (File.Exists(path))
+            {
+                switch (backend)
+                {
+                    case SoundBackendType.Unity:
+                        //await UniTask.SwitchToMainThread();
+                        return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     default:
                         var provider = new CachedSampleProvider(new CachedSound(path), mixer);
                         return new NAudioAudioSample(provider);

@@ -1,13 +1,14 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
 using TMPro;
 using Unity.Collections;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Setting
 {
     public class Option : MonoBehaviour
@@ -16,10 +17,13 @@ namespace MajdataPlay.Setting
         public Menu Parent { get; set; }
         public PropertyInfo PropertyInfo { get; set; }
         public object OptionObject { get; set; }
+
         [SerializeField]
         TextMeshPro nameText;
         [SerializeField]
         TextMeshPro valueText;
+        [SerializeField]
+        TextMeshPro descriptionText;
         [ReadOnly]
         [SerializeField]
         int current = 0; // 当前选项的位置
@@ -39,15 +43,23 @@ namespace MajdataPlay.Setting
         int lastIndex = 0;
         void Start()
         {
-            nameText.text = PropertyInfo.Name;
-            valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
+            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
             InitOptions();
             UpdatePosition();
+            UpdateOption();
 
             if (Parent.SelectedIndex == Index)
                 BindArea();
             else
                 UnbindArea();
+        }
+        void OnLangChanged(object? sender,Language newLanguage)
+        {
+            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
+            UpdateOption();
         }
         void InitOptions()
         {
@@ -63,7 +75,7 @@ namespace MajdataPlay.Setting
                 for (int i = 0; i < values.Length; i++)
                     options[i] = values.GetValue(i);
                 var obj = PropertyInfo.GetValue(OptionObject);
-                current = options.FindIndex(x => x == obj);
+                current = options.FindIndex(x => (int)x == (int)obj);
             }
             else if(type == typeof(bool))
             {
@@ -104,7 +116,7 @@ namespace MajdataPlay.Setting
             {
                 switch(PropertyInfo.Name)
                 {
-                    case "Resplution":
+                    case "Resolution":
                         isReadOnly = true;
                         break;
                     case "Skin":
@@ -115,6 +127,24 @@ namespace MajdataPlay.Setting
                         options = skinNames;
                         maxOptionIndex = options.Length - 1;
                         current = skinNames.FindIndex(x => x == currentSkin.Name);
+                        break;
+                    case "Language":
+                        var availableLangs = Localization.Available;
+                        if(availableLangs.IsEmpty())
+                        {
+                            current = 0;
+                            options = new object[] { "Unavailable" };
+                            maxOptionIndex = 0;
+                            isReadOnly = true;
+                            PropertyInfo.SetValue(OptionObject, "Unavailable");
+                            return;
+                        }
+                        var langNames = availableLangs.Select(x => x.ToString())
+                                                      .ToArray();
+                        var currentLang = Localization.Current;
+                        options = langNames;
+                        maxOptionIndex = options.Length - 1;
+                        current = availableLangs.FindIndex(x => x == currentLang);
                         break;
                 }
             }
@@ -142,7 +172,9 @@ namespace MajdataPlay.Setting
         }
         void UpdateOption()
         {
-            valueText.text = PropertyInfo.GetValue(OptionObject).ToString();
+            var origin = PropertyInfo.GetValue(OptionObject).ToString();
+            var localizedText = Localization.GetLocalizedText(origin);
+            valueText.text = localizedText;
         }
         void Up()
         {
@@ -188,6 +220,14 @@ namespace MajdataPlay.Setting
                 current--;
                 current = current.Clamp(0, maxOptionIndex);
                 PropertyInfo.SetValue(OptionObject, options[current]);
+                switch (PropertyInfo.Name)
+                {
+                    case "Skin":
+                        var skins = SkinManager.Instance.LoadedSkins;
+                        var newSkin = skins.Find(x => x.Name == options[current].ToString());
+                        SkinManager.Instance.SelectedSkin = newSkin;
+                        break;
+                }
             }
         }
         void OnAreaDown(object sender, InputEventArgs e)
@@ -235,11 +275,18 @@ namespace MajdataPlay.Setting
         {
             if (isBound)
                 return;
+            else if(isReadOnly)
+            {
+                isBound = true;
+                Localization.OnLanguageChanged += OnLangChanged;
+                return;
+            }
             else if (Parent == null)
                 return;
             else if (Parent.SelectedIndex != Index)
                 return;
             isBound = true;
+            Localization.OnLanguageChanged += OnLangChanged;
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B4);
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.E4);
             InputManager.Instance.BindSensor(OnAreaDown, SensorType.B5);
@@ -249,6 +296,12 @@ namespace MajdataPlay.Setting
         {
             if (!isBound)
                 return;
+            else if (isReadOnly)
+            {
+                isBound = false; 
+                Localization.OnLanguageChanged -= OnLangChanged;
+                return;
+            }
             isBound = false;
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
             InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E4);

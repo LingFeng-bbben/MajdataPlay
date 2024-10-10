@@ -50,15 +50,13 @@ namespace MajdataPlay.Game
         private Text table;
         private Text judgeResultCount;
 
-        NoteManager notes;
-
         public double[] accRate = new double[5]
         {
-        0.00,    // classic acc (+)
-        100.00,  // classic acc (-)
-        101.0000,// acc 101(-)
-        100.0000,// acc 100(-)
-        0.0000,  // acc (+)
+            0.00,    // classic acc (+)
+            100.00,  // classic acc (-)
+            101.0000,// acc 101(-)
+            100.0000,// acc 100(-)
+            0.0000,  // acc (+)
         };
 
         long cPerfectCount = 0;
@@ -90,7 +88,6 @@ namespace MajdataPlay.Game
         // Start is called before the first frame update
         private void Start()
         {
-            notes = GameObject.Find("Notes").GetComponent<NoteManager>();
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
             rate = GameObject.Find("ObjectRate").GetComponent<Text>();
@@ -561,14 +558,29 @@ namespace MajdataPlay.Game
                     }
                     break;
                 case SimaiNoteType.Touch:
-                    judgedTouchCount[result]++;
-                    touchCount++;
+                    if (isBreak)
+                    {
+                        judgedBreakCount[result]++;
+                        breakCount++;
+                    }
+                    else
+                    {
+                        judgedTouchCount[result]++;
+                        touchCount++;
+                    }
                     break;
                 case SimaiNoteType.TouchHold:
-                    judgedTouchHoldCount[result]++;
-                    holdCount++;
+                    if (isBreak)
+                    {
+                        judgedBreakCount[result]++;
+                        breakCount++;
+                    }
+                    else
+                    {
+                        judgedTouchHoldCount[result]++;
+                        holdCount++;
+                    }
                     break;
-
             }
             totalJudgedCount[result]++;
 
@@ -624,16 +636,21 @@ namespace MajdataPlay.Game
                     break;
             }
 
-        UpdateFastLate(judgeResult);
-        CalAccRate();
-    }
+            XxlbAnimationController.instance.Dance(result);
+            UpdateFastLate(judgeResult);
+            CalAccRate();
+        }
     /// <summary>
     /// 更新Fast/Late统计信息
     /// </summary>
     /// <param name="judgeResult"></param>
     void UpdateFastLate(in JudgeResult judgeResult)
     {
-        var gameSetting = GameManager.Instance.Setting.Display.FastLateType;
+        JudgeDisplayType gameSetting;
+        if (judgeResult.IsBreak)
+            gameSetting = GameManager.Instance.Setting.Display.BreakFastLateType;
+        else
+            gameSetting = GameManager.Instance.Setting.Display.FastLateType;
         var resultValue = (int)judgeResult.Result;
         var absValue = Math.Abs(7 - resultValue);
 
@@ -655,34 +672,12 @@ namespace MajdataPlay.Game
                 else
                     late++;
                 break;
-                //默认只统计Great、Good的Fast/Late
-            case JudgeDisplayType.BelowP_BreakOnly:
-            case JudgeDisplayType.BelowGR_BreakOnly:
+            //默认只统计Great、Good的Fast/Late
             case JudgeDisplayType.BelowP:
             case JudgeDisplayType.BelowGR:
             case JudgeDisplayType.Disable:
                 if (judgeResult.IsMiss || absValue <= 2)
                     break;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            case JudgeDisplayType.All_BreakOnly:
-                if (judgeResult.Diff == 0 || judgeResult.IsMiss)
-                    break;
-                else if (!judgeResult.IsBreak)
-                    goto case JudgeDisplayType.BelowP;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            case JudgeDisplayType.BelowCP_BreakOnly:
-                if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
-                    break;
-                else if (!judgeResult.IsBreak)
-                    goto case JudgeDisplayType.BelowP;
                 else if (judgeResult.IsFast)
                     fast++;
                 else
@@ -874,12 +869,12 @@ namespace MajdataPlay.Game
                         $"{accRate[4]:F4} % ";
         }
         /// <summary>
-        /// 游戏结算
+        /// 计算最终达成率
         /// </summary>
-        public void CalculateFinalResult()
+        public float CalculateFinalResult()
         {
             CalAccRate();
-            GamePlayManager.Instance.EndGame((float)accRate[2]);
+            return (float)accRate[2];
         }
         void UpdateState()
         {

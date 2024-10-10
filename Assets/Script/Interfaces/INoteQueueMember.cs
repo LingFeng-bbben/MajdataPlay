@@ -2,8 +2,8 @@
 
 namespace MajdataPlay.Interfaces
 {
-    public interface INoteQueueMember<T> where T: NoteQueueInfo
+    public interface INoteQueueMember<TMember> where TMember: NoteQueueInfo
     {
-        T QueueInfo { get; }
+        TMember QueueInfo { get; }
     }
 }

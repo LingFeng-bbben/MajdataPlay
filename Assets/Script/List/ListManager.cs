@@ -114,12 +114,12 @@ namespace MajdataPlay.List
                             InputManager.Instance.UnbindAnyArea(OnAreaDown);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_SONG);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_BGM);
-                            SceneManager.LoadSceneAsync(2);
+                            SceneSwitcher.Instance.SwitchScene(2);
                         }
                         break;
                     case SensorType.A7:
                         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneManager.LoadScene(4);
+                        SceneSwitcher.Instance.SwitchScene(4);
                         break;
                 }
             }

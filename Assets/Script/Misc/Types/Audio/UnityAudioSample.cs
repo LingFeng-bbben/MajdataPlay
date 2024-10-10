@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Extensions;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -73,6 +74,15 @@ namespace MajdataPlay.Types
             {
                 www.SendWebRequest();
                 while (!www.isDone) ;
+                var myClip = DownloadHandlerAudioClip.GetContent(www);
+                return new UnityAudioSample(myClip, gameObject);
+            }
+        }
+        public static async UniTask<UnityAudioSample> ReadFromFileAsync(string filePath, GameObject gameObject)
+        {
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
+            {
+                await www.SendWebRequest();
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
                 return new UnityAudioSample(myClip, gameObject);
             }
