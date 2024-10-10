@@ -17,6 +17,11 @@ namespace MajdataPlay.Utils
     {
         public static bool IsEmpty => Songs.IsEmpty() || Songs.All(x => x.Count == 0);
         public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
+
+        private static SongCollection[] SongsUnsorted { get; set; } = new SongCollection[0];
+        public static string lastFindKey { get; private set; } = "";
+        public static SortType lastSortType { get; private set; } = SortType.Default; 
+
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
         public static async Task ScanMusicAsync()
@@ -40,6 +45,7 @@ namespace MajdataPlay.Utils
             else
             {
                 Songs = songs;
+                SongsUnsorted = (SongCollection[])songs.Clone();
                 State = ComponentState.Finished;
             }
         }
@@ -127,6 +133,8 @@ namespace MajdataPlay.Utils
                 var gameList = new List<SongDetail>();
                 foreach (var song in list)
                 {
+                    DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                    dateTime = dateTime.AddSeconds(song.Timestamp).ToLocalTime();
                     var songDetail = new SongDetail()
                     {
                         Title = song.Title,
@@ -138,7 +146,7 @@ namespace MajdataPlay.Utils
                         BGPath = apiroot + "/ImageFull/" + song.Id,
                         CoverPath = apiroot + "/Image/" + song.Id,
                         Hash = song.Id.ToString(),
-
+                        AddTime = dateTime
                     };
                     for (int i = 0; i < songDetail.Designers.Count(); i++)
                     {
@@ -155,5 +163,58 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
+    
+        public static void SortAndFind(string searchKey,SortType sortType)
+        {
+            lastFindKey = searchKey;
+            lastSortType = sortType;
+            
+            var newSongList = new SongCollection[SongsUnsorted.Length];
+            if (searchKey.IsEmpty())
+            {
+                newSongList = SongsUnsorted;
+            }
+            else
+            {
+                searchKey = searchKey.ToLower();
+                for (int i = 0; i < SongsUnsorted.Length; i++)
+                {
+                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, SongsUnsorted[i].FindAll(
+                        o => o.Title.ToLower().Contains(searchKey) ||
+                        o.Artist.ToLower().Contains(searchKey) ||
+                        o.Designers.Any(p => p == null ? false : p.ToLower().Contains(searchKey)) ||
+                        o.Levels.Any(p => p == null ? false : p.ToLower() == searchKey)
+                        ));
+                }
+            }
+
+            for (int i = 0; i < SongsUnsorted.Length; i++)
+            {
+                if(sortType == SortType.ByTime) {
+                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.AddTime).ToArray());
+                }
+                if (sortType == SortType.ByTitle)
+                {
+                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Title).ToArray());
+                }
+                if (sortType == SortType.ByDes)
+                {
+                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Designers[4]).ToArray());
+                }
+                if (sortType == SortType.ByDiff)
+                {
+                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.Levels[4]).ToArray());
+                }
+
+            }
+
+            Songs = newSongList;
+        }
+
+    }
+
+    public enum SortType
+    {
+        Default=4, ByTime=0, ByDiff=1, ByDes=2, ByTitle=3
     }
 }

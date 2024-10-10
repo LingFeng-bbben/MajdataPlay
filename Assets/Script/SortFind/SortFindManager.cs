@@ -7,6 +7,8 @@ using MajdataPlay.IO;
 using MajdataPlay.List;
 using MajdataPlay.Types;
 using UnityEngine.EventSystems;
+using MajdataPlay.Utils;
+using MajdataPlay;
 
 public class SortFindManager : MonoBehaviour
 {
@@ -14,14 +16,15 @@ public class SortFindManager : MonoBehaviour
     public InputField SearchBar;
 
     public Color selectedColor;
-
+    public SortType sortType;
     // Start is called before the first frame update
     void Start()
     {
-        //TODO: disable button input
         EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
         LightManager.Instance.SetAllLight(Color.black);
         InputManager.Instance.BindAnyArea(OnAreaDown);
+        SearchBar.text = SongStorage.lastFindKey;
+        SetActiveSort(SongStorage.lastSortType);
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)
@@ -34,23 +37,23 @@ public class SortFindManager : MonoBehaviour
             {
                 case SensorType.E6:
                     //sort by add time
-                    ClearColor();
-                    Sorts[0].color = selectedColor;
+                    SetActiveSort(SortType.ByTime);
                     break;
                 case SensorType.B5:
                     //sort by difficulty
-                    ClearColor();
-                    Sorts[1].color = selectedColor;
+                    SetActiveSort(SortType.ByDiff);
                     break;
                 case SensorType.B4:
                     //sort by mapper
-                    ClearColor();
-                    Sorts[2].color = selectedColor;
+                    SetActiveSort(SortType.ByDes);
                     break;
                 case SensorType.E4:
                     //sort by title
-                    ClearColor();
-                    Sorts[3].color = selectedColor;
+                    SetActiveSort(SortType.ByTitle);
+                    break;
+                case SensorType.E5:
+                    //default
+                    SetActiveSort(SortType.Default);
                     break;
 
                 case SensorType.E7:
@@ -72,6 +75,13 @@ public class SortFindManager : MonoBehaviour
 
     }
 
+    void SetActiveSort(SortType _sortType)
+    {
+        ClearColor();
+        Sorts[(int)_sortType].color = selectedColor;
+        sortType = _sortType;
+    }
+
     void ClearColor()
     {
         foreach (var s in Sorts)
@@ -82,6 +92,9 @@ public class SortFindManager : MonoBehaviour
 
     void SortAndExit()
     {
+        SongStorage.SortAndFind(SearchBar.text,sortType);
+        if (GameManager.Instance.Collection.Count != 0)
+            GameManager.Instance.Collection.Index = 0;
         SceneSwitcher.Instance.SwitchScene(1);
     }
 }

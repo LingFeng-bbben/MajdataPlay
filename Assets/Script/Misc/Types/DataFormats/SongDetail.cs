@@ -30,12 +30,13 @@ namespace MajdataPlay.Types
         private Sprite? SongCover;
         public double First { get; set; }
         public string Hash { get; set; } = string.Empty;
-
+        public DateTime AddTime { get; set; }
         public bool isOnline { get; set; } = false;
 
         public static async Task<SongDetail> ParseAsync(FileInfo[] files)
         {
-            var maidataPath = files.FirstOrDefault(o => o.Name is "maidata.txt").FullName;
+            var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+            var maidataPath = maidataFile.FullName;
             var trackPath = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg").FullName;
             var videoFile = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4");
             var coverFile = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg");
@@ -105,7 +106,8 @@ namespace MajdataPlay.Types
                 VideoPath = videoPath,
                 TrackPath = trackPath,
                 CoverPath = coverPath,
-                MaidataPath = maidataPath
+                MaidataPath = maidataPath,
+                AddTime = maidataFile.LastWriteTime
             };
         }
         private static string GetValue(string varline)

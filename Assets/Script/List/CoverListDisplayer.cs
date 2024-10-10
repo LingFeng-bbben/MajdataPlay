@@ -182,8 +182,15 @@ namespace MajdataPlay.List
             }
             if (isDirList && Time.frameCount % 50 == 0)
             {
-                if (coveri >= songs.Count) coveri = 0;
-                CoverBigDisplayer.SetCover(songs.ToArray()[coveri++]);
+                if (songs.Count > 0)
+                {
+                    if (coveri >= songs.Count) coveri = 0;
+                    CoverBigDisplayer.SetCover(songs.ToArray()[coveri++]);
+                }
+                else
+                {
+                    CoverBigDisplayer.SetNoCover();
+                }
             }
         }
         private int coveri = 0;
