@@ -192,7 +192,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Unity:
                         return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
                     default:
-                        var provider = new CachedSampleProvider(new CachedSound(path), mixer);
+                        var provider = new UncachedSampleProvider(path, mixer);
                         return new NAudioAudioSample(provider);
                 }
             }
@@ -214,7 +214,8 @@ namespace MajdataPlay.IO
                         //await UniTask.SwitchToMainThread();
                         return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     default:
-                        var provider = new CachedSampleProvider(new CachedSound(path), mixer);
+                        //var provider = new CachedSampleProvider(new CachedSound(path), mixer);
+                        var provider = new UncachedSampleProvider(path,mixer);
                         return new NAudioAudioSample(provider);
                 }
             }
