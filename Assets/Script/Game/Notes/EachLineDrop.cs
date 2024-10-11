@@ -54,9 +54,10 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
             sr.sprite = curvSprites[curvLength - 1];
-            transform.localScale = new Vector3(0f, 0f, 1f);
+            transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
+            RendererState = RendererStatus.Off;
             if (DistanceProvider is null)
                 Debug.LogWarning("DistanceProvider not found");
         }
@@ -97,14 +98,11 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
                         RendererState = RendererStatus.Off;
 
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
-                    else
-                        transform.localScale = new Vector3(0, 0);
                     return;
                 case NoteStatus.Scaling:
                     if (destScale > 0.3f)
