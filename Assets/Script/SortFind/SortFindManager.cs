@@ -1,15 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MajdataPlay.IO;
-using MajdataPlay.List;
 using MajdataPlay.Types;
 using UnityEngine.EventSystems;
 using MajdataPlay.Utils;
-using MajdataPlay;
-
+using Cysharp.Threading.Tasks;
+#nullable enable
 public class SortFindManager : MonoBehaviour
 {
     public TextMeshProUGUI[] Sorts;
@@ -17,6 +14,7 @@ public class SortFindManager : MonoBehaviour
 
     public Color selectedColor;
     public SortType sortType;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -26,7 +24,6 @@ public class SortFindManager : MonoBehaviour
         SearchBar.text = SongStorage.OrderBy.Keyword;
         SetActiveSort(SongStorage.OrderBy.SortBy);
     }
-
     private void OnAreaDown(object sender, InputEventArgs e)
     {
         if (!e.IsClick)
@@ -68,7 +65,7 @@ public class SortFindManager : MonoBehaviour
 
                 case SensorType.D5:
                     InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                    SortAndExit();
+                    SortAndExit().Forget();
                     break;
             }
         }
@@ -90,11 +87,9 @@ public class SortFindManager : MonoBehaviour
         }
     }
 
-    void SortAndExit()
+    async UniTaskVoid SortAndExit()
     {
-        SongStorage.SortAndFind(SearchBar.text,sortType);
-        if (SongStorage.WorkingCollection.Count != 0)
-            SongStorage.WorkingCollection.Index = 0;
+        await SongStorage.SortAndFindAsync(SearchBar.text,sortType);
         SceneSwitcher.Instance.SwitchScene("List");
     }
 }

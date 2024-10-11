@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Types
@@ -60,6 +61,10 @@ namespace MajdataPlay.Types
             _index = newIndex;
             this.sorted = sorted;
         }
+        public async Task SortAndFilterAsync(SongOrder orderBy)
+        {
+            await Task.Run(() => SortAndFilter(orderBy));
+        }
         public void Reset()
         {
             IsSorted = false;
@@ -96,6 +101,7 @@ namespace MajdataPlay.Types
         {
             if (string.IsNullOrEmpty(keyword))
                 return origin;
+            keyword = keyword.ToLower();
             var result = new Span<SongDetail>(new SongDetail[origin.Length]);
             int i = 0;
             foreach(var song in origin)
@@ -112,7 +118,7 @@ namespace MajdataPlay.Types
             return result.Slice(0, i).ToArray();
         }
         public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<SongDetail>());
-        public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(origin);
+        public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(sorted);
 
         // Implementation for the GetEnumerator method.
         IEnumerator IEnumerable.GetEnumerator() => origin.GetEnumerator();

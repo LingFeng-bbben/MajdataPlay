@@ -317,4 +317,9 @@
         ByDes = 2, 
         ByTitle = 3
     }
+    public enum CoverListMode
+    {
+        Directory,
+        Chart
+    }
 }

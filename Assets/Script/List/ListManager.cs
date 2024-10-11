@@ -101,7 +101,7 @@ namespace MajdataPlay.List
                         SceneSwitcher.Instance.SwitchScene("SortFind");
                         break;
                     case SensorType.A5:
-                        if (!CoverListDisplayer.isDirList)
+                        if (CoverListDisplayer.IsChartList)
                         {
                             CoverListDisplayer.SetDirList(SongStorage.Collections);
                             LightManager.Instance.SetButtonLight(Color.white, 4);
@@ -109,7 +109,7 @@ namespace MajdataPlay.List
                         }
                         break;
                     case SensorType.A4:
-                        if (CoverListDisplayer.isDirList)
+                        if (CoverListDisplayer.IsDirList)
                         {
                             CoverListDisplayer.SetSongList();
                             LightManager.Instance.SetButtonLight(Color.red, 4);

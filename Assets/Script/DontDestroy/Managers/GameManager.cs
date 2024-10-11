@@ -127,10 +127,12 @@ namespace MajdataPlay
             await SongStorage.ScanMusicAsync();
 
             SelectedDiff = Setting.Misc.SelectedDiff;
+            SongStorage.OrderBy = Setting.Misc.OrderBy;
             if (!SongStorage.IsEmpty)
             {
                 SongStorage.CollectionIndex = Setting.Misc.SelectedDir;
                 SongStorage.WorkingCollection.Index = Setting.Misc.SelectedIndex;
+                SongStorage.SortAndFind();
             }
         }
         private void OnApplicationQuit()
@@ -146,6 +148,8 @@ namespace MajdataPlay
             Setting.Misc.SelectedDiff = SelectedDiff;
             Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
             Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
+            SongStorage.OrderBy.Keyword = string.Empty;
+            Setting.Misc.OrderBy = SongStorage.OrderBy;
 
             var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
             File.WriteAllText(SettingPath, json);
