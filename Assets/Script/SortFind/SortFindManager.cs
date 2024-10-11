@@ -6,6 +6,7 @@ using MajdataPlay.Types;
 using UnityEngine.EventSystems;
 using MajdataPlay.Utils;
 using Cysharp.Threading.Tasks;
+using MajdataPlay;
 #nullable enable
 public class SortFindManager : MonoBehaviour
 {
@@ -87,9 +88,9 @@ public class SortFindManager : MonoBehaviour
         }
     }
 
-    async UniTaskVoid SortAndExit()
+    void SortAndExit()
     {
-        await SongStorage.SortAndFindAsync(SearchBar.text,sortType);
-        SceneSwitcher.Instance.SwitchScene("List");
+        var task = SongStorage.SortAndFindAsync(SearchBar.text,sortType);
+        SceneSwitcher.Instance.SwitchSceneAfterTaskAsync("List",task).Forget();
     }
 }
