@@ -10,6 +10,7 @@ namespace MajdataPlay.Utils
 {
     public static class SpriteLoader
     {
+        public static Sprite EmptySprite => Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
         public static Sprite Load(string path)
         {
             if (!File.Exists(path))

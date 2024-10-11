@@ -16,12 +16,12 @@ namespace MajdataPlay.Types
 #nullable enable
     public class SongDetail
     {
-        public string? Title { get; set; }
-        public string? Artist { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Artist { get; set; } = string.Empty;
         public string?[] Designers { get; set; } = new string[7];
         public string? Description { get; set; }
         public int? ClockCount { get; set; }
-        public string[]? Levels { get; set; } = new string[7];
+        public string[] Levels { get; set; } = new string[7];
         public string? VideoPath { get; init; }
         public string? TrackPath { get; init; }
         public string? MaidataPath { get; init; }
@@ -167,7 +167,8 @@ namespace MajdataPlay.Types
                 Debug.Log("Memory Cache Hit");
                 return SongCover;
             }
-            if (CoverPath is null or "") return null;
+            if (string.IsNullOrEmpty(CoverPath)) 
+                return SpriteLoader.EmptySprite;
             if (isOnline)
             {
                 Debug.Log("Try load cover online" + CoverPath);

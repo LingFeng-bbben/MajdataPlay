@@ -196,7 +196,5 @@ namespace MajdataPlay
         }
         [SerializeField]
         bool _useUnityTimer = false;
-        int _selectedDir = 0;
-        int _selectedIndex = 0;
     }
 }
