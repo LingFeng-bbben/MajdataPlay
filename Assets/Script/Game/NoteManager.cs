@@ -43,13 +43,5 @@ namespace MajdataPlay.Game
         }
         public void NextNote(in TapQueueInfo queueInfo) => noteCurrentIndex[queueInfo.KeyIndex]++;
         public void NextTouch(in TouchQueueInfo queueInfo) => touchCurrentIndex[queueInfo.SensorPos]++;
-        public void DestroyAllNotes()
-        {
-            foreach (var note in notes)
-            {
-                if (note != null)
-                    Destroy(note);
-            }
-        }
     }
 }

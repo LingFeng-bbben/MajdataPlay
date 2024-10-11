@@ -84,14 +84,14 @@ namespace MajdataPlay.Game.Notes
         {
             State = NoteStatus.Destroyed;
             ioManager.UnbindArea(Check, sensorPos);
-            if (!isJudged)
+            if (forceEnd)
+                return;
+            else if (!isJudged)
             {
                 noteManager.NextNote(QueueInfo);
                 return;
             }
-            else if (forceEnd)
-                return;
-
+            
             if (IsClassic)
                 EndJudge_Classic(ref judgeResult);
             else

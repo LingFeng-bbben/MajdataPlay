@@ -78,7 +78,7 @@ namespace MajdataPlay.Game
         {
             Instance = this;
             //print(GameManager.Instance.SelectedIndex);
-            song = GameManager.Instance.Collection.Current;
+            song = SongStorage.WorkingCollection.Current;
             HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
             GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
         }
@@ -88,7 +88,7 @@ namespace MajdataPlay.Game
             if (e.IsButton && e.IsClick && e.Type == SensorType.P1)
             {
                 print("Pause!!");
-                BackToList();
+                BackToList().Forget();
             }
         }
 
@@ -143,7 +143,7 @@ namespace MajdataPlay.Game
                 }
             }
 
-            DelayPlay().Forget();
+            PrepareToPlay().Forget();
         }
         async UniTask LoadAudioTrack()
         {
@@ -309,7 +309,7 @@ namespace MajdataPlay.Game
             loadingMask.SetActive(false);
             loadingText.gameObject.SetActive(false);
         }
-        async UniTaskVoid DelayPlay()
+        async UniTaskVoid PrepareToPlay()
         {
             if (audioSample is null)
                 return;
@@ -348,7 +348,7 @@ namespace MajdataPlay.Game
 
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             print("GPManagerDestroy");
             DisposeAudioTrack();
@@ -455,40 +455,30 @@ namespace MajdataPlay.Game
                 audioSample = null;
             }
         }
-        public void BackToList()
+        async UniTaskVoid BackToList()
         {
             InputManager.Instance.UnbindAnyArea(OnPauseButton);
             GameManager.Instance.EnableGC();
             StopAllCoroutines();
             DisposeAudioTrack();
-            //AudioManager.Instance.UnLoadMusic();
-            
-            DelayBackToList().Forget();
+
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            SceneSwitcher.Instance.SwitchScene("List");
 
         }
-        async UniTaskVoid DelayBackToList()
-        {
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            GameObject.Find("Notes").GetComponent<NoteManager>().DestroyAllNotes();
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            SceneSwitcher.Instance.SwitchScene(1);
-        }
-        public void EndGame()
+        public async UniTaskVoid EndGame()
         {
             var acc = objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
             GameManager.LastGameResult = objectCounter.GetPlayRecord(song, GameManager.Instance.SelectedDiff);
             GameManager.Instance.EnableGC();
-            DelayEndGame().Forget();
             BGManager.Instance.CancelTimeRef();
             State = ComponentState.Finished;
-        }
-        async UniTaskVoid DelayEndGame()
-        {
-            await UniTask.Delay(2000);
             DisposeAudioTrack();
+
             InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            SceneSwitcher.Instance.SwitchScene(3);
+            await UniTask.DelayFrame(5);
+            SceneSwitcher.Instance.SwitchSceneAfterTaskAsync("Result", UniTask.Delay(1000)).Forget();
         }
         class AnwserSoundPoint
         {

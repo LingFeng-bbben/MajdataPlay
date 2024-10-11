@@ -199,7 +199,7 @@ namespace MajdataPlay.Result
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
-                SceneSwitcher.Instance.SwitchScene(1);
+                SceneSwitcher.Instance.SwitchScene("List");
             }
         }
 

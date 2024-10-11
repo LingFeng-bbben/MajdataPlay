@@ -56,6 +56,10 @@ namespace MajdataPlay.List
             StopAllCoroutines();
             StartCoroutine(SetCoverAsync(detail));
         }
+        public void SetNoCover()
+        {
+            Cover.sprite = null;
+        }
 
         IEnumerator SetCoverAsync(SongDetail detail)
         {

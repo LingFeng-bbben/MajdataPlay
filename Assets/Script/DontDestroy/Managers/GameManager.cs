@@ -21,6 +21,7 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
+        public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => tokenSource.Token; }
         
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -34,29 +35,15 @@ namespace MajdataPlay
 
         public GameSetting Setting { get; private set; } = new();
         /// <summary>
-        /// ��List��ѡ�е��ļ���
+        /// Current difficult
         /// </summary>
-        public SongCollection Collection { get; private set; } = new();
-        public int SelectedDir
-        {
-            get => _selectedDir;
-            set
-            {
-                Collection = SongStorage.Songs[value];
-                _selectedDir = value;
-            }
-        }
-        public static GameResult? LastGameResult { get; set; } = null;
+        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
+        
 
         CancellationTokenSource tokenSource = new();
         Task? logWritebackTask = null;
         Queue<GameLog> logQueue = new();
-        /// <summary>
-        /// ���ѡ��������Ѷ�
-        /// </summary>
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-
         readonly JsonSerializerOptions jsonReaderOption = new()
         {
 
@@ -67,6 +54,7 @@ namespace MajdataPlay
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+
         void Awake()
         {
             Application.logMessageReceived += (c, trace, type) =>
@@ -138,9 +126,14 @@ namespace MajdataPlay
         {
             await SongStorage.ScanMusicAsync();
 
-            SelectedDir = Setting.SelectedDir;
-            Collection.Index = Setting.SelectedIndex;
-            SelectedDiff = Setting.SelectedDiff;
+            SelectedDiff = Setting.Misc.SelectedDiff;
+            SongStorage.OrderBy = Setting.Misc.OrderBy;
+            if (!SongStorage.IsEmpty)
+            {
+                SongStorage.SortAndFind();
+                SongStorage.CollectionIndex = Setting.Misc.SelectedDir;
+                SongStorage.WorkingCollection.Index = Setting.Misc.SelectedIndex;
+            }
         }
         private void OnApplicationQuit()
         {
@@ -152,9 +145,11 @@ namespace MajdataPlay
         }
         public void Save()
         {
-            Setting.SelectedDiff = SelectedDiff;
-            Setting.SelectedIndex = Collection.Index;
-            Setting.SelectedDir = SelectedDir;
+            Setting.Misc.SelectedDiff = SelectedDiff;
+            Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
+            Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
+            SongStorage.OrderBy.Keyword = string.Empty;
+            Setting.Misc.OrderBy = SongStorage.OrderBy;
 
             var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
             File.WriteAllText(SettingPath, json);
@@ -205,7 +200,5 @@ namespace MajdataPlay
         }
         [SerializeField]
         bool _useUnityTimer = false;
-        int _selectedDir = 0;
-        int _selectedIndex = 0;
     }
 }

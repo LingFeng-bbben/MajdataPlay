@@ -15,10 +15,36 @@ namespace MajdataPlay.Utils
 {
     public static class SongStorage
     {
-        public static bool IsEmpty => Songs.IsEmpty() || Songs.All(x => x.Count == 0);
-        public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
+        public static bool IsEmpty => Collections.IsEmpty() || Collections.All(x => x.Count == 0);
+        /// <summary>
+        /// Current song collection index
+        /// </summary>
+        public static int CollectionIndex 
+        { 
+            get => _collectionIndex;
+            set => _collectionIndex = value.Clamp(0, Collections.Length - 1); 
+        }
+        /// <summary>
+        /// Current song collection
+        /// </summary>
+        public static SongCollection WorkingCollection 
+        { 
+            get
+            {
+                if (Collections.IsEmpty())
+                    return SongCollection.Empty("default");
+                return Collections[_collectionIndex];
+            }
+        }
+        /// <summary>
+        /// Loaded song collections
+        /// </summary>
+        public static SongCollection[] Collections { get; private set; } = new SongCollection[0];
+        public static SongOrder OrderBy { get; set; } = new();
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
+
+        static int _collectionIndex = 0;
         public static async Task ScanMusicAsync()
         {
             State = ComponentState.Backend;
@@ -39,7 +65,7 @@ namespace MajdataPlay.Utils
             }
             else
             {
-                Songs = songs;
+                Collections = songs;
                 State = ComponentState.Finished;
             }
         }
@@ -103,7 +129,6 @@ namespace MajdataPlay.Utils
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());
         }
-
         static async Task<SongCollection> GetOnlineCollection(string apiroot)
         {
             var collection = SongCollection.Empty("MajNet");
@@ -127,6 +152,8 @@ namespace MajdataPlay.Utils
                 var gameList = new List<SongDetail>();
                 foreach (var song in list)
                 {
+                    DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                    dateTime = dateTime.AddSeconds(song.Timestamp).ToLocalTime();
                     var songDetail = new SongDetail()
                     {
                         Title = song.Title,
@@ -138,7 +165,7 @@ namespace MajdataPlay.Utils
                         BGPath = apiroot + "/ImageFull/" + song.Id,
                         CoverPath = apiroot + "/Image/" + song.Id,
                         Hash = song.Id.ToString(),
-
+                        AddTime = dateTime
                     };
                     for (int i = 0; i < songDetail.Designers.Count(); i++)
                     {
@@ -155,5 +182,48 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
-    }
+        public static void SortAndFind(string searchKey, SortType sortType)
+        {
+            OrderBy.Keyword = searchKey;
+            OrderBy.SortBy = sortType;
+            SortAndFind();
+        }
+        public static void SortAndFind()
+        {
+            var searchKey = OrderBy.Keyword;
+            var sortType = OrderBy.SortBy;
+            
+            if(string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
+            {
+                foreach (var collection in Collections)
+                    collection.Reset();
+                return;
+            }
+            foreach (var collection in Collections)
+                collection.SortAndFilter(OrderBy);
+        }
+        public static async Task SortAndFindAsync(string searchKey, SortType sortType)
+        {
+            OrderBy.Keyword = searchKey;
+            OrderBy.SortBy = sortType;
+            await SortAndFindAsync();
+        }
+        public static async Task SortAndFindAsync()
+        {
+            Task[] tasks = new Task[Collections.Length];
+
+            var searchKey = OrderBy.Keyword;
+            var sortType = OrderBy.SortBy;
+
+            if (string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
+            {
+                foreach (var collection in Collections)
+                    collection.Reset();
+                return;
+            }
+            foreach (var (i, collection) in Collections.WithIndex())
+                tasks[i] = collection.SortAndFilterAsync(OrderBy);
+            await Task.WhenAll(tasks);
+        }
+    }    
 }

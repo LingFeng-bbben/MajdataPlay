@@ -12,14 +12,15 @@ namespace MajdataPlay.List
         // Start is called before the first frame update
         void Start()
         {
-            CoverListDisplayer.SetDirList(SongStorage.Songs);
+            CoverListDisplayer.SetDirList(SongStorage.Collections);
             CoverListDisplayer.SetSongList();
-            LightManager.Instance.SetAllLight(Color.white);
+            //LightManager.Instance.SetAllLight(Color.white);
             LightManager.Instance.SetButtonLight(Color.green, 3);
             LightManager.Instance.SetButtonLight(Color.red, 4);
             LightManager.Instance.SetButtonLight(Color.blue, 2);
             LightManager.Instance.SetButtonLight(Color.blue, 5);
             LightManager.Instance.SetButtonLight(Color.yellow, 6);
+            LightManager.Instance.SetButtonLight(Color.yellow, 1);
             CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
             AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_SONG);
             AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_BGM, true);
@@ -95,16 +96,20 @@ namespace MajdataPlay.List
                     case SensorType.A1:
                         CoverListDisplayer.SlideDifficulty(1);
                         break;
+                    case SensorType.A2:
+                        InputManager.Instance.UnbindAnyArea(OnAreaDown);
+                        SceneSwitcher.Instance.SwitchScene("SortFind");
+                        break;
                     case SensorType.A5:
-                        if (!CoverListDisplayer.isDirList)
+                        if (CoverListDisplayer.IsChartList)
                         {
-                            CoverListDisplayer.SetDirList(SongStorage.Songs);
+                            CoverListDisplayer.SetDirList(SongStorage.Collections);
                             LightManager.Instance.SetButtonLight(Color.white, 4);
-                            GameManager.Instance.Collection.Index = 0;
+                            SongStorage.WorkingCollection.Index = 0;
                         }
                         break;
                     case SensorType.A4:
-                        if (CoverListDisplayer.isDirList)
+                        if (CoverListDisplayer.IsDirList)
                         {
                             CoverListDisplayer.SetSongList();
                             LightManager.Instance.SetButtonLight(Color.red, 4);
@@ -114,12 +119,12 @@ namespace MajdataPlay.List
                             InputManager.Instance.UnbindAnyArea(OnAreaDown);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_SONG);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_BGM);
-                            SceneSwitcher.Instance.SwitchScene(2);
+                            SceneSwitcher.Instance.SwitchScene("Game");
                         }
                         break;
                     case SensorType.A7:
                         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneSwitcher.Instance.SwitchScene(4);
+                        SceneSwitcher.Instance.SwitchScene("Setting");
                         break;
                 }
             }
