@@ -15,12 +15,12 @@
     {
       "Type": "PRESS_ANY_KEY",
       "Origin": "Press Any Key",
-      "Content": "请按任意键继续"
+      "Content": "触摸继续"
     },
     {
       "Type": "DOWNLOADING",
       "Origin": "Downloading",
-      "Content": "正在从服务器下载资源"
+      "Content": "正在下载"
     },
     {
       "Type": "LOAD_CHART_FAILED",
@@ -115,7 +115,7 @@
     {
       "Type": "LANGUAGE_DESC",
       "Origin": "Language_MAJSETTING_DESC",
-      "Content": "我也不知道这是干嘛的"
+      "Content": "言語/LANGUAGE"
     },
     {
       "Type": "STAR_ROTATION",

@@ -40,27 +40,27 @@
     {
       "Type": "GAME",
       "Origin": "Game",
-      "Content": "ゲーム"
+      "Content": "ゲーム設定"
     },
     {
       "Type": "JUDGE",
       "Origin": "Judge",
-      "Content": "判定"
+      "Content": "判定設定"
     },
     {
       "Type": "DISPLAY",
       "Origin": "Display",
-      "Content": "表示"
+      "Content": "表示設定"
     },
     {
       "Type": "AUDIO",
       "Origin": "Audio",
-      "Content": "オーディオ"
+      "Content": "サウンド設定"
     },
     {
       "Type": "VOLUME",
       "Origin": "Volume",
-      "Content": "音量"
+      "Content": "サウンド設定"
     },
     {
       "Type": "DEBUG",
@@ -70,7 +70,7 @@
     {
       "Type": "TAP_SPEED",
       "Origin": "TapSpeed",
-      "Content": "Tap速さ"
+      "Content": "タップスビート"
     },
     {
       "Type": "TAP_SPEED_DESC",
@@ -80,7 +80,7 @@
     {
       "Type": "TOUCH_SPEED",
       "Origin": "TouchSpeed",
-      "Content": "Touch速さ"
+      "Content": "タッチスビート"
     },
     {
       "Type": "TOUCH_SPEED_DESC",
@@ -90,12 +90,12 @@
     {
       "Type": "SLIDE_FADEIN_OFFSET",
       "Origin": "SlideFadeInOffset",
-      "Content": "Slideタイミング補正"
+      "Content": "スライド表示タイミング"
     },
     {
       "Type": "SLIDE_FADEIN_OFFSET_DESC",
       "Origin": "",
-      "Content": "スライド現れるタイミングを設定"
+      "Content": "スライド現れるタイミングを設定、右調整は遅い（秒）"
     },
     {
       "Type": "BACKGROUND_DIM",
@@ -105,7 +105,7 @@
     {
       "Type": "BACKGROUND_DIM_DESC",
       "Origin": "",
-      "Content": ""
+      "Content": "大きいの方が暗い"
     },
     {
       "Type": "LANGUAGE",
@@ -115,12 +115,12 @@
     {
       "Type": "LANGUAGE_DESC",
       "Origin": "",
-      "Content": ""
+      "Content": "语言/LANGUAGE"
     },
     {
       "Type": "STAR_ROTATION",
       "Origin": "StarRotation",
-      "Content": "Star回し"
+      "Content": "スライドローテーション"
     },
     {
       "Type": "STAR_ROTATION_DESC",
@@ -130,7 +130,7 @@
     {
       "Type": "BGINFO",
       "Origin": "BGInfo",
-      "Content": "中心ディスプレイ"
+      "Content": "画面中央表示"
     },
     {
       "Type": "BGINFO_DESC",
@@ -145,7 +145,7 @@
     {
       "Type": "AUDIO_OFFSET_DESC",
       "Origin": "",
-      "Content": "FAST = -\nLATE = +"
+      "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
       "Type": "JUDGE_OFFSET",
@@ -155,7 +155,7 @@
     {
       "Type": "JUDGE_OFFSET_DESC",
       "Origin": "",
-      "Content": "FAST = -\nLATE = +"
+      "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
       "Type": "MODE",
@@ -248,9 +248,19 @@
       "Content": ""
     },
     {
+      "Type": "SLIDE_SORT_ORDER",
+      "Origin": "SlideSortOrder",
+      "Content": "スライド表示順番"
+    },
+    {
+      "Type": "SLIDE_SORT_ORDER_DESC",
+      "Origin": "SlideSortOrder_MAJSETTING_DESC",
+      "Content": "Classic: 新しいのは古いの上に\nModern: 古いのは新しいの上に"
+    },
+    {
       "Type": "OUTER_JUDGE_DISTANCE",
       "Origin": "OuterJudgeDistance",
-      "Content": "内側判定距離"
+      "Content": "内側判定文字表示距離"
     },
     {
       "Type": "OUTER_JUDGE_DISTANCE_DESC",
@@ -260,7 +270,7 @@
     {
       "Type": "INNER_JUDGE_DISTANCE",
       "Origin": "InnerJudgeDistance",
-      "Content": "外側判定距離"
+      "Content": "外側判定文字表示距離"
     },
     {
       "Type": "INNER_JUDGE_DISTANCE_DESC",
