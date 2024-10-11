@@ -1,6 +1,7 @@
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using UnityEngine;
+using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -53,7 +54,7 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
             sr.sprite = curvSprites[curvLength - 1];
-            transform.localScale = new Vector3(0.255f, 0.255f, 1f);
+            transform.localScale = new Vector3(0f, 0f, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
         }
@@ -84,35 +85,53 @@ namespace MajdataPlay.Game.Notes
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
             var timing = gpManager.AudioTime - this.timing;
-            float distance;
-
-            if (DistanceProvider is not null)
-                distance = DistanceProvider.Distance;
-            else
-                distance = timing * speed + 4.8f;
+            var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
             var scaleRate = gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
-            if (NoteA is not null && NoteB is not null)
-            {
-                if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
-                {
-                    End();
-                    return;
-                }
-            }
-            else if (timing > 0)
-            {
-                End();
-                return;
-            }
-
-            if (distance <= 1.225f)
-                distance = 1.225f;
-            if (destScale > 0.3f)
-                RendererState = RendererStatus.On;
             var lineScale = Mathf.Abs(distance / 4.8f);
-            transform.localScale = new Vector3(lineScale, lineScale, 1f);
-            transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
+
+            switch (State)
+            {
+                case NoteStatus.Initialized:
+                    if (destScale >= 0f)
+                    {
+                        transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
+                        RendererState = RendererStatus.Off;
+
+                        State = NoteStatus.Scaling;
+                        goto case NoteStatus.Scaling;
+                    }
+                    else
+                        transform.localScale = new Vector3(0, 0);
+                    return;
+                case NoteStatus.Scaling:
+                    if (destScale > 0.3f)
+                        RendererState = RendererStatus.On;
+                    if (distance < 1.225f)
+                        transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                    else
+                    {
+                        State = NoteStatus.Running;
+                        goto case NoteStatus.Running;
+                    }
+                    break;
+                case NoteStatus.Running:
+                    transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                    if (NoteA is not null && NoteB is not null)
+                    {
+                        if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
+                        {
+                            End();
+                            return;
+                        }
+                    }
+                    else if (timing > 0)
+                    {
+                        End();
+                        return;
+                    }
+                    break;
+            }
         }
 
         RendererStatus _rendererState = RendererStatus.Off;
