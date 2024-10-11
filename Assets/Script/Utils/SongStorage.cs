@@ -19,8 +19,8 @@ namespace MajdataPlay.Utils
         public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
 
         private static SongCollection[] SongsUnsorted { get; set; } = new SongCollection[0];
-        public static string lastFindKey { get; private set; } = "";
-        public static SortType lastSortType { get; private set; } = SortType.Default; 
+        public static string LastFindKey { get; private set; } = "";
+        public static SortType LastSortType { get; private set; } = SortType.Default; 
 
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
@@ -109,7 +109,6 @@ namespace MajdataPlay.Utils
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());
         }
-
         static async Task<SongCollection> GetOnlineCollection(string apiroot)
         {
             var collection = SongCollection.Empty("MajNet");
@@ -163,11 +162,10 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
-    
         public static void SortAndFind(string searchKey,SortType sortType)
         {
-            lastFindKey = searchKey;
-            lastSortType = sortType;
+            LastFindKey = searchKey;
+            LastSortType = sortType;
             
             var newSongList = new SongCollection[SongsUnsorted.Length];
             if (searchKey.IsEmpty())
@@ -211,10 +209,5 @@ namespace MajdataPlay.Utils
             Songs = newSongList;
         }
 
-    }
-
-    public enum SortType
-    {
-        Default=4, ByTime=0, ByDiff=1, ByDes=2, ByTitle=3
-    }
+    }    
 }
