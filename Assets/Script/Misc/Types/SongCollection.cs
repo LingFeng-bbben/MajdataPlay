@@ -43,6 +43,10 @@ namespace MajdataPlay.Types
             return true;
         }
         public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
+        public void Sort(SongOrder orderBy)
+        {
+
+        }
         public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<SongDetail>());
         public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(songs);
 

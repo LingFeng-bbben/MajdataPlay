@@ -21,6 +21,7 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
+        public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => tokenSource.Token; }
         
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -34,29 +35,15 @@ namespace MajdataPlay
 
         public GameSetting Setting { get; private set; } = new();
         /// <summary>
-        /// Current song collection
+        /// Current difficult
         /// </summary>
-        public SongCollection Collection { get; private set; } = new();
-        public int SelectedDir
-        {
-            get => _selectedDir;
-            set
-            {
-                Collection = SongStorage.Songs[value];
-                _selectedDir = value;
-            }
-        }
-        public static GameResult? LastGameResult { get; set; } = null;
+        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
+        
 
         CancellationTokenSource tokenSource = new();
         Task? logWritebackTask = null;
         Queue<GameLog> logQueue = new();
-        /// <summary>
-        /// Current difficult
-        /// </summary>
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-
         readonly JsonSerializerOptions jsonReaderOption = new()
         {
 
@@ -67,6 +54,7 @@ namespace MajdataPlay
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+
         void Awake()
         {
             Application.logMessageReceived += (c, trace, type) =>
@@ -138,9 +126,12 @@ namespace MajdataPlay
         {
             await SongStorage.ScanMusicAsync();
 
-            SelectedDir = Setting.Misc.SelectedDir;
-            Collection.Index = Setting.Misc.SelectedIndex;
             SelectedDiff = Setting.Misc.SelectedDiff;
+            if (!SongStorage.IsEmpty)
+            {
+                SongStorage.CollectionIndex = Setting.Misc.SelectedDir;
+                SongStorage.WorkingCollection.Index = Setting.Misc.SelectedIndex;
+            }
         }
         private void OnApplicationQuit()
         {
@@ -153,8 +144,8 @@ namespace MajdataPlay
         public void Save()
         {
             Setting.Misc.SelectedDiff = SelectedDiff;
-            Setting.Misc.SelectedIndex = Collection.Index;
-            Setting.Misc.SelectedDir = SelectedDir;
+            Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
+            Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
 
             var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
             File.WriteAllText(SettingPath, json);

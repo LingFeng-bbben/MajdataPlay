@@ -78,7 +78,7 @@ namespace MajdataPlay.Game
         {
             Instance = this;
             //print(GameManager.Instance.SelectedIndex);
-            song = GameManager.Instance.Collection.Current;
+            song = SongStorage.WorkingCollection.Current;
             HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
             GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
         }

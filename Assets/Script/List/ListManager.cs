@@ -12,7 +12,7 @@ namespace MajdataPlay.List
         // Start is called before the first frame update
         void Start()
         {
-            CoverListDisplayer.SetDirList(SongStorage.Songs);
+            CoverListDisplayer.SetDirList(SongStorage.Collections);
             CoverListDisplayer.SetSongList();
             //LightManager.Instance.SetAllLight(Color.white);
             LightManager.Instance.SetButtonLight(Color.green, 3);
@@ -103,9 +103,9 @@ namespace MajdataPlay.List
                     case SensorType.A5:
                         if (!CoverListDisplayer.isDirList)
                         {
-                            CoverListDisplayer.SetDirList(SongStorage.Songs);
+                            CoverListDisplayer.SetDirList(SongStorage.Collections);
                             LightManager.Instance.SetButtonLight(Color.white, 4);
-                            GameManager.Instance.Collection.Index = 0;
+                            SongStorage.WorkingCollection.Index = 0;
                         }
                         break;
                     case SensorType.A4:

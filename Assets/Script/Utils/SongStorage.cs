@@ -15,14 +15,37 @@ namespace MajdataPlay.Utils
 {
     public static class SongStorage
     {
-        public static bool IsEmpty => Songs.IsEmpty() || Songs.All(x => x.Count == 0);
-        public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
-
-        private static SongCollection[] SongsUnsorted { get; set; } = new SongCollection[0];
+        public static bool IsEmpty => Collections.IsEmpty() || Collections.All(x => x.Count == 0);
+        /// <summary>
+        /// Current song collection index
+        /// </summary>
+        public static int CollectionIndex 
+        { 
+            get => _collectionIndex;
+            set => _collectionIndex = value.Clamp(0, Collections.Length - 1); 
+        }
+        /// <summary>
+        /// Current song collection
+        /// </summary>
+        public static SongCollection WorkingCollection 
+        { 
+            get
+            {
+                if (Collections.IsEmpty())
+                    return SongCollection.Empty("default");
+                return Collections[_collectionIndex];
+            }
+        }
+        /// <summary>
+        /// Loaded song collections
+        /// </summary>
+        public static SongCollection[] Collections { get; private set; } = new SongCollection[0];
         public static SongOrder OrderBy { get; set; } = new();
-
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
+
+        static int _collectionIndex = 0;
+        static SongCollection[] CollectionsUnsorted { get; set; } = new SongCollection[0];
         public static async Task ScanMusicAsync()
         {
             State = ComponentState.Backend;
@@ -43,8 +66,8 @@ namespace MajdataPlay.Utils
             }
             else
             {
-                Songs = songs;
-                SongsUnsorted = (SongCollection[])songs.Clone();
+                Collections = songs;
+                CollectionsUnsorted = (SongCollection[])songs.Clone();
                 State = ComponentState.Finished;
             }
         }
@@ -166,17 +189,17 @@ namespace MajdataPlay.Utils
             OrderBy.Keyword = searchKey;
             OrderBy.SortBy = sortType;
             
-            var newSongList = new SongCollection[SongsUnsorted.Length];
+            var newSongList = new SongCollection[CollectionsUnsorted.Length];
             if (searchKey.IsEmpty())
             {
-                newSongList = SongsUnsorted;
+                newSongList = CollectionsUnsorted;
             }
             else
             {
                 searchKey = searchKey.ToLower();
-                for (int i = 0; i < SongsUnsorted.Length; i++)
+                for (int i = 0; i < CollectionsUnsorted.Length; i++)
                 {
-                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, SongsUnsorted[i].FindAll(
+                    newSongList[i] = new SongCollection(CollectionsUnsorted[i].Name, CollectionsUnsorted[i].FindAll(
                         o => o.Title.ToLower().Contains(searchKey) ||
                         o.Artist.ToLower().Contains(searchKey) ||
                         o.Designers.Any(p => p == null ? false : p.ToLower().Contains(searchKey)) ||
@@ -185,27 +208,27 @@ namespace MajdataPlay.Utils
                 }
             }
 
-            for (int i = 0; i < SongsUnsorted.Length; i++)
+            for (int i = 0; i < CollectionsUnsorted.Length; i++)
             {
                 if(sortType == SortType.ByTime) {
-                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.AddTime).ToArray());
+                    newSongList[i] = new SongCollection(CollectionsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.AddTime).ToArray());
                 }
                 if (sortType == SortType.ByTitle)
                 {
-                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Title).ToArray());
+                    newSongList[i] = new SongCollection(CollectionsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Title).ToArray());
                 }
                 if (sortType == SortType.ByDes)
                 {
-                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Designers[4]).ToArray());
+                    newSongList[i] = new SongCollection(CollectionsUnsorted[i].Name, newSongList[i].OrderBy(o => o.Designers[4]).ToArray());
                 }
                 if (sortType == SortType.ByDiff)
                 {
-                    newSongList[i] = new SongCollection(SongsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.Levels[4]).ToArray());
+                    newSongList[i] = new SongCollection(CollectionsUnsorted[i].Name, newSongList[i].OrderByDescending(o => o.Levels[4]).ToArray());
                 }
 
             }
 
-            Songs = newSongList;
+            Collections = newSongList;
         }
 
     }    

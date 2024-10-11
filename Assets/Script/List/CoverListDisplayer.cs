@@ -1,5 +1,6 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace MajdataPlay.List
             covers.Clear();
             isDirList = true;
             dirs = _dirs;
-            desiredListPos = GameManager.Instance.SelectedDir;
+            desiredListPos = SongStorage.CollectionIndex;
             foreach (var dir in _dirs)
             {
                 var obj = Instantiate(DirSmallPrefab, transform);
@@ -68,7 +69,7 @@ namespace MajdataPlay.List
             }
             covers.Clear();
             isDirList = false;
-            desiredListPos = GameManager.Instance.Collection.Index;
+            desiredListPos = SongStorage.WorkingCollection.Index;
             foreach (var song in songs)
             {
                 var obj = Instantiate(CoverSmallPrefab, transform);
@@ -122,14 +123,14 @@ namespace MajdataPlay.List
 
         public void SlideList(int delta)
         {
-            var collection = GameManager.Instance.Collection;
+            var collection = SongStorage.WorkingCollection;
             collection.Move(delta);
             desiredListPos = collection.Index;
             SlideToList(desiredListPos);
         }
         public void RefreshList()
         {
-            var collection = GameManager.Instance.Collection;
+            var collection = SongStorage.WorkingCollection;
             desiredListPos = collection.Index;
             SlideToList(desiredListPos);
         }
@@ -153,17 +154,16 @@ namespace MajdataPlay.List
                 CoverBigDisplayer.SetCover(songinfo);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
-                GameManager.Instance.Collection.Index = desiredListPos;
+                SongStorage.WorkingCollection.Index = desiredListPos;
             }
             else
             {
                 songs = dirs[desiredListPos];
                 CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
                 CoverBigDisplayer.SetScore(new MaiScore());
-                GameManager.Instance.SelectedDir = desiredListPos;
+                SongStorage.CollectionIndex = desiredListPos;
             }
         }
-
         private void Update()
         {
             listPosReal += (desiredListPos - listPosReal) * turnSpeed * Time.deltaTime;
