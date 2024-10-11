@@ -57,6 +57,8 @@ namespace MajdataPlay.Game.Notes
             transform.localScale = new Vector3(0f, 0f, 1f);
             transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
+            if (DistanceProvider is null)
+                Debug.LogWarning("DistanceProvider not found");
         }
         public void End(bool forceEnd = false)
         {
