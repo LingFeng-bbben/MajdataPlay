@@ -49,8 +49,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, Task taskToRun)
@@ -65,8 +65,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, ValueTask taskToRun)
@@ -81,8 +81,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, UniTask taskToRun)
@@ -99,9 +99,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
-            animator.SetBool("In", false);
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
@@ -116,8 +115,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
             animator.SetBool("In", false);
             return taskToRun.Result;
         }
@@ -133,8 +132,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
+            await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.Delay(100);
             animator.SetBool("In", false);
             switch(taskToRun.Status)
             {

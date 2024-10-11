@@ -312,13 +312,13 @@ namespace MajdataPlay.Game
                 kv => judgedHoldCount[kv.Key] + judgedTouchHoldCount[kv.Key]
             );
             var record = new Dictionary<ScoreNoteType, JudgeInfo>()
-        {
-            { ScoreNoteType.Tap, new (judgedTapCount) },
-            { ScoreNoteType.Hold, new (holdRecord)},
-            { ScoreNoteType.Slide,new (judgedSlideCount)},
-            { ScoreNoteType.Break, new (judgedBreakCount)},
-            { ScoreNoteType.Touch, new (judgedTouchCount) }
-        };
+            {
+                { ScoreNoteType.Tap, new (judgedTapCount) },
+                { ScoreNoteType.Hold, new (holdRecord)},
+                { ScoreNoteType.Slide,new (judgedSlideCount)},
+                { ScoreNoteType.Break, new (judgedBreakCount)},
+                { ScoreNoteType.Touch, new (judgedTouchCount) }
+            };
             var judgeRecord = new JudgeDetail(record);
 
             return new GameResult()
