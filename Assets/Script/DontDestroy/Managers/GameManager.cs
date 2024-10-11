@@ -130,9 +130,9 @@ namespace MajdataPlay
             SongStorage.OrderBy = Setting.Misc.OrderBy;
             if (!SongStorage.IsEmpty)
             {
+                SongStorage.SortAndFind();
                 SongStorage.CollectionIndex = Setting.Misc.SelectedDir;
                 SongStorage.WorkingCollection.Index = Setting.Misc.SelectedIndex;
-                SongStorage.SortAndFind();
             }
         }
         private void OnApplicationQuit()

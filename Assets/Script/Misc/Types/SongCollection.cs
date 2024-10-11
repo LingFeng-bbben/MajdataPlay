@@ -56,7 +56,7 @@ namespace MajdataPlay.Types
             var filtered = Filter(origin,orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
-            var newIndex = sorted.FindIndex(x => x == origin[Index]);
+            var newIndex = sorted.FindIndex(x => x == Current);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
             this.sorted = sorted;
@@ -68,7 +68,7 @@ namespace MajdataPlay.Types
         public void Reset()
         {
             IsSorted = false;
-            var newIndex = sorted.FindIndex(x => x == sorted[Index]);
+            var newIndex = origin.FindIndex(x => x == Current);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
             sorted = origin;
