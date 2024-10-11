@@ -34,7 +34,7 @@ namespace MajdataPlay
 
         public GameSetting Setting { get; private set; } = new();
         /// <summary>
-        /// ��List��ѡ�е��ļ���
+        /// Current song collection
         /// </summary>
         public SongCollection Collection { get; private set; } = new();
         public int SelectedDir
@@ -53,7 +53,7 @@ namespace MajdataPlay
         Task? logWritebackTask = null;
         Queue<GameLog> logQueue = new();
         /// <summary>
-        /// ���ѡ��������Ѷ�
+        /// Current difficult
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
 
@@ -138,9 +138,9 @@ namespace MajdataPlay
         {
             await SongStorage.ScanMusicAsync();
 
-            SelectedDir = Setting.SelectedDir;
-            Collection.Index = Setting.SelectedIndex;
-            SelectedDiff = Setting.SelectedDiff;
+            SelectedDir = Setting.Misc.SelectedDir;
+            Collection.Index = Setting.Misc.SelectedIndex;
+            SelectedDiff = Setting.Misc.SelectedDiff;
         }
         private void OnApplicationQuit()
         {
@@ -152,9 +152,9 @@ namespace MajdataPlay
         }
         public void Save()
         {
-            Setting.SelectedDiff = SelectedDiff;
-            Setting.SelectedIndex = Collection.Index;
-            Setting.SelectedDir = SelectedDir;
+            Setting.Misc.SelectedDiff = SelectedDiff;
+            Setting.Misc.SelectedIndex = Collection.Index;
+            Setting.Misc.SelectedDir = SelectedDir;
 
             var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
             File.WriteAllText(SettingPath, json);

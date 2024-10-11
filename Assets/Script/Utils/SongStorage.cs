@@ -19,8 +19,7 @@ namespace MajdataPlay.Utils
         public static SongCollection[] Songs { get; private set; } = new SongCollection[0];
 
         private static SongCollection[] SongsUnsorted { get; set; } = new SongCollection[0];
-        public static string LastFindKey { get; private set; } = "";
-        public static SortType LastSortType { get; private set; } = SortType.Default; 
+        public static SongOrder OrderBy { get; set; } = new();
 
         public static long TotalChartCount { get; private set; } = 0;
         public static ComponentState State { get; private set; } = ComponentState.Idle;
@@ -164,8 +163,8 @@ namespace MajdataPlay.Utils
         }
         public static void SortAndFind(string searchKey,SortType sortType)
         {
-            LastFindKey = searchKey;
-            LastSortType = sortType;
+            OrderBy.Keyword = searchKey;
+            OrderBy.SortBy = sortType;
             
             var newSongList = new SongCollection[SongsUnsorted.Length];
             if (searchKey.IsEmpty())

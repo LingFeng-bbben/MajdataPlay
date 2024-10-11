@@ -23,8 +23,8 @@ public class SortFindManager : MonoBehaviour
         EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
         LightManager.Instance.SetAllLight(Color.black);
         InputManager.Instance.BindAnyArea(OnAreaDown);
-        SearchBar.text = SongStorage.LastFindKey;
-        SetActiveSort(SongStorage.LastSortType);
+        SearchBar.text = SongStorage.OrderBy.Keyword;
+        SetActiveSort(SongStorage.OrderBy.SortBy);
     }
 
     private void OnAreaDown(object sender, InputEventArgs e)

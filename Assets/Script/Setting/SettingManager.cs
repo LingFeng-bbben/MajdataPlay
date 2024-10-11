@@ -20,7 +20,7 @@ namespace MajdataPlay.Setting
         {
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                             .SkipLast(4)
+                             .SkipLast(2)
                              .ToArray();
             menus = new Menu[properties.Length];
             foreach(var (i, property) in properties.WithIndex())

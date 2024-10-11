@@ -8,9 +8,8 @@
         public SoundOptions Audio { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public OnlineOptions Online { get; set; } = new();
-        public int SelectedIndex { get; set; } = 0;
-        public int SelectedDir { get; set; } = 0;
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
+        public MiscOptions Misc { get; set; } = new();
+        
     }
     public class GameOptions
     {
@@ -79,5 +78,12 @@
         public bool TryFixAudioSync { get; set; } = true;
         public float NoteAppearRate { get; set; } = 0.36f;
         public bool DisableGCInGameing { get; set; } = true;
+    }
+    public class MiscOptions
+    {
+        public int SelectedIndex { get; set; } = 0;
+        public int SelectedDir { get; set; } = 0;
+        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
+        public SongOrder OrderBy { get; set; } = new();
     }
 }

@@ -122,7 +122,15 @@ namespace MajdataPlay.List
 
         public void SlideList(int delta)
         {
-            desiredListPos += delta;
+            var collection = GameManager.Instance.Collection;
+            collection.Move(delta);
+            desiredListPos = collection.Index;
+            SlideToList(desiredListPos);
+        }
+        public void RefreshList()
+        {
+            var collection = GameManager.Instance.Collection;
+            desiredListPos = collection.Index;
             SlideToList(desiredListPos);
         }
 
