@@ -66,7 +66,7 @@ public class SortFindManager : MonoBehaviour
 
                 case SensorType.D5:
                     InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                    SortAndExit().Forget();
+                    SortAndExit();
                     break;
             }
         }
