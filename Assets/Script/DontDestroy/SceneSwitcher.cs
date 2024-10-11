@@ -25,149 +25,115 @@ namespace MajdataPlay
             DontDestroyOnLoad(this);
         }
 
-        public void SwitchScene(int sceneIndex)
-        {
-            SwitchSceneInternal(sceneIndex).Forget();
-        }
         public void SwitchScene(string sceneName)
         {
             SwitchSceneInternal(sceneName).Forget();
         }
-        async UniTask SwitchSceneInternal(int sceneIndex)
+        async UniTask SwitchSceneInternal(string sceneName)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             await UniTask.Delay(250);
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
-        }
-        async UniTaskVoid SwitchSceneInternal(string sceneName)
-        {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            await SwitchSceneInternal(scene.buildIndex);
         }
     }
     public partial class SceneSwitcher : MonoBehaviour
     {
         // Task
-        async UniTask SwitchSceneInternalAsync(int sceneIndex, Task taskToRun)
+        async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
-        }
-        public async UniTaskVoid SwitchSceneAfterTaskAsync(int sceneIndex, Task taskToRun)
-        {
-            await SwitchSceneInternalAsync(sceneIndex, taskToRun);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, Task taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
         // ValueTasl
-        async UniTask SwitchSceneInternalAsync(int sceneIndex, ValueTask taskToRun)
+        async UniTask SwitchSceneInternalAsync(string sceneName, ValueTask taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
         }
-        public async UniTaskVoid SwitchSceneAfterTaskAsync(int sceneIndex, ValueTask taskToRun)
-        {
-            await SwitchSceneInternalAsync(sceneIndex, taskToRun);
-        }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, ValueTask taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
         // UniTask
-        async UniTask SwitchSceneInternalAsync(int sceneIndex, UniTask taskToRun)
+        async UniTask SwitchSceneInternalAsync(string sceneName, UniTask taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
         }
-        public async UniTaskVoid SwitchSceneAfterTaskAsync(int sceneIndex, UniTask taskToRun)
-        {
-            await SwitchSceneInternalAsync(sceneIndex, taskToRun);
-        }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, UniTask taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
 
 
         // Task
-        async UniTask<T> SwitchSceneInternalAsync<T>(int sceneIndex, Task<T> taskToRun)
+        async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, Task<T> taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
             return taskToRun.Result;
-        }
-        public async UniTask<T> SwitchSceneAfterTaskAsync<T>(int sceneIndex, Task<T> taskToRun)
-        {
-            return await SwitchSceneInternalAsync(sceneIndex, taskToRun);
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            return await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            return await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
         // ValueTasl
-        async UniTask<T> SwitchSceneInternalAsync<T>(int sceneIndex, ValueTask<T> taskToRun)
+        async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, ValueTask<T> taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
             return taskToRun.Result;
         }
-        public async UniTask<T> SwitchSceneAfterTaskAsync<T>(int sceneIndex, ValueTask<T> taskToRun)
-        {
-            return await SwitchSceneInternalAsync(sceneIndex, taskToRun);
-        }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, ValueTask<T> taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            return await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            return await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
         // UniTask
-        async UniTask<T> SwitchSceneInternalAsync<T>(int sceneIndex, UniTask<T> taskToRun)
+        async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, UniTask<T> taskToRun)
         {
             SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
             MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
-            await SceneManager.LoadSceneAsync(sceneIndex);
+            await SceneManager.LoadSceneAsync(sceneName);
             await UniTask.Delay(100);
             animator.SetBool("In", false);
             switch(taskToRun.Status)
@@ -180,14 +146,9 @@ namespace MajdataPlay
                     throw new TaskCanceledException();
             }
         }
-        public async UniTask<T> SwitchSceneAfterTaskAsync<T>(int sceneIndex, UniTask<T> taskToRun)
-        {
-            return await SwitchSceneInternalAsync(sceneIndex, taskToRun);
-        }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, UniTask<T> taskToRun)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-            return await SwitchSceneInternalAsync(scene.buildIndex, taskToRun);
+            return await SwitchSceneInternalAsync(sceneName, taskToRun);
         }
     }
 }
