@@ -110,7 +110,7 @@ namespace MajdataPlay.Game.Notes
                     if (destScale > 0.3f)
                         RendererState = RendererStatus.On;
                     if (distance < 1.225f)
-                        transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                        transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
                     else
                     {
                         State = NoteStatus.Running;
