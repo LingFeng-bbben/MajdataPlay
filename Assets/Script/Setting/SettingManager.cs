@@ -63,7 +63,7 @@ namespace MajdataPlay.Setting
             {
                 //refresh some setting here
                 AudioManager.Instance.ReadVolumeFromSettings();
-                SceneSwitcher.Instance.SwitchScene(1);
+                SceneSwitcher.Instance.SwitchScene("List");
                 return;
             }
             

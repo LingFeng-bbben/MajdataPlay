@@ -95,6 +95,6 @@ public class SortFindManager : MonoBehaviour
         SongStorage.SortAndFind(SearchBar.text,sortType);
         if (GameManager.Instance.Collection.Count != 0)
             GameManager.Instance.Collection.Index = 0;
-        SceneSwitcher.Instance.SwitchScene(1);
+        SceneSwitcher.Instance.SwitchScene("List");
     }
 }

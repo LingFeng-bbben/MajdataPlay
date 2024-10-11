@@ -471,7 +471,7 @@ namespace MajdataPlay.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             GameObject.Find("Notes").GetComponent<NoteManager>().DestroyAllNotes();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            SceneSwitcher.Instance.SwitchScene(1);
+            SceneSwitcher.Instance.SwitchScene("List");
         }
         public void EndGame()
         {
@@ -488,7 +488,7 @@ namespace MajdataPlay.Game
             await UniTask.Delay(2000);
             DisposeAudioTrack();
             InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            SceneSwitcher.Instance.SwitchScene(3);
+            SceneSwitcher.Instance.SwitchScene("Result");
         }
         class AnwserSoundPoint
         {

@@ -1,11 +1,9 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay;
-using MajdataPlay.Types;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
+#nullable enable
 public class SceneSwitcher : MonoBehaviour
 {
     Animator animator;
@@ -24,19 +22,30 @@ public class SceneSwitcher : MonoBehaviour
         DontDestroyOnLoad(this);
     }
 
-    public void SwitchScene(int index)
+    public void SwitchScene(int sceneIndex)
     {
-        StartCoroutine(SwitchSceneInternal(index));
+        SwitchSceneInternal(sceneIndex).Forget();
     }
-
-    IEnumerator SwitchSceneInternal(int index)
+    public void SwitchScene(string sceneName)
+    {
+        SwitchSceneInternal(sceneName).Forget();
+    }
+    async UniTaskVoid SwitchSceneInternal(int sceneIndex)
     {
         SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
         MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
         animator.SetBool("In", true);
-        yield return new WaitForSeconds(0.25f);
-        yield return SceneManager.LoadSceneAsync(index);
+        await UniTask.Delay(250);
+        await SceneManager.LoadSceneAsync(sceneIndex);
         animator.SetBool("In", false);
-        
+    }
+    async UniTaskVoid SwitchSceneInternal(string sceneName)
+    {
+        SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
+        MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+        animator.SetBool("In", true);
+        await UniTask.Delay(250);
+        await SceneManager.LoadSceneAsync(sceneName);
+        animator.SetBool("In", false);
     }
 }

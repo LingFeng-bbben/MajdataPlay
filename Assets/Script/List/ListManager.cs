@@ -98,7 +98,7 @@ namespace MajdataPlay.List
                         break;
                     case SensorType.A2:
                         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneSwitcher.Instance.SwitchScene(5);
+                        SceneSwitcher.Instance.SwitchScene("SortFind");
                         break;
                     case SensorType.A5:
                         if (!CoverListDisplayer.isDirList)
@@ -119,12 +119,12 @@ namespace MajdataPlay.List
                             InputManager.Instance.UnbindAnyArea(OnAreaDown);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_SONG);
                             AudioManager.Instance.StopSFX(SFXSampleType.SELECT_BGM);
-                            SceneSwitcher.Instance.SwitchScene(2);
+                            SceneSwitcher.Instance.SwitchScene("Game");
                         }
                         break;
                     case SensorType.A7:
                         InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneSwitcher.Instance.SwitchScene(4);
+                        SceneSwitcher.Instance.SwitchScene("Setting");
                         break;
                 }
             }
