@@ -3,6 +3,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -181,9 +182,9 @@ namespace MajdataPlay.Game.Notes
             
             bool canPlay;
             if(result.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakJudgeType, result);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, result);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
                 slideOK.SetActive(true);

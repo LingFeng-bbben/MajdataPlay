@@ -11,37 +11,38 @@ namespace MajdataPlay
     {
         public static Color BgColor { get; set; } = new Color(0, 0, 0);
 
-        float frameTimer = 1;
-        List<float> data = new();
-        TextMeshPro textDisplayer;
+        float _frameTimer = 1;
+        List<float> _data = new();
+        TextMeshPro _textDisplayer;
         GameSetting _setting = MajInstanceHelper<GameSetting>.Instance!;
         
         void Start()
         {
-            textDisplayer = GetComponent<TextMeshPro>();
+            _textDisplayer = GetComponent<TextMeshPro>();
             DontDestroyOnLoad(this);
-            if (!_setting.Debug.DisplayFPS)
-                gameObject.SetActive(false);
+            _setting = MajInstances.Setting;
+            _textDisplayer.enabled = _setting.Debug.DisplayFPS;
         }
 
         void LateUpdate()
         {
             var delta = Time.deltaTime;
-            data.Add(delta);
-            var count = data.Count;
+            _data.Add(delta);
+            var count = _data.Count;
             if (count > 150)
-                data = data.Skip(count - 150).ToList();
-            if (frameTimer <= 0)
+                _data = _data.Skip(count - 150).ToList();
+            if (_frameTimer <= 0)
             {
+                _textDisplayer.enabled = _setting.Debug.DisplayFPS;
                 var newColor = new Color(1.0f - BgColor.r, 1.0f - BgColor.g, 1.0f - BgColor.b);
-                var fpsDelta = data.Sum() / count;
+                var fpsDelta = _data.Sum() / count;
 
-                textDisplayer.text = $"FPS\n{1 / fpsDelta:F2}";
-                textDisplayer.color = newColor;
-                frameTimer = 1;
+                _textDisplayer.text = $"FPS\n{1 / fpsDelta:F2}";
+                _textDisplayer.color = newColor;
+                _frameTimer = 1;
             }
             else
-                frameTimer -= delta;
+                _frameTimer -= delta;
         }
     }
 }

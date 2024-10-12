@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using MajdataPlay.Types;
 using System;
 using UnityEngine;
@@ -140,7 +141,7 @@ namespace MajdataPlay.Game.Notes
 
             RendererState = RendererStatus.Off;
 
-            var skin = SkinManager.Instance.GetStarSkin();
+            var skin = MajInstances.SkinManager.GetStarSkin();
             renderer.material = skin.DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];

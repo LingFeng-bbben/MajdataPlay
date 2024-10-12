@@ -36,7 +36,7 @@ namespace MajdataPlay.Title
                 switch (e.Type)
                 {
                     case SensorType.A8:
-                        AudioManager.Instance.OpenAsioPannel();
+                        MajInstances.AudioManager.OpenAsioPannel();
                         break;
                     case SensorType.E5:
                         NextScene();
@@ -64,7 +64,7 @@ namespace MajdataPlay.Title
                     else
                     {
                         echoText.text = Localization.GetLocalizedText("Press Any Key");
-                        InputManager.Instance.BindAnyArea(OnAreaDown);
+                        MajInstances.InputManager.BindAnyArea(OnAreaDown);
                         return;
                     }
                 }
@@ -111,22 +111,22 @@ namespace MajdataPlay.Title
             if (isEmpty)
                 return;
             else if (SongStorage.State != ComponentState.Failed)
-                InputManager.Instance.BindAnyArea(OnAreaDown);
+                MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
 
         async UniTaskVoid DelayPlayVoice()
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            AudioManager.Instance.PlaySFX(SFXSampleType.MAJDATA_PLAY);
-            AudioManager.Instance.PlaySFX(SFXSampleType.TITLE_BGM);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.MAJDATA_PLAY);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.TITLE_BGM);
         }
 
         void NextScene()
         {
-            InputManager.Instance.UnbindAnyArea(OnAreaDown);
-            AudioManager.Instance.StopSFX(SFXSampleType.TITLE_BGM);
-            AudioManager.Instance.StopSFX(SFXSampleType.MAJDATA_PLAY);
-            SceneSwitcher.Instance.SwitchScene("List");
+            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            MajInstances.AudioManager.StopSFX(SFXSampleType.TITLE_BGM);
+            MajInstances.AudioManager.StopSFX(SFXSampleType.MAJDATA_PLAY);
+            MajInstances.SceneSwitcher.SwitchScene("List");
         }
     }
 }

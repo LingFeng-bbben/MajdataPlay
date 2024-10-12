@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 
 namespace MajdataPlay.Game
 {
@@ -312,7 +313,7 @@ namespace MajdataPlay.Game
                             continue;
                         var time = (float)timing.time;
                         var speed = noteSpeed * timing.HSpeed;
-                        var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+                        var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
                         var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                         var appearTiming = time + appearDiff;
 
@@ -365,7 +366,7 @@ namespace MajdataPlay.Game
         {
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
-            var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
@@ -399,7 +400,7 @@ namespace MajdataPlay.Game
         {
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
-            var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
@@ -429,7 +430,7 @@ namespace MajdataPlay.Game
         {
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
-            var scaleRate = GameManager.Instance.Setting.Debug.NoteAppearRate;
+            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
@@ -915,7 +916,7 @@ namespace MajdataPlay.Game
             SliCompo.timing = (float)note.slideStartTime;
             SliCompo.LastFor = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
-            if(GameManager.Instance.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.sortIndex = slideLayer;
@@ -970,7 +971,7 @@ namespace MajdataPlay.Game
                 centerStar,
                 leftStar
             };
-            if (GameManager.Instance.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
                 WifiCompo.sortIndex = slideLayer;

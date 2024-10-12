@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
@@ -33,9 +34,9 @@ namespace MajdataPlay.Game
         Sprite missSprite;
         void Start() 
         {
-            var skin = SkinManager.Instance.GetJudgeTextSkin();
+            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
 
-            if(GameManager.Instance.Setting.Display.DisplayCriticalPerfect)
+            if(MajInstances.Setting.Display.DisplayCriticalPerfect)
             {
                 breakSprite = skin.CP_Break;
                 cPerfectSprite = skin.CriticalPerfect;

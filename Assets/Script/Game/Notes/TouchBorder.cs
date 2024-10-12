@@ -1,6 +1,6 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
-using System.Collections;
+using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +32,7 @@ namespace MajdataPlay.Game.Notes
             three = transform.GetChild(1).gameObject;
             twoRenderer = two.GetComponent<SpriteRenderer>();
             threeRenderer = three.GetComponent<SpriteRenderer>();
-            var skin = SkinManager.Instance.GetTouchSkin();
+            var skin = MajInstances.SkinManager.GetTouchSkin();
             normal = skin.Border_Normal;
             each = skin.Border_Each;
             bReak = skin.Border_Break;

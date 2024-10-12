@@ -279,7 +279,7 @@ namespace MajdataPlay.Game.Notes
             if (isBreak && judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
-                anim.runtimeAnimatorController = SkinManager.Instance.JustBreak;
+                anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                 audioEffMana.PlayBreakSlideEndSound();
             }
             slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
@@ -288,7 +288,7 @@ namespace MajdataPlay.Game.Notes
         protected override void LoadSkin()
         {
             var bars = slideBars;
-            var skin = SkinManager.Instance.GetWifiSkin();
+            var skin = MajInstances.SkinManager.GetWifiSkin();
 
             var barSprites = skin.Normal;
             var starSprite = skin.Star.Normal;

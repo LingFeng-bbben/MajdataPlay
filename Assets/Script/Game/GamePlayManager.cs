@@ -43,7 +43,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         GameObject loadingMask;
         [SerializeField]
-        GameSetting gameSetting = GameManager.Instance.Setting;
+        GameSetting gameSetting = MajInstances.Setting;
         [SerializeField]
         GameObject skipBtn;
         NoteLoader noteLoader;
@@ -61,7 +61,7 @@ namespace MajdataPlay.Game
         {
             get
             {
-                if (GameManager.Instance.UseUnityTimer)
+                if (MajInstances.GameManager.UseUnityTimer)
                     return Time.unscaledTime;
 
                 GetSystemTimePreciseAsFileTime(out var filetime);
@@ -77,9 +77,9 @@ namespace MajdataPlay.Game
         private void Awake()
         {
             Instance = this;
-            //print(GameManager.Instance.SelectedIndex);
+            //print(MajInstances.GameManager.SelectedIndex);
             song = SongStorage.WorkingCollection.Current;
-            HistoryScore = ScoreManager.Instance.GetScore(song, GameManager.Instance.SelectedDiff);
+            HistoryScore = MajInstances.ScoreManager.GetScore(song, MajInstances.GameManager.SelectedDiff);
             GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
         }
 
@@ -98,7 +98,7 @@ namespace MajdataPlay.Game
             State = ComponentState.Loading;
             loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
             loadingImage = loadingMask.GetComponent<Image>();
-            InputManager.Instance.BindAnyArea(OnPauseButton);
+            MajInstances.InputManager.BindAnyArea(OnPauseButton);
             errorText = GameObject.Find("ErrText").GetComponent<Text>();
             DumpOnlineChart().Forget();
         }
@@ -150,7 +150,7 @@ namespace MajdataPlay.Game
             var trackPath = song.TrackPath ?? string.Empty;
             if(!File.Exists(trackPath))
                 throw new InvalidAudioTrackException("Audio track not found", trackPath);
-            audioSample = await AudioManager.Instance.LoadMusicAsync(trackPath);
+            audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
             await UniTask.Yield();
             if (audioSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
@@ -159,7 +159,7 @@ namespace MajdataPlay.Game
         }
         async UniTask LoadChart()
         {
-            var maidata = song.LoadInnerMaidata((int)GameManager.Instance.SelectedDiff);
+            var maidata = song.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
             loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
             if (string.IsNullOrEmpty(maidata))
             {
@@ -325,7 +325,7 @@ namespace MajdataPlay.Game
                 await UniTask.Yield();
             }
 
-            GameManager.Instance.DisableGC();
+            MajInstances.GameManager.DisableGC();
             Time.timeScale = 1f;
             var firstClockTiming = AnwserSoundList[0].time;
             float extraTime = 5f;
@@ -355,7 +355,7 @@ namespace MajdataPlay.Game
             audioSample = null;
             State = ComponentState.Finished;
             allTaskTokenSource.Cancel();
-            GameManager.Instance.EnableGC();
+            MajInstances.GameManager.EnableGC();
         }
         // Update is called once per frame
         void Update()
@@ -402,7 +402,7 @@ namespace MajdataPlay.Game
             {
                 errorText.text = "音频错位了哟\n" + realTimeDifference;
             }
-            else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && GameManager.Instance.Setting.Debug.TryFixAudioSync)
+            else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
             {
                 errorText.text = "修正音频哟\n" + realTimeDifference;
                 AudioStartTime -= realTimeDifference * 0.8f;
@@ -425,14 +425,14 @@ namespace MajdataPlay.Game
                     {
                         if (AnwserSoundList[i].isClock)
                         {
-                            AudioManager.Instance.PlaySFX(SFXSampleType.CLOCK);
+                            MajInstances.AudioManager.PlaySFX(SFXSampleType.CLOCK);
                             UnityMainThreadDispatcher.Instance().Enqueue(() =>
                             {
                                 XxlbAnimationController.instance.Stepping();
                             });
                         }
                         else
-                            AudioManager.Instance.PlaySFX(SFXSampleType.ANSWER);
+                            MajInstances.AudioManager.PlaySFX(SFXSampleType.ANSWER);
                         AnwserSoundList[i].isPlayed = true;
                         i++;
                     }
@@ -457,28 +457,28 @@ namespace MajdataPlay.Game
         }
         async UniTaskVoid BackToList()
         {
-            InputManager.Instance.UnbindAnyArea(OnPauseButton);
-            GameManager.Instance.EnableGC();
+            MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
+            MajInstances.GameManager.EnableGC();
             StopAllCoroutines();
             DisposeAudioTrack();
 
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            SceneSwitcher.Instance.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List");
 
         }
         public async UniTaskVoid EndGame()
         {
             var acc = objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            GameManager.LastGameResult = objectCounter.GetPlayRecord(song, GameManager.Instance.SelectedDiff);
-            GameManager.Instance.EnableGC();
+            GameManager.LastGameResult = objectCounter.GetPlayRecord(song, MajInstances.GameManager.SelectedDiff);
+            MajInstances.GameManager.EnableGC();
             BGManager.Instance.CancelTimeRef();
             State = ComponentState.Finished;
             DisposeAudioTrack();
 
-            InputManager.Instance.UnbindAnyArea(OnPauseButton);
+            MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
             await UniTask.DelayFrame(5);
-            SceneSwitcher.Instance.SwitchSceneAfterTaskAsync("Result", UniTask.Delay(1000)).Forget();
+            MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("Result", UniTask.Delay(1000)).Forget();
         }
         class AnwserSoundPoint
         {

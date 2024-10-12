@@ -1,5 +1,6 @@
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
 #nullable enable
@@ -78,7 +79,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             gpManager = GamePlayManager.Instance;
             poolManager = FindObjectOfType<NotePoolManager>();
-            gameSetting = GameManager.Instance.Setting;
+            gameSetting = MajInstances.Setting;
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
             RendererState = RendererStatus.Off;

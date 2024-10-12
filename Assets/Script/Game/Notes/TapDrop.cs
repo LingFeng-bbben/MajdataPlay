@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace MajdataPlay.Game.Notes
         //}
         protected override void LoadSkin()
         {
-            var skin = SkinManager.Instance.GetTapSkin();
+            var skin = MajInstances.SkinManager.GetTapSkin();
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();

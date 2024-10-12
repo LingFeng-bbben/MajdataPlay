@@ -3,6 +3,7 @@ using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
@@ -178,7 +179,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void LoadSkin()
         {
-            var skin = SkinManager.Instance.GetTouchSkin();
+            var skin = MajInstances.SkinManager.GetTouchSkin();
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();

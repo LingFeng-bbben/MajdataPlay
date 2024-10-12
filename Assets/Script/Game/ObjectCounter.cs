@@ -5,6 +5,7 @@ using MajSimaiDecode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -216,7 +217,7 @@ namespace MajdataPlay.Game
         };
 
             bgInfoText.gameObject.SetActive(true);
-            switch (GameManager.Instance.Setting.Game.BGInfo)
+            switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
                     bgInfoHeader.color = CPComboColor;
@@ -648,9 +649,9 @@ namespace MajdataPlay.Game
     {
         JudgeDisplayType gameSetting;
         if (judgeResult.IsBreak)
-            gameSetting = GameManager.Instance.Setting.Display.BreakFastLateType;
+            gameSetting = MajInstances.Setting.Display.BreakFastLateType;
         else
-            gameSetting = GameManager.Instance.Setting.Display.FastLateType;
+            gameSetting = MajInstances.Setting.Display.FastLateType;
         var resultValue = (int)judgeResult.Result;
         var absValue = Math.Abs(7 - resultValue);
 
@@ -704,7 +705,7 @@ namespace MajdataPlay.Game
     /// </summary>
     void UpdateMainOutput()
     {
-        var bgInfo = GameManager.Instance.Setting.Game.BGInfo;
+        var bgInfo = MajInstances.Setting.Game.BGInfo;
         switch (bgInfo)
         {
             case BGInfoType.CPCombo:

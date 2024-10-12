@@ -5,6 +5,7 @@ using NAudio.Wave.SampleProviders;
 using System.Runtime.InteropServices;
 using System;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 
 namespace MajdataPlay.Types
 {
@@ -22,7 +23,7 @@ namespace MajdataPlay.Types
             using (var audioFileReader = new AudioFileReader(audioFileName))
             {
                 
-                var resampler = new WdlResamplingSampleProvider(audioFileReader, GameManager.Instance.Setting.Audio.Samplerate);
+                var resampler = new WdlResamplingSampleProvider(audioFileReader, MajInstances.Setting.Audio.Samplerate);
                 WaveFormat = resampler.WaveFormat;
                 Length = 0;
                 var readBuffer = new float[resampler.WaveFormat.SampleRate * resampler.WaveFormat.Channels];

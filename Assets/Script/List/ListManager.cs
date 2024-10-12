@@ -21,10 +21,10 @@ namespace MajdataPlay.List
             LightManager.Instance.SetButtonLight(Color.blue, 5);
             LightManager.Instance.SetButtonLight(Color.yellow, 6);
             LightManager.Instance.SetButtonLight(Color.yellow, 1);
-            CoverListDisplayer.SlideToDifficulty((int)GameManager.Instance.SelectedDiff);
-            AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_SONG);
-            AudioManager.Instance.PlaySFX(SFXSampleType.SELECT_BGM, true);
-            InputManager.Instance.BindAnyArea(OnAreaDown);
+            CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_SONG);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_BGM, true);
+            MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
 
         private void OnAreaDown(object sender, InputEventArgs e)
@@ -75,7 +75,7 @@ namespace MajdataPlay.List
                     case SensorType.A4:
                     case SensorType.A5:
                     case SensorType.D5:
-                        AudioManager.Instance.PlaySFX(SFXSampleType.DONT_TOUCH_ME);
+                        MajInstances.AudioManager.PlaySFX(SFXSampleType.DONT_TOUCH_ME);
                         XxlbAnimation.instance.PlayTouchAnimation();
                         break;
                 }
@@ -97,8 +97,8 @@ namespace MajdataPlay.List
                         CoverListDisplayer.SlideDifficulty(1);
                         break;
                     case SensorType.A2:
-                        InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneSwitcher.Instance.SwitchScene("SortFind");
+                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        MajInstances.SceneSwitcher.SwitchScene("SortFind");
                         break;
                     case SensorType.A5:
                         if (CoverListDisplayer.IsChartList)
@@ -116,15 +116,15 @@ namespace MajdataPlay.List
                         }
                         else
                         {
-                            InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                            AudioManager.Instance.StopSFX(SFXSampleType.SELECT_SONG);
-                            AudioManager.Instance.StopSFX(SFXSampleType.SELECT_BGM);
-                            SceneSwitcher.Instance.SwitchScene("Game");
+                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_SONG);
+                            MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_BGM);
+                            MajInstances.SceneSwitcher.SwitchScene("Game");
                         }
                         break;
                     case SensorType.A7:
-                        InputManager.Instance.UnbindAnyArea(OnAreaDown);
-                        SceneSwitcher.Instance.SwitchScene("Setting");
+                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        MajInstances.SceneSwitcher.SwitchScene("Setting");
                         break;
                 }
             }

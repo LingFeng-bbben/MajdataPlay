@@ -1,6 +1,7 @@
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
@@ -21,7 +22,7 @@ namespace MajdataPlay.Game.Notes
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
         protected GamePlayManager gpManager => GamePlayManager.Instance;
-        protected InputManager ioManager => InputManager.Instance;
+        protected InputManager ioManager => MajInstances.InputManager;
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         public bool CanShine { get; protected set; } = false;
         public float JudgeTiming { get => judgeTiming + gameSetting.Judge.JudgeOffset; }
@@ -48,7 +49,7 @@ namespace MajdataPlay.Game.Notes
             objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
             noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
             audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            gameSetting = GameManager.Instance.Setting;
+            gameSetting = MajInstances.Setting;
             judgeTiming = timing;
         }
         protected abstract void LoadSkin();

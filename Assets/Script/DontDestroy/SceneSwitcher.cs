@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
 using System;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,10 +13,9 @@ namespace MajdataPlay
         Animator animator;
         public Image SubImage;
         public Image MainImage;
-        public static SceneSwitcher Instance;
         private void Awake()
         {
-            Instance = this;
+            MajInstances.SceneSwitcher = this;
         }
 
         // Start is called before the first frame update
@@ -31,8 +31,8 @@ namespace MajdataPlay
         }
         async UniTask SwitchSceneInternal(string sceneName)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             await UniTask.Delay(250);
             await SceneManager.LoadSceneAsync(sceneName);
@@ -44,8 +44,8 @@ namespace MajdataPlay
         // Task
         async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -60,8 +60,8 @@ namespace MajdataPlay
         // ValueTasl
         async UniTask SwitchSceneInternalAsync(string sceneName, ValueTask taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -76,8 +76,8 @@ namespace MajdataPlay
         // UniTask
         async UniTask SwitchSceneInternalAsync(string sceneName, UniTask taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
@@ -94,8 +94,8 @@ namespace MajdataPlay
         // Task
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, Task<T> taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -110,8 +110,8 @@ namespace MajdataPlay
         // ValueTasl
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, ValueTask<T> taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -127,8 +127,8 @@ namespace MajdataPlay
         // UniTask
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, UniTask<T> taskToRun)
         {
-            SubImage.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
-            MainImage.sprite = SkinManager.Instance.SelectedSkin.LoadingSplash;
+            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();

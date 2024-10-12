@@ -1,12 +1,13 @@
 using MajdataPlay.Types;
 using UnityEngine;
 using MajdataPlay.IO;
+using MajdataPlay.Utils;
 
 namespace MajdataPlay.Game
 {
     public class NoteAudioManager : MonoBehaviour
     {
-        AudioManager audioManager => AudioManager.Instance;
+        AudioManager audioManager => MajInstances.AudioManager;
         public void PlayTapSound(in JudgeResult judgeResult)
         {
             var isBreak = judgeResult.IsBreak;

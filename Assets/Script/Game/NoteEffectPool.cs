@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -34,7 +35,7 @@ namespace MajdataPlay.Game
                 obj.name = $"TapEffect_{i + 1}";
                 obj.transform.rotation = rotation;
                 var displayer = obj.GetComponent<TapEffectDisplayer>();
-                displayer.DistanceRatio = GameManager.Instance.Setting.Display.OuterJudgeDistance;
+                displayer.DistanceRatio = MajInstances.Setting.Display.OuterJudgeDistance;
                 displayer.ResetAll();
                 tapJudgeEffects[i] = displayer;
             }
@@ -43,7 +44,7 @@ namespace MajdataPlay.Game
                 var sensorPos = (SensorType)i;
                 var obj = Instantiate(touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
-                displayer.DistanceRatio= GameManager.Instance.Setting.Display.InnerJudgeDistance;
+                displayer.DistanceRatio= MajInstances.Setting.Display.InnerJudgeDistance;
                 obj.name = $"TouchEffect_{sensorPos}";
                 displayer.SensorPos = sensorPos;
                 displayer.ResetAll();
@@ -56,7 +57,7 @@ namespace MajdataPlay.Game
                 var rotation = TouchBase.GetRoation(TouchBase.GetAreaPos(sensorPos), sensorPos);
                 var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
                 obj4Hold.transform.rotation = rotation;
-                displayer4Hold.DistanceRatio = GameManager.Instance.Setting.Display.InnerJudgeDistance;
+                displayer4Hold.DistanceRatio = MajInstances.Setting.Display.InnerJudgeDistance;
                 displayer4Hold.LocalPosition = position;
                 obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
                 displayer4Hold.ResetAll();

@@ -20,7 +20,6 @@ namespace MajdataPlay
 #nullable enable
     public class GameManager : MonoBehaviour
     {
-        public static GameManager Instance { get; private set; }
         public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => tokenSource.Token; }
         
@@ -33,7 +32,11 @@ namespace MajdataPlay
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
-        public GameSetting Setting { get; private set; } = new();
+        public GameSetting Setting
+        {
+            get => MajInstances.Setting;
+            set => MajInstances.Setting = value;
+        }
         /// <summary>
         /// Current difficult
         /// </summary>
@@ -68,8 +71,7 @@ namespace MajdataPlay
                 });
             };
             logWritebackTask = LogWriteback();
-            MajInstanceHelper<GameManager>.Instance = this;
-            Instance = this;
+            MajInstances.GameManager = this;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
@@ -91,7 +93,7 @@ namespace MajdataPlay
                 Setting = new GameSetting();
                 Save();
             }
-            MajInstanceHelper<GameSetting>.Instance = Setting;
+            MajInstances.Setting = Setting;
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 

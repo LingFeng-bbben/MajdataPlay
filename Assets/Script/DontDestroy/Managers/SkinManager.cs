@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using MajSimaiDecode;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +9,6 @@ namespace MajdataPlay
 {
     public class SkinManager : MonoBehaviour
     {
-        public static SkinManager Instance { get; private set; }
-
         public CustomSkin SelectedSkin { get; set; }
         public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
         List<CustomSkin> loadedSkins = new();
@@ -29,7 +28,7 @@ namespace MajdataPlay
         private void Awake()
         {
             DontDestroyOnLoad(this);
-            Instance = this;
+            MajInstances.SkinManager = this;
         }
 
         // Start is called before the first frame update
@@ -39,7 +38,7 @@ namespace MajdataPlay
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            var selectedSkinName = GameManager.Instance.Setting.Display.Skin;
+            var selectedSkinName = MajInstances.Setting.Display.Skin;
             var dicts = Directory.GetDirectories(path);
 
             foreach (var skinPath in dicts)
