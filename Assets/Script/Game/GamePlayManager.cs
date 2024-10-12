@@ -45,16 +45,28 @@ namespace MajdataPlay.Game
             }
         }
         /// <summary>
-        /// 当前逻辑帧的时刻<para>Unit: Second</para>
+        /// The timing of the current FixedUpdate<para>Unit: Second</para>
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
+        /// <summary>
+        ///  The first Note appear timing
+        /// </summary>
         public float FirstNoteAppearTiming
         {
             get => _firstNoteAppearTiming;
             set => _firstNoteAppearTiming = value;
         }
+        /// <summary>
+        /// Current audio playback time
+        /// </summary>
         public float AudioTime => _audioTime;
+        /// <summary>
+        /// Current audio playback time without offset correction
+        /// </summary>
         public float AudioTimeNoOffset => _audioTimeNoOffset;
+        /// <summary>
+        /// The timing of audio starting to play
+        /// </summary>
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
