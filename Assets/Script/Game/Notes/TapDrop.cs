@@ -36,7 +36,7 @@ namespace MajdataPlay.Game.Notes
             breakShineController.enabled = false;
 
 
-            if (isEach)
+            if (IsEach)
             {
                 renderer.sprite = skin.Each;
                 tapLineRenderer.sprite = skin.NoteLines[1];
@@ -44,7 +44,7 @@ namespace MajdataPlay.Game.Notes
 
             }
 
-            if (isBreak)
+            if (IsBreak)
             {
                 renderer.sprite = skin.Break;
                 renderer.material = skin.BreakMaterial;
@@ -62,7 +62,7 @@ namespace MajdataPlay.Game.Notes
             base.Initialize(poolingInfo);
 
             LoadSkin();
-            _sensorPos = (SensorType)(startPosition - 1);
+            _sensorPos = (SensorType)(StartPos - 1);
             _ioManager.BindArea(Check, _sensorPos);
             State = NoteStatus.Initialized;
         }

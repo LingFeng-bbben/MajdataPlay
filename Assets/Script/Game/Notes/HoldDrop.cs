@@ -28,7 +28,7 @@ namespace MajdataPlay.Game.Notes
                         break;
                     case RendererStatus.On:
                         thisRenderer.forceRenderingOff = false;
-                        exRenderer.forceRenderingOff = !isEX;
+                        exRenderer.forceRenderingOff = !IsEX;
                         tapLineRenderer.forceRenderingOff = false;
                         endRenderer.forceRenderingOff = false;
                         break;
@@ -59,19 +59,19 @@ namespace MajdataPlay.Game.Notes
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
                 return;
-            startPosition = poolingInfo.StartPos;
-            timing = poolingInfo.Timing;
-            _judgeTiming = timing;
-            noteSortOrder = poolingInfo.NoteSortOrder;
-            speed = poolingInfo.Speed;
-            isEach = poolingInfo.IsEach;
-            isBreak = poolingInfo.IsBreak;
-            isEX = poolingInfo.IsEX;
+            StartPos = poolingInfo.StartPos;
+            Timing = poolingInfo.Timing;
+            _judgeTiming = Timing;
+            SortOrder = poolingInfo.NoteSortOrder;
+            Speed = poolingInfo.Speed;
+            IsEach = poolingInfo.IsEach;
+            IsBreak = poolingInfo.IsBreak;
+            IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             _isJudged = false;
             Distance = -100;
-            LastFor = poolingInfo.LastFor;
-            _sensorPos = (SensorType)(startPosition - 1);
+            Length = poolingInfo.LastFor;
+            _sensorPos = (SensorType)(StartPos - 1);
             if (State == NoteStatus.Start)
                 Start();
             else
@@ -102,14 +102,14 @@ namespace MajdataPlay.Game.Notes
             var result = new JudgeResult()
             {
                 Result = _judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
                 Diff = _judgeDiff
             };
             RendererState = RendererStatus.Off;
-            _effectManager.ResetHoldEffect(startPosition);
+            _effectManager.ResetHoldEffect(StartPos);
             _audioEffMana.PlayTapSound(result);
-            _effectManager.PlayEffect(startPosition, result);
+            _effectManager.PlayEffect(StartPos, result);
             _objectCounter.ReportResult(this, result);
             poolManager.Collect(this);
         }
@@ -132,11 +132,11 @@ namespace MajdataPlay.Game.Notes
 
             LoadSkin();
 
-            thisRenderer.sortingOrder += noteSortOrder;
-            exRenderer.sortingOrder += noteSortOrder;
-            endRenderer.sortingOrder += noteSortOrder;
+            thisRenderer.sortingOrder += SortOrder;
+            exRenderer.sortingOrder += SortOrder;
+            endRenderer.sortingOrder += SortOrder;
 
-            _sensorPos = (SensorType)(startPosition - 1);
+            _sensorPos = (SensorType)(StartPos - 1);
             _ioManager.BindArea(Check, _sensorPos);
             transform.localScale = new Vector3(0, 0);
 
@@ -148,7 +148,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
-            var endTiming = timing - LastFor;
+            var endTiming = timing - Length;
             var remainingTime = GetRemainingTime();
             var isTooLate = timing > 0.15f;
 
@@ -188,14 +188,14 @@ namespace MajdataPlay.Game.Notes
                 if (on)
                 {
                     if (remainingTime == 0)
-                        _effectManager.ResetHoldEffect(startPosition);
+                        _effectManager.ResetHoldEffect(StartPos);
                     else
                         PlayHoldEffect();
                             
                 }
                 else
                 {
-                    playerIdleTime += Time.fixedDeltaTime;
+                    _playerIdleTime += Time.fixedDeltaTime;
                     StopHoldEffect();
 
                     if (IsClassic)
@@ -243,8 +243,8 @@ namespace MajdataPlay.Game.Notes
             _audioEffMana.PlayTapSound(new JudgeResult()
             {
                 Result = _judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
                 Diff = _judgeDiff
             });
             PlayHoldEffect();
@@ -253,20 +253,20 @@ namespace MajdataPlay.Game.Notes
         void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
-            var distance = timing * speed + 4.8f;
+            var distance = timing * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             var remaining = GetRemainingTimeWithoutOffset();
-            var holdTime = timing - LastFor;
-            var holdDistance = holdTime * speed + 4.8f;
+            var holdTime = timing - Length;
+            var holdDistance = holdTime * Speed + 4.8f;
 
             switch (State)
             {
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
+                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
                         tapLine.transform.rotation = transform.rotation;
                         thisRenderer.size = new Vector2(1.22f, 1.4f);
 
@@ -337,8 +337,8 @@ namespace MajdataPlay.Game.Notes
                     transform.localScale = new Vector3(1f, 1f);
                     break;
                 case NoteStatus.End:
-                    var endTiming = timing - LastFor;
-                    var endDistance = endTiming * speed + 4.8f;
+                    var endTiming = timing - Length;
+                    var endDistance = endTiming * Speed + 4.8f;
                     tapLine.transform.localScale = new Vector3(1f, 1f, 1f);
 
                     if (IsClassic)
@@ -355,7 +355,7 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
 
-            if (isEX)
+            if (IsEX)
                 exRenderer.size = thisRenderer.size;
         }
         void EndJudge(ref JudgeType result)
@@ -364,8 +364,8 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
-            var realityHT = LastFor - 0.3f - offset / 1000f;
-            var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
+            var realityHT = Length - 0.3f - offset / 1000f;
+            var percent = MathF.Min(1, (realityHT - _playerIdleTime) / realityHT);
             result = _judgeResult;
             if (realityHT > 0)
             {
@@ -414,7 +414,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var releaseTiming = _gpManager.AudioTime;
-            var diff = (timing + LastFor) - releaseTiming;
+            var diff = (Timing + Length) - releaseTiming;
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
 
@@ -436,9 +436,9 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            _effectManager.PlayHoldEffect(startPosition, _judgeResult);
-            _effectManager.ResetEffect(startPosition);
-            if (LastFor <= 0.3)
+            _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+            _effectManager.ResetEffect(StartPos);
+            if (Length <= 0.3)
                 return;
             else if (!holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
@@ -456,7 +456,7 @@ namespace MajdataPlay.Game.Notes
         }
         void StopHoldEffect()
         {
-            _effectManager.ResetHoldEffect(startPosition);
+            _effectManager.ResetHoldEffect(StartPos);
             holdAnimStart = false;
             shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
@@ -489,7 +489,7 @@ namespace MajdataPlay.Game.Notes
             renderer.material = skin.DefaultMaterial;
             tapLineRenderer.sprite = skin.NoteLines[0];
 
-            if (isEach)
+            if (IsEach)
             {
                 holdSprite = skin.Each;
                 holdOnSprite = skin.Each_On;
@@ -498,7 +498,7 @@ namespace MajdataPlay.Game.Notes
                 exRenderer.color = skin.ExEffects[1];
             }
 
-            if (isBreak)
+            if (IsBreak)
             {
                 holdSprite = skin.Break;
                 holdOnSprite = skin.Break_On;

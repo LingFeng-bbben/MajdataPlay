@@ -22,7 +22,7 @@ namespace MajdataPlay.Game.Notes
 
             return Quaternion.Euler(new Vector3(0, 0, -deg));
         }
-        public SensorType GetSensor() => GetSensor(areaPosition, startPosition);
+        public SensorType GetSensor() => GetSensor(areaPosition, StartPos);
         public static SensorType GetSensor(char areaPos, int startPos)
         {
             switch (areaPos)

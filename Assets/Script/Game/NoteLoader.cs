@@ -886,12 +886,12 @@ namespace MajdataPlay.Game
             {
                 if (timing.noteList.FindAll(o => o.noteType == SimaiNoteType.Slide).Count > 1)
                 {
-                    SliCompo.isEach = true;
+                    SliCompo.IsEach = true;
                 }
             }
 
             SliCompo.ConnectInfo = info;
-            SliCompo.isBreak = note.isSlideBreak;
+            SliCompo.IsBreak = note.isSlideBreak;
 
             SliCompo.isMirror = isMirror;
             SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
@@ -909,12 +909,12 @@ namespace MajdataPlay.Game
             {
                 SliCompo.isSpecialFlip = isMirror;
             }
-            SliCompo.speed = noteSpeed * timing.HSpeed;
+            SliCompo.Speed = noteSpeed * timing.HSpeed;
             SliCompo.startTiming = (float)timing.time;
-            SliCompo.startPosition = note.startPosition;
+            SliCompo.StartPos = note.startPosition;
             SliCompo.stars = new GameObject[] { slide_star };
-            SliCompo.timing = (float)note.slideStartTime;
-            SliCompo.LastFor = (float)note.slideTime;
+            SliCompo.Timing = (float)note.slideStartTime;
+            SliCompo.Length = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
             if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
@@ -950,18 +950,18 @@ namespace MajdataPlay.Game
                 if (timing.noteList.FindAll(
                         o => o.noteType == SimaiNoteType.Slide).Count
                     > 1)
-                    WifiCompo.isEach = true;
+                    WifiCompo.IsEach = true;
             }
 
-            WifiCompo.isBreak = note.isSlideBreak;
+            WifiCompo.IsBreak = note.isSlideBreak;
 
             WifiCompo.isJustR = detectJustType(note.noteContent, out endPos);
             WifiCompo.endPosition = endPos;
-            WifiCompo.speed = noteSpeed * timing.HSpeed;
+            WifiCompo.Speed = noteSpeed * timing.HSpeed;
             WifiCompo.startTiming = (float)timing.time;
-            WifiCompo.startPosition = note.startPosition;
-            WifiCompo.timing = (float)note.slideStartTime;
-            WifiCompo.LastFor = (float)note.slideTime;
+            WifiCompo.StartPos = note.startPosition;
+            WifiCompo.Timing = (float)note.slideStartTime;
+            WifiCompo.Length = (float)note.slideTime;
             var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));

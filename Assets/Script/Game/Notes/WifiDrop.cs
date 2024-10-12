@@ -28,12 +28,12 @@ namespace MajdataPlay.Game.Notes
                 return;
             base.Start();
             State = NoteStatus.Initialized;
-            ConnectInfo.StartTiming = timing;
-            judgeQueues = SlideTables.GetWifiTable(startPosition);
+            ConnectInfo.StartTiming = Timing;
+            judgeQueues = SlideTables.GetWifiTable(StartPos);
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            fadeInTiming = -3.926913f / speed;
+            fadeInTiming = -3.926913f / Speed;
             fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
             fadeInTiming += startTiming;
             // Slide完全淡入时机
@@ -54,9 +54,9 @@ namespace MajdataPlay.Game.Notes
 
             if(IsClassic)
             {
-                SlidePositionStart[0] = GetPositionFromDistance(4.55f,startPosition + 0.11f);
+                SlidePositionStart[0] = GetPositionFromDistance(4.55f,StartPos + 0.11f);
                 SlidePositionStart[1] = GetPositionFromDistance(4.8f);
-                SlidePositionStart[2] = GetPositionFromDistance(4.55f, startPosition - 0.13f);
+                SlidePositionStart[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
             }
             else
             {
@@ -67,7 +67,7 @@ namespace MajdataPlay.Game.Notes
 
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
 
-            transform.rotation = Quaternion.Euler(0f, 0f, -45f * (startPosition - 1));
+            transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             slideBars = new GameObject[transform.childCount - 1];
 
             for (var i = 0; i < transform.childCount - 1; i++)
@@ -81,8 +81,8 @@ namespace MajdataPlay.Game.Notes
             Initialize();
 
             var wifiConst = 0.162870f;
-            _judgeTiming = timing + (LastFor * (1 - wifiConst));
-            lastWaitTime = LastFor * wifiConst;
+            _judgeTiming = Timing + (Length * (1 - wifiConst));
+            lastWaitTime = Length * wifiConst;
 
             judgeAreas = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
                                     .GroupBy(x => x)
@@ -97,9 +97,9 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - base.timing;
+            var timing = _gpManager.AudioTime - base.Timing;
             var startTiming = _gpManager.AudioTime - base.startTiming;
-            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = base.Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
@@ -157,7 +157,7 @@ namespace MajdataPlay.Game.Notes
 
             if (!isSoundPlayed && first.On)
             {
-                _audioEffMana.PlaySlideSound(isBreak);
+                _audioEffMana.PlaySlideSound(IsBreak);
                 isSoundPlayed = true;
             }
 
@@ -214,12 +214,12 @@ namespace MajdataPlay.Game.Notes
             foreach (var star in stars)
                 star.SetActive(true);
 
-            var timing = CurrentSec - base.timing;
+            var timing = CurrentSec - base.Timing;
             if (timing <= 0f)
             {
                 CanShine = true;
                 float alpha;
-                alpha = 1f - -timing / (base.timing - startTiming);
+                alpha = 1f - -timing / (base.Timing - startTiming);
                 alpha = alpha > 1f ? 1f : alpha;
                 alpha = alpha < 0f ? 0f : alpha;
 
@@ -236,8 +236,8 @@ namespace MajdataPlay.Game.Notes
         }
         void UpdateStar()
         {
-            var timing = _gpManager.AudioTime - base.timing;
-            var process = (LastFor - timing) / LastFor;
+            var timing = _gpManager.AudioTime - base.Timing;
+            var process = (Length - timing) / Length;
             process = 1f - process;
 
             if (process >= 1)
@@ -271,12 +271,12 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = _judgeResult,
                 Diff = _judgeDiff,
-                IsEX = isEX,
-                IsBreak = isBreak
+                IsEX = IsEX,
+                IsBreak = IsBreak
             };
 
             _objectCounter.ReportResult(this, result);
-            if (isBreak && _judgeResult == JudgeType.Perfect)
+            if (IsBreak && _judgeResult == JudgeType.Perfect)
             {
                 var anim = slideOK.GetComponent<Animator>();
                 anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
@@ -294,12 +294,12 @@ namespace MajdataPlay.Game.Notes
             var starSprite = skin.Star.Normal;
             Material? breakMaterial = null;
 
-            if (isEach)
+            if (IsEach)
             {
                 barSprites = skin.Each;
                 starSprite = skin.Star.Each;
             }
-            if (isBreak)
+            if (IsBreak)
             {
                 barSprites = skin.Break;
                 starSprite = skin.Star.Break;
@@ -332,7 +332,7 @@ namespace MajdataPlay.Game.Notes
                     var controller = star.AddComponent<BreakShineController>();
                     controller.Parent = this;
                 }
-                star.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (startPosition - 1)));
+                star.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (StartPos - 1)));
                 star.SetActive(false);
             }
             if(IsClassic)

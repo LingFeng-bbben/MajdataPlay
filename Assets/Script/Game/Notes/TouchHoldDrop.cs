@@ -69,25 +69,25 @@ namespace MajdataPlay.Game.Notes
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
                 return;
 
-            startPosition = poolingInfo.StartPos;
+            StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
-            timing = poolingInfo.Timing;
-            _judgeTiming = timing;
-            noteSortOrder = poolingInfo.NoteSortOrder;
-            speed = poolingInfo.Speed;
-            isEach = poolingInfo.IsEach;
-            isBreak = poolingInfo.IsBreak;
-            isEX = poolingInfo.IsEX;
+            Timing = poolingInfo.Timing;
+            _judgeTiming = Timing;
+            SortOrder = poolingInfo.NoteSortOrder;
+            Speed = poolingInfo.Speed;
+            IsEach = poolingInfo.IsEach;
+            IsBreak = poolingInfo.IsBreak;
+            IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             _isJudged = false;
-            LastFor = poolingInfo.LastFor;
+            Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
             if (State == NoteStatus.Start)
                 Start();
             else
             {
-                wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
                 moveDuration = 0.8f * wholeDuration;
                 displayDuration = 0.2f * wholeDuration;
 
@@ -99,7 +99,7 @@ namespace MajdataPlay.Game.Notes
                 point.SetActive(false);
                 border.SetActive(false);
 
-                _sensorPos = TouchBase.GetSensor(areaPosition, startPosition);
+                _sensorPos = TouchBase.GetSensor(areaPosition, StartPos);
                 var pos = TouchBase.GetAreaPos(_sensorPos);
                 transform.position = pos;
                 SetFansPosition(0.4f);
@@ -118,8 +118,8 @@ namespace MajdataPlay.Game.Notes
             var result = new JudgeResult()
             {
                 Result = _judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
                 Diff = _judgeDiff
             };
             DisableBreakShine();
@@ -145,7 +145,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Start()
         {
             base.Start();
-            wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+            wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
@@ -169,7 +169,7 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             border.SetActive(false);
 
-            _sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
+            _sensorPos = TouchBase.GetSensor(areaPosition,StartPos);
             var pos = TouchBase.GetAreaPos(_sensorPos);
             transform.position = pos;
             SetFansPosition(0.4f);
@@ -202,7 +202,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-                fanRenderers[i].sortingOrder += noteSortOrder;
+                fanRenderers[i].sortingOrder += SortOrder;
                 var controller = breakShineControllers[i];
                 if (controller is null)
                 {
@@ -213,10 +213,10 @@ namespace MajdataPlay.Game.Notes
                     breakShineControllers[i] = controller;
                 }
             }
-            borderRenderer.sortingOrder += noteSortOrder;
+            borderRenderer.sortingOrder += SortOrder;
             DisableBreakShine();
             SetFansMaterial(skin.DefaultMaterial);
-            if(isBreak)
+            if(IsBreak)
             {
                 EnableBreakShine();
                 for (var i = 0; i < 4; i++)
@@ -295,7 +295,7 @@ namespace MajdataPlay.Game.Notes
                     PlayHoldEffect();
                 else
                 {
-                    playerIdleTime += Time.fixedDeltaTime;
+                    _playerIdleTime += Time.fixedDeltaTime;
                     StopHoldEffect();
                 }
             }
@@ -360,7 +360,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 case NoteStatus.End:
                     {
-                        var value = 0.91f * (1 - (LastFor - timing) / LastFor);
+                        var value = 0.91f * (1 - (Length - timing) / Length);
                         var alpha = value.Clamp(0, 1f);
                         mask.alphaCutoff = alpha;
                     }
@@ -380,8 +380,8 @@ namespace MajdataPlay.Game.Notes
             if (!_isJudged) 
                 return;
             var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
-            var realityHT = LastFor - 0.45f - offset / 1000f;
-            var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
+            var realityHT = Length - 0.45f - offset / 1000f;
+            var percent = MathF.Min(1, (realityHT - _playerIdleTime) / realityHT);
             result = _judgeResult;
             if (realityHT > 0)
             {
@@ -424,7 +424,7 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            if(isBreak)
+            if(IsBreak)
             {
                 foreach(var fanRenderer in fanRenderers)
                 {
@@ -440,7 +440,7 @@ namespace MajdataPlay.Game.Notes
         }
         void StopHoldEffect()
         {
-            if (isBreak)
+            if (IsBreak)
             {
                 foreach (var fanRenderer in fanRenderers)
                 {

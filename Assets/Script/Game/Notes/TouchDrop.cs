@@ -64,15 +64,15 @@ namespace MajdataPlay.Game.Notes
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
                 return;
 
-            startPosition = poolingInfo.StartPos;
+            StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
-            timing = poolingInfo.Timing;
-            _judgeTiming = timing;
-            noteSortOrder = poolingInfo.NoteSortOrder;
-            speed = poolingInfo.Speed;
-            isEach = poolingInfo.IsEach;
-            isBreak = poolingInfo.IsBreak;
-            isEX = poolingInfo.IsEX;
+            Timing = poolingInfo.Timing;
+            _judgeTiming = Timing;
+            SortOrder = poolingInfo.NoteSortOrder;
+            Speed = poolingInfo.Speed;
+            IsEach = poolingInfo.IsEach;
+            IsBreak = poolingInfo.IsBreak;
+            IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             _isJudged = false;
             isFirework = poolingInfo.IsFirework;
@@ -82,13 +82,13 @@ namespace MajdataPlay.Game.Notes
                 Start();
             else
             {
-                wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
                 moveDuration = 0.8f * wholeDuration;
                 displayDuration = 0.2f * wholeDuration;
 
                 LoadSkin();
 
-                transform.position = GetAreaPos(startPosition, areaPosition);
+                transform.position = GetAreaPos(StartPos, areaPosition);
                 point.SetActive(false);
                 justBorder.SetActive(false);
 
@@ -112,8 +112,8 @@ namespace MajdataPlay.Game.Notes
             {
                 Result = _judgeResult,
                 Diff = _judgeDiff,
-                IsEX = isEX,
-                IsBreak = isBreak
+                IsEX = IsEX,
+                IsBreak = IsBreak
             };
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
@@ -148,7 +148,7 @@ namespace MajdataPlay.Game.Notes
             if (IsInitialized)
                 return;
             base.Start();
-            wholeDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+            wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
 
@@ -166,7 +166,7 @@ namespace MajdataPlay.Game.Notes
             justBorderRenderer = justBorder.GetComponent<SpriteRenderer>();
 
             LoadSkin();
-            transform.position = GetAreaPos(startPosition, areaPosition);
+            transform.position = GetAreaPos(StartPos, areaPosition);
             point.SetActive(false);
             justBorder.SetActive(false);
             
@@ -183,7 +183,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-                fanRenderers[i].sortingOrder += noteSortOrder;
+                fanRenderers[i].sortingOrder += SortOrder;
                 var controller = breakShineControllers[i];
                 if(controller is null)
                 {
@@ -196,14 +196,14 @@ namespace MajdataPlay.Game.Notes
             }
             DisableBreakShine();
             SetFansMaterial(skin.DefaultMaterial);
-            if (isBreak)
+            if (IsBreak)
             {
                 EnableBreakShine();
                 SetFansSprite(skin.Break);
                 SetFansMaterial(skin.BreakMaterial);
                 pointRenderer.sprite = skin.Point_Break;
             }
-            else if (isEach)
+            else if (IsEach)
             {
                 SetFansSprite(skin.Each);
                 pointRenderer.sprite = skin.Point_Each;
@@ -306,7 +306,7 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if((-timing).InRange(wholeDuration, moveDuration))
                     {
-                        multTouchHandler.Register(_sensorPos,isEach,isBreak);
+                        multTouchHandler.Register(_sensorPos,IsEach,IsBreak);
                         RendererState = RendererStatus.On;
                         point.SetActive(true);
                         CanShine = true;

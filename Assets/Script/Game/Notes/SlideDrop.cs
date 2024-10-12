@@ -47,15 +47,15 @@ namespace MajdataPlay.Game.Notes
             {
                 table.Mirror();
                 transform.localScale = new Vector3(-1f, 1f, 1f);
-                transform.rotation = Quaternion.Euler(0f, 0f, -45f * startPosition);
+                transform.rotation = Quaternion.Euler(0f, 0f, -45f * StartPos);
                 slideOK.transform.localScale = new Vector3(-1f, 1f, 1f);
             }
             else
             {
-                transform.rotation = Quaternion.Euler(0f, 0f, -45f * (startPosition - 1));
+                transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             }
 
-            var diff = Math.Abs(1 - startPosition);
+            var diff = Math.Abs(1 - StartPos);
             if(diff != 0)
                 table.Diff(diff);
 
@@ -64,7 +64,7 @@ namespace MajdataPlay.Game.Notes
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            fadeInTiming = -3.926913f / speed;
+            fadeInTiming = -3.926913f / Speed;
             fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
             fadeInTiming += startTiming;
             // Slide完全淡入时机
@@ -100,21 +100,21 @@ namespace MajdataPlay.Game.Notes
             Initialize();
             if (ConnectInfo.IsConnSlide)
             {
-                LastFor = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * GetSlideLength();
+                Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * GetSlideLength();
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     if (Parent is null)
                         throw new NullReferenceException();
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
-                    timing = parent.timing + parent.LastFor;
+                    Timing = parent.Timing + parent.Length;
                 }
             }
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                _judgeTiming = timing + LastFor * (1 - percent);
-                lastWaitTime = LastFor *  percent;
+                _judgeTiming = Timing + Length * (1 - percent);
+                lastWaitTime = Length *  percent;
             }
 
             judgeAreas = table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
@@ -131,9 +131,9 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - base.timing;
+            var timing = _gpManager.AudioTime - base.Timing;
             var startTiming = _gpManager.AudioTime - base.startTiming;
-            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
+            var tooLateTiming = base.Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
             var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
 
             if (!canCheck)
@@ -187,7 +187,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             stars[0].SetActive(true);
-            var timing = CurrentSec - base.timing;
+            var timing = CurrentSec - base.Timing;
             if (timing <= 0f)
             {
                 CanShine = true;
@@ -197,7 +197,7 @@ namespace MajdataPlay.Game.Notes
                 else
                 {
                     // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    alpha = 1f - -timing / (base.timing - startTiming);
+                    alpha = 1f - -timing / (base.Timing - startTiming);
                     alpha = alpha > 1f ? 1f : alpha;
                     alpha = alpha < 0f ? 0f : alpha;
                 }
@@ -242,7 +242,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if(first.On)
                 {
-                    _audioEffMana.PlaySlideSound(isBreak);
+                    _audioEffMana.PlaySlideSound(IsBreak);
                     isSoundPlayed = true;
                 }
             }
@@ -309,13 +309,13 @@ namespace MajdataPlay.Game.Notes
                 {
                     Result = _judgeResult,
                     Diff = _judgeDiff,
-                    IsEX = isEX,
-                    IsBreak = isBreak
+                    IsEX = IsEX,
+                    IsBreak = IsBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 _objectCounter.ReportResult(this, result);
                 
-                if (isBreak && _judgeResult == JudgeType.Perfect) 
+                if (IsBreak && _judgeResult == JudgeType.Perfect) 
                 { 
                     var anim = slideOK.GetComponent<Animator>();
                     anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
@@ -339,7 +339,7 @@ namespace MajdataPlay.Game.Notes
             starRenderer.color = Color.white;
             stars[0].transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
 
-            var process = MathF.Min((LastFor - GetRemainingTimeWithoutOffset()) / LastFor, 1);
+            var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
             var indexProcess = (slidePositions.Count - 1) * process;
             var index = (int)indexProcess;
             var pos = indexProcess - index;
@@ -402,12 +402,12 @@ namespace MajdataPlay.Game.Notes
             var starSprite = skin.Star.Normal;
             Material? breakMaterial = null;
 
-            if(isEach)
+            if(IsEach)
             {
                 barSprite = skin.Each;
                 starSprite = skin.Star.Each;
             }
-            if(isBreak)
+            if(IsBreak)
             {
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;

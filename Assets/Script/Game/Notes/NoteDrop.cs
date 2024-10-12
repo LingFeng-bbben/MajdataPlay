@@ -1,6 +1,7 @@
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Types.Attribute;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -9,13 +10,41 @@ namespace MajdataPlay.Game.Notes
 {
     public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider
     {
-        public int startPosition;
-        public float timing;
-        public int noteSortOrder;
-        public float speed = 7;
-        public bool isEach;
-        public bool isBreak = false;
-        public bool isEX = false;
+        public int StartPos 
+        { 
+            get => _startPos; 
+            set => _startPos = value; 
+        }
+        public float Timing 
+        { 
+            get => _timing; 
+            set => _timing = value; 
+        }
+        public int SortOrder 
+        { 
+            get => _sortOrder; 
+            set => _sortOrder = value; 
+        }
+        public float Speed 
+        { 
+            get => _speed; 
+            set => _speed = value; 
+        }
+        public bool IsEach 
+        { 
+            get => _isEach; 
+            set => _isEach = value; 
+        }
+        public bool IsBreak 
+        { 
+            get => _isBreak; 
+            set => _isBreak = value; 
+        }
+        public bool IsEX 
+        { 
+            get => _isEX;
+            set => _isEX = value; 
+        }
 
         public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
@@ -49,7 +78,7 @@ namespace MajdataPlay.Game.Notes
             _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            _judgeTiming = timing;
+            _judgeTiming = Timing;
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
@@ -95,7 +124,7 @@ namespace MajdataPlay.Game.Notes
 
             if (result != JudgeType.Miss && isFast)
                 result = 14 - result;
-            if (result != JudgeType.Miss && isEX)
+            if (result != JudgeType.Miss && IsEX)
                 result = JudgeType.Perfect;
 
             _judgeResult = result;
@@ -108,7 +137,7 @@ namespace MajdataPlay.Game.Notes
         /// 当前时刻在判定线后方，结果为正数
         /// <para>当前时刻在判定线前方，结果为负数</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - timing;
+        protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - Timing;
         /// <summary>
         /// 获取当前时刻距离正解帧的长度
         /// </summary>
@@ -118,7 +147,7 @@ namespace MajdataPlay.Game.Notes
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
-        protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
+        protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
         public static Vector3 GetPositionFromDistance(float distance, int position)
         {
             return new Vector3(
@@ -131,22 +160,51 @@ namespace MajdataPlay.Game.Notes
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
+
+        [ReadOnlyField]
+        [SerializeField]
+        protected int _startPos;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _timing;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _speed = 7;
+        [ReadOnlyField]
+        [SerializeField]
+        protected int _sortOrder;
+        [ReadOnlyField]
+        [SerializeField]
+        protected bool _isEach = false;
+        [ReadOnlyField]
+        [SerializeField]
+        protected bool _isBreak = false;
+        [ReadOnlyField]
+        [SerializeField]
+        protected bool _isEX = false;
     }
 
     public abstract class NoteLongDrop : NoteDrop
     {
-        public float LastFor = 1f;
+        public float Length
+        {
+            get => _length;
+            set => _length = value;
+        }
 
-        protected float playerIdleTime = 0;
-        
-
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _playerIdleTime = 0;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _length = 1f;
         /// <summary>
         /// 返回Hold的剩余长度
         /// </summary>
         /// <returns>
         /// Hold剩余长度
         /// </returns>
-        protected float GetRemainingTime() => MathF.Max(LastFor - GetTimeSpanToJudgeTiming(), 0);
-        protected float GetRemainingTimeWithoutOffset() => MathF.Max(LastFor - GetTimeSpanToArriveTiming(), 0);
+        protected float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
+        protected float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);
     }
 }

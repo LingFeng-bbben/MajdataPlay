@@ -26,7 +26,7 @@ namespace MajdataPlay.Game.Notes
                         break;
                     case RendererStatus.On:
                         thisRenderer.forceRenderingOff = false;
-                        exRenderer.forceRenderingOff = !isEX;
+                        exRenderer.forceRenderingOff = !IsEX;
                         tapLineRenderer.forceRenderingOff = false;
                         break;
                 }
@@ -46,14 +46,14 @@ namespace MajdataPlay.Game.Notes
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
                 return;
-            startPosition = poolingInfo.StartPos;
-            timing = poolingInfo.Timing;
-            _judgeTiming = timing;
-            noteSortOrder = poolingInfo.NoteSortOrder;
-            speed = poolingInfo.Speed;
-            isEach = poolingInfo.IsEach;
-            isBreak = poolingInfo.IsBreak;
-            isEX = poolingInfo.IsEX;
+            StartPos = poolingInfo.StartPos;
+            Timing = poolingInfo.Timing;
+            _judgeTiming = Timing;
+            SortOrder = poolingInfo.NoteSortOrder;
+            Speed = poolingInfo.Speed;
+            IsEach = poolingInfo.IsEach;
+            IsBreak = poolingInfo.IsBreak;
+            IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             _isJudged = false;
             Distance = -100;
@@ -71,14 +71,14 @@ namespace MajdataPlay.Game.Notes
             var result = new JudgeResult()
             {
                 Result = _judgeResult,
-                IsBreak = isBreak,
-                IsEX = isEX,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
                 Diff = _judgeDiff
             };
             CanShine = false;
             if (breakShineController is not null)
                 breakShineController.enabled = false;
-            _effectManager.PlayEffect(startPosition, result);
+            _effectManager.PlayEffect(StartPos, result);
             _audioEffMana.PlayTapSound(result);
             _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
@@ -96,8 +96,8 @@ namespace MajdataPlay.Game.Notes
             tapLine.SetActive(false);
             tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
 
-            thisRenderer.sortingOrder += noteSortOrder;
-            exRenderer.sortingOrder += noteSortOrder;
+            thisRenderer.sortingOrder += SortOrder;
+            exRenderer.sortingOrder += SortOrder;
 
             transform.localScale = new Vector3(0, 0);
         }
@@ -121,7 +121,7 @@ namespace MajdataPlay.Game.Notes
         protected virtual void Update()
         {
             var timing = GetTimeSpanToArriveTiming();
-            var distance = timing * speed + 4.8f;
+            var distance = timing * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
@@ -130,8 +130,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
-                        tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
+                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+                        tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
 
                         RendererState = RendererStatus.On;
                         CanShine = true;
@@ -238,7 +238,7 @@ namespace MajdataPlay.Game.Notes
 
             if (result != JudgeType.Miss && isFast)
                 result = 14 - result;
-            if (result != JudgeType.Miss && isEX)
+            if (result != JudgeType.Miss && IsEX)
                 result = JudgeType.Perfect;
 
             _judgeResult = result;
