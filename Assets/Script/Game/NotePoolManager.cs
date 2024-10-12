@@ -2,7 +2,7 @@
 using MajdataPlay.Types;
 using System.Collections.Generic;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Game
 {
     public class NotePoolManager: MonoBehaviour

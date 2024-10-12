@@ -30,7 +30,17 @@ namespace MajdataPlay.Game
         public float FirstNoteAppearTiming { get; set; } = 0f;
         public ComponentState State { get; private set; } = ComponentState.Idle;
         public MaiScore? HistoryScore { get; private set; }
-        public (float, float) BreakParams => (0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0), 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0));
+        public BreakShineParam BreakParam
+        {
+            get
+            {
+                return new BreakShineParam()
+                {
+                    Brightness = 0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0),
+                    Contrast = 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0)
+                };
+            }
+        }
         public float NoteSpeed { get; private set; } = 9f;
         public float TouchSpeed { get; private set; } = 7.5f;
         public float AudioTime { get; private set; } = -114514f;

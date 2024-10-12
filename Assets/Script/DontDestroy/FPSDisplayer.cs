@@ -14,7 +14,7 @@ namespace MajdataPlay
         float _frameTimer = 1;
         List<float> _data = new();
         TextMeshPro _textDisplayer;
-        GameSetting _setting = MajInstanceHelper<GameSetting>.Instance!;
+        GameSetting _setting;
         
         void Start()
         {

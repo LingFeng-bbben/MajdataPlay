@@ -20,9 +20,9 @@ namespace MajdataPlay.Game.Controllers
                 return;
             if (Parent is not null && Parent.CanShine)
             {
-                var (brightness, contrast) = gpManager.BreakParams;
-                Renderer.material.SetFloat("_Brightness", brightness);
-                Renderer.material.SetFloat("_Contrast", contrast);
+                var param = gpManager.BreakParam;
+                Renderer.material.SetFloat("_Brightness", param.Brightness);
+                Renderer.material.SetFloat("_Contrast", param.Contrast);
             }
         }
     }
