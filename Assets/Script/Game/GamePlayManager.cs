@@ -16,19 +16,51 @@ using UnityEngine.Scripting;
 using System.IO;
 using MajdataPlay.Utils;
 using PimDeWitte.UnityMainThreadDispatcher;
+using MajdataPlay.Types.Attribute;
 
 namespace MajdataPlay.Game
 {
 #nullable enable
     public class GamePlayManager : MonoBehaviour
     {
+        public static GamePlayManager Instance { get; private set; }
+
+        public float NoteSpeed { get; private set; } = 9f;
+        public float TouchSpeed { get; private set; } = 7.5f;
+        // Timeline
+        /// <summary>
+        /// Time provider
+        /// </summary>
+        public float TimeSource
+        {
+            get
+            {
+                if (MajInstances.GameManager.UseUnityTimer)
+                    return Time.unscaledTime;
+
+                GetSystemTimePreciseAsFileTime(out var filetime);
+                filetime = filetime - _fileTimeAtStart;
+                //print(filetime);
+                return (float)(filetime / 10000000d);
+            }
+        }
         /// <summary>
         /// 当前逻辑帧的时刻<para>Unit: Second</para>
         /// </summary>
-        public float ThisFrameSec { get; private set; } = 0;
-        public static GamePlayManager Instance { get; private set; }
-        public float FirstNoteAppearTiming { get; set; } = 0f;
+        public float ThisFrameSec => _thisFrameSec;
+        public float FirstNoteAppearTiming
+        {
+            get => _firstNoteAppearTiming;
+            set => _firstNoteAppearTiming = value;
+        }
+        public float AudioTime => _audioTime;
+        public float AudioTimeNoOffset => _audioTimeNoOffset;
+        public float AudioStartTime => _audioStartTime;
+        // Control
+        public bool IsStart => _audioSample?.IsPlaying ?? false;
+        public float CurrentSpeed { get; set; } = 1f;
         public ComponentState State { get; private set; } = ComponentState.Idle;
+        // Data
         public MaiScore? HistoryScore { get; private set; }
         public BreakShineParam BreakParam
         {
@@ -41,56 +73,56 @@ namespace MajdataPlay.Game
                 };
             }
         }
-        public float NoteSpeed { get; private set; } = 9f;
-        public float TouchSpeed { get; private set; } = 7.5f;
-        public float AudioTime { get; private set; } = -114514f;
-        public float AudioTimeNoOffset { get; private set; } = -114514f;
-        public bool IsStart => audioSample?.IsPlaying ?? false;
-        public float CurrentSpeed { get; set; } = 1f;
-        public float AudioStartTime { get; private set; } = -114514f;
 
-        
+
+
         [SerializeField]
-        GameObject loadingMask;
+        GameObject _loadingMask;
         [SerializeField]
-        GameSetting gameSetting = MajInstances.Setting;
+        GameSetting _setting = MajInstances.Setting;
         [SerializeField]
-        GameObject skipBtn;
-        NoteLoader noteLoader;
-        Text errorText;
-        SimaiProcess Chart;
-        SongDetail song;
-        AudioSampleWrap? audioSample = null;
-        ObjectCounter objectCounter;
-        CancellationTokenSource allTaskTokenSource = new();
-        List<AnwserSoundPoint> AnwserSoundList = new List<AnwserSoundPoint>();
+        GameObject _skipBtn;
 
-        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
-        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
-        float timeSource
-        {
-            get
-            {
-                if (MajInstances.GameManager.UseUnityTimer)
-                    return Time.unscaledTime;
+        [ReadOnlyField]
+        [SerializeField]
+        float _thisFrameSec = 0f;
+        [ReadOnlyField]
+        [SerializeField]
+        float _firstNoteAppearTiming = 0f;
+        [ReadOnlyField]
+        [SerializeField]
+        float _audioTime = -114514;
+        [ReadOnlyField]
+        [SerializeField]
+        float _audioTimeNoOffset = -114514;
+        [ReadOnlyField]
+        [SerializeField]
+        float _audioStartTime = -114514;
 
-                GetSystemTimePreciseAsFileTime(out var filetime);
-                filetime = filetime - fileTimeAtStart;
-                //print(filetime);
-                return (float)(filetime / 10000000d);
-            }
-        }
-        long fileTimeAtStart = 0;
-        TextMeshPro loadingText;
-        Image loadingImage;
+        long _fileTimeAtStart = 0;
 
+        Image _loadingImage;
+        Text _errText;
+        TextMeshPro _loadingText;
+
+        SimaiProcess _chart;
+        SongDetail _songDetail;
+
+        AudioSampleWrap? _audioSample = null;
+
+        NoteLoader _noteLoader;
+        ObjectCounter _objectCounter;
+
+        CancellationTokenSource _allTaskTokenSource = new();
+        List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
         private void Awake()
         {
             Instance = this;
+            MajInstanceHelper<GamePlayManager>.Instance = this;
             //print(MajInstances.GameManager.SelectedIndex);
-            song = SongStorage.WorkingCollection.Current;
-            HistoryScore = MajInstances.ScoreManager.GetScore(song, MajInstances.GameManager.SelectedDiff);
-            GetSystemTimePreciseAsFileTime(out fileTimeAtStart);
+            _songDetail = SongStorage.WorkingCollection.Current;
+            HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
+            GetSystemTimePreciseAsFileTime(out _fileTimeAtStart);
         }
 
         private void OnPauseButton(object sender, InputEventArgs e)
@@ -104,27 +136,27 @@ namespace MajdataPlay.Game
 
         void Start()
         {
-            objectCounter = FindObjectOfType<ObjectCounter>();
+            _objectCounter = FindObjectOfType<ObjectCounter>();
             State = ComponentState.Loading;
-            loadingText = loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
-            loadingImage = loadingMask.GetComponent<Image>();
+            _loadingText = _loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
+            _loadingImage = _loadingMask.GetComponent<Image>();
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
-            errorText = GameObject.Find("ErrText").GetComponent<Text>();
+            _errText = GameObject.Find("ErrText").GetComponent<Text>();
             DumpOnlineChart().Forget();
         }
 
         async UniTask DumpOnlineChart()
         {
-            if (song.isOnline)
+            if (_songDetail.isOnline)
             {
                 LightManager.Instance.SetAllLight(Color.red);
-                loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
-                var dumpTask = song.DumpToLocal();
+                _loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
+                var dumpTask = _songDetail.DumpToLocal();
                 while (!dumpTask.IsCompleted)
                 {
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                 }
-                song = dumpTask.Result;
+                _songDetail = dumpTask.Result;
             }
             var loadingTask =  UniTask.WhenAll(LoadAudioTrack(), LoadChart());
             var task = loadingTask.AsTask();
@@ -138,15 +170,15 @@ namespace MajdataPlay.Game
                     {
                         case InvalidAudioTrackException audioE:
                             State = ComponentState.Failed;
-                            loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioE.Message}";
-                            loadingText.color = Color.red;
+                            _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioE.Message}";
+                            _loadingText.color = Color.red;
                             Debug.LogError(audioE);
                             return;
                         case TaskCanceledException:
                             return;
                         default:
                             State = ComponentState.Failed;
-                            errorText.text = "加载note时出错了哟\n" + e.Message;
+                            _errText.text = "加载note时出错了哟\n" + e.Message;
                             Debug.LogError(e);
                             return;
                     }
@@ -157,27 +189,27 @@ namespace MajdataPlay.Game
         }
         async UniTask LoadAudioTrack()
         {
-            var trackPath = song.TrackPath ?? string.Empty;
+            var trackPath = _songDetail.TrackPath ?? string.Empty;
             if(!File.Exists(trackPath))
                 throw new InvalidAudioTrackException("Audio track not found", trackPath);
-            audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
+            _audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
             await UniTask.Yield();
-            if (audioSample is null)
+            if (_audioSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
-            audioSample.SetVolume(gameSetting.Audio.Volume.BGM);
+            _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             LightManager.Instance.SetAllLight(Color.white);
         }
         async UniTask LoadChart()
         {
-            var maidata = song.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
-            loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
+            var maidata = _songDetail.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
+            _loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
             if (string.IsNullOrEmpty(maidata))
             {
                 BackToList();
                 throw new TaskCanceledException("Empty chart");
             }
-            Chart = new SimaiProcess(maidata);
-            if (Chart.notelist.Count == 0)
+            _chart = new SimaiProcess(maidata);
+            if (_chart.notelist.Count == 0)
             {
                 BackToList();
                 throw new TaskCanceledException("Empty chart");
@@ -186,15 +218,15 @@ namespace MajdataPlay.Game
             await Task.Run(() =>
             {
                 //Generate ClockSounds
-                var countnum = song.ClockCount == null ? 4 : song.ClockCount;
-                var firstBpm = Chart.notelist.FirstOrDefault().currentBpm;
+                var countnum = _songDetail.ClockCount == null ? 4 : _songDetail.ClockCount;
+                var firstBpm = _chart.notelist.FirstOrDefault().currentBpm;
                 var interval = 60 / firstBpm;
-                if (Chart.notelist.Any(o => o.time < countnum * interval))
+                if (_chart.notelist.Any(o => o.time < countnum * interval))
                 {
                     //if there is something in first measure, we add clock before the bgm
                     for (int i = 0; i < countnum; i++)
                     {
-                        AnwserSoundList.Add(new AnwserSoundPoint()
+                        _anwserSoundList.Add(new AnwserSoundPoint()
                         {
                             time = -(i + 1) * interval,
                             isClock = true,
@@ -207,7 +239,7 @@ namespace MajdataPlay.Game
                     //if nothing there, we can add it with bgm
                     for (int i = 0; i < countnum; i++)
                     {
-                        AnwserSoundList.Add(new AnwserSoundPoint()
+                        _anwserSoundList.Add(new AnwserSoundPoint()
                         {
                             time = i * interval,
                             isClock = true,
@@ -218,11 +250,11 @@ namespace MajdataPlay.Game
 
 
                 //Generate AnwserSounds
-                foreach (var timingPoint in Chart.notelist)
+                foreach (var timingPoint in _chart.notelist)
                 {
                     if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
 
-                    AnwserSoundList.Add(new AnwserSoundPoint()
+                    _anwserSoundList.Add(new AnwserSoundPoint()
                     {
                         time = timingPoint.time,
                         isClock = false,
@@ -233,10 +265,10 @@ namespace MajdataPlay.Game
                     foreach (var hold in holds)
                     {
                         var newtime = timingPoint.time + hold.holdTime;
-                        if (!Chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
-                            !AnwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
+                        if (!_chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
+                            !_anwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
                             )
-                            AnwserSoundList.Add(new AnwserSoundPoint()
+                            _anwserSoundList.Add(new AnwserSoundPoint()
                             {
                                 time = newtime,
                                 isClock = false,
@@ -244,7 +276,7 @@ namespace MajdataPlay.Game
                             });
                     }
                 }
-                AnwserSoundList = AnwserSoundList.OrderBy(o => o.time).ToList();
+                _anwserSoundList = _anwserSoundList.OrderBy(o => o.time).ToList();
             });
         }
 
@@ -257,11 +289,11 @@ namespace MajdataPlay.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
-            if (!string.IsNullOrEmpty(song.VideoPath))
-                BGManager.SetBackgroundMovie(song.VideoPath);
+            if (!string.IsNullOrEmpty(_songDetail.VideoPath))
+                BGManager.SetBackgroundMovie(_songDetail.VideoPath);
             else
             {
-                var task = song.GetSpriteAsync();
+                var task = _songDetail.GetSpriteAsync();
                 while (!task.IsCompleted)
                 {
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -270,7 +302,7 @@ namespace MajdataPlay.Game
             }
 
 
-            BGManager.SetBackgroundDim(gameSetting.Game.BackgroundDim);
+            BGManager.SetBackgroundDim(_setting.Game.BackgroundDim);
         }
         /// <summary>
         /// 初始化NoteLoader与实例化Note对象
@@ -280,29 +312,29 @@ namespace MajdataPlay.Game
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
-            noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
-            noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(gameSetting.Game.TapSpeed + 0.9975f, -0.985558604f)));
-            noteLoader.touchSpeed = gameSetting.Game.TouchSpeed;
+            _noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
+            _noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(_setting.Game.TapSpeed + 0.9975f, -0.985558604f)));
+            _noteLoader.touchSpeed = _setting.Game.TouchSpeed;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
-            var loaderTask = noteLoader.LoadNotesIntoPool(Chart);
+            var loaderTask = _noteLoader.LoadNotesIntoPool(_chart);
             var timer = 1f;
 
-            while (noteLoader.State < NoteLoaderStatus.Finished)
+            while (_noteLoader.State < NoteLoaderStatus.Finished)
             {
-                if (noteLoader.State == NoteLoaderStatus.Error)
+                if (_noteLoader.State == NoteLoaderStatus.Error)
                 {
                     var e = loaderTask.AsTask().Exception;
-                    errorText.text = "加载note时出错了哟\n" + e.Message;
-                    loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%";
+                    _errText.text = "加载note时出错了哟\n" + e.Message;
+                    _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%";
                     Debug.LogError(e);
                     StopAllCoroutines();
                     throw e;
                 }
-                loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n{noteLoader.Process * 100:F2}%";
+                _loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Process * 100:F2}%";
                 await UniTask.Yield();
             }
-            loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%";
+            _loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%";
 
             while (timer > 0)
             {
@@ -312,18 +344,18 @@ namespace MajdataPlay.Game
                 var maskColor = Color.black;
                 textColor.a = timer / 1f;
                 maskColor.a = timer / 1f * 0.75f;
-                loadingImage.color = maskColor;
-                loadingText.color = textColor;
+                _loadingImage.color = maskColor;
+                _loadingText.color = textColor;
             }
 
-            loadingMask.SetActive(false);
-            loadingText.gameObject.SetActive(false);
+            _loadingMask.SetActive(false);
+            _loadingText.gameObject.SetActive(false);
         }
         async UniTaskVoid PrepareToPlay()
         {
-            if (audioSample is null)
+            if (_audioSample is null)
                 return;
-            AudioTime = -5f;
+            _audioTime = -5f;
 
             await InitBackground();
             var noteLoaderTask = LoadNotes().AsTask();
@@ -337,24 +369,24 @@ namespace MajdataPlay.Game
 
             MajInstances.GameManager.DisableGC();
             Time.timeScale = 1f;
-            var firstClockTiming = AnwserSoundList[0].time;
+            var firstClockTiming = _anwserSoundList[0].time;
             float extraTime = 5f;
             if (firstClockTiming < -5f)
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
-            AudioStartTime = timeSource + (float)audioSample.CurrentSec + extraTime;
+            _audioStartTime = TimeSource + (float)_audioSample.CurrentSec + extraTime;
             StartToPlayAnswer();
-            audioSample.Play();
-            audioSample.Pause();
+            _audioSample.Play();
+            _audioSample.Pause();
 
             State = ComponentState.Running;
 
-            while (timeSource - AudioStartTime < 0)
+            while (TimeSource - AudioStartTime < 0)
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
-            audioSample.Play();
-            AudioStartTime = timeSource;
+            _audioSample.Play();
+            _audioStartTime = TimeSource;
 
         }
 
@@ -362,38 +394,38 @@ namespace MajdataPlay.Game
         {
             print("GPManagerDestroy");
             DisposeAudioTrack();
-            audioSample = null;
+            _audioSample = null;
             State = ComponentState.Finished;
-            allTaskTokenSource.Cancel();
+            _allTaskTokenSource.Cancel();
             MajInstances.GameManager.EnableGC();
         }
         // Update is called once per frame
         void Update()
         {
             UpdateAudioTime();
-            if (audioSample is null)
+            if (_audioSample is null)
                 return;
-            else if (!objectCounter.AllFinished)
+            else if (!_objectCounter.AllFinished)
                 return;
             else if (State != ComponentState.Running)
                 return;
 
-            var remainingTime = AudioTime - audioSample.Length.TotalSeconds;
+            var remainingTime = AudioTime - _audioSample.Length.TotalSeconds;
             if(remainingTime < -6)
-                skipBtn.SetActive(true);
+                _skipBtn.SetActive(true);
             else if(remainingTime >= 0)
             {
-                skipBtn.SetActive(false);
-                EndGame();
+                _skipBtn.SetActive(false);
+                EndGame().Forget();
             }
         }
         void FixedUpdate()
         {
-            ThisFrameSec = AudioTime;
+            _thisFrameSec = _audioTime;
         }
         void UpdateAudioTime()
         {
-            if (audioSample is null)
+            if (_audioSample is null)
                 return;
             else if (State != ComponentState.Running)
                 return;
@@ -401,21 +433,21 @@ namespace MajdataPlay.Game
                 return;
             //Do not use this!!!! This have connection with sample batch size
             //AudioTime = (float)audioSample.GetCurrentTime();
-            var chartOffset = (float)song.First + gameSetting.Judge.AudioOffset;
-            AudioTime = timeSource - AudioStartTime - chartOffset;
-            AudioTimeNoOffset = timeSource - AudioStartTime;
+            var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
+            _audioTime = TimeSource - AudioStartTime - chartOffset;
+            _audioTimeNoOffset = TimeSource - AudioStartTime;
 
-            var realTimeDifference = (float)audioSample.CurrentSec - (timeSource - AudioStartTime);
-            if (!audioSample.IsPlaying)
+            var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
+            if (!_audioSample.IsPlaying)
                 return;
             if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
             {
-                errorText.text = "音频错位了哟\n" + realTimeDifference;
+                _errText.text = "音频错位了哟\n" + realTimeDifference;
             }
             else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
             {
-                errorText.text = "修正音频哟\n" + realTimeDifference;
-                AudioStartTime -= realTimeDifference * 0.8f;
+                _errText.text = "修正音频哟\n" + realTimeDifference;
+                _audioStartTime -= realTimeDifference * 0.8f;
             }
         }
         async void StartToPlayAnswer()
@@ -423,17 +455,17 @@ namespace MajdataPlay.Game
             int i = 0;
             await Task.Run(() =>
             {
-                while (!allTaskTokenSource.IsCancellationRequested)
+                while (!_allTaskTokenSource.IsCancellationRequested)
                 {
-                    if (i >= AnwserSoundList.Count)
+                    if (i >= _anwserSoundList.Count)
                         return;
 
-                    var noteToPlay = AnwserSoundList[i].time;
+                    var noteToPlay = _anwserSoundList[i].time;
                     var delta = AudioTime - noteToPlay;
 
                     if (delta > 0)
                     {
-                        if (AnwserSoundList[i].isClock)
+                        if (_anwserSoundList[i].isClock)
                         {
                             MajInstances.AudioManager.PlaySFX(SFXSampleType.CLOCK);
                             UnityMainThreadDispatcher.Instance().Enqueue(() =>
@@ -443,7 +475,7 @@ namespace MajdataPlay.Game
                         }
                         else
                             MajInstances.AudioManager.PlaySFX(SFXSampleType.ANSWER);
-                        AnwserSoundList[i].isPlayed = true;
+                        _anwserSoundList[i].isPlayed = true;
                         i++;
                     }
                     //await Task.Delay(1);
@@ -458,11 +490,11 @@ namespace MajdataPlay.Game
         }
         void DisposeAudioTrack()
         {
-            if (audioSample is not null)
+            if (_audioSample is not null)
             {
-                audioSample.Pause();
-                audioSample.Dispose();
-                audioSample = null;
+                _audioSample.Pause();
+                _audioSample.Dispose();
+                _audioSample = null;
             }
         }
         async UniTaskVoid BackToList()
@@ -478,9 +510,9 @@ namespace MajdataPlay.Game
         }
         public async UniTaskVoid EndGame()
         {
-            var acc = objectCounter.CalculateFinalResult();
+            var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            GameManager.LastGameResult = objectCounter.GetPlayRecord(song, MajInstances.GameManager.SelectedDiff);
+            GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             MajInstances.GameManager.EnableGC();
             BGManager.Instance.CancelTimeRef();
             State = ComponentState.Finished;
@@ -490,6 +522,8 @@ namespace MajdataPlay.Game
             await UniTask.DelayFrame(5);
             MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("Result", UniTask.Delay(1000)).Forget();
         }
+        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
+        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
         class AnwserSoundPoint
         {
             public double time;
