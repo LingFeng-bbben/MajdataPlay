@@ -18,6 +18,9 @@ namespace MajdataPlay.Utils
 
         static T? _instance = default;
 
+        /// <summary>
+        /// Release the instance
+        /// </summary>
         public static void Free()
         {
             _instance = default;

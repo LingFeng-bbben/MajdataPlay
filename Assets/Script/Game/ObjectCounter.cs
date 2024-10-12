@@ -86,9 +86,18 @@ namespace MajdataPlay.Game
         Dictionary<JudgeType, int> judgedBreakCount;
         Dictionary<JudgeType, int> totalJudgedCount;
 
-        // Start is called before the first frame update
+        GamePlayManager _gpManager;
+        void Awake()
+        {
+            MajInstanceHelper<ObjectCounter>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            MajInstanceHelper<ObjectCounter>.Free();
+        }
         private void Start()
         {
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
             rate = GameObject.Find("ObjectRate").GetComponent<Text>();
@@ -641,215 +650,215 @@ namespace MajdataPlay.Game
             UpdateFastLate(judgeResult);
             CalAccRate();
         }
-    /// <summary>
-    /// 更新Fast/Late统计信息
-    /// </summary>
-    /// <param name="judgeResult"></param>
-    void UpdateFastLate(in JudgeResult judgeResult)
-    {
-        JudgeDisplayType gameSetting;
-        if (judgeResult.IsBreak)
-            gameSetting = MajInstances.Setting.Display.BreakFastLateType;
-        else
-            gameSetting = MajInstances.Setting.Display.FastLateType;
-        var resultValue = (int)judgeResult.Result;
-        var absValue = Math.Abs(7 - resultValue);
+        /// <summary>
+        /// 更新Fast/Late统计信息
+        /// </summary>
+        /// <param name="judgeResult"></param>
+        void UpdateFastLate(in JudgeResult judgeResult)
+        {
+            JudgeDisplayType gameSetting;
+            if (judgeResult.IsBreak)
+                gameSetting = MajInstances.Setting.Display.BreakFastLateType;
+            else
+                gameSetting = MajInstances.Setting.Display.FastLateType;
+            var resultValue = (int)judgeResult.Result;
+            var absValue = Math.Abs(7 - resultValue);
 
-        switch (gameSetting)
-        {
-            case JudgeDisplayType.All:
-                if (judgeResult.Diff == 0 || judgeResult.IsMiss)
+            switch (gameSetting)
+            {
+                case JudgeDisplayType.All:
+                    if (judgeResult.Diff == 0 || judgeResult.IsMiss)
+                        break;
+                    else if (judgeResult.IsFast)
+                        fast++;
+                    else
+                        late++;
                     break;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            case JudgeDisplayType.BelowCP:
-                if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
+                case JudgeDisplayType.BelowCP:
+                    if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
+                        break;
+                    else if (judgeResult.IsFast)
+                        fast++;
+                    else
+                        late++;
                     break;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
-            //默认只统计Great、Good的Fast/Late
-            case JudgeDisplayType.BelowP:
-            case JudgeDisplayType.BelowGR:
-            case JudgeDisplayType.Disable:
-                if (judgeResult.IsMiss || absValue <= 2)
+                //默认只统计Great、Good的Fast/Late
+                case JudgeDisplayType.BelowP:
+                case JudgeDisplayType.BelowGR:
+                case JudgeDisplayType.Disable:
+                    if (judgeResult.IsMiss || absValue <= 2)
+                        break;
+                    else if (judgeResult.IsFast)
+                        fast++;
+                    else
+                        late++;
                     break;
-                else if (judgeResult.IsFast)
-                    fast++;
-                else
-                    late++;
-                break;
+            }
         }
-    }
-    /// <summary>
-    /// 更新Combo
-    /// </summary>
-    /// <param name="combo"></param>
-    void UpdateCombo(long combo)
-    {
-        if (combo == 0)
-            bgInfoText.gameObject.SetActive(false);
-        else
+        /// <summary>
+        /// 更新Combo
+        /// </summary>
+        /// <param name="combo"></param>
+        void UpdateCombo(long combo)
         {
-            bgInfoText.gameObject.SetActive(true);
-            bgInfoText.text = $"{combo}";
+            if (combo == 0)
+                bgInfoText.gameObject.SetActive(false);
+            else
+            {
+                bgInfoText.gameObject.SetActive(true);
+                bgInfoText.text = $"{combo}";
+            }
         }
-    }
-    /// <summary>
-    /// 更新BgInfo
-    /// </summary>
-    void UpdateMainOutput()
-    {
-        var bgInfo = MajInstances.Setting.Game.BGInfo;
-        switch (bgInfo)
+        /// <summary>
+        /// 更新BgInfo
+        /// </summary>
+        void UpdateMainOutput()
         {
-            case BGInfoType.CPCombo:
-                UpdateCombo(cPCombo);
-                break;
-            case BGInfoType.PCombo:
-                UpdateCombo(pCombo);
-                break;
-            case BGInfoType.Combo:
-                UpdateCombo(combo);
-                break;
-            case BGInfoType.Achievement_101:
-                bgInfoText.text = $"{accRate[2]:F4}%";
-                UpdateAchievementColor(accRate[2],bgInfoText);
-                break;
-            case BGInfoType.Achievement_100:
-                bgInfoText.text = $"{accRate[3]:F4}%";
-                UpdateAchievementColor(accRate[3], bgInfoText);
-                break;
-            case BGInfoType.Achievement:
-                bgInfoText.text = $"{accRate[4]:F4}%";
-                UpdateAchievementColor(accRate[4], bgInfoText);
-                break;
-            case BGInfoType.AchievementClassical:
-                bgInfoText.text = $"{accRate[0]:F2}%";
-                UpdateAchievementColor(accRate[0], bgInfoText);
-                break;
-            case BGInfoType.AchievementClassical_100:
-                bgInfoText.text = $"{accRate[1]:F2}%";
-                UpdateAchievementColor(accRate[1], bgInfoText);
-                break;
-            case BGInfoType.DXScore:
-                bgInfoText.text = $"{lostDXScore}";
-                break;
-            case BGInfoType.DXScoreRank:
-                UpdateDXScoreRank();
-                break;
-            case BGInfoType.S_Board:
-            case BGInfoType.SS_Board:
-            case BGInfoType.SSS_Board:
-            case BGInfoType.MyBest:
-                UpdateRankBoard(bgInfo);
-                break;
-            case BGInfoType.Diff:
-                bgInfoText.text = $"{diff:F2}";
-                var oldColor = bgInfoText.color;
-                if (diff < 0)
-                {
-                    oldColor = EarlyDiffColor;
-                    bgInfoHeader.text = "FAST";
-                }
-                else
-                {
-                    oldColor = LateDiffColor;
-                    bgInfoHeader.text = "LATE";
-                }
-                var newColor = new Color()
-                {
-                    r = oldColor.r,
-                    g = oldColor.g,
-                    b = oldColor.b,
-                    a = diffTimer.Clamp(0, 1)
-                };
-                bgInfoHeader.color = newColor;
-                bgInfoText.color = newColor;
-                diffTimer -= Time.deltaTime * 3;
-                break;
-            default:
+            var bgInfo = MajInstances.Setting.Game.BGInfo;
+            switch (bgInfo)
+            {
+                case BGInfoType.CPCombo:
+                    UpdateCombo(cPCombo);
+                    break;
+                case BGInfoType.PCombo:
+                    UpdateCombo(pCombo);
+                    break;
+                case BGInfoType.Combo:
+                    UpdateCombo(combo);
+                    break;
+                case BGInfoType.Achievement_101:
+                    bgInfoText.text = $"{accRate[2]:F4}%";
+                    UpdateAchievementColor(accRate[2], bgInfoText);
+                    break;
+                case BGInfoType.Achievement_100:
+                    bgInfoText.text = $"{accRate[3]:F4}%";
+                    UpdateAchievementColor(accRate[3], bgInfoText);
+                    break;
+                case BGInfoType.Achievement:
+                    bgInfoText.text = $"{accRate[4]:F4}%";
+                    UpdateAchievementColor(accRate[4], bgInfoText);
+                    break;
+                case BGInfoType.AchievementClassical:
+                    bgInfoText.text = $"{accRate[0]:F2}%";
+                    UpdateAchievementColor(accRate[0], bgInfoText);
+                    break;
+                case BGInfoType.AchievementClassical_100:
+                    bgInfoText.text = $"{accRate[1]:F2}%";
+                    UpdateAchievementColor(accRate[1], bgInfoText);
+                    break;
+                case BGInfoType.DXScore:
+                    bgInfoText.text = $"{lostDXScore}";
+                    break;
+                case BGInfoType.DXScoreRank:
+                    UpdateDXScoreRank();
+                    break;
+                case BGInfoType.S_Board:
+                case BGInfoType.SS_Board:
+                case BGInfoType.SSS_Board:
+                case BGInfoType.MyBest:
+                    UpdateRankBoard(bgInfo);
+                    break;
+                case BGInfoType.Diff:
+                    bgInfoText.text = $"{diff:F2}";
+                    var oldColor = bgInfoText.color;
+                    if (diff < 0)
+                    {
+                        oldColor = EarlyDiffColor;
+                        bgInfoHeader.text = "FAST";
+                    }
+                    else
+                    {
+                        oldColor = LateDiffColor;
+                        bgInfoHeader.text = "LATE";
+                    }
+                    var newColor = new Color()
+                    {
+                        r = oldColor.r,
+                        g = oldColor.g,
+                        b = oldColor.b,
+                        a = diffTimer.Clamp(0, 1)
+                    };
+                    bgInfoHeader.color = newColor;
+                    bgInfoText.color = newColor;
+                    diffTimer -= Time.deltaTime * 3;
+                    break;
+                default:
+                    return;
+            }
+        }
+        void UpdateRankBoard(in BGInfoType bgInfo)
+        {
+            double rate = -1;
+            switch (bgInfo)
+            {
+                case BGInfoType.S_Board:
+                    rate = accRate[2] - 97;
+                    break;
+                case BGInfoType.SS_Board:
+                    rate = accRate[2] - 99;
+                    break;
+                case BGInfoType.SSS_Board:
+                    rate = accRate[2] - 100;
+                    break;
+                case BGInfoType.MyBest:
+                    rate = accRate[2] - _gpManager.HistoryScore.Acc.DX;
+                    break;
+                default:
+                    return;
+            }
+            if (rate >= 0)
+                bgInfoText.text = $"{rate:F4}%";
+            else
+                bgInfoText.gameObject.SetActive(false);
+        }
+        void UpdateDXScoreRank()
+        {
+            var remainingDXScore = totalDXScore + lostDXScore;
+            var dxRank = new DXScoreRank(remainingDXScore, totalDXScore);
+            var num = remainingDXScore - (dxRank.Lower + 1);
+            if (dxRank.Rank == 0)
+            {
+                bgInfoText.gameObject.SetActive(false);
                 return;
+            }
+            else
+                bgInfoText.gameObject.SetActive(true);
+            bgInfoHeader.text = $"✧{dxRank.Rank}";
+            bgInfoText.text = $"+{num}";
+            switch (dxRank.Rank)
+            {
+                case 5:
+                case 4:
+                case 3:
+                    bgInfoHeader.color = AchievementGoldColor;
+                    bgInfoText.color = AchievementGoldColor;
+                    break;
+                case 2:
+                case 1:
+                    bgInfoHeader.color = DXScoreColor;
+                    bgInfoText.color = DXScoreColor;
+                    break;
+            }
         }
-    }
-    void UpdateRankBoard(in BGInfoType bgInfo)
-    {
-        double rate = -1;
-        switch(bgInfo)
+        /// <summary>
+        /// 更新SubDisplay的JudgeResult
+        /// </summary>
+        void UpdateJudgeResult()
         {
-            case BGInfoType.S_Board:
-                rate = accRate[2] - 97;
-                break;
-            case BGInfoType.SS_Board:
-                rate = accRate[2] - 99;
-                break;
-            case BGInfoType.SSS_Board:
-                rate = accRate[2] - 100;
-                break;
-            case BGInfoType.MyBest:
-                rate = accRate[2] - GamePlayManager.Instance.HistoryScore.Acc.DX;
-                break;
-            default:
-                return;
+            //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
+            //                           .Select(x => x.Value)
+            //                           .Sum();
+            //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
+            //                           .Select(x => x.Value)
+            //                           .Sum();
+            judgeResultCount.text = $"{cPerfectCount}\n{perfectCount}\n{greatCount}\n{goodCount}\n{missCount}\n\n{fast}\n{late}";
         }
-        if (rate >= 0)
-            bgInfoText.text = $"{rate:F4}%";
-        else
-            bgInfoText.gameObject.SetActive(false);
-    }
-    void UpdateDXScoreRank()
-    {
-        var remainingDXScore = totalDXScore + lostDXScore;
-        var dxRank = new DXScoreRank(remainingDXScore, totalDXScore);
-        var num = remainingDXScore - (dxRank.Lower + 1);
-        if (dxRank.Rank == 0)
+        /// <summary>
+        /// 更新SubDisplay左侧的Note详情
+        /// </summary>
+        void UpdateSideOutput()
         {
-            bgInfoText.gameObject.SetActive(false);
-            return;
-        }
-        else
-            bgInfoText.gameObject.SetActive(true);
-        bgInfoHeader.text = $"✧{dxRank.Rank}";
-        bgInfoText.text = $"+{num}";
-        switch(dxRank.Rank)
-        {
-            case 5:
-            case 4:
-            case 3:
-                bgInfoHeader.color = AchievementGoldColor;
-                bgInfoText.color = AchievementGoldColor;
-                break;
-            case 2:
-            case 1:
-                bgInfoHeader.color = DXScoreColor;
-                bgInfoText.color = DXScoreColor;
-                break;
-        }
-    }
-    /// <summary>
-    /// 更新SubDisplay的JudgeResult
-    /// </summary>
-    void UpdateJudgeResult()
-    {
-        //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
-        //                           .Select(x => x.Value)
-        //                           .Sum();
-        //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
-        //                           .Select(x => x.Value)
-        //                           .Sum();
-        judgeResultCount.text = $"{cPerfectCount}\n{perfectCount}\n{greatCount}\n{goodCount}\n{missCount}\n\n{fast}\n{late}";
-    }
-    /// <summary>
-    /// 更新SubDisplay左侧的Note详情
-    /// </summary>
-    void UpdateSideOutput()
-    {
-        var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
+            var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
 
             table.text = string.Format(
                 "TAP: {0} / {5}\n" +

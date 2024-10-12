@@ -65,7 +65,7 @@ namespace MajdataPlay.Game.Notes
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             fadeInTiming = -3.926913f / speed;
-            fadeInTiming += gameSetting.Game.SlideFadeInOffset;
+            fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
             fadeInTiming += startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
@@ -113,7 +113,7 @@ namespace MajdataPlay.Game.Notes
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = table.Const;
-                judgeTiming = timing + LastFor * (1 - percent);
+                _judgeTiming = timing + LastFor * (1 - percent);
                 lastWaitTime = LastFor *  percent;
             }
 
@@ -123,7 +123,7 @@ namespace MajdataPlay.Game.Notes
                                          .ToArray();
 
             foreach (var sensor in judgeAreas)
-                ioManager.BindSensor(Check, sensor);
+                _ioManager.BindSensor(Check, sensor);
             FadeIn().Forget();
         }
         void FixedUpdate()
@@ -131,10 +131,10 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = gpManager.AudioTime - base.timing;
-            var startTiming = gpManager.AudioTime - base.startTiming;
-            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(gameSetting.Judge.JudgeOffset , 0);
-            var isTooLate = gpManager.AudioTime - tooLateTiming >= 0;
+            var timing = _gpManager.AudioTime - base.timing;
+            var startTiming = _gpManager.AudioTime - base.startTiming;
+            var tooLateTiming = base.timing + LastFor + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
+            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
 
             if (!canCheck)
             {
@@ -153,15 +153,15 @@ namespace MajdataPlay.Game.Notes
 
             if(canJudge)
             {
-                if(!isJudged)
+                if(!_isJudged)
                 {
                     if (IsFinished)
                     {
                         HideAllBar();
                         if(IsClassic)
-                            Judge_Classic(gpManager.ThisFrameSec);
+                            Judge_Classic(_gpManager.ThisFrameSec);
                         else
-                            Judge(gpManager.ThisFrameSec);
+                            Judge(_gpManager.ThisFrameSec);
                         return;
                     }
                     else if(isTooLate)
@@ -234,7 +234,7 @@ namespace MajdataPlay.Game.Notes
             
             foreach (var t in fType)
             {
-                var sensor = ioManager.GetSensor(t);
+                var sensor = _ioManager.GetSensor(t);
                 first.Judge(t, sensor.Status);
             }
 
@@ -242,7 +242,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if(first.On)
                 {
-                    audioEffMana.PlaySlideSound(isBreak);
+                    _audioEffMana.PlaySlideSound(isBreak);
                     isSoundPlayed = true;
                 }
             }
@@ -252,7 +252,7 @@ namespace MajdataPlay.Game.Notes
                 var sType = second.GetSensorTypes();
                 foreach (var t in sType)
                 {
-                    var sensor = ioManager.GetSensor(t);
+                    var sensor = _ioManager.GetSensor(t);
                     second.Judge(t, sensor.Status);
                 }
 
@@ -302,26 +302,26 @@ namespace MajdataPlay.Game.Notes
                 Destroy(stars[0]);
             State = NoteStatus.Destroyed;
             foreach (var sensor in judgeAreas)
-                ioManager.UnbindSensor(Check, sensor);
+                _ioManager.UnbindSensor(Check, sensor);
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var result = new JudgeResult()
                 {
-                    Result = judgeResult,
-                    Diff = judgeDiff,
+                    Result = _judgeResult,
+                    Diff = _judgeDiff,
                     IsEX = isEX,
                     IsBreak = isBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
-                objectCounter.ReportResult(this, result);
+                _objectCounter.ReportResult(this, result);
                 
-                if (isBreak && judgeResult == JudgeType.Perfect) 
+                if (isBreak && _judgeResult == JudgeType.Perfect) 
                 { 
                     var anim = slideOK.GetComponent<Animator>();
                     anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-                    audioEffMana.PlayBreakSlideEndSound();
+                    _audioEffMana.PlayBreakSlideEndSound();
                 }
-                slideOK.GetComponent<LoadJustSprite>().SetResult(judgeResult);
+                slideOK.GetComponent<LoadJustSprite>().SetResult(_judgeResult);
                 PlaySlideOK(result);
             }
             else

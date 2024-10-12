@@ -15,7 +15,7 @@ namespace MajdataPlay.Game.Notes
 
         protected Quaternion GetRoation()
         {
-            if (sensorPos == SensorType.C)
+            if (_sensorPos == SensorType.C)
                 return Quaternion.Euler(Vector3.zero);
             var d = Vector3.zero - transform.position;
             var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;

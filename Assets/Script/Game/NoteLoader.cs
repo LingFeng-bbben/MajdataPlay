@@ -45,7 +45,7 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController JudgeBreakShine;
         public RuntimeAnimatorController HoldShine;
 
-        GamePlayManager gpManager;
+        GamePlayManager _gpManager;
         private ObjectCounter ObjectCounter;
         NotePoolManager poolManager;
 
@@ -203,7 +203,7 @@ namespace MajdataPlay.Game
             var notes = GameObject.Find("Notes");
             noteManager = notes.GetComponent<NoteManager>();
             poolManager = notes.GetComponent<NotePoolManager>();
-            gpManager = GamePlayManager.Instance;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         public async UniTask LoadNotesIntoPool(SimaiProcess simaiProcess)
         {
@@ -371,7 +371,7 @@ namespace MajdataPlay.Game
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
             if(appearTiming < -5f)
-                gpManager.FirstNoteAppearTiming = Mathf.Min(gpManager.FirstNoteAppearTiming, appearTiming);
+                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
@@ -405,7 +405,7 @@ namespace MajdataPlay.Game
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
             if (appearTiming < -5f)
-                gpManager.FirstNoteAppearTiming = Mathf.Min(gpManager.FirstNoteAppearTiming, appearTiming);
+                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new()
@@ -438,7 +438,7 @@ namespace MajdataPlay.Game
             bool isDouble = false;
             TapQueueInfo? queueInfo = null;
             if (appearTiming < -5f)
-                gpManager.FirstNoteAppearTiming = Mathf.Min(gpManager.FirstNoteAppearTiming, appearTiming);
+                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             if(timing.noteList.Count > 1)
@@ -506,7 +506,7 @@ namespace MajdataPlay.Game
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
             if (appearTiming < -5f)
-                gpManager.FirstNoteAppearTiming = Mathf.Min(gpManager.FirstNoteAppearTiming, appearTiming);
+                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             this.noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             var poolingInfo = new TouchPoolingInfo()
             {
@@ -547,7 +547,7 @@ namespace MajdataPlay.Game
             var appearTiming = noteTiming - moveDuration;
             var noteSortOrder = this.noteSortOrder;
             if (appearTiming < -5f)
-                gpManager.FirstNoteAppearTiming = Mathf.Min(gpManager.FirstNoteAppearTiming, appearTiming);
+                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             this.noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new TouchHoldPoolingInfo()

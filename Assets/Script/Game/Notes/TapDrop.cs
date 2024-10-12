@@ -62,8 +62,8 @@ namespace MajdataPlay.Game.Notes
             base.Initialize(poolingInfo);
 
             LoadSkin();
-            sensorPos = (SensorType)(startPosition - 1);
-            ioManager.BindArea(Check, sensorPos);
+            _sensorPos = (SensorType)(startPosition - 1);
+            _ioManager.BindArea(Check, _sensorPos);
             State = NoteStatus.Initialized;
         }
         public override void End(bool forceEnd = false)

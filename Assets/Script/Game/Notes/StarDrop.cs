@@ -46,8 +46,8 @@ namespace MajdataPlay.Game.Notes
             LoadSkin();
             if (!IsNoHead)
             {
-                sensorPos = (SensorType)(startPosition - 1);
-                ioManager.BindArea(Check, sensorPos);
+                _sensorPos = (SensorType)(startPosition - 1);
+                _ioManager.BindArea(Check, _sensorPos);
             }
             State = NoteStatus.Initialized;
         }
@@ -64,10 +64,10 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Update()
         {
-            var songSpeed = gpManager.CurrentSpeed;
+            var songSpeed = _gpManager.CurrentSpeed;
             var judgeTiming = GetTimeSpanToArriveTiming();
             var distance = judgeTiming * speed + 4.8f;
-            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             switch (State)
@@ -126,7 +126,7 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
 
-            if (gpManager.IsStart && !IsFakeStar && gameSetting.Game.StarRotation)
+            if (_gpManager.IsStart && !IsFakeStar && _gameSetting.Game.StarRotation)
                 transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / RotateSpeed);
             else if (IsForceRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);

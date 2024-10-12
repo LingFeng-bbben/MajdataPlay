@@ -72,17 +72,17 @@ namespace MajdataPlay.Game.Notes
             startPosition = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
             timing = poolingInfo.Timing;
-            judgeTiming = timing;
+            _judgeTiming = timing;
             noteSortOrder = poolingInfo.NoteSortOrder;
             speed = poolingInfo.Speed;
             isEach = poolingInfo.IsEach;
             isBreak = poolingInfo.IsBreak;
             isEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
-            isJudged = false;
+            _isJudged = false;
             LastFor = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
-            sensorPos = poolingInfo.SensorPos;
+            _sensorPos = poolingInfo.SensorPos;
             if (State == NoteStatus.Start)
                 Start();
             else
@@ -99,47 +99,47 @@ namespace MajdataPlay.Game.Notes
                 point.SetActive(false);
                 border.SetActive(false);
 
-                sensorPos = TouchBase.GetSensor(areaPosition, startPosition);
-                var pos = TouchBase.GetAreaPos(sensorPos);
+                _sensorPos = TouchBase.GetSensor(areaPosition, startPosition);
+                var pos = TouchBase.GetAreaPos(_sensorPos);
                 transform.position = pos;
                 SetFansPosition(0.4f);
-                ioManager.BindSensor(Check, sensorPos);
+                _ioManager.BindSensor(Check, _sensorPos);
                 State = NoteStatus.Initialized;
                 RendererState = RendererStatus.Off;
             }
         }
         public void End(bool forceEnd = false)
         {
-            ioManager.UnbindSensor(Check, sensorPos);
+            _ioManager.UnbindSensor(Check, _sensorPos);
             State = NoteStatus.Destroyed;
             if (forceEnd)
                 return;
-            EndJudge(ref judgeResult);
+            EndJudge(ref _judgeResult);
             var result = new JudgeResult()
             {
-                Result = judgeResult,
+                Result = _judgeResult,
                 IsBreak = isBreak,
                 IsEX = isEX,
-                Diff = judgeDiff
+                Diff = _judgeDiff
             };
             DisableBreakShine();
             CanShine = false;
             point.SetActive(false);
             RendererState = RendererStatus.Off;
 
-            objectCounter.ReportResult(this, result);
-            if (!isJudged)
-                noteManager.NextTouch(QueueInfo);
+            _objectCounter.ReportResult(this, result);
+            if (!_isJudged)
+                _noteManager.NextTouch(QueueInfo);
             if (isFirework && !result.IsMiss)
             {
-                effectManager.PlayFireworkEffect(transform.position);
-                audioEffMana.PlayHanabiSound();
+                _effectManager.PlayFireworkEffect(transform.position);
+                _audioEffMana.PlayHanabiSound();
             }
-            audioEffMana.PlayTapSound(result);
-            audioEffMana.StopTouchHoldSound();
+            _audioEffMana.PlayTapSound(result);
+            _audioEffMana.StopTouchHoldSound();
 
-            effectManager.PlayTouchHoldEffect(sensorPos, result);
-            effectManager.ResetHoldEffect(sensorPos);
+            _effectManager.PlayTouchHoldEffect(_sensorPos, result);
+            _effectManager.ResetHoldEffect(_sensorPos);
             notePoolManager.Collect(this);
         }
         protected override void Start()
@@ -169,30 +169,30 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             border.SetActive(false);
 
-            sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
-            var pos = TouchBase.GetAreaPos(sensorPos);
+            _sensorPos = TouchBase.GetSensor(areaPosition,startPosition);
+            var pos = TouchBase.GetAreaPos(_sensorPos);
             transform.position = pos;
             SetFansPosition(0.4f);
-            ioManager.BindSensor(Check, sensorPos);
+            _ioManager.BindSensor(Check, _sensorPos);
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (isJudged || !noteManager.CanJudge(QueueInfo))
+            if (_isJudged || !_noteManager.CanJudge(QueueInfo))
                 return;
             else if (arg.IsClick)
             {
-                if (!ioManager.IsIdle(arg))
+                if (!_ioManager.IsIdle(arg))
                     return;
                 else
-                    ioManager.SetBusy(arg);
-                Judge(gpManager.ThisFrameSec);
+                    _ioManager.SetBusy(arg);
+                Judge(_gpManager.ThisFrameSec);
                 //ioManager.SetIdle(arg);
-                if (isJudged)
+                if (_isJudged)
                 {
-                    ioManager.UnbindSensor(Check, sensorPos);
-                    noteManager.NextTouch(QueueInfo);
+                    _ioManager.UnbindSensor(Check, _sensorPos);
+                    _noteManager.NextTouch(QueueInfo);
                 }
             }
         }
@@ -245,12 +245,12 @@ namespace MajdataPlay.Game.Notes
 
             const float JUDGE_SEG_PERFECT = 150f;
 
-            if (isJudged)
+            if (_isJudged)
                 return;
 
             var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
-            judgeDiff = timing * 1000;
+            _judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
             JudgeType result;
             if (diff > JUDGE_SEG_PERFECT && isFast)
@@ -266,8 +266,8 @@ namespace MajdataPlay.Game.Notes
             else
                 result = JudgeType.Miss;
 
-            judgeResult = result;
-            isJudged = true;
+            _judgeResult = result;
+            _isJudged = true;
             PlayHoldEffect();
         }
         void FixedUpdate()
@@ -278,19 +278,19 @@ namespace MajdataPlay.Game.Notes
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.316667f;
 
-            if (remainingTime == 0 && isJudged)
+            if (remainingTime == 0 && _isJudged)
                 End();
 
-            if (isJudged)
+            if (_isJudged)
             {
                 if (timing <= 0.25f) // 忽略头部15帧
                     return;
                 else if (remainingTime <= 0.2f) // 忽略尾部12帧
                     return;
-                else if (!gpManager.IsStart) // 忽略暂停
+                else if (!_gpManager.IsStart) // 忽略暂停
                     return;
 
-                var on = ioManager.CheckSensorStatus(sensorPos, SensorStatus.On);
+                var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);
                 if (on)
                     PlayHoldEffect();
                 else
@@ -301,11 +301,11 @@ namespace MajdataPlay.Game.Notes
             }
             else if (isTooLate)
             {
-                judgeDiff = 316.667f;
-                judgeResult = JudgeType.Miss;
-                ioManager.UnbindSensor(Check, SensorType.C);
-                isJudged = true;
-                noteManager.NextTouch(QueueInfo);
+                _judgeDiff = 316.667f;
+                _judgeResult = JudgeType.Miss;
+                _ioManager.UnbindSensor(Check, SensorType.C);
+                _isJudged = true;
+                _noteManager.NextTouch(QueueInfo);
             }
         }
         void Update()
@@ -377,47 +377,47 @@ namespace MajdataPlay.Game.Notes
         }
         void EndJudge(ref JudgeType result)
         {
-            if (!isJudged) 
+            if (!_isJudged) 
                 return;
-            var offset = (int)judgeResult > 7 ? 0 : judgeDiff;
+            var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
             var realityHT = LastFor - 0.45f - offset / 1000f;
             var percent = MathF.Min(1, (realityHT - playerIdleTime) / realityHT);
-            result = judgeResult;
+            result = _judgeResult;
             if (realityHT > 0)
             {
                 if (percent >= 1f)
                 {
-                    if (judgeResult == JudgeType.Miss)
+                    if (_judgeResult == JudgeType.Miss)
                         result = JudgeType.LateGood;
-                    else if (MathF.Abs((int)judgeResult - 7) == 6)
-                        result = (int)judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                    else if (MathF.Abs((int)_judgeResult - 7) == 6)
+                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
                     else
-                        result = judgeResult;
+                        result = _judgeResult;
                 }
                 else if (percent >= 0.67f)
                 {
-                    if (judgeResult == JudgeType.Miss)
+                    if (_judgeResult == JudgeType.Miss)
                         result = JudgeType.LateGood;
-                    else if (MathF.Abs((int)judgeResult - 7) == 6)
-                        result = (int)judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
-                    else if (judgeResult == JudgeType.Perfect)
-                        result = (int)judgeResult < 7 ? JudgeType.LatePerfect1 : JudgeType.FastPerfect1;
+                    else if (MathF.Abs((int)_judgeResult - 7) == 6)
+                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                    else if (_judgeResult == JudgeType.Perfect)
+                        result = (int)_judgeResult < 7 ? JudgeType.LatePerfect1 : JudgeType.FastPerfect1;
                 }
                 else if (percent >= 0.33f)
                 {
-                    if (MathF.Abs((int)judgeResult - 7) >= 6)
-                        result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                    if (MathF.Abs((int)_judgeResult - 7) >= 6)
+                        result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                     else
-                        result = (int)judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
                 }
                 else if (percent >= 0.05f)
-                    result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                    result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 else if (percent >= 0)
                 {
-                    if (judgeResult == JudgeType.Miss)
+                    if (_judgeResult == JudgeType.Miss)
                         result = JudgeType.Miss;
                     else
-                        result = (int)judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                        result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 }
             }
             print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
@@ -434,8 +434,8 @@ namespace MajdataPlay.Game.Notes
                 DisableBreakShine();
             }
             CanShine = false;
-            effectManager.PlayHoldEffect(sensorPos, judgeResult);
-            audioEffMana.PlayTouchHoldSound();
+            _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+            _audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
         }
         void StopHoldEffect()
@@ -450,8 +450,8 @@ namespace MajdataPlay.Game.Notes
                 DisableBreakShine();
             }
             CanShine = false;
-            effectManager.ResetHoldEffect(sensorPos);
-            audioEffMana.StopTouchHoldSound();
+            _effectManager.ResetHoldEffect(_sensorPos);
+            _audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
         }
         Vector3 GetAngle(int index)

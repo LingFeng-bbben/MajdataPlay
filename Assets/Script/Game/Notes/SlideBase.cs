@@ -87,14 +87,14 @@ namespace MajdataPlay.Game.Notes
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
-            else if (isJudged)
+            else if (_isJudged)
                 return;
             //var stayTime = time + LastFor - judgeTiming; // 停留时间
             var stayTime = lastWaitTime; // 停留时间
 
             // By Minepig
             var diff = currentSec - JudgeTiming;
-            judgeDiff = diff * 1000;
+            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             // input latency simulation
@@ -120,10 +120,10 @@ namespace MajdataPlay.Game.Notes
             }
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            judgeResult = judge ?? JudgeType.Miss;
-            isJudged = true;
+            _judgeResult = judge ?? JudgeType.Miss;
+            _isJudged = true;
 
-            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
@@ -133,11 +133,11 @@ namespace MajdataPlay.Game.Notes
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
-            else if (isJudged)
+            else if (_isJudged)
                 return;
 
             var diff = currentSec - JudgeTiming;
-            judgeDiff = diff * 1000;
+            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             var perfect = 0.15f;
@@ -159,10 +159,10 @@ namespace MajdataPlay.Game.Notes
             }
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            judgeResult = judge ?? JudgeType.Miss;
-            isJudged = true;
+            _judgeResult = judge ?? JudgeType.Miss;
+            _isJudged = true;
 
-            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
@@ -209,17 +209,17 @@ namespace MajdataPlay.Game.Notes
         }
         protected void TooLateJudge()
         {
-            if (isJudged)
+            if (_isJudged)
             {
                 DestroySelf();
                 return;
             }
 
             if (QueueRemaining == 1)
-                judgeResult = JudgeType.LateGood;
+                _judgeResult = JudgeType.LateGood;
             else
-                judgeResult = JudgeType.Miss;
-            isJudged = true;
+                _judgeResult = JudgeType.Miss;
+            _isJudged = true;
             DestroySelf();
         }
         /// <summary>

@@ -20,37 +20,36 @@ namespace MajdataPlay.Game.Notes
         public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
-        public bool IsClassic => gameSetting.Judge.Mode == JudgeMode.Classic;
-        protected GamePlayManager gpManager => GamePlayManager.Instance;
-        protected InputManager ioManager => MajInstances.InputManager;
+        public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
         public NoteStatus State { get; protected set; } = NoteStatus.Start;
         public bool CanShine { get; protected set; } = false;
-        public float JudgeTiming { get => judgeTiming + gameSetting.Judge.JudgeOffset; }
-        protected float CurrentSec => gpManager.AudioTime;
+        public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
+        public float CurrentSec => _gpManager.AudioTime;
 
-
-        protected bool isJudged = false;
+        protected GamePlayManager _gpManager;
+        protected InputManager _ioManager = MajInstances.InputManager;
+        protected bool _isJudged = false;
         /// <summary>
         /// 正解帧
         /// </summary>
-        protected float judgeTiming;
-        protected float judgeDiff = -1;
-        protected JudgeType judgeResult = JudgeType.Miss;
+        protected float _judgeTiming;
+        protected float _judgeDiff = -1;
+        protected JudgeType _judgeResult = JudgeType.Miss;
 
-        protected SensorType sensorPos;
-        protected ObjectCounter objectCounter;
-        protected NoteManager noteManager;
-        protected NoteEffectManager effectManager;
-        protected NoteAudioManager audioEffMana;
-        protected GameSetting gameSetting = new();
+        protected SensorType _sensorPos;
+        protected ObjectCounter _objectCounter;
+        protected NoteManager _noteManager;
+        protected NoteEffectManager _effectManager;
+        protected NoteAudioManager _audioEffMana;
+        protected GameSetting _gameSetting = MajInstances.Setting;
         protected virtual void Start()
         {
-            effectManager = GameObject.Find("NoteEffects").GetComponent<NoteEffectManager>();
-            objectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-            noteManager = GameObject.Find("Notes").GetComponent<NoteManager>();
-            audioEffMana = GameObject.Find("NoteAudioManager").GetComponent<NoteAudioManager>();
-            gameSetting = MajInstances.Setting;
-            judgeTiming = timing;
+            _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
+            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
+            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
+            _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _judgeTiming = timing;
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
@@ -65,13 +64,13 @@ namespace MajdataPlay.Game.Notes
             const float JUDGE_SEG_GREAT1 = 66.66667f;
             const float JUDGE_SEG_GREAT2 = 83.33334f;
 
-            if (isJudged)
+            if (_isJudged)
                 return;
 
             //var timing = GetTimeSpanToJudgeTiming();
             var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
-            judgeDiff = timing * 1000;
+            _judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
 
             JudgeType result;
@@ -99,8 +98,8 @@ namespace MajdataPlay.Game.Notes
             if (result != JudgeType.Miss && isEX)
                 result = JudgeType.Perfect;
 
-            judgeResult = result;
-            isJudged = true;
+            _judgeResult = result;
+            _isJudged = true;
         }
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度
@@ -109,7 +108,7 @@ namespace MajdataPlay.Game.Notes
         /// 当前时刻在判定线后方，结果为正数
         /// <para>当前时刻在判定线前方，结果为负数</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => gpManager.AudioTime - timing;
+        protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - timing;
         /// <summary>
         /// 获取当前时刻距离正解帧的长度
         /// </summary>
@@ -117,7 +116,7 @@ namespace MajdataPlay.Game.Notes
         /// 当前时刻在正解帧后方，结果为正数
         /// <para>当前时刻在正解帧前方，结果为负数</para>
         /// </returns>
-        protected float GetTimeSpanToJudgeTiming() => gpManager.AudioTime - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, startPosition);
         public static Vector3 GetPositionFromDistance(float distance, int position)

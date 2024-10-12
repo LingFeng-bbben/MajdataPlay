@@ -23,8 +23,6 @@ namespace MajdataPlay.Game
 #nullable enable
     public class GamePlayManager : MonoBehaviour
     {
-        public static GamePlayManager Instance { get; private set; }
-
         public float NoteSpeed { get; private set; } = 9f;
         public float TouchSpeed { get; private set; } = 7.5f;
         // Timeline
@@ -122,22 +120,21 @@ namespace MajdataPlay.Game
 
         AudioSampleWrap? _audioSample = null;
 
+        BGManager _bgManager;
         NoteLoader _noteLoader;
         ObjectCounter _objectCounter;
 
         CancellationTokenSource _allTaskTokenSource = new();
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
-        private void Awake()
+        void Awake()
         {
-            Instance = this;
             MajInstanceHelper<GamePlayManager>.Instance = this;
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = SongStorage.WorkingCollection.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             GetSystemTimePreciseAsFileTime(out _fileTimeAtStart);
         }
-
-        private void OnPauseButton(object sender, InputEventArgs e)
+        void OnPauseButton(object sender, InputEventArgs e)
         {
             if (e.IsButton && e.IsClick && e.Type == SensorType.P1)
             {
@@ -145,15 +142,16 @@ namespace MajdataPlay.Game
                 BackToList().Forget();
             }
         }
-
         void Start()
         {
-            _objectCounter = FindObjectOfType<ObjectCounter>();
             State = ComponentState.Loading;
+
+            _bgManager = MajInstanceHelper<BGManager>.Instance!;
+            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
             _loadingText = _loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
             _loadingImage = _loadingMask.GetComponent<Image>();
-            MajInstances.InputManager.BindAnyArea(OnPauseButton);
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
+            MajInstances.InputManager.BindAnyArea(OnPauseButton);
             DumpOnlineChart().Forget();
         }
 
@@ -410,8 +408,8 @@ namespace MajdataPlay.Game
             State = ComponentState.Finished;
             _allTaskTokenSource.Cancel();
             MajInstances.GameManager.EnableGC();
+            MajInstanceHelper<GamePlayManager>.Free();
         }
-        // Update is called once per frame
         void Update()
         {
             UpdateAudioTime();
@@ -526,7 +524,7 @@ namespace MajdataPlay.Game
             print("GameResult: " + acc);
             GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             MajInstances.GameManager.EnableGC();
-            BGManager.Instance.CancelTimeRef();
+            _bgManager.CancelTimeRef();
             State = ComponentState.Finished;
             DisposeAudioTrack();
 

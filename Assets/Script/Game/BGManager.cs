@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using MajdataPlay.Utils;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -7,15 +8,18 @@ namespace MajdataPlay.Game
     public class BGManager : MonoBehaviour
     {
         private float playSpeed;
-        private GamePlayManager gamePlayManager;
+        private GamePlayManager _gpManager;
 
         private SpriteRenderer spriteRender;
 
         private VideoPlayer videoPlayer;
-        public static BGManager Instance;
-        private void Awake()
+        void Awake()
         {
-            Instance = this;
+            MajInstanceHelper<BGManager>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            MajInstanceHelper<BGManager>.Free();
         }
 
         // Start is called before the first frame update
@@ -23,13 +27,13 @@ namespace MajdataPlay.Game
         {
             spriteRender = GetComponent<SpriteRenderer>();
             videoPlayer = GetComponent<VideoPlayer>();
-            gamePlayManager = GamePlayManager.Instance;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
 
         private void Update()
         {
             if (videoPlayer.isPlaying)
-                videoPlayer.externalReferenceTime = gamePlayManager.AudioTimeNoOffset;
+                videoPlayer.externalReferenceTime = _gpManager.AudioTimeNoOffset;
             /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
 
             if (delta < -0.01f)
@@ -88,7 +92,7 @@ namespace MajdataPlay.Game
 
             videoPlayer.timeReference = VideoTimeReference.ExternalTime;
 
-            while (gamePlayManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
+            while (_gpManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
             while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
             videoPlayer.Play();
             //videoPlayer.time = gamePlayManager.AudioTimeNoOffset;
