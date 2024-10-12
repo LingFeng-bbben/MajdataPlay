@@ -14,6 +14,7 @@ using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Scripting;
+using MajdataPlay.Types.Attribute;
 
 namespace MajdataPlay
 {
@@ -41,8 +42,11 @@ namespace MajdataPlay
         /// Current difficult
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
-        
+        public bool UseUnityTimer 
+        { 
+            get => _useUnityTimer; 
+            set => _useUnityTimer = value; 
+        }
 
         CancellationTokenSource tokenSource = new();
         Task? logWritebackTask = null;

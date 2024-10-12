@@ -39,7 +39,7 @@ namespace MajdataPlay.Game
         public float CurrentSpeed { get; set; } = 1f;
         public float AudioStartTime { get; private set; } = -114514f;
 
-
+        
         [SerializeField]
         GameObject loadingMask;
         [SerializeField]
