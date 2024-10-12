@@ -1,22 +1,26 @@
+using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay
 {
     public class FPSDisplayer : MonoBehaviour
     {
         public static Color BgColor { get; set; } = new Color(0, 0, 0);
-        List<float> data = new();
-        TextMeshPro textDisplayer;
 
         float frameTimer = 1;
+        List<float> data = new();
+        TextMeshPro textDisplayer;
+        GameSetting _setting = MajInstanceHelper<GameSetting>.Instance!;
+        
         void Start()
         {
             textDisplayer = GetComponent<TextMeshPro>();
             DontDestroyOnLoad(this);
-            if (!GameManager.Instance.Setting.Debug.DisplayFPS)
+            if (!_setting.Debug.DisplayFPS)
                 gameObject.SetActive(false);
         }
 

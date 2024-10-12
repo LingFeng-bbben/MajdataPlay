@@ -68,6 +68,7 @@ namespace MajdataPlay
                 });
             };
             logWritebackTask = LogWriteback();
+            MajInstanceHelper<GameManager>.Instance = this;
             Instance = this;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
@@ -90,6 +91,7 @@ namespace MajdataPlay
                 Setting = new GameSetting();
                 Save();
             }
+            MajInstanceHelper<GameSetting>.Instance = Setting;
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 
