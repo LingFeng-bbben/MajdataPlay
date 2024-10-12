@@ -38,9 +38,9 @@ namespace MajdataPlay.Game.Notes
             table = slideTable;
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
             starRenderer = stars[0].GetComponent<SpriteRenderer>();
-            slideBars = new GameObject[transform.childCount - 1];
+            _slideBars = new GameObject[transform.childCount - 1];
             for (var i = 0; i < transform.childCount - 1; i++)
-                slideBars[i] = transform.GetChild(i).gameObject;
+                _slideBars[i] = transform.GetChild(i).gameObject;
 
 
             if (isMirror)
@@ -77,12 +77,12 @@ namespace MajdataPlay.Game.Notes
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
             SetSlideBarAlpha(0f);
-            judgeQueues[0] = table.JudgeQueue;
+            _judgeQueues[0] = table.JudgeQueue;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
-                judgeQueues[0].LastOrDefault().SetIsLast();
+                _judgeQueues[0].LastOrDefault().SetIsLast();
             else if (ConnectInfo.IsConnSlide)
-                judgeQueues[0].LastOrDefault().SetNonLast();
+                _judgeQueues[0].LastOrDefault().SetNonLast();
         }
         public float GetSlideLength()
         {
@@ -220,7 +220,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (isChecking)
                 return;
-            var queue = judgeQueues[0];
+            var queue = _judgeQueues[0];
             isChecking = true;
             
             
@@ -259,7 +259,7 @@ namespace MajdataPlay.Game.Notes
                 if (second.IsFinished)
                 {
                     HideBar(first.SlideIndex);
-                    judgeQueues[0] = queue.Skip(2).ToArray();
+                    _judgeQueues[0] = queue.Skip(2).ToArray();
                     isChecking = false;
                     SetParentFinish();
                     return;
@@ -267,7 +267,7 @@ namespace MajdataPlay.Game.Notes
                 else if (second.On)
                 {
                     HideBar(first.SlideIndex);
-                    judgeQueues[0] = queue.Skip(1).ToArray();
+                    _judgeQueues[0] = queue.Skip(1).ToArray();
                     isChecking = false;
                     SetParentFinish();
                     return;
@@ -277,7 +277,7 @@ namespace MajdataPlay.Game.Notes
             if (first.IsFinished)
             {
                 HideBar(first.SlideIndex);
-                judgeQueues[0] = queue.Skip(1).ToArray();
+                _judgeQueues[0] = queue.Skip(1).ToArray();
                 isChecking = false;
                 SetParentFinish();
                 return;
@@ -288,7 +288,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (Parent is not null)
             {
-                if(judgeQueues[0].Length < table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                if(_judgeQueues[0].Length < table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
                     Parent.ForceFinish();
             }
         }
@@ -383,7 +383,7 @@ namespace MajdataPlay.Game.Notes
         void LoadPath()
         {
             slidePositions.Add(GetPositionFromDistance(4.8f));
-            foreach (var bars in slideBars)
+            foreach (var bars in _slideBars)
             {
                 slidePositions.Add(bars.transform.position);
 
@@ -395,7 +395,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void LoadSkin()
         {
-            var bars = slideBars;
+            var bars = _slideBars;
             var skin = MajInstances.SkinManager.GetSlideSkin();
 
             var barSprite = skin.Normal;

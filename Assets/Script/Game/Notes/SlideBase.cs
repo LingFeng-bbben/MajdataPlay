@@ -3,6 +3,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Types.Attribute;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -37,20 +38,22 @@ namespace MajdataPlay.Game.Notes
             get
             {
                 int[] reamaining = new int[3];
-                foreach (var (i, queue) in judgeQueues.WithIndex())
+                foreach (var (i, queue) in _judgeQueues.WithIndex())
                     reamaining[i] = queue.Length;
                 return reamaining.Max();
             }
         }
-
-        protected JudgeArea[][] judgeQueues = new JudgeArea[3][]
+        [ReadOnlyField]
+        [SerializeField]
+        protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>()
         }; // 判定队列
-
-        protected GameObject[] slideBars = { }; // Arrows
+        [ReadOnlyField]
+        [SerializeField]
+        protected GameObject[] _slideBars = { }; // Arrows
 
 
         /// <summary>
@@ -171,9 +174,9 @@ namespace MajdataPlay.Game.Notes
         protected void HideBar(int endIndex)
         {
             endIndex = endIndex - 1;
-            endIndex = Math.Min(endIndex, slideBars.Length - 1);
+            endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                slideBars[i].SetActive(false);
+                _slideBars[i].SetActive(false);
         }
         protected void PlaySlideOK(in JudgeResult result)
         {
@@ -194,7 +197,7 @@ namespace MajdataPlay.Game.Notes
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var gm in slideBars)
+            foreach (var gm in _slideBars)
             {
                 var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
@@ -237,7 +240,7 @@ namespace MajdataPlay.Game.Notes
                 if (Parent is not null && !Parent.IsDestroyed)
                     Destroy(Parent.GameObject);
 
-                foreach (GameObject obj in slideBars)
+                foreach (GameObject obj in _slideBars)
                     obj.SetActive(false);
 
                 DestroyStars();
@@ -255,7 +258,7 @@ namespace MajdataPlay.Game.Notes
             HideAllBar();
             var emptyQueue = Array.Empty<JudgeArea>();
             for (int i = 0; i < 2; i++)
-                judgeQueues[i] = emptyQueue;
+                _judgeQueues[i] = emptyQueue;
         }
         void DestroyStars()
         {

@@ -29,7 +29,7 @@ namespace MajdataPlay.Game.Notes
             base.Start();
             State = NoteStatus.Initialized;
             ConnectInfo.StartTiming = Timing;
-            judgeQueues = SlideTables.GetWifiTable(StartPos);
+            _judgeQueues = SlideTables.GetWifiTable(StartPos);
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
@@ -68,10 +68,10 @@ namespace MajdataPlay.Game.Notes
             slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
 
             transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
-            slideBars = new GameObject[transform.childCount - 1];
+            _slideBars = new GameObject[transform.childCount - 1];
 
             for (var i = 0; i < transform.childCount - 1; i++)
-                slideBars[i] = transform.GetChild(i).gameObject;
+                _slideBars[i] = transform.GetChild(i).gameObject;
 
             LoadSkin();
         }
@@ -84,7 +84,7 @@ namespace MajdataPlay.Game.Notes
             _judgeTiming = Timing + (Length * (1 - wifiConst));
             lastWaitTime = Length * wifiConst;
 
-            judgeAreas = judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
+            judgeAreas = _judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
                                     .GroupBy(x => x)
                                     .Select(x => x.Key);
 
@@ -135,7 +135,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             isChecking = true;
             for (int i = 0; i < 3; i++)
-                Check(ref judgeQueues[i]);
+                Check(ref _judgeQueues[i]);
             isChecking = false;
         }
         void Check(ref JudgeArea[] judgeQueue)
@@ -194,20 +194,26 @@ namespace MajdataPlay.Game.Notes
         }
         int GetIndex()
         {
-            if(judgeQueues.IsEmpty())
+            if(_judgeQueues.IsEmpty())
                 return int.MaxValue;
-            else if (judgeQueues[1].IsEmpty())
+            else if(IsClassic)
             {
-                if (judgeQueues[0].Length <= 1 && judgeQueues[2].Length <= 1)
+                var isRemainingOne = _judgeQueues.All(x => x.Length <= 1);
+                if (isRemainingOne)
+                    return 8;
+            }
+            else if (_judgeQueues[1].IsEmpty())
+            {
+                if (_judgeQueues[0].Length <= 1 && _judgeQueues[2].Length <= 1)
                     return 9;
             }
             var nums = new int[3];
-            foreach(var (i,queue) in judgeQueues.WithIndex())
+            foreach(var (i,queue) in _judgeQueues.WithIndex())
                 nums[i] = queue.Length;
             var max = nums.Max();
             var index = nums.FindIndex(x => x == max);
 
-            return judgeQueues[index].First().SlideIndex;
+            return _judgeQueues[index].First().SlideIndex;
         }
         void Update()
         {
@@ -287,7 +293,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void LoadSkin()
         {
-            var bars = slideBars;
+            var bars = _slideBars;
             var skin = MajInstances.SkinManager.GetWifiSkin();
 
             var barSprites = skin.Normal;
