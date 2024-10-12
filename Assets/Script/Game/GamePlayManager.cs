@@ -411,7 +411,7 @@ namespace MajdataPlay.Game
         async void StartToPlayAnswer()
         {
             int i = 0;
-            await Task.Run(async () =>
+            await Task.Run(() =>
             {
                 while (!allTaskTokenSource.IsCancellationRequested)
                 {
@@ -436,7 +436,7 @@ namespace MajdataPlay.Game
                         AnwserSoundList[i].isPlayed = true;
                         i++;
                     }
-                    await Task.Delay(1);
+                    //await Task.Delay(1);
                 }
             });
         }
