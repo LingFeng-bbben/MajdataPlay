@@ -43,8 +43,6 @@ namespace MajdataPlay.Game.Notes
                 return reamaining.Max();
             }
         }
-        [ReadOnlyField]
-        [SerializeField]
         protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 

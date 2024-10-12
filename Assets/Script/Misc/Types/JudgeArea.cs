@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace MajdataPlay.Types
 {
-    [Serializable]
     public class JudgeArea
     {
         public bool On
