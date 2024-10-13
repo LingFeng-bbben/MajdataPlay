@@ -68,9 +68,15 @@ namespace MajdataPlay.Types
         public void Reset()
         {
             IsSorted = false;
-            var newIndex = origin.FindIndex(x => x == Current);
-            newIndex = newIndex is -1 ? 0 : newIndex;
-            _index = newIndex;
+            if (sorted.Length != 0)
+            {
+                var newIndex = origin.FindIndex(x => x == Current);
+                newIndex = newIndex is -1 ? 0 : newIndex;
+                _index = newIndex;
+            }
+            else{
+                _index = 0;
+            }
             sorted = origin;
         }
         static SongDetail[] Sort(SongDetail[] origin,SortType sortType)
