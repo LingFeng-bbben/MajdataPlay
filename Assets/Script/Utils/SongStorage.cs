@@ -164,7 +164,7 @@ namespace MajdataPlay.Utils
                         TrackPath = apiroot + "/Track/" + song.Id,
                         BGPath = apiroot + "/ImageFull/" + song.Id,
                         CoverPath = apiroot + "/Image/" + song.Id,
-                        Hash = song.Id.ToString(),
+                        Hash = song.Id.ToString()+"//" + song.Timestamp,
                         AddTime = dateTime
                     };
                     for (int i = 0; i < songDetail.Designers.Count(); i++)

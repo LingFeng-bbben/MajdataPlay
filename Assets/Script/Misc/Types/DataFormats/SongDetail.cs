@@ -213,7 +213,9 @@ namespace MajdataPlay.Types
             }
 
             var info = new DirectoryInfo(dir);
-            return await ParseAsync(info.GetFiles());
+            var song = await ParseAsync(info.GetFiles());
+            song.Hash = Hash;
+            return song;
         }
 
     }
