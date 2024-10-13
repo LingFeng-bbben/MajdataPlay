@@ -49,6 +49,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            if (taskToRun.IsFaulted)
+                Debug.LogException(taskToRun.Exception);
             await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
@@ -65,6 +67,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            if(taskToRun.IsFaulted)
+                Debug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
@@ -81,6 +85,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
+            if (taskToRun.Status is UniTaskStatus.Faulted)
+                Debug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
@@ -99,6 +105,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            if (taskToRun.IsFaulted)
+                throw taskToRun.Exception;
             await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
             return taskToRun.Result;
@@ -115,6 +123,8 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
+            if (taskToRun.IsFaulted)
+                throw taskToRun.AsTask().Exception;
             await UniTask.Delay(300);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);

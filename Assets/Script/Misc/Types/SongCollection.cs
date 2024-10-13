@@ -74,7 +74,8 @@ namespace MajdataPlay.Types
                 newIndex = newIndex is -1 ? 0 : newIndex;
                 _index = newIndex;
             }
-            else{
+            else
+            {
                 _index = 0;
             }
             sorted = origin;
