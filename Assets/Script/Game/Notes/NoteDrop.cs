@@ -1,3 +1,4 @@
+using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -13,7 +14,13 @@ namespace MajdataPlay.Game.Notes
         public int StartPos 
         { 
             get => _startPos; 
-            set => _startPos = value; 
+            set
+            {
+                if (value.InRange(1, 8))
+                    _startPos = value;
+                else
+                    throw new ArgumentOutOfRangeException("Start position must be between 1 and 8");
+            } 
         }
         public float Timing 
         { 

@@ -880,7 +880,7 @@ namespace MajdataPlay.Game
             poolManager.AddTap(CreateStar(note, timing, slide));
             var SliCompo = slide.AddComponent<SlideDrop>();
 
-            SliCompo.slideType = slideShape;
+            SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
             {
@@ -893,9 +893,9 @@ namespace MajdataPlay.Game
             SliCompo.ConnectInfo = info;
             SliCompo.IsBreak = note.isSlideBreak;
 
-            SliCompo.isMirror = isMirror;
-            SliCompo.isJustR = detectJustType(note.noteContent, out int endPos);
-            SliCompo.endPosition = endPos;
+            SliCompo.IsMirror = isMirror;
+            SliCompo.IsJustR = detectJustType(note.noteContent, out int endPos);
+            SliCompo.EndPos = endPos;
             if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
             {
                 // known slide sprite issue
@@ -903,27 +903,27 @@ namespace MajdataPlay.Game
                 // p  X X X X X X O O
                 // q  X O O X X X X X
                 var pqEndPos = slideIndex - 26;
-                SliCompo.isSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
+                SliCompo.IsSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
             }
             else
             {
-                SliCompo.isSpecialFlip = isMirror;
+                SliCompo.IsSpecialFlip = isMirror;
             }
             SliCompo.Speed = noteSpeed * timing.HSpeed;
-            SliCompo.startTiming = (float)timing.time;
+            SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = note.startPosition;
-            SliCompo.stars = new GameObject[] { slide_star };
+            SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)note.slideStartTime;
             SliCompo.Length = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
             if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
-                SliCompo.sortIndex = slideLayer;
+                SliCompo.SortOrder = slideLayer;
             }
             else
             {
-                SliCompo.sortIndex = slideLayer;
+                SliCompo.SortOrder = slideLayer;
                 slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
             }
             //slideLayer += 5;
@@ -955,17 +955,17 @@ namespace MajdataPlay.Game
 
             WifiCompo.IsBreak = note.isSlideBreak;
 
-            WifiCompo.isJustR = detectJustType(note.noteContent, out endPos);
-            WifiCompo.endPosition = endPos;
+            WifiCompo.IsJustR = detectJustType(note.noteContent, out endPos);
+            WifiCompo.EndPos = endPos;
             WifiCompo.Speed = noteSpeed * timing.HSpeed;
-            WifiCompo.startTiming = (float)timing.time;
+            WifiCompo.StartTiming = (float)timing.time;
             WifiCompo.StartPos = note.startPosition;
             WifiCompo.Timing = (float)note.slideStartTime;
             WifiCompo.Length = (float)note.slideTime;
             var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            WifiCompo.stars = new GameObject[3]
+            WifiCompo._stars = new GameObject[3]
             {
                 rightStar,
                 centerStar,
@@ -974,11 +974,11 @@ namespace MajdataPlay.Game
             if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
-                WifiCompo.sortIndex = slideLayer;
+                WifiCompo.SortOrder = slideLayer;
             }
             else
             {
-                WifiCompo.sortIndex = slideLayer;
+                WifiCompo.SortOrder = slideLayer;
                 slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
             }
             //slideLayer += 5;

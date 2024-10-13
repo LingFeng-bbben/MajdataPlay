@@ -304,7 +304,7 @@ namespace MajdataPlay.Game.Notes
             switch(State)
             {
                 case NoteStatus.Initialized:
-                    if((-timing).InRange(wholeDuration, moveDuration))
+                    if((-timing).InRange(moveDuration, wholeDuration))
                     {
                         multTouchHandler.Register(_sensorPos,IsEach,IsBreak);
                         RendererState = RendererStatus.On;
