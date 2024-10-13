@@ -13,15 +13,15 @@ namespace MajdataPlay.Game
     {
         public int Capacity { get; private set; } = 64;
 
-        protected TimingPoint<TInfo>?[] timingPoints;
-        protected List<IPoolableNote<TInfo, TMember>> idleNotes;
-        protected List<IPoolableNote<TInfo, TMember>> inUseNotes;
+        protected TimingPoint<TInfo>?[] _timingPoints;
+        protected List<IPoolableNote<TInfo, TMember>> _idleNotes;
+        protected List<IPoolableNote<TInfo, TMember>> _inUseNotes;
         
         public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos,int capacity)
         {
             Capacity = capacity;
-            idleNotes = new(capacity);
-            inUseNotes = new(capacity);
+            _idleNotes = new(capacity);
+            _inUseNotes = new(capacity);
             for (int i = 0; i < capacity; i++)
             {
                 var obj = GameObject.Instantiate(prefab, parent);
@@ -29,14 +29,14 @@ namespace MajdataPlay.Game
                 var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
                 if (noteObj is null)
                     throw new NotSupportedException();
-                idleNotes.Add(noteObj);
+                _idleNotes.Add(noteObj);
             }
             var timingPoints = noteInfos.GroupBy(x => x.AppearTiming)
                                         .OrderBy(x => x.Key);
-            this.timingPoints = new TimingPoint<TInfo>[timingPoints.Count()];
+            this._timingPoints = new TimingPoint<TInfo>[timingPoints.Count()];
             foreach (var (i, timingPoint) in timingPoints.WithIndex())
             {
-                this.timingPoints[i] = new TimingPoint<TInfo>()
+                this._timingPoints[i] = new TimingPoint<TInfo>()
                 {
                     Timing = timingPoint.Key,
                     Infos = timingPoint.ToArray()
@@ -49,9 +49,9 @@ namespace MajdataPlay.Game
         }
         public virtual void Update(float currentSec)
         {
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
                 return;
-            foreach(var (i, tp) in timingPoints.WithIndex())
+            foreach(var (i, tp) in _timingPoints.WithIndex())
             {
                 if (tp is null)
                     continue;
@@ -60,7 +60,7 @@ namespace MajdataPlay.Game
                 {
                     if (!Dequeue(tp.Infos))
                         return;
-                    timingPoints[i] = null;
+                    _timingPoints[i] = null;
                 }
             }
         }
@@ -79,16 +79,16 @@ namespace MajdataPlay.Game
         bool Dequeue(TInfo info)
         {
 
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
             {
                 Debug.LogWarning($"No more Note can use");
                 return false;
             }
-            var idleNote = idleNotes[0];
+            var idleNote = _idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;
-            inUseNotes.Add(idleNote);
-            idleNotes.RemoveAt(0);
+            _inUseNotes.Add(idleNote);
+            _idleNotes.RemoveAt(0);
             idleNote.Initialize(info);
             if (!obj.activeSelf)
                 obj.SetActive(true);
@@ -96,12 +96,12 @@ namespace MajdataPlay.Game
         }
         public virtual void Collect(IPoolableNote<TInfo, TMember> endNote)
         {
-            inUseNotes.Remove(endNote);
-            idleNotes.Add(endNote);
+            _inUseNotes.Remove(endNote);
+            _idleNotes.Add(endNote);
         }
         public virtual void Destroy()
         {
-            foreach (var note in idleNotes)
+            foreach (var note in _idleNotes)
             {
                 try
                 {
@@ -113,7 +113,7 @@ namespace MajdataPlay.Game
                     Debug.LogError($"Cannot destroy note:\n{e}");
                 }
             }
-            foreach (var note in inUseNotes)
+            foreach (var note in _inUseNotes)
             {
                 try
                 {
