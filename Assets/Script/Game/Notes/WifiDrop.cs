@@ -32,23 +32,23 @@ namespace MajdataPlay.Game.Notes
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            FadeInTiming = -3.926913f / Speed;
-            FadeInTiming += _gameSetting.Game.SlideFadeInOffset;
-            FadeInTiming += StartTiming;
+            _fadeInTiming = -3.926913f / Speed;
+            _fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
+            _fadeInTiming += _startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
+            _fullFadeInTiming = _fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
             Destroy(GetComponent<Animator>());
             _maxFadeInAlpha = 1f;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
-            var sensorPos = (SensorType)(EndPos - 1);
+            var sensorPos = (SensorType)(_endPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
             _slideEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _slideEndPositions[1] = GetPositionFromDistance(4.8f, EndPos);// Center
+            _slideEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
             _slideEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
 
             if(IsClassic)
@@ -96,9 +96,9 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - base.Timing;
-            var startTiming = _gpManager.AudioTime - base.StartTiming;
-            var tooLateTiming = base.Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var timing = _gpManager.AudioTime - _timing;
+            var startTiming = _gpManager.AudioTime - _startTiming;
+            var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
@@ -219,12 +219,12 @@ namespace MajdataPlay.Game.Notes
             foreach (var star in _stars)
                 star.SetActive(true);
 
-            var timing = CurrentSec - base.Timing;
+            var timing = CurrentSec - _timing;
             if (timing <= 0f)
             {
                 CanShine = true;
                 float alpha;
-                alpha = 1f - -timing / (base.Timing - StartTiming);
+                alpha = 1f - -timing / (_timing - _startTiming);
                 alpha = alpha > 1f ? 1f : alpha;
                 alpha = alpha < 0f ? 0f : alpha;
 
@@ -241,7 +241,7 @@ namespace MajdataPlay.Game.Notes
         }
         void UpdateStar()
         {
-            var timing = _gpManager.AudioTime - base.Timing;
+            var timing = _gpManager.AudioTime - _timing;
             var process = (Length - timing) / Length;
             process = 1f - process;
 
@@ -346,7 +346,7 @@ namespace MajdataPlay.Game.Notes
                 _starRenderers[2].sortingOrder = -1;
             }
 
-            if (IsJustR)
+            if (_isJustR)
                 _slideOK.GetComponent<LoadJustSprite>().SetR();
             else
             {

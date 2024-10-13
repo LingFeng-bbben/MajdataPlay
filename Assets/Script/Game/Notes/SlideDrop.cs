@@ -40,9 +40,9 @@ namespace MajdataPlay.Game.Notes
                 return;
             base.Start();
             State = NoteStatus.Initialized;
-            var slideTable = SlideTables.FindTableByName(SlideType);
+            var slideTable = SlideTables.FindTableByName(_slideType);
             if (slideTable is null)
-                throw new MissingComponentException($"Slide table of \"{SlideType}\" is not found");
+                throw new MissingComponentException($"Slide table of \"{_slideType}\" is not found");
             _table = slideTable;
             _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
             _starRenderer = _stars[0].GetComponent<SpriteRenderer>();
@@ -72,12 +72,12 @@ namespace MajdataPlay.Game.Notes
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            FadeInTiming = -3.926913f / Speed;
-            FadeInTiming += _gameSetting.Game.SlideFadeInOffset;
-            FadeInTiming += StartTiming;
+            _fadeInTiming = -3.926913f / Speed;
+            _fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
+            _fadeInTiming += _startTiming;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
+            _fullFadeInTiming = _fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
             Destroy(GetComponent<Animator>());
@@ -139,9 +139,9 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - base.Timing;
-            var startTiming = _gpManager.AudioTime - base.StartTiming;
-            var tooLateTiming = base.Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
+            var timing = _gpManager.AudioTime - _timing;
+            var startTiming = _gpManager.AudioTime - _startTiming;
+            var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
             var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
 
             if (!_canCheck)
@@ -205,7 +205,7 @@ namespace MajdataPlay.Game.Notes
                 else
                 {
                     // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    alpha = 1f - -timing / (base.Timing - StartTiming);
+                    alpha = 1f - -timing / (_timing - _startTiming);
                     alpha = alpha > 1f ? 1f : alpha;
                     alpha = alpha < 0f ? 0f : alpha;
                 }
@@ -397,7 +397,7 @@ namespace MajdataPlay.Game.Notes
 
                 _slideRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
             }
-            var endPos = GetPositionFromDistance(4.8f, EndPos);
+            var endPos = GetPositionFromDistance(4.8f, _endPos);
             _slidePositions.Add(endPos);
             _slideRotations.Add(_slideRotations.LastOrDefault());
         }
@@ -450,7 +450,7 @@ namespace MajdataPlay.Game.Notes
                 controller.Parent = this;
             }
 
-            if (IsJustR)
+            if (_isJustR)
             {
                 if (_slideOK.GetComponent<LoadJustSprite>().SetR() == 1 && _isMirror)
                 {

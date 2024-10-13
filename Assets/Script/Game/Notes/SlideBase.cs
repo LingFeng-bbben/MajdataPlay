@@ -301,10 +301,10 @@ namespace MajdataPlay.Game.Notes
         }
         protected async UniTaskVoid FadeIn()
         {
-            FadeInTiming = Math.Max(FadeInTiming,CurrentSec);
-            var num = StartTiming - 0.05f;
-            float interval = (num - FadeInTiming).Clamp(0, 0.2f);
-            float fullFadeInTiming = FadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
+            _fadeInTiming = Math.Max(_fadeInTiming,CurrentSec);
+            var num = _startTiming - 0.05f;
+            float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
+            float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
             while (CurrentSec < fullFadeInTiming) 
             {
