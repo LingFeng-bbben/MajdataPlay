@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -12,7 +13,7 @@ namespace MajdataPlay.Game
 
         public void SetResult(JudgeType result)
         {
-            var displayCP = GameManager.Instance.Setting.Display.DisplayCriticalPerfect;
+            var displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
             switch (result)
             {
                 case JudgeType.LatePerfect2:
@@ -105,7 +106,7 @@ namespace MajdataPlay.Game
         }
         private void RefreshSprite()
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = SkinManager.Instance.SelectedSkin.Just[_0curv1str2wifi + indexOffset + judgeOffset];
+            gameObject.GetComponent<SpriteRenderer>().sprite = MajInstances.SkinManager.SelectedSkin.Just[_0curv1str2wifi + indexOffset + judgeOffset];
         }
     }
 }

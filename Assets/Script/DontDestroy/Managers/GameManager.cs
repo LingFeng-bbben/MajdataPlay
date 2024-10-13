@@ -14,13 +14,13 @@ using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Scripting;
+using MajdataPlay.Types.Attribute;
 
 namespace MajdataPlay
 {
 #nullable enable
     public class GameManager : MonoBehaviour
     {
-        public static GameManager Instance { get; private set; }
         public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => tokenSource.Token; }
         
@@ -33,13 +33,20 @@ namespace MajdataPlay
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
 
-        public GameSetting Setting { get; private set; } = new();
+        public GameSetting Setting
+        {
+            get => MajInstances.Setting;
+            set => MajInstances.Setting = value;
+        }
         /// <summary>
         /// Current difficult
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public bool UseUnityTimer { get => _useUnityTimer; set => _useUnityTimer = value; }
-        
+        public bool UseUnityTimer 
+        { 
+            get => _useUnityTimer; 
+            set => _useUnityTimer = value; 
+        }
 
         CancellationTokenSource tokenSource = new();
         Task? logWritebackTask = null;
@@ -68,7 +75,7 @@ namespace MajdataPlay
                 });
             };
             logWritebackTask = LogWriteback();
-            Instance = this;
+            MajInstances.GameManager = this;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
@@ -90,6 +97,7 @@ namespace MajdataPlay
                 Setting = new GameSetting();
                 Save();
             }
+            MajInstances.Setting = Setting;
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 

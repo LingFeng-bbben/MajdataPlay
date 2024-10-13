@@ -1,4 +1,5 @@
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Controllers
@@ -7,12 +8,13 @@ namespace MajdataPlay.Game.Controllers
     {
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer? Renderer { get; set; } = null;
-        GamePlayManager gpManager => GamePlayManager.Instance;
+        GamePlayManager _gpManager;
 
         void Start()
         {
             if(Renderer is null)
                 Renderer = GetComponent<SpriteRenderer>();
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         void Update()
         {
@@ -20,9 +22,9 @@ namespace MajdataPlay.Game.Controllers
                 return;
             if (Parent is not null && Parent.CanShine)
             {
-                var (brightness, contrast) = gpManager.BreakParams;
-                Renderer.material.SetFloat("_Brightness", brightness);
-                Renderer.material.SetFloat("_Contrast", contrast);
+                var param = _gpManager.BreakParam;
+                Renderer.material.SetFloat("_Brightness", param.Brightness);
+                Renderer.material.SetFloat("_Contrast", param.Contrast);
             }
         }
     }

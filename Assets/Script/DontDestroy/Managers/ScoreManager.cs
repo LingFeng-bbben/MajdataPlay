@@ -12,13 +12,12 @@ namespace MajdataPlay
 #nullable enable
     public class ScoreManager : MonoBehaviour
     {
-        public static ScoreManager Instance { get; private set; }
         List<MaiScore> scores = new();
         Task? backendTask = null;
 
         void Awake()
         {
-            Instance = this;
+            MajInstances.ScoreManager = this;
         }
         void Start()
         {

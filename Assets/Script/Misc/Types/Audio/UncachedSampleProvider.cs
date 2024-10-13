@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
@@ -37,7 +38,7 @@ namespace MajdataPlay.Types
         public UncachedSampleProvider(string audioFileName, MixingSampleProvider mixer,int bufferSize)
         {
             audioFileReader = new AudioFileReader(audioFileName);
-            resampler = new WdlResamplingSampleProvider(audioFileReader, GameManager.Instance.Setting.Audio.Samplerate);
+            resampler = new WdlResamplingSampleProvider(audioFileReader, MajInstances.Setting.Audio.Samplerate);
             WaveFormat = resampler.WaveFormat;
             TrackLen = audioFileReader.TotalTime;
             Length = (int)audioFileReader.Length;
@@ -70,7 +71,7 @@ namespace MajdataPlay.Types
                     if (IsLoop)
                     {
                         Position = 0;
-                        resampler = new WdlResamplingSampleProvider(audioFileReader, GameManager.Instance.Setting.Audio.Samplerate);
+                        resampler = new WdlResamplingSampleProvider(audioFileReader, MajInstances.Setting.Audio.Samplerate);
                     }
                     else
                     {

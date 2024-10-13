@@ -1,8 +1,9 @@
 ﻿using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Game
 {
     public class NotePoolManager: MonoBehaviour
@@ -29,13 +30,17 @@ namespace MajdataPlay.Game
         [SerializeField]
         GameObject eachLinePrefab;
 
-        GamePlayManager gpManager;
+        GamePlayManager _gpManager;
         List<TapPoolingInfo> tapInfos = new();
         List<TapPoolingInfo> starInfos = new();
         List<HoldPoolingInfo> holdInfos = new();
         List<TouchPoolingInfo> touchInfos = new();
         List<TouchHoldPoolingInfo> touchHoldInfos = new();
         List<EachLinePoolingInfo> eachLineInfos = new();
+        void Awake()
+        {
+            MajInstanceHelper<NotePoolManager>.Instance = this;
+        }
         public void Initialize()
         {
             var tapParent = transform.GetChild(0);
@@ -54,13 +59,13 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            gpManager = GamePlayManager.Instance;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         void Update()
         {
             if (State < ComponentState.Running)
                 return;
-            var currentSec = gpManager.AudioTime;
+            var currentSec = _gpManager.AudioTime;
             tapPool.Update(currentSec);
             holdPool.Update(currentSec);
             starPool.Update(currentSec);
@@ -123,6 +128,7 @@ namespace MajdataPlay.Game
             touchPool.Destroy();
             touchHoldPool.Destroy();
             eachLinePool.Destroy();
+            MajInstanceHelper<NotePoolManager>.Free();
         }
     }
 }

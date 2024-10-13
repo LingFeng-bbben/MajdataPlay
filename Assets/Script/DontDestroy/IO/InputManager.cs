@@ -6,12 +6,12 @@ using UnityRawInput;
 using System.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 #nullable enable
 namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        public static InputManager Instance;
         public bool displayDebug = false;
         public bool useDummy = false;
 
@@ -24,7 +24,7 @@ namespace MajdataPlay.IO
 
         void Awake()
         {
-            Instance = this;
+            MajInstances.InputManager = this;
             DontDestroyOnLoad(this);
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {

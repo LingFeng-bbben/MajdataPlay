@@ -258,23 +258,23 @@
       "Content": "Classic: 旧Slide在新Slide下方\nModern: 旧Slide在新Slide上方"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE",
-      "Origin": "OuterJudgeDistance",
-      "Content": "内圈判定显示距离"
-    },
-    {
-      "Type": "OUTER_JUDGE_DISTANCE_DESC",
-      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
-      "Content": "调整Touch判定结果的显示位置\n数值越小越靠近中心"
-    },
-    {
       "Type": "INNER_JUDGE_DISTANCE",
       "Origin": "InnerJudgeDistance",
-      "Content": "外圈判定显示距离"
+      "Content": "内圈判定显示距离"
     },
     {
       "Type": "INNER_JUDGE_DISTANCE_DESC",
       "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
+      "Content": "调整Touch判定结果的显示位置\n数值越小越靠近中心"
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE",
+      "Origin": "OuterJudgeDistance",
+      "Content": "外圈判定显示距离"
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE_DESC",
+      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
       "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {

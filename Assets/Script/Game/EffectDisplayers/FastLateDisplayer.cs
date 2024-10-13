@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
@@ -27,7 +28,7 @@ namespace MajdataPlay.Game
         Sprite lateSprite;
         void Start()
         {
-            var skin = SkinManager.Instance.GetJudgeTextSkin();
+            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
             fastSprite = skin.Fast;
             lateSprite = skin.Late;
         }

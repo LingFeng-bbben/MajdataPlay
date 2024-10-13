@@ -46,8 +46,18 @@ namespace MajdataPlay.Types
         
         public Sprite[] Just { get; private set; } = new Sprite[54];
         public Sprite[] JudgeText { get; private set; } = new Sprite[5];
+
         public Sprite CriticalPerfect_Break { get; private set; }
         public Sprite Perfect_Break { get; private set; }
+        public Sprite Break_2600_Shine { get; private set; }
+        public Sprite Break_2600 { get; private set; }
+        public Sprite Break_2550 { get; private set; }
+        public Sprite Break_2500 { get; private set; }
+        public Sprite Break_2000 { get; private set; }
+        public Sprite Break_1500 { get; private set; }
+        public Sprite Break_1250 { get; private set; }
+        public Sprite Break_1000 { get; private set; }
+        public Sprite Break_0 { get; private set; }
         public Sprite FastText { get; private set; }
         public Sprite LateText { get; private set; }
 
@@ -211,8 +221,19 @@ namespace MajdataPlay.Types
             JudgeText[2] = SpriteLoader.Load(skinCollectionPath + "/judge_text_great.png");
             JudgeText[3] = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect.png");
             JudgeText[4] = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect.png");
-            CriticalPerfect_Break = SpriteLoader.Load(skinCollectionPath + "/judge_text_break.png");
+
+            CriticalPerfect_Break = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect_break.png");
             Perfect_Break = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect_break.png");
+
+            Break_2600_Shine = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600_shine.png");
+            Break_2600 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600.png");
+            Break_2550 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2550.png");
+            Break_2500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2500.png");
+            Break_2000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2000.png");
+            Break_1500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1500.png");
+            Break_1250 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1250.png");
+            Break_1000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1000.png");
+            Break_0 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_0.png");
 
             FastText = SpriteLoader.Load(skinCollectionPath + "/fast.png");
             LateText = SpriteLoader.Load(skinCollectionPath + "/late.png");

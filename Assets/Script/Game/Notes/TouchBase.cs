@@ -15,14 +15,14 @@ namespace MajdataPlay.Game.Notes
 
         protected Quaternion GetRoation()
         {
-            if (sensorPos == SensorType.C)
+            if (_sensorPos == SensorType.C)
                 return Quaternion.Euler(Vector3.zero);
             var d = Vector3.zero - transform.position;
             var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
 
             return Quaternion.Euler(new Vector3(0, 0, -deg));
         }
-        public SensorType GetSensor() => GetSensor(areaPosition, startPosition);
+        public SensorType GetSensor() => GetSensor(areaPosition, StartPos);
         public static SensorType GetSensor(char areaPos, int startPos)
         {
             switch (areaPos)

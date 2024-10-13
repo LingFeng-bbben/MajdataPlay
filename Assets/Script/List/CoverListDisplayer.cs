@@ -101,12 +101,12 @@ namespace MajdataPlay.List
             {
                 selectedDifficulty = 6;
             }
-            GameManager.Instance.SelectedDiff = (ChartLevel)selectedDifficulty;
+            MajInstances.GameManager.SelectedDiff = (ChartLevel)selectedDifficulty;
             CoverBigDisplayer.SetDifficulty(selectedDifficulty);
             if (IsChartList)
             {
                 var songinfo = songs.ToArray()[desiredListPos];
-                var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
+                var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
 
@@ -144,7 +144,7 @@ namespace MajdataPlay.List
 
         public void SlideToList(int pos)
         {
-            AudioManager.Instance.PlaySFX(SFXSampleType.JUDGE);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.JUDGE);
             desiredListPos = pos;
             if (desiredListPos >= covers.Count)
             {
@@ -164,7 +164,7 @@ namespace MajdataPlay.List
                     break;
                 case CoverListMode.Chart:
                     var songinfo = songs.ToArray()[desiredListPos];
-                    var songScore = ScoreManager.Instance.GetScore(songinfo, GameManager.Instance.SelectedDiff);
+                    var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetCover(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);

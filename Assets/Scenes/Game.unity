@@ -315,8 +315,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb7d3a7dd6fb60145acd5e14b3b6b921, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadingMask: {fileID: 1166160105}
-  skipBtn: {fileID: 401781753}
+  _loadingMask: {fileID: 1166160105}
+  _skipBtn: {fileID: 401781753}
+  _thisFrameSec: 0
+  _firstNoteAppearTiming: 0
+  _audioTime: -114514
+  _audioTimeNoOffset: -114514
+  _audioStartTime: -114514
 --- !u!4 &187050633
 Transform:
   m_ObjectHideFlags: 0

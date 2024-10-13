@@ -1,4 +1,5 @@
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,7 +40,7 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
-            IsDebug = GameManager.Instance.Setting.Debug.DisplaySensor;
+            IsDebug = MajInstances.Setting.Debug.DisplaySensor;
             image = GetComponent<Image>();
             if (!IsDebug)
             {

@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using MajSimaiDecode;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +9,6 @@ namespace MajdataPlay
 {
     public class SkinManager : MonoBehaviour
     {
-        public static SkinManager Instance { get; private set; }
-
         public CustomSkin SelectedSkin { get; set; }
         public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
         List<CustomSkin> loadedSkins = new();
@@ -29,7 +28,7 @@ namespace MajdataPlay
         private void Awake()
         {
             DontDestroyOnLoad(this);
-            Instance = this;
+            MajInstances.SkinManager = this;
         }
 
         // Start is called before the first frame update
@@ -39,7 +38,7 @@ namespace MajdataPlay
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            var selectedSkinName = GameManager.Instance.Setting.Display.Skin;
+            var selectedSkinName = MajInstances.Setting.Display.Skin;
             var dicts = Directory.GetDirectories(path);
 
             foreach (var skinPath in dicts)
@@ -60,6 +59,15 @@ namespace MajdataPlay
             {
                 CP_Break = SelectedSkin.CriticalPerfect_Break,
                 P_Break = SelectedSkin.Perfect_Break,
+                Break_2600_Shine = SelectedSkin.Break_2600_Shine,
+                Break_2600 = SelectedSkin.Break_2600,
+                Break_2550 = SelectedSkin.Break_2550,
+                Break_2500 = SelectedSkin.Break_2500,
+                Break_2000 = SelectedSkin.Break_2000,
+                Break_1500 = SelectedSkin.Break_1500,
+                Break_1250 = SelectedSkin.Break_1250,
+                Break_1000 = SelectedSkin.Break_1000,
+                Break_0 = SelectedSkin.Break_0,
                 CriticalPerfect = SelectedSkin.JudgeText[4],
                 Perfect = SelectedSkin.JudgeText[3],
                 Great = SelectedSkin.JudgeText[2],

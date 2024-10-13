@@ -21,7 +21,7 @@ public class SortFindManager : MonoBehaviour
     {
         EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
         LightManager.Instance.SetAllLight(Color.black);
-        InputManager.Instance.BindAnyArea(OnAreaDown);
+        MajInstances.InputManager.BindAnyArea(OnAreaDown);
         SearchBar.text = SongStorage.OrderBy.Keyword;
         SetActiveSort(SongStorage.OrderBy.SortBy);
     }
@@ -65,7 +65,7 @@ public class SortFindManager : MonoBehaviour
                     break;
 
                 case SensorType.D5:
-                    InputManager.Instance.UnbindAnyArea(OnAreaDown);
+                    MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                     SortAndExit();
                     break;
             }
@@ -91,6 +91,6 @@ public class SortFindManager : MonoBehaviour
     void SortAndExit()
     {
         var task = SongStorage.SortAndFindAsync(SearchBar.text,sortType);
-        SceneSwitcher.Instance.SwitchSceneAfterTaskAsync("List",task).Forget();
+        MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("List",task).Forget();
     }
 }

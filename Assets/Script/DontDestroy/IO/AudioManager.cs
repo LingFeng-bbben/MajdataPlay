@@ -8,12 +8,12 @@ using MajdataPlay.Extensions;
 using NAudio.CoreAudioApi;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
+using MajdataPlay.Utils;
 #nullable enable
 namespace MajdataPlay.IO
 {
     public class AudioManager : MonoBehaviour
     {
-        public static AudioManager Instance { get; private set; }
         readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
         readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
         readonly string[] SFXFileNames = new string[]
@@ -52,13 +52,13 @@ namespace MajdataPlay.IO
         public bool PlayDebug;
         private void Awake()
         {
-            Instance = this;
+            MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
         }
         void Start()
         {
-            var backend = GameManager.Instance.Setting.Audio.Backend;
-            var sampleRate = GameManager.Instance.Setting.Audio.Samplerate;
+            var backend = MajInstances.Setting.Audio.Backend;
+            var sampleRate = MajInstances.Setting.Audio.Samplerate;
             if (backend != SoundBackendType.Unity)
             {
                 var waveformat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
@@ -67,7 +67,7 @@ namespace MajdataPlay.IO
             }
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
-            var deviceIndex = GameManager.Instance.Setting.Audio.AsioDeviceIndex;
+            var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
             switch (backend)
             {
                 case SoundBackendType.Asio:
@@ -106,7 +106,7 @@ namespace MajdataPlay.IO
                     break;
             }
             if (PlayDebug)
-                InputManager.Instance.BindAnyArea(OnAnyAreaDown);
+                MajInstances.InputManager.BindAnyArea(OnAnyAreaDown);
             ReadVolumeFromSettings();
         }
         void InitSFXSample(string[] fileNameList,string rootPath)
@@ -121,7 +121,7 @@ namespace MajdataPlay.IO
                     continue;
                 }
 
-                switch(GameManager.Instance.Setting.Audio.Backend)
+                switch(MajInstances.Setting.Audio.Backend)
                 {
                     case SoundBackendType.Unity:
                         SFXSamples.Add(UnityAudioSample.ReadFromFile($"file://{path}", gameObject));
@@ -156,7 +156,7 @@ namespace MajdataPlay.IO
 
         public void ReadVolumeFromSettings()
         {
-            var setting = GameManager.Instance.Setting;
+            var setting = MajInstances.Setting;
             SFXSamples[(int)SFXSampleType.ANSWER]?.SetVolume(setting.Audio.Volume.Answer);
             SFXSamples[(int)SFXSampleType.ALL_PERFECT]?.SetVolume(setting.Audio.Volume.Voice);
             SFXSamples[(int)SFXSampleType.BREAK]?.SetVolume(setting.Audio.Volume.Break);
@@ -184,7 +184,7 @@ namespace MajdataPlay.IO
 
         public AudioSampleWrap? LoadMusic(string path)
         {
-            var backend = GameManager.Instance.Setting.Audio.Backend;
+            var backend = MajInstances.Setting.Audio.Backend;
             if (File.Exists(path))
             {
                 switch(backend)
@@ -205,7 +205,7 @@ namespace MajdataPlay.IO
         public async UniTask<AudioSampleWrap?> LoadMusicAsync(string path)
         {
             await UniTask.SwitchToThreadPool();
-            var backend = GameManager.Instance.Setting.Audio.Backend;
+            var backend = MajInstances.Setting.Audio.Backend;
             if (File.Exists(path))
             {
                 switch (backend)

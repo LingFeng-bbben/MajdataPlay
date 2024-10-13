@@ -91,8 +91,8 @@ namespace MajdataPlay.Setting
                 return;
             isBound = true;
             Localization.OnLanguageChanged += OnLangChanged;
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A3);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A3);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A6);
         }
         void UnbindArea()
         {
@@ -100,8 +100,8 @@ namespace MajdataPlay.Setting
                 return;
             isBound = false;
             Localization.OnLanguageChanged -= OnLangChanged;
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A3);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A3);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A6);
         }
         [SerializeField]
         int _selectedIndex = 0;
