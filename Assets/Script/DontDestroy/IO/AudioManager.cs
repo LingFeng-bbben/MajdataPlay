@@ -8,6 +8,7 @@ using MajdataPlay.Extensions;
 using NAudio.CoreAudioApi;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -236,6 +237,21 @@ namespace MajdataPlay.IO
             else
                 Debug.LogError("No such SFX");
         }
+
+        public AudioSampleWrap GetSFX(in SFXSampleType sfxType)
+        {
+            var psp = SFXSamples[(int)sfxType];
+            if (psp is not null)
+            {
+                return psp;
+            }
+            else
+            {
+                return null;
+            }
+            
+        }
+
         public void StopSFX(in SFXSampleType sfxType)
         {
             var psp = SFXSamples[(int)sfxType];

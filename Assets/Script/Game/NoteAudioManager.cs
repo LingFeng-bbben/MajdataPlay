@@ -89,7 +89,9 @@ namespace MajdataPlay.Game
         }
         public void PlayTouchHoldSound()
         {
-            audioManager.PlaySFX(SFXSampleType.TOUCH_HOLD_RISER);
+            var riser = audioManager.GetSFX(SFXSampleType.TOUCH_HOLD_RISER);
+            if(!riser.IsPlaying)
+                audioManager.PlaySFX(SFXSampleType.TOUCH_HOLD_RISER);
         }
         public void StopTouchHoldSound()
         {
