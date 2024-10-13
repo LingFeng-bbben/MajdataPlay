@@ -1,22 +1,21 @@
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 public class XxlbAnimationController : MonoBehaviour
 {
     Image image;
     Animator animator;
     public Sprite[] sprites;
 
-    public static XxlbAnimationController instance;
-
     short dir=0;
 
     private void Awake()
     {
-        instance = this; 
+        MajInstanceHelper<XxlbAnimationController>.Instance = this;
     }
 
     // Start is called before the first frame update
@@ -87,6 +86,6 @@ public class XxlbAnimationController : MonoBehaviour
 
     private void OnDestroy()
     {
-        instance = null;
+        MajInstanceHelper<XxlbAnimationController>.Free();
     }
 }

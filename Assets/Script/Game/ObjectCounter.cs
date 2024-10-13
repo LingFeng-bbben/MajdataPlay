@@ -87,6 +87,7 @@ namespace MajdataPlay.Game
         Dictionary<JudgeType, int> totalJudgedCount;
 
         GamePlayManager _gpManager;
+        XxlbAnimationController _xxlbController;
         void Awake()
         {
             MajInstanceHelper<ObjectCounter>.Instance = this;
@@ -97,6 +98,7 @@ namespace MajdataPlay.Game
         }
         private void Start()
         {
+            _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
@@ -646,7 +648,7 @@ namespace MajdataPlay.Game
                     break;
             }
 
-            XxlbAnimationController.instance.Dance(result);
+            _xxlbController.Dance(result);
             UpdateFastLate(judgeResult);
             CalAccRate();
         }

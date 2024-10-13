@@ -123,6 +123,7 @@ namespace MajdataPlay.Game
         BGManager _bgManager;
         NoteLoader _noteLoader;
         ObjectCounter _objectCounter;
+        XxlbAnimationController _xxlbController;
 
         CancellationTokenSource _allTaskTokenSource = new();
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
@@ -148,6 +149,7 @@ namespace MajdataPlay.Game
 
             _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
+            _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
             _loadingText = _loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
             _loadingImage = _loadingMask.GetComponent<Image>();
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
@@ -480,7 +482,7 @@ namespace MajdataPlay.Game
                             MajInstances.AudioManager.PlaySFX(SFXSampleType.CLOCK);
                             UnityMainThreadDispatcher.Instance().Enqueue(() =>
                             {
-                                XxlbAnimationController.instance.Stepping();
+                                _xxlbController.Stepping();
                             });
                         }
                         else
