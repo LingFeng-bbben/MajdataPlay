@@ -7,7 +7,7 @@ namespace MajdataPlay.Types
     public partial class MajnetSongDetail
     {
         [JsonPropertyName("Id")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("Title")]
         public string Title { get; set; }
