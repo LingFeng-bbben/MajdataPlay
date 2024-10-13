@@ -38,12 +38,14 @@ namespace MajdataPlay.Game
 
             if(MajInstances.Setting.Display.DisplayCriticalPerfect)
             {
-                breakSprite = skin.CP_Break;
+                //breakSprite = skin.CP_Break;
+                breakSprite = skin.Break_2600_Shine;
                 cPerfectSprite = skin.CriticalPerfect;
             }
             else
             {
-                breakSprite = skin.P_Break;
+                //breakSprite = skin.P_Break;
+                breakSprite = skin.Break_2600_Shine;
                 cPerfectSprite = skin.Perfect;
             }
             breakRenderer.sprite = breakSprite;
@@ -62,7 +64,19 @@ namespace MajdataPlay.Game
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Result;
 
-            switch (result)
+            if (isBreak)
+                LoadBreakSkin(judgeResult);
+            else
+                LoadTapSkin(judgeResult);
+            
+            if (isBreak && result == JudgeType.Perfect)
+                animator.SetTrigger("break");
+            else
+                animator.SetTrigger("perfect");
+        }
+        void LoadTapSkin(in JudgeResult judgeResult)
+        {
+            switch (judgeResult.Result)
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
@@ -89,10 +103,43 @@ namespace MajdataPlay.Game
                     textRenderer.sprite = missSprite;
                     break;
             }
-            if (isBreak && result == JudgeType.Perfect)
-                animator.SetTrigger("break");
-            else
-                animator.SetTrigger("perfect");
+        }
+        void LoadBreakSkin(in JudgeResult judgeResult)
+        {
+            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
+            switch (judgeResult.Result)
+            {
+                case JudgeType.LateGood:
+                case JudgeType.FastGood:
+                    textRenderer.sprite = skin.Break_1000;
+                    break;
+                case JudgeType.LateGreat:
+                case JudgeType.FastGreat:
+                    textRenderer.sprite = skin.Break_1250;
+                    break;
+                case JudgeType.LateGreat1:
+                case JudgeType.FastGreat1:
+                    textRenderer.sprite = skin.Break_1500;
+                    break;
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat2:
+                    textRenderer.sprite = skin.Break_2000;
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                    textRenderer.sprite = skin.Break_2500;
+                    break;
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                    textRenderer.sprite = skin.Break_2550;
+                    break;
+                case JudgeType.Perfect:
+                    textRenderer.sprite = skin.Break_2600;
+                    break;
+                default:
+                    textRenderer.sprite = skin.Break_0;
+                    break;
+            }
         }
     }
 }
