@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 
@@ -7,22 +8,29 @@ namespace MajdataPlay.Game
 #nullable enable
     public class NoteEffectManager : MonoBehaviour
     {
-        NoteEffectPool effectPool;
-        GameObject fireworkEffect;
-        Animator fireworkEffectAnimator;
+        NoteEffectPool _effectPool;
+        GameObject _fireworkEffect;
+        Animator _fireworkEffectAnimator;
 
-
+        void Awake()
+        {
+            MajInstanceHelper<NoteEffectManager>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            MajInstanceHelper<NoteEffectManager>.Free();
+        }
         void Start()
         {
-            fireworkEffect = GameObject.Find("FireworkEffect");
-            fireworkEffectAnimator = fireworkEffect.GetComponent<Animator>();
+            _fireworkEffect = GameObject.Find("FireworkEffect");
+            _fireworkEffectAnimator = _fireworkEffect.GetComponent<Animator>();
 
-            effectPool = GetComponent<NoteEffectPool>();
+            _effectPool = MajInstanceHelper<NoteEffectPool>.Instance!;
         }
         public void PlayFireworkEffect(in Vector3 position)
         {
-            fireworkEffectAnimator.SetTrigger("Fire");
-            fireworkEffect.transform.position = position;
+            _fireworkEffectAnimator.SetTrigger("Fire");
+            _fireworkEffect.transform.position = position;
         }
         /// <summary>
         /// Tap, Hold, Star
@@ -32,31 +40,31 @@ namespace MajdataPlay.Game
         /// <param name="judge"></param>
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
-            effectPool.Play(judgeResult, position);
+            _effectPool.Play(judgeResult, position);
         }
         public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
         {
-            effectPool.PlayHoldEffect(judgeType, keyIndex);
+            _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect( SensorType sensorPos, in JudgeType judgeType)
         {
-            effectPool.PlayHoldEffect(judgeType, sensorPos);
+            _effectPool.PlayHoldEffect(judgeType, sensorPos);
         }
         public void ResetHoldEffect(int keyIndex)
         {
-            effectPool.ResetHoldEffect(keyIndex);
+            _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorType sensorPos)
         {
-            effectPool.ResetHoldEffect(sensorPos);
+            _effectPool.ResetHoldEffect(sensorPos);
         }
         public void PlayTouchEffect(SensorType sensorPos, in JudgeResult judgeResult)
         {
-            effectPool.Play(judgeResult, sensorPos);
+            _effectPool.Play(judgeResult, sensorPos);
         }
         public void PlayTouchHoldEffect(SensorType sensorPos, in JudgeResult judgeResult)
         {
-            effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
+            _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
         }
         public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
         {
@@ -76,7 +84,7 @@ namespace MajdataPlay.Game
         }
         public void ResetEffect(int position)
         {
-            effectPool.Reset(position);
+            _effectPool.Reset(position);
         }
     }
 }

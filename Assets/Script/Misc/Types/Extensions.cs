@@ -721,10 +721,10 @@ namespace MajdataPlay.Extensions
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
-        /// <param name="max"></param>
         /// <param name="min"></param>
+        /// <param name="max"></param>
         /// <returns>if in range return true,else false</returns>
-        public static bool InRange<T>(this T source,in T max,in T min) where T : IComparable<T>
+        public static bool InRange<T>(this T source, in T min, in T max) where T : IComparable<T>
         {
             return !(source.CompareTo(min) < 0 || source.CompareTo(max) > 0);
         }

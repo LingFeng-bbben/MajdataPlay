@@ -1,28 +1,27 @@
-﻿using System;
+﻿using MajdataPlay.Utils;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.Game
 {
     public class TimeDisplayer : MonoBehaviour
     {
-        private Text text;
+        Text _timeText;
 
-        private GamePlayManager gamePlayManager;
+        GamePlayManager _gpManager;
 
-        // Start is called before the first frame update
-        private void Start()
+
+        void Start()
         {
-            text = GetComponent<Text>();
-            gamePlayManager = GamePlayManager.Instance;
+            _timeText = GetComponent<Text>();
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
 
-        // Update is called once per frame
-
-        private void Update()
+        void Update()
         {
             // Lock AudioTime variable for real
-            var ctime = gamePlayManager.AudioTime;
+            var ctime = _gpManager.AudioTime;
             var timenowInt = (int)ctime;
             var minute = timenowInt / 60;
             var second = timenowInt - 60 * minute;
@@ -34,11 +33,11 @@ namespace MajdataPlay.Game
                 minute = Math.Abs(minute);
                 second = Math.Abs(second);
                 mili = Math.Abs(mili);
-                text.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
+                _timeText.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
             }
             else
             {
-                text.text = string.Format("{0}:{1:00}.{2:0000}", minute, second, mili);
+                _timeText.text = string.Format("{0}:{1:00}.{2:0000}", minute, second, mili);
             }
         }
     }

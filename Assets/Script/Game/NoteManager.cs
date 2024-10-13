@@ -1,7 +1,5 @@
-using MajdataPlay.Game.Notes;
-using MajdataPlay.IO;
 using MajdataPlay.Types;
-using System;
+using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,10 +7,17 @@ namespace MajdataPlay.Game
 {
     public class NoteManager : MonoBehaviour
     {
-        public List<GameObject> notes = new();
         Dictionary<int, int> noteCurrentIndex = new();
         Dictionary<SensorType, int> touchCurrentIndex = new();
 
+        void Awake()
+        {
+            MajInstanceHelper<NoteManager>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            MajInstanceHelper<NoteManager>.Free();
+        }
         public void ResetCounter()
         {
             noteCurrentIndex.Clear();

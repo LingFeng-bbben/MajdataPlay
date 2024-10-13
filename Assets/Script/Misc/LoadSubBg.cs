@@ -1,6 +1,6 @@
 using MajdataPlay;
 using System.Collections;
-using System.Collections.Generic;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +17,7 @@ namespace MajdataPlay.Misc
         {
             yield return new WaitForEndOfFrame();
             var img = GetComponent<Image>();
-            img.sprite = SkinManager.Instance.SelectedSkin.SubDisplay;
+            img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             img.color = Color.white;
         }
     }

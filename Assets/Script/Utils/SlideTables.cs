@@ -625,6 +625,29 @@ namespace MajdataPlay.Utils
                 BuildJudgeArea(new SensorType[]{ SensorType.A4 , SensorType.D5 },7,true,true)
             }
         };
+        public static JudgeArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new JudgeArea[][]
+        {
+            new JudgeArea[] // L
+            {
+                BuildJudgeArea(SensorType.A1,0),
+                BuildJudgeArea(SensorType.B8,2),
+                BuildJudgeArea(SensorType.B7,4),
+                BuildJudgeArea(new SensorType[]{ SensorType.A6 , SensorType.D6 },7,true,true)
+            },
+            new JudgeArea[] // Center
+            {
+                BuildJudgeArea(SensorType.A1,0),
+                BuildJudgeArea(SensorType.B1,2),
+                BuildJudgeArea(SensorType.C,7,true,false),
+            },
+            new JudgeArea[] // R
+            {
+                BuildJudgeArea(SensorType.A1,0),
+                BuildJudgeArea(SensorType.B2,2),
+                BuildJudgeArea(SensorType.B3,4),
+                BuildJudgeArea(new SensorType[]{ SensorType.A4 , SensorType.D5 },7,true,true)
+            }
+        };
         public static SlideTable? FindTableByName(string prefabName)
         {
             var result = SLIDE_TABLES.Find(x => x.Name == prefabName);
@@ -634,7 +657,7 @@ namespace MajdataPlay.Utils
         public static JudgeArea[][] GetWifiTable(int startPos)
         {
             List<JudgeArea[]> queue = new();
-            var raw = WIFISLIDE_JUDGE_QUEUE;
+            var raw = MajInstances.Setting.Judge.Mode == JudgeMode.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
             foreach (var line in raw)
             {
                 List<JudgeArea> rows = new();

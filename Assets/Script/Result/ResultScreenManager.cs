@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
 
 namespace MajdataPlay.Result
 {
@@ -43,7 +44,7 @@ namespace MajdataPlay.Result
 
         void Start()
         {
-            var gameManager = GameManager.Instance;
+            var gameManager = MajInstances.GameManager;
             var result = (GameResult)GameManager.LastGameResult;
             GameManager.LastGameResult = null;
 
@@ -104,10 +105,10 @@ namespace MajdataPlay.Result
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
 
 
-            InputManager.Instance.BindAnyArea(OnAreaDown);
-            AudioManager.Instance.PlaySFX(SFXSampleType.SUGOI);
-            AudioManager.Instance.PlaySFX(SFXSampleType.RESULT_BGM, true);
-            ScoreManager.Instance.SaveScore(result, result.ChartLevel);
+            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.SUGOI);
+            MajInstances.AudioManager.PlaySFX(SFXSampleType.RESULT_BGM, true);
+            MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
         }
 
         async UniTask LoadCover(SongDetail song)
@@ -199,15 +200,15 @@ namespace MajdataPlay.Result
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
-                SceneSwitcher.Instance.SwitchScene("List");
+                MajInstances.SceneSwitcher.SwitchScene("List");
             }
         }
 
         private void OnDestroy()
         {
-            InputManager.Instance.UnbindAnyArea(OnAreaDown);
-            AudioManager.Instance.StopSFX(SFXSampleType.SUGOI);
-            AudioManager.Instance.StopSFX(SFXSampleType.RESULT_BGM);
+            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            MajInstances.AudioManager.StopSFX(SFXSampleType.SUGOI);
+            MajInstances.AudioManager.StopSFX(SFXSampleType.RESULT_BGM);
         }
         readonly ref struct UnpackJudgeInfo
         {

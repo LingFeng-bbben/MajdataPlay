@@ -19,9 +19,9 @@ namespace MajdataPlay.Game
         }
         public override void Update(float currentSec)
         {
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
                 return;
-            foreach (var (i, tp) in timingPoints.WithIndex())
+            foreach (var (i, tp) in _timingPoints.WithIndex())
             {
                 if (tp is null)
                     continue;
@@ -30,7 +30,7 @@ namespace MajdataPlay.Game
                 {
                     if (!Dequeue(tp.Infos))
                         return;
-                    timingPoints[i] = null;
+                    _timingPoints[i] = null;
                 }
             }
         }
@@ -48,20 +48,20 @@ namespace MajdataPlay.Game
         }
         bool Dequeue(TapPoolingInfo info)
         {
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
             {
                 Debug.LogWarning($"No more SlideLauncher can use");
                 return false;
             }
-            var idleNote = idleNotes[0];
+            var idleNote = _idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;
             var launcher = obj.GetComponent<ISlideLauncher>();
             if (launcher is null)
                 throw new NullReferenceException("This type does not implement ISlideLauncher");
             launcher.SlideObject = info.Slide;
-            inUseNotes.Add(idleNote);
-            idleNotes.RemoveAt(0);
+            _inUseNotes.Add(idleNote);
+            _idleNotes.RemoveAt(0);
             idleNote.Initialize(info);
             if (!obj.activeSelf)
                 obj.SetActive(true);

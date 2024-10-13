@@ -1,5 +1,6 @@
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
 #nullable enable
@@ -41,7 +42,7 @@ namespace MajdataPlay.Game.Notes
         public Sprite[] curvSprites;
         private SpriteRenderer sr;
         GameSetting gameSetting = new();
-        private GamePlayManager gpManager;
+        GamePlayManager _gpManager;
         NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
@@ -76,9 +77,9 @@ namespace MajdataPlay.Game.Notes
         {
             if (IsInitialized)
                 return;
-            gpManager = GamePlayManager.Instance;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             poolManager = FindObjectOfType<NotePoolManager>();
-            gameSetting = GameManager.Instance.Setting;
+            gameSetting = MajInstances.Setting;
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
             RendererState = RendererStatus.Off;
@@ -87,7 +88,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
-            var timing = gpManager.AudioTime - this.timing;
+            var timing = _gpManager.AudioTime - this.timing;
             var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
             var scaleRate = gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));

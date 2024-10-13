@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using MajdataPlay.Utils;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -9,7 +8,7 @@ namespace MajdataPlay.Game
         // Start is called before the first frame update
         void Start()
         {
-            GetComponent<SpriteRenderer>().sprite = SkinManager.Instance.SelectedSkin.Outline;
+            GetComponent<SpriteRenderer>().sprite = MajInstances.SkinManager.SelectedSkin.Outline;
         }
     }
 }

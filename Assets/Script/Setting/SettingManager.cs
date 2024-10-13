@@ -1,6 +1,7 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace MajdataPlay.Setting
     public class SettingManager : MonoBehaviour
     {
         public int Index { get; private set; } = 0;
-        public GameSetting Setting => GameManager.Instance.Setting;
+        public GameSetting Setting => MajInstances.Setting;
 
         public GameObject menuPrefab;
 
@@ -62,8 +63,8 @@ namespace MajdataPlay.Setting
             else if (e.Type is SensorType.A5 or SensorType.A4)
             {
                 //refresh some setting here
-                AudioManager.Instance.ReadVolumeFromSettings();
-                SceneSwitcher.Instance.SwitchScene("List");
+                MajInstances.AudioManager.ReadVolumeFromSettings();
+                MajInstances.SceneSwitcher.SwitchScene("List");
                 return;
             }
             
@@ -108,17 +109,17 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A1);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A8);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A5);
-            InputManager.Instance.BindButton(OnAreaDown, SensorType.A4);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A1);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A8);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A5);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A4);
         }
         void UnbindArea()
         {
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A1);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A8);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A5);
-            InputManager.Instance.UnbindButton(OnAreaDown, SensorType.A4);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A1);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A8);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A5);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A4);
         }
         private void OnDestroy()
         {

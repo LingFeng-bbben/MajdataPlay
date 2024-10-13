@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -91,9 +92,9 @@ namespace MajdataPlay.Game
         {
             bool canPlay;
             if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, judgeResult);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.TouchJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
             if (!canPlay)
             {
                 judgeTextDisplayer.Reset();
@@ -105,9 +106,9 @@ namespace MajdataPlay.Game
         {
             bool canPlay;
             if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakFastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakFastLateType, judgeResult);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.FastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
             if (!canPlay)
             {
                 fastLateDisplayer.Reset();

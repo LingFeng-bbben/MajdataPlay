@@ -120,7 +120,7 @@ namespace MajdataPlay.Setting
                         isReadOnly = true;
                         break;
                     case "Skin":
-                        var skinManager = SkinManager.Instance;
+                        var skinManager = MajInstances.SkinManager;
                         var skinNames = skinManager.LoadedSkins.Select(x => x.Name)
                                                                .ToArray();
                         var currentSkin = skinManager.SelectedSkin;
@@ -196,9 +196,9 @@ namespace MajdataPlay.Setting
                 switch(PropertyInfo.Name)
                 {
                     case "Skin":
-                        var skins = SkinManager.Instance.LoadedSkins;
+                        var skins = MajInstances.SkinManager.LoadedSkins;
                         var newSkin = skins.Find(x => x.Name == options[current].ToString());
-                        SkinManager.Instance.SelectedSkin = newSkin;
+                        MajInstances.SkinManager.SelectedSkin = newSkin;
                         break;
                 }
             }
@@ -223,9 +223,9 @@ namespace MajdataPlay.Setting
                 switch (PropertyInfo.Name)
                 {
                     case "Skin":
-                        var skins = SkinManager.Instance.LoadedSkins;
+                        var skins = MajInstances.SkinManager.LoadedSkins;
                         var newSkin = skins.Find(x => x.Name == options[current].ToString());
-                        SkinManager.Instance.SelectedSkin = newSkin;
+                        MajInstances.SkinManager.SelectedSkin = newSkin;
                         break;
                 }
             }
@@ -287,10 +287,10 @@ namespace MajdataPlay.Setting
                 return;
             isBound = true;
             Localization.OnLanguageChanged += OnLangChanged;
-            InputManager.Instance.BindSensor(OnAreaDown, SensorType.B4);
-            InputManager.Instance.BindSensor(OnAreaDown, SensorType.E4);
-            InputManager.Instance.BindSensor(OnAreaDown, SensorType.B5);
-            InputManager.Instance.BindSensor(OnAreaDown, SensorType.E6);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E4);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B5);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E6);
         }
         void UnbindArea()
         {
@@ -303,10 +303,10 @@ namespace MajdataPlay.Setting
                 return;
             }
             isBound = false;
-            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B4);
-            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E4);
-            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.B5);
-            InputManager.Instance.UnbindSensor(OnAreaDown, SensorType.E6);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B4);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E4);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B5);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E6);
         }
         Vector3 GetScale(int diff)
         {

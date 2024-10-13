@@ -18,9 +18,9 @@ namespace MajdataPlay.Game
         }
         public override void Update(float currentSec)
         {
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
                 return;
-            foreach (var (i, tp) in timingPoints.WithIndex())
+            foreach (var (i, tp) in _timingPoints.WithIndex())
             {
                 if (tp is null)
                     continue;
@@ -29,7 +29,7 @@ namespace MajdataPlay.Game
                 {
                     if (!Dequeue(tp.Infos))
                         continue;
-                    timingPoints[i] = null;
+                    _timingPoints[i] = null;
                 }
             }
         }
@@ -49,22 +49,22 @@ namespace MajdataPlay.Game
         {
             var noteA = info.MemberA?.Instance;
             var noteB = info.MemberB?.Instance;
-            if (idleNotes.IsEmpty())
+            if (_idleNotes.IsEmpty())
             {
                 Debug.LogWarning($"No more EachLine can use");
                 return false;
             }
             else if (noteA is null && noteB is null)
                 return false;
-            var idleNote = idleNotes[0];
+            var idleNote = _idleNotes[0];
             var obj = idleNote.GameObject;
             info.Instance = obj;
             var eachLine = obj.GetComponent<EachLineDrop>();
             eachLine.DistanceProvider = (noteA ?? noteB)?.GetComponent<IDistanceProvider>();
             eachLine.NoteA = noteA?.GetComponent<IStatefulNote>();
             eachLine.NoteB = noteB?.GetComponent<IStatefulNote>();
-            inUseNotes.Add(idleNote);
-            idleNotes.RemoveAt(0);
+            _inUseNotes.Add(idleNote);
+            _idleNotes.RemoveAt(0);
             idleNote.Initialize(info);
             if (!obj.activeSelf)
                 obj.SetActive(true);

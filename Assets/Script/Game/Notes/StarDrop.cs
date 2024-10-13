@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using MajdataPlay.Types;
 using System;
 using UnityEngine;
@@ -45,8 +46,8 @@ namespace MajdataPlay.Game.Notes
             LoadSkin();
             if (!IsNoHead)
             {
-                sensorPos = (SensorType)(startPosition - 1);
-                ioManager.BindArea(Check, sensorPos);
+                _sensorPos = (SensorType)(StartPos - 1);
+                _ioManager.BindArea(Check, _sensorPos);
             }
             State = NoteStatus.Initialized;
         }
@@ -63,10 +64,10 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Update()
         {
-            var songSpeed = gpManager.CurrentSpeed;
+            var songSpeed = _gpManager.CurrentSpeed;
             var judgeTiming = GetTimeSpanToArriveTiming();
-            var distance = judgeTiming * speed + 4.8f;
-            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var distance = judgeTiming * Speed + 4.8f;
+            var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             switch (State)
@@ -76,7 +77,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         if (!IsNoHead)
                         {
-                            tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (startPosition - 1));
+                            tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
                             RendererState = RendererStatus.On;
                         }
                         State = NoteStatus.Scaling;
@@ -125,7 +126,7 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
 
-            if (gpManager.IsStart && !IsFakeStar && gameSetting.Game.StarRotation)
+            if (_gpManager.IsStart && !IsFakeStar && _gameSetting.Game.StarRotation)
                 transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / RotateSpeed);
             else if (IsForceRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);
@@ -140,7 +141,7 @@ namespace MajdataPlay.Game.Notes
 
             RendererState = RendererStatus.Off;
 
-            var skin = SkinManager.Instance.GetStarSkin();
+            var skin = MajInstances.SkinManager.GetStarSkin();
             renderer.material = skin.DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
@@ -151,13 +152,13 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Double;
                 exRenderer.sprite = skin.ExDouble;
                 
-                if (isEach)
+                if (IsEach)
                 {
                     renderer.sprite = skin.EachDouble;
                     tapLineRenderer.sprite = skin.NoteLines[1];
                     exRenderer.color = skin.ExEffects[1];
                 }
-                if (isBreak)
+                if (IsBreak)
                 {
                     renderer.sprite = skin.BreakDouble;
                     renderer.material = skin.BreakMaterial;
@@ -172,13 +173,13 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Normal;
                 exRenderer.sprite = skin.Ex;
 
-                if (isEach)
+                if (IsEach)
                 {
                     renderer.sprite = skin.Each;
                     tapLineRenderer.sprite = skin.NoteLines[1];
                     exRenderer.color = skin.ExEffects[1];
                 }
-                if (isBreak)
+                if (IsBreak)
                 {
                     renderer.sprite = skin.Break;
                     renderer.material = skin.BreakMaterial;

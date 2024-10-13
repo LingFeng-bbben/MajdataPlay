@@ -3,6 +3,8 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Types.Attribute;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,64 +38,94 @@ namespace MajdataPlay.Game.Notes
             get
             {
                 int[] reamaining = new int[3];
-                foreach (var (i, queue) in judgeQueues.WithIndex())
+                foreach (var (i, queue) in _judgeQueues.WithIndex())
                     reamaining[i] = queue.Length;
                 return reamaining.Max();
             }
         }
+        /// <summary>
+        /// a timing of slide start
+        /// </summary>
+        public float StartTiming
+        {
+            get => _startTiming;
+            set => _startTiming = value;
+        }
+        public bool IsJustR
+        {
+            get => _isJustR;
+            set => _isJustR = value;
+        }
+        public float FadeInTiming
+        {
+            get => _fadeInTiming;
+            set => _fadeInTiming = value;
+        }
+        public float FullFadeInTiming
+        {
+            get => _fullFadeInTiming;
+            set => _fullFadeInTiming = value;
+        }
+        public int EndPos
+        {
+            get => _endPos;
+            set
+            {
+                if (value.InRange(1, 8))
+                    _endPos = value;
+                else
+                    throw new ArgumentOutOfRangeException("End position must be between 1 and 8");
+            }
+        }
+        public string SlideType
+        {
+            get => _slideType;
+            set => _slideType = value;
+        }
 
-        protected JudgeArea[][] judgeQueues = new JudgeArea[3][]
+        protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>()
         }; // 判定队列
+        [ReadOnlyField]
+        [SerializeField]
+        protected GameObject[] _slideBars = { }; // Arrows
 
-        protected GameObject[] slideBars = { }; // Arrows
 
-
-        /// <summary>
-        /// a timing of slide start
-        /// </summary>
-        public float startTiming;
-        public int sortIndex;
-        public bool isJustR;
-        public float fadeInTiming;
-        public float fullFadeInTiming;
-        public int endPosition;
-        public string slideType;
+        
 
         /// <summary>
         /// 引导Star
         /// </summary>
-        public GameObject[] stars = new GameObject[3];
+        public GameObject[] _stars = new GameObject[3];
 
-        protected Animator fadeInAnimator;
-        protected GameObject slideOK;
-        protected bool isSoundPlayed = false;
-        protected float lastWaitTime;
-        protected bool canCheck = false;
-        protected bool isChecking = false;
+        protected GameObject _slideOK;
+        protected bool _isSoundPlayed = false;
+        protected float _lastWaitTime;
+        protected bool _canCheck = false;
+        protected bool _isChecking = false;
         
-        protected float maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+        protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
         /// </summary>
-        protected IEnumerable<SensorType> judgeAreas;
+        protected IEnumerable<SensorType> _judgeAreas;
         public abstract void Initialize();
         protected override void Judge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
-            else if (isJudged)
+            else if (_isJudged)
                 return;
             //var stayTime = time + LastFor - judgeTiming; // 停留时间
-            var stayTime = lastWaitTime; // 停留时间
+            var stayTime = _lastWaitTime; // 停留时间
 
             // By Minepig
             var diff = currentSec - JudgeTiming;
-            judgeDiff = diff * 1000;
+            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             // input latency simulation
@@ -119,24 +151,24 @@ namespace MajdataPlay.Game.Notes
             }
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            judgeResult = judge ?? JudgeType.Miss;
-            isJudged = true;
+            _judgeResult = judge ?? JudgeType.Miss;
+            _isJudged = true;
 
-            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
-                lastWaitTime = MathF.Abs(remainingStartTime) / 2;
+                _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
-                lastWaitTime = 0;
+                _lastWaitTime = 0;
         }
         protected void Judge_Classic(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
-            else if (isJudged)
+            else if (_isJudged)
                 return;
 
             var diff = currentSec - JudgeTiming;
-            judgeDiff = diff * 1000;
+            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
 
             var perfect = 0.15f;
@@ -158,42 +190,42 @@ namespace MajdataPlay.Game.Notes
             }
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            judgeResult = judge ?? JudgeType.Miss;
-            isJudged = true;
+            _judgeResult = judge ?? JudgeType.Miss;
+            _isJudged = true;
 
-            var remainingStartTime = gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
-                lastWaitTime = MathF.Abs(remainingStartTime) / 2;
+                _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
-                lastWaitTime = 0;
+                _lastWaitTime = 0;
         }
         protected void HideBar(int endIndex)
         {
             endIndex = endIndex - 1;
-            endIndex = Math.Min(endIndex, slideBars.Length - 1);
+            endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                slideBars[i].SetActive(false);
+                _slideBars[i].SetActive(false);
         }
         protected void PlaySlideOK(in JudgeResult result)
         {
-            if (slideOK == null)
+            if (_slideOK == null)
                 return;
             
             bool canPlay;
             if(result.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.BreakJudgeType, result);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, result);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(GameManager.Instance.Setting.Display.SlideJudgeType, result);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
-                slideOK.SetActive(true);
+                _slideOK.SetActive(true);
             else
-                Destroy(slideOK);
+                Destroy(_slideOK);
         }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var gm in slideBars)
+            foreach (var gm in _slideBars)
             {
                 var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
@@ -208,17 +240,17 @@ namespace MajdataPlay.Game.Notes
         }
         protected void TooLateJudge()
         {
-            if (isJudged)
+            if (_isJudged)
             {
                 DestroySelf();
                 return;
             }
 
             if (QueueRemaining == 1)
-                judgeResult = JudgeType.LateGood;
+                _judgeResult = JudgeType.LateGood;
             else
-                judgeResult = JudgeType.Miss;
-            isJudged = true;
+                _judgeResult = JudgeType.Miss;
+            _isJudged = true;
             DestroySelf();
         }
         /// <summary>
@@ -236,7 +268,7 @@ namespace MajdataPlay.Game.Notes
                 if (Parent is not null && !Parent.IsDestroyed)
                     Destroy(Parent.GameObject);
 
-                foreach (GameObject obj in slideBars)
+                foreach (GameObject obj in _slideBars)
                     obj.SetActive(false);
 
                 DestroyStars();
@@ -254,25 +286,25 @@ namespace MajdataPlay.Game.Notes
             HideAllBar();
             var emptyQueue = Array.Empty<JudgeArea>();
             for (int i = 0; i < 2; i++)
-                judgeQueues[i] = emptyQueue;
+                _judgeQueues[i] = emptyQueue;
         }
         void DestroyStars()
         {
-            if (stars.IsEmpty())
+            if (_stars.IsEmpty())
                 return;
-            foreach (var star in stars)
+            foreach (var star in _stars)
             {
                 if (star != null)
                     Destroy(star);
             }
-            stars = Array.Empty<GameObject>();
+            _stars = Array.Empty<GameObject>();
         }
         protected async UniTaskVoid FadeIn()
         {
-            fadeInTiming = Math.Max(fadeInTiming,CurrentSec);
-            var num = startTiming - 0.05f;
-            float interval = (num - fadeInTiming).Clamp(0, 0.2f);
-            float fullFadeInTiming = fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
+            _fadeInTiming = Math.Max(_fadeInTiming,CurrentSec);
+            var num = _startTiming - 0.05f;
+            float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
+            float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
             while (CurrentSec < fullFadeInTiming) 
             {
@@ -281,14 +313,32 @@ namespace MajdataPlay.Game.Notes
 
                 if(interval != 0)
                     alpha = 1 - (diff / interval);
-                alpha *= maxFadeInAlpha;
+                alpha *= _maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
                 await UniTask.Yield();
             }
-            SetSlideBarAlpha(maxFadeInAlpha);
+            SetSlideBarAlpha(_maxFadeInAlpha);
             while (CurrentSec < num)
                 await UniTask.Yield();
             SetSlideBarAlpha(1f);
         }
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _startTiming;
+        [ReadOnlyField]
+        [SerializeField]
+        protected bool _isJustR = false;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _fadeInTiming = 0;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _fullFadeInTiming = 0.2f;
+        [ReadOnlyField]
+        [SerializeField]
+        protected int _endPos = 1;
+        [ReadOnlyField]
+        [SerializeField]
+        protected string _slideType = string.Empty;
     }
 }
