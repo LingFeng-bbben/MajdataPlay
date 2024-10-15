@@ -4,7 +4,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
     public class UncachedSampleProvider : INAudioSampleProvider, IDisposable
     {
@@ -35,7 +35,7 @@ namespace MajdataPlay.Types
         WdlResamplingSampleProvider resampler;
         MixingSampleProvider mixer;
 
-        public UncachedSampleProvider(string audioFileName, MixingSampleProvider mixer,int bufferSize)
+        public UncachedSampleProvider(string audioFileName, MixingSampleProvider mixer, int bufferSize)
         {
             audioFileReader = new AudioFileReader(audioFileName);
             resampler = new WdlResamplingSampleProvider(audioFileReader, MajInstances.Setting.Audio.Samplerate);
@@ -51,7 +51,7 @@ namespace MajdataPlay.Types
 
             //streamPosition += resampler.Read(buffer, 0, buffer.Length);
         }
-        public UncachedSampleProvider(string audioFileName, MixingSampleProvider mixer) : this(audioFileName,mixer, 4096) { }
+        public UncachedSampleProvider(string audioFileName, MixingSampleProvider mixer) : this(audioFileName, mixer, 4096) { }
         ~UncachedSampleProvider() => Dispose();
         public int Read(float[] buffer, int offset, int count)
         {
@@ -61,10 +61,10 @@ namespace MajdataPlay.Types
                     buffer[i + offset] = 0;
                 return count;
             }
-            
+
             int readCount = 0;
 
-            while(readCount < count)
+            while (readCount < count)
             {
                 if (Position >= Length)
                 {

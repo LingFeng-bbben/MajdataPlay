@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using NAudio.Wave;
-using System.Linq;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Runtime.InteropServices;
 using System;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Utils;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
-    public unsafe class CachedSound: IDisposable, INAudioSample
+    public unsafe class CachedSound : IDisposable, INAudioSample
     {
         bool isDestroyed = false;
         public TimeSpan TrackLen { get; private set; }
@@ -22,7 +20,7 @@ namespace MajdataPlay.Types
         {
             using (var audioFileReader = new AudioFileReader(audioFileName))
             {
-                
+
                 var resampler = new WdlResamplingSampleProvider(audioFileReader, MajInstances.Setting.Audio.Samplerate);
                 WaveFormat = resampler.WaveFormat;
                 Length = 0;
@@ -34,7 +32,7 @@ namespace MajdataPlay.Types
                 {
                     var startIndex = totalRead;
                     totalRead += samplesRead;
-                    if(totalRead > buffer.Length)
+                    if (totalRead > buffer.Length)
                     {
                         var _buffer = new float[totalRead];
                         buffer.CopyTo(_buffer.AsSpan());

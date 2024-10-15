@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
     public class UnityAudioSample : AudioSampleWrap
     {
@@ -19,15 +19,15 @@ namespace MajdataPlay.Types
             }
             set { audioSource.loop = value; }
         }
-        public override double CurrentSec 
-        { 
-            get => audioSource.time; 
-            set => audioSource.time = (float)value; 
+        public override double CurrentSec
+        {
+            get => audioSource.time;
+            set => audioSource.time = (float)value;
         }
-        public override float Volume 
-        { 
-            get => audioSource.volume; 
-            set => audioSource.volume = value.Clamp(0,1); 
+        public override float Volume
+        {
+            get => audioSource.volume;
+            set => audioSource.volume = value.Clamp(0, 1);
         }
         public override TimeSpan Length => TimeSpan.FromSeconds(audioClip.length);
         public override bool IsPlaying => audioSource.isPlaying;
@@ -68,7 +68,7 @@ namespace MajdataPlay.Types
             audioClip.UnloadAudioData();
             UnityEngine.Object.Destroy(audioSource);
         }
-        public static UnityAudioSample ReadFromFile(string filePath,GameObject gameObject)
+        public static UnityAudioSample ReadFromFile(string filePath, GameObject gameObject)
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
             {

@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Interfaces;
 using System;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
     public abstract class AudioSampleWrap : IDisposable, IPausableSoundProvider
     {

@@ -4,7 +4,7 @@ using NAudio.Wave.SampleProviders;
 using System;
 #nullable enable
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.IO
 {
     public class CachedSampleProvider : INAudioSampleProvider<CachedSound>, IDisposable
     {
@@ -32,9 +32,9 @@ namespace MajdataPlay.Types
         public int Position { get; set; } = 0;
         public float Volume { get; set; } = 1f;
         public bool IsLoop { get; set; } = false;
-        public bool IsPlaying 
+        public bool IsPlaying
         {
-            get => _isPlaying; 
+            get => _isPlaying;
             set
             {
                 if (Position == Length && !IsLoop)
@@ -44,15 +44,15 @@ namespace MajdataPlay.Types
         }
         bool _isPlaying = false;
         readonly MixingSampleProvider mixer;
-        public CachedSampleProvider(CachedSound cachedSound,MixingSampleProvider mixer)
+        public CachedSampleProvider(CachedSound cachedSound, MixingSampleProvider mixer)
         {
-            this.Sample = cachedSound;
+            Sample = cachedSound;
             this.mixer = mixer;
             mixer.AddMixerInput(this);
             Length = cachedSound.Length;
         }
         ~CachedSampleProvider() => Dispose();
-        
+
         public int Read(float[] buffer, int offset, int count)
         {
             if (Sample is null)
