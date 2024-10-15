@@ -11,16 +11,7 @@ namespace MajdataPlay.Net
 {
     public class HttpDownloader
     {
-        public double Progress
-        {
-            get
-            {
-                if (_downloaders.Length == 0)
-                    return 0;
-                var totalProgress = _downloaders.Select(x => x.Progress).Sum();
-                return totalProgress / _downloaders.Length;
-            }
-        }
+        public double Progress { get; private set; }
         public long Length { get; private set; }
         public bool MultiThread { get; set; } = false;
         public int ThreadCount { get; set; } = 4;
@@ -28,30 +19,31 @@ namespace MajdataPlay.Net
         public Uri RequestAddress { get; private set; }
         public static TimeSpan Timeout
         {
-            get => _httpClient.Timeout;
-            set => _httpClient.Timeout = value;
+            get => ShareClient.Timeout;
+            set => ShareClient.Timeout = value;
         }
 
         int _retryCount = 0;
-        Downloader[] _downloaders = Array.Empty<Downloader>();
+        Progress<ReportEventArgs> _reporter = new();
+        double[] _progresses = Array.Empty<double>();
 
-        static HttpClient _httpClient = new HttpClient(new HttpClientHandler()
+        public static HttpClient ShareClient { get; } = new HttpClient(new HttpClientHandler()
         {
             Proxy = WebRequest.GetSystemWebProxy(),
             UseProxy = true
         });
-        public HttpDownloader(string uri)
+        public HttpDownloader(string uri) : this(new Uri(uri))
         {
-            RequestAddress = new Uri(uri);
         }
         public HttpDownloader(Uri uri)
         {
             RequestAddress = uri;
+            _reporter.ProgressChanged += OnProgressUpdated;
         }
 
         public async Task DownloadAsync(string savePath)
         {
-            var rsp = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, RequestAddress));
+            var rsp = await ShareClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, RequestAddress));
             rsp.EnsureSuccessStatusCode();
             bool rangeDlAvailable = rsp.Headers.Contains("Accept-Ranges") && rsp.Headers.GetValues("Accept-Ranges").Any(x => x == "bytes");
             if (MultiThread)
@@ -66,14 +58,14 @@ namespace MajdataPlay.Net
         }
         async ValueTask SingleThreadDownloadAsync(string savePath)
         {
-            var downloader = new Downloader(RequestAddress, _httpClient, 0, Length - 1);
-            _downloaders = new Downloader[] { downloader };
+            var downloader = new Downloader(RequestAddress, _reporter, 0, Length - 1);
+            _progresses = new double[] { 0 };
             await downloader.DownloadAsync(savePath);
         }
         async ValueTask MultiThreadDownloadAsync(string savePath)
         {
             var length4Part = Length / ThreadCount;
-            _downloaders = new Downloader[ThreadCount];
+            _progresses = new double[ThreadCount];
             Task[] tasks = new Task[ThreadCount];
             for (int i = 0; i < ThreadCount; i++)
             {
@@ -82,8 +74,7 @@ namespace MajdataPlay.Net
                 var length = length4Part;
                 if (isLast)
                     length = Length - startAt;
-                var downloader = new Downloader(RequestAddress, _httpClient, startAt, length);
-                _downloaders[i] = downloader;
+                var downloader = new Downloader(i, RequestAddress, _reporter, startAt, length);
                 tasks[i] = downloader.DownloadAsync($"{savePath}.{i}");
             }
             await Task.WhenAll(tasks);
@@ -106,12 +97,30 @@ namespace MajdataPlay.Net
             }
             await Task.WhenAll(tasks);
             foreach (var combiner in combiners)
-                combiner.Close();
+                combiner.CloseAndDelete();
+        }
+        void OnProgressUpdated(object? sender, ReportEventArgs value)
+        {
+            if (_progresses.Length == 0)
+            {
+                Progress = 0;
+                return;
+            }
+            _progresses[value.Index] = value.Progress;
+            var totalProgress = _progresses.Sum();
+            Progress = totalProgress / _progresses.Length;
+        }
+        struct ReportEventArgs
+        {
+            public long Index { get; init; }
+            public double Progress { get; init; }
         }
         struct FileCombiner
         {
             public long StartAt { get; private set; }
             public long Length { get; private set; }
+
+            string _chunkedFilePath;
 
             FileStream _fileStream;
             FileStream _chunkedStream;
@@ -123,6 +132,7 @@ namespace MajdataPlay.Net
                 _fileStream = new FileStream(savePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite, 1024, FileOptions.WriteThrough);
                 _chunkedStream = new FileStream(chunkedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                 _fileStream.Position = startAt;
+                _chunkedFilePath = chunkedFilePath;
             }
 
             public async Task CombineAsync()
@@ -135,11 +145,13 @@ namespace MajdataPlay.Net
                     await _fileStream.WriteAsync(buffer, 0, read);
                     readBytes += read;
                 }
+                await _fileStream.FlushAsync();
             }
-            public void Close()
+            public void CloseAndDelete()
             {
                 _fileStream.Close();
                 _chunkedStream.Close();
+                File.Delete(_chunkedFilePath);
             }
         }
         struct Downloader
@@ -148,17 +160,23 @@ namespace MajdataPlay.Net
             public long StartAt { get; private set; }
             public long EndAt { get; private set; }
             public long Length { get; private set; }
-            public int MaxRetryCount { get; set; }
+            public int MaxRetryCount { get; private set; }
             public bool IsCompleted { get; private set; }
             public Uri RequestAddress { get; private set; }
 
+            long _index;
             long _downloadedBytes;
             bool _isDownloading;
             int _retryCount;
+            IProgress<ReportEventArgs> _reporter;
             HttpClient _httpClient;
-            public Downloader(Uri address, HttpClient httpClient, long startAt, long length)
+            public Downloader(long index, Uri address, IProgress<ReportEventArgs> reporter, long startAt, long length) : this(address, reporter, startAt, length)
             {
-                _httpClient = httpClient;
+                _index = index;
+            }
+            public Downloader(Uri address, IProgress<ReportEventArgs> reporter, long startAt, long length)
+            {
+                _httpClient = ShareClient;
                 StartAt = startAt;
                 EndAt = startAt + length - 1;
                 Length = length;
@@ -166,11 +184,13 @@ namespace MajdataPlay.Net
 
                 _downloadedBytes = 0;
                 MaxRetryCount = 4;
+                Progress = 0;
                 IsCompleted = false;
 
-                Progress = 0;
+                _reporter = reporter;
                 _isDownloading = false;
                 _retryCount = 0;
+                _index = 0;
             }
             public async Task<Stream> DownloadAsync()
             {
@@ -261,6 +281,11 @@ namespace MajdataPlay.Net
                     Progress = 0;
                 else
                     Progress = (double)_downloadedBytes / Length;
+                _reporter.Report(new ReportEventArgs()
+                {
+                    Index = _index,
+                    Progress = Progress,
+                });
             }
             async Task<Stream> Connect()
             {
