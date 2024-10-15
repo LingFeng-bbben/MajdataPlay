@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,13 +59,14 @@ namespace MajdataPlay.Net
             rsp.EnsureSuccessStatusCode();
             var fileSize = rsp.Content.Headers.ContentLength ?? throw new HttpRequestException("Invalid http response");
             Length = fileSize;
-            //await DownloadWithSingleThread(savePath);
+            var downloader = new Downloader(RequestAddress, _httpClient, 0, Length);
+            await downloader.DownloadAsync(savePath);
         }
 
         struct Downloader
         {
-            public int StartAt { get; private set; }
-            public int EndAt { get; private set; }
+            public long StartAt { get; private set; }
+            public long EndAt { get; private set; }
             public long Length { get; private set; }
             public long DownloadedBytes { get; private set; }
             public int MaxRetryCount { get; set; }
@@ -74,7 +76,7 @@ namespace MajdataPlay.Net
             bool _isDownloading;
             int _retryCount;
             HttpClient _httpClient;
-            public Downloader(Uri address, HttpClient httpClient, int startAt, int length)
+            public Downloader(Uri address, HttpClient httpClient, long startAt, long length)
             {
                 _httpClient = httpClient;
                 StartAt = startAt;
@@ -90,7 +92,7 @@ namespace MajdataPlay.Net
                 _retryCount = 0;
             }
 
-            async Task<Stream> DownloadAsync()
+            public async Task<Stream> DownloadAsync()
             {
                 ThrowIfDownloadingOrCompleted();
                 _isDownloading = true;
@@ -131,7 +133,7 @@ namespace MajdataPlay.Net
                 IsCompleted = true;
                 return heapStream;
             }
-            async Task DownloadAsync(string savePath)
+            public async Task DownloadAsync(string savePath)
             {
                 ThrowIfDownloadingOrCompleted();
                 _isDownloading = true;
@@ -165,6 +167,7 @@ namespace MajdataPlay.Net
                     }
                     var _memBuffer = read != 1024 ? membuffer.Slice(0, read) : membuffer;
                     await fileStream.WriteAsync(_memBuffer);
+                    await fileStream.FlushAsync();
                     DownloadedBytes += read;
                 }
                 httpStream.Dispose();
@@ -216,65 +219,35 @@ namespace MajdataPlay.Net
     }
     public unsafe class HeapStream : Stream
     {
-        public override bool CanRead => _canRead;
-        public override bool CanSeek => _canSeek;
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
         public override bool CanWrite => _canWrite;
         public override long Length => _length;
-        public override long Position { get; set; }
+        public override long Position 
+        { 
+            get => _position; 
+            set
+            {
+                if (!value.InRange(0, Length))
+                    throw new IndexOutOfRangeException();
+            }
+        }
 
 
         long _position = 0;
         readonly Heap<byte> _buffer;
-        readonly bool _canRead = true;
-        readonly bool _canSeek = true;
         readonly bool _canWrite = true;
         readonly long _length;
 
-        public HeapStream(long length, bool canRead, bool canWrite, bool canSeek) : this(length, canRead, canWrite)
-        {
-            _canSeek = canSeek;
-        }
-        public HeapStream(long length, bool canRead, bool canWrite) : this(length, canRead)
-        {
-            _canWrite = canWrite;
-        }
-        public HeapStream(long length, bool canRead) : this(length)
-        {
-            _canRead = canRead;
-        }
         public HeapStream(long length)
         {
             _buffer = new Heap<byte>(length);
             _length = length;
         }
-        public HeapStream(IntPtr pointer, long length, bool canRead, bool canWrite, bool canSeek) : this(pointer, length, canRead, canWrite)
-        {
-            _canSeek = canSeek;
-        }
-        public HeapStream(IntPtr pointer, long length, bool canRead, bool canWrite) : this(pointer, length, canRead)
-        {
-            _canWrite = canWrite;
-        }
-        public HeapStream(IntPtr pointer, long length, bool canRead) : this(pointer, length)
-        {
-            _canRead = canRead;
-        }
         public HeapStream(IntPtr pointer, long length)
         {
             _buffer = new Heap<byte>(pointer, length);
             _length = length;
-        }
-        public HeapStream(byte* pointer, long length, bool canRead, bool canWrite, bool canSeek) : this(pointer, length, canRead, canWrite)
-        {
-            _canSeek = canSeek;
-        }
-        public HeapStream(byte* pointer, long length, bool canRead, bool canWrite) : this(pointer, length, canRead)
-        {
-            _canWrite = canWrite;
-        }
-        public HeapStream(byte* pointer, long length, bool canRead) : this(pointer, length)
-        {
-            _canRead = canRead;
         }
         public HeapStream(byte* pointer, long length)
         {
@@ -294,12 +267,11 @@ namespace MajdataPlay.Net
                 _buffer[_position++] = buffer[i];
             }
         }
-        public override void Flush() => throw new NotImplementedException();
+        public override void Flush() { }
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (!_canWrite)
-                throw new NotSupportedException("Unsupport operation because this stream cannot be read");
-
+            if (Position == Length)
+                return 0;
             var startAt = _position;
             for (int i = offset; i < count; i++)
             {
@@ -311,22 +283,29 @@ namespace MajdataPlay.Net
         }
         public override long Seek(long offset, SeekOrigin origin)
         {
-            if (!_canSeek)
-                throw new NotSupportedException("Unsupport operation because this stream cannot be seeked");
             switch (origin)
             {
                 case SeekOrigin.Begin:
-                    var newPos = offset > _length ? _length : offset;
-                    _position = newPos;
-                    return _position;
+                    _position = offset.Clamp(0,Length);
+                    break;
                 case SeekOrigin.Current:
+                    {
+                        var newPos = _position + offset;
+                        newPos = newPos.Clamp(0, Length);
+                        _position = newPos;
+                    }
                     break;
                 case SeekOrigin.End:
+                    {
+                        var newPos = Length - offset;
+                        newPos = newPos.Clamp(0, Length);
+                        _position = newPos;
+                    }
                     break;
             }
-            return 0;
+            return _position;
         }
         public Heap<byte> ToHeap() => _buffer;
-        public override void SetLength(long value) => throw new NotImplementedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
     }
 }
