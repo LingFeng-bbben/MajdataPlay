@@ -105,14 +105,14 @@ namespace MajdataPlay.List
             CoverBigDisplayer.SetDifficulty(selectedDifficulty);
             if (IsChartList)
             {
-                var songinfo = songs.ToArray()[desiredListPos];
+                var songinfo = songs[desiredListPos];
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
 
                 for (int i = 0; i < covers.Count; i++)
                 {
-                    var text = songs.ToArray()[i].Levels[selectedDifficulty];
+                    var text = songs[i].Levels[selectedDifficulty];
                     if (text == null || text == "") text = "-";
                     covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
                 }
@@ -163,7 +163,7 @@ namespace MajdataPlay.List
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = songs.ToArray()[desiredListPos];
+                    var songinfo = songs[desiredListPos];
                     var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetCover(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
@@ -201,7 +201,7 @@ namespace MajdataPlay.List
                 if (songs.Count > 0)
                 {
                     if (coveri >= songs.Count) coveri = 0;
-                    CoverBigDisplayer.SetCover(songs.ToArray()[coveri++]);
+                    CoverBigDisplayer.SetCover(songs[coveri++]);
                 }
                 else
                 {
