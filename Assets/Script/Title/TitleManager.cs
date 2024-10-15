@@ -6,10 +6,11 @@ using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+#nullable enable
 namespace MajdataPlay.Title
 {
     public class TitleManager : MonoBehaviour
@@ -17,12 +18,27 @@ namespace MajdataPlay.Title
         public TextMeshProUGUI echoText;
         public Animator fadeInAnim;
 
-        // Start is called before the first frame update
+        Task? songStorageTask = null;
         void Start()
         {
+            echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
             DelayPlayVoice().Forget();
+            songStorageTask = StartScanningChart();
             WaitForScanningTask().Forget();
             LightManager.Instance.SetAllLight(Color.white);
+            
+        }
+        async Task StartScanningChart()
+        {
+            await SongStorage.ScanMusicAsync();
+
+            if (!SongStorage.IsEmpty)
+            {
+                var setting = MajInstances.Setting;
+                await SongStorage.SortAndFindAsync();
+                SongStorage.CollectionIndex = setting.Misc.SelectedDir;
+                SongStorage.WorkingCollection.Index = setting.Misc.SelectedIndex;
+            }
         }
 
         private void OnAreaDown(object sender, InputEventArgs e)
@@ -47,13 +63,15 @@ namespace MajdataPlay.Title
 
         async UniTaskVoid WaitForScanningTask()
         {
+            if (songStorageTask is null)
+                return;
             bool isEmpty = false;
             float animTimer = 0;
             while (animTimer < 2f)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update);
                 animTimer += Time.deltaTime;
-                if (SongStorage.State == ComponentState.Finished)
+                if (songStorageTask.IsCompleted)
                 {
                     if (SongStorage.IsEmpty)
                     {
@@ -76,7 +94,6 @@ namespace MajdataPlay.Title
             while (true)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update);
-                var state = SongStorage.State;
                 if (timer >= 2f)
                     a = -1;
                 else if (timer == 0)
@@ -85,9 +102,9 @@ namespace MajdataPlay.Title
                 timer = timer.Clamp(0, 2f);
                 var newColor = Color.white;
 
-                if (state >= ComponentState.Finished)
+                if (songStorageTask.IsCompleted)
                 {
-                    if (state == ComponentState.Failed)
+                    if (songStorageTask.IsFaulted)
                         echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
                     else if (SongStorage.IsEmpty)
                     {
@@ -110,7 +127,7 @@ namespace MajdataPlay.Title
 
             if (isEmpty)
                 return;
-            else if (SongStorage.State != ComponentState.Failed)
+            else if (songStorageTask.Status is TaskStatus.RanToCompletion)
                 MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
 

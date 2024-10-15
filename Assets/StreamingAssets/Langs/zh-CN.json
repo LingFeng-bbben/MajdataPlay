@@ -3,6 +3,11 @@
   "Author": "Majdata",
   "MappingTable": [
     {
+      "Type": "SCANNING_CHART",
+      "Origin": "Scanning Chart",
+      "Content": "正在扫面谱面"
+    },
+    {
       "Type": "SCAN_CHART_FAILED",
       "Origin": "Scan Chart Failed",
       "Content": "扫描谱面时出现问题"

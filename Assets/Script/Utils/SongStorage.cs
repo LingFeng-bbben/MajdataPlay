@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using System;
@@ -42,17 +43,14 @@ namespace MajdataPlay.Utils
         public static SongCollection[] Collections { get; private set; } = new SongCollection[0];
         public static SongOrder OrderBy { get; set; } = new();
         public static long TotalChartCount { get; private set; } = 0;
-        public static ComponentState State { get; private set; } = ComponentState.Idle;
 
         static int _collectionIndex = 0;
         public static async Task ScanMusicAsync()
         {
-            State = ComponentState.Backend;
             if (!Directory.Exists(GameManager.ChartPath))
             {
                 Directory.CreateDirectory(GameManager.ChartPath);
                 Directory.CreateDirectory(Path.Combine(GameManager.ChartPath, "default"));
-                State = ComponentState.Finished;
                 return;
             }
             var rootPath = GameManager.ChartPath;
@@ -60,14 +58,14 @@ namespace MajdataPlay.Utils
             var songs = await task;
             if (task.IsFaulted)
             {
-                State = ComponentState.Failed;
-                throw task.AsTask().Exception.InnerException;
+                var e = task.AsTask().Exception.InnerException;
+                Debug.LogException(e);
+                throw e;
             }
             else
-            {
                 Collections = songs;
-                State = ComponentState.Finished;
-            }
+            TotalChartCount =  await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
+            Debug.Log($"Loaded chart count: {TotalChartCount}");
         }
         static async ValueTask<SongCollection[]> GetCollections(string rootPath)
         {
@@ -190,6 +188,9 @@ namespace MajdataPlay.Utils
         }
         public static void SortAndFind()
         {
+            if (Collections.IsEmpty())
+                return;
+
             var searchKey = OrderBy.Keyword;
             var sortType = OrderBy.SortBy;
             

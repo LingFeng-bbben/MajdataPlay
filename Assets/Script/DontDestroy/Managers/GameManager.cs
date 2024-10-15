@@ -130,18 +130,10 @@ namespace MajdataPlay
             }
             Localization.Current = lang;
         }
-        async void Start()
+        void Start()
         {
-            await SongStorage.ScanMusicAsync();
-
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
-            if (!SongStorage.IsEmpty)
-            {
-                SongStorage.SortAndFind();
-                SongStorage.CollectionIndex = Setting.Misc.SelectedDir;
-                SongStorage.WorkingCollection.Index = Setting.Misc.SelectedIndex;
-            }
         }
         private void OnApplicationQuit()
         {

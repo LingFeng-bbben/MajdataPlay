@@ -215,6 +215,7 @@
     }
     public enum MajText
     {
+        SCANNING_CHART,
         SCAN_CHART_FAILED,
         NO_CHARTS,
         PRESS_ANY_KEY,
