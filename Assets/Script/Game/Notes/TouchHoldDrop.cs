@@ -341,7 +341,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 case NoteStatus.Running:
                     {
-                        var pow = -Mathf.Exp(8 * (timing * 0.4f / moveDuration) - 0.85f) + 0.42f;
+                        var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
                         var distance = Mathf.Clamp(pow, 0f, 0.4f);
                         if (float.IsNaN(distance))
                             distance = 0f;
