@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -65,13 +66,13 @@ namespace MajdataPlay.Net
             public int StartAt { get; private set; }
             public int EndAt { get; private set; }
             public long Length { get; private set; }
-            public long DownloadedBytes { get; private set; } = 0;
-            public int MaxRetryCount { get; set; } = 4;
-            public bool IsCompleted { get; private set; } = false;
+            public long DownloadedBytes { get; private set; }
+            public int MaxRetryCount { get; set; }
+            public bool IsCompleted { get; private set; }
             public Uri RequestAddress { get; private set; }
 
-            bool _isDownloading = false;
-            int _retryCount = 0;
+            bool _isDownloading;
+            int _retryCount;
             HttpClient _httpClient;
             public Downloader(Uri address, HttpClient httpClient, int startAt, int length)
             {
@@ -80,6 +81,13 @@ namespace MajdataPlay.Net
                 EndAt = startAt + length;
                 Length = length;
                 RequestAddress = address;
+
+                DownloadedBytes = 0;
+                MaxRetryCount = 4;
+                IsCompleted = false;
+
+                _isDownloading = false;
+                _retryCount = 0;
             }
 
             async Task<Stream> DownloadAsync()
@@ -206,34 +214,7 @@ namespace MajdataPlay.Net
         }
 
     }
-    public unsafe class Heap<T> : IDisposable where T : unmanaged
-    {
-        public int Length => (int)_length;
-        public long LongLength => _length;
-
-        public T this[long index]
-        {
-            get
-            {
-                if (index >= LongLength || index < 0)
-                    throw new IndexOutOfRangeException();
-                return _pointer[index];
-            }
-            set => _pointer[index] = value;
-
-        }
-
-        readonly long _length;
-        readonly T* _pointer;
-
-        public Heap(long length)
-        {
-            _pointer = (T*)Marshal.AllocHGlobal(new IntPtr(length));
-            _length = length;
-        }
-        public T* ToPointer() => _pointer;
-    }
-    public unsafe class HeapStream : Stream, IDisposable
+    public unsafe class HeapStream : Stream
     {
         public override bool CanRead => _canRead;
         public override bool CanSeek => _canSeek;
@@ -243,18 +224,11 @@ namespace MajdataPlay.Net
 
 
         long _position = 0;
-        readonly bool _isCreatedPtr = false;
-        readonly byte* _pointer;
+        readonly Heap<byte> _buffer;
         readonly bool _canRead = true;
         readonly bool _canSeek = true;
         readonly bool _canWrite = true;
         readonly long _length;
-
-        ~HeapStream()
-        {
-            if (_isCreatedPtr)
-                Marshal.FreeHGlobal((IntPtr)_pointer);
-        }
 
         public HeapStream(long length, bool canRead, bool canWrite, bool canSeek) : this(length, canRead, canWrite)
         {
@@ -270,11 +244,8 @@ namespace MajdataPlay.Net
         }
         public HeapStream(long length)
         {
-            _pointer = (byte*)Marshal.AllocHGlobal(new IntPtr(length));
-            for (int i = 0; i < length; i++)
-                _pointer[i] = 0;
+            _buffer = new Heap<byte>(length);
             _length = length;
-            _isCreatedPtr = true;
         }
         public HeapStream(IntPtr pointer, long length, bool canRead, bool canWrite, bool canSeek) : this(pointer, length, canRead, canWrite)
         {
@@ -290,9 +261,7 @@ namespace MajdataPlay.Net
         }
         public HeapStream(IntPtr pointer, long length)
         {
-            if (pointer == IntPtr.Zero)
-                throw new NullReferenceException();
-            _pointer = (byte*)pointer;
+            _buffer = new Heap<byte>(pointer, length);
             _length = length;
         }
         public HeapStream(byte* pointer, long length, bool canRead, bool canWrite, bool canSeek) : this(pointer, length, canRead, canWrite)
@@ -309,9 +278,7 @@ namespace MajdataPlay.Net
         }
         public HeapStream(byte* pointer, long length)
         {
-            if (pointer is null)
-                throw new NullReferenceException();
-            _pointer = pointer;
+            _buffer = new Heap<byte>(pointer, length);
             _length = length;
         }
 
@@ -324,7 +291,7 @@ namespace MajdataPlay.Net
             {
                 if (_position == Length)
                     break;
-                _pointer[_position++] = buffer[i];
+                _buffer[_position++] = buffer[i];
             }
         }
         public override void Flush() => throw new NotImplementedException();
@@ -338,21 +305,28 @@ namespace MajdataPlay.Net
             {
                 if (_position == Length)
                     break;
-                buffer[i] = _pointer[_position++];
+                buffer[i] = _buffer[_position++];
             }
             return (int)(_position - startAt);
         }
         public override long Seek(long offset, SeekOrigin origin)
         {
-            if (!_canWrite)
+            if (!_canSeek)
                 throw new NotSupportedException("Unsupport operation because this stream cannot be seeked");
-
+            switch (origin)
+            {
+                case SeekOrigin.Begin:
+                    var newPos = offset > _length ? _length : offset;
+                    _position = newPos;
+                    return _position;
+                case SeekOrigin.Current:
+                    break;
+                case SeekOrigin.End:
+                    break;
+            }
             return 0;
         }
+        public Heap<byte> ToHeap() => _buffer;
         public override void SetLength(long value) => throw new NotImplementedException();
-        public new void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Collections;
+using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,10 @@ namespace MajdataPlay.Extensions
     public static class ArrayExtensions
     {
         //public static bool IsEmpty(this Array source) => source.Length == 0;
+        public static Heap<T> AsHeap<T>(this T[] source) where T : unmanaged
+        {
+            return new Heap<T>(source);
+        }
     }
     public static class Vector3Extensions
     {
