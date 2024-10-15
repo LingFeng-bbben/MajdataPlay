@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Interfaces;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 #nullable enable

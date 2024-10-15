@@ -1,7 +1,6 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
 
-namespace MajdataPlay.Interfaces
+namespace MajdataPlay.IO
 {
     public interface INAudioSample
     {

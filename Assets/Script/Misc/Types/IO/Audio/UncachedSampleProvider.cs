@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Interfaces;
-using MajdataPlay.Utils;
+﻿using MajdataPlay.Utils;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;

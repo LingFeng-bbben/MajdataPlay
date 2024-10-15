@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Interfaces;
 using System;
 using UnityEngine;
 

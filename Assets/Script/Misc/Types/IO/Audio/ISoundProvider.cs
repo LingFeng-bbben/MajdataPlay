@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MajdataPlay.Interfaces
+namespace MajdataPlay.IO
 {
     public interface ISoundProvider
     {

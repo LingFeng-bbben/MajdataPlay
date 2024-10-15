@@ -2,7 +2,6 @@
 using NAudio.Wave.SampleProviders;
 using System.Runtime.InteropServices;
 using System;
-using MajdataPlay.Interfaces;
 using MajdataPlay.Utils;
 
 namespace MajdataPlay.IO
