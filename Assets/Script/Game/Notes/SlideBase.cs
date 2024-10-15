@@ -8,8 +8,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -238,42 +236,28 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        protected void TooLateJudge()
+        protected virtual void TooLateJudge()
         {
-            if (_isJudged)
-            {
-                DestroySelf();
-                return;
-            }
-
             if (QueueRemaining == 1)
                 _judgeResult = JudgeType.LateGood;
             else
                 _judgeResult = JudgeType.Miss;
             _isJudged = true;
-            DestroySelf();
         }
         /// <summary>
         /// 销毁当前Slide
         /// <para>当 <paramref name="onlyStar"/> 为true时，仅销毁引导Star</para>
         /// </summary>
         /// <param name="onlyStar"></param>
-        protected void DestroySelf(bool onlyStar = false)
+        public virtual void End(bool forceEnd = false)
         {
+            if (Parent is not null && !Parent.IsDestroyed)
+                Parent.End(true);
 
-            if (onlyStar)
-                DestroyStars();
-            else
-            {
-                if (Parent is not null && !Parent.IsDestroyed)
-                    Destroy(Parent.GameObject);
+            foreach (GameObject obj in _slideBars)
+                obj.SetActive(false);
 
-                foreach (GameObject obj in _slideBars)
-                    obj.SetActive(false);
-
-                DestroyStars();
-                Destroy(gameObject);
-            }
+            DestroyStars();
         }
         /// <summary>
         /// Connection Slide
@@ -288,7 +272,7 @@ namespace MajdataPlay.Game.Notes
             for (int i = 0; i < 2; i++)
                 _judgeQueues[i] = emptyQueue;
         }
-        void DestroyStars()
+        protected void DestroyStars()
         {
             if (_stars.IsEmpty())
                 return;

@@ -12,7 +12,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class SlideDrop : SlideBase,IConnectableSlide
+    public sealed class SlideDrop : SlideBase,IConnectableSlide, IEndableNote
     {
         public bool IsMirror 
         { 
@@ -178,7 +178,7 @@ namespace MajdataPlay.Game.Notes
                 else
                 {
                     if (_lastWaitTime < 0)
-                        DestroySelf();
+                        End();
                     else
                         _lastWaitTime -= Time.fixedDeltaTime;
                 }
@@ -190,12 +190,12 @@ namespace MajdataPlay.Game.Notes
             if (_stars.IsEmpty() || _stars[0] == null)
             {
                 if (IsFinished)
-                    DestroySelf();
+                    End();
                 return;
             }
 
             _stars[0].SetActive(true);
-            var timing = CurrentSec - base.Timing;
+            var timing = CurrentSec - Timing;
             if (timing <= 0f)
             {
                 CanShine = true;
@@ -300,17 +300,32 @@ namespace MajdataPlay.Game.Notes
                     Parent.ForceFinish();
             }
         }
-        void OnDestroy()
+        protected override void TooLateJudge()
+        {
+            if (_isJudged)
+            {
+                End();
+                return;
+            }
+            base.TooLateJudge();
+            End();
+        }
+        public override void End(bool forceEnd = false)
         {
             if (IsDestroyed)
                 return;
-            if (Parent is not null && !Parent.IsDestroyed)
-                Destroy(Parent.GameObject);
-            if (!_stars.IsEmpty() && _stars[0] != null)
-                Destroy(_stars[0]);
             State = NoteStatus.Destroyed;
             foreach (var sensor in _judgeAreas)
                 _ioManager.UnbindSensor(Check, sensor);
+            base.End();
+            if (forceEnd)
+            {
+                Destroy(_slideOK);
+                Destroy(gameObject);
+                return;
+            }
+            
+
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var result = new JudgeResult()
@@ -322,9 +337,9 @@ namespace MajdataPlay.Game.Notes
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 _objectCounter.ReportResult(this, result);
-                
-                if (IsBreak && _judgeResult == JudgeType.Perfect) 
-                { 
+
+                if (IsBreak && _judgeResult == JudgeType.Perfect)
+                {
                     var anim = _slideOK.GetComponent<Animator>();
                     anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                     _audioEffMana.PlayBreakSlideEndSound();
@@ -333,10 +348,8 @@ namespace MajdataPlay.Game.Notes
                 PlaySlideOK(result);
             }
             else
-            {
-                // 如果不是组内最后一个 那么也要将判定条删掉
                 Destroy(_slideOK);
-            }
+            Destroy(gameObject);
         }
         /// <summary>
         /// 更新引导Star状态
@@ -357,7 +370,7 @@ namespace MajdataPlay.Game.Notes
                 _stars[0].transform.position = _slidePositions.LastOrDefault();
                 ApplyStarRotation(_slideRotations.LastOrDefault());
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
-                    DestroySelf(true);
+                    DestroyStars();
             }
             else
             {

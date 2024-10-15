@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Interfaces
 {
-    public interface IConnectableSlide: IStatefulNote
+    public interface IConnectableSlide: IStatefulNote, IEndableNote
     {
         ConnSlideInfo ConnectInfo { get; }
         GameObject GameObject { get; }

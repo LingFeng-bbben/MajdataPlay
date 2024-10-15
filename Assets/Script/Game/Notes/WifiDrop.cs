@@ -120,7 +120,7 @@ namespace MajdataPlay.Game.Notes
             else
             {
                 if (_lastWaitTime < 0)
-                    DestroySelf();
+                    End();
                 else
                     _lastWaitTime -= Time.fixedDeltaTime;
             }
@@ -265,13 +265,31 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        void OnDestroy()
+        protected override void TooLateJudge()
+        {
+            if (_isJudged)
+            {
+                End();
+                return;
+            }
+            base.TooLateJudge();
+            End();
+        }
+        public override void End(bool forceEnd = false)
         {
             if (IsDestroyed)
                 return;
             foreach (var sensor in _judgeAreas)
                 _ioManager.UnbindSensor(Check, sensor);
             State = NoteStatus.Destroyed;
+            base.End();
+            if (forceEnd)
+            {
+                Destroy(_slideOK);
+                Destroy(gameObject);
+                return;
+            }
+            
             var result = new JudgeResult()
             {
                 Result = _judgeResult,
@@ -289,6 +307,7 @@ namespace MajdataPlay.Game.Notes
             }
             _slideOK.GetComponent<LoadJustSprite>().SetResult(_judgeResult);
             PlaySlideOK(result);
+            Destroy(gameObject);
         }
         protected override void LoadSkin()
         {
