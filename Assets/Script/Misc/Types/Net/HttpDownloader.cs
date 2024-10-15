@@ -16,13 +16,14 @@ namespace MajdataPlay.Net
 {
     public class HttpDownloader
     {
-        public float Progress
+        public double Progress
         {
             get
             {
-                if (Length == 0)
+                if (_downloaders.Length == 0)
                     return 0;
-                return _downloadedBytes / Length;
+                var totalProgress = _downloaders.Select(x => x.Progress).Sum();
+                return totalProgress / _downloaders.Length;
             }
         }
         public long Length { get; private set; }
@@ -37,7 +38,7 @@ namespace MajdataPlay.Net
         }
 
         int _retryCount = 0;
-        long _downloadedBytes = 0;
+        Downloader[] _downloaders = Array.Empty<Downloader>();
 
         static HttpClient _httpClient = new HttpClient(new HttpClientHandler()
         {
@@ -57,22 +58,106 @@ namespace MajdataPlay.Net
         {
             var rsp = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, RequestAddress));
             rsp.EnsureSuccessStatusCode();
+            bool rangeDlAvailable = rsp.Headers.Contains("Accept-Ranges") && rsp.Headers.GetValues("Accept-Ranges").Any(x => x == "bytes");
+            if (MultiThread)
+                MultiThread = rangeDlAvailable;
             var fileSize = rsp.Content.Headers.ContentLength ?? throw new HttpRequestException("Invalid http response");
             Length = fileSize;
-            var downloader = new Downloader(RequestAddress, _httpClient, 0, Length);
+
+            if (!MultiThread || fileSize < ThreadCount * 2)
+                await SingleThreadDownloadAsync(savePath);
+            else
+                await MultiThreadDownloadAsync(savePath);
+        }
+        async ValueTask SingleThreadDownloadAsync(string savePath)
+        {
+            var downloader = new Downloader(RequestAddress, _httpClient, 0, Length - 1);
+            _downloaders = new Downloader[] { downloader };
             await downloader.DownloadAsync(savePath);
         }
+        async ValueTask MultiThreadDownloadAsync(string savePath)
+        {
+            var length4Part = Length / ThreadCount;
+            _downloaders = new Downloader[ThreadCount];
+            Task[] tasks = new Task[ThreadCount];
+            for (int i = 0; i < ThreadCount; i++)
+            {
+                var isLast = i == ThreadCount - 1;
+                var startAt = i * length4Part;
+                var length = length4Part;
+                if (isLast)
+                    length = Length - startAt;
+                var downloader = new Downloader(RequestAddress, _httpClient, startAt, length);
+                _downloaders[i] = downloader;
+                tasks[i] = downloader.DownloadAsync($"{savePath}.{i}");
+            }
+            await Task.WhenAll(tasks);
+            if (File.Exists(savePath))
+                File.Delete(savePath);
+            var combiners = new FileCombiner[ThreadCount];
+            for (int i = 0; i < ThreadCount; i++)
+            {
+                var chunkedFilePath = $"{savePath}.{i}";
+                var isLast = i == ThreadCount - 1;
+                var startAt = i * length4Part;
+                var length = length4Part;
 
+                if (isLast)
+                    length = Length - startAt;
+
+                var combiner = new FileCombiner(savePath, chunkedFilePath, startAt, length);
+                combiners[i] = combiner;
+                tasks[i] = combiner.CombineAsync();
+            }
+            await Task.WhenAll(tasks);
+            foreach (var combiner in combiners)
+                combiner.Close();
+        }
+        struct FileCombiner
+        {
+            public long StartAt { get; private set; }
+            public long Length { get; private set; }
+
+            FileStream _fileStream;
+            FileStream _chunkedStream;
+
+            public FileCombiner(string savePath, string chunkedFilePath, long startAt, long length)
+            {
+                StartAt = startAt;
+                Length = length;
+                _fileStream = new FileStream(savePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite, 1024, FileOptions.WriteThrough);
+                _chunkedStream = new FileStream(chunkedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                _fileStream.Position = startAt;
+            }
+
+            public async Task CombineAsync()
+            {
+                int readBytes = 0;
+                var buffer = new byte[1024];
+                while (readBytes < Length)
+                {
+                    var read = await _chunkedStream.ReadAsync(buffer, 0, 1024);
+                    await _fileStream.WriteAsync(buffer, 0, read);
+                    readBytes += read;
+                }
+            }
+            public void Close()
+            {
+                _fileStream.Close();
+                _chunkedStream.Close();
+            }
+        }
         struct Downloader
         {
+            public double Progress { get; private set; }
             public long StartAt { get; private set; }
             public long EndAt { get; private set; }
             public long Length { get; private set; }
-            public long DownloadedBytes { get; private set; }
             public int MaxRetryCount { get; set; }
             public bool IsCompleted { get; private set; }
             public Uri RequestAddress { get; private set; }
 
+            long _downloadedBytes;
             bool _isDownloading;
             int _retryCount;
             HttpClient _httpClient;
@@ -80,18 +165,18 @@ namespace MajdataPlay.Net
             {
                 _httpClient = httpClient;
                 StartAt = startAt;
-                EndAt = startAt + length;
+                EndAt = startAt + length - 1;
                 Length = length;
                 RequestAddress = address;
 
-                DownloadedBytes = 0;
+                _downloadedBytes = 0;
                 MaxRetryCount = 4;
                 IsCompleted = false;
 
+                Progress = 0;
                 _isDownloading = false;
                 _retryCount = 0;
             }
-
             public async Task<Stream> DownloadAsync()
             {
                 ThrowIfDownloadingOrCompleted();
@@ -100,7 +185,7 @@ namespace MajdataPlay.Net
                 var heapStream = new HeapStream(Length);
                 var buffer = new byte[1024];
                 var membuffer = buffer.AsMemory();
-                while (DownloadedBytes < Length)
+                while (_downloadedBytes < Length)
                 {
                     int read = 0;
                     try
@@ -116,7 +201,7 @@ namespace MajdataPlay.Net
                         }
 
                         await httpStream.DisposeAsync();
-                        var newHttpStream = await Retry(DownloadedBytes, EndAt);
+                        var newHttpStream = await Retry(_downloadedBytes, EndAt);
 
                         if (newHttpStream is not null)
                             httpStream = newHttpStream;
@@ -126,7 +211,7 @@ namespace MajdataPlay.Net
                     }
                     var _memBuffer = read != 1024 ? membuffer.Slice(0, read) : membuffer;
                     await heapStream.WriteAsync(_memBuffer);
-                    DownloadedBytes += read;
+                    _downloadedBytes += read;
                 }
                 httpStream.Dispose();
                 _isDownloading = false;
@@ -137,11 +222,11 @@ namespace MajdataPlay.Net
             {
                 ThrowIfDownloadingOrCompleted();
                 _isDownloading = true;
-                using var fileStream = File.OpenWrite(savePath);
+                using var fileStream = File.Create(savePath, 1024, FileOptions.WriteThrough);
                 var httpStream = await Connect();
                 var buffer = new byte[1024];
                 var membuffer = buffer.AsMemory();
-                while (DownloadedBytes < Length)
+                while (_downloadedBytes < Length)
                 {
                     int read = 0;
                     try
@@ -157,7 +242,7 @@ namespace MajdataPlay.Net
                         }
 
                         await httpStream.DisposeAsync();
-                        var newHttpStream = await Retry(DownloadedBytes, EndAt);
+                        var newHttpStream = await Retry(_downloadedBytes, EndAt);
 
                         if (newHttpStream is not null)
                             httpStream = newHttpStream;
@@ -168,11 +253,19 @@ namespace MajdataPlay.Net
                     var _memBuffer = read != 1024 ? membuffer.Slice(0, read) : membuffer;
                     await fileStream.WriteAsync(_memBuffer);
                     await fileStream.FlushAsync();
-                    DownloadedBytes += read;
+                    _downloadedBytes += read;
+                    UpdateProgress();
                 }
                 httpStream.Dispose();
                 _isDownloading = false;
                 IsCompleted = true;
+            }
+            void UpdateProgress()
+            {
+                if (Length == 0)
+                    Progress = 0;
+                else
+                    Progress = (double)_downloadedBytes / Length;
             }
             async Task<Stream> Connect()
             {
@@ -180,7 +273,9 @@ namespace MajdataPlay.Net
                 {
                     try
                     {
-                        var rsp = await _httpClient.GetAsync(RequestAddress, HttpCompletionOption.ResponseHeadersRead);
+                        var req = new HttpRequestMessage(HttpMethod.Get, RequestAddress);
+                        req.Headers.Range = new RangeHeaderValue(StartAt, EndAt);
+                        var rsp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
                         rsp.EnsureSuccessStatusCode();
                         return await rsp.Content.ReadAsStreamAsync();
                     }
@@ -200,6 +295,7 @@ namespace MajdataPlay.Net
                     req.Headers.Range = new RangeHeaderValue(startAt, endAt);
 
                     var rsp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+                    rsp.EnsureSuccessStatusCode();
                     return await rsp.Content.ReadAsStreamAsync();
                 }
                 catch
@@ -212,10 +308,9 @@ namespace MajdataPlay.Net
                 if (_isDownloading || IsCompleted)
                     throw new InvalidOperationException("");
                 _retryCount = 0;
-                DownloadedBytes = 0;
+                _downloadedBytes = 0;
             }
         }
-
     }
     public unsafe class HeapStream : Stream
     {
