@@ -1,9 +1,9 @@
 ﻿using MajdataPlay.Game.Controllers;
-using MajdataPlay.Interfaces;
 using MajdataPlay.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using UnityEngine;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {

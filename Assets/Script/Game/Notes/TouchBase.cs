@@ -2,7 +2,7 @@
 using MajdataPlay.Types;
 using MajdataPlay.Extensions;
 using System;
-using MajdataPlay.Interfaces;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {

@@ -4,15 +4,15 @@ using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Buffers
 {
-    public class EachLinePool : NotePool<EachLinePoolingInfo,NoteQueueInfo>
+    public class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
-        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos,capacity)
+        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {
 
         }
-        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos): base(prefab, parent, noteInfos)
+        public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos) : base(prefab, parent, noteInfos)
         {
 
         }

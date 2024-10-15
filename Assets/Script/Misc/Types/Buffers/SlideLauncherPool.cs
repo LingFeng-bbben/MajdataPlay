@@ -5,9 +5,9 @@ using System;
 using UnityEngine;
 
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Buffers
 {
-    public class SlideLauncherPool : NotePool<TapPoolingInfo,TapQueueInfo>
+    public class SlideLauncherPool : NotePool<TapPoolingInfo, TapQueueInfo>
     {
         public SlideLauncherPool(GameObject prefab, Transform parent, TapPoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {

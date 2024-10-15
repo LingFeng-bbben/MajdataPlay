@@ -4,6 +4,7 @@ using MajdataPlay.Utils;
 using MajdataPlay.Types;
 using System;
 using UnityEngine;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {

@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Types;
 
-namespace MajdataPlay.Interfaces
+namespace MajdataPlay.Buffers
 {
     public interface INotePool<TInfo, TMember> where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {

@@ -1,14 +1,13 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Buffers
 {
-    public class NotePool<TInfo,TMember> :INotePool<TInfo,TMember>
+    public class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {
         public int Capacity { get; private set; } = 64;
@@ -16,15 +15,15 @@ namespace MajdataPlay.Game
         protected TimingPoint<TInfo>?[] _timingPoints;
         protected List<IPoolableNote<TInfo, TMember>> _idleNotes;
         protected List<IPoolableNote<TInfo, TMember>> _inUseNotes;
-        
-        public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos,int capacity)
+
+        public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos, int capacity)
         {
             Capacity = capacity;
             _idleNotes = new(capacity);
             _inUseNotes = new(capacity);
             for (int i = 0; i < capacity; i++)
             {
-                var obj = GameObject.Instantiate(prefab, parent);
+                var obj = UnityEngine.Object.Instantiate(prefab, parent);
                 obj.SetActive(false);
                 var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
                 if (noteObj is null)
@@ -33,30 +32,30 @@ namespace MajdataPlay.Game
             }
             var timingPoints = noteInfos.GroupBy(x => x.AppearTiming)
                                         .OrderBy(x => x.Key);
-            this._timingPoints = new TimingPoint<TInfo>[timingPoints.Count()];
+            _timingPoints = new TimingPoint<TInfo>[timingPoints.Count()];
             foreach (var (i, timingPoint) in timingPoints.WithIndex())
             {
-                this._timingPoints[i] = new TimingPoint<TInfo>()
+                _timingPoints[i] = new TimingPoint<TInfo>()
                 {
                     Timing = timingPoint.Key,
                     Infos = timingPoint.ToArray()
                 };
             }
         }
-        public NotePool(GameObject prefab,Transform parent, TInfo[] noteInfos) : this(prefab, parent, noteInfos,64)
+        public NotePool(GameObject prefab, Transform parent, TInfo[] noteInfos) : this(prefab, parent, noteInfos, 64)
         {
-            
+
         }
         public virtual void Update(float currentSec)
         {
             if (_idleNotes.IsEmpty())
                 return;
-            foreach(var (i, tp) in _timingPoints.WithIndex())
+            foreach (var (i, tp) in _timingPoints.WithIndex())
             {
                 if (tp is null)
                     continue;
                 var timeDiff = currentSec - tp.Timing;
-                if(timeDiff > -0.15f)
+                if (timeDiff > -0.15f)
                 {
                     if (!Dequeue(tp.Infos))
                         return;
@@ -66,7 +65,7 @@ namespace MajdataPlay.Game
         }
         bool Dequeue(TInfo?[] infos)
         {
-            foreach(var (i,info) in infos.WithIndex())
+            foreach (var (i, info) in infos.WithIndex())
             {
                 if (info is null)
                     continue;
@@ -106,9 +105,9 @@ namespace MajdataPlay.Game
                 try
                 {
                     note.End(true);
-                    GameObject.Destroy(note.GameObject);
+                    UnityEngine.Object.Destroy(note.GameObject);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError($"Cannot destroy note:\n{e}");
                 }
@@ -118,7 +117,7 @@ namespace MajdataPlay.Game
                 try
                 {
                     note.End(true);
-                    GameObject.Destroy(note.GameObject);
+                    UnityEngine.Object.Destroy(note.GameObject);
                 }
                 catch (Exception e)
                 {
@@ -126,7 +125,7 @@ namespace MajdataPlay.Game
                 }
             }
         }
-        protected class TimingPoint<T> where T: NotePoolingInfo
+        protected class TimingPoint<T> where T : NotePoolingInfo
         {
             public float Timing { get; init; }
             public T?[] Infos { get; init; } = Array.Empty<T>();

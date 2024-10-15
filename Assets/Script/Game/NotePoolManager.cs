@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
