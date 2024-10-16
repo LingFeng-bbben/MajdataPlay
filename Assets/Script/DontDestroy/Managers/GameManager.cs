@@ -64,6 +64,7 @@ namespace MajdataPlay
 
         void Awake()
         {
+            Debug.Log($"Version: {MajInstances.GameVersion}");
             Application.logMessageReceived += (c, trace, type) =>
             {
                 logQueue.Enqueue(new GameLog()

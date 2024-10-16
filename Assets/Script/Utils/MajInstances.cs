@@ -1,10 +1,13 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Types;
+using Semver;
+using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
 {
     public static class MajInstances
     {
+        public static SemVersion GameVersion { get; } = SemVersion.Parse(Application.version,SemVersionStyles.Strict);
         public static GameManager GameManager
         {
             get => MajInstanceHelper<GameManager>.Instance!;

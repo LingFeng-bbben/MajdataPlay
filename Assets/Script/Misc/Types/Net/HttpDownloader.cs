@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.IO;
+using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace MajdataPlay.Net
         public bool MultiThread { get; set; } = false;
         public int ThreadCount { get; set; } = 4;
         public int MaxRetryCount { get; set; } = 4;
+        public string UserAgent { get; set; } = $"MajdataPlay/{MajInstances.GameVersion}";
         public Uri RequestAddress { get; private set; }
         public static TimeSpan Timeout
         {
