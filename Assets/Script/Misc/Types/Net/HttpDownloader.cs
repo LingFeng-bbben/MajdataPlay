@@ -260,6 +260,11 @@ namespace MajdataPlay.Net
                 File.Delete(_chunkedFilePath);
             }
         }
+        struct ReportEventArgs
+        {
+            public long Index { get; init; }
+            public double Progress { get; init; }
+        }
         struct Downloader
         {
             public double Progress { get; private set; }
@@ -403,6 +408,17 @@ namespace MajdataPlay.Net
             public HttpStatusCode StatusCode { get; init; }
             public long Length { get; init; }
             public bool RangeDLAvailable { get; init; }
+        }
+        readonly struct RangeDownloadInfo
+        {
+            public int Index { get; init; }
+            public long StartAt { get; init; }
+            public long SegmentLength { get; init; }
+            public int MaxRetryCount { get; init; }
+            public string SavePath { get; init; }
+            public string UserAgent { get; init; }
+            public IProgress<ReportEventArgs> Reporter { get; init; }
+            public Uri RequestAddress { get; init; }
         }
     }
 }
