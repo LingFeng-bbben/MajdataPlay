@@ -15,6 +15,7 @@ using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Scripting;
 using MajdataPlay.Types.Attribute;
+using MajdataPlay.Net;
 
 namespace MajdataPlay
 {
@@ -65,6 +66,7 @@ namespace MajdataPlay
         void Awake()
         {
             Debug.Log($"Version: {MajInstances.GameVersion}");
+            HttpDownloader.Timeout = TimeSpan.FromMilliseconds(4000);
             Application.logMessageReceived += (c, trace, type) =>
             {
                 logQueue.Enqueue(new GameLog()
