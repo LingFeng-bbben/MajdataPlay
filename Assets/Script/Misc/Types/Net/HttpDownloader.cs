@@ -130,8 +130,8 @@ namespace MajdataPlay.Net
             
             try
             {
-                reporter.ProgressChanged -= progressUpdateHandler;
                 await downloader.DownloadAsync();
+                reporter.ProgressChanged -= progressUpdateHandler;
             }
             catch
             {
