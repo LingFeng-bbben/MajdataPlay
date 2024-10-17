@@ -2,9 +2,10 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace MajdataPlay.Net
 {
     public readonly struct DownloadResult
@@ -25,7 +26,7 @@ namespace MajdataPlay.Net
         public DateTime StartAt { get; init; }
         public HttpStatusCode StatusCode { get; init; }
         public HttpRequestError RequestError { get; init; }
-
+        public HttpResponseMessage? ResponseMessage { get; init; }
         public FileStream ReadAsStream()
         {
             ThrowIfFailed();
@@ -45,10 +46,19 @@ namespace MajdataPlay.Net
 
             return Encoding.UTF8.GetString(buffer);
         }
-        void ThrowIfFailed()
+        public void ThrowIfFailed()
         {
             if (!IsSuccess)
-                throw new InvalidOperationException("This download operation was unsuccessful");
+            {
+                if(ResponseMessage is null)
+                    throw new ArgumentNullException("This result object has no HttpResponseMessage");
+                throw new HttpTransmitException("This download operation was unsuccessful")
+                {
+                    ResponseMessage = ResponseMessage,
+                    StatusCode = StatusCode,
+                    RequestError = RequestError,
+                };
+            }
         }
     }
 }

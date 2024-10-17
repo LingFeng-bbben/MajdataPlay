@@ -17,6 +17,10 @@ using System.IO;
 using MajdataPlay.Utils;
 using PimDeWitte.UnityMainThreadDispatcher;
 using MajdataPlay.Types.Attribute;
+using MajdataPlay.Net;
+using System.Security.Policy;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 namespace MajdataPlay.Game
 {
@@ -115,6 +119,7 @@ namespace MajdataPlay.Game
         Text _errText;
         TextMeshPro _loadingText;
 
+        HttpDownloader _httpDownloader = new();
         SimaiProcess _chart;
         SongDetail _songDetail;
 
@@ -154,56 +159,129 @@ namespace MajdataPlay.Game
             _loadingImage = _loadingMask.GetComponent<Image>();
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
-            DumpOnlineChart().Forget();
+            LoadChart().Forget();
         }
-
-        async UniTask DumpOnlineChart()
+        /// <summary>
+        /// Parse the chart and load it into memory, or dump it locally if the chart is online
+        /// </summary>
+        /// <returns></returns>
+        async UniTaskVoid LoadChart()
         {
-            if (_songDetail.isOnline)
+            try
             {
-                LightManager.Instance.SetAllLight(Color.red);
-                _loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
-                var dumpTask = _songDetail.DumpToLocal();
-                while (!dumpTask.IsCompleted)
-                {
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-                }
-                _songDetail = dumpTask.Result;
+                if (_songDetail.isOnline)
+                    await DumpOnlineChart();
+                await UniTask.WhenAll(LoadAudioTrack(), ParseChart());
             }
-            var loadingTask =  UniTask.WhenAll(LoadAudioTrack(), LoadChart());
-            var task = loadingTask.AsTask();
-            while (!task.IsCompleted)
-                await UniTask.Yield();
-            if(task.IsFaulted)
+            catch(HttpTransmitException httpEx)
             {
-                foreach (var e in task.Exception.InnerExceptions)
-                {
-                    switch(e)
-                    {
-                        case InvalidAudioTrackException audioE:
-                            State = ComponentState.Failed;
-                            _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioE.Message}";
-                            _loadingText.color = Color.red;
-                            Debug.LogError(audioE);
-                            return;
-                        case TaskCanceledException:
-                            return;
-                        default:
-                            State = ComponentState.Failed;
-                            _errText.text = "加载note时出错了哟\n" + e.Message;
-                            Debug.LogError(e);
-                            return;
-                    }
-                }
+                State = ComponentState.Failed;
+                _loadingText.text = $"{Localization.GetLocalizedText("Failed to download chart")}";
+                _loadingText.color = Color.red;
+                Debug.LogError(httpEx);
+                return;
+            }
+            catch(InvalidAudioTrackException audioEx)
+            {
+                State = ComponentState.Failed;
+                _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}";
+                _loadingText.color = Color.red;
+                Debug.LogError(audioEx);
+                return;
+            }
+            catch(OperationCanceledException canceledEx)
+            {
+                Debug.LogWarning(canceledEx);
+                return;
+            }
+            catch(Exception e)
+            {
+                State = ComponentState.Failed;
+                _errText.text = "加载note时出错了哟\n" + e.Message;
+                Debug.LogError(e);
             }
 
             PrepareToPlay().Forget();
+        }
+        /// <summary>
+        /// Dump online chart to local
+        /// </summary>
+        /// <returns></returns>
+        async UniTask DumpOnlineChart()
+        {
+            var chartFolder = Path.Combine(GameManager.ChartPath, $"MajnetPlayed/{_songDetail.Hash}");
+            Directory.CreateDirectory(chartFolder);
+            var dirInfo = new DirectoryInfo(chartFolder);
+            var trackPath = Path.Combine(chartFolder, "track.mp3");
+            var chartPath = Path.Combine(chartFolder, "maidata.txt");
+            var bgPath = Path.Combine(chartFolder, "bg.png");
+            var trackUri = _songDetail.TrackPath;
+            var chartUri = _songDetail.MaidataPath;
+            var bgUri = _songDetail.BGPath;
+
+            if (trackUri is null or "")
+                throw new AudioTrackNotFoundException(trackPath);
+            if (chartUri is null or "")
+                throw new ChartNotFoundException(_songDetail);
+            
+            LightManager.Instance.SetAllLight(Color.red);
+            _loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
+            await UniTask.Delay(2000);
+            if (!File.Exists(trackPath))
+            {
+                var result = await DownloadFile(trackUri, trackPath, r =>
+                {
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{r.Progress * 100:F2}%";
+                });
+                result.ThrowIfFailed();
+            }
+            if (!File.Exists(chartPath))
+            {
+                var result = await DownloadFile(chartUri, chartPath, r =>
+                {
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Chart")}...\n{r.Progress * 100:F2}%";
+                });
+                result.ThrowIfFailed();
+            }
+            SongDetail song;
+            if (bgUri is null or "")
+            {
+                song = await SongDetail.ParseAsync(dirInfo.GetFiles());
+                song.Hash = _songDetail.Hash;
+                _songDetail = song;
+                return; 
+            }
+            if (!File.Exists(bgPath))
+            {
+                await DownloadFile(bgUri, bgPath, r =>
+                {
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...\n{r.Progress * 100:F2}%";
+                });
+            }
+            song = await SongDetail.ParseAsync(dirInfo.GetFiles());
+            song.Hash = _songDetail.Hash;
+            _songDetail = song;
+        }
+        async UniTask<DownloadResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged)
+        {
+            var dlInfo = DownloadInfo.Create(uri, savePath);
+            var reporter = dlInfo.ProgressReporter;
+            var task = _httpDownloader.DownloadAsync(dlInfo,16384);
+
+            while(!task.IsCompleted)
+            {
+                onProgressChanged(reporter!);
+                await UniTask.Yield();
+            }
+            onProgressChanged(reporter!);
+            await UniTask.Yield();
+            return task.Result;
         }
         async UniTask LoadAudioTrack()
         {
             var trackPath = _songDetail.TrackPath ?? string.Empty;
             if(!File.Exists(trackPath))
-                throw new InvalidAudioTrackException("Audio track not found", trackPath);
+                throw new AudioTrackNotFoundException(trackPath);
             _audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
             await UniTask.Yield();
             if (_audioSample is null)
@@ -211,19 +289,24 @@ namespace MajdataPlay.Game
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             LightManager.Instance.SetAllLight(Color.white);
         }
-        async UniTask LoadChart()
+        /// <summary>
+        /// Parse the chart into memory
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="TaskCanceledException"></exception>
+        async UniTask ParseChart()
         {
             var maidata = _songDetail.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
             _loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
             if (string.IsNullOrEmpty(maidata))
             {
-                BackToList();
+                BackToList().Forget();
                 throw new TaskCanceledException("Empty chart");
             }
             _chart = new SimaiProcess(maidata);
             if (_chart.notelist.Count == 0)
             {
-                BackToList();
+                BackToList().Forget();
                 throw new TaskCanceledException("Empty chart");
             }
 
@@ -293,7 +376,7 @@ namespace MajdataPlay.Game
         }
 
         /// <summary>
-        /// 背景加载
+        /// Load the background picture and set brightness
         /// </summary>
         /// <returns></returns>
         async UniTask InitBackground()
@@ -317,7 +400,7 @@ namespace MajdataPlay.Game
             BGManager.SetBackgroundDim(_setting.Game.BackgroundDim);
         }
         /// <summary>
-        /// 初始化NoteLoader与实例化Note对象
+        /// Parse and load notes into NotePool
         /// </summary>
         /// <returns></returns>
         async UniTask LoadNotes()

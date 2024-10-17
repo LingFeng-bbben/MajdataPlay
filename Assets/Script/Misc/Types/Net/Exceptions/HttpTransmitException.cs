@@ -17,7 +17,7 @@ namespace MajdataPlay.Net
         {
             
         }
-        public HttpTransmitException(HttpRequestException e): base(e.Message)
+        public HttpTransmitException(HttpRequestException e): this(e.Message)
         {
 
         }

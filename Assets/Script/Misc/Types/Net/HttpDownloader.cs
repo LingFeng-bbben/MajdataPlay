@@ -32,6 +32,7 @@ namespace MajdataPlay.Net
             var preCheckResult = await PreCheck(dlInfo);
             var fileSize = preCheckResult.Length;
             var startAt = DateTime.Now;
+
             multiThread = multiThread && preCheckResult.RangeDLAvailable;
 
             if (fileSize < 0)
@@ -42,9 +43,11 @@ namespace MajdataPlay.Net
                     SavePath = dlInfo.SavePath,
                     StartAt = startAt,
                     StatusCode = preCheckResult.StatusCode,
-                    RequestError = HttpRequestError.InvalidResponse
+                    RequestError = HttpRequestError.InvalidResponse,
+                    ResponseMessage = preCheckResult.ResponseMessage
                 };
             }
+
 
             try
             {
@@ -58,7 +61,8 @@ namespace MajdataPlay.Net
                     SavePath = dlInfo.SavePath,
                     StartAt = startAt,
                     StatusCode = preCheckResult.StatusCode,
-                    RequestError = HttpRequestError.NoError
+                    RequestError = HttpRequestError.NoError,
+                    ResponseMessage = null
                 };
             }
             catch (HttpTransmitException e)
@@ -69,7 +73,8 @@ namespace MajdataPlay.Net
                     SavePath = dlInfo.SavePath,
                     StartAt = startAt,
                     StatusCode = e.StatusCode,
-                    RequestError = e.RequestError
+                    RequestError = e.RequestError,
+                    ResponseMessage = e.ResponseMessage
                 };
             }
         }
@@ -77,17 +82,33 @@ namespace MajdataPlay.Net
         {
             var requestAddress = dlInfo.RequestAddress;
             var req = new HttpRequestMessage(HttpMethod.Head, requestAddress);
-            req.Headers.UserAgent.ParseAdd(UserAgent);
+            var retryCount = 0;
             var rsp = await ShareClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, requestAddress));
-
-            if (!rsp.IsSuccessStatusCode)
+            var isSuccess = rsp.IsSuccessStatusCode && rsp.Content.Headers.ContentLength > 0;
+            req.Headers.UserAgent.ParseAdd(UserAgent);
+            
+            if(!isSuccess)
             {
-                return new PreCheckInfo()
+                while (true)
                 {
-                    StatusCode = rsp.StatusCode,
-                    Length = 0,
-                    RangeDLAvailable = false
-                };
+                    rsp = await ShareClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, requestAddress));
+                    isSuccess = rsp.IsSuccessStatusCode && rsp.Content.Headers.ContentLength > 0;
+                    if (!isSuccess)
+                    {
+                        if (retryCount < dlInfo.MaxRetryCount)
+                        {
+                            retryCount++;
+                            continue;
+                        }
+                        return new PreCheckInfo()
+                        {
+                            ResponseMessage = rsp,
+                            StatusCode = rsp.StatusCode,
+                            Length = 0,
+                            RangeDLAvailable = false
+                        };
+                    }
+                }
             }
 
             bool rangeDlAvailable = rsp.Headers.Contains("Accept-Ranges") && rsp.Headers.GetValues("Accept-Ranges").Any(x => x == "bytes");
@@ -95,6 +116,7 @@ namespace MajdataPlay.Net
 
             return new PreCheckInfo()
             {
+                ResponseMessage = rsp,
                 StatusCode = rsp.StatusCode,
                 Length = fileSize,
                 RangeDLAvailable = rangeDlAvailable
@@ -315,7 +337,7 @@ namespace MajdataPlay.Net
                 var httpStream = await Connect();
                 var buffer = new byte[_bufferSize];
                 var membuffer = buffer.AsMemory();
-                while (_downloadedBytes < Length)
+                while (true)
                 {
                     int read = 0;
                     try
@@ -331,7 +353,7 @@ namespace MajdataPlay.Net
                         }
 
                         await httpStream.DisposeAsync();
-                        var newHttpStream = await Retry(_downloadedBytes, EndAt);
+                        var newHttpStream = await Retry();
 
                         if (newHttpStream is not null)
                             httpStream = newHttpStream;
@@ -347,6 +369,8 @@ namespace MajdataPlay.Net
                         _downloadedBytes += read;
                         UpdateProgress();
                     }
+                    else if (_downloadedBytes >= Length || (Length == 0 && read == 0))
+                        break;
                 }
                 httpStream.Dispose();
                 _isDownloading = false;
@@ -371,7 +395,8 @@ namespace MajdataPlay.Net
                     try
                     {
                         var req = new HttpRequestMessage(HttpMethod.Get, RequestAddress);
-                        req.Headers.Range = new RangeHeaderValue(StartAt, EndAt);
+                        if (Length != 0)
+                            req.Headers.Range = new RangeHeaderValue(StartAt, EndAt);
                         req.Headers.UserAgent.ParseAdd(_userAgent);
                         var rsp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
                         rsp.ThrowIfTransmitFailure();
@@ -385,12 +410,15 @@ namespace MajdataPlay.Net
                     }
                 }
             }
-            async ValueTask<Stream?> Retry(long startAt, long endAt)
+            async ValueTask<Stream?> Retry()
             {
                 try
                 {
                     var req = new HttpRequestMessage(HttpMethod.Get, RequestAddress);
-                    req.Headers.Range = new RangeHeaderValue(startAt, endAt);
+                    if (Length != 0)
+                        req.Headers.Range = new RangeHeaderValue(_downloadedBytes, EndAt);
+                    else
+                        _downloadedBytes = 0;
                     req.Headers.UserAgent.ParseAdd(_userAgent);
 
                     var rsp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
@@ -412,6 +440,7 @@ namespace MajdataPlay.Net
         }
         readonly struct PreCheckInfo
         {
+            public HttpResponseMessage ResponseMessage { get; init; }
             public HttpStatusCode StatusCode { get; init; }
             public long Length { get; init; }
             public bool RangeDLAvailable { get; init; }

@@ -123,12 +123,12 @@ namespace MajdataPlay.Game
         }
         void OnDestroy()
         {
-            tapPool.Destroy();
-            holdPool.Destroy();
-            starPool.Destroy();
-            touchPool.Destroy();
-            touchHoldPool.Destroy();
-            eachLinePool.Destroy();
+            tapPool?.Destroy();
+            holdPool?.Destroy();
+            starPool?.Destroy();
+            touchPool?.Destroy();
+            touchHoldPool?.Destroy();
+            eachLinePool?.Destroy();
             MajInstanceHelper<NotePoolManager>.Free();
         }
     }
