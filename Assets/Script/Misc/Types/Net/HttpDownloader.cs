@@ -24,7 +24,7 @@ namespace MajdataPlay.Net
             UseProxy = true
         });
 
-        public async Task<DownloadResult> DownloadAsync(DownloadInfo dlInfo)
+        public async ValueTask<DownloadResult> DownloadAsync(DownloadInfo dlInfo, int bufferSize = 4096)
         {
             var threadCount = dlInfo.ThreadCount;
             var multiThread = dlInfo.MultiThread && threadCount > 1;
@@ -34,7 +34,7 @@ namespace MajdataPlay.Net
             var startAt = DateTime.Now;
             multiThread = multiThread && preCheckResult.RangeDLAvailable;
 
-            if(fileSize < 0)
+            if (fileSize < 0)
             {
                 return new DownloadResult()
                 {
@@ -49,9 +49,9 @@ namespace MajdataPlay.Net
             try
             {
                 if (!multiThread || fileSize < threadCount * 2)
-                    await SingleThreadDownloadAsync(dlInfo, fileSize);
+                    await SingleThreadDownloadAsync(dlInfo, fileSize, bufferSize);
                 else
-                    await MultiThreadDownloadAsync(dlInfo, fileSize);
+                    await MultiThreadDownloadAsync(dlInfo, fileSize, bufferSize);
                 return new DownloadResult()
                 {
                     Length = fileSize,
@@ -61,7 +61,7 @@ namespace MajdataPlay.Net
                     RequestError = HttpRequestError.NoError
                 };
             }
-            catch(HttpTransmitException e)
+            catch (HttpTransmitException e)
             {
                 return new DownloadResult()
                 {
@@ -79,8 +79,8 @@ namespace MajdataPlay.Net
             var req = new HttpRequestMessage(HttpMethod.Head, requestAddress);
             req.Headers.UserAgent.ParseAdd(UserAgent);
             var rsp = await ShareClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, requestAddress));
-            
-            if(!rsp.IsSuccessStatusCode)
+
+            if (!rsp.IsSuccessStatusCode)
             {
                 return new PreCheckInfo()
                 {
@@ -100,7 +100,7 @@ namespace MajdataPlay.Net
                 RangeDLAvailable = rangeDlAvailable
             };
         }
-        async ValueTask SingleThreadDownloadAsync(DownloadInfo dlInfo,long fileSize)
+        async ValueTask SingleThreadDownloadAsync(DownloadInfo dlInfo, long fileSize, int bufferSize)
         {
             Progress<ReportEventArgs> reporter = new();
             var info = new RangeDownloadInfo()
@@ -109,25 +109,26 @@ namespace MajdataPlay.Net
                 Reporter = reporter,
                 StartAt = 0,
                 UserAgent = UserAgent,
+                BufferSize = bufferSize,
                 SegmentLength = fileSize,
                 SavePath = dlInfo.SavePath
             };
             var downloader = new Downloader(info);
-            var onProgressUpdated = dlInfo.OnProgressUpdated;
+            var progressReporter = dlInfo.ProgressReporter;
             EventHandler<ReportEventArgs> progressUpdateHandler = (sender, args) =>
             {
-                if(onProgressUpdated is not null)
+                if (progressReporter is not null)
                 {
                     var progress = new DLProgress()
                     {
                         Length = fileSize,
                         Progress = args.Progress
                     };
-                    onProgressUpdated(progress);
+                    progressReporter.OnProgressChanged(progress);
                 }
             };
             reporter.ProgressChanged += progressUpdateHandler;
-            
+
             try
             {
                 await downloader.DownloadAsync();
@@ -139,7 +140,7 @@ namespace MajdataPlay.Net
                 throw;
             }
         }
-        async ValueTask MultiThreadDownloadAsync(DownloadInfo dlInfo, long fileSize)
+        async ValueTask MultiThreadDownloadAsync(DownloadInfo dlInfo, long fileSize, int bufferSize)
         {
             var reporter = new Progress<ReportEventArgs>();
             var threadCount = dlInfo.ThreadCount;
@@ -147,10 +148,10 @@ namespace MajdataPlay.Net
             var length4Part = fileSize / threadCount;
             var progresses = new double[threadCount];
             var tasks = new Task[threadCount];
-            var onProgressUpdated = dlInfo.OnProgressUpdated;
+            var progressReporter = dlInfo.ProgressReporter;
             EventHandler<ReportEventArgs> progressUpdateHandler = (sender, args) =>
             {
-                if (onProgressUpdated is not null)
+                if (progressReporter is not null)
                 {
                     double progress = 0;
                     if (progresses.Length == 0)
@@ -161,7 +162,7 @@ namespace MajdataPlay.Net
                         var totalProgress = progresses.Sum();
                         progress = totalProgress / progresses.Length;
                     }
-                    onProgressUpdated(new DLProgress()
+                    progressReporter.OnProgressChanged(new DLProgress()
                     {
                         Length = fileSize,
                         Progress = progress
@@ -183,6 +184,7 @@ namespace MajdataPlay.Net
                         Index = i,
                         Reporter = reporter,
                         StartAt = startAt,
+                        BufferSize = bufferSize,
                         UserAgent = UserAgent,
                         SegmentLength = length,
                         SavePath = $"{savePath}.{i}",
@@ -275,6 +277,7 @@ namespace MajdataPlay.Net
             public bool IsCompleted { get; private set; }
             public Uri RequestAddress { get; private set; }
 
+            int _bufferSize;
             long _index;
             long _downloadedBytes;
             bool _isDownloading;
@@ -296,6 +299,7 @@ namespace MajdataPlay.Net
                 Progress = 0;
                 IsCompleted = false;
 
+                _bufferSize = info.BufferSize;
                 _userAgent = info.UserAgent;
                 _reporter = info.Reporter;
                 _isDownloading = false;
@@ -309,7 +313,7 @@ namespace MajdataPlay.Net
                 _isDownloading = true;
                 using var fileStream = File.Create(_savePath, 1024, FileOptions.WriteThrough);
                 var httpStream = await Connect();
-                var buffer = new byte[1024];
+                var buffer = new byte[_bufferSize];
                 var membuffer = buffer.AsMemory();
                 while (_downloadedBytes < Length)
                 {
@@ -335,11 +339,14 @@ namespace MajdataPlay.Net
                         _retryCount++;
                         continue;
                     }
-                    var _memBuffer = read != 1024 ? membuffer.Slice(0, read) : membuffer;
-                    await fileStream.WriteAsync(_memBuffer);
-                    await fileStream.FlushAsync();
-                    _downloadedBytes += read;
-                    UpdateProgress();
+                    if (read > 0)
+                    {
+                        var _memBuffer = read != _bufferSize ? membuffer.Slice(0, read) : membuffer;
+                        await fileStream.WriteAsync(_memBuffer);
+                        await fileStream.FlushAsync();
+                        _downloadedBytes += read;
+                        UpdateProgress();
+                    }
                 }
                 httpStream.Dispose();
                 _isDownloading = false;
@@ -357,7 +364,7 @@ namespace MajdataPlay.Net
                     Progress = Progress,
                 });
             }
-            async Task<Stream> Connect()
+            async ValueTask<Stream> Connect()
             {
                 while (true)
                 {
@@ -378,7 +385,7 @@ namespace MajdataPlay.Net
                     }
                 }
             }
-            async Task<Stream?> Retry(long startAt, long endAt)
+            async ValueTask<Stream?> Retry(long startAt, long endAt)
             {
                 try
                 {
@@ -417,6 +424,7 @@ namespace MajdataPlay.Net
             public int MaxRetryCount { get; init; }
             public string SavePath { get; init; }
             public string UserAgent { get; init; }
+            public int BufferSize { get; init; }
             public IProgress<ReportEventArgs> Reporter { get; init; }
             public Uri RequestAddress { get; init; }
         }

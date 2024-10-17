@@ -10,37 +10,37 @@ namespace MajdataPlay.Net
         public bool MultiThread { get; init; }
         public int ThreadCount { get; init; }
         public int MaxRetryCount { get; init; }
-        public Action<DLProgress>? OnProgressUpdated { get; init; }
+        public IHttpProgressReporter? ProgressReporter { get; init; }
 
         public static DownloadInfo Create(string uri, string savePath)
         {
-            return Create(new Uri(uri), savePath, 4, null);
+            return Create(new Uri(uri), savePath, 4, new HttpProgressReporter());
         }
         public static DownloadInfo Create(string uri, string savePath, int maxRetryCount)
         {
-            return Create(new Uri(uri), savePath, maxRetryCount, null);
+            return Create(new Uri(uri), savePath, maxRetryCount, new HttpProgressReporter());
         }
-        public static DownloadInfo Create(string uri, string savePath, Action<DLProgress>? onProgressUpdated)
+        public static DownloadInfo Create(string uri, string savePath, IHttpProgressReporter? progressReporter)
         {
-            return Create(new Uri(uri), savePath, 4, onProgressUpdated);
+            return Create(new Uri(uri), savePath, 4, progressReporter);
         }
-        public static DownloadInfo Create(string uri, string savePath, int maxRetryCount, Action<DLProgress>? onProgressUpdated)
+        public static DownloadInfo Create(string uri, string savePath, int maxRetryCount, IHttpProgressReporter? progressReporter)
         {
-            return Create(new Uri(uri), savePath, maxRetryCount, onProgressUpdated);
+            return Create(new Uri(uri), savePath, maxRetryCount, progressReporter);
         }
         public static DownloadInfo Create(Uri uri,string savePath)
         {
-            return Create(uri, savePath, 4, null);
+            return Create(uri, savePath, 4, new HttpProgressReporter());
         }
         public static DownloadInfo Create(Uri uri, string savePath,int maxRetryCount)
         {
-            return Create(uri, savePath, maxRetryCount, null);
+            return Create(uri, savePath, maxRetryCount, new HttpProgressReporter());
         }
-        public static DownloadInfo Create(Uri uri, string savePath, Action<DLProgress>? onProgressUpdated)
+        public static DownloadInfo Create(Uri uri, string savePath, IHttpProgressReporter? progressReporter)
         {
-            return Create(uri, savePath, 4, onProgressUpdated);
+            return Create(uri, savePath, 4, progressReporter);
         }
-        public static DownloadInfo Create(Uri uri, string savePath, int maxRetryCount ,Action<DLProgress>? onProgressUpdated)
+        public static DownloadInfo Create(Uri uri, string savePath, int maxRetryCount , IHttpProgressReporter? progressReporter)
         {
             return new DownloadInfo
             {
@@ -49,7 +49,7 @@ namespace MajdataPlay.Net
                 MultiThread = false,
                 ThreadCount = 0,
                 MaxRetryCount = maxRetryCount,
-                OnProgressUpdated = onProgressUpdated
+                ProgressReporter = progressReporter
             };
         }
     }
