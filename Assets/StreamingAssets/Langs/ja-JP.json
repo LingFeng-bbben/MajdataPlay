@@ -4,8 +4,8 @@
   "MappingTable": [
     {
       "Type": "SCANNING_CHART",
-      "Origin": "Scanning Chart",
-      "Content": "Scanning Chart"
+      "Origin": "Scanning Charts",
+      "Content": "Scanning Charts"
     },
     {
       "Type": "SCAN_CHART_FAILED",
@@ -26,6 +26,31 @@
       "Type": "DOWNLOADING",
       "Origin": "Downloading",
       "Content": "ダウンロード中"
+    },
+    {
+      "Type": "DOWNLOAD_CHART_FAILED",
+      "Origin": "Failed to download chart",
+      "Content": "Failed to download chart"
+    },
+    {
+      "Type": "UNKNOWN_ERROR",
+      "Origin": "Unknown error",
+      "Content": "Unknown error"
+    },
+    {
+      "Type": "DOWNLOADING_AUDIO_TRACK",
+      "Origin": "Downloading Audio Track",
+      "Content": "Downloading Audio Track"
+    },
+    {
+      "Type": "DOWNLOADING_CHART",
+      "Origin": "Downloading Chart",
+      "Content": "Downloading Chart"
+    },
+    {
+      "Type": "DOWNLOADING_PICTURE",
+      "Origin": "Downloading Picture",
+      "Content": "Downloading Picture"
     },
     {
       "Type": "LOAD_CHART_FAILED",
@@ -79,7 +104,7 @@
     },
     {
       "Type": "TAP_SPEED_DESC",
-      "Origin": "",
+      "Origin": "TapSpeed_MAJSETTING_DESC",
       "Content": "タップの速さを設定"
     },
     {
@@ -89,7 +114,7 @@
     },
     {
       "Type": "TOUCH_SPEED_DESC",
-      "Origin": "",
+      "Origin": "TouchSpeed_MAJSETTING_DESC",
       "Content": "タッチの速さを設定"
     },
     {
@@ -99,7 +124,7 @@
     },
     {
       "Type": "SLIDE_FADEIN_OFFSET_DESC",
-      "Origin": "",
+      "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
       "Content": "スライド現れるタイミングを設定、右調整は遅い（秒）"
     },
     {
@@ -109,7 +134,7 @@
     },
     {
       "Type": "BACKGROUND_DIM_DESC",
-      "Origin": "",
+      "Origin": "BackgroundDim_MAJSETTING_DESC",
       "Content": "大きいの方が暗い"
     },
     {
@@ -119,7 +144,7 @@
     },
     {
       "Type": "LANGUAGE_DESC",
-      "Origin": "",
+      "Origin": "Language_MAJSETTING_DESC",
       "Content": "语言/LANGUAGE"
     },
     {
@@ -129,7 +154,7 @@
     },
     {
       "Type": "STAR_ROTATION_DESC",
-      "Origin": "",
+      "Origin": "StarRotation_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -139,7 +164,7 @@
     },
     {
       "Type": "BGINFO_DESC",
-      "Origin": "",
+      "Origin": "BGInfo_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -149,7 +174,7 @@
     },
     {
       "Type": "AUDIO_OFFSET_DESC",
-      "Origin": "",
+      "Origin": "AudioOffset_MAJSETTING_DESC",
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
@@ -159,7 +184,7 @@
     },
     {
       "Type": "JUDGE_OFFSET_DESC",
-      "Origin": "",
+      "Origin": "JudgeOffset_MAJSETTING_DESC",
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
@@ -169,7 +194,7 @@
     },
     {
       "Type": "MODE_DESC",
-      "Origin": "",
+      "Origin": "Mode_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -179,7 +204,7 @@
     },
     {
       "Type": "NOTE_SKIN_DESC",
-      "Origin": "",
+      "Origin": "Skin_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -189,7 +214,7 @@
     },
     {
       "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
-      "Origin": "",
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -199,7 +224,7 @@
     },
     {
       "Type": "FAST_LATE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "FastLateType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -209,7 +234,7 @@
     },
     {
       "Type": "NOTE_JUDGE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "NoteJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -219,7 +244,7 @@
     },
     {
       "Type": "TOUCH_JUDGE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "TouchJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -229,7 +254,7 @@
     },
     {
       "Type": "SLIDE_JUDGE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "SlideJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -239,7 +264,7 @@
     },
     {
       "Type": "BREAK_JUDGE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "BreakJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -249,7 +274,7 @@
     },
     {
       "Type": "BREAK_FAST_LATE_TYPE_DESC",
-      "Origin": "",
+      "Origin": "BreakFastLateType_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -263,23 +288,23 @@
       "Content": "Classic: 新しいのは古いの上に\nModern: 古いのは新しいの上に"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE",
-      "Origin": "OuterJudgeDistance",
+      "Type": "INNER_JUDGE_DISTANCE",
+      "Origin": "InnerJudgeDistance",
       "Content": "内側判定文字表示距離"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE_DESC",
-      "Origin": "",
+      "Type": "INNER_JUDGE_DISTANCE_DESC",
+      "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE",
-      "Origin": "InnerJudgeDistance",
+      "Type": "OUTER_JUDGE_DISTANCE",
+      "Origin": "OuterJudgeDistance",
       "Content": "外側判定文字表示距離"
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE_DESC",
-      "Origin": "",
+      "Type": "OUTER_JUDGE_DISTANCE_DESC",
+      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -289,7 +314,7 @@
     },
     {
       "Type": "RESOLUTION_DESC",
-      "Origin": "",
+      "Origin": "Resolution_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -299,7 +324,7 @@
     },
     {
       "Type": "ANSWER_VOL_DESC",
-      "Origin": "",
+      "Origin": "Answer_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -309,7 +334,7 @@
     },
     {
       "Type": "BGM_VOL_DESC",
-      "Origin": "",
+      "Origin": "BGM_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -319,7 +344,7 @@
     },
     {
       "Type": "TAP_VOL_DESC",
-      "Origin": "",
+      "Origin": "Tap_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -329,7 +354,7 @@
     },
     {
       "Type": "SLIDE_VOL_DESC",
-      "Origin": "",
+      "Origin": "Slide_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -339,7 +364,7 @@
     },
     {
       "Type": "BREAK_VOL_DESC",
-      "Origin": "",
+      "Origin": "Break_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -349,7 +374,7 @@
     },
     {
       "Type": "TOUCH_VOL_DESC",
-      "Origin": "",
+      "Origin": "Touch_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -359,7 +384,7 @@
     },
     {
       "Type": "VOICE_VOL_DESC",
-      "Origin": "",
+      "Origin": "Voice_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -369,7 +394,7 @@
     },
     {
       "Type": "DISPLAY_SENSOR_DESC",
-      "Origin": "",
+      "Origin": "DisplaySensor_MAJSETTING_DESC",
       "Content": "センサーの状況を表示します"
     },
     {
@@ -379,7 +404,7 @@
     },
     {
       "Type": "DISPLAY_FPS_DESC",
-      "Origin": "",
+      "Origin": "DisplayFPS_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -389,7 +414,7 @@
     },
     {
       "Type": "FULLSCREEN_DESC",
-      "Origin": "",
+      "Origin": "FullScreen_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -399,7 +424,7 @@
     },
     {
       "Type": "TRY_FIX_AUDIO_SYNC_DESC",
-      "Origin": "",
+      "Origin": "TryFixAudioSync_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -409,7 +434,7 @@
     },
     {
       "Type": "NOTE_APPEAR_RATE_DESC",
-      "Origin": "",
+      "Origin": "NoteAppearRate_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -419,7 +444,7 @@
     },
     {
       "Type": "DISABLE_GC_IN_GAMING_DESC",
-      "Origin": "",
+      "Origin": "DisableGCInGameing_MAJSETTING_DESC",
       "Content": ""
     },
     {
@@ -446,6 +471,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "MissOnly",
       "Content": "Missだけ"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Enable",
+      "Content": "有効"
     },
     {
       "Type": "OTHER_MAJTEXT",

@@ -197,8 +197,10 @@ namespace MajdataPlay.Game
             catch(Exception e)
             {
                 State = ComponentState.Failed;
-                _errText.text = "加载note时出错了哟\n" + e.Message;
+                _loadingText.text = $"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}";
+                _loadingText.color = Color.red;
                 Debug.LogError(e);
+                return;
             }
 
             PrepareToPlay().Forget();
@@ -266,7 +268,7 @@ namespace MajdataPlay.Game
         {
             var dlInfo = DownloadInfo.Create(uri, savePath);
             var reporter = dlInfo.ProgressReporter;
-            var task = _httpDownloader.DownloadAsync(dlInfo,16384);
+            var task = _httpDownloader.DownloadAsync(dlInfo,512 * 1024);
 
             while(!task.IsCompleted)
             {

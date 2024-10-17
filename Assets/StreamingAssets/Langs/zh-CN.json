@@ -4,8 +4,8 @@
   "MappingTable": [
     {
       "Type": "SCANNING_CHART",
-      "Origin": "Scanning Chart",
-      "Content": "正在扫面谱面"
+      "Origin": "Scanning Charts",
+      "Content": "正在扫描谱面"
     },
     {
       "Type": "SCAN_CHART_FAILED",
@@ -26,6 +26,31 @@
       "Type": "DOWNLOADING",
       "Origin": "Downloading",
       "Content": "正在下载"
+    },
+    {
+      "Type": "DOWNLOAD_CHART_FAILED",
+      "Origin": "Failed to download chart",
+      "Content": "下载失败"
+    },
+    {
+      "Type": "UNKNOWN_ERROR",
+      "Origin": "Unknown error",
+      "Content": "未知错误"
+    },
+    {
+      "Type": "DOWNLOADING_AUDIO_TRACK",
+      "Origin": "Downloading Audio Track",
+      "Content": "正在下载音频"
+    },
+    {
+      "Type": "DOWNLOADING_CHART",
+      "Origin": "Downloading Chart",
+      "Content": "正在下载谱面"
+    },
+    {
+      "Type": "DOWNLOADING_PICTURE",
+      "Origin": "Downloading Picture",
+      "Content": "正在下载背景图"
     },
     {
       "Type": "LOAD_CHART_FAILED",
@@ -446,6 +471,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "MissOnly",
       "Content": "仅Miss"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Enable",
+      "Content": "启用"
     },
     {
       "Type": "OTHER_MAJTEXT",
