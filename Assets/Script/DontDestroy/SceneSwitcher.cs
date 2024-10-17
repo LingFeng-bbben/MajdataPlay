@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ namespace MajdataPlay
         Animator animator;
         public Image SubImage;
         public Image MainImage;
+
+        InputManager _inputManager;
         private void Awake()
         {
             MajInstances.SceneSwitcher = this;
@@ -21,6 +24,7 @@ namespace MajdataPlay
         // Start is called before the first frame update
         void Start()
         {
+            _inputManager = MajInstances.InputManager;
             animator = GetComponent<Animator>();
             DontDestroyOnLoad(this);
         }
@@ -31,6 +35,7 @@ namespace MajdataPlay
         }
         async UniTask SwitchSceneInternal(string sceneName)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -44,6 +49,7 @@ namespace MajdataPlay
         // Task
         async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -62,6 +68,7 @@ namespace MajdataPlay
         // ValueTasl
         async UniTask SwitchSceneInternalAsync(string sceneName, ValueTask taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -80,6 +87,7 @@ namespace MajdataPlay
         // UniTask
         async UniTask SwitchSceneInternalAsync(string sceneName, UniTask taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -100,6 +108,7 @@ namespace MajdataPlay
         // Task
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, Task<T> taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -118,6 +127,7 @@ namespace MajdataPlay
         // ValueTasl
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, ValueTask<T> taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
@@ -137,6 +147,7 @@ namespace MajdataPlay
         // UniTask
         async UniTask<T> SwitchSceneInternalAsync<T>(string sceneName, UniTask<T> taskToRun)
         {
+            _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);

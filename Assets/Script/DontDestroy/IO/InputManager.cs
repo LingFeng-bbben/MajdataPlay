@@ -173,6 +173,14 @@ namespace MajdataPlay.IO
         public Sensor GetSensor(SensorType target) => sensors[(int)target];
         public Sensor[] GetSensors() => sensors.ToArray();
         public Sensor[] GetSensors(SensorGroup group) => sensors.Where(x => x.Group == group).ToArray();
+        public void ClearAllSubscriber()
+        {
+            foreach(var sensor in sensors)
+                sensor.ClearSubscriber();
+            foreach(var button in buttons)
+                button.ClearSubscriber();
+            OnAnyAreaTrigger = null;
+        }
         void PushEvent(InputEventArgs args)
         {
             if (OnAnyAreaTrigger is not null)

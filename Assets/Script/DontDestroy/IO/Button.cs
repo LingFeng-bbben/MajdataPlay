@@ -25,5 +25,6 @@ namespace MajdataPlay.IO
             if (OnStatusChanged is not null)
                 OnStatusChanged(this, args);
         }
+        public void ClearSubscriber() => OnStatusChanged = null;
     }
 }
