@@ -91,6 +91,29 @@ namespace MajdataPlay.Game.Notes
                 _judgeQueues[0].LastOrDefault().SetIsLast();
             else if (ConnectInfo.IsConnSlide)
                 _judgeQueues[0].LastOrDefault().SetNonLast();
+
+            if(ConnectInfo.IsConnSlide)
+            {
+                var judgeQueue = _judgeQueues[0];
+                if (ConnectInfo.TotalJudgeQueueLen < 4)
+                {
+                    if(ConnectInfo.IsGroupPartHead)
+                    {
+                        judgeQueue[0].CanSkip = true;
+                        judgeQueue[1].CanSkip = false;
+                    }
+                    else if (ConnectInfo.IsGroupPartEnd)
+                    {
+                        judgeQueue[0].CanSkip = false;
+                        judgeQueue[1].CanSkip = true;
+                    }
+                }
+                else
+                {
+                    foreach (var judgeArea in judgeQueue)
+                        judgeArea.CanSkip = true;
+                }
+            }
         }
         public float GetSlideLength()
         {

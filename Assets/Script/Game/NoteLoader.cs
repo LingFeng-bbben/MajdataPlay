@@ -854,12 +854,26 @@ namespace MajdataPlay.Game
                     subSlides.Add(parent.GameObject.GetComponent<SlideDrop>());
                 }
             }
-            subSlides.ForEach(s =>
+            long judgeQueueLen = 0;
+            var slideCount = subSlides.Count;
+            foreach (var (i, s) in subSlides.WithIndex())
             {
-                s.Initialize();
+                var isFirst = i == 0;
+                var isEnd = i == slideCount - 1;
+                var table = SlideTables.FindTableByName(s.SlideType);
+                
                 totalSlideLen += s.GetSlideLength();
+                if (isEnd)
+                    judgeQueueLen += table!.JudgeQueue.Length;
+                else
+                    judgeQueueLen += table!.JudgeQueue.Length - 1;
+            }
+            subSlides.ForEach(s => 
+            {
+                s.ConnectInfo.TotalSlideLen = totalSlideLen;
+                s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
+                s.Initialize();
             });
-            subSlides.ForEach(s => s.ConnectInfo.TotalSlideLen = totalSlideLen);
         }
         private IConnectableSlide CreateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
         {

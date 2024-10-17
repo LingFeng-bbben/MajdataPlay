@@ -13,7 +13,7 @@ namespace MajdataPlay.Types
                 return areas.Any(a => a.On);
             }
         }
-        public bool CanSkip = true;
+        public bool CanSkip { get; set; } = true;
         public bool IsFinished
         {
             get

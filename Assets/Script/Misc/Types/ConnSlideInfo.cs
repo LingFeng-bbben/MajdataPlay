@@ -16,6 +16,10 @@ namespace MajdataPlay.Types
         /// </summary>
         public float TotalSlideLen { get; set; }
         /// <summary>
+        /// 表示Slide Group的判定队列长度
+        /// </summary>
+        public long TotalJudgeQueueLen { get; set; }
+        /// <summary>
         /// 指示该Slide是否位于Group的头部
         /// </summary>
         public bool IsGroupPartHead
