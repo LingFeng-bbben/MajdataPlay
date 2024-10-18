@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net
 {
-    public partial class HttpDownloader
+    public partial class HttpTransporter
     {
         public string UserAgent { get; set; } = $"MajdataPlay/{MajInstances.GameVersion}";
         public static TimeSpan Timeout
@@ -24,12 +24,69 @@ namespace MajdataPlay.Net
             UseProxy = true
         });
 
-        public async ValueTask<DownloadResult> DownloadAsync(DownloadInfo dlInfo, int bufferSize = 4096)
+        public async ValueTask<PostResult> PostAsync(PostRequest request)
         {
-            var threadCount = dlInfo.ThreadCount;
-            var multiThread = dlInfo.MultiThread && threadCount > 1;
+            var httpReq = new HttpRequestMessage(HttpMethod.Post,request.RequestAddress);
+            var length = request.Content.Headers.ContentLength;
+            var retryCount = 0;
+            var maxRetryCount = request.MaxRetryCount;
+            var startAt = DateTime.Now;
+            httpReq.Headers.UserAgent.ParseAdd(UserAgent);
+            httpReq.Content = request.Content;
 
-            var preCheckResult = await PreCheck(dlInfo);
+            while(true)
+            {
+                try
+                {
+                    var rsp = await ShareClient.SendAsync(httpReq);
+                    rsp.ThrowIfTransmitFailure();
+                    return new PostResult()
+                    {
+                        Length = length ?? 0,
+                        StartAt = startAt,
+                        StatusCode = rsp.StatusCode,
+                        RequestError = HttpRequestError.NoError,
+                        ResponseMessage = rsp
+                    };
+                }
+                catch(HttpRequestException ex)
+                {
+                    if (retryCount >= maxRetryCount)
+                    {
+                        var errCode = ex.GetErrorCode();
+                        return new PostResult()
+                        {
+                            Length = length ?? 0,
+                            StartAt = startAt,
+                            StatusCode = HttpStatusCode.BadGateway,
+                            RequestError = errCode,
+                            ResponseMessage = null
+                        };
+                    }
+                }
+                catch(HttpTransmitException e)
+                {
+                    if (retryCount >= maxRetryCount)
+                    {
+                        return new PostResult()
+                        {
+                            Length = length ?? 0,
+                            StartAt = startAt,
+                            StatusCode = e.StatusCode,
+                            RequestError = e.RequestError,
+                            ResponseMessage = e.ResponseMessage
+                        };
+                    }
+                }
+                retryCount++;
+            }
+        }
+        public async ValueTask<DownloadResult> DownloadAsync(DownloadRequest request, int bufferSize = 4096)
+        {
+            var threadCount = request.ThreadCount;
+            var multiThread = request.MultiThread && threadCount > 1;
+
+            var preCheckResult = await PreCheck(request);
             var fileSize = preCheckResult.Length;
             var startAt = DateTime.Now;
 
@@ -40,7 +97,7 @@ namespace MajdataPlay.Net
                 return new DownloadResult()
                 {
                     Length = fileSize,
-                    SavePath = dlInfo.SavePath,
+                    SavePath = request.SavePath,
                     StartAt = startAt,
                     StatusCode = preCheckResult.StatusCode,
                     RequestError = HttpRequestError.InvalidResponse,
@@ -52,13 +109,13 @@ namespace MajdataPlay.Net
             try
             {
                 if (!multiThread || fileSize < threadCount * 2)
-                    await SingleThreadDownloadAsync(dlInfo, fileSize, bufferSize);
+                    await SingleThreadDownloadAsync(request, fileSize, bufferSize);
                 else
-                    await MultiThreadDownloadAsync(dlInfo, fileSize, bufferSize);
+                    await MultiThreadDownloadAsync(request, fileSize, bufferSize);
                 return new DownloadResult()
                 {
                     Length = fileSize,
-                    SavePath = dlInfo.SavePath,
+                    SavePath = request.SavePath,
                     StartAt = startAt,
                     StatusCode = preCheckResult.StatusCode,
                     RequestError = HttpRequestError.NoError,
@@ -70,7 +127,7 @@ namespace MajdataPlay.Net
                 return new DownloadResult()
                 {
                     Length = fileSize,
-                    SavePath = dlInfo.SavePath,
+                    SavePath = request.SavePath,
                     StartAt = startAt,
                     StatusCode = e.StatusCode,
                     RequestError = e.RequestError,
@@ -78,9 +135,9 @@ namespace MajdataPlay.Net
                 };
             }
         }
-        async ValueTask<PreCheckInfo> PreCheck(DownloadInfo dlInfo)
+        async ValueTask<PreCheckResule> PreCheck(DownloadRequest request)
         {
-            var requestAddress = dlInfo.RequestAddress;
+            var requestAddress = request.RequestAddress;
             var req = new HttpRequestMessage(HttpMethod.Head, requestAddress);
             var retryCount = 0;
             var rsp = await ShareClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, requestAddress));
@@ -95,12 +152,12 @@ namespace MajdataPlay.Net
                     isSuccess = rsp.IsSuccessStatusCode && rsp.Content.Headers.ContentLength > 0;
                     if (!isSuccess)
                     {
-                        if (retryCount < dlInfo.MaxRetryCount)
+                        if (retryCount < request.MaxRetryCount)
                         {
                             retryCount++;
                             continue;
                         }
-                        return new PreCheckInfo()
+                        return new PreCheckResule()
                         {
                             ResponseMessage = rsp,
                             StatusCode = rsp.StatusCode,
@@ -114,7 +171,7 @@ namespace MajdataPlay.Net
             bool rangeDlAvailable = rsp.Headers.Contains("Accept-Ranges") && rsp.Headers.GetValues("Accept-Ranges").Any(x => x == "bytes");
             var fileSize = rsp.Content.Headers.ContentLength ?? -1;
 
-            return new PreCheckInfo()
+            return new PreCheckResule()
             {
                 ResponseMessage = rsp,
                 StatusCode = rsp.StatusCode,
@@ -122,21 +179,21 @@ namespace MajdataPlay.Net
                 RangeDLAvailable = rangeDlAvailable
             };
         }
-        async ValueTask SingleThreadDownloadAsync(DownloadInfo dlInfo, long fileSize, int bufferSize)
+        async ValueTask SingleThreadDownloadAsync(DownloadRequest request, long fileSize, int bufferSize)
         {
             Progress<ReportEventArgs> reporter = new();
             var info = new RangeDownloadInfo()
             {
-                RequestAddress = dlInfo.RequestAddress,
+                RequestAddress = request.RequestAddress,
                 Reporter = reporter,
                 StartAt = 0,
                 UserAgent = UserAgent,
                 BufferSize = bufferSize,
                 SegmentLength = fileSize,
-                SavePath = dlInfo.SavePath
+                SavePath = request.SavePath
             };
             var downloader = new Downloader(info);
-            var progressReporter = dlInfo.ProgressReporter;
+            var progressReporter = request.ProgressReporter;
             EventHandler<ReportEventArgs> progressUpdateHandler = (sender, args) =>
             {
                 if (progressReporter is not null)
@@ -162,15 +219,15 @@ namespace MajdataPlay.Net
                 throw;
             }
         }
-        async ValueTask MultiThreadDownloadAsync(DownloadInfo dlInfo, long fileSize, int bufferSize)
+        async ValueTask MultiThreadDownloadAsync(DownloadRequest request, long fileSize, int bufferSize)
         {
             var reporter = new Progress<ReportEventArgs>();
-            var threadCount = dlInfo.ThreadCount;
-            var savePath = dlInfo.SavePath;
+            var threadCount = request.ThreadCount;
+            var savePath = request.SavePath;
             var length4Part = fileSize / threadCount;
             var progresses = new double[threadCount];
             var tasks = new Task[threadCount];
-            var progressReporter = dlInfo.ProgressReporter;
+            var progressReporter = request.ProgressReporter;
             EventHandler<ReportEventArgs> progressUpdateHandler = (sender, args) =>
             {
                 if (progressReporter is not null)
@@ -438,7 +495,7 @@ namespace MajdataPlay.Net
                 _downloadedBytes = 0;
             }
         }
-        readonly struct PreCheckInfo
+        readonly struct PreCheckResule
         {
             public HttpResponseMessage ResponseMessage { get; init; }
             public HttpStatusCode StatusCode { get; init; }

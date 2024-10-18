@@ -119,7 +119,7 @@ namespace MajdataPlay.Game
         Text _errText;
         TextMeshPro _loadingText;
 
-        HttpDownloader _httpDownloader = new();
+        HttpTransporter _httpDownloader = new();
         SimaiProcess _chart;
         SongDetail _songDetail;
 
@@ -266,7 +266,7 @@ namespace MajdataPlay.Game
         }
         async UniTask<DownloadResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged)
         {
-            var dlInfo = DownloadInfo.Create(uri, savePath);
+            var dlInfo = DownloadRequest.Create(uri, savePath);
             var reporter = dlInfo.ProgressReporter;
             var task = _httpDownloader.DownloadAsync(dlInfo,512 * 1024);
 
