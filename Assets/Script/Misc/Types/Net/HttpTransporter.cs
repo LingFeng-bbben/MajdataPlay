@@ -81,7 +81,7 @@ namespace MajdataPlay.Net
                 retryCount++;
             }
         }
-        public async ValueTask<DownloadResult> DownloadAsync(DownloadRequest request, int bufferSize = 4096)
+        public async ValueTask<GetResult> GetAsync(GetRequest request, int bufferSize = 4096)
         {
             var threadCount = request.ThreadCount;
             var multiThread = request.MultiThread && threadCount > 1;
@@ -94,7 +94,7 @@ namespace MajdataPlay.Net
 
             if (fileSize < 0)
             {
-                return new DownloadResult()
+                return new GetResult()
                 {
                     Length = fileSize,
                     SavePath = request.SavePath,
@@ -109,10 +109,10 @@ namespace MajdataPlay.Net
             try
             {
                 if (!multiThread || fileSize < threadCount * 2)
-                    await SingleThreadDownloadAsync(request, fileSize, bufferSize);
+                    await SingleThreadGetAsync(request, fileSize, bufferSize);
                 else
-                    await MultiThreadDownloadAsync(request, fileSize, bufferSize);
-                return new DownloadResult()
+                    await MultiThreadGetAsync(request, fileSize, bufferSize);
+                return new GetResult()
                 {
                     Length = fileSize,
                     SavePath = request.SavePath,
@@ -124,7 +124,7 @@ namespace MajdataPlay.Net
             }
             catch (HttpTransmitException e)
             {
-                return new DownloadResult()
+                return new GetResult()
                 {
                     Length = fileSize,
                     SavePath = request.SavePath,
@@ -135,7 +135,7 @@ namespace MajdataPlay.Net
                 };
             }
         }
-        async ValueTask<PreCheckResule> PreCheck(DownloadRequest request)
+        async ValueTask<PreCheckResule> PreCheck(GetRequest request)
         {
             var requestAddress = request.RequestAddress;
             var req = new HttpRequestMessage(HttpMethod.Head, requestAddress);
@@ -179,7 +179,7 @@ namespace MajdataPlay.Net
                 RangeDLAvailable = rangeDlAvailable
             };
         }
-        async ValueTask SingleThreadDownloadAsync(DownloadRequest request, long fileSize, int bufferSize)
+        async ValueTask SingleThreadGetAsync(GetRequest request, long fileSize, int bufferSize)
         {
             Progress<ReportEventArgs> reporter = new();
             var info = new RangeDownloadInfo()
@@ -219,7 +219,7 @@ namespace MajdataPlay.Net
                 throw;
             }
         }
-        async ValueTask MultiThreadDownloadAsync(DownloadRequest request, long fileSize, int bufferSize)
+        async ValueTask MultiThreadGetAsync(GetRequest request, long fileSize, int bufferSize)
         {
             var reporter = new Progress<ReportEventArgs>();
             var threadCount = request.ThreadCount;

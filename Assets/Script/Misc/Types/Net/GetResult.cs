@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net
 {
-    public readonly struct DownloadResult
+    public readonly struct GetResult
     {
         public bool IsSuccess
         {

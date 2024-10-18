@@ -264,11 +264,11 @@ namespace MajdataPlay.Game
             song.Hash = _songDetail.Hash;
             _songDetail = song;
         }
-        async UniTask<DownloadResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged)
+        async UniTask<GetResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged)
         {
-            var dlInfo = DownloadRequest.Create(uri, savePath);
+            var dlInfo = GetRequest.Create(uri, savePath);
             var reporter = dlInfo.ProgressReporter;
-            var task = _httpDownloader.DownloadAsync(dlInfo,512 * 1024);
+            var task = _httpDownloader.GetAsync(dlInfo,512 * 1024);
 
             while(!task.IsCompleted)
             {
