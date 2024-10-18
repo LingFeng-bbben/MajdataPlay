@@ -367,7 +367,7 @@ namespace MajdataPlay.Game
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
             if(appearTiming < -5f)
@@ -399,7 +399,7 @@ namespace MajdataPlay.Game
         HoldPoolingInfo CreateHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
             var noteTiming = (float)timing.time;
-            var speed = noteSpeed * timing.HSpeed;
+            var speed = noteSpeed * Math.Abs(timing.HSpeed);
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
@@ -431,7 +431,7 @@ namespace MajdataPlay.Game
             var noteTiming = (float)timing.time;
             var speed = noteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = noteSortOrder;
             bool isEach = false;
@@ -500,7 +500,7 @@ namespace MajdataPlay.Game
             var startPosition = note.startPosition;
             var isEach = timing.noteList.Count > 1;
             var isBreak = note.isBreak;
-            var speed = touchSpeed * timing.HSpeed;
+            var speed = touchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
             var noteSortOrder = this.noteSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
@@ -540,7 +540,7 @@ namespace MajdataPlay.Game
             var areaPosition = note.touchArea;
             var noteTiming = (float)timing.time;
             var lastFor = (float)note.holdTime;
-            var speed = touchSpeed * timing.HSpeed;
+            var speed = touchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
             var isBreak = note.isBreak;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
@@ -613,7 +613,6 @@ namespace MajdataPlay.Game
                     member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
             });
         }
-
         private async ValueTask CountNoteSumAsync(SimaiProcess json)
         {
             await Task.Run(() =>
@@ -923,7 +922,7 @@ namespace MajdataPlay.Game
             {
                 SliCompo.IsSpecialFlip = isMirror;
             }
-            SliCompo.Speed = noteSpeed * timing.HSpeed;
+            SliCompo.Speed = noteSpeed * Math.Abs(timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = note.startPosition;
             SliCompo._stars = new GameObject[] { slide_star };
@@ -971,7 +970,7 @@ namespace MajdataPlay.Game
 
             WifiCompo.IsJustR = detectJustType(note.noteContent, out endPos);
             WifiCompo.EndPos = endPos;
-            WifiCompo.Speed = noteSpeed * timing.HSpeed;
+            WifiCompo.Speed = noteSpeed * Math.Abs(timing.HSpeed);
             WifiCompo.StartTiming = (float)timing.time;
             WifiCompo.StartPos = note.startPosition;
             WifiCompo.Timing = (float)note.slideStartTime;
