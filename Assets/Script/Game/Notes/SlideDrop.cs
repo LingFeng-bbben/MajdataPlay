@@ -92,27 +92,28 @@ namespace MajdataPlay.Game.Notes
             else if (ConnectInfo.IsConnSlide)
                 _judgeQueues[0].LastOrDefault().SetNonLast();
 
-            if(ConnectInfo.IsConnSlide)
+            
+        }
+        void UpdateJudgeQueue()
+        {
+            var judgeQueue = _judgeQueues[0];
+            if (ConnectInfo.TotalJudgeQueueLen < 4)
             {
-                var judgeQueue = _judgeQueues[0];
-                if (ConnectInfo.TotalJudgeQueueLen < 4)
+                if (ConnectInfo.IsGroupPartHead)
                 {
-                    if(ConnectInfo.IsGroupPartHead)
-                    {
-                        judgeQueue[0].CanSkip = true;
-                        judgeQueue[1].CanSkip = false;
-                    }
-                    else if (ConnectInfo.IsGroupPartEnd)
-                    {
-                        judgeQueue[0].CanSkip = false;
-                        judgeQueue[1].CanSkip = true;
-                    }
+                    judgeQueue[0].CanSkip = true;
+                    judgeQueue[1].CanSkip = false;
                 }
-                else
+                else if (ConnectInfo.IsGroupPartEnd)
                 {
-                    foreach (var judgeArea in judgeQueue)
-                        judgeArea.CanSkip = true;
+                    judgeQueue[0].CanSkip = false;
+                    judgeQueue[1].CanSkip = true;
                 }
+            }
+            else
+            {
+                foreach (var judgeArea in judgeQueue)
+                    judgeArea.CanSkip = true;
             }
         }
         public float GetSlideLength()
@@ -139,6 +140,7 @@ namespace MajdataPlay.Game.Notes
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     Timing = parent.Timing + parent.Length;
                 }
+                UpdateJudgeQueue();
             }
 
             if(ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
