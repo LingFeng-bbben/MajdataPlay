@@ -1,4 +1,6 @@
-﻿namespace MajdataPlay.Types
+﻿using System.Collections.Generic;
+
+namespace MajdataPlay.Types
 {
     public class GameSetting
     {
@@ -68,7 +70,10 @@
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public string ApiEndpoint { get; set; } = "";
+        public Dictionary<string,string> ApiEndpoints { get; set; } = new Dictionary<string, string> {
+            { "Majnet","https://majdata.net/api3/api" },
+            { "Contest","https://majdata.net/api1/api"}
+        };
     }
     public class DebugOptions
     {

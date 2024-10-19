@@ -85,8 +85,14 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
-            if(MajInstances.Setting.Online.Enable)
-                tasks.Add(GetOnlineCollection(MajInstances.Setting.Online.ApiEndpoint));
+            if (MajInstances.Setting.Online.Enable)
+            {
+                foreach(var item in MajInstances.Setting.Online.ApiEndpoints)
+                {
+                    tasks.Add(GetOnlineCollection(item.Key,item.Value));
+                }
+            }
+                
 
             var a = Task.WhenAll(tasks);
             await a;
@@ -128,9 +134,9 @@ namespace MajdataPlay.Utils
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());
         }
-        static async Task<SongCollection> GetOnlineCollection(string apiroot)
+        static async Task<SongCollection> GetOnlineCollection(string name, string apiroot)
         {
-            var collection = SongCollection.Empty("MajNet");
+            var collection = SongCollection.Empty(name);
             if (string.IsNullOrEmpty(apiroot)) 
                 return collection;
 
@@ -170,7 +176,7 @@ namespace MajdataPlay.Utils
                     gameList.Add(songDetail);
                 }
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
-                return new SongCollection("MajNet", gameList.ToArray());
+                return new SongCollection(name, gameList.ToArray());
             }
             catch (Exception e)
             {
