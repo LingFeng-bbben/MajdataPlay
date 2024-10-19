@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using MajdataPlay.Extensions;
+using MajdataPlay.Net;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
@@ -137,11 +138,7 @@ namespace MajdataPlay.Utils
             Debug.Log("Loading Online Charts from:" + listurl);
             try
             {
-                var client = new HttpClient(new HttpClientHandler() 
-                { 
-                    Proxy = WebRequest.GetSystemWebProxy(), 
-                    UseProxy = true 
-                });
+                var client = HttpTransporter.ShareClient;
                 var liststr = await client.GetStringAsync(listurl);
                 var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr);
                 if (list is null || list.IsEmpty())
