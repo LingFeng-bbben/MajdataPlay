@@ -213,7 +213,7 @@ namespace MajdataPlay.Net
                 await downloader.DownloadAsync();
                 reporter.ProgressChanged -= progressUpdateHandler;
             }
-            catch
+            catch(Exception e)
             {
                 reporter.ProgressChanged -= progressUpdateHandler;
                 throw;
@@ -456,10 +456,13 @@ namespace MajdataPlay.Net
                             req.Headers.Range = new RangeHeaderValue(StartAt, EndAt);
                         req.Headers.UserAgent.ParseAdd(_userAgent);
                         var rsp = await _httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-                        rsp.ThrowIfTransmitFailure();
+                        if(((int)rsp.StatusCode).InRange(400,499))
+                            rsp.ThrowIfTransmitFailure();
+                        else
+                            rsp.EnsureSuccessStatusCode();
                         return await rsp.Content.ReadAsStreamAsync();
                     }
-                    catch
+                    catch(HttpRequestException)
                     {
                         if (_retryCount >= MaxRetryCount)
                             throw;

@@ -21,6 +21,7 @@ using MajdataPlay.Net;
 using System.Security.Policy;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using System.Net;
 
 namespace MajdataPlay.Game
 {
@@ -262,15 +263,16 @@ namespace MajdataPlay.Game
                     _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...\n{r.Progress * 100:F2}%";
                 });
             }
-            if (!File.Exists(videoPath))
+            if (!File.Exists(videoPath) && videoUri is not null)
             {
                 var result = await DownloadFile(videoUri, videoPath, r =>
                 {
                     _loadingText.text = $"{Localization.GetLocalizedText("Downloading Video")}...\n{r.Progress * 100:F2}%";
                 });
-                if(result.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if(result.StatusCode == HttpStatusCode.NotFound)
                 {
                     Debug.Log("No video for this song");
+                    File.Delete(videoPath);
                     videoPath = "";
                 }
             }
