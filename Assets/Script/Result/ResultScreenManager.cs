@@ -200,16 +200,13 @@ namespace MajdataPlay.Result
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
+                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                MajInstances.AudioManager.StopSFX(SFXSampleType.SUGOI);
+                MajInstances.AudioManager.StopSFX(SFXSampleType.RESULT_BGM);
                 MajInstances.SceneSwitcher.SwitchScene("List");
             }
         }
 
-        private void OnDestroy()
-        {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-            MajInstances.AudioManager.StopSFX(SFXSampleType.SUGOI);
-            MajInstances.AudioManager.StopSFX(SFXSampleType.RESULT_BGM);
-        }
         readonly ref struct UnpackJudgeInfo
         {
             public long CriticalPerfect { get; init; }
