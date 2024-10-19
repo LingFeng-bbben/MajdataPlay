@@ -236,14 +236,14 @@ namespace MajdataPlay.Game
             {
                 await DownloadFile(trackUri, trackPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{r * 100:F2}%";
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Audio Track")}...";
                 });
             }
             if (!File.Exists(chartPath))
             {
                 await DownloadFile(chartUri, chartPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Maidata")}...\n{r * 100:F2}%";
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Maidata")}...";
                 });
             }
             SongDetail song;
@@ -258,7 +258,7 @@ namespace MajdataPlay.Game
             {
                 await DownloadFile(bgUri, bgPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...\n{r * 100:F2}%";
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...";
                 });
             }
             if (!File.Exists(videoPath) && videoUri is not null)
@@ -267,7 +267,7 @@ namespace MajdataPlay.Game
                 {
                     await DownloadFile(videoUri, videoPath, r =>
                     {
-                        _loadingText.text = $"{Localization.GetLocalizedText("Downloading Video")}...\n{r * 100:F2}%";
+                        _loadingText.text = $"{Localization.GetLocalizedText("Downloading Video")}...";
                     });
                 }
                 catch
@@ -296,7 +296,7 @@ namespace MajdataPlay.Game
             await UniTask.Yield();
             return task.Result;
         }*/
-        async UniTask DownloadString(string uri, string savePath)
+        /*async UniTask DownloadString(string uri, string savePath)
         {
             var task = HttpTransporter.ShareClient.GetStringAsync(uri);
 
@@ -306,8 +306,8 @@ namespace MajdataPlay.Game
             }
             File.WriteAllText(savePath, task.Result);
             return;
-        }
-        async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
+        }*/
+        /*async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
         {
             UnityWebRequest trackreq = UnityWebRequest.Get(uri);
             trackreq.downloadHandler = new DownloadHandlerFile(savePath);
@@ -322,6 +322,24 @@ namespace MajdataPlay.Game
                 Debug.LogError("Error downloading file: " + trackreq.error);
                 throw new Exception("Download file failed");
             }
+        }*/
+        async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
+        {
+            var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
+            float fakeprogress = 0f;
+            while (!task.IsCompleted)
+            {
+                progressCallback.Invoke(fakeprogress);
+                fakeprogress += 0.001f;
+                if(fakeprogress >0.99f) fakeprogress = 0.99f;
+                await UniTask.Yield();
+            }
+            if (task.IsCanceled)
+            {
+                throw new Exception("Download failed");
+            }
+            File.WriteAllBytes(savePath, task.Result);
+            return;
         }
         async UniTask LoadAudioTrack()
         {
