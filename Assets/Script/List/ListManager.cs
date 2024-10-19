@@ -22,8 +22,11 @@ namespace MajdataPlay.List
             LightManager.Instance.SetButtonLight(Color.yellow, 6);
             LightManager.Instance.SetButtonLight(Color.yellow, 1);
             CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_SONG);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_BGM, true);
+            if (!MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM).IsPlaying)
+            {
+                MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_BGM, true);
+                MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_SONG);
+            }
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
 
