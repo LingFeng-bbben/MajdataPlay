@@ -38,21 +38,6 @@
       "Content": "未知错误"
     },
     {
-      "Type": "DOWNLOADING_AUDIO_TRACK",
-      "Origin": "Downloading Audio Track",
-      "Content": "正在下载音频"
-    },
-    {
-      "Type": "DOWNLOADING_CHART",
-      "Origin": "Downloading Chart",
-      "Content": "正在下载谱面"
-    },
-    {
-      "Type": "DOWNLOADING_PICTURE",
-      "Origin": "Downloading Picture",
-      "Content": "正在下载背景图"
-    },
-    {
       "Type": "LOAD_CHART_FAILED",
       "Origin": "Failed to load chart",
       "Content": "加载谱面时发生错误"
@@ -496,6 +481,25 @@
       "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "不可用"
+    },{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Audio Track",
+      "Content": "下载音频中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Maidata",
+      "Content": "下载谱面中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Picture",
+      "Content": "下载图片中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Video",
+      "Content": "下载视频中"
     }
   ]
 }

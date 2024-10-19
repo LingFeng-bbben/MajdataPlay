@@ -38,21 +38,6 @@
       "Content": "Unknown error"
     },
     {
-      "Type": "DOWNLOADING_AUDIO_TRACK",
-      "Origin": "Downloading Audio Track",
-      "Content": "Downloading Audio Track"
-    },
-    {
-      "Type": "DOWNLOADING_CHART",
-      "Origin": "Downloading Chart",
-      "Content": "Downloading Chart"
-    },
-    {
-      "Type": "DOWNLOADING_PICTURE",
-      "Origin": "Downloading Picture",
-      "Content": "Downloading Picture"
-    },
-    {
       "Type": "LOAD_CHART_FAILED",
       "Origin": "Failed to load chart",
       "Content": "譜面読み込みエラー"
@@ -496,6 +481,25 @@
       "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "利用不可"
+    },{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Audio Track",
+      "Content": "トラックをダウンロード中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Maidata",
+      "Content": "譜面をダウンロード中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Picture",
+      "Content": "背景をダウンロード中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Video",
+      "Content": "動画をダウンロード中"
     }
   ]
 }
