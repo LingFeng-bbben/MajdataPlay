@@ -861,6 +861,7 @@ namespace MajdataPlay.Game
                 var isEnd = i == slideCount - 1;
                 var table = SlideTables.FindTableByName(s.SlideType);
                 
+                s.Initialize();
                 totalSlideLen += s.GetSlideLength();
                 if (isEnd)
                     judgeQueueLen += table!.JudgeQueue.Length;
@@ -871,7 +872,6 @@ namespace MajdataPlay.Game
             {
                 s.ConnectInfo.TotalSlideLen = totalSlideLen;
                 s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
-                s.Initialize();
             });
         }
         private IConnectableSlide CreateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
