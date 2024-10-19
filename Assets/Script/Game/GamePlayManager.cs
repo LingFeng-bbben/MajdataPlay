@@ -217,9 +217,11 @@ namespace MajdataPlay.Game
             var trackPath = Path.Combine(chartFolder, "track.mp3");
             var chartPath = Path.Combine(chartFolder, "maidata.txt");
             var bgPath = Path.Combine(chartFolder, "bg.png");
+            var videoPath = Path.Combine(chartFolder, "bg.mp4");
             var trackUri = _songDetail.TrackPath;
             var chartUri = _songDetail.MaidataPath;
             var bgUri = _songDetail.BGPath;
+            var videoUri = _songDetail.VideoPath;
 
             if (trackUri is null or "")
                 throw new AudioTrackNotFoundException(trackPath);
@@ -259,6 +261,18 @@ namespace MajdataPlay.Game
                 {
                     _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...\n{r.Progress * 100:F2}%";
                 });
+            }
+            if (!File.Exists(videoPath))
+            {
+                var result = await DownloadFile(videoUri, videoPath, r =>
+                {
+                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Video")}...\n{r.Progress * 100:F2}%";
+                });
+                if(result.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Debug.Log("No video for this song");
+                    videoPath = "";
+                }
             }
             song = await SongDetail.ParseAsync(dirInfo.GetFiles());
             song.Hash = _songDetail.Hash;

@@ -158,6 +158,7 @@ namespace MajdataPlay.Utils
                         MaidataPath = apiroot + "/Maidata/" + song.Id,
                         TrackPath = apiroot + "/Track/" + song.Id,
                         BGPath = apiroot + "/ImageFull/" + song.Id,
+                        VideoPath = apiroot + "/Video/" + song.Id,
                         CoverPath = apiroot + "/Image/" + song.Id,
                         Hash = song.Id.ToString()+"//" + song.Timestamp,
                         AddTime = dateTime
