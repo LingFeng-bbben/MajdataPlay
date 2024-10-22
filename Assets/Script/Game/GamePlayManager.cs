@@ -555,7 +555,7 @@ namespace MajdataPlay.Game
             else if(remainingTime >= 0)
             {
                 _skipBtn.SetActive(false);
-                EndGame().Forget();
+                EndGame(true).Forget();
             }
         }
         void FixedUpdate()
@@ -647,19 +647,22 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SwitchScene("List");
 
         }
-        public async UniTaskVoid EndGame()
+        public async UniTaskVoid EndGame(bool isDelay =false)
         {
+            _bgManager.CancelTimeRef();
+            State = ComponentState.Finished;
+            if (isDelay)
+                await UniTask.Delay(2000);
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
             GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             MajInstances.GameManager.EnableGC();
-            _bgManager.CancelTimeRef();
-            State = ComponentState.Finished;
+            
             DisposeAudioTrack();
 
             MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
             await UniTask.DelayFrame(5);
-            MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("Result", UniTask.Delay(1000)).Forget();
+            MajInstances.SceneSwitcher.SwitchScene("Result");
         }
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
