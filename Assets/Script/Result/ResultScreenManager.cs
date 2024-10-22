@@ -54,6 +54,8 @@ namespace MajdataPlay.Result
             var totalJudgeRecord = UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongInfo;
 
+            GetComponent<OnlineInteractionSender>().Init(song);
+
             if (result.Acc.DX < 70)
             {
                 omg.text = "您输了";

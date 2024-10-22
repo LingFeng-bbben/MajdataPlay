@@ -271,6 +271,8 @@ namespace MajdataPlay.Game
             }
             song = await SongDetail.ParseAsync(dirInfo.GetFiles());
             song.Hash = _songDetail.Hash;
+            song.OnlineId = _songDetail.OnlineId;
+            song.ApiEndpoint = _songDetail.ApiEndpoint;
             _songDetail = song;
         }
         /*async UniTask<GetResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged,int buffersize = 128*1024)
