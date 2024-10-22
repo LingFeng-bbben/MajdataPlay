@@ -170,6 +170,7 @@ namespace MajdataPlay.List
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
+                    GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     break;
             }
