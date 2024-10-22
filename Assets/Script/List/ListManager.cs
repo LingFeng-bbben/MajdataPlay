@@ -122,7 +122,7 @@ namespace MajdataPlay.List
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_SONG);
                             MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_BGM);
-                            MajInstances.SceneSwitcher.SwitchScene("Game");
+                            MajInstances.SceneSwitcher.SwitchScene("Game",false);
                         }
                         break;
                     case SensorType.A7:

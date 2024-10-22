@@ -93,8 +93,6 @@ namespace MajdataPlay.Game
 
 
         [SerializeField]
-        GameObject _loadingMask;
-        [SerializeField]
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
@@ -117,9 +115,7 @@ namespace MajdataPlay.Game
 
         long _fileTimeAtStart = 0;
 
-        Image _loadingImage;
         Text _errText;
-        TextMeshPro _loadingText;
 
         HttpTransporter _httpDownloader = new();
         SimaiProcess _chart;
@@ -157,8 +153,7 @@ namespace MajdataPlay.Game
             _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
-            _loadingText = _loadingMask.transform.GetChild(0).GetComponent<TextMeshPro>();
-            _loadingImage = _loadingMask.GetComponent<Image>();
+
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
             LoadChart().Forget();
@@ -178,16 +173,14 @@ namespace MajdataPlay.Game
             catch(HttpTransmitException httpEx)
             {
                 State = ComponentState.Failed;
-                _loadingText.text = $"{Localization.GetLocalizedText("Failed to download chart")}";
-                _loadingText.color = Color.red;
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
                 Debug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
                 State = ComponentState.Failed;
-                _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}";
-                _loadingText.color = Color.red;
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
                 Debug.LogError(audioEx);
                 return;
             }
@@ -199,8 +192,7 @@ namespace MajdataPlay.Game
             catch(Exception e)
             {
                 State = ComponentState.Failed;
-                _loadingText.text = $"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}";
-                _loadingText.color = Color.red;
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
                 Debug.LogError(e);
                 return;
             }
@@ -230,20 +222,20 @@ namespace MajdataPlay.Game
             if (chartUri is null or "")
                 throw new ChartNotFoundException(_songDetail);
             
-            LightManager.Instance.SetAllLight(Color.red);
-            _loadingText.text = $"{Localization.GetLocalizedText("Downloading")}...";
+            LightManager.Instance.SetAllLight(Color.blue);
+            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
             if (!File.Exists(trackPath))
             {
                 await DownloadFile(trackUri, trackPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Audio Track")}...";
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                 });
             }
             if (!File.Exists(chartPath))
             {
                 await DownloadFile(chartUri, chartPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Maidata")}...";
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                 });
             }
             SongDetail song;
@@ -258,7 +250,7 @@ namespace MajdataPlay.Game
             {
                 await DownloadFile(bgUri, bgPath, r =>
                 {
-                    _loadingText.text = $"{Localization.GetLocalizedText("Downloading Picture")}...";
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                 });
             }
             if (!File.Exists(videoPath) && videoUri is not null)
@@ -267,7 +259,7 @@ namespace MajdataPlay.Game
                 {
                     await DownloadFile(videoUri, videoPath, r =>
                     {
-                        _loadingText.text = $"{Localization.GetLocalizedText("Downloading Video")}...";
+                        MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     });
                 }
                 catch
@@ -361,7 +353,7 @@ namespace MajdataPlay.Game
         async UniTask ParseChart()
         {
             var maidata = _songDetail.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
-            _loadingText.text = $"{Localization.GetLocalizedText("Deserialization")}...";
+            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
                 BackToList().Forget();
@@ -484,31 +476,16 @@ namespace MajdataPlay.Game
                 if (_noteLoader.State == NoteLoaderStatus.Error)
                 {
                     var e = loaderTask.AsTask().Exception;
-                    _errText.text = "加载note时出错了哟\n" + e.Message;
-                    _loadingText.text = $"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%";
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
                     Debug.LogError(e);
                     StopAllCoroutines();
                     throw e;
                 }
-                _loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Process * 100:F2}%";
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Process * 100:F2}%");
                 await UniTask.Yield();
             }
-            _loadingText.text = $"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%";
+            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
 
-            while (timer > 0)
-            {
-                await UniTask.Yield();
-                timer -= Time.deltaTime;
-                var textColor = Color.white;
-                var maskColor = Color.black;
-                textColor.a = timer / 1f;
-                maskColor.a = timer / 1f * 0.75f;
-                _loadingImage.color = maskColor;
-                _loadingText.color = textColor;
-            }
-
-            _loadingMask.SetActive(false);
-            _loadingText.gameObject.SetActive(false);
         }
         async UniTaskVoid PrepareToPlay()
         {
@@ -525,6 +502,9 @@ namespace MajdataPlay.Game
                     throw noteLoaderTask.Exception;
                 await UniTask.Yield();
             }
+
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            MajInstances.SceneSwitcher.FadeOut();
 
             MajInstances.GameManager.DisableGC();
             Time.timeScale = 1f;

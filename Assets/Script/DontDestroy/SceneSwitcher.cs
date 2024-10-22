@@ -3,6 +3,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,6 +15,7 @@ namespace MajdataPlay
         Animator animator;
         public Image SubImage;
         public Image MainImage;
+        public TMP_Text loadingText;
 
         InputManager _inputManager;
         private void Awake()
@@ -26,22 +28,44 @@ namespace MajdataPlay
         {
             _inputManager = MajInstances.InputManager;
             animator = GetComponent<Animator>();
+            loadingText.gameObject.SetActive(false);
             DontDestroyOnLoad(this);
         }
 
-        public void SwitchScene(string sceneName)
+        public void SwitchScene(string sceneName, bool autoFadeOut = true)
         {
-            SwitchSceneInternal(sceneName).Forget();
+            SwitchSceneInternal(sceneName,autoFadeOut).Forget();
         }
-        async UniTask SwitchSceneInternal(string sceneName)
+
+        public void FadeOut()
+        {
+            animator.SetBool("In", false);
+            loadingText.gameObject.SetActive(false);
+        }
+
+        public void SetLoadingText(string text , Color color)
+        {
+            loadingText.text = text;
+            loadingText.color = color;
+        }
+        public void SetLoadingText(string text)
+        {
+            loadingText.text = text;
+            loadingText.color = Color.white;
+        }
+
+        async UniTask SwitchSceneInternal(string sceneName, bool autoFadeOut)
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            loadingText.text = "";
+            loadingText.gameObject.SetActive(true);
             animator.SetBool("In", true);
             await UniTask.Delay(250);
             await SceneManager.LoadSceneAsync(sceneName);
-            animator.SetBool("In", false);
+            if(autoFadeOut)
+                animator.SetBool("In", false);
         }
     }
     public partial class SceneSwitcher : MonoBehaviour
