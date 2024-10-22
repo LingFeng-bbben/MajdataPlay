@@ -89,7 +89,7 @@ namespace MajdataPlay.Utils
             {
                 foreach(var item in MajInstances.Setting.Online.ApiEndpoints)
                 {
-                    tasks.Add(GetOnlineCollection(item.Key,item.Value));
+                    tasks.Add(GetOnlineCollection(item));
                 }
             }
                 
@@ -134,9 +134,11 @@ namespace MajdataPlay.Utils
                 charts.Add(task.Result);
             return new SongCollection(thisDir.Name, charts.ToArray());
         }
-        static async Task<SongCollection> GetOnlineCollection(string name, string apiroot)
+        static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api)
         {
+            var name = api.Name;
             var collection = SongCollection.Empty(name);
+            var apiroot = api.Url;
             if (string.IsNullOrEmpty(apiroot)) 
                 return collection;
 
@@ -153,26 +155,7 @@ namespace MajdataPlay.Utils
                 var gameList = new List<SongDetail>();
                 foreach (var song in list)
                 {
-                    DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                    dateTime = dateTime.AddSeconds(song.Timestamp).ToLocalTime();
-                    var songDetail = new SongDetail()
-                    {
-                        Title = song.Title,
-                        Artist = song.Artist,
-                        Levels = song.Levels.ToArray(),
-                        isOnline = true,
-                        MaidataPath = apiroot + "/Maidata/" + song.Id,
-                        TrackPath = apiroot + "/Track/" + song.Id,
-                        BGPath = apiroot + "/ImageFull/" + song.Id,
-                        VideoPath = apiroot + "/Video/" + song.Id,
-                        CoverPath = apiroot + "/Image/" + song.Id,
-                        Hash = song.Id.ToString()+"-" + song.Timestamp,
-                        AddTime = dateTime
-                    };
-                    for (int i = 0; i < songDetail.Designers.Count(); i++)
-                    {
-                        songDetail.Designers[i] = song.Uploader + "@" + song.Designer;
-                    }
+                    SongDetail songDetail = SongDetail.ParseOnline(api, song);
                     gameList.Add(songDetail);
                 }
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
@@ -184,6 +167,9 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
+
+        
+
         public static void SortAndFind(string searchKey, SortType sortType)
         {
             OrderBy.Keyword = searchKey;

@@ -30,6 +30,8 @@ namespace MajdataPlay.Types
         private Sprite? SongCover;
         public double First { get; set; }
         public string Hash { get; set; } = string.Empty;
+        public string OnlineId { get; set; } = "";
+        public ApiEndpoint? ApiEndpoint { get; set; }
         public DateTime AddTime { get; set; }
         public bool isOnline { get; set; } = false;
 
@@ -110,6 +112,36 @@ namespace MajdataPlay.Types
                 AddTime = maidataFile.LastWriteTime
             };
         }
+
+        public static SongDetail ParseOnline(ApiEndpoint api, MajnetSongDetail song)
+        {
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(song.Timestamp).ToLocalTime();
+            var apiroot = api.Url;
+            var songDetail = new SongDetail()
+            {
+                Title = song.Title,
+                Artist = song.Artist,
+                Levels = song.Levels.ToArray(),
+                isOnline = true,
+                MaidataPath = apiroot + "/Maidata/" + song.Id,
+                TrackPath = apiroot + "/Track/" + song.Id,
+                BGPath = apiroot + "/ImageFull/" + song.Id,
+                VideoPath = apiroot + "/Video/" + song.Id,
+                CoverPath = apiroot + "/Image/" + song.Id,
+                Hash = song.Id.ToString() + "-" + song.Timestamp,
+                ApiEndpoint = api,
+                OnlineId = song.Id,
+                AddTime = dateTime
+            };
+            for (int i = 0; i < songDetail.Designers.Count(); i++)
+            {
+                songDetail.Designers[i] = song.Uploader + "@" + song.Designer;
+            }
+
+            return songDetail;
+        }
+
         private static string GetValue(string varline)
         {
             try

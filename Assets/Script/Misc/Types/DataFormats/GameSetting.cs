@@ -70,11 +70,20 @@ namespace MajdataPlay.Types
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public Dictionary<string,string> ApiEndpoints { get; set; } = new Dictionary<string, string> {
-            { "Majnet","https://majdata.net/api3/api" },
-            { "Contest","https://majdata.net/api1/api"}
+        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> {
+            { new ApiEndpoint(){ Name = "Majnet",Url = "https://majdata.net/api3/api" } },
+            { new ApiEndpoint(){ Name = "Contest", Url = "https://majdata.net/api1/api"} }
         };
     }
+
+    public class ApiEndpoint
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+    }
+
     public class DebugOptions
     {
         public bool DisplaySensor { get; set; } = false;

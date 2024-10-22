@@ -30,4 +30,10 @@ namespace MajdataPlay.Types
         [JsonPropertyName("Timestamp")]
         public long Timestamp { get; set; }
     }
+
+    public partial class MajNetSongInteract
+    {
+        public string[] LikeList { get; set; }
+        public Dictionary<string,string> CommentsList { get; set; }
+    }
 }

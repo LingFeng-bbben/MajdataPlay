@@ -22,6 +22,7 @@ namespace MajdataPlay.List
         public GameObject CoverSmallPrefab;
         public GameObject DirSmallPrefab;
         public CoverBigDisplayer CoverBigDisplayer;
+        public SubInfoDisplayer SubInfoDisplayer;
 
         public int desiredListPos = 0;
         public float listPosReal;
@@ -168,6 +169,7 @@ namespace MajdataPlay.List
                     CoverBigDisplayer.SetCover(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
+                    SubInfoDisplayer.RefreshContent(songinfo);
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     break;
             }
