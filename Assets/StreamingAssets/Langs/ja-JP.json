@@ -500,6 +500,46 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Video",
       "Content": "動画をダウンロード中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Search",
+      "Content": "検索"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "UseKeyboardHint",
+      "Content": "鍵盤を使ってください..."
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Sort",
+      "Content": "順番"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTime",
+      "Content": "時間"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDiff",
+      "Content": "難易\n度順"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDes",
+      "Content": "譜面\n作者"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTitle",
+      "Content": "タイ\nトル"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDefault",
+      "Content": "デフォルト"
     }
   ]
 }

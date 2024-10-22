@@ -500,6 +500,46 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Video",
       "Content": "下载视频中"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Search",
+      "Content": "搜索"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "UseKeyboardHint",
+      "Content": "拿出你的键盘使劲的敲啊..."
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Sort",
+      "Content": "排序"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTime",
+      "Content": "添加\n时间"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDiff",
+      "Content": "谱面\n难度"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDes",
+      "Content": "谱面\n作者"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTitle",
+      "Content": "谱面\n标题"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDefault",
+      "Content": "默认"
     }
   ]
 }
