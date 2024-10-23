@@ -90,6 +90,7 @@ namespace MajdataPlay.Setting
                 {
                     case "Answer":
                     case "BGM":
+                    case "Tap":
                     case "Judge":
                     case "Slide":
                     case "Break":
