@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using UnityEngine;
 #nullable enable

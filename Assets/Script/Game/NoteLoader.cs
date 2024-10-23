@@ -20,15 +20,12 @@ namespace MajdataPlay.Game
         public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
         public long NoteLimit { get; set; } = 1000;
         public double Process { get; set; } = 0;
-
-        long noteCount = 0;
-
-        public float noteSpeed = 7f;
-        public float touchSpeed = 7.5f;
-
-        NoteManager noteManager;
-        Dictionary<int, int> noteIndex = new();
-        Dictionary<SensorType, int> touchIndex = new();
+        public float NoteSpeed { get; set; } = 7f;
+        public float TouchSpeed
+        {
+            get => _touchSpeed;
+            set => _touchSpeed = Math.Abs(value);
+        }
 
         public GameObject tapPrefab;
         public GameObject holdPrefab;
@@ -45,12 +42,18 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController JudgeBreakShine;
         public RuntimeAnimatorController HoldShine;
 
-        GamePlayManager _gpManager;
-        private ObjectCounter ObjectCounter;
-        NotePoolManager poolManager;
+        float _touchSpeed = 7.5f;
+        long _noteCount = 0;
+        int _slideLayer = -1;
+        int _noteSortOrder = 0;
 
-        private int slideLayer = -1;
-        private int noteSortOrder = 0;
+        NoteManager _noteManager;
+        Dictionary<int, int> _noteIndex = new();
+        Dictionary<SensorType, int> _touchIndex = new();
+
+        GamePlayManager _gpManager;
+        ObjectCounter _objectCounter;
+        NotePoolManager _poolManager;
 
         static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
@@ -193,16 +196,12 @@ namespace MajdataPlay.Game
             {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
         };
 
-        private void Awake()
-        {
-            ObjectCounter = GameObject.Find("ObjectCounter").GetComponent<ObjectCounter>();
-        }
 
         private void Start()
         {
-            var notes = GameObject.Find("Notes");
-            noteManager = notes.GetComponent<NoteManager>();
-            poolManager = notes.GetComponent<NotePoolManager>();
+            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
+            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
+            _poolManager = MajInstanceHelper<NotePoolManager>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         public async UniTask LoadNotesIntoPool(SimaiProcess simaiProcess)
@@ -211,25 +210,25 @@ namespace MajdataPlay.Game
             try
             {
                 State = NoteLoaderStatus.ParsingNote;
-                noteManager.ResetCounter();
-                noteIndex.Clear();
-                touchIndex.Clear();
+                _noteManager.ResetCounter();
+                _noteIndex.Clear();
+                _touchIndex.Clear();
 
                 for (int i = 1; i < 9; i++)
-                    noteIndex.Add(i, 0);
+                    _noteIndex.Add(i, 0);
                 for (int i = 0; i < 33; i++)
-                    touchIndex.Add((SensorType)i, 0);
+                    _touchIndex.Add((SensorType)i, 0);
 
                 var loadedData = simaiProcess;
 
 
                 await CountNoteSumAsync(loadedData);
 
-                var sum = ObjectCounter.tapSum +
-                          ObjectCounter.holdSum +
-                          ObjectCounter.touchSum +
-                          ObjectCounter.breakSum +
-                          ObjectCounter.slideSum;
+                var sum = _objectCounter.tapSum +
+                          _objectCounter.holdSum +
+                          _objectCounter.touchSum +
+                          _objectCounter.breakSum +
+                          _objectCounter.slideSum;
 
                 var lastNoteTime = loadedData.notelist.Last().time;
 
@@ -247,9 +246,9 @@ namespace MajdataPlay.Game
                     List<TouchPoolingInfo> members = new();
                     foreach (var (i, note) in timing.noteList.WithIndex())
                     {
-                        noteCount++;
-                        Process = (double)noteCount / sum;
-                        if (noteCount % 30 == 0)
+                        _noteCount++;
+                        Process = (double)_noteCount / sum;
+                        if (_noteCount % 30 == 0)
                             await UniTask.Yield();
 
                         switch (note.noteType)
@@ -257,7 +256,7 @@ namespace MajdataPlay.Game
                             case SimaiNoteType.Tap:
                                 {
                                     var obj = CreateTap(note, timing);
-                                    poolManager.AddTap(obj);
+                                    _poolManager.AddTap(obj);
                                     if (eachNotes.Count > 1 && i < 2)
                                     {
                                         if (num is null)
@@ -275,7 +274,7 @@ namespace MajdataPlay.Game
                             case SimaiNoteType.Hold:
                                 {
                                     var obj = CreateHold(note, timing);
-                                    poolManager.AddHold(obj);
+                                    _poolManager.AddHold(obj);
                                     if (eachNotes.Count > 1 && i < 2)
                                     {
                                         if (num is null)
@@ -291,10 +290,10 @@ namespace MajdataPlay.Game
                                 }
                                 break;
                             case SimaiNoteType.TouchHold:
-                                poolManager.AddTouchHold(CreateTouchHold(note, timing));
+                                _poolManager.AddTouchHold(CreateTouchHold(note, timing));
                                 break;
                             case SimaiNoteType.Touch:
-                                poolManager.AddTouch(CreateTouch(note, timing, members));
+                                _poolManager.AddTouch(CreateTouch(note, timing, members));
                                 break;
                             case SimaiNoteType.Slide:
                                 CreateSlideGroup(timing, note); // 星星组
@@ -312,7 +311,7 @@ namespace MajdataPlay.Game
                         if (endPos == 0)
                             continue;
                         var time = (float)timing.time;
-                        var speed = noteSpeed * timing.HSpeed;
+                        var speed = NoteSpeed * timing.HSpeed;
                         var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
                         var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                         var appearTiming = time + appearDiff;
@@ -333,7 +332,7 @@ namespace MajdataPlay.Game
 
                         var startPosition = startPos;
                         var curvLength = endPos - 1;
-                        poolManager.AddEachLine(new EachLinePoolingInfo()
+                        _poolManager.AddEachLine(new EachLinePoolingInfo()
                         {
                             StartPos = startPosition,
                             Timing = time,
@@ -359,21 +358,21 @@ namespace MajdataPlay.Game
                 State = NoteLoaderStatus.Error;
                 throw e;
             }
-            poolManager.Initialize();
+            _poolManager.Initialize();
             State = NoteLoaderStatus.Finished;
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
             var noteTiming = (float)timing.time;
-            var speed = noteSpeed * timing.HSpeed;
+            var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
-            var sortOrder = noteSortOrder;
+            var sortOrder = _noteSortOrder;
             if(appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
-            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new()
             {
@@ -391,7 +390,7 @@ namespace MajdataPlay.Game
                 IsForceRotate = note.isFakeRotate,
                 QueueInfo = new TapQueueInfo()
                 {
-                    Index = noteIndex[note.startPosition]++,
+                    Index = _noteIndex[note.startPosition]++,
                     KeyIndex = note.startPosition
                 }
             };
@@ -399,14 +398,14 @@ namespace MajdataPlay.Game
         HoldPoolingInfo CreateHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
             var noteTiming = (float)timing.time;
-            var speed = noteSpeed * Math.Abs(timing.HSpeed);
+            var speed = Math.Abs(NoteSpeed * timing.HSpeed);
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
-            var sortOrder = noteSortOrder;
+            var sortOrder = _noteSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new()
             {
@@ -421,7 +420,7 @@ namespace MajdataPlay.Game
                 IsEX = note.isEx,
                 QueueInfo = new TapQueueInfo()
                 {
-                    Index = noteIndex[note.startPosition]++,
+                    Index = _noteIndex[note.startPosition]++,
                     KeyIndex = note.startPosition
                 }
             };
@@ -429,17 +428,17 @@ namespace MajdataPlay.Game
         TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing,GameObject slide)
         {
             var noteTiming = (float)timing.time;
-            var speed = noteSpeed * timing.HSpeed;
+            var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
-            var sortOrder = noteSortOrder;
+            var sortOrder = _noteSortOrder;
             bool isEach = false;
             bool isDouble = false;
             TapQueueInfo? queueInfo = null;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             if(timing.noteList.Count > 1)
             {
@@ -460,7 +459,7 @@ namespace MajdataPlay.Game
             {
                 queueInfo = new TapQueueInfo()
                 {
-                    Index = noteIndex[note.startPosition]++,
+                    Index = _noteIndex[note.startPosition]++,
                     KeyIndex = note.startPosition
                 };
             }
@@ -493,21 +492,21 @@ namespace MajdataPlay.Game
             var queueInfo = new TouchQueueInfo()
             {
                 SensorPos = sensorPos,
-                Index = touchIndex[sensorPos]++
+                Index = _touchIndex[sensorPos]++
             };
             var noteTiming = (float)timing.time;
             var areaPosition = note.touchArea;
             var startPosition = note.startPosition;
             var isEach = timing.noteList.Count > 1;
             var isBreak = note.isBreak;
-            var speed = touchSpeed * Math.Abs(timing.HSpeed);
+            var speed = TouchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
-            var noteSortOrder = this.noteSortOrder;
+            var noteSortOrder = this._noteSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            this.noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            this._noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             var poolingInfo = new TouchPoolingInfo()
             {
                 SensorPos = sensorPos,
@@ -534,21 +533,21 @@ namespace MajdataPlay.Game
             var queueInfo = new TouchQueueInfo()
             {
                 SensorPos = sensorPos,
-                Index = touchIndex[sensorPos]++
+                Index = _touchIndex[sensorPos]++
             };
             var startPosition = note.startPosition;
             var areaPosition = note.touchArea;
             var noteTiming = (float)timing.time;
             var lastFor = (float)note.holdTime;
-            var speed = touchSpeed * Math.Abs(timing.HSpeed);
+            var speed = TouchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
             var isBreak = note.isBreak;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
-            var noteSortOrder = this.noteSortOrder;
+            var noteSortOrder = this._noteSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            this.noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            this._noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new TouchHoldPoolingInfo()
             {
@@ -621,35 +620,35 @@ namespace MajdataPlay.Game
                     foreach (var note in timing.noteList)
                         if (!note.isBreak)
                         {
-                            if (note.noteType == SimaiNoteType.Tap) ObjectCounter.tapSum++;
-                            if (note.noteType == SimaiNoteType.Hold) ObjectCounter.holdSum++;
-                            if (note.noteType == SimaiNoteType.TouchHold) ObjectCounter.holdSum++;
-                            if (note.noteType == SimaiNoteType.Touch) ObjectCounter.touchSum++;
+                            if (note.noteType == SimaiNoteType.Tap) _objectCounter.tapSum++;
+                            if (note.noteType == SimaiNoteType.Hold) _objectCounter.holdSum++;
+                            if (note.noteType == SimaiNoteType.TouchHold) _objectCounter.holdSum++;
+                            if (note.noteType == SimaiNoteType.Touch) _objectCounter.touchSum++;
                             if (note.noteType == SimaiNoteType.Slide)
                             {
-                                if (!note.isSlideNoHead) ObjectCounter.tapSum++;
+                                if (!note.isSlideNoHead) _objectCounter.tapSum++;
                                 if (note.isSlideBreak)
-                                    ObjectCounter.breakSum++;
+                                    _objectCounter.breakSum++;
                                 else
-                                    ObjectCounter.slideSum++;
+                                    _objectCounter.slideSum++;
                             }
                         }
                         else
                         {
                             if (note.noteType == SimaiNoteType.Slide)
                             {
-                                if (!note.isSlideNoHead) ObjectCounter.breakSum++;
+                                if (!note.isSlideNoHead) _objectCounter.breakSum++;
                                 if (note.isSlideBreak)
-                                    ObjectCounter.breakSum++;
+                                    _objectCounter.breakSum++;
                                 else
-                                    ObjectCounter.slideSum++;
+                                    _objectCounter.slideSum++;
                             }
                             else
                             {
-                                ObjectCounter.breakSum++;
+                                _objectCounter.breakSum++;
                             }
                         }
-                ObjectCounter.totalDXScore = (ObjectCounter.tapSum + ObjectCounter.holdSum + ObjectCounter.touchSum + ObjectCounter.slideSum + ObjectCounter.breakSum) * 3;
+                _objectCounter.totalDXScore = (_objectCounter.tapSum + _objectCounter.holdSum + _objectCounter.touchSum + _objectCounter.slideSum + _objectCounter.breakSum) * 3;
             });
         }
         private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note)
@@ -890,7 +889,7 @@ namespace MajdataPlay.Game
             //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
             slide_star.SetActive(false);
             slide.SetActive(false);
-            poolManager.AddTap(CreateStar(note, timing, slide));
+            _poolManager.AddTap(CreateStar(note, timing, slide));
             var SliCompo = slide.AddComponent<SlideDrop>();
 
             SliCompo.SlideType = slideShape;
@@ -922,7 +921,7 @@ namespace MajdataPlay.Game
             {
                 SliCompo.IsSpecialFlip = isMirror;
             }
-            SliCompo.Speed = noteSpeed * Math.Abs(timing.HSpeed);
+            SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = note.startPosition;
             SliCompo._stars = new GameObject[] { slide_star };
@@ -931,13 +930,13 @@ namespace MajdataPlay.Game
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
             if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
-                slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
-                SliCompo.SortOrder = slideLayer;
+                _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
+                SliCompo.SortOrder = _slideLayer;
             }
             else
             {
-                SliCompo.SortOrder = slideLayer;
-                slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+                SliCompo.SortOrder = _slideLayer;
+                _slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
             }
             //slideLayer += 5;
             return SliCompo;
@@ -955,7 +954,7 @@ namespace MajdataPlay.Game
 
             var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform.GetChild(3));
             slideWifi.SetActive(false);
-            poolManager.AddTap(CreateStar(note, timing, slideWifi));
+            _poolManager.AddTap(CreateStar(note, timing, slideWifi));
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
 
             if (timing.noteList.Count > 1)
@@ -970,7 +969,7 @@ namespace MajdataPlay.Game
 
             WifiCompo.IsJustR = detectJustType(note.noteContent, out endPos);
             WifiCompo.EndPos = endPos;
-            WifiCompo.Speed = noteSpeed * Math.Abs(timing.HSpeed);
+            WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             WifiCompo.StartTiming = (float)timing.time;
             WifiCompo.StartPos = note.startPosition;
             WifiCompo.Timing = (float)note.slideStartTime;
@@ -986,13 +985,13 @@ namespace MajdataPlay.Game
             };
             if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
-                slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
-                WifiCompo.SortOrder = slideLayer;
+                _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
+                WifiCompo.SortOrder = _slideLayer;
             }
             else
             {
-                WifiCompo.SortOrder = slideLayer;
-                slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
+                WifiCompo.SortOrder = _slideLayer;
+                _slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
             }
             //slideLayer += 5;
 

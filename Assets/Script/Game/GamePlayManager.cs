@@ -465,9 +465,14 @@ namespace MajdataPlay.Game
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
+            var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
+
             _noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
-            _noteLoader.noteSpeed = (float)(107.25 / (71.4184491 * Mathf.Pow(_setting.Game.TapSpeed + 0.9975f, -0.985558604f)));
-            _noteLoader.touchSpeed = _setting.Game.TouchSpeed;
+            if(_setting.Game.TapSpeed < 0)
+                _noteLoader.NoteSpeed = -((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+            else
+                _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+            _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPool(_chart);
