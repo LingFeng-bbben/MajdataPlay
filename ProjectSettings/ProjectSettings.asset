@@ -701,7 +701,37 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols: {}
-  additionalCompilerArguments: {}
+  additionalCompilerArguments:
+    Android:
+    - -langversion:10.0
+    EmbeddedLinux:
+    - -langversion:10.0
+    LinuxHeadlessSimulation:
+    - -langversion:10.0
+    Nintendo Switch:
+    - -langversion:10.0
+    PS4:
+    - -langversion:10.0
+    QNX:
+    - -langversion:10.0
+    Server:
+    - -langversion:10.0
+    Stadia:
+    - -langversion:10.0
+    Standalone:
+    - -langversion:10.0
+    VisionOS:
+    - -langversion:10.0
+    WebGL:
+    - -langversion:10.0
+    Windows Store Apps:
+    - -langversion:10.0
+    XboxOne:
+    - -langversion:10.0
+    iPhone:
+    - -langversion:10.0
+    tvOS:
+    - -langversion:10.0
   platformArchitecture: {}
   scriptingBackend:
     Standalone: 0
