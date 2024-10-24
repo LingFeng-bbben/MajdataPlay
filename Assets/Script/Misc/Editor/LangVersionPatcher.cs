@@ -10,7 +10,7 @@ namespace MajdataPlay.Misc.Editor
     public class LangVersionPatcher : AssetPostprocessor
     {
         const string OldVersion = "9.0";
-        const string NewVersion = "10.0";
+        const string NewVersion = "11.0";
 
         [InitializeOnLoadMethod]
         public static void Setup()
@@ -29,7 +29,7 @@ namespace MajdataPlay.Misc.Editor
                     var arguments = PlayerSettings.GetAdditionalCompilerArguments(target);
                     if (arguments.Any(argument => argument.StartsWith(CscFlag)))
                         continue;
-                    PlayerSettings.SetAdditionalCompilerArguments(target, arguments.Append(CscFlag + NewVersion).ToArray());
+                    PlayerSettings.SetAdditionalCompilerArguments(target, arguments.Append(CscFlag + "preview").ToArray());
                     dirty = true;
                 }
                 catch
@@ -50,7 +50,7 @@ namespace MajdataPlay.Misc.Editor
         public static string OnGeneratedCSProject(string path, string content)
         {
             const string MsBuildFlag = "LangVersion";
-            return content.Replace($"<{MsBuildFlag}>{OldVersion}</{MsBuildFlag}>", $"<{MsBuildFlag}>{NewVersion}</{MsBuildFlag}>");
+            return content.Replace($"<{MsBuildFlag}>{OldVersion}</{MsBuildFlag}>", $"<{MsBuildFlag}>11.0</{MsBuildFlag}>");
         }
     }
 }
