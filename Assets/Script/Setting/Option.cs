@@ -45,6 +45,7 @@ namespace MajdataPlay.Setting
         int _lastIndex = 0;
         void Start()
         {
+            Localization.OnLanguageChanged += OnLangChanged;
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
             //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
             descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
@@ -212,6 +213,9 @@ namespace MajdataPlay.Setting
                         var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
                         MajInstances.SkinManager.SelectedSkin = newSkin;
                         break;
+                    case "Language":
+                        Localization.SetLang((string)_options[_current]);
+                        break;
                 }
             }
             UpdateOption();
@@ -239,6 +243,9 @@ namespace MajdataPlay.Setting
                         var skins = MajInstances.SkinManager.LoadedSkins;
                         var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
                         MajInstances.SkinManager.SelectedSkin = newSkin;
+                        break;
+                    case "Language":
+                        Localization.SetLang((string)_options[_current]);
                         break;
                 }
             }
@@ -288,6 +295,7 @@ namespace MajdataPlay.Setting
         void OnDestroy()
         {
             UnbindArea();
+            Localization.OnLanguageChanged -= OnLangChanged;
         }
         void OnDisable()
         {
@@ -311,7 +319,6 @@ namespace MajdataPlay.Setting
             else if (Parent.SelectedIndex != Index)
                 return;
             _isBound = true;
-            Localization.OnLanguageChanged += OnLangChanged;
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E4);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B5);
