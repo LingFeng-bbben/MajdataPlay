@@ -15,6 +15,7 @@ using ManagedBass;
 using ManagedBass.Wasapi;
 using ManagedBass.Mix;
 using ManagedBass.Asio;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.IO
@@ -109,6 +110,7 @@ namespace MajdataPlay.IO
                         };
                         Debug.Log("Asio Init " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
                         BassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
                         BassAsio.ChannelEnable(false, 0, asioProcedure);
                         BassAsio.Start();
                     }
@@ -139,6 +141,7 @@ namespace MajdataPlay.IO
                         Debug.Log("Wasapi Init " + BassWasapi.Init(-1, Procedure: wasapiProcedure, Buffer: 0f, Period: 0f));
                         BassWasapi.GetInfo(out var wasapiInfo);
                         BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
                         BassWasapi.Start();
                     }
                     break;

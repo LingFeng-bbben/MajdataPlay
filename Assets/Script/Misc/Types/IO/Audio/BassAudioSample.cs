@@ -56,7 +56,7 @@ namespace MajdataPlay.IO
         {
             stream = Bass.CreateStream(path,0,0, BassFlags.Prescan);
             Debug.Log(Bass.LastError);
-            //Bass.ChannelSetAttribute(stream,ChannelAttribute.Buffer,0);
+            Bass.ChannelSetAttribute(stream,ChannelAttribute.Buffer,0);
 
             var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
             length = Bass.ChannelBytes2Seconds(decode,
@@ -65,6 +65,7 @@ namespace MajdataPlay.IO
 
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             resampler = BassMix.CreateMixerStream(reqfreq,2 , BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+            Bass.ChannelSetAttribute(resampler, ChannelAttribute.Buffer, 0);
             BassMix.MixerAddChannel(stream, resampler, BassFlags.Default);
             Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, resampler, BassFlags.Default));
         }
