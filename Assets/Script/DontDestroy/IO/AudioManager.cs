@@ -14,6 +14,7 @@ using MajdataPlay.Utils;
 using ManagedBass;
 using ManagedBass.Wasapi;
 using ManagedBass.Mix;
+using ManagedBass.Asio;
 
 #nullable enable
 namespace MajdataPlay.IO
@@ -58,6 +59,7 @@ namespace MajdataPlay.IO
         private MixingSampleProvider NAudioGlobalMixer;
 
         private WasapiProcedure? wasapiProcedure;
+        private AsioProcedure? asioProcedure;
         private WasapiNotifyProcedure? wasapiNotifyProcedure;
         private int BassGlobalMixer = -114514;
 
@@ -93,6 +95,22 @@ namespace MajdataPlay.IO
                         audioOutputDevice = asioOut;
                         audioOutputDevice.Init(NAudioGlobalMixer);
                         audioOutputDevice.Play();
+                    }
+                    break;
+                case SoundBackendType.BassAsio:
+                    {
+                        Debug.Log("Bass Init " + Bass.Init(-1, sampleRate, Bass.NoSoundDevice));
+                        asioProcedure = (input, channel, buffer, length, _) =>
+                        {
+                            if (BassGlobalMixer == -114514)
+                                return 0;
+                            //Debug.Log("wasapi get");
+                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+                        };
+                        Debug.Log("Asio Init " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        BassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        BassAsio.ChannelEnable(false, 0, asioProcedure);
+                        BassAsio.Start();
                     }
                     break;
                 case SoundBackendType.WaveOut:
@@ -156,6 +174,7 @@ namespace MajdataPlay.IO
                         var provider = new CachedSampleProvider(new CachedSound(path), NAudioGlobalMixer);
                         SFXSamples.Add(new NAudioAudioSample(provider));
                         break;
+                    case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
                         SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer));
                         break;
@@ -179,7 +198,8 @@ namespace MajdataPlay.IO
                 audioOutputDevice.Stop();
                 audioOutputDevice.Dispose();
             }
-            if(MajInstances.Setting.Audio.Backend == SoundBackendType.Wasapi)
+            if(MajInstances.Setting.Audio.Backend == SoundBackendType.Wasapi
+                || MajInstances.Setting.Audio.Backend == SoundBackendType.BassAsio)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -187,6 +207,8 @@ namespace MajdataPlay.IO
                         sample.Dispose();
                 }
                 Bass.StreamFree(BassGlobalMixer);
+                BassAsio.Stop();
+                BassAsio.Free();
                 BassWasapi.Stop();
                 BassWasapi.Free();
                 Bass.Stop();
@@ -231,6 +253,7 @@ namespace MajdataPlay.IO
                 {
                     case SoundBackendType.Unity:
                         return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                    case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);
                     default:
@@ -255,6 +278,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Unity:
                         await UniTask.SwitchToMainThread();
                         return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
+                    case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);
                     default:
@@ -299,14 +323,21 @@ namespace MajdataPlay.IO
         {
             var psp = SFXSamples[(int)sfxType];
             if (psp is not null)
-                psp.Pause();
+                psp.Stop();
             else
                 Debug.LogError("No such SFX");
         }
         public void OpenAsioPannel()
         {
-            if(audioOutputDevice is AsioOut asioOut)
-                asioOut.ShowControlPanel();
+            if (MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
+            {
+                if (audioOutputDevice is AsioOut asioOut)
+                    asioOut.ShowControlPanel();
+            }
+            if(MajInstances.Setting.Audio.Backend == SoundBackendType.BassAsio)
+            {
+                BassAsio.ControlPanel();
+            }
         }
     }
 }
