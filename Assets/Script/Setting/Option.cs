@@ -26,21 +26,23 @@ namespace MajdataPlay.Setting
         TextMeshPro descriptionText;
         [ReadOnly]
         [SerializeField]
-        int current = 0; // 当前选项的位置
-        int maxOptionIndex = 0;
+        int _current = 0; // 当前选项的位置
         [ReadOnly]
         [SerializeField]
-        object[] options = Array.Empty<object>(); // 可用的选项
+        object[] _options = Array.Empty<object>(); // 可用的选项
 
-        float step = 1;
-        bool isNum = false;
-        bool isBound = false;
-        bool isFloat = false;
-        bool isReadOnly = false;
-        bool isTriggering = false;
-        float? maxValue = null;
+        int _maxOptionIndex = 0;
+        float _step = 1;
+        bool _isNum = false;
+        bool _isBound = false;
+        bool _isFloat = false;
+        bool _isReadOnly = false;
+        bool _isPressed = false;
+        bool _isUp = false;
+        float _pressTime = 0;
+        float? _maxValue = null;
 
-        int lastIndex = 0;
+        int _lastIndex = 0;
         void Start()
         {
             nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
@@ -64,27 +66,27 @@ namespace MajdataPlay.Setting
         void InitOptions()
         {
             var type = PropertyInfo.PropertyType;
-            isFloat = type.IsFloatType();
-            isNum = type.IsIntType() || isFloat;
+            _isFloat = type.IsFloatType();
+            _isNum = type.IsIntType() || _isFloat;
             
             if (type.IsEnum)
             {
                 var values = Enum.GetValues(type);
-                maxOptionIndex = values.Length - 1;
-                options = new object[values.Length];
+                _maxOptionIndex = values.Length - 1;
+                _options = new object[values.Length];
                 for (int i = 0; i < values.Length; i++)
-                    options[i] = values.GetValue(i);
+                    _options[i] = values.GetValue(i);
                 var obj = PropertyInfo.GetValue(OptionObject);
-                current = options.FindIndex(x => (int)x == (int)obj);
+                _current = _options.FindIndex(x => (int)x == (int)obj);
             }
             else if(type == typeof(bool))
             {
-                options = new object[2] { true,false };
+                _options = new object[2] { true,false };
                 var obj = PropertyInfo.GetValue(OptionObject);
-                maxOptionIndex = 1;
-                current = (bool)obj ? 0 : 1;
+                _maxOptionIndex = 1;
+                _current = (bool)obj ? 0 : 1;
             }
-            else if (isNum)
+            else if (_isNum)
             {
                 switch (PropertyInfo.Name)
                 {
@@ -99,17 +101,17 @@ namespace MajdataPlay.Setting
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
                     case "BackgroundDim":
-                        maxValue = 1;
-                        step = 0.05f;
+                        _maxValue = 1;
+                        _step = 0.05f;
                         break;
                     case "TouchSpeed":
                     case "TapSpeed":
-                        maxValue = null;
-                        step = 0.25f;
+                        _maxValue = null;
+                        _step = 0.25f;
                         break;
                     default:
-                        maxValue = null;
-                        step = 0.001f;
+                        _maxValue = null;
+                        _step = 0.001f;
                         break;
                 }
             }
@@ -118,54 +120,63 @@ namespace MajdataPlay.Setting
                 switch(PropertyInfo.Name)
                 {
                     case "Resolution":
-                        isReadOnly = true;
+                        _isReadOnly = true;
                         break;
                     case "Skin":
                         var skinManager = MajInstances.SkinManager;
                         var skinNames = skinManager.LoadedSkins.Select(x => x.Name)
                                                                .ToArray();
                         var currentSkin = skinManager.SelectedSkin;
-                        options = skinNames;
-                        maxOptionIndex = options.Length - 1;
-                        current = skinNames.FindIndex(x => x == currentSkin.Name);
+                        _options = skinNames;
+                        _maxOptionIndex = _options.Length - 1;
+                        _current = skinNames.FindIndex(x => x == currentSkin.Name);
                         break;
                     case "Language":
                         var availableLangs = Localization.Available;
                         if(availableLangs.IsEmpty())
                         {
-                            current = 0;
-                            options = new object[] { "Unavailable" };
-                            maxOptionIndex = 0;
-                            isReadOnly = true;
+                            _current = 0;
+                            _options = new object[] { "Unavailable" };
+                            _maxOptionIndex = 0;
+                            _isReadOnly = true;
                             PropertyInfo.SetValue(OptionObject, "Unavailable");
                             return;
                         }
                         var langNames = availableLangs.Select(x => x.ToString())
                                                       .ToArray();
                         var currentLang = Localization.Current;
-                        options = langNames;
-                        maxOptionIndex = options.Length - 1;
-                        current = availableLangs.FindIndex(x => x == currentLang);
+                        _options = langNames;
+                        _maxOptionIndex = _options.Length - 1;
+                        _current = availableLangs.FindIndex(x => x == currentLang);
                         break;
                 }
             }
         }
         void Update()
         {
+            if (_pressTime >= 1.5f)
+            {
+                if (_isUp)
+                    Up();
+                else
+                    Down();
+            }
+            else if (_isPressed)
+                _pressTime += Time.deltaTime;
             var currentIndex = Parent.SelectedIndex;
-            if (lastIndex == currentIndex)
+            if (_lastIndex == currentIndex)
                 return;
 
             if (currentIndex == Index)
                 BindArea();
             else
                 UnbindArea();
-            lastIndex = currentIndex;
+            _lastIndex = currentIndex;
             UpdatePosition();
         }
         void UpdatePosition()
         {
-            var diff = lastIndex - Index;
+            var diff = _lastIndex - Index;
             var scale = GetScale(diff);
             var pos = GetPosition(diff);
             transform.localPosition = pos;
@@ -179,86 +190,100 @@ namespace MajdataPlay.Setting
         }
         void Up()
         {
-            if(isNum) // 数值类
+            if(_isNum) // 数值类
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var value = (float)valueObj;
-                value += step;
+                value += _step;
                 value = MathF.Round(value, 3);
-                if (maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)maxValue);
+                if (_maxValue is not null) //有上限
+                    value = value.Clamp(0, (float)_maxValue);
                 PropertyInfo.SetValue(OptionObject, value);
             }
             else //非数值类
             {
-                current++;
-                current = current.Clamp(0, maxOptionIndex);
-                PropertyInfo.SetValue(OptionObject, options[current]);
+                _current++;
+                _current = _current.Clamp(0, _maxOptionIndex);
+                PropertyInfo.SetValue(OptionObject, _options[_current]);
                 switch(PropertyInfo.Name)
                 {
                     case "Skin":
                         var skins = MajInstances.SkinManager.LoadedSkins;
-                        var newSkin = skins.Find(x => x.Name == options[current].ToString());
+                        var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
                         MajInstances.SkinManager.SelectedSkin = newSkin;
                         break;
                 }
             }
+            UpdateOption();
         }
         void Down()
         {
-            if (isNum) // 数值类
+            if (_isNum) // 数值类
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var value = (float)valueObj;
-                value -= step;
+                value -= _step;
                 value = MathF.Round(value, 3);
-                if (maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)maxValue);
+                if (_maxValue is not null) //有上限
+                    value = value.Clamp(0, (float)_maxValue);
                 PropertyInfo.SetValue(OptionObject, value);
             }
             else //非数值类
             {
-                current--;
-                current = current.Clamp(0, maxOptionIndex);
-                PropertyInfo.SetValue(OptionObject, options[current]);
+                _current--;
+                _current = _current.Clamp(0, _maxOptionIndex);
+                PropertyInfo.SetValue(OptionObject, _options[_current]);
                 switch (PropertyInfo.Name)
                 {
                     case "Skin":
                         var skins = MajInstances.SkinManager.LoadedSkins;
-                        var newSkin = skins.Find(x => x.Name == options[current].ToString());
+                        var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
                         MajInstances.SkinManager.SelectedSkin = newSkin;
                         break;
                 }
             }
+            UpdateOption();
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (isReadOnly)
-                return;
-            else if(e.Status == SensorStatus.Off)
-            {
-                isTriggering = false;
-                return;
-            }
-            else if (!e.IsClick)
+            if (_isReadOnly)
                 return;
             else if (e.IsButton)
                 return;
-            else if (isTriggering)
-                return;
-            isTriggering = true;
+            var on = e.Status == SensorStatus.On;
+            var canTrigger = on && !_isPressed;
             switch (e.Type)
             {
                 case SensorType.E4:
                 case SensorType.B4:
-                    Up();
+
+                    if (canTrigger)
+                    {
+                        Up();
+                        _isUp = true;
+                        _isPressed = true;
+                    }
+                    else if(!on)
+                    {
+                        _isPressed = false;
+                        _pressTime = 0;
+                    }
                     break;
                 case SensorType.E6:
                 case SensorType.B5:
-                    Down();
+                    if (canTrigger)
+                    {
+                        Down();
+                        _isUp = false;
+                        _isPressed = true;
+                    }
+                    else if (!on)
+                    {
+                        _isPressed = false;
+                        _pressTime = 0;
+                    }
                     break;
             }
-            UpdateOption();
         }
         void OnDestroy()
         {
@@ -274,19 +299,18 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            if (isBound)
+            if (_isBound)
                 return;
-            else if(isReadOnly)
+            else if(_isReadOnly)
             {
-                isBound = true;
-                Localization.OnLanguageChanged += OnLangChanged;
+                _isBound = true;
                 return;
             }
             else if (Parent == null)
                 return;
             else if (Parent.SelectedIndex != Index)
                 return;
-            isBound = true;
+            _isBound = true;
             Localization.OnLanguageChanged += OnLangChanged;
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E4);
@@ -295,15 +319,11 @@ namespace MajdataPlay.Setting
         }
         void UnbindArea()
         {
-            if (!isBound)
+            if (!_isBound)
                 return;
-            else if (isReadOnly)
-            {
-                isBound = false; 
-                Localization.OnLanguageChanged -= OnLangChanged;
-                return;
-            }
-            isBound = false;
+            _isPressed = false;
+            _pressTime = 0;
+            _isBound = false;
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B4);
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E4);
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B5);
