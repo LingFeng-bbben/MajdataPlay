@@ -39,7 +39,7 @@ namespace MajdataPlay.Game.Notes
             // 正常情况下应为负值；速度过高将忽略淡入
             _fullFadeInTiming = _fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
-            Destroy(GetComponent<Animator>());
+            //Destroy(GetComponent<Animator>());
             _maxFadeInAlpha = 1f;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;

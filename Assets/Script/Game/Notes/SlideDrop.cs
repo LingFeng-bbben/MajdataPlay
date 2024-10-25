@@ -80,7 +80,7 @@ namespace MajdataPlay.Game.Notes
             _fullFadeInTiming = _fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
-            Destroy(GetComponent<Animator>());
+            //Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
