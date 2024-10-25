@@ -5,17 +5,13 @@ using System.IO;
 using System.Collections.Generic;
 using MajdataPlay.Types;
 using MajdataPlay.Extensions;
-using NAudio.CoreAudioApi;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 using MajdataPlay.Utils;
 
 using ManagedBass;
 using ManagedBass.Wasapi;
 using ManagedBass.Mix;
 using ManagedBass.Asio;
-using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.IO
@@ -57,12 +53,9 @@ namespace MajdataPlay.IO
         private List<AudioSampleWrap?> SFXSamples = new();
 
         IWavePlayer? audioOutputDevice = null;
-        private MixingSampleProvider NAudioGlobalMixer;
+        MixingSampleProvider _NAudioGlobalMixer;
 
-        private WasapiProcedure? wasapiProcedure;
-        private AsioProcedure? asioProcedure;
-        private WasapiNotifyProcedure? wasapiNotifyProcedure;
-        private int BassGlobalMixer = -114514;
+        int _bassGlobalMixer = -114514;
 
         public bool PlayDebug;
         private void Awake()
@@ -78,8 +71,8 @@ namespace MajdataPlay.IO
             if (backend != SoundBackendType.Unity)
             {
                 var waveformat = NAudio.Wave.WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
-                NAudioGlobalMixer = new MixingSampleProvider(waveformat);
-                NAudioGlobalMixer.ReadFully = true;
+                _NAudioGlobalMixer = new MixingSampleProvider(waveformat);
+                _NAudioGlobalMixer.ReadFully = true;
             }
             switch (backend)
             {
@@ -94,23 +87,23 @@ namespace MajdataPlay.IO
                         var asioOut = new AsioOut(devices[deviceIndex]);
                         print("Starting ASIO...at " + asioOut.DriverName + " as " + sampleRate);
                         audioOutputDevice = asioOut;
-                        audioOutputDevice.Init(NAudioGlobalMixer);
+                        audioOutputDevice.Init(_NAudioGlobalMixer);
                         audioOutputDevice.Play();
                     }
                     break;
                 case SoundBackendType.BassAsio:
                     {
                         Debug.Log("Bass Init " + Bass.Init(-1, sampleRate, Bass.NoSoundDevice));
-                        asioProcedure = (input, channel, buffer, length, _) =>
+                        AsioProcedure asioProcedure = (input, channel, buffer, length, _) =>
                         {
-                            if (BassGlobalMixer == -114514)
+                            if (_bassGlobalMixer == -114514)
                                 return 0;
                             //Debug.Log("wasapi get");
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+                            return Bass.ChannelGetData(_bassGlobalMixer, buffer, length);
                         };
                         Debug.Log("Asio Init " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
-                        BassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
-                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
+                        _bassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        Bass.ChannelSetAttribute(_bassGlobalMixer, ChannelAttribute.Buffer, 0);
                         BassAsio.ChannelEnable(false, 0, asioProcedure);
                         BassAsio.Start();
                     }
@@ -121,7 +114,7 @@ namespace MajdataPlay.IO
                         var waveOut = new WaveOutEvent();
                         waveOut.NumberOfBuffers = 12;
                         audioOutputDevice = waveOut;
-                        audioOutputDevice.Init(NAudioGlobalMixer, false);
+                        audioOutputDevice.Init(_NAudioGlobalMixer, false);
                         audioOutputDevice.Play();
                     }
                     break;
@@ -130,18 +123,18 @@ namespace MajdataPlay.IO
                         //Bass.Init(-1, sampleRate);
                         Debug.Log("Bass Init " + Bass.Init(-1, sampleRate,Bass.NoSoundDevice));
 
-                        wasapiProcedure = (buffer, length, _) =>
+                        WasapiProcedure wasapiProcedure = (buffer, length, _) =>
                         {
-                            if (BassGlobalMixer == -114514)
+                            if (_bassGlobalMixer == -114514)
                                 return 0;
                             //Debug.Log("wasapi get");
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+                            return Bass.ChannelGetData(_bassGlobalMixer, buffer, length);
                         };
 
                         Debug.Log("Wasapi Init " + BassWasapi.Init(-1, Procedure: wasapiProcedure, Buffer: 0f, Period: 0f));
                         BassWasapi.GetInfo(out var wasapiInfo);
-                        BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
-                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
+                        _bassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        Bass.ChannelSetAttribute(_bassGlobalMixer, ChannelAttribute.Buffer, 0);
                         BassWasapi.Start();
                     }
                     break;
@@ -174,12 +167,12 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendType.WaveOut:
                     case SoundBackendType.Asio:
-                        var provider = new CachedSampleProvider(new CachedSound(path), NAudioGlobalMixer);
+                        var provider = new CachedSampleProvider(new CachedSound(path), _NAudioGlobalMixer);
                         SFXSamples.Add(new NAudioAudioSample(provider));
                         break;
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
-                        SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer));
+                        SFXSamples.Add(new BassAudioSample(path,_bassGlobalMixer));
                         break;
                 }
             }
@@ -209,7 +202,7 @@ namespace MajdataPlay.IO
                     if(sample is not null)
                         sample.Dispose();
                 }
-                Bass.StreamFree(BassGlobalMixer);
+                Bass.StreamFree(_bassGlobalMixer);
                 BassAsio.Stop();
                 BassAsio.Free();
                 BassWasapi.Stop();
@@ -258,9 +251,9 @@ namespace MajdataPlay.IO
                         return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
-                        return new BassAudioSample(path, BassGlobalMixer);
+                        return new BassAudioSample(path, _bassGlobalMixer);
                     default:
-                        var provider = new UncachedSampleProvider(path, NAudioGlobalMixer);
+                        var provider = new UncachedSampleProvider(path, _NAudioGlobalMixer);
                         return new NAudioAudioSample(provider);
                 }
             }
@@ -283,10 +276,10 @@ namespace MajdataPlay.IO
                         return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
-                        return new BassAudioSample(path, BassGlobalMixer);
+                        return new BassAudioSample(path, _bassGlobalMixer);
                     default:
                         //var provider = new CachedSampleProvider(new CachedSound(path), mixer);
-                        var provider = new UncachedSampleProvider(path,NAudioGlobalMixer);
+                        var provider = new UncachedSampleProvider(path,_NAudioGlobalMixer);
                         return new NAudioAudioSample(provider);
                 }
             }
