@@ -458,6 +458,9 @@ namespace MajdataPlay.Game.Notes
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;
                 breakMaterial = skin.BreakMaterial;
+                var controller = gameObject.AddComponent<BreakSlideShineController>();
+                controller.Parent = this;
+                controller.Initialize();
             }
 
             foreach(var bar in bars)
@@ -474,8 +477,8 @@ namespace MajdataPlay.Game.Notes
                 if(breakMaterial != null)
                 {
                     barRenderer.material = breakMaterial;
-                    var controller = bar.AddComponent<BreakShineController>();
-                    controller.Parent = this;
+                    //var controller = bar.AddComponent<BreakShineController>();
+                    //controller.Parent = this;
                 }
             }
 
