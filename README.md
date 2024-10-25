@@ -6,19 +6,17 @@
 
 ## How to use
 
-By default, the app use unity audio, this provide somehow acceptable latency.
-
-However, for best performance, you will need an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
-
-If you encounter desync issues, try to tweak the sound control pannel: Turn off all audio enhancements and allow exclusive control.
-
 For the big iPod, you need to ensure the touch sensors are connected to COM3, and the lights are connected to COM21.
 
 Put your songs folder in `MaiCharts\` folder, and you are good to go. You will need to group your songs by folder.
 
+If you are not satisfied with audio latency, you can use an asio driver. [ASIO4ALL](https://asio4all.org/about/download-asio4all/) is a common choice.
+
+If you encounter desync issues, try to tweak the sound control pannel: Turn off all audio enhancements and allow exclusive control.
+
 ## Online Charts
 
-Fill in the api endpoint for downloading charts online. More online functions comming soon.
+The api endpoints fills in by default now. If you have majnet account, you can login by modify `setting.json` to enable chart reaction.
 
 ## Adjusting settings
 
@@ -31,80 +29,89 @@ You can use the in-game UI for most settings now.
   "Game": {
     "TapSpeed": 7.5,
     "TouchSpeed": 7.5,
-    "SlideFadeInOffset": 0,       // in seconds. this will advance or delay the timing of the Slide fade-in. + is delay
-    "BackgroundDim": 0.800000012, // 0-1 bigger dimmer
-    "StarRotation": false,
-    "BGInfo": "Combo" // what the center will display in game
-    // options:
-    // Combo
-    // PCombo
-    // CPCombo
-    // Achievement_101
-    // Achievement_100
-    // Achievement
-    // AchievementClassical
-    // AchievementClassical_100
-    // DXScore
-    // DXScoreRank
-    // S_Board
-    // SS_Board
-    // SSS_Board
-    // MyBest
-    // Diff
-    // None
+    "SlideFadeInOffset": 0, // in seconds. this will advance or delay the timing of the Slide fade-in. + is delay
+    "BackgroundDim": 0.8,
+    "StarRotation": true,
+    "Language": "ja-JP - Majdata",
+    "BGInfo": "Combo"
   },
   "Judge": {
-    "AudioOffset": 0, // in seconds. + is late. same as &first
-    "JudgeOffset": 0, // in seconds. + is late. influence judge
-    "Mode": "Modern"  // judge mode, options: "Modern" or "Classic"
+    "AudioOffset": 0,
+    "JudgeOffset": 0,
+    "Mode": "Modern"
   },
   "Display": {
-    "Skin": "default", // the subdirectory name under "Skins"
+    "Skin": "default",
     "DisplayCriticalPerfect": false,
-    "FastLateType": "Disable", // options: All, BelowCP, BelowP, BelowGR, Disable
-    "NoteJudgeType": "All",    // ditto
-    "TouchJudgeType": "All",   // ditto
-    "SlideJudgeType": "All",   // ditto
-    "OuterJudgeDistance": 1,   // adjust the value to control where the judge result is displayed
-                               // options: 1 - 0
-                               // influence: Tap, Hold, Star, Break
-    "InnerJudgeDistance": 1,   // adjust the value to control where the judge result is displayed
-                               // options: 1 - 0
-                               // influence: Touch, TouchHold
-    "Resolution": "Auto"  // Screen Resolution
-                          // format: "width x height" or "Auto"
-                          // e.g. "1080x1920" 
-  },  
+    "FastLateType": "Disable",
+    "NoteJudgeType": "All",
+    "TouchJudgeType": "All",
+    "SlideJudgeType": "All",
+    "BreakJudgeType": "All",
+    "BreakFastLateType": "Disable",
+    "SlideSortOrder": "Modern",
+    "OuterJudgeDistance": 1,
+    "InnerJudgeDistance": 1,
+    "Resolution": "Auto"
+  },
   "Audio": {
-    "Samplerate": 44100,  // Dont touch this if you dont know what does it mean
-    "AsioDeviceIndex": 0, // If you have multiple ASIO devices you can choose them here
+    "Samplerate": 44100,
+    "AsioDeviceIndex": 0,
+    //Select your ASIO sound card here
     "Volume": {
-      "Anwser": 0.800000012,
+      "Answer": 0.8,
       "BGM": 1,
-      "Judge": 0.300000012,
-      "Slide": 0.300000012,
-      "Break": 0.300000012,
-      "Touch": 0.300000012,
+      "Tap": 0.3,
+      "Slide": 0.3,
+      "Break": 0.3,
+      "Touch": 0.3,
       "Voice": 1
     },
-    "Backend": "Asio" // WaveOut(High Latency), Asio(Low Latency, Driver needed), Unity(Unity Classic, FMod i think?)
+    "Backend": "Wasapi"
+    //"WaveOut" (NAudio), "Asio" (NAudio), "Unity", "Wasapi" (Bass), "BassAsio" (Bass)
   },
   "Debug": {
-    "DisplaySensor": false, // this will display sensor feedback
-    "DisplayFPS": true,     // this will display FPS at the top right of the screen
-    "FullScreen": true,     // MajdataPlay will be windowed if this option is false
-    "TryFixAudioSync": true,
-    "NoteAppearRate": 0.360000014
+    "DisplaySensor": false,
+    "DisplayFPS": true,
+    "FullScreen": true,
+    "TryFixAudioSync": false,
+    "NoteAppearRate": 0.36, 
+    //Important! this affects the note fade in speed before it drops!!
+    "DisableGCInGameing": true
   },
-  "SelectedIndex": 0,    // dont touch it
-  "SelectedDiff": "Easy" // dont touch it
+  "Online": {
+    "Enable": false,
+    "ApiEndpoints": [
+      {
+        "Name": "Majnet",
+        "Url": "https://majdata.net/api3/api",
+        "Username": "YourUsername",
+        "Password": "YourPassword"
+      },
+      {
+        "Name": "Contest",
+        "Url": "https://majdata.net/api1/api",
+        "Username": null,
+        "Password": null
+      }
+    ]
+  },
+  "Misc": {
+    "SelectedIndex": 0,
+    "SelectedDir": 0,
+    "SelectedDiff": "Easy",
+    "OrderBy": {
+      "Keyword": "",
+      "SortBy": "Default"
+    }
+  }
 }
 ```
 
 ## Keybindings
 
 * Buttons: QWEDCXZA
-* Exit Song: * (One of the side button on your big iPod)
+* Exit Song: Num* (One of the side button on your big iPod)
 
 ## Custom Adjusting
 
@@ -124,7 +131,7 @@ Note this is project is still in a very early stage. Feel free if you wanna part
 
 Please report problems to issues page.
 
-The log files should be in `C:\Users\YOUR_USERNAME\AppData\LocalLow\bbben\MajdataPlay\Player.log`
+The log files should be in `MajPlayRuntime.log`
 
 ## Note
 

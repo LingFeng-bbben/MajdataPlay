@@ -118,7 +118,7 @@
     }
     public enum SoundBackendType
     {
-        WaveOut, Asio, Unity, Wasapi, DirectSound
+        WaveOut, Asio, Unity, Wasapi, BassAsio
     }
     public enum JudgeMode
     {
