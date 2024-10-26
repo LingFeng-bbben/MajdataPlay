@@ -1,7 +1,9 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Types;
+using MychIO.Device;
 using System;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityRawInput;
 #nullable enable
@@ -41,7 +43,7 @@ namespace MajdataPlay.IO
         };
         void UpdateButtonState()
         {
-            if (!buttonCheckerMutex.WaitOne(4))
+            if (!_buttonCheckerMutex.WaitOne(4))
                 return;
             foreach (var keyId in _bindingKeys)
             {
@@ -68,7 +70,7 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
                 SetIdle(msg);
             }
-            buttonCheckerMutex.ReleaseMutex();
+            _buttonCheckerMutex.ReleaseMutex();
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
@@ -84,9 +86,30 @@ namespace MajdataPlay.IO
                 throw new Exception($"{sType} Button not found.");
             button.OnStatusChanged -= checker;
         }
-        void OnRawKeyUp(RawKey key)
+        void OnKeyStateChanged(ButtonRingZone btnZone, InputState state)
         {
-            if (!buttonCheckerMutex.WaitOne(4))
+            var key = btnZone switch
+            {
+                ButtonRingZone.BA1 => RawKey.W,
+                ButtonRingZone.BA2 => RawKey.E,
+                ButtonRingZone.BA3 => RawKey.D,
+                ButtonRingZone.BA4 => RawKey.C,
+                ButtonRingZone.BA5 => RawKey.X,
+                ButtonRingZone.BA6 => RawKey.Z,
+                ButtonRingZone.BA7 => RawKey.A,
+                ButtonRingZone.BA8 => RawKey.Q,
+                ButtonRingZone.ArrowUp => RawKey.Multiply,
+                ButtonRingZone.ArrowDown => RawKey.Numpad3,
+                ButtonRingZone.Select => RawKey.Numpad9,
+                ButtonRingZone.InsertCoin => RawKey.Numpad7,
+                _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
+            };
+            var keyState = state is InputState.Off ? SensorStatus.Off : SensorStatus.On;
+            OnKeyStateChanged(key, keyState);
+        }
+        void OnKeyStateChanged(RawKey key,SensorStatus state)
+        {
+            if (!_buttonCheckerMutex.WaitOne(4))
                 return;
             if (_bindingKeys.All(x => x != key))
                 return;
@@ -97,7 +120,7 @@ namespace MajdataPlay.IO
                 return;
             }
             var oldState = button.Status;
-            var newState = SensorStatus.Off;
+            var newState = state;
             if (oldState == newState)
                 return;
             button.Status = newState;
@@ -112,37 +135,9 @@ namespace MajdataPlay.IO
             button.PushEvent(msg);
             PushEvent(msg);
             SetIdle(msg);
-            buttonCheckerMutex.ReleaseMutex();
+            _buttonCheckerMutex.ReleaseMutex();
         }
-        void OnRawKeyDown(RawKey key)
-        {
-            if (!buttonCheckerMutex.WaitOne(4))
-                return;
-            if (_bindingKeys.All(x => x != key))
-                return;
-            var button = _buttons.Find(x => x.BindingKey == key);
-            if (button == null)
-            {
-                Debug.LogError($"Key not found:\n{key}");
-                return;
-            }
-            var oldState = button.Status;
-            var newState = SensorStatus.On;
-            if (oldState == newState)
-                return;
-            button.Status = newState;
-            Debug.Log($"Key \"{button.BindingKey}\": {newState}");
-            var msg = new InputEventArgs()
-            {
-                Type = button.Type,
-                OldStatus = oldState,
-                Status = newState,
-                IsButton = true
-            };
-            button.PushEvent(msg);
-            PushEvent(msg);
-            SetIdle(msg);
-            buttonCheckerMutex.ReleaseMutex();
-        }
+        void OnRawKeyUp(RawKey key) => OnKeyStateChanged(key, SensorStatus.Off);
+        void OnRawKeyDown(RawKey key) => OnKeyStateChanged(key, SensorStatus.On);
     }
 }

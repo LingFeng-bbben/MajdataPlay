@@ -11,7 +11,7 @@ namespace MajdataPlay.IO
 
         void UpdateSensorState()
         {
-            foreach(var (index, on) in COMReport.WithIndex())
+            foreach(var (index, on) in _COMReport.WithIndex())
             {
                 if (index > sensors.Length)
                     break;
@@ -29,7 +29,7 @@ namespace MajdataPlay.IO
                 var oState = sensor.Status;
                 var nState = on ? SensorStatus.On : SensorStatus.Off;
                 if (sensor.Type == SensorType.C)
-                    nState = COMReport[16] || COMReport[17] ? SensorStatus.On : SensorStatus.Off;
+                    nState = _COMReport[16] || _COMReport[17] ? SensorStatus.On : SensorStatus.Off;
                 if(oState != nState)
                 {
                     Debug.Log($"Sensor \"{sensor.Type}\": {nState}");

@@ -328,4 +328,10 @@
         Directory,
         Chart
     }
+    public enum DeviceType
+    {
+        Keyboard,
+        HID,
+        IO4
+    }
 }

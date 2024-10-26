@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using MychIO.Connection;
 using MychIO.Connection.HidDevice;
 using MychIO.Helper;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace MychIO.Device

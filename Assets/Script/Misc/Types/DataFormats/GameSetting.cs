@@ -112,6 +112,7 @@ namespace MajdataPlay.Types
     {
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
+        public DeviceType InputDevice { get; set; } = DeviceType.Keyboard;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
     }

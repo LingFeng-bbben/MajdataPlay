@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MychIO.Connection;
 using MychIO.Generic;
-using PlasticGui.WorkspaceWindow;
 
 namespace MychIO.Device
 {

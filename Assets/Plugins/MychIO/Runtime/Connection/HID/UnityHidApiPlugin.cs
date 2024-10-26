@@ -1,11 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
-using PlasticPipe.PlasticProtocol.Messages;
-using UnityEditor;
 
 namespace MychIO.Connection.HidDevice
 {
-    [InitializeOnLoad]
+    //[InitializeOnLoad]
     public static class UnityHidApiPlugin
     {
 

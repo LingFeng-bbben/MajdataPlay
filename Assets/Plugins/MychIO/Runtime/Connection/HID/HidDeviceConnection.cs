@@ -6,7 +6,6 @@ using MychIO.Device;
 using MychIO.Event;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using UnityEditor.Build;
 using UnityEngine;
 
 namespace MychIO.Connection.HidDevice
