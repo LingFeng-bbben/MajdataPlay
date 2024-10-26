@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+#nullable enable
 namespace MajdataPlay.Types
 {
     public class GameSetting
@@ -33,6 +33,7 @@ namespace MajdataPlay.Types
     {
         public string Skin { get; set; } = "default";
         public bool DisplayCriticalPerfect { get; set; } = false;
+        public bool DisplayBreakScore { get; set; } = true;
         public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;

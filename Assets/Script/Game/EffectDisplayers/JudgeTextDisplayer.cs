@@ -32,14 +32,20 @@ namespace MajdataPlay.Game
         Sprite greatSprite;
         Sprite goodSprite;
         Sprite missSprite;
+
+        bool _displayBreakScore = false;
         void Start() 
         {
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
+            _displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
 
-            if(MajInstances.Setting.Display.DisplayCriticalPerfect)
+            if (MajInstances.Setting.Display.DisplayCriticalPerfect)
             {
                 //breakSprite = skin.CP_Break;
-                breakSprite = skin.Break_2600_Shine;
+                if (_displayBreakScore)
+                    breakSprite = skin.Break_2600_Shine;
+                else
+                    breakSprite = skin.CP_Break;
                 cPerfectSprite = skin.CriticalPerfect;
             }
             else
@@ -53,6 +59,7 @@ namespace MajdataPlay.Game
             greatSprite = skin.Great;
             goodSprite = skin.Good;
             missSprite = skin.Miss;
+            
         }
         public void Reset()
         {
@@ -64,7 +71,7 @@ namespace MajdataPlay.Game
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Result;
 
-            if (isBreak)
+            if (isBreak && _displayBreakScore)
                 LoadBreakSkin(judgeResult);
             else
                 LoadTapSkin(judgeResult);

@@ -203,6 +203,16 @@
       "Content": ""
     },
     {
+      "Type": "DISPLAY_BREAK_SCORE",
+      "Origin": "DisplayBreakScore",
+      "Content": "DisplayBreakScore"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE_DESC",
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "DisplayBreakScore_MAJSETTING_DESC"
+    },
+    {
       "Type": "FAST_LATE_TYPE",
       "Origin": "FastLateType",
       "Content": "Fast/Late種類"

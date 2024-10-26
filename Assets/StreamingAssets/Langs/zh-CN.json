@@ -203,6 +203,16 @@
       "Content": "开启后，将会显示Critical判定"
     },
     {
+      "Type": "DISPLAY_BREAK_SCORE",
+      "Origin": "DisplayBreakScore",
+      "Content": "显示Break分数"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE_DESC",
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "开启后，会显示Break类Note的详细得分"
+    },
+    {
       "Type": "FAST_LATE_TYPE",
       "Origin": "FastLateType",
       "Content": "Fast/Late显示等级"
