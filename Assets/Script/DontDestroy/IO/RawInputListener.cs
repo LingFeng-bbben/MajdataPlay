@@ -9,7 +9,7 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        readonly static RawKey[] bindingKeys = new RawKey[12]
+        readonly static RawKey[] _bindingKeys = new RawKey[12]
         {
             RawKey.W,
             RawKey.E,
@@ -24,7 +24,7 @@ namespace MajdataPlay.IO
             RawKey.Numpad7,
             RawKey.Numpad3,
         };
-        Button[] buttons = new Button[12]
+        Button[] _buttons = new Button[12]
         {
             new Button(RawKey.W,SensorType.A1),
             new Button(RawKey.E,SensorType.A2),
@@ -43,9 +43,9 @@ namespace MajdataPlay.IO
         {
             if (!buttonCheckerMutex.WaitOne(4))
                 return;
-            foreach (var keyId in bindingKeys)
+            foreach (var keyId in _bindingKeys)
             {
-                var button = buttons.Find(x => x.BindingKey == keyId);
+                var button = _buttons.Find(x => x.BindingKey == keyId);
                 if (button == null)
                 {
                     Debug.LogError($"Key not found:\n{keyId}");
@@ -72,14 +72,14 @@ namespace MajdataPlay.IO
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = buttons.Find(x => x?.Type == sType);
+            var button = _buttons.Find(x => x?.Type == sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.OnStatusChanged += checker;
         }
         public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = buttons.Find(x => x?.Type == sType);
+            var button = _buttons.Find(x => x?.Type == sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.OnStatusChanged -= checker;
@@ -88,9 +88,9 @@ namespace MajdataPlay.IO
         {
             if (!buttonCheckerMutex.WaitOne(4))
                 return;
-            if (bindingKeys.All(x => x != key))
+            if (_bindingKeys.All(x => x != key))
                 return;
-            var button = buttons.Find(x => x.BindingKey == key);
+            var button = _buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {
                 Debug.LogError($"Key not found:\n{key}");
@@ -118,9 +118,9 @@ namespace MajdataPlay.IO
         {
             if (!buttonCheckerMutex.WaitOne(4))
                 return;
-            if (bindingKeys.All(x => x != key))
+            if (_bindingKeys.All(x => x != key))
                 return;
-            var button = buttons.Find(x => x.BindingKey == key);
+            var button = _buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {
                 Debug.LogError($"Key not found:\n{key}");
