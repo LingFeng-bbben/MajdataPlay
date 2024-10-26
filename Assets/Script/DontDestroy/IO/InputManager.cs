@@ -13,6 +13,10 @@ using DeviceType = MajdataPlay.Types.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
+using Microsoft.Win32;
+using System.Windows.Forms;
+using Application = UnityEngine.Application;
+using System.Security.Policy;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -38,18 +42,41 @@ namespace MajdataPlay.IO
                 sensors[index] = child.GetComponent<Sensor>();
                 sensors[index].Type = (SensorType)index;
             }
+            
+        }
+        void CheckEnvironment(bool forceQuit = true)
+        {
+            // MSVC 2015-2019
+            var registryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
+            using var key = Registry.LocalMachine.OpenSubKey(registryKey);
+            if(key is null)
+            {
+                var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer.";
+                var title = "Missing MSVC";
+                if (forceQuit)
+                {
+                    MessageBox.Show($"{msg} Please click \"OK\" to jump to download and install.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.OpenURL("https://github.com/abbodi1406/vcredist/releases");
+                    Application.Quit();
+                }
+                else
+                    MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
         void Start()
         {
             switch(MajInstances.Setting.Misc.InputDevice)
             {
                 case DeviceType.Keyboard:
+                    CheckEnvironment(false);
                     StartInputDevicesListener(); 
                     break;
                 case DeviceType.IO4:
+                    CheckEnvironment();
                     StartExternalIOManager();
                     break;
                 case DeviceType.HID:
+                    CheckEnvironment();
                     StartExternalIOManager(true);
                     break;
             }

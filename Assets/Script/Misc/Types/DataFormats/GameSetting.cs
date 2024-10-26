@@ -105,7 +105,7 @@ namespace MajdataPlay.Types
         public bool DisplayFPS { get; set; } = true;
         public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = false;
-        public float NoteAppearRate { get; set; } = 0.36f;
+        public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = true;
     }
     public class MiscOptions
