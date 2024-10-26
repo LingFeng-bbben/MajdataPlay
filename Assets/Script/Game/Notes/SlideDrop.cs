@@ -80,7 +80,7 @@ namespace MajdataPlay.Game.Notes
             _fullFadeInTiming = _fadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
-            Destroy(GetComponent<Animator>());
+            //Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
@@ -458,6 +458,9 @@ namespace MajdataPlay.Game.Notes
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;
                 breakMaterial = skin.BreakMaterial;
+                var controller = gameObject.AddComponent<BreakSlideShineController>();
+                controller.Parent = this;
+                controller.Initialize();
             }
 
             foreach(var bar in bars)
@@ -474,8 +477,8 @@ namespace MajdataPlay.Game.Notes
                 if(breakMaterial != null)
                 {
                     barRenderer.material = breakMaterial;
-                    var controller = bar.AddComponent<BreakShineController>();
-                    controller.Parent = this;
+                    //var controller = bar.AddComponent<BreakShineController>();
+                    //controller.Parent = this;
                 }
             }
 

@@ -256,7 +256,6 @@ namespace MajdataPlay.Game.Notes
 
             foreach (GameObject obj in _slideBars)
                 obj.SetActive(false);
-
             DestroyStars();
         }
         /// <summary>

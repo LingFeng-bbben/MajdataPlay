@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.Interfaces
 {
-    public interface IFlasher
+    public interface IFlasher : IGameObjectProvider
     {
         bool CanShine { get; }
     }

@@ -20,7 +20,7 @@ namespace MajdataPlay.Types
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
-        public string Language { get; set; } = string.Empty;
+        public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
     }
     public class JudgeOptions
@@ -70,9 +70,24 @@ namespace MajdataPlay.Types
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> {
-            { new ApiEndpoint(){ Name = "Majnet",Url = "https://majdata.net/api3/api" ,Username = "YourUsername",Password = "YourPassword"} },
-            { new ApiEndpoint(){ Name = "Contest", Url = "https://majdata.net/api1/api"} }
+        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> 
+        {
+            { 
+                new ApiEndpoint()
+                { 
+                    Name = "Majnet",
+                    Url = "https://majdata.net/api3/api" ,
+                    Username = "YourUsername",
+                    Password = "YourPassword"
+                } 
+            },
+            { 
+                new ApiEndpoint()
+                { 
+                    Name = "Contest", 
+                    Url = "https://majdata.net/api1/api"
+                } 
+            }
         };
     }
 

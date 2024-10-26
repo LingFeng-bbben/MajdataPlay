@@ -67,7 +67,7 @@ namespace MajdataPlay.IO
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var sensor = sensors.Find(x => x.Type == sType);
-            var button = buttons.Find(x => x.Type == sType);
+            var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -78,7 +78,7 @@ namespace MajdataPlay.IO
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var sensor = sensors.Find(x => x.Type == sType);
-            var button = buttons.Find(x => x.Type == sType);
+            var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -100,7 +100,7 @@ namespace MajdataPlay.IO
         {
             if (target > SensorType.A8)
                 throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
-            var button = buttons.Find(x => x.Type == target);
+            var button = _buttons.Find(x => x.Type == target);
 
             if (button is null)
                 throw new Exception($"{target} Button not found.");
@@ -169,7 +169,7 @@ namespace MajdataPlay.IO
             }
             return isIdle;
         }
-        public Button? GetButton(SensorType type) => buttons.Find(x => x.Type == type);
+        public Button? GetButton(SensorType type) => _buttons.Find(x => x.Type == type);
         public Sensor GetSensor(SensorType target) => sensors[(int)target];
         public Sensor[] GetSensors() => sensors.ToArray();
         public Sensor[] GetSensors(SensorGroup group) => sensors.Where(x => x.Group == group).ToArray();
@@ -177,7 +177,7 @@ namespace MajdataPlay.IO
         {
             foreach(var sensor in sensors)
                 sensor.ClearSubscriber();
-            foreach(var button in buttons)
+            foreach(var button in _buttons)
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
