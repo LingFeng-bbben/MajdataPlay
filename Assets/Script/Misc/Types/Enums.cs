@@ -215,6 +215,8 @@
     }
     public enum MajText
     {
+        MISSING_MSVC,
+        MISSING_MSVC_CONTENT,
         SCANNING_CHART,
         SCAN_CHART_FAILED,
         NO_CHARTS,

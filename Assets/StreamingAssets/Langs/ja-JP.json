@@ -3,6 +3,16 @@
   "Author": "Majdata",
   "MappingTable": [
     {
+      "Type": "MISSING_MSVC",
+      "Origin": "Missing MSVC",
+      "Content": "Missing MSVC"
+    },
+    {
+      "Type": "MISSING_MSVC_CONTENT",
+      "Origin": "Missing MSVC CONTENT",
+      "Content": "MSVCライブラリ見つかりませんでした\nOKをクリックするとダウンロードページへ行きます"
+    },
+    {
       "Type": "SCANNING_CHART",
       "Origin": "Scanning Charts",
       "Content": "Scanning Charts"
