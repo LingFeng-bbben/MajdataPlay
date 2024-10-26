@@ -265,28 +265,28 @@ namespace MajdataPlay.Game
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.S_Board:
-                    bgInfoHeader.text = "S  Board";
+                    bgInfoHeader.text = "S  BORDER";
                     bgInfoHeader.color = AchievementSilverColor;
                     bgInfoText.color = AchievementSilverColor;
                     bgInfoText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SS_Board:
-                    bgInfoHeader.text = "SS  Board";
+                    bgInfoHeader.text = "SS  BORDER";
                     bgInfoHeader.color = AchievementGoldColor;
                     bgInfoText.color = AchievementGoldColor;
                     bgInfoText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SSS_Board:
-                    bgInfoHeader.text = "SSS  Board";
+                    bgInfoHeader.text = "SSS  BORDER";
                     bgInfoHeader.color = AchievementGoldColor;
                     bgInfoText.color = AchievementGoldColor;
                     bgInfoText.text = "1.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.MyBest:
-                    bgInfoHeader.text = "MyBestScore Board";
+                    bgInfoHeader.text = "MyBestScore BORDER";
                     bgInfoHeader.color = AchievementGoldColor;
                     bgInfoText.color = AchievementGoldColor;
                     bgInfoText.text = "101.0000%";
