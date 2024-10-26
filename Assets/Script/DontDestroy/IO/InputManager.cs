@@ -51,16 +51,16 @@ namespace MajdataPlay.IO
             using var key = Registry.LocalMachine.OpenSubKey(registryKey);
             if(key is null)
             {
-                var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer.";
+                var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer. Please click \"OK\" to jump to download and install.";
                 var title = "Missing MSVC";
                 if (forceQuit)
                 {
-                    MessageBox.Show($"{msg} Please click \"OK\" to jump to download and install.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.OpenURL("https://github.com/abbodi1406/vcredist/releases");
                     Application.Quit();
                 }
                 else
-                    MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Debug.LogWarning("Missing environment: MSVC runtime library not found.");
             }
         }
         void Start()
