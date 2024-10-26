@@ -1,0 +1,20 @@
+{
+    "name": "MychIO",
+    "rootNamespace": "MychIO",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "dev.isas.mychio",
+            "expression": "",
+            "define": ""
+        }
+    ],
+    "noEngineReferences": false
+}
