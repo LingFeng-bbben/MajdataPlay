@@ -225,6 +225,8 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var gm in _slideBars)
             {
+                if (IsDestroyed)
+                    return;
                 var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
                 {
@@ -253,7 +255,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (Parent is not null && !Parent.IsDestroyed)
                 Parent.End(true);
-
+            CanShine = false;
             foreach (GameObject obj in _slideBars)
                 obj.SetActive(false);
             DestroyStars();
