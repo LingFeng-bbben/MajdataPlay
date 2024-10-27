@@ -244,8 +244,8 @@ namespace MajdataPlay.IO
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
-            sensor.OnStatusChanged += checker;
-            button.OnStatusChanged += checker;
+            sensor.AddSubscriber(checker);
+            button.AddSubscriber(checker);
         }
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
@@ -255,8 +255,8 @@ namespace MajdataPlay.IO
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
-            sensor.OnStatusChanged -= checker;
-            button.OnStatusChanged -= checker;
+            sensor.RemoveSubscriber(checker);
+            button.RemoveSubscriber(checker);
         }
         public bool CheckAreaStatus(SensorType sType, SensorStatus targetStatus)
         {

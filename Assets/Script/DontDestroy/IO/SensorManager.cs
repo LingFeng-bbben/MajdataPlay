@@ -76,14 +76,14 @@ namespace MajdataPlay.IO
             var sensor = sensors.Find(x => x?.Type == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
-            sensor.OnStatusChanged += checker;
+            sensor.AddSubscriber(checker);
         }
         public void UnbindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var sensor = sensors.Find(x => x?.Type == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
-            sensor.OnStatusChanged -= checker;
+            sensor.RemoveSubscriber(checker);
         }
     }
 }

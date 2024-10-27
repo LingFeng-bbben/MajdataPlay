@@ -77,14 +77,14 @@ namespace MajdataPlay.IO
             var button = _buttons.Find(x => x?.Type == sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
-            button.OnStatusChanged += checker;
+            button.AddSubscriber(checker);
         }
         public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
             var button = _buttons.Find(x => x?.Type == sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
-            button.OnStatusChanged -= checker;
+            button.RemoveSubscriber(checker);
         }
         void OnKeyStateChanged(ButtonRingZone btnZone, InputState state)
         {
