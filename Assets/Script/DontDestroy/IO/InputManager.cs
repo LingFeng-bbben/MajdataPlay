@@ -46,25 +46,25 @@ namespace MajdataPlay.IO
         }
         void CheckEnvironment(bool forceQuit = true)
         {
-            // MSVC 2015-2019
-            var registryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
-            using var key = Registry.LocalMachine.OpenSubKey(registryKey);
-            if(key is null)
-            {
-                //var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer. Please click \"OK\" to jump to download and install.";
-                var msg = Localization.GetLocalizedText(MajText.MISSING_MSVC_CONTENT);
-                if (string.IsNullOrEmpty(msg))
-                    msg = "MSVCRT not found\r\nClick \"OK\" to download";
-                var title = "Missing MSVC";
-                if (forceQuit)
-                {
-                    MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.OpenURL("https://aka.ms/vs/17/release/vc_redist.x64.exe");
-                    Application.Quit();
-                }
-                else
-                    Debug.LogWarning("Missing environment: MSVC runtime library not found.");
-            }
+            //// MSVC 2015-2019
+            //var registryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
+            //using var key = Registry.LocalMachine.OpenSubKey(registryKey);
+            //if(key is null)
+            //{
+            //    //var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer. Please click \"OK\" to jump to download and install.";
+            //    var msg = Localization.GetLocalizedText(MajText.MISSING_MSVC_CONTENT);
+            //    if (string.IsNullOrEmpty(msg))
+            //        msg = "MSVCRT not found\r\nClick \"OK\" to download";
+            //    var title = "Missing MSVC";
+            //    if (forceQuit)
+            //    {
+            //        MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //        Application.OpenURL("https://aka.ms/vs/17/release/vc_redist.x64.exe");
+            //        Application.Quit();
+            //    }
+            //    else
+            //        Debug.LogWarning("Missing environment: MSVC runtime library not found.");
+            //}
         }
         void Start()
         {
@@ -197,7 +197,8 @@ namespace MajdataPlay.IO
                     _ioManager.AddButtonRing(AdxIO4ButtonRing.GetDeviceName(),
                                          inputSubscriptions: buttonRingCallbacks);
                 }
-                //_ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
+                _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
+                
                 UniTask.Void(async () =>
                 {
                     while (!_cancelSource.IsCancellationRequested)
