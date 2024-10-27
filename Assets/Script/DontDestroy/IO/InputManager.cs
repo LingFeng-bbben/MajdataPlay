@@ -103,11 +103,18 @@ namespace MajdataPlay.IO
             {
                 while (!_cancelSource.IsCancellationRequested)
                 {
-                    if (useDummy)
-                        UpdateMousePosition();
-                    else
-                        UpdateSensorState();
-                    UpdateButtonState();
+                    try
+                    {
+                        if (useDummy)
+                            UpdateMousePosition();
+                        else
+                            UpdateSensorState();
+                        UpdateButtonState();
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
                     await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
                 }
             });
@@ -199,22 +206,28 @@ namespace MajdataPlay.IO
                 }
                 _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
                 
-                UniTask.Void(async () =>
-                {
-                    while (!_cancelSource.IsCancellationRequested)
-                    {
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                        UpdateSensorState();
-                        await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
-                    }
-                });
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
-            
+            UniTask.Void(async () =>
+            {
+                while (!_cancelSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        while (executionQueue.TryDequeue(out var eventAction))
+                            eventAction();
+                        UpdateSensorState();
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                }
+            });
         }
         void OnApplicationQuit()
         {
