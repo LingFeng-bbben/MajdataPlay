@@ -46,6 +46,7 @@ namespace MajdataPlay.Game
         long _noteCount = 0;
         int _slideLayer = -1;
         int _noteSortOrder = 0;
+        int _touchSortOrder = 0;
 
         NoteManager _noteManager;
         Dictionary<int, int> _noteIndex = new();
@@ -60,7 +61,7 @@ namespace MajdataPlay.Game
             {SimaiNoteType.Tap, 2 },
             {SimaiNoteType.Hold, 3 },
             {SimaiNoteType.Slide, 2 },
-            {SimaiNoteType.Touch, 7 },
+            {SimaiNoteType.Touch, 6 },
             {SimaiNoteType.TouchHold, 6 },
         };
         static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
@@ -501,12 +502,12 @@ namespace MajdataPlay.Game
             var isBreak = note.isBreak;
             var speed = TouchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
-            var noteSortOrder = this._noteSortOrder;
+            var noteSortOrder = _touchSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            this._noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             var poolingInfo = new TouchPoolingInfo()
             {
                 SensorPos = sensorPos,
@@ -544,10 +545,10 @@ namespace MajdataPlay.Game
             var isBreak = note.isBreak;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
-            var noteSortOrder = this._noteSortOrder;
+            var noteSortOrder = _touchSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            this._noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
             return new TouchHoldPoolingInfo()
             {

@@ -71,8 +71,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
-  m_SortingOrder: 5
+  m_SortingLayer: 8
+  m_SortingOrder: 6
   m_Sprite: {fileID: 21300000, guid: 56ada2b421cc3e94dbda75b53ed53951, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -155,8 +155,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
-  m_SortingOrder: 0
+  m_SortingLayer: 8
+  m_SortingOrder: 5
   m_Sprite: {fileID: 21300000, guid: 681871fcccbc55d459f5f087357e456c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -239,7 +239,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
+  m_SortingLayer: 8
   m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 1e772999674a5ab43bef559b1e8ca798, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -406,7 +406,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
+  m_SortingLayer: 8
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 5e746a87a6eaa414d8c4b14e9d7f5296, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -490,7 +490,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
+  m_SortingLayer: 8
   m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 964bfec600c4eb24c9ba2500ee1d263a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -574,7 +574,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1967659789
-  m_SortingLayer: 7
+  m_SortingLayer: 8
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 276d97e4e78b505419c1f6707c075422, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -638,26 +638,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6839bc41b7edde469c9fc7c4c009e2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPosition: 0
-  time: 5
-  noteSortOrder: 0
-  speed: 0.8
-  isEach: 0
-  isBreak: 0
-  isEX: 0
-  LastFor: 1
-  holdEffect: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
+  _startPos: 0
+  _timing: 0
+  _speed: 0
+  _sortOrder: 0
+  _isEach: 0
+  _isBreak: 0
+  _isEX: 0
+  _playerIdleTime: 0
+  _length: 1
+  areaPosition: 49
   isFirework: 0
   tapEffect: {fileID: 314035496818238881, guid: 3edd06a81e4ec844bb281d728dce49b2, type: 3}
   judgeEffect: {fileID: 2214473122963414705, guid: e863ee95f9b63c044a47510ad82daf33, type: 3}
-  board_On: {fileID: 0}
-  Board_Off: {fileID: 0}
-  boarder: {fileID: 4570065831695336312}
-  fans:
-  - {fileID: 4570065831800169648}
-  - {fileID: 4570065832418346541}
-  - {fileID: 4570065832111625927}
-  - {fileID: 4570065832687991426}
-  - {fileID: 4570065831502088326}
-  - {fileID: 4570065831695336318}
-  mask: {fileID: 4570065831974175032}
