@@ -49,10 +49,13 @@ namespace MajdataPlay.Game.Controllers
                 var param = _gpManager.BreakParam;
                 foreach (var renderer in Renderers)
                 {
+                    var material = renderer?.material;
                     if (renderer is null)
                         continue;
-                    renderer.material.SetFloat("_Brightness", param.Brightness);
-                    renderer.material.SetFloat("_Contrast", param.Contrast);
+                    if (material is null)
+                        continue;
+                    material.SetFloat("_Brightness", param.Brightness);
+                    material.SetFloat("_Contrast", param.Contrast);
                 }
             }
         }
