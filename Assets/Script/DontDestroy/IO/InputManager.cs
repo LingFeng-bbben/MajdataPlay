@@ -13,10 +13,10 @@ using DeviceType = MajdataPlay.Types.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
-using Microsoft.Win32;
-using System.Windows.Forms;
-using Application = UnityEngine.Application;
-using System.Security.Policy;
+//using Microsoft.Win32;
+//using System.Windows.Forms;
+//using Application = UnityEngine.Application;
+//using System.Security.Policy;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -39,8 +39,8 @@ namespace MajdataPlay.IO
             DontDestroyOnLoad(this);
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
-                sensors[index] = child.GetComponent<Sensor>();
-                sensors[index].Type = (SensorType)index;
+                _sensors[index] = child.GetComponent<Sensor>();
+                _sensors[index].Type = (SensorType)index;
             }
             
         }
@@ -239,7 +239,7 @@ namespace MajdataPlay.IO
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x.Type == sType);
+            var sensor = _sensors.Find(x => x.Type == sType);
             var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
@@ -250,7 +250,7 @@ namespace MajdataPlay.IO
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x.Type == sType);
+            var sensor = _sensors.Find(x => x.Type == sType);
             var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
@@ -264,7 +264,7 @@ namespace MajdataPlay.IO
         }
         public bool CheckSensorStatus(SensorType target, SensorStatus targetStatus)
         {
-            var sensor = sensors[(int)target];
+            var sensor = _sensors[(int)target];
             if (sensor == null)
                 throw new Exception($"{target} Sensor or Button not found.");
             return sensor.Status == targetStatus;
@@ -343,12 +343,12 @@ namespace MajdataPlay.IO
             return isIdle;
         }
         public Button? GetButton(SensorType type) => _buttons.Find(x => x.Type == type);
-        public Sensor GetSensor(SensorType target) => sensors[(int)target];
-        public Sensor[] GetSensors() => sensors.ToArray();
-        public Sensor[] GetSensors(SensorGroup group) => sensors.Where(x => x.Group == group).ToArray();
+        public Sensor GetSensor(SensorType target) => _sensors[(int)target];
+        public Sensor[] GetSensors() => _sensors.ToArray();
+        public Sensor[] GetSensors(SensorGroup group) => _sensors.Where(x => x.Group == group).ToArray();
         public void ClearAllSubscriber()
         {
-            foreach(var sensor in sensors)
+            foreach(var sensor in _sensors)
                 sensor.ClearSubscriber();
             foreach(var button in _buttons)
                 button.ClearSubscriber();

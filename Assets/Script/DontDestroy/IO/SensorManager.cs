@@ -7,19 +7,19 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        Sensor[] sensors = new Sensor[33];
+        readonly Sensor[] _sensors = new Sensor[33];
 
         void UpdateSensorState()
         {
             foreach(var (index, on) in _COMReport.WithIndex())
             {
-                if (index > sensors.Length)
+                if (index > _sensors.Length)
                     break;
                 var sensor = index switch
                 {
-                    <= (int)SensorType.C => sensors[index],
-                     > 17 => sensors[index - 1],
-                     _    => sensors[16],
+                    <= (int)SensorType.C => _sensors[index],
+                     > 17 => _sensors[index - 1],
+                     _    => _sensors[16],
                 };
                 if (sensor == null)
                 {
@@ -49,7 +49,7 @@ namespace MajdataPlay.IO
         }
         void SetSensorState(SensorType type,SensorStatus nState)
         {
-            var sensor = sensors[(int)type];
+            var sensor = _sensors[(int)type];
             if (sensor == null)
                 throw new Exception($"{type} Sensor not found.");
             var oState = sensor.Status;
@@ -73,14 +73,14 @@ namespace MajdataPlay.IO
         }
         public void BindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x?.Type == sType);
+            var sensor = _sensors.Find(x => x?.Type == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
             sensor.AddSubscriber(checker);
         }
         public void UnbindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x?.Type == sType);
+            var sensor = _sensors.Find(x => x?.Type == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
             sensor.RemoveSubscriber(checker);
