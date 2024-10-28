@@ -23,17 +23,17 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => tokenSource.Token; }
+        public CancellationToken AllTaskToken { get => _tokenSource.Token; }
         
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
         public static string SettingPath { get; } = Path.Combine(AssestsPath, "settings.json");
         public static string SkinPath { get; } = Path.Combine(AssestsPath, "Skins");
         public static string CachePath { get; } = Path.Combine(AssestsPath, "Cache");
-        public static string LogPath { get; } = Path.Combine(AssestsPath, $"MajPlayRuntime.log");
+        public static string LogsPath { get; } = Path.Combine(AssestsPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
-
+        public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
         public GameSetting Setting
         {
             get => MajInstances.Setting;
@@ -49,10 +49,10 @@ namespace MajdataPlay
             set => _useUnityTimer = value; 
         }
 
-        CancellationTokenSource tokenSource = new();
-        Task? logWritebackTask = null;
-        Queue<GameLog> logQueue = new();
-        readonly JsonSerializerOptions jsonReaderOption = new()
+        CancellationTokenSource _tokenSource = new();
+        Task? _logWritebackTask = null;
+        Queue<GameLog> _logQueue = new();
+        readonly JsonSerializerOptions _jsonReaderOption = new()
         {
 
             Converters =
@@ -65,11 +65,10 @@ namespace MajdataPlay
 
         void Awake()
         {
-            Debug.Log($"Version: {MajInstances.GameVersion}");
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
             Application.logMessageReceived += (c, trace, type) =>
             {
-                logQueue.Enqueue(new GameLog()
+                _logQueue.Enqueue(new GameLog()
                 {
                     Date = DateTime.Now,
                     Condition = c,
@@ -77,7 +76,8 @@ namespace MajdataPlay
                     Type = type
                 });
             };
-            logWritebackTask = LogWriteback();
+            _logWritebackTask = LogWriteback();
+            Debug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
@@ -87,7 +87,7 @@ namespace MajdataPlay
                 var js = File.ReadAllText(SettingPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, jsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, _jsonReaderOption) || setting is null)
                 {
                     Setting = new();
                     Debug.LogError("Failed to read setting from file");
@@ -142,8 +142,8 @@ namespace MajdataPlay
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            tokenSource.Cancel();
-            foreach (var log in logQueue)
+            _tokenSource.Cancel();
+            foreach (var log in _logQueue)
                 File.AppendAllText(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
         }
         public void Save()
@@ -154,7 +154,7 @@ namespace MajdataPlay
             SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
-            var json = Serializer.Json.Serialize(Setting, jsonReaderOption);
+            var json = Serializer.Json.Serialize(Setting, _jsonReaderOption);
             File.WriteAllText(SettingPath, json);
         }
         public void EnableGC()
@@ -179,18 +179,23 @@ namespace MajdataPlay
         }
         async Task LogWriteback()
         {
+            var oldLogPath = Path.Combine(AssestsPath, "MajPlayRuntime.log");
+            if (!Directory.Exists(LogsPath))
+                Directory.CreateDirectory(LogsPath);
+            if (File.Exists(oldLogPath))
+                File.Delete(oldLogPath);
             if (File.Exists(LogPath))
                 File.Delete(LogPath);
             while (true)
             {
-                if (logQueue.Count == 0)
+                if (_logQueue.Count == 0)
                 {
                     if (AllTaskToken.IsCancellationRequested)
                         return;
                     await Task.Delay(50);
                     continue;
                 }
-                var log = logQueue.Dequeue();
+                var log = _logQueue.Dequeue();
                 await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
             }
         }
