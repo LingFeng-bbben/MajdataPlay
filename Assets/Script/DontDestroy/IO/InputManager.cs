@@ -107,73 +107,6 @@ namespace MajdataPlay.IO
             var executionQueue = IOManager.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
-            var eventCallbacks = new Dictionary<IOEventType, ControllerEventDelegate>
-            {
-                {
-                    IOEventType.Attach,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.Log($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.Debug,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.Log($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.Detach,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogWarning($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.ConnectionError,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogError($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                            //CheckAllDevicesState();
-                        });
-                    }
-                },
-                {
-                    IOEventType.SerialDeviceReadError,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogError($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                            //CheckAllDevicesState();
-                        });
-                    }
-                },
-                {
-                    IOEventType.HidDeviceReadError,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogError($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                            //CheckAllDevicesState();
-                        });
-                    }
-                }
-
-            };
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
                 buttonRingCallbacks[zone] = (zone, state) => executionQueue.Enqueue(() => OnKeyStateChanged(zone, state));
@@ -183,7 +116,7 @@ namespace MajdataPlay.IO
 
             
             _ioManager.Destroy();
-            _ioManager.SubscribeToEvents(eventCallbacks);
+            _ioManager.SubscribeAllEvents(ExternalIOEventHandler);
             _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, 4));
 
             try
@@ -252,28 +185,26 @@ namespace MajdataPlay.IO
                 }
             });
         }
-        void CheckAllDevicesState()
+        void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
         {
-            CheckDeviceState(DeviceClassification.TouchPanel);
-            CheckDeviceState(DeviceClassification.ButtonRing);
-            //CheckDeviceState(DeviceClassification.LedDevice);
-        }
-        void CheckDeviceState(DeviceClassification deviceType)
-        {
-            if (_ioManager is null)
-                throw new NullReferenceException("External IOManager was never initialized");
-
-            if (_ioManager.IsReading(deviceType))
-                return;
-            Debug.LogWarning($"Device of \"{deviceType}\" has not started reading, trying to start a read loop...");
-
-            if (_ioManager.StartReading(deviceType))
-                return;
-            Debug.LogWarning($"Device of \"{deviceType}\" has not connected, trying to connect the device...");
-
-            if (_ioManager.ReConnect(deviceType))
-                return;
-            Debug.LogError($"Attempt to connect to device of \"{deviceType}\" failed");
+            var executionQueue = IOManager.ExecutionQueue;
+            var logContent = $"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {msg.Trim()}";
+            switch (eventType)
+            {
+                case IOEventType.Attach:
+                case IOEventType.Debug:
+                    executionQueue.Enqueue(() => Debug.Log(logContent));
+                    break;
+                case IOEventType.ConnectionError:
+                case IOEventType.SerialDeviceReadError:
+                case IOEventType.HidDeviceReadError:
+                case IOEventType.ReconnectionError:
+                    executionQueue.Enqueue(() => Debug.LogError(logContent));
+                    break;
+                case IOEventType.Detach:
+                    executionQueue.Enqueue(() => Debug.LogWarning(logContent));
+                    break;
+            }
         }
         void OnApplicationQuit()
         {
