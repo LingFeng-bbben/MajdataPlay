@@ -17,21 +17,7 @@ namespace MajdataPlay.Game.Notes
         public bool IsForceRotate { get; set; } = false;
 
         public GameObject? SlideObject { get; set; }
-        //protected override void Start()
-        //{
-        //    base.Start();
 
-        //    if (SlideObject is null)
-        //        throw new NullReferenceException("Slide launcher has no slide reference");
-        //    LoadSkin();
-
-        //    if (!IsNoHead)
-        //    {
-        //        sensorPos = (SensorType)(startPosition - 1);
-        //        ioManager.BindArea(Check, sensorPos);
-        //    }
-        //    State = NoteStatus.Initialized;
-        //}
         public override void Initialize(TapPoolingInfo poolingInfo)
         {
             base.Initialize(poolingInfo);

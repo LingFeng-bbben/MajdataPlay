@@ -215,6 +215,8 @@
     }
     public enum MajText
     {
+        MISSING_MSVC,
+        MISSING_MSVC_CONTENT,
         SCANNING_CHART,
         SCAN_CHART_FAILED,
         NO_CHARTS,
@@ -263,6 +265,8 @@
         NOTE_SKIN_DESC,
         DISPLAY_CRITICAL_PERFECT,
         DISPLAY_CRITICAL_PERFECT_DESC,
+        DISPLAY_BREAK_SCORE,
+        DISPLAY_BREAK_SCORE_DESC,
         FAST_LATE_TYPE,
         FAST_LATE_TYPE_DESC,
         NOTE_JUDGE_TYPE,
@@ -327,5 +331,11 @@
     {
         Directory,
         Chart
+    }
+    public enum DeviceType
+    {
+        Keyboard,
+        HID,
+        IO4
     }
 }

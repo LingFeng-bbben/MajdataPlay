@@ -12,9 +12,9 @@ namespace MajdataPlay.Utils
     public static class Localization
     {
         public static event EventHandler<Language>? OnLanguageChanged;
-        public static Language Current 
+        public static Language Current
         {
-            get => _current; 
+            get => _current;
             set
             {
                 _current = value;
@@ -36,7 +36,7 @@ namespace MajdataPlay.Utils
         public static void Initialize()
         {
             var path = GameManager.LangPath;
-            if(!Directory.Exists(path))
+            if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
                 return;
@@ -44,12 +44,12 @@ namespace MajdataPlay.Utils
             var files = new DirectoryInfo(path).GetFiles()
                                                .Where(x => x.Extension == ".json");
             List<Language> loadedLangs = new();
-            foreach(var fileInfo in files)
+            foreach (var fileInfo in files)
             {
                 var filePath = fileInfo.FullName;
                 var json = File.ReadAllText(filePath);
                 Language? lang = null;
-                if (Serializer.Json.TryDeserialize(json, out lang,jsonReaderOption) && lang is not null)
+                if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderOption) && lang is not null)
                     loadedLangs.Add(lang);
                 else
                     continue;
@@ -58,7 +58,7 @@ namespace MajdataPlay.Utils
                 return;
             var grouped = loadedLangs.GroupBy(x => x.ToString());
             Available = new Language[grouped.Count()];
-            foreach(var (i, grouping) in grouped.WithIndex())
+            foreach (var (i, grouping) in grouped.WithIndex())
                 Available[i] = grouping.First();
         }
         /// <summary>
@@ -97,10 +97,11 @@ namespace MajdataPlay.Utils
 
             return result?.Content ?? origin;
         }
-        public static void GetLocalizedText(MajText textType,out string origin)
+        public static void GetLocalizedText(MajText textType, out string origin)
         {
             origin = GetLocalizedText(textType);
         }
         static Language _current = Language.Default;
     }
 }
+

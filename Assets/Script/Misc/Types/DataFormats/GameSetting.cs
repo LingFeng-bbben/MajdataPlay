@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+#nullable enable
 namespace MajdataPlay.Types
 {
     public class GameSetting
@@ -20,7 +20,7 @@ namespace MajdataPlay.Types
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
-        public string Language { get; set; } = string.Empty;
+        public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
     }
     public class JudgeOptions
@@ -33,6 +33,7 @@ namespace MajdataPlay.Types
     {
         public string Skin { get; set; } = "default";
         public bool DisplayCriticalPerfect { get; set; } = false;
+        public bool DisplayBreakScore { get; set; } = true;
         public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
@@ -70,9 +71,24 @@ namespace MajdataPlay.Types
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> {
-            { new ApiEndpoint(){ Name = "Majnet",Url = "https://majdata.net/api3/api" ,Username = "YourUsername",Password = "YourPassword"} },
-            { new ApiEndpoint(){ Name = "Contest", Url = "https://majdata.net/api1/api"} }
+        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> 
+        {
+            { 
+                new ApiEndpoint()
+                { 
+                    Name = "Majnet",
+                    Url = "https://majdata.net/api3/api" ,
+                    Username = "YourUsername",
+                    Password = "YourPassword"
+                } 
+            },
+            { 
+                new ApiEndpoint()
+                { 
+                    Name = "Contest", 
+                    Url = "https://majdata.net/api1/api"
+                } 
+            }
         };
     }
 
@@ -90,13 +106,14 @@ namespace MajdataPlay.Types
         public bool DisplayFPS { get; set; } = true;
         public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = false;
-        public float NoteAppearRate { get; set; } = 0.36f;
+        public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = true;
     }
     public class MiscOptions
     {
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
+        public DeviceType InputDevice { get; set; } = DeviceType.Keyboard;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
     }

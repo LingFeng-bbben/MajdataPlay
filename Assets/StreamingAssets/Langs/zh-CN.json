@@ -3,6 +3,16 @@
   "Author": "Majdata",
   "MappingTable": [
     {
+      "Type": "MISSING_MSVC",
+      "Origin": "Missing MSVC",
+      "Content": "Missing MSVC"
+    },
+    {
+      "Type": "MISSING_MSVC_CONTENT",
+      "Origin": "Missing MSVC CONTENT",
+      "Content": "找不到MSVC运行库\n点击\"OK\"下载MSVC运行库"
+    },
+    {
       "Type": "SCANNING_CHART",
       "Origin": "Scanning Charts",
       "Content": "正在扫描谱面"
@@ -201,6 +211,16 @@
       "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
       "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
       "Content": "开启后，将会显示Critical判定"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE",
+      "Origin": "DisplayBreakScore",
+      "Content": "显示Break分数"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE_DESC",
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "开启后，会显示Break类Note的详细得分"
     },
     {
       "Type": "FAST_LATE_TYPE",

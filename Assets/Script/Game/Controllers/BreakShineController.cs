@@ -23,8 +23,11 @@ namespace MajdataPlay.Game.Controllers
             if (Parent is not null && Parent.CanShine)
             {
                 var param = _gpManager.BreakParam;
-                Renderer.material.SetFloat("_Brightness", param.Brightness);
-                Renderer.material.SetFloat("_Contrast", param.Contrast);
+                var material = Renderer.material;
+                if (material is null)
+                    return;
+                material.SetFloat("_Brightness", param.Brightness);
+                material.SetFloat("_Contrast", param.Contrast);
             }
         }
     }

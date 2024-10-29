@@ -18,7 +18,7 @@ namespace MajdataPlay.IO
             try
             {
                 serial = new SerialPort("COM3", 9600);
-                recvTask = Task.Run(() =>
+                _recvTask = Task.Run(() =>
                 {
                     while (true)
                     {
@@ -44,7 +44,7 @@ namespace MajdataPlay.IO
                                         //print(buf[i].ToString("X2"));
                                         for (int j = 0; j < 5; j++)
                                         {
-                                            COMReport[k] = (buf[i] & 0x01 << j) > 0;
+                                            _COMReport[k] = (buf[i] & 0x01 << j) > 0;
                                             k++;
                                         }
                                     }
@@ -73,7 +73,7 @@ namespace MajdataPlay.IO
                         }
                     }
                 });
-                await recvTask;
+                await _recvTask;
             }
             catch(IOException)
             {

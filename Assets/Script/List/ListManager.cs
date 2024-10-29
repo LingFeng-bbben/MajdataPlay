@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -9,6 +10,11 @@ namespace MajdataPlay.List
     public class ListManager : MonoBehaviour
     {
         public CoverListDisplayer CoverListDisplayer;
+
+        int _delta = 0;
+        float _pressTime = 0;
+        bool _isPressed = false;
+        
         // Start is called before the first frame update
         void Start()
         {
@@ -33,7 +39,18 @@ namespace MajdataPlay.List
         private void OnAreaDown(object sender, InputEventArgs e)
         {
             if (!e.IsClick)
+            {
+                switch(e.Type)
+                {
+                    case SensorType.A6:
+                    case SensorType.A3:
+                        _isPressed = false;
+                        _delta = 0;
+                        _pressTime = 0;
+                        break;
+                }
                 return;
+            }
             if (!e.IsButton)
             {
                 switch (e.Type)
@@ -88,10 +105,20 @@ namespace MajdataPlay.List
                 switch (e.Type)
                 {
                     case SensorType.A3:
+                        if (_isPressed)
+                            return;
                         CoverListDisplayer.SlideList(1);
+                        _isPressed = true;
+                        _delta = 1;
+                        AutoSlide().Forget();
                         break;
                     case SensorType.A6:
+                        if (_isPressed)
+                            return;
                         CoverListDisplayer.SlideList(-1);
+                        _isPressed = true;
+                        _delta = -1;
+                        AutoSlide().Forget();
                         break;
                     case SensorType.A8:
                         CoverListDisplayer.SlideDifficulty(-1);
@@ -130,6 +157,20 @@ namespace MajdataPlay.List
                         MajInstances.SceneSwitcher.SwitchScene("Setting");
                         break;
                 }
+            }
+        }
+        async UniTaskVoid AutoSlide()
+        {
+            while(_isPressed)
+            {
+                if ( _pressTime < 0.6f)
+                {
+                    _pressTime += Time.deltaTime;
+                    await UniTask.Yield();
+                    continue;
+                }
+                CoverListDisplayer.SlideList(_delta);
+                await UniTask.Delay(100);
             }
         }
     }

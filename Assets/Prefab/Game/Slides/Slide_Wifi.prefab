@@ -986,7 +986,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6000435141830527362}
   - component: {fileID: 4850745122976708631}
-  - component: {fileID: 8491945047529125324}
   m_Layer: 0
   m_Name: Slide_Wifi
   m_TagString: Untagged
@@ -1033,46 +1032,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dce01e6efa89ca542a1491788bab73ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPosition: 1
-  timing: 0
-  noteSortOrder: 0
-  speed: 0
-  isEach: 0
-  isBreak: 0
-  isEX: 0
-  LastFor: 1
-  startTiming: 0
-  sortIndex: 0
-  isJustR: 0
-  fadeInTiming: 0
-  fullFadeInTiming: 0
-  endPosition: 0
-  slideType: 
-  stars:
+  _startPos: 0
+  _timing: 0
+  _speed: 7
+  _sortOrder: 0
+  _isEach: 0
+  _isBreak: 0
+  _isEX: 0
+  _playerIdleTime: 0
+  _length: 1
+  _slideBars: []
+  _stars:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
---- !u!95 &8491945047529125324
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6574093696964316734}
-  m_Enabled: 0
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7d0ba6d7eeb05394a8fb602b73147814, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  _startTiming: 0
+  _isJustR: 0
+  _fadeInTiming: 0
+  _fullFadeInTiming: 0.2
+  _endPos: 1
+  _slideType: 
 --- !u!1 &7964666901942964958
 GameObject:
   m_ObjectHideFlags: 0

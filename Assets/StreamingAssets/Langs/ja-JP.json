@@ -3,6 +3,16 @@
   "Author": "Majdata",
   "MappingTable": [
     {
+      "Type": "MISSING_MSVC",
+      "Origin": "Missing MSVC",
+      "Content": "Missing MSVC"
+    },
+    {
+      "Type": "MISSING_MSVC_CONTENT",
+      "Origin": "Missing MSVC CONTENT",
+      "Content": "MSVCライブラリ見つかりませんでした\nOKをクリックするとダウンロードページへ行きます"
+    },
+    {
       "Type": "SCANNING_CHART",
       "Origin": "Scanning Charts",
       "Content": "Scanning Charts"
@@ -201,6 +211,16 @@
       "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
       "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
       "Content": ""
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE",
+      "Origin": "DisplayBreakScore",
+      "Content": "DisplayBreakScore"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE_DESC",
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "DisplayBreakScore_MAJSETTING_DESC"
     },
     {
       "Type": "FAST_LATE_TYPE",
