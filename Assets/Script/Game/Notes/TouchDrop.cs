@@ -60,6 +60,10 @@ namespace MajdataPlay.Game.Notes
         NotePoolManager notePoolManager;
         BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
+        const int _fanSpriteSortOrder = 3;
+        const int _justBorderSortOrder = 1;
+        const int _pointBorderSortOrder = 2;
+
         public void Initialize(TouchPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -97,9 +101,14 @@ namespace MajdataPlay.Game.Notes
                 _ioManager.BindSensor(Check, GetSensor());
                 _sensorPos = GetSensor();
                 SetFansPosition(0.4f);
-                State = NoteStatus.Initialized;
                 RendererState = RendererStatus.Off;
             }
+            for (var i = 0; i < 4; i++)
+                fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
+            justBorderRenderer.sortingOrder= SortOrder - _justBorderSortOrder;
+
+            State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
@@ -184,7 +193,6 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-                fanRenderers[i].sortingOrder += SortOrder;
                 var controller = breakShineControllers[i];
                 if(controller is null)
                 {

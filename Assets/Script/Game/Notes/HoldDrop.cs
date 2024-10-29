@@ -56,6 +56,10 @@ namespace MajdataPlay.Game.Notes
         NotePoolManager poolManager;
         BreakShineController? breakShineController = null;
 
+        const int _spriteSortOrder = 1;
+        const int _exSortOrder = 0;
+        const int _endSortOrder = 2;
+
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -80,6 +84,11 @@ namespace MajdataPlay.Game.Notes
                 _ioManager.BindArea(Check, _sensorPos);
                 LoadSkin();
             }
+
+            thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
+            exRenderer.sortingOrder = SortOrder - _exSortOrder;
+            endRenderer.sortingOrder = SortOrder - _endSortOrder;
+
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
@@ -132,10 +141,6 @@ namespace MajdataPlay.Game.Notes
             poolManager = FindObjectOfType<NotePoolManager>();
 
             LoadSkin();
-
-            thisRenderer.sortingOrder += SortOrder;
-            exRenderer.sortingOrder += SortOrder;
-            endRenderer.sortingOrder += SortOrder;
 
             _sensorPos = (SensorType)(StartPos - 1);
             _ioManager.BindArea(Check, _sensorPos);

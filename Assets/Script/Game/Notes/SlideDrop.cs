@@ -249,7 +249,9 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         void Check()
         {
-            if (IsFinished || !_canCheck)
+            if (IsDestroyed || !IsInitialized)
+                return;
+            else if (IsFinished || !_canCheck)
                 return;
             else if (_isChecking)
                 return;

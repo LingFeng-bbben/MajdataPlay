@@ -19,8 +19,8 @@ namespace MajdataPlay.IO
                 var distance = Math.Sqrt(x * x + y * y);
                 var angle = Mathf.Atan2(y, x) * Mathf.Rad2Deg;
 
-                Dictionary<SensorType, SensorStatus> oldSensorsState = sensors.ToDictionary(s => s.Type,s => s.Status);
-                Dictionary<SensorType, SensorStatus> newSensorsState = sensors.ToDictionary(s => s.Type,x => SensorStatus.Off);
+                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type,s => s.Status);
+                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type,x => SensorStatus.Off);
 
                 if (distance > 0.75)
                 {
@@ -115,7 +115,7 @@ namespace MajdataPlay.IO
             }
             else
             {
-                foreach (var s in sensors)
+                foreach (var s in _sensors)
                     SetSensorState(s.Type, SensorStatus.Off);
             }
         }

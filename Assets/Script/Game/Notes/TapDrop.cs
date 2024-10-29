@@ -9,16 +9,6 @@ namespace MajdataPlay.Game.Notes
 {
     public sealed class TapDrop : TapBase, IPoolableNote<TapPoolingInfo, TapQueueInfo>
     {
-        //protected override void Start()
-        //{
-        //    base.Start();
-
-        //    LoadSkin();
-
-        //    sensorPos = (SensorType)(startPosition - 1);
-        //    ioManager.BindArea(Check, sensorPos);
-        //    State = NoteStatus.Initialized;
-        //}
         protected override void LoadSkin()
         {
             var skin = MajInstances.SkinManager.GetTapSkin();

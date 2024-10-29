@@ -43,6 +43,10 @@ namespace MajdataPlay.Game.Notes
         protected SpriteRenderer tapLineRenderer;
         protected NotePoolManager notePoolManager;
 
+        const int _spriteSortOrder = 1;
+        const int _exSortOrder = 0;
+
+
         public virtual void Initialize(TapPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -60,6 +64,10 @@ namespace MajdataPlay.Game.Notes
             Distance = -100;
             if (State == NoteStatus.Start)
                 Start();
+
+            thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
+            exRenderer.sortingOrder = SortOrder - _exSortOrder;
+
             State = NoteStatus.Initialized;
         }
         public virtual void End(bool forceEnd = false)
@@ -96,9 +104,6 @@ namespace MajdataPlay.Game.Notes
             tapLine = Instantiate(tapLine, _noteManager.gameObject.transform.GetChild(7));
             tapLine.SetActive(false);
             tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
-
-            thisRenderer.sortingOrder += SortOrder;
-            exRenderer.sortingOrder += SortOrder;
 
             transform.localScale = new Vector3(0, 0);
         }

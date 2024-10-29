@@ -13,10 +13,10 @@ using DeviceType = MajdataPlay.Types.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
-using Microsoft.Win32;
-using System.Windows.Forms;
-using Application = UnityEngine.Application;
-using System.Security.Policy;
+//using Microsoft.Win32;
+//using System.Windows.Forms;
+//using Application = UnityEngine.Application;
+//using System.Security.Policy;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -39,8 +39,8 @@ namespace MajdataPlay.IO
             DontDestroyOnLoad(this);
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
-                sensors[index] = child.GetComponent<Sensor>();
-                sensors[index].Type = (SensorType)index;
+                _sensors[index] = child.GetComponent<Sensor>();
+                _sensors[index].Type = (SensorType)index;
             }
             
         }
@@ -72,20 +72,19 @@ namespace MajdataPlay.IO
             {
                 case DeviceType.Keyboard:
                     CheckEnvironment(false);
-                    StartInputDevicesListener(); 
+                    StartInternalIOManager();
+                    StartInternalIOListener();
                     break;
                 case DeviceType.IO4:
-                    CheckEnvironment();
-                    StartExternalIOManager();
-                    break;
                 case DeviceType.HID:
                     CheckEnvironment();
-                    StartExternalIOManager(true);
+                    StartExternalIOManager();
+                    StartExternalIOListener();
                     break;
             }
 
         }
-        void StartInputDevicesListener()
+        void StartInternalIOManager()
         {
             RawInput.Start();
             RawInput.OnKeyDown += OnRawKeyDown;
@@ -99,79 +98,15 @@ namespace MajdataPlay.IO
                 Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
                 useDummy = true;
             }
-            UniTask.Void(async () =>
-            {
-                while (!_cancelSource.IsCancellationRequested)
-                {
-                    if (useDummy)
-                        UpdateMousePosition();
-                    else
-                        UpdateSensorState();
-                    UpdateButtonState();
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
-                }
-            });
         }
-        void StartExternalIOManager(bool useHID = false)
+        public void StartExternalIOManager()
         {
-            _ioManager = new();
+            if(_ioManager is null)
+                _ioManager = new();
+            var useHID = MajInstances.Setting.Misc.InputDevice is DeviceType.HID;
             var executionQueue = IOManager.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
-            var eventCallbacks = new Dictionary<IOEventType, ControllerEventDelegate>
-            {
-                {
-                    IOEventType.Attach,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.Log($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.ConnectionError,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogError($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.Debug,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.Log($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.Detach,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogWarning($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                },
-                {
-                    IOEventType.SerialDeviceReadError,
-                    (eventType, deviceType, message) =>
-                    {
-                        executionQueue.Enqueue(() =>
-                        {
-                            Debug.LogError($"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {message.Trim()}");
-                        });
-                    }
-                }
-
-            };
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
                 buttonRingCallbacks[zone] = (zone, state) => executionQueue.Enqueue(() => OnKeyStateChanged(zone, state));
@@ -181,7 +116,8 @@ namespace MajdataPlay.IO
 
             
             _ioManager.Destroy();
-            _ioManager.SubscribeToEvents(eventCallbacks);
+            _ioManager.SubscribeToAllEvents(ExternalIOEventHandler);
+            _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, 4));
 
             try
             {
@@ -199,22 +135,76 @@ namespace MajdataPlay.IO
                 }
                 _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
                 
-                UniTask.Void(async () =>
-                {
-                    while (!_cancelSource.IsCancellationRequested)
-                    {
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                        UpdateSensorState();
-                        await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
-                    }
-                });
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
             
+        }
+        void StartInternalIOListener()
+        {
+            UniTask.Void(async () =>
+            {
+                while (!_cancelSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (useDummy)
+                            UpdateMousePosition();
+                        else
+                            UpdateSensorState();
+                        UpdateButtonState();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                }
+            });
+        }
+        void StartExternalIOListener()
+        {
+            UniTask.Void(async () =>
+            {
+                var executionQueue = IOManager.ExecutionQueue;
+                while (!_cancelSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        while (executionQueue.TryDequeue(out var eventAction))
+                            eventAction();
+                        UpdateSensorState();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                }
+            });
+        }
+        void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
+        {
+            var executionQueue = IOManager.ExecutionQueue;
+            var logContent = $"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {msg.Trim()}";
+            switch (eventType)
+            {
+                case IOEventType.Attach:
+                case IOEventType.Debug:
+                    executionQueue.Enqueue(() => Debug.Log(logContent));
+                    break;
+                case IOEventType.ConnectionError:
+                case IOEventType.SerialDeviceReadError:
+                case IOEventType.HidDeviceReadError:
+                case IOEventType.ReconnectionError:
+                    executionQueue.Enqueue(() => Debug.LogError(logContent));
+                    break;
+                case IOEventType.Detach:
+                    executionQueue.Enqueue(() => Debug.LogWarning(logContent));
+                    break;
+            }
         }
         void OnApplicationQuit()
         {
@@ -226,24 +216,24 @@ namespace MajdataPlay.IO
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x.Type == sType);
+            var sensor = _sensors.Find(x => x.Type == sType);
             var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
-            sensor.OnStatusChanged += checker;
-            button.OnStatusChanged += checker;
+            sensor.AddSubscriber(checker);
+            button.AddSubscriber(checker);
         }
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = sensors.Find(x => x.Type == sType);
+            var sensor = _sensors.Find(x => x.Type == sType);
             var button = _buttons.Find(x => x.Type == sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
-            sensor.OnStatusChanged -= checker;
-            button.OnStatusChanged -= checker;
+            sensor.RemoveSubscriber(checker);
+            button.RemoveSubscriber(checker);
         }
         public bool CheckAreaStatus(SensorType sType, SensorStatus targetStatus)
         {
@@ -251,7 +241,7 @@ namespace MajdataPlay.IO
         }
         public bool CheckSensorStatus(SensorType target, SensorStatus targetStatus)
         {
-            var sensor = sensors[(int)target];
+            var sensor = _sensors[(int)target];
             if (sensor == null)
                 throw new Exception($"{target} Sensor or Button not found.");
             return sensor.Status == targetStatus;
@@ -330,12 +320,12 @@ namespace MajdataPlay.IO
             return isIdle;
         }
         public Button? GetButton(SensorType type) => _buttons.Find(x => x.Type == type);
-        public Sensor GetSensor(SensorType target) => sensors[(int)target];
-        public Sensor[] GetSensors() => sensors.ToArray();
-        public Sensor[] GetSensors(SensorGroup group) => sensors.Where(x => x.Group == group).ToArray();
+        public Sensor GetSensor(SensorType target) => _sensors[(int)target];
+        public Sensor[] GetSensors() => _sensors.ToArray();
+        public Sensor[] GetSensors(SensorGroup group) => _sensors.Where(x => x.Group == group).ToArray();
         public void ClearAllSubscriber()
         {
-            foreach(var sensor in sensors)
+            foreach(var sensor in _sensors)
                 sensor.ClearSubscriber();
             foreach(var button in _buttons)
                 button.ClearSubscriber();

@@ -128,7 +128,9 @@ namespace MajdataPlay.Game.Notes
         protected override void Check(object sender, InputEventArgs arg) => CheckAll();
         void CheckAll()
         {
-            if (IsFinished || !_canCheck)
+            if (IsDestroyed || !IsInitialized)
+                return;
+            else if (IsFinished || !_canCheck)
                 return;
             else if (_isChecking)
                 return;
