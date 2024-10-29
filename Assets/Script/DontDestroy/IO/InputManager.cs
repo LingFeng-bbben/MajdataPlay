@@ -116,7 +116,7 @@ namespace MajdataPlay.IO
 
             
             _ioManager.Destroy();
-            _ioManager.SubscribeAllEvents(ExternalIOEventHandler);
+            _ioManager.SubscribeToAllEvents(ExternalIOEventHandler);
             _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, 4));
 
             try
