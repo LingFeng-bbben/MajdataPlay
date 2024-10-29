@@ -131,7 +131,7 @@ Note this is project is still in a very early stage. Feel free if you wanna part
 
 Please report problems to issues page.
 
-The log files should be in `MajPlayRuntime.log`
+The log files should be in `Logs/`
 
 ## Note
 
