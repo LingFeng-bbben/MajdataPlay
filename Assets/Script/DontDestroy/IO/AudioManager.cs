@@ -205,12 +205,15 @@ namespace MajdataPlay.IO
         public AudioSampleWrap? LoadMusic(string path)
         {
             var backend = MajInstances.Setting.Audio.Backend;
-            if (File.Exists(path))
+            if (File.Exists(path) || path.StartsWith("http"))
             {
-                switch(backend)
+                switch (backend)
                 {
                     case SoundBackendType.Unity:
-                        return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
+                        if (path.StartsWith("http"))
+                            return UnityAudioSample.ReadFromFile(path, gameObject);
+                        else
+                            return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);
@@ -228,13 +231,16 @@ namespace MajdataPlay.IO
         {
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Setting.Audio.Backend;
-            if (File.Exists(path))
+            if (File.Exists(path) || path.StartsWith("http"))
             {
                 switch (backend)
                 {
                     case SoundBackendType.Unity:
                         await UniTask.SwitchToMainThread();
-                        return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
+                        if (path.StartsWith("http"))
+                            return await UnityAudioSample.ReadFromFileAsync(path, gameObject);
+                        else
+                            return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);

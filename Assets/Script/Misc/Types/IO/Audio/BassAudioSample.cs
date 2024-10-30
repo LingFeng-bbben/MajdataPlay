@@ -45,24 +45,36 @@ namespace MajdataPlay.IO
         public override bool IsPlaying => Bass.ChannelIsActive(stream) == PlaybackState.Playing;
         public BassAudioSample(string path, int globalMixer, bool normalize = true)
         {
-            stream = Bass.CreateStream(path,0,0, BassFlags.Prescan);
-            Debug.Log(Bass.LastError);
-            Bass.ChannelSetAttribute(stream,ChannelAttribute.Buffer,0);
-            var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
-            var bytelength = Bass.ChannelGetLength(decode);
-            length = Bass.ChannelBytes2Seconds(decode,bytelength);
-            if (normalize)
+            if (path.StartsWith("http"))
             {
-                double channelmax = 0;
-                while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
-                {
-                    var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
-                    if (level > channelmax) channelmax = level;
-                }
-                gain = 1 / channelmax;
+                Debug.Log("Load Online Stream "+ path);
+                stream = Bass.CreateStream(path, 0, 0, null);
+                var bytelength = Bass.ChannelGetLength(stream);
+                length = Bass.ChannelBytes2Seconds(stream, bytelength);
                 Volume = 1;
             }
-            Bass.StreamFree(decode);
+            else
+            {
+                stream = Bass.CreateStream(path, 0, 0, BassFlags.Prescan);
+                Debug.Log(Bass.LastError);
+                Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
+
+                var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
+                var bytelength = Bass.ChannelGetLength(decode);
+                length = Bass.ChannelBytes2Seconds(decode, bytelength);
+                if (normalize)
+                {
+                    double channelmax = 0;
+                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    {
+                        var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
+                        if (level > channelmax) channelmax = level;
+                    }
+                    gain = 1 / channelmax;
+                    Volume = 1;
+                }
+                Bass.StreamFree(decode);
+            }
 
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             resampler = BassMix.CreateMixerStream(reqfreq,2 , BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
