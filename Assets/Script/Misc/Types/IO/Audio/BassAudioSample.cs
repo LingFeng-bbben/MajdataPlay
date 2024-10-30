@@ -1,18 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using MajdataPlay.Extensions;
+﻿using MajdataPlay.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Networking;
 using UnityEngine;
 using ManagedBass;
-using NAudio.Wave.Compression;
-using static UnityEngine.Rendering.VirtualTexturing.Debugging;
-using Unity.Collections.LowLevel.Unsafe;
 using ManagedBass.Mix;
-using ManagedBass.Wasapi;
 
 namespace MajdataPlay.IO
 {
