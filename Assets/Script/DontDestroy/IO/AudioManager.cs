@@ -139,7 +139,7 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendType.BassAsio:
                     case SoundBackendType.Wasapi:
-                        SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer));
+                        SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer,false));
                         break;
                 }
             }

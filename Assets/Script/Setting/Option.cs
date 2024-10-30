@@ -99,6 +99,9 @@ namespace MajdataPlay.Setting
                     case "Break":
                     case "Touch":
                     case "Voice":
+                        _maxValue = 2;
+                        _step = 0.05f;
+                        break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
                     case "BackgroundDim":
