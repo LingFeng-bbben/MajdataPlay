@@ -1,18 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using MajdataPlay.Extensions;
+﻿using MajdataPlay.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.Networking;
 using UnityEngine;
 using ManagedBass;
-using NAudio.Wave.Compression;
-using static UnityEngine.Rendering.VirtualTexturing.Debugging;
-using Unity.Collections.LowLevel.Unsafe;
 using ManagedBass.Mix;
-using ManagedBass.Wasapi;
 
 namespace MajdataPlay.IO
 {
@@ -21,6 +11,7 @@ namespace MajdataPlay.IO
         private int stream;
         private double length;
         private int resampler;
+        private double gain = 1f;
         public override bool IsLoop
         {
             get
@@ -48,20 +39,42 @@ namespace MajdataPlay.IO
         public override float Volume
         {
             get => (float)Bass.ChannelGetAttribute(stream, ChannelAttribute.Volume);
-            set => Bass.ChannelSetAttribute(stream, ChannelAttribute.Volume, value.Clamp(0, 1)) ;
+            set => Bass.ChannelSetAttribute(stream, ChannelAttribute.Volume, value.Clamp(0, 2)*gain) ;
         }
         public override TimeSpan Length => TimeSpan.FromSeconds(length);
         public override bool IsPlaying => Bass.ChannelIsActive(stream) == PlaybackState.Playing;
-        public BassAudioSample(string path , int globalMixer)
+        public BassAudioSample(string path, int globalMixer, bool normalize = true)
         {
-            stream = Bass.CreateStream(path,0,0, BassFlags.Prescan);
-            Debug.Log(Bass.LastError);
-            Bass.ChannelSetAttribute(stream,ChannelAttribute.Buffer,0);
+            if (path.StartsWith("http"))
+            {
+                Debug.Log("Load Online Stream "+ path);
+                stream = Bass.CreateStream(path, 0, 0, null);
+                var bytelength = Bass.ChannelGetLength(stream);
+                length = Bass.ChannelBytes2Seconds(stream, bytelength);
+                Volume = 1;
+            }
+            else
+            {
+                stream = Bass.CreateStream(path, 0, 0, BassFlags.Prescan);
+                Debug.Log(Bass.LastError);
+                Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
 
-            var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
-            length = Bass.ChannelBytes2Seconds(decode,
-                Bass.ChannelGetLength(decode));
-            Bass.StreamFree(decode);
+                var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
+                var bytelength = Bass.ChannelGetLength(decode);
+                length = Bass.ChannelBytes2Seconds(decode, bytelength);
+                if (normalize)
+                {
+                    double channelmax = 0;
+                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    {
+                        var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
+                        if (level > channelmax) channelmax = level;
+                    }
+                    gain = 1 / channelmax;
+                    Volume = 1;
+                }
+                Bass.StreamFree(decode);
+            }
 
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             resampler = BassMix.CreateMixerStream(reqfreq,2 , BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);

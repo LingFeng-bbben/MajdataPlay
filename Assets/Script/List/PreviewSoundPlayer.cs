@@ -27,12 +27,12 @@ public class PreviewSoundPlayer : MonoBehaviour
         var selectSound = MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM);
         selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
 
-        if (info.isOnline) yield break;
+        //if (info.isOnline) yield break;
 
         yield return new WaitForSeconds(1f);
 
         var trackPath = info.TrackPath ?? string.Empty;
-        if (!File.Exists(trackPath))
+        if (!File.Exists(trackPath) && !info.isOnline)
             throw new AudioTrackNotFoundException(trackPath);
         sample =  MajInstances.AudioManager.LoadMusic(trackPath);
         if (sample is null)
