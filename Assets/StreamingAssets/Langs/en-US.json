@@ -1,0 +1,565 @@
+{
+  "Code": "en-US",
+  "Author": "Ryuto Setsujin",
+  "MappingTable": [
+    {
+      "Type": "MISSING_MSVC",
+      "Origin": "Missing MSVC",
+      "Content": "Missing MSVC"
+    },
+    {
+      "Type": "MISSING_MSVC_CONTENT",
+      "Origin": "Missing MSVC CONTENT",
+      "Content": "MSVC Library not found. Click on OK to go to the download page"
+    },
+    {
+      "Type": "SCANNING_CHART",
+      "Origin": "Scanning Charts",
+      "Content": "Scanning Charts"
+    },
+    {
+      "Type": "SCAN_CHART_FAILED",
+      "Origin": "Scan Chart Failed",
+      "Content": "Chart scan failed"
+    },
+    {
+      "Type": "NO_CHARTS",
+      "Origin": "No Charts",
+      "Content": "No charts"
+    },
+    {
+      "Type": "PRESS_ANY_KEY",
+      "Origin": "Press Any Key",
+      "Content": "TOUCH TO START"
+    },
+    {
+      "Type": "DOWNLOADING",
+      "Origin": "Downloading",
+      "Content": "Downloading"
+    },
+    {
+      "Type": "DOWNLOAD_CHART_FAILED",
+      "Origin": "Failed to download chart",
+      "Content": "Failed to download chart"
+    },
+    {
+      "Type": "UNKNOWN_ERROR",
+      "Origin": "Unknown error",
+      "Content": "Unknown error"
+    },
+    {
+      "Type": "LOAD_CHART_FAILED",
+      "Origin": "Failed to load chart",
+      "Content": "Failed to load chart"
+    },
+    {
+      "Type": "DESERIALIZATION",
+      "Origin": "Deserialization",
+      "Content": "Deserialization"
+    },
+    {
+      "Type": "LOADING_CHART",
+      "Origin": "Loading Chart",
+      "Content": "Loading chart"
+    },
+    {
+      "Type": "GAME",
+      "Origin": "Game",
+      "Content": "Game Settings"
+    },
+    {
+      "Type": "JUDGE",
+      "Origin": "Judge",
+      "Content": "Judgment Settings"
+    },
+    {
+      "Type": "DISPLAY",
+      "Origin": "Display",
+      "Content": "Display Settings"
+    },
+    {
+      "Type": "AUDIO",
+      "Origin": "Audio",
+      "Content": "Audio Settings"
+    },
+    {
+      "Type": "VOLUME",
+      "Origin": "Volume",
+      "Content": "Volume Settings"
+    },
+    {
+      "Type": "DEBUG",
+      "Origin": "Debug",
+      "Content": "Debug"
+    },
+    {
+      "Type": "TAP_SPEED",
+      "Origin": "TapSpeed",
+      "Content": "Tap Note Speed"
+    },
+    {
+      "Type": "TAP_SPEED_DESC",
+      "Origin": "TapSpeed_MAJSETTING_DESC",
+      "Content": "Adjust how fast tap notes\napproach the circle"
+    },
+    {
+      "Type": "TOUCH_SPEED",
+      "Origin": "TouchSpeed",
+      "Content": "Touch Note Speed"
+    },
+    {
+      "Type": "TOUCH_SPEED_DESC",
+      "Origin": "TouchSpeed_MAJSETTING_DESC",
+      "Content": "Adjust how fast touch notes appear"
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET",
+      "Origin": "SlideFadeInOffset",
+      "Content": "Slide Note Fade-in Offset"
+    },
+    {
+      "Type": "SLIDE_FADEIN_OFFSET_DESC",
+      "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
+      "Content": "Set timing for slide appearance,\nhigher values are slower (seconds)"
+    },
+    {
+      "Type": "BACKGROUND_DIM",
+      "Origin": "BackgroundDim",
+      "Content": "Backround Dim Setting"
+    },
+    {
+      "Type": "BACKGROUND_DIM_DESC",
+      "Origin": "BackgroundDim_MAJSETTING_DESC",
+      "Content": "Change the background brightness"
+    },
+    {
+      "Type": "LANGUAGE",
+      "Origin": "Language",
+      "Content": "Language"
+    },
+    {
+      "Type": "LANGUAGE_DESC",
+      "Origin": "Language_MAJSETTING_DESC",
+      "Content": "Change the game's language."
+    },
+    {
+      "Type": "STAR_ROTATION",
+      "Origin": "StarRotation",
+      "Content": "Star Rotation"
+    },
+    {
+      "Type": "STAR_ROTATION_DESC",
+      "Origin": "StarRotation_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "BGINFO",
+      "Origin": "BGInfo",
+      "Content": "BG Info"
+    },
+    {
+      "Type": "BGINFO_DESC",
+      "Origin": "BGInfo_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "AUDIO_OFFSET",
+      "Origin": "AudioOffset",
+      "Content": "Offset A (Sound)"
+    },
+    {
+      "Type": "AUDIO_OFFSET_DESC",
+      "Origin": "AudioOffset_MAJSETTING_DESC",
+      "Content": "FAST = -\nLATE = +\n(seconds)"
+    },
+    {
+      "Type": "JUDGE_OFFSET",
+      "Origin": "JudgeOffset",
+      "Content": "Offset B (Visual)"
+    },
+    {
+      "Type": "JUDGE_OFFSET_DESC",
+      "Origin": "JudgeOffset_MAJSETTING_DESC",
+      "Content": "FAST = -\nLATE = +\n(seconds)"
+    },
+    {
+      "Type": "MODE",
+      "Origin": "Mode",
+      "Content": "Select Mode"
+    },
+    {
+      "Type": "MODE_DESC",
+      "Origin": "Mode_MAJSETTING_DESC",
+      "Content": "Selects the current offset mode"
+    },
+    {
+      "Type": "NOTE_SKIN",
+      "Origin": "Skin",
+      "Content": "Note Skin"
+    },
+    {
+      "Type": "NOTE_SKIN_DESC",
+      "Origin": "Skin_MAJSETTING_DESC",
+      "Content": "Changes the noteskin used in game"
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT",
+      "Origin": "DisplayCriticalPerfect",
+      "Content": "Display Critical Perfect"
+    },
+    {
+      "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE",
+      "Origin": "DisplayBreakScore",
+      "Content": "DisplayBreakScore"
+    },
+    {
+      "Type": "DISPLAY_BREAK_SCORE_DESC",
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "DisplayBreakScore_MAJSETTING_DESC"
+    },
+    {
+      "Type": "FAST_LATE_TYPE",
+      "Origin": "FastLateType",
+      "Content": "Fast/Late Type"
+    },
+    {
+      "Type": "FAST_LATE_TYPE_DESC",
+      "Origin": "FastLateType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE",
+      "Origin": "NoteJudgeType",
+      "Content": "Note Judgment Display Type"
+    },
+    {
+      "Type": "NOTE_JUDGE_TYPE_DESC",
+      "Origin": "NoteJudgeType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE",
+      "Origin": "TouchJudgeType",
+      "Content": "Touch Judgment Display Type"
+    },
+    {
+      "Type": "TOUCH_JUDGE_TYPE_DESC",
+      "Origin": "TouchJudgeType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE",
+      "Origin": "SlideJudgeType",
+      "Content": "Slide Judgment Display Type"
+    },
+    {
+      "Type": "SLIDE_JUDGE_TYPE_DESC",
+      "Origin": "SlideJudgeType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE",
+      "Origin": "BreakJudgeType",
+      "Content": "Break Note Judgment Type"
+    },
+    {
+      "Type": "BREAK_JUDGE_TYPE_DESC",
+      "Origin": "BreakJudgeType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE",
+      "Origin": "BreakFastLateType",
+      "Content": "Change how Break Fast/Lates are displayed."
+    },
+    {
+      "Type": "BREAK_FAST_LATE_TYPE_DESC",
+      "Origin": "BreakFastLateType_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_SORT_ORDER",
+      "Origin": "SlideSortOrder",
+      "Content": "Slide Sort Order"
+    },
+    {
+      "Type": "SLIDE_SORT_ORDER_DESC",
+      "Origin": "SlideSortOrder_MAJSETTING_DESC",
+      "Content": "Classic: New slides overlap old slides.\nModern: Old slides overlap new slides."
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE",
+      "Origin": "InnerJudgeDistance",
+      "Content": "Inner Judgment Display Distance"
+    },
+    {
+      "Type": "INNER_JUDGE_DISTANCE_DESC",
+      "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE",
+      "Origin": "OuterJudgeDistance",
+      "Content": "Outer Judgment Display Distance"
+    },
+    {
+      "Type": "OUTER_JUDGE_DISTANCE_DESC",
+      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "RESOLUTION",
+      "Origin": "Resolution",
+      "Content": "Game Resolution"
+    },
+    {
+      "Type": "RESOLUTION_DESC",
+      "Origin": "Resolution_MAJSETTING_DESC",
+      "Content": "Changes the game's resolution."
+    },
+    {
+      "Type": "ANSWER_VOL",
+      "Origin": "Answer",
+      "Content": "Answer SE"
+    },
+    {
+      "Type": "ANSWER_VOL_DESC",
+      "Origin": "Answer_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "BGM_VOL",
+      "Origin": "BGM",
+      "Content": "BGM"
+    },
+    {
+      "Type": "BGM_VOL_DESC",
+      "Origin": "BGM_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "TAP_VOL",
+      "Origin": "Tap",
+      "Content": "Tap/Hold SE"
+    },
+    {
+      "Type": "TAP_VOL_DESC",
+      "Origin": "Tap_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "SLIDE_VOL",
+      "Origin": "Slide",
+      "Content": "Slide SE"
+    },
+    {
+      "Type": "SLIDE_VOL_DESC",
+      "Origin": "Slide_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "BREAK_VOL",
+      "Origin": "Break",
+      "Content": "Break SE"
+    },
+    {
+      "Type": "BREAK_VOL_DESC",
+      "Origin": "Break_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "TOUCH_VOL",
+      "Origin": "Touch",
+      "Content": "Touch SE"
+    },
+    {
+      "Type": "TOUCH_VOL_DESC",
+      "Origin": "Touch_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "VOICE_VOL",
+      "Origin": "Voice",
+      "Content": "System Voice"
+    },
+    {
+      "Type": "VOICE_VOL_DESC",
+      "Origin": "Voice_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "DISPLAY_SENSOR",
+      "Origin": "DisplaySensor",
+      "Content": "Display Sensor"
+    },
+    {
+      "Type": "DISPLAY_SENSOR_DESC",
+      "Origin": "DisplaySensor_MAJSETTING_DESC",
+      "Content": "Displays the sensor's current status."
+    },
+    {
+      "Type": "DISPLAY_FPS",
+      "Origin": "DisplayFPS",
+      "Content": "Display FPS"
+    },
+    {
+      "Type": "DISPLAY_FPS_DESC",
+      "Origin": "DisplayFPS_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "FULLSCREEN",
+      "Origin": "FullScreen",
+      "Content": "Fullscreen"
+    },
+    {
+      "Type": "FULLSCREEN_DESC",
+      "Origin": "FullScreen_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC",
+      "Origin": "TryFixAudioSync",
+      "Content": "Correct Audio Desync"
+    },
+    {
+      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
+      "Origin": "TryFixAudioSync_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE",
+      "Origin": "NoteAppearRate",
+      "Content": "Note Appearance Rate"
+    },
+    {
+      "Type": "NOTE_APPEAR_RATE_DESC",
+      "Origin": "NoteAppearRate_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING",
+      "Origin": "DisableGCInGameing",
+      "Content": "Disable GC in Gaming"
+    },
+    {
+      "Type": "DISABLE_GC_IN_GAMING_DESC",
+      "Origin": "DisableGCInGameing_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "All",
+      "Content": "All"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowCP",
+      "Content": "Critical or Lower"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowP",
+      "Content": "Perfect or Lower"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "BelowGR",
+      "Content": "Great or Lower"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "MissOnly",
+      "Content": "Miss Only"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Enable",
+      "Content": "Enable"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Disable",
+      "Content": "Disable"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "True",
+      "Content": "True"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "False",
+      "Content": "False"
+    },
+    {
+      "Type": "UNAVAILABLE",
+      "Origin": "Unavailable",
+      "Content": "Unavailable"
+    },{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Audio Track",
+      "Content": "Downloading Audio"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Maidata",
+      "Content": "Downloading Maidata"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Picture",
+      "Content": "Downloading Cover Art"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Downloading Video",
+      "Content": "Downloading Video"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Search",
+      "Content": "Search"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "UseKeyboardHint",
+      "Content": "Use your keyboard..."
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Sort",
+      "Content": "Sort"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTime",
+      "Content": "Time"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDiff",
+      "Content": "Difficulty"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDes",
+      "Content": "Song\nArtist"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyTitle",
+      "Content": "Song\nTitle"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SortbyDefault",
+      "Content": "Default Sort"
+    }
+  ]
+}
