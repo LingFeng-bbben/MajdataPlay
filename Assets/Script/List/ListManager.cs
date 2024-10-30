@@ -163,7 +163,7 @@ namespace MajdataPlay.List
         {
             while(_isPressed)
             {
-                if ( _pressTime < 0.6f)
+                if ( _pressTime < 0.4f)
                 {
                     _pressTime += Time.deltaTime;
                     await UniTask.Yield();
