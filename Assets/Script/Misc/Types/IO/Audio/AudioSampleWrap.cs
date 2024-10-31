@@ -6,6 +6,7 @@ namespace MajdataPlay.IO
     {
         public abstract bool IsPlaying { get; }
         public abstract float Volume { get; set; }
+        public abstract float Speed { get; set; }
         public abstract double CurrentSec { get; set; }
         public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }

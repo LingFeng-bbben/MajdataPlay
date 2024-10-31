@@ -29,6 +29,11 @@ namespace MajdataPlay.IO
             get => audioSource.volume;
             set => audioSource.volume = value.Clamp(0, 1);
         }
+        public override float Speed
+        {
+            get => audioSource.pitch;
+            set => audioSource.pitch = value;
+        }// this is not perfect and will change the pitch. FUCK YOU UNITY
         public override TimeSpan Length => TimeSpan.FromSeconds(audioClip.length);
         public override bool IsPlaying => audioSource.isPlaying;
         public UnityAudioSample(AudioClip audioClip, GameObject gameObject)

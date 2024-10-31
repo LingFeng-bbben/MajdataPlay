@@ -3,12 +3,15 @@ using System;
 using UnityEngine;
 using ManagedBass;
 using ManagedBass.Mix;
+using Live2D.Cubism.Framework.Json;
+using ManagedBass.Fx;
 
 namespace MajdataPlay.IO
 {
     public class BassAudioSample : AudioSampleWrap
     {
         private int stream;
+        private int decode;
         private double length;
         private int resampler;
         private double gain = 1f;
@@ -41,6 +44,11 @@ namespace MajdataPlay.IO
             get => (float)Bass.ChannelGetAttribute(stream, ChannelAttribute.Volume);
             set => Bass.ChannelSetAttribute(stream, ChannelAttribute.Volume, value.Clamp(0, 2)*gain) ;
         }
+        public override float Speed { 
+            get => (float)Bass.ChannelGetAttribute(stream, ChannelAttribute.Tempo) / 100f + 1f;
+            set => Bass.ChannelSetAttribute(stream,ChannelAttribute.Tempo, (value - 1) * 100f);
+        }
+
         public override TimeSpan Length => TimeSpan.FromSeconds(length);
         public override bool IsPlaying => Bass.ChannelIsActive(stream) == PlaybackState.Playing;
         public BassAudioSample(string path, int globalMixer, bool normalize = true)
@@ -55,11 +63,11 @@ namespace MajdataPlay.IO
             }
             else
             {
-                stream = Bass.CreateStream(path, 0, 0, BassFlags.Prescan);
-                Debug.Log(Bass.LastError);
+                decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode|BassFlags.Prescan);
+                stream = BassFx.TempoCreate(decode, BassFlags.FxFreeSource);
                 Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
-
-                var decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode);
+                
+                //scan the peak here
                 var bytelength = Bass.ChannelGetLength(decode);
                 length = Bass.ChannelBytes2Seconds(decode, bytelength);
                 if (normalize)
@@ -73,9 +81,7 @@ namespace MajdataPlay.IO
                     gain = 1 / channelmax;
                     Volume = 1;
                 }
-                Bass.StreamFree(decode);
             }
-
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             resampler = BassMix.CreateMixerStream(reqfreq,2 , BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
             Bass.ChannelSetAttribute(resampler, ChannelAttribute.Buffer, 0);
@@ -108,6 +114,7 @@ namespace MajdataPlay.IO
             BassMix.MixerRemoveChannel(stream);
             Bass.ChannelStop(stream);
             Bass.StreamFree(stream);
+            Bass.StreamFree(decode);
         }
     }
 }
