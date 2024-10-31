@@ -44,5 +44,10 @@ namespace MajdataPlay.Utils
             get => MajInstanceHelper<SceneSwitcher>.Instance!;
             set => MajInstanceHelper<SceneSwitcher>.Instance = value;
         }
+        public static LightManager LightManager
+        {
+            get => MajInstanceHelper<LightManager>.Instance!;
+            set => MajInstanceHelper<LightManager>.Instance = value;
+        }
     }
 }

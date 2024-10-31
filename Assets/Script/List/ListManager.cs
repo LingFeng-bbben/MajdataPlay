@@ -20,13 +20,13 @@ namespace MajdataPlay.List
         {
             CoverListDisplayer.SetDirList(SongStorage.Collections);
             CoverListDisplayer.SetSongList();
-            //LightManager.Instance.SetAllLight(Color.white);
-            LightManager.Instance.SetButtonLight(Color.green, 3);
-            LightManager.Instance.SetButtonLight(Color.red, 4);
-            LightManager.Instance.SetButtonLight(Color.blue, 2);
-            LightManager.Instance.SetButtonLight(Color.blue, 5);
-            LightManager.Instance.SetButtonLight(Color.yellow, 6);
-            LightManager.Instance.SetButtonLight(Color.yellow, 1);
+            //MajInstances.LightManager.SetAllLight(Color.white);
+            MajInstances.LightManager.SetButtonLight(Color.green, 3);
+            MajInstances.LightManager.SetButtonLight(Color.red, 4);
+            MajInstances.LightManager.SetButtonLight(Color.blue, 2);
+            MajInstances.LightManager.SetButtonLight(Color.blue, 5);
+            MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
+            MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
             CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
             if (!MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM).IsPlaying)
             {
@@ -134,7 +134,7 @@ namespace MajdataPlay.List
                         if (CoverListDisplayer.IsChartList)
                         {
                             CoverListDisplayer.SetDirList(SongStorage.Collections);
-                            LightManager.Instance.SetButtonLight(Color.white, 4);
+                            MajInstances.LightManager.SetButtonLight(Color.white, 4);
                             SongStorage.WorkingCollection.Index = 0;
                         }
                         break;
@@ -142,7 +142,7 @@ namespace MajdataPlay.List
                         if (CoverListDisplayer.IsDirList)
                         {
                             CoverListDisplayer.SetSongList();
-                            LightManager.Instance.SetButtonLight(Color.red, 4);
+                            MajInstances.LightManager.SetButtonLight(Color.red, 4);
                         }
                         else
                         {

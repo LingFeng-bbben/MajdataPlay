@@ -222,7 +222,7 @@ namespace MajdataPlay.Game
             if (chartUri is null or "")
                 throw new ChartNotFoundException(_songDetail);
             
-            LightManager.Instance.SetAllLight(Color.blue);
+            MajInstances.LightManager.SetAllLight(Color.blue);
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
             if (!File.Exists(trackPath))
             {
@@ -345,7 +345,7 @@ namespace MajdataPlay.Game
             if (_audioSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
-            LightManager.Instance.SetAllLight(Color.white);
+            MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
         /// Parse the chart into memory

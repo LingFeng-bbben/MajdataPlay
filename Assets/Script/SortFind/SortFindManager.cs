@@ -20,7 +20,7 @@ public class SortFindManager : MonoBehaviour
     void Start()
     {
         EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
-        LightManager.Instance.SetAllLight(Color.black);
+        MajInstances.LightManager.SetAllLight(Color.black);
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
         SearchBar.text = SongStorage.OrderBy.Keyword;
         SetActiveSort(SongStorage.OrderBy.SortBy);

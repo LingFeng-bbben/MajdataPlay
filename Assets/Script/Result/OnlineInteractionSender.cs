@@ -31,7 +31,7 @@ public class OnlineInteractionSender : MonoBehaviour
         }
         SongDetail = song;
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
-        LightManager.Instance.SetButtonLight(Color.yellow, 4);
+        MajInstances.LightManager.SetButtonLight(Color.yellow, 4);
         return true;
     }
 
@@ -57,21 +57,21 @@ public class OnlineInteractionSender : MonoBehaviour
     async UniTask SendLike(SongDetail song)
     {
         infotext.text = "稍等...";
-        LightManager.Instance.SetButtonLight(Color.blue, 4);
+        MajInstances.LightManager.SetButtonLight(Color.blue, 4);
         var client = HttpTransporter.ShareClient;
         try
         {
             if (song.ApiEndpoint == null)
             {
                 infotext.text = "";
-                LightManager.Instance.SetButtonLight(Color.red, 4);
+                MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
 
             if (song.ApiEndpoint.Username == null || song.ApiEndpoint.Password == null)
             {
                 infotext.text = "登录失败";
-                LightManager.Instance.SetButtonLight(Color.red, 4);
+                MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
 
@@ -88,7 +88,7 @@ public class OnlineInteractionSender : MonoBehaviour
             if (intlist.LikeList.Any(o => o == song.ApiEndpoint.Username))
             {
                 infotext.text = "你已经点过赞了！@！";
-                LightManager.Instance.SetButtonLight(Color.red, 4);
+                MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
 
@@ -130,13 +130,13 @@ public class OnlineInteractionSender : MonoBehaviour
             if (liketask.Result.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 infotext.text = "点赞成功";
-                LightManager.Instance.SetButtonLight(Color.green, 4);
+                MajInstances.LightManager.SetButtonLight(Color.green, 4);
             }
         }catch (Exception ex)
         {
             infotext.text = "点赞失败";
             Debug.LogError(ex);
-            LightManager.Instance.SetButtonLight(Color.red, 4);
+            MajInstances.LightManager.SetButtonLight(Color.red, 4);
             return;
         }
     }

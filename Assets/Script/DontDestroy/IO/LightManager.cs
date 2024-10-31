@@ -1,35 +1,34 @@
 using MajdataPlay.Extensions;
+using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.IO
 {
     public class LightManager : MonoBehaviour
     {
-        // Start is called before the first frame update
-        public static LightManager Instance;
-        bool useDummy = true;
-        SpriteRenderer[] DummyLights;
-        SerialPort serial;
-        List<byte> templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        List<byte> templateSingle = new List<byte>() { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
-        List<byte> templateUpdate = new List<byte>() { 0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F };
+        bool _useDummy = true;
+        SpriteRenderer[] _dummyLights;
+        SerialPort _serial;
+        List<byte> _templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
+        List<byte> _templateSingle = new List<byte>() { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
+        List<byte> _templateUpdate = new List<byte>() { 0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F };
         private void Awake()
         {
-            Instance = this;
+            MajInstances.LightManager = this;
             DontDestroyOnLoad(gameObject);
-            DummyLights = gameObject.GetComponentsInChildren<SpriteRenderer>();
+            _dummyLights = gameObject.GetComponentsInChildren<SpriteRenderer>();
             try
             {
-                serial = new SerialPort("COM21", 115200);
-                serial.WriteBufferSize = 16;
-                serial.Open();
-                useDummy = false;
-                foreach (var light in DummyLights)
+                _serial = new SerialPort("COM21", 115200);
+                _serial.WriteBufferSize = 16;
+                _serial.Open();
+                _useDummy = false;
+                foreach (var light in _dummyLights)
                 {
                     light.forceRenderingOff = true;
                 }
@@ -37,12 +36,13 @@ namespace MajdataPlay.IO
             catch
             {
                 Debug.Log("Cannot open COM21, using dummy lights");
-                useDummy = true;
+                _useDummy = true;
             }
         }
         private void OnDestroy()
         {
-            serial!.Close();
+            MajInstanceHelper<LightManager>.Free();
+            _serial!.Close();
         }
 
         void Start()
@@ -64,36 +64,36 @@ namespace MajdataPlay.IO
 
         void SetAllLightSerial(Color color)
         {
-            var bytes = templateAll.Clone();
+            var bytes = _templateAll.Clone();
             bytes[8] = (byte)(color.r * 255);
             bytes[9] = (byte)(color.g * 255);
             bytes[10] = (byte)(color.b * 255);
             bytes.Add(CalculateCheckSum(bytes));
-            Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
+            Task.Run(() => { _serial.Write(bytes.ToArray(), 0, bytes.Count); });
             UpdateLightSerial();
         }
         void SetButtonLightSerial(Color color, int button)
         {
-            var bytes = templateSingle.Clone();
+            var bytes = _templateSingle.Clone();
             bytes[5] = (byte)button;
             bytes[6] = (byte)(color.r * 255);
             bytes[7] = (byte)(color.g * 255);
             bytes[8] = (byte)(color.b * 255);
             bytes.Add(CalculateCheckSum(bytes));
-            Task.Run(() => { serial.Write(bytes.ToArray(), 0, bytes.Count); });
+            Task.Run(() => { _serial.Write(bytes.ToArray(), 0, bytes.Count); });
             UpdateLightSerial();
         }
 
         void UpdateLightSerial()
         {
-            Task.Run(() => { serial.Write(templateUpdate.ToArray(), 0, templateUpdate.Count); });
+            Task.Run(() => { _serial.Write(_templateUpdate.ToArray(), 0, _templateUpdate.Count); });
         }
 
         public void SetAllLight(Color lightColor)
         {
-            if (useDummy)
+            if (_useDummy)
             {
-                foreach (var light in DummyLights)
+                foreach (var light in _dummyLights)
                 {
                     light.color = lightColor;
                 }
@@ -106,9 +106,9 @@ namespace MajdataPlay.IO
 
         public void SetButtonLight(Color lightColor, int button)
         {
-            if (useDummy)
+            if (_useDummy)
             {
-                DummyLights[button].color = lightColor;
+                _dummyLights[button].color = lightColor;
             }
             else
             {

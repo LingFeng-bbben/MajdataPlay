@@ -25,7 +25,7 @@ namespace MajdataPlay.Title
             DelayPlayVoice().Forget();
             songStorageTask = StartScanningChart();
             WaitForScanningTask().Forget();
-            LightManager.Instance.SetAllLight(Color.white);
+            MajInstances.LightManager.SetAllLight(Color.white);
             
         }
         async Task StartScanningChart()

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -40,6 +41,28 @@ namespace MajdataPlay.Game
         /// <param name="judge"></param>
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
+            switch(judgeResult.Result)
+            {
+                case JudgeType.LateGood:
+                case JudgeType.FastGood:
+                    MajInstances.LightManager.SetButtonLight(Color.green, position);
+                    break;
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat2:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat:
+                    MajInstances.LightManager.SetButtonLight(new Color(1, 0.54f, 1f), position);
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                case JudgeType.Perfect:
+                    MajInstances.LightManager.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), position);
+                    break;
+            }
             _effectPool.Play(judgeResult, position);
         }
         public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)

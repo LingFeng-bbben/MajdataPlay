@@ -1,5 +1,6 @@
 using MajdataPlay.IO;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,19 +36,19 @@ namespace MajdataPlay.List
             bgCard.color = diffColors[i];
             if (i + 1 < diffColors.Length)
             {
-                LightManager.Instance.SetButtonLight(diffColors[i + 1], 0);
+                MajInstances.LightManager.SetButtonLight(diffColors[i + 1], 0);
             }
             else
             {
-                LightManager.Instance.SetButtonLight(diffColors.First(), 0);
+                MajInstances.LightManager.SetButtonLight(diffColors.First(), 0);
             }
             if (i - 1 >= 0)
             {
-                LightManager.Instance.SetButtonLight(diffColors[i - 1], 7);
+                MajInstances.LightManager.SetButtonLight(diffColors[i - 1], 7);
             }
             else
             {
-                LightManager.Instance.SetButtonLight(diffColors.Last(), 7);
+                MajInstances.LightManager.SetButtonLight(diffColors.Last(), 7);
             }
 
         }
