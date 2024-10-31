@@ -13,6 +13,10 @@ namespace MajdataPlay.Game
         GameObject _fireworkEffect;
         Animator _fireworkEffectAnimator;
 
+        public Color buttonGoodColor = Color.green;
+        public Color buttonGreatColor = Color.red;
+        public Color buttonPerfectColor = Color.yellow;
+
         void Awake()
         {
             MajInstanceHelper<NoteEffectManager>.Instance = this;
@@ -45,7 +49,7 @@ namespace MajdataPlay.Game
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    MajInstances.LightManager.SetButtonLight(Color.green, position);
+                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonGoodColor, position-1);
                     break;
                 case JudgeType.LateGreat:
                 case JudgeType.LateGreat1:
@@ -53,14 +57,14 @@ namespace MajdataPlay.Game
                 case JudgeType.FastGreat2:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat:
-                    MajInstances.LightManager.SetButtonLight(new Color(1, 0.54f, 1f), position);
+                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonGreatColor, position-1);
                     break;
                 case JudgeType.LatePerfect2:
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
                 case JudgeType.Perfect:
-                    MajInstances.LightManager.SetButtonLight(new Color(0.99f, 0.99f, 0.717f), position);
+                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonPerfectColor, position-1);
                     break;
             }
             _effectPool.Play(judgeResult, position);

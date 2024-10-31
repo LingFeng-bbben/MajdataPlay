@@ -116,6 +116,20 @@ namespace MajdataPlay.IO
             }
         }
 
+        Coroutine[] timers = new Coroutine[8];
+        public void SetButtonLightWithTimeout(Color lightColor, int button)
+        {
+            SetButtonLight(lightColor, button);
+            if (timers[button] != null)
+                StopCoroutine(timers[button]);
+            timers[button] = StartCoroutine(TurnWhiteAfter(button));
+        }
+        IEnumerator TurnWhiteAfter(int button)
+        {
+            yield return new WaitForSeconds(0.3f);
+            SetButtonLight(Color.white, button);
+        }
+
         IEnumerator DebugLights()
         {
             while (true)
