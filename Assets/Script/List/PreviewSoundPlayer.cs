@@ -10,7 +10,6 @@ using UnityEngine;
 #nullable enable
 public class PreviewSoundPlayer : MonoBehaviour
 {
-    AudioSampleWrap? _previewSample; 
     CancellationTokenSource? _cancellationTokenSource = null;
     public void PlayPreviewSound(SongDetail info)
     {
@@ -25,46 +24,42 @@ public class PreviewSoundPlayer : MonoBehaviour
 
     async UniTaskVoid PlayPreviewAsync(SongDetail info,CancellationToken token)
     {
-        if(_previewSample is not null)
-        {
-            _previewSample.Stop();
-            _previewSample.Dispose();
-            _previewSample = null;
-        }
+
         var selectSound = MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM);
         selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
         token.ThrowIfCancellationRequested();
-        await UniTask.Delay(1000);
+        await UniTask.Delay(1000,cancellationToken: token, cancelImmediately:true);
         token.ThrowIfCancellationRequested();
         var trackPath = info.TrackPath ?? string.Empty;
         if (!File.Exists(trackPath) && !info.isOnline)
             throw new AudioTrackNotFoundException(trackPath);
-        _previewSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
-        if (_previewSample is null)
-            throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
-        _previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
-        //set sample.CurrentSec Not implmented
-        _previewSample.IsLoop = true;
-        _previewSample.Play();
-        await UniTask.Delay(500);
-        token.ThrowIfCancellationRequested();
-        for (float i = 1f; i > 0; i = i - 0.2f)
+        using (var previewSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath))
         {
+            if (previewSample is null)
+                throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
+            previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
+            //set sample.CurrentSec Not implmented
+            previewSample.IsLoop = true;
+            previewSample.Play();
             token.ThrowIfCancellationRequested();
-            selectSound.Volume = i * MajInstances.Setting.Audio.Volume.BGM;
-            await UniTask.Delay(100);
+            await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);
+            token.ThrowIfCancellationRequested();
+            for (float i = 1f; i > 0; i = i - 0.2f)
+            {
+                token.ThrowIfCancellationRequested();
+                selectSound.Volume = i * MajInstances.Setting.Audio.Volume.BGM;
+                await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+            }
+            while (true)
+            {
+                await UniTask.Yield(token, cancelImmediately: true);
+            }
         }
     }
 
     private void OnDestroy()
     {
         _cancellationTokenSource?.Cancel();
-        if (_previewSample is not null)
-        {
-            _previewSample.Stop();
-            _previewSample.Dispose();
-            _previewSample = null;
-        }
         var selectSound = MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM);
         selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
     }
