@@ -73,7 +73,7 @@ namespace MajdataPlay.IO
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
             switch (backend)
             {
-                case SoundBackendType.BassAsio:
+                case SoundBackendType.Asio:
                     {
                         Debug.Log("Bass Init " + Bass.Init(-1, sampleRate, Bass.NoSoundDevice));
                         asioProcedure = (input, channel, buffer, length, _) =>
@@ -137,7 +137,7 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Unity:
                         SFXSamples.Add(UnityAudioSample.ReadFromFile($"file://{path}", gameObject));
                         break;
-                    case SoundBackendType.BassAsio:
+                    case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer,false));
                         break;
@@ -157,7 +157,7 @@ namespace MajdataPlay.IO
         private void OnDestroy()
         {
             if(MajInstances.Setting.Audio.Backend == SoundBackendType.Wasapi
-                || MajInstances.Setting.Audio.Backend == SoundBackendType.BassAsio)
+                || MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -214,7 +214,7 @@ namespace MajdataPlay.IO
                             return UnityAudioSample.ReadFromFile(path, gameObject);
                         else
                             return UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
-                    case SoundBackendType.BassAsio:
+                    case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);
                     default:
@@ -241,7 +241,7 @@ namespace MajdataPlay.IO
                             return await UnityAudioSample.ReadFromFileAsync(path, gameObject);
                         else
                             return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
-                    case SoundBackendType.BassAsio:
+                    case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         return new BassAudioSample(path, BassGlobalMixer);
                     default:
@@ -290,7 +290,7 @@ namespace MajdataPlay.IO
         }
         public void OpenAsioPannel()
         {
-            if(MajInstances.Setting.Audio.Backend == SoundBackendType.BassAsio)
+            if(MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
             {
                 BassAsio.ControlPanel();
             }
