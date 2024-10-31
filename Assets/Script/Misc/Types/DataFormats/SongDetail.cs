@@ -199,8 +199,11 @@ namespace MajdataPlay.Types
                 Debug.Log("Memory Cache Hit");
                 return SongCover;
             }
-            if (string.IsNullOrEmpty(CoverPath)) 
-                return SpriteLoader.EmptySprite;
+            if (string.IsNullOrEmpty(CoverPath))
+            {
+                SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
+                return SongCover;
+            }
             if (isOnline)
             {
                 Debug.Log("Try load cover online" + CoverPath);
