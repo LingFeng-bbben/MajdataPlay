@@ -3,6 +3,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace MajdataPlay.Game
 {
@@ -45,32 +46,12 @@ namespace MajdataPlay.Game
         /// <param name="judge"></param>
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
-            switch(judgeResult.Result)
-            {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
-                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonGoodColor, position-1);
-                    break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonGreatColor, position-1);
-                    break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
-                    MajInstances.LightManager.SetButtonLightWithTimeout(buttonPerfectColor, position-1);
-                    break;
-            }
+            MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Result), position - 1);
             _effectPool.Play(judgeResult, position);
         }
         public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
         {
+            MajInstances.LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect( SensorType sensorPos, in JudgeType judgeType)
@@ -79,6 +60,7 @@ namespace MajdataPlay.Game
         }
         public void ResetHoldEffect(int keyIndex)
         {
+            MajInstances.LightManager.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorType sensorPos)
@@ -112,6 +94,30 @@ namespace MajdataPlay.Game
         public void ResetEffect(int position)
         {
             _effectPool.Reset(position);
+        }
+        public Color GetColor(JudgeType judgeType)
+        {
+            switch (judgeType)
+            {
+                case JudgeType.LateGood:
+                case JudgeType.FastGood:
+                    return buttonGoodColor;
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat2:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat:
+                    return buttonGreatColor;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                case JudgeType.Perfect:
+                    return buttonPerfectColor;
+                default:
+                    return Color.white;
+            }
         }
     }
 }
