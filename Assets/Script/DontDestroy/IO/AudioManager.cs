@@ -227,7 +227,7 @@ namespace MajdataPlay.IO
                 return null;
             }
         }
-        public async UniTask<AudioSampleWrap?> LoadMusicAsync(string path)
+        public async UniTask<AudioSampleWrap?> LoadMusicAsync(string path, bool speedChange=false)
         {
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Setting.Audio.Backend;
@@ -243,7 +243,7 @@ namespace MajdataPlay.IO
                             return await UnityAudioSample.ReadFromFileAsync($"file://{path}", gameObject);
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
-                        return new BassAudioSample(path, BassGlobalMixer);
+                        return new BassAudioSample(path, BassGlobalMixer,speedChange: speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
                 }

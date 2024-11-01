@@ -340,7 +340,7 @@ namespace MajdataPlay.Game
             var trackPath = _songDetail.TrackPath ?? string.Empty;
             if(!File.Exists(trackPath))
                 throw new AudioTrackNotFoundException(trackPath);
-            _audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath);
+            _audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath,true);
             await UniTask.Yield();
             if (_audioSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
