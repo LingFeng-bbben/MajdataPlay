@@ -523,8 +523,6 @@ namespace MajdataPlay.Game
                 extraTime += -(FirstNoteAppearTiming + 4f);
             _audioStartTime = TimeSource + (float)_audioSample.CurrentSec + extraTime;
             StartToPlayAnswer();
-            _audioSample.Play();
-            _audioSample.Pause();
 
             State = ComponentState.Running;
 
@@ -532,6 +530,7 @@ namespace MajdataPlay.Game
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             _audioSample.Play();
+            _audioSample.CurrentSec = 0;
             _audioStartTime = TimeSource;
 
         }
