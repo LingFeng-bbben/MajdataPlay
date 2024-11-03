@@ -9,12 +9,16 @@ namespace MajdataPlay.Title
     {
         public VideoPlayer player;
         public string videopath;
+        public bool LoadOnly;
         // Start is called before the first frame update
         void Start()
         {
             player = GetComponent<VideoPlayer>();
             player.url = Application.streamingAssetsPath + videopath;
-            player.Play();
+            if(LoadOnly)
+                player.Prepare();
+            else
+                player.Play();
         }
 
         // Update is called once per frame

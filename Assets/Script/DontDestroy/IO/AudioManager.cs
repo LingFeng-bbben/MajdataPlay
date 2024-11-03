@@ -15,6 +15,7 @@ using ManagedBass.Asio;
 using UnityEngine.Profiling;
 using UnityEditor;
 using System;
+using System.Linq;
 
 #nullable enable
 namespace MajdataPlay.IO
@@ -23,36 +24,8 @@ namespace MajdataPlay.IO
     {
         readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
         readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
-        readonly string[] SFXFileNames = new string[]
-        {
-            "all_perfect.wav",
-            "answer.wav",
-            "break.wav",
-            "break_slide.wav",
-            "break_slide_start.wav",
-            "clock.wav",
-            "hanabi.wav",
-            "judge.wav",
-            "judge_break.wav",
-            "judge_break_slide.wav",
-            "judge_ex.wav",
-            "slide.wav",
-            "touch.wav",
-            "touchHold_riser.wav",
-            "track_start.wav",
-            "good.wav",
-            "great.wav",
-            "titlebgm.mp3",
-            "resultbgm.mp3",
-            "selectbgm.mp3"
-        };
-        readonly string[] VoiceFileNames = new string[]
-        {
-            "MajdataPlay.wav",
-            "SelectSong.wav",
-            "Sugoi.wav",
-            "DontTouchMe.wav"
-        };
+        string[] SFXFileNames = new string[0];
+        string[] VoiceFileNames = new string [0];
         private List<AudioSampleWrap?> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
@@ -65,6 +38,8 @@ namespace MajdataPlay.IO
         {
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
+            SFXFileNames =  new DirectoryInfo(SFXFilePath).GetFiles().FindAll(o=>!o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
+            VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles().FindAll(o => !o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
         }
         void Start()
         {
@@ -131,17 +106,49 @@ namespace MajdataPlay.IO
                     Debug.LogWarning(path + " dos not exists");
                     continue;
                 }
-
+                AudioSampleWrap sample;
                 switch(MajInstances.Setting.Audio.Backend)
                 {
                     case SoundBackendType.Unity:
-                        SFXSamples.Add(UnityAudioSample.ReadFromFile($"file://{path}", gameObject));
+                        sample = UnityAudioSample.ReadFromFile($"file://{path}", gameObject);
                         break;
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
-                        SFXSamples.Add(new BassAudioSample(path,BassGlobalMixer,false));
+                        sample = new BassAudioSample(path,BassGlobalMixer,false);
                         break;
+                    default:
+                        throw new NotImplementedException("Backend not supported");
                 }
+                sample.Name = filePath;
+
+                //group the samples
+                if (rootPath == VoiceFilePath) {
+                    sample.SampleType = SFXSampleType.Voice;
+                }else if (filePath.StartsWith("bgm"))
+                {
+                    sample.SampleType = SFXSampleType.BGM;
+                }
+                else if (filePath.StartsWith("answer"))
+                {
+                    sample.SampleType = SFXSampleType.Answer;
+                }
+                else if (filePath.StartsWith("break"))
+                {
+                    sample.SampleType = SFXSampleType.Break;
+                }
+                else if (filePath.StartsWith("slide"))
+                {
+                    sample.SampleType = SFXSampleType.Slide;
+                }
+                else if (filePath.StartsWith("tap"))
+                {
+                    sample.SampleType = SFXSampleType.Tap;
+                }
+                else if (filePath.StartsWith("touch"))
+                {
+                    sample.SampleType = SFXSampleType.Touch;
+                }
+                SFXSamples.Add((sample));
             }
         }
         void OnAnyAreaDown(object sender, InputEventArgs e)
@@ -149,9 +156,9 @@ namespace MajdataPlay.IO
             if (e.Status != SensorStatus.On)
                 return;
             if(e.IsButton)
-                PlaySFX(SFXSampleType.ANSWER);
+                PlaySFX("answer.wav");
             else
-                PlaySFX(SFXSampleType.TOUCH);
+                PlaySFX("touch.wav");
         }
 
         private void OnDestroy()
@@ -176,30 +183,28 @@ namespace MajdataPlay.IO
 
         public void ReadVolumeFromSettings()
         {
-            var setting = MajInstances.Setting;
-            SFXSamples[(int)SFXSampleType.ANSWER]?.SetVolume(setting.Audio.Volume.Answer);
-            SFXSamples[(int)SFXSampleType.ALL_PERFECT]?.SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples[(int)SFXSampleType.BREAK]?.SetVolume(setting.Audio.Volume.Break);
-            SFXSamples[(int)SFXSampleType.BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Break);
-            SFXSamples[(int)SFXSampleType.BREAK_SLIDE_START]?.SetVolume(setting.Audio.Volume.Slide);
-            SFXSamples[(int)SFXSampleType.CLOCK]?.SetVolume(setting.Audio.Volume.Answer);
-            SFXSamples[(int)SFXSampleType.HANABI]?.SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples[(int)SFXSampleType.JUDGE]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.JUDGE_BREAK]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.JUDGE_BREAK_SLIDE]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.JUDGE_EX]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.SLIDE]?.SetVolume(setting.Audio.Volume.Slide);
-            SFXSamples[(int)SFXSampleType.TOUCH]?.SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples[(int)SFXSampleType.TOUCH_HOLD_RISER]?.SetVolume(setting.Audio.Volume.Touch);
-            SFXSamples[(int)SFXSampleType.TRACK_START]?.SetVolume(setting.Audio.Volume.BGM);
-            SFXSamples[(int)SFXSampleType.GOOD]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.GREAT]?.SetVolume(setting.Audio.Volume.Tap);
-            SFXSamples[(int)SFXSampleType.TITLE_BGM]?.SetVolume(setting.Audio.Volume.BGM);
-
-            SFXSamples[(int)SFXSampleType.MAJDATA_PLAY]?.SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples[(int)SFXSampleType.SELECT_SONG]?.SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples[(int)SFXSampleType.SUGOI]?.SetVolume(setting.Audio.Volume.Voice);
-            SFXSamples[(int)SFXSampleType.DONT_TOUCH_ME]?.SetVolume(setting.Audio.Volume.Voice);
+            var volume = MajInstances.Setting.Audio.Volume;
+            foreach(var sample in SFXSamples)
+            {
+                if(sample is null) 
+                    continue;
+                if(sample.SampleType == SFXSampleType.Answer)
+                    sample.SetVolume(volume.Answer);
+                if (sample.SampleType == SFXSampleType.Tap)
+                    sample.SetVolume(volume.Tap);
+                if (sample.SampleType == SFXSampleType.Break)
+                    sample.SetVolume(volume.Answer);
+                if (sample.SampleType == SFXSampleType.Break)
+                    sample.SetVolume(volume.Answer);
+                if (sample.SampleType == SFXSampleType.BGM)
+                    sample.SetVolume(volume.BGM);
+                if (sample.SampleType == SFXSampleType.Touch)
+                    sample.SetVolume(volume.Touch);
+                if (sample.SampleType == SFXSampleType.Slide)
+                    sample.SetVolume(volume.Slide);
+                if (sample.SampleType == SFXSampleType.Voice)
+                    sample.SetVolume(volume.Voice);
+            }
         }
 
         public AudioSampleWrap? LoadMusic(string path)
@@ -254,11 +259,19 @@ namespace MajdataPlay.IO
                 return null;
             }
         }
-        public void PlaySFX(in SFXSampleType sfxType, bool isLoop = false)
+        public void PlaySFX(string name, bool isLoop = false)
         {
-            var psp = SFXSamples[(int)sfxType];
+            var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
             if (psp is not null) 
-            { 
+            {
+                if (psp.SampleType == SFXSampleType.Voice)
+                {
+                    foreach(var voice in SFXSamples.FindAll(o => o.SampleType == SFXSampleType.Voice))
+                    {
+                        if(voice is not null)
+                            voice.Stop();
+                    }
+                }
                 psp.PlayOneShot();
                 psp.IsLoop = isLoop;
             }   
@@ -266,9 +279,9 @@ namespace MajdataPlay.IO
                 Debug.LogError("No such SFX");
         }
 
-        public AudioSampleWrap GetSFX(in SFXSampleType sfxType)
+        public AudioSampleWrap GetSFX(string name)
         {
-            var psp = SFXSamples[(int)sfxType];
+            var psp = SFXSamples.FirstOrDefault(o=>o.Name==name);
             if (psp is not null)
             {
                 return psp;
@@ -280,9 +293,9 @@ namespace MajdataPlay.IO
             
         }
 
-        public void StopSFX(in SFXSampleType sfxType)
+        public void StopSFX(string name)
         {
-            var psp = SFXSamples[(int)sfxType];
+            var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
             if (psp is not null)
                 psp.Stop();
             else

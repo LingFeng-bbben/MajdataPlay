@@ -28,10 +28,11 @@ namespace MajdataPlay.List
             MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
             MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
             CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
-            if (!MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM).IsPlaying)
+            var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
+            if (!selectsfx.IsPlaying)
             {
-                MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_BGM, true);
-                MajInstances.AudioManager.PlaySFX(SFXSampleType.SELECT_SONG);
+                MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
+                MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
@@ -95,7 +96,8 @@ namespace MajdataPlay.List
                     case SensorType.A4:
                     case SensorType.A5:
                     case SensorType.D5:
-                        MajInstances.AudioManager.PlaySFX(SFXSampleType.DONT_TOUCH_ME);
+                        var list = new string[] { "notouch.wav", "notouch_2.wav", "notouch_3.wav", "notouch_4.wav" };
+                        MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                         XxlbAnimation.instance.PlayTouchAnimation();
                         break;
                 }
@@ -147,8 +149,9 @@ namespace MajdataPlay.List
                         else
                         {
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                            MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_SONG);
-                            MajInstances.AudioManager.StopSFX(SFXSampleType.SELECT_BGM);
+                            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+                            var list = new string[] { "track_start.wav", "track_start_2.wav" };
+                            MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                             MajInstances.SceneSwitcher.SwitchScene("Game",false);
                         }
                         break;

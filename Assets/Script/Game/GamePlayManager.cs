@@ -90,7 +90,8 @@ namespace MajdataPlay.Game
             }
         }
 
-
+        public GameObject AllPerfectAnimation;
+        public GameObject FullComboAnimation;
 
         [SerializeField]
         GameSetting _setting = MajInstances.Setting;
@@ -555,13 +556,61 @@ namespace MajdataPlay.Game
             else if (State != ComponentState.Running)
                 return;
 
+            _bgManager.CancelTimeRef();
+            State = ComponentState.Finished;
+
             var remainingTime = AudioTime - _audioSample.Length.TotalSeconds;
-            if(remainingTime < -6)
+
+            var acc = _objectCounter.CalculateFinalResult();
+            print("GameResult: " + acc);
+            GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+
+            var unpackedinfo = JudgeDetail.UnpackJudgeRecord(((GameResult)GameManager.LastGameResult).JudgeRecord.TotalJudgeInfo);
+
+            if (unpackedinfo.ISAllPerfectPlus)
+            {
+                //AP+
+                AllPerfectAnimation.SetActive(true);
+                MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
+                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                EndGame(5000).Forget();
+                return;
+            }
+            else if (unpackedinfo.IsAllPerfect)
+            {
+                //AP
+                AllPerfectAnimation.SetActive(true);
+                MajInstances.AudioManager.PlaySFX("all_perfect.wav");
+                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                EndGame(5000).Forget();
+                return;
+            }
+            else if (unpackedinfo.IsFullComboPlus)
+            {
+                //FC+
+                FullComboAnimation.SetActive(true);
+                MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
+                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                EndGame(5000).Forget();
+                return;
+            }
+            else if (unpackedinfo.IsFullCombo)
+            {
+                //FC
+                FullComboAnimation.SetActive(true);
+                MajInstances.AudioManager.PlaySFX("full_combo.wav");
+                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                EndGame(5000).Forget();
+                return;
+            }
+
+
+            if (remainingTime < -6)
                 _skipBtn.SetActive(true);
-            else if(remainingTime >= 0)
+            else if (remainingTime >= 0)
             {
                 _skipBtn.SetActive(false);
-                EndGame(true).Forget();
+                EndGame(2000).Forget();
             }
         }
         void FixedUpdate()
@@ -612,14 +661,14 @@ namespace MajdataPlay.Game
                     {
                         if (_anwserSoundList[i].isClock)
                         {
-                            MajInstances.AudioManager.PlaySFX(SFXSampleType.CLOCK);
+                            MajInstances.AudioManager.PlaySFX("answer_clock.wav");
                             UnityMainThreadDispatcher.Instance().Enqueue(() =>
                             {
                                 _xxlbController.Stepping();
                             });
                         }
                         else
-                            MajInstances.AudioManager.PlaySFX(SFXSampleType.ANSWER);
+                            MajInstances.AudioManager.PlaySFX("answer.wav");
                         _anwserSoundList[i].isPlayed = true;
                         i++;
                     }
@@ -653,15 +702,10 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SwitchScene("List");
 
         }
-        public async UniTaskVoid EndGame(bool isDelay =false)
+        public async UniTaskVoid EndGame(int delayMiliseconds =0)
         {
-            _bgManager.CancelTimeRef();
-            State = ComponentState.Finished;
-            if (isDelay)
-                await UniTask.Delay(2000);
-            var acc = _objectCounter.CalculateFinalResult();
-            print("GameResult: " + acc);
-            GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+            await UniTask.Delay(delayMiliseconds);
+
             MajInstances.GameManager.EnableGC();
             
             DisposeAudioTrack();

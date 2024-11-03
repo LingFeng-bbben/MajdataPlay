@@ -25,7 +25,7 @@ public class PreviewSoundPlayer : MonoBehaviour
     async UniTaskVoid PlayPreviewAsync(SongDetail info,CancellationToken token)
     {
 
-        var selectSound = MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM);
+        var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
         selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
         token.ThrowIfCancellationRequested();
         await UniTask.Delay(1000,cancellationToken: token, cancelImmediately:true);
@@ -60,7 +60,7 @@ public class PreviewSoundPlayer : MonoBehaviour
     private void OnDestroy()
     {
         _cancellationTokenSource?.Cancel();
-        var selectSound = MajInstances.AudioManager.GetSFX(SFXSampleType.SELECT_BGM);
+        var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
         selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
     }
 

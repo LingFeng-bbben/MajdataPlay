@@ -145,7 +145,7 @@ namespace MajdataPlay.List
 
         public void SlideToList(int pos)
         {
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.JUDGE);
+            MajInstances.AudioManager.PlaySFX("tap_perfect.wav");
             desiredListPos = pos;
             if (desiredListPos >= covers.Count)
             {

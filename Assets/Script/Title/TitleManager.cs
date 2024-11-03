@@ -134,15 +134,15 @@ namespace MajdataPlay.Title
         async UniTaskVoid DelayPlayVoice()
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.MAJDATA_PLAY);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.TITLE_BGM);
+            MajInstances.AudioManager.PlaySFX("MajdataPlay.wav");
+            MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
         }
 
         void NextScene()
         {
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-            MajInstances.AudioManager.StopSFX(SFXSampleType.TITLE_BGM);
-            MajInstances.AudioManager.StopSFX(SFXSampleType.MAJDATA_PLAY);
+            MajInstances.AudioManager.StopSFX("bgm_title.mp3");
+            MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
             MajInstances.SceneSwitcher.SwitchScene("List");
         }
     }

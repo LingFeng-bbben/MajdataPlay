@@ -9,10 +9,11 @@ using UnityEngine.UI;
 using System;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace MajdataPlay.Result
 {
-    public class ResultScreenManager : MonoBehaviour
+    public partial class ResultScreenManager : MonoBehaviour
     {
         public TextMeshProUGUI title;
         public TextMeshProUGUI artist;
@@ -51,7 +52,7 @@ namespace MajdataPlay.Result
             MajInstances.LightManager.SetAllLight(Color.white);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
 
-            var totalJudgeRecord = UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
+            var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongInfo;
 
             GetComponent<OnlineInteractionSender>().Init(song);
@@ -92,24 +93,23 @@ namespace MajdataPlay.Result
 
             LoadCover(song).Forget();
 
-            var breakJudgeInfo = UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
+            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 
-            if (!totalJudgeRecord.IsNoMiss)
+            if (!totalJudgeRecord.IsFullCombo)
                 clearLogo.SetActive(false);
+            else if (totalJudgeRecord.ISAllPerfectPlus)
+            {
+                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+            }
             else if (totalJudgeRecord.IsAllPerfect)
             {
-                if (breakJudgeInfo.Perfect == 0)
-                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
-                else
-                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
             }
-            else if (totalJudgeRecord.IsNoGood)
+            else if (totalJudgeRecord.IsFullComboPlus)
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
 
-
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.SUGOI);
-            MajInstances.AudioManager.PlaySFX(SFXSampleType.RESULT_BGM, true);
+            MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
+            PlayVoice(result.Acc.DX,song).Forget();
             MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
         }
 
@@ -123,13 +123,64 @@ namespace MajdataPlay.Result
             coverImg.sprite = task.Result;
         }
 
+        async UniTask PlayVoice(double dxacc, SongDetail song)
+        {
+            if (dxacc >= 97)
+            {
+                MajInstances.AudioManager.PlaySFX("Rank.wav");
+                await UniTask.WaitForSeconds(1);
+            }
+            if (dxacc >= 100.5f)
+            {
+                MajInstances.AudioManager.PlaySFX("SSS+.wav");
+            }else if (dxacc >= 100f)
+            {
+                MajInstances.AudioManager.PlaySFX("SSS.wav");
+            }
+            else if (dxacc >= 99.5f)
+            {
+                MajInstances.AudioManager.PlaySFX("SS+.wav");
+            }
+            else if (dxacc >= 99f)
+            {
+                MajInstances.AudioManager.PlaySFX("SS.wav");
+            }
+            else if (dxacc >= 98f)
+            {
+                MajInstances.AudioManager.PlaySFX("S+.wav");
+            }
+            else if (dxacc >= 97f)
+            {
+                MajInstances.AudioManager.PlaySFX("S.wav");
+            }
+            if (dxacc > 97)
+            {
+                await UniTask.WaitForSeconds(2);
+                var list = new string[] { "good.wav", "good_2.wav", "good_3.wav", "good_4.wav", "good_5.wav", "good_6.wav" };
+                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                await UniTask.WaitForSeconds(3);
+                if (song.ApiEndpoint != null)
+                {
+                    MajInstances.AudioManager.PlaySFX("dian_zan.wav");
+                }
+            }
+            else
+            {
+                var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav"};
+                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0,list.Length)]);
+                await UniTask.WaitForSeconds(2);
+            }
+            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+        }
+
+
         string BuildSubDisplayText(JudgeDetail judgeRecord)
         {
-            var tapJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-            var holdJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-            var slideJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-            var touchJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-            var breakJudge = UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            var tapJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
+            var holdJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
+            var slideJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
+            var touchJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
+            var breakJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
             string[] nmsl = new string[]
             {
             "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
@@ -141,86 +192,15 @@ namespace MajdataPlay.Result
             };
             return string.Join("\n", nmsl);
         }
-        UnpackJudgeInfo UnpackJudgeRecord(JudgeInfo judgeInfo)
-        {
-            long cPerfect = 0;
-            long perfect = 0;
-            long great = 0;
-            long good = 0;
-            long miss = 0;
-
-            long fast = 0;
-            long late = 0;
-
-            foreach (var kv in judgeInfo)
-            {
-                if (kv.Key > JudgeType.Perfect)
-                    fast += kv.Value;
-                else if (kv.Key is not (JudgeType.Miss or JudgeType.Perfect))
-                    late += kv.Value;
-                switch (kv.Key)
-                {
-                    case JudgeType.Miss:
-                        miss += kv.Value;
-                        break;
-                    case JudgeType.FastGood:
-                    case JudgeType.LateGood:
-                        good += kv.Value;
-                        break;
-                    case JudgeType.LateGreat2:
-                    case JudgeType.LateGreat1:
-                    case JudgeType.LateGreat:
-                    case JudgeType.FastGreat:
-                    case JudgeType.FastGreat1:
-                    case JudgeType.FastGreat2:
-                        great += kv.Value;
-                        break;
-                    case JudgeType.LatePerfect2:
-                    case JudgeType.LatePerfect1:
-                    case JudgeType.FastPerfect1:
-                    case JudgeType.FastPerfect2:
-                        perfect += kv.Value;
-                        break;
-                    case JudgeType.Perfect:
-                        cPerfect += kv.Value;
-                        break;
-                }
-            }
-            return new UnpackJudgeInfo()
-            {
-                CriticalPerfect = cPerfect,
-                Perfect = perfect,
-                Great = great,
-                Good = good,
-                Miss = miss,
-                Fast = fast,
-                Late = late,
-            };
-
-        }
+        
         private void OnAreaDown(object sender, InputEventArgs e)
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                MajInstances.AudioManager.StopSFX(SFXSampleType.SUGOI);
-                MajInstances.AudioManager.StopSFX(SFXSampleType.RESULT_BGM);
+                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                 MajInstances.SceneSwitcher.SwitchScene("List");
             }
-        }
-
-        readonly ref struct UnpackJudgeInfo
-        {
-            public long CriticalPerfect { get; init; }
-            public long Perfect { get; init; }
-            public long Great { get; init; }
-            public long Good { get; init; }
-            public long Miss { get; init; }
-            public long Fast { get; init; }
-            public long Late { get; init; }
-            public bool IsNoMiss => Miss == 0;
-            public bool IsNoGood => Good == 0;
-            public bool IsAllPerfect => IsNoMiss && IsNoGood && Great == 0;
         }
     }
 }

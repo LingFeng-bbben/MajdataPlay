@@ -30,7 +30,7 @@ namespace MajdataPlay.Game
             }
             else if (isEx)
             {
-                audioManager.PlaySFX(SFXSampleType.JUDGE_EX);
+                audioManager.PlaySFX("tap_ex.wav");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace MajdataPlay.Game
             {
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    audioManager.PlaySFX(SFXSampleType.GOOD);
+                    audioManager.PlaySFX("tap_good.wav");
                     break;
                 case JudgeType.LateGreat:
                 case JudgeType.LateGreat1:
@@ -46,19 +46,16 @@ namespace MajdataPlay.Game
                 case JudgeType.FastGreat2:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat:
-                    audioManager.PlaySFX(SFXSampleType.GREAT);
+                    audioManager.PlaySFX("tap_great.wav");
                     break;
                 case JudgeType.LatePerfect2:
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
-                    audioManager.PlaySFX(SFXSampleType.JUDGE);
+                    audioManager.PlaySFX("tap_perfect.wav");
                     break;
                 case JudgeType.Perfect:
-                    if (isBreak)
-                        audioManager.PlaySFX(SFXSampleType.BREAK);
-                    else
-                        audioManager.PlaySFX(SFXSampleType.JUDGE);
+                    audioManager.PlaySFX("tap_perfect.wav");
                     break;
             }
         }
@@ -78,50 +75,51 @@ namespace MajdataPlay.Game
                 case JudgeType.FastPerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
-                    audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
+                    audioManager.PlaySFX("break_tap.wav");
                     break;
                 case JudgeType.Perfect:
-                    audioManager.PlaySFX(SFXSampleType.BREAK);
-                    audioManager.PlaySFX(SFXSampleType.JUDGE_BREAK);
+                    audioManager.PlaySFX("break.wav");
+                    audioManager.PlaySFX("break_tap.wav");
                     break;
             }
         }
 
         public void PlayTouchSound()
         {
-            audioManager.PlaySFX(SFXSampleType.TOUCH);
+            audioManager.PlaySFX("touch.wav");
         }
 
         public void PlayHanabiSound()
         {
-            audioManager.PlaySFX(SFXSampleType.HANABI);
+            audioManager.PlaySFX("touch_hanabi.wav");
         }
         public void PlayTouchHoldSound()
         {
-            var riser = audioManager.GetSFX(SFXSampleType.TOUCH_HOLD_RISER);
+            var riser = audioManager.GetSFX("touch_Hold_riser.wav");
             if(!riser.IsPlaying)
-                audioManager.PlaySFX(SFXSampleType.TOUCH_HOLD_RISER);
+                audioManager.PlaySFX("touch_Hold_riser.wav");
         }
         public void StopTouchHoldSound()
         {
-            audioManager.StopSFX(SFXSampleType.TOUCH_HOLD_RISER);
+            audioManager.StopSFX("touch_Hold_riser.wav");
         }
 
         public void PlaySlideSound(bool isBreak)
         {
             if (isBreak)
             {
-                audioManager.PlaySFX(SFXSampleType.BREAK_SLIDE_START);
+                audioManager.PlaySFX("slide_break_start.wav");
             }
             else
             {
-                audioManager.PlaySFX(SFXSampleType.SLIDE);
+                audioManager.PlaySFX("slide.wav");
             }
         }
 
         public void PlayBreakSlideEndSound()
         {
-            audioManager.PlaySFX(SFXSampleType.BREAK_SLIDE);
+            audioManager.PlaySFX("slide_break_slide.wav");
+            audioManager.PlaySFX("break_slide.wav");
         }
     }
 }
