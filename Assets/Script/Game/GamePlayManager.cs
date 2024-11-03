@@ -23,6 +23,7 @@ using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Net;
 using UnityEngine.Networking;
+using MajdataPlay.Extensions;
 
 namespace MajdataPlay.Game
 {
@@ -74,7 +75,11 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
-        public float CurrentSpeed { get; set; } = 1f;
+        public float PlaybackSpeed 
+        {
+            get => _playbackSpeed;
+            private set => _playbackSpeed = value;
+        }
         public ComponentState State { get; private set; } = ComponentState.Idle;
         // Data
         public MaiScore? HistoryScore { get; private set; }
@@ -113,7 +118,7 @@ namespace MajdataPlay.Game
         [ReadOnlyField]
         [SerializeField]
         float _audioStartTime = -114514;
-
+        float _playbackSpeed = 1f;
         long _fileTimeAtStart = 0;
 
         Text _errText;
@@ -346,6 +351,7 @@ namespace MajdataPlay.Game
             if (_audioSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
+            _audioSample.Speed = PlaybackSpeed;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
@@ -368,7 +374,8 @@ namespace MajdataPlay.Game
                 BackToList().Forget();
                 throw new TaskCanceledException("Empty chart");
             }
-
+            if(PlaybackSpeed != 1)
+                _chart.Scale(PlaybackSpeed);
             await Task.Run(() =>
             {
                 //Generate ClockSounds
@@ -533,7 +540,7 @@ namespace MajdataPlay.Game
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
             _audioStartTime = TimeSource;
-
+            Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
         }
 
         void OnDestroy()
@@ -604,7 +611,7 @@ namespace MajdataPlay.Game
             }
             if (State == ComponentState.Calculate)
             {
-                var remainingTime = AudioTime - _audioSample.Length.TotalSeconds;
+                var remainingTime = AudioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
                 if (remainingTime < -6)
                     _skipBtn.SetActive(true);
                 else if (remainingTime >= 0)
@@ -630,8 +637,9 @@ namespace MajdataPlay.Game
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
                 var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
-                _audioTime = TimeSource - AudioStartTime - chartOffset;
-                _audioTimeNoOffset = TimeSource - AudioStartTime;
+                var timeOffset = TimeSource - AudioStartTime;
+                _audioTime = timeOffset - chartOffset;
+                _audioTimeNoOffset = timeOffset;
 
                 var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
                 if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)

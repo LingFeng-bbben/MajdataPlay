@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Net;
 using MajdataPlay.Types;
+using MajSimaiDecode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,24 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
+    public static class SimaiProcessExtensions
+    {
+        public static void Scale(this SimaiProcess source,float timeScale)
+        {
+            var timingPoints = source.notelist;
+            foreach(var timingPoint in timingPoints)
+            {
+                timingPoint.currentBpm *= timeScale;
+                timingPoint.time /= timeScale;
+                foreach(var note in timingPoint.noteList)
+                {
+                    note.holdTime /= timeScale;
+                    note.slideStartTime /= timeScale;
+                    note.slideTime /= timeScale;
+                }
+            }
+        }
+    }
     public static class HttpRequestExceptionExtensions
     {
         public static HttpRequestError GetErrorCode(this HttpRequestException source)

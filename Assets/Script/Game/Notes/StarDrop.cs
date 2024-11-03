@@ -51,7 +51,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Update()
         {
-            var songSpeed = _gpManager.CurrentSpeed;
+            var songSpeed = _gpManager.PlaybackSpeed;
             var judgeTiming = GetTimeSpanToArriveTiming();
             var distance = judgeTiming * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
