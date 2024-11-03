@@ -103,6 +103,7 @@
         Parsing,
         Running,
         Backend,
+        Calculate,
         Finished,
         Failed,
     }

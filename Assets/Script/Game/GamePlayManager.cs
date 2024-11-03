@@ -551,67 +551,69 @@ namespace MajdataPlay.Game
             UpdateAudioTime();
             if (_audioSample is null)
                 return;
+
             else if (!_objectCounter.AllFinished)
                 return;
-            else if (State != ComponentState.Running)
-                return;
 
-            _bgManager.CancelTimeRef();
-            State = ComponentState.Finished;
-
-            var remainingTime = AudioTime - _audioSample.Length.TotalSeconds;
-
-            var acc = _objectCounter.CalculateFinalResult();
-            print("GameResult: " + acc);
-            GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-
-            var unpackedinfo = JudgeDetail.UnpackJudgeRecord(((GameResult)GameManager.LastGameResult).JudgeRecord.TotalJudgeInfo);
-
-            if (unpackedinfo.ISAllPerfectPlus)
+            if (State == ComponentState.Running)
             {
-                //AP+
-                AllPerfectAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
+                State = ComponentState.Calculate;
+
+                var acc = _objectCounter.CalculateFinalResult();
+                print("GameResult: " + acc);
+                GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+
+                var unpackedinfo = JudgeDetail.UnpackJudgeRecord(((GameResult)GameManager.LastGameResult).JudgeRecord.TotalJudgeInfo);
+
+                if (unpackedinfo.ISAllPerfectPlus)
+                {
+                    //AP+
+                    AllPerfectAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    EndGame(5000).Forget();
+                    return;
+                }
+                else if (unpackedinfo.IsAllPerfect)
+                {
+                    //AP
+                    AllPerfectAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("all_perfect.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    EndGame(5000).Forget();
+                    return;
+                }
+                else if (unpackedinfo.IsFullComboPlus)
+                {
+                    //FC+
+                    FullComboAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    EndGame(5000).Forget();
+                    return;
+                }
+                else if (unpackedinfo.IsFullCombo)
+                {
+                    //FC
+                    FullComboAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("full_combo.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    EndGame(5000).Forget();
+                    return;
+                }
             }
-            else if (unpackedinfo.IsAllPerfect)
+            if (State == ComponentState.Calculate)
             {
-                //AP
-                AllPerfectAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("all_perfect.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
-            }
-            else if (unpackedinfo.IsFullComboPlus)
-            {
-                //FC+
-                FullComboAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
-            }
-            else if (unpackedinfo.IsFullCombo)
-            {
-                //FC
-                FullComboAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("full_combo.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
+                var remainingTime = AudioTime - _audioSample.Length.TotalSeconds;
+                if (remainingTime < -6)
+                    _skipBtn.SetActive(true);
+                else if (remainingTime >= 0)
+                {
+                    _skipBtn.SetActive(false);
+                    EndGame(2000).Forget();
+                }
             }
 
-
-            if (remainingTime < -6)
-                _skipBtn.SetActive(true);
-            else if (remainingTime >= 0)
-            {
-                _skipBtn.SetActive(false);
-                EndGame(2000).Forget();
-            }
         }
         void FixedUpdate()
         {
@@ -621,27 +623,22 @@ namespace MajdataPlay.Game
         {
             if (_audioSample is null)
                 return;
-            else if (State != ComponentState.Running)
-                return;
             else if (AudioStartTime == -114514f)
                 return;
-            //Do not use this!!!! This have connection with sample batch size
-            //AudioTime = (float)audioSample.GetCurrentTime();
-            var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
-            _audioTime = TimeSource - AudioStartTime - chartOffset;
-            _audioTimeNoOffset = TimeSource - AudioStartTime;
+            if (State == ComponentState.Running || State == ComponentState.Calculate)
+            {
+                //Do not use this!!!! This have connection with sample batch size
+                //AudioTime = (float)audioSample.GetCurrentTime();
+                var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
+                _audioTime = TimeSource - AudioStartTime - chartOffset;
+                _audioTimeNoOffset = TimeSource - AudioStartTime;
 
-            var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
-            if (!_audioSample.IsPlaying)
-                return;
-            if (Math.Abs(realTimeDifference) > 0.04f && AudioTime > 0)
-            {
-                _errText.text = "音频错位了哟\n" + realTimeDifference;
-            }
-            else if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
-            {
-                _errText.text = "修正音频哟\n" + realTimeDifference;
-                _audioStartTime -= realTimeDifference * 0.8f;
+                var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
+                if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
+                {
+                    _errText.text = "修正音频哟\n" + realTimeDifference;
+                    _audioStartTime -= realTimeDifference * 0.8f;
+                }
             }
         }
         async void StartToPlayAnswer()
@@ -702,8 +699,11 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SwitchScene("List");
 
         }
-        public async UniTaskVoid EndGame(int delayMiliseconds =0)
+        public async UniTaskVoid EndGame(int delayMiliseconds = 100)
         {
+            State = ComponentState.Finished;
+            _bgManager.CancelTimeRef();
+
             await UniTask.Delay(delayMiliseconds);
 
             MajInstances.GameManager.EnableGC();
