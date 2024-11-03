@@ -193,9 +193,9 @@ namespace MajdataPlay.IO
                 if (sample.SampleType == SFXSampleType.Tap)
                     sample.SetVolume(volume.Tap);
                 if (sample.SampleType == SFXSampleType.Break)
-                    sample.SetVolume(volume.Answer);
-                if (sample.SampleType == SFXSampleType.Break)
-                    sample.SetVolume(volume.Answer);
+                    sample.SetVolume(volume.Break);
+                if (sample.SampleType == SFXSampleType.Touch)
+                    sample.SetVolume(volume.Touch);
                 if (sample.SampleType == SFXSampleType.BGM)
                     sample.SetVolume(volume.BGM);
                 if (sample.SampleType == SFXSampleType.Touch)
