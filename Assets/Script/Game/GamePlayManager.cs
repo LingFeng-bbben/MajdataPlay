@@ -562,10 +562,10 @@ namespace MajdataPlay.Game
                 var acc = _objectCounter.CalculateFinalResult();
                 print("GameResult: " + acc);
                 GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-
-                var unpackedinfo = JudgeDetail.UnpackJudgeRecord(((GameResult)GameManager.LastGameResult).JudgeRecord.TotalJudgeInfo);
-
-                if (unpackedinfo.ISAllPerfectPlus)
+                var judgerecord = ((GameResult)GameManager.LastGameResult).JudgeRecord;
+                var unpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord.TotalJudgeInfo);
+                var breakunpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord[ScoreNoteType.Break]);
+                if (unpackedinfo.IsAllPerfect && breakunpackedinfo.IsTheoretical)
                 {
                     //AP+
                     AllPerfectAnimation.SetActive(true);

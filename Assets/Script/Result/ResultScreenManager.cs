@@ -97,13 +97,12 @@ namespace MajdataPlay.Result
 
             if (!totalJudgeRecord.IsFullCombo)
                 clearLogo.SetActive(false);
-            else if (totalJudgeRecord.ISAllPerfectPlus)
-            {
-                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
-            }
             else if (totalJudgeRecord.IsAllPerfect)
             {
-                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+                if (breakJudgeInfo.IsTheoretical)
+                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+                else
+                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
             }
             else if (totalJudgeRecord.IsFullComboPlus)
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";

@@ -13,6 +13,6 @@
         public bool IsFullCombo => All!=0 && Miss == 0;
         public bool IsFullComboPlus => IsFullCombo && Good == 0;
         public bool IsAllPerfect => IsFullComboPlus && Great == 0;
-        public bool ISAllPerfectPlus => IsAllPerfect && Perfect == 0;
+        public bool IsTheoretical => IsAllPerfect && Perfect == 0;
     }
 }
