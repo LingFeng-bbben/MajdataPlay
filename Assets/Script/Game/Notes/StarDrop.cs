@@ -114,7 +114,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             if (_gpManager.IsStart && !IsFakeStar && _gameSetting.Game.StarRotation)
-                transform.Rotate(0f, 0f, -180f * Time.deltaTime * songSpeed / RotateSpeed);
+                transform.Rotate(0f, 0f, -180f * Time.deltaTime / RotateSpeed);
             else if (IsForceRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);
         }
