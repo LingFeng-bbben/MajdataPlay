@@ -119,6 +119,9 @@ namespace MajdataPlay.Game
         [SerializeField]
         float _audioStartTime = -114514;
         float _playbackSpeed = 1f;
+        bool _isAllBreak = false;
+        bool _isAllEx = false;
+        bool _isAllTouch = false;
         long _fileTimeAtStart = 0;
 
         Text _errText;
@@ -162,7 +165,24 @@ namespace MajdataPlay.Game
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
+            LoadGameMod();
             LoadChart().Forget();
+        }
+        void LoadGameMod()
+        {
+            var mod = GameModHelper.GetGameMod(Types.Mods.ModType.TIME_SCALE);
+            var mod2 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_BREAK);
+            var mod3 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_EX);
+            var mod4 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_TOUCH);
+
+            if (mod is not null && mod.Active && mod.Value > 0)
+                PlaybackSpeed = mod.Value;
+            if (mod2 is not null)
+                _isAllBreak = mod2.Active;
+            if (mod3 is not null)
+                _isAllEx = mod3.Active;
+            if (mod4 is not null)
+                _isAllTouch = mod4.Active;
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
@@ -376,6 +396,12 @@ namespace MajdataPlay.Game
             }
             if(PlaybackSpeed != 1)
                 _chart.Scale(PlaybackSpeed);
+            if(_isAllBreak)
+                _chart.ConvertToBreak();
+            if (_isAllEx)
+                _chart.ConvertToEx();
+            if(_isAllTouch)
+                _chart.ConvertToTouch();
             await Task.Run(() =>
             {
                 //Generate ClockSounds

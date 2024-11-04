@@ -32,8 +32,19 @@ namespace MajdataPlay
         public static string CachePath { get; } = Path.Combine(AssestsPath, "Cache");
         public static string LogsPath { get; } = Path.Combine(AssestsPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
+        public static string ModPath { get; } = Path.Combine(Application.streamingAssetsPath, "Mods");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static JsonSerializerOptions JsonReaderOption { get; } = new()
+        {
+
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            },
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            WriteIndented = true
+        };
         public GameSetting Setting
         {
             get => MajInstances.Setting;
@@ -52,16 +63,7 @@ namespace MajdataPlay
         CancellationTokenSource _tokenSource = new();
         Task? _logWritebackTask = null;
         Queue<GameLog> _logQueue = new();
-        readonly JsonSerializerOptions _jsonReaderOption = new()
-        {
-
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
-        };
+        
 
         void Awake()
         {
@@ -87,7 +89,7 @@ namespace MajdataPlay
                 var js = File.ReadAllText(SettingPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, _jsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, JsonReaderOption) || setting is null)
                 {
                     Setting = new();
                     Debug.LogError("Failed to read setting from file");
@@ -132,6 +134,7 @@ namespace MajdataPlay
                 Setting.Game.Language = lang.ToString();
             }
             Localization.Current = lang;
+            GameModHelper.Initialize();
         }
         void Start()
         {
@@ -141,6 +144,7 @@ namespace MajdataPlay
         private void OnApplicationQuit()
         {
             Save();
+            GameModHelper.Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             _tokenSource.Cancel();
             foreach (var log in _logQueue)
@@ -154,7 +158,7 @@ namespace MajdataPlay
             SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
-            var json = Serializer.Json.Serialize(Setting, _jsonReaderOption);
+            var json = Serializer.Json.Serialize(Setting, JsonReaderOption);
             File.WriteAllText(SettingPath, json);
         }
         public void EnableGC()
