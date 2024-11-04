@@ -662,7 +662,7 @@ namespace MajdataPlay.Game
             {
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
-                var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
+                var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
                 var timeOffset = TimeSource - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
                 _audioTimeNoOffset = timeOffset;
