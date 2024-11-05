@@ -1,37 +1,31 @@
 using MajdataPlay.IO;
+using MajdataPlay.Net;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
+using MajdataPlay.Extensions;
+using MajdataPlay.Types.Attribute;
 using MajSimaiDecode;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
-using System.Runtime.InteropServices;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Threading;
-using UnityEngine.Scripting;
-using System.IO;
-using MajdataPlay.Utils;
-using PimDeWitte.UnityMainThreadDispatcher;
-using MajdataPlay.Types.Attribute;
-using MajdataPlay.Net;
-using System.Security.Policy;
-using System.Diagnostics;
 using Debug = UnityEngine.Debug;
-using System.Net;
-using UnityEngine.Networking;
-using MajdataPlay.Extensions;
+using MychIO;
+
 
 namespace MajdataPlay.Game
 {
 #nullable enable
     public class GamePlayManager : MonoBehaviour
     {
-        public float NoteSpeed { get; private set; } = 9f;
-        public float TouchSpeed { get; private set; } = 7.5f;
+        public float NoteSpeed { get; private set; } = 7f;
+        public float TouchSpeed { get; private set; } = 7f;
         // Timeline
         /// <summary>
         /// Time provider
@@ -698,10 +692,7 @@ namespace MajdataPlay.Game
                         if (_anwserSoundList[i].isClock)
                         {
                             MajInstances.AudioManager.PlaySFX("answer_clock.wav");
-                            UnityMainThreadDispatcher.Instance().Enqueue(() =>
-                            {
-                                _xxlbController.Stepping();
-                            });
+                            GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
                         }
                         else
                             MajInstances.AudioManager.PlaySFX("answer.wav");

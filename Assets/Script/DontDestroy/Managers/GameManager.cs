@@ -16,6 +16,8 @@ using System.Linq;
 using UnityEngine.Scripting;
 using MajdataPlay.Types.Attribute;
 using MajdataPlay.Net;
+using System.Collections.Concurrent;
+using MychIO;
 
 namespace MajdataPlay
 {
@@ -24,7 +26,8 @@ namespace MajdataPlay
     {
         public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => _tokenSource.Token; }
-        
+        public static DateTime StartAt { get; } = DateTime.Now;
+        public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
         public static string SettingPath { get; } = Path.Combine(AssestsPath, "settings.json");

@@ -104,7 +104,7 @@ namespace MajdataPlay.IO
             if(_ioManager is null)
                 _ioManager = new();
             var useHID = MajInstances.Setting.Misc.InputDevice is DeviceType.HID;
-            var executionQueue = IOManager.ExecutionQueue;
+            var executionQueue = GameManager.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
@@ -146,6 +146,7 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
+                var executionQueue = GameManager.ExecutionQueue;
                 while (!_cancelSource.IsCancellationRequested)
                 {
                     try
@@ -155,6 +156,8 @@ namespace MajdataPlay.IO
                         else
                             UpdateSensorState();
                         UpdateButtonState();
+                        while (executionQueue.TryDequeue(out var eventAction))
+                            eventAction();
                     }
                     catch (Exception e)
                     {
@@ -168,7 +171,7 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
-                var executionQueue = IOManager.ExecutionQueue;
+                var executionQueue = GameManager.ExecutionQueue;
                 while (!_cancelSource.IsCancellationRequested)
                 {
                     try
@@ -199,6 +202,7 @@ namespace MajdataPlay.IO
                 case IOEventType.SerialDeviceReadError:
                 case IOEventType.HidDeviceReadError:
                 case IOEventType.ReconnectionError:
+                case IOEventType.InvalidDevicePropertyError:
                     executionQueue.Enqueue(() => Debug.LogError(logContent));
                     break;
                 case IOEventType.Detach:
