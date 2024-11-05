@@ -171,6 +171,7 @@ namespace MajdataPlay.Game
         }
         void LoadGameMod()
         {
+            GameModHelper.Refresh();
             var mod = GameModHelper.GetGameMod(Types.Mods.ModType.TIME_SCALE);
             var mod2 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_BREAK);
             var mod3 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_EX);
@@ -481,7 +482,7 @@ namespace MajdataPlay.Game
 
             var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
             if (!string.IsNullOrEmpty(_songDetail.VideoPath))
-                BGManager.SetBackgroundMovie(_songDetail.VideoPath);
+                BGManager.SetBackgroundMovie(_songDetail.VideoPath,PlaybackSpeed);
             else
             {
                 var task = _songDetail.GetSpriteAsync();

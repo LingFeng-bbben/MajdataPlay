@@ -59,6 +59,30 @@ namespace MajdataPlay.Utils
             else
                 Debug.LogError("Fail to load mod setting");
         }
+        public static void Refresh()
+        {
+            var modSettingsPath = Path.Combine(GameManager.AssestsPath, "ModSettings.json");
+            if (!File.Exists(modSettingsPath))
+                return;
+            if (Serializer.Json.TryDeserialize(
+                    File.ReadAllText(modSettingsPath),
+                    out ModSetting[]? modSettings,
+                    GameManager.JsonReaderOption) && modSettings is not null)
+            {
+                foreach (var setting in modSettings)
+                {
+                    if (setting is null)
+                        continue;
+                    var mod = GetGameMod(setting.Type);
+                    if (mod is null)
+                        continue;
+                    mod.Value = setting.Value;
+                    mod.Active = setting.Active;
+                }
+            }
+            else
+                Debug.LogError("Fail to load mod setting");
+        }
         public static void Save()
         {
             if (_gameMods.IsEmpty())
