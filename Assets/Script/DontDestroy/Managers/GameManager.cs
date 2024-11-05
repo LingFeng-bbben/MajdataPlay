@@ -205,7 +205,7 @@ namespace MajdataPlay
                     continue;
                 }
                 var log = _logQueue.Dequeue();
-                await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
+                await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss.ffff}][{log.Type}] {log.Condition}\n{log.StackTrace}");
             }
         }
         class GameLog
