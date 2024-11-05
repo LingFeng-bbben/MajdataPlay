@@ -106,7 +106,8 @@ namespace MajdataPlay
                 Save();
             }
             MajInstances.Setting = Setting;
-            Setting.Misc.IOPollingRateMs = Math.Max(0, Setting.Misc.IOPollingRateMs);
+            Setting.Misc.CustomButtonPollingRateMs = Math.Max(0, Setting.Misc.CustomButtonPollingRateMs);
+            Setting.Misc.CustomTouchPanelPollingRateMs = Math.Max(0, Setting.Misc.CustomTouchPanelPollingRateMs);
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 

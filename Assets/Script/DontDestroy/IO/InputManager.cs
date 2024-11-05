@@ -122,26 +122,40 @@ namespace MajdataPlay.IO
 
             try
             {
-                IConnectionProperties connPropertie;
+                string deviceName;
+                var btnPollingRate = MajInstances.Setting.Misc.CustomButtonPollingRateMs;
+                var touchPanelPollingRate = MajInstances.Setting.Misc.CustomTouchPanelPollingRateMs;
+                Dictionary<string, dynamic>? btnConnProperties = null;
+                Dictionary<string, dynamic>? touchPanelConnProperties = null;
 
-                _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
-                                         inputSubscriptions: touchPanelCallbacks);
+                if (btnPollingRate != 0)
+                {
+                    btnConnProperties = new()
+                    {
+                        { "PollingRateMs", btnPollingRate }
+                    };
+                }
+                if (touchPanelPollingRate != 0)
+                {
+                    touchPanelConnProperties = new()
+                    {
+                        { "PollingRateMs", touchPanelPollingRate }
+                    };
+                }
                 if (useHID)
                 {
-                    connPropertie = AdxHIDButtonRing.GetDefaultConnectionProperties();
-                    _ioManager.AddButtonRing(AdxHIDButtonRing.GetDeviceName(),
-                                         inputSubscriptions: buttonRingCallbacks);
+                    deviceName = AdxHIDButtonRing.GetDeviceName();
                 }
                 else
                 {
-                    connPropertie = AdxIO4ButtonRing.GetDefaultConnectionProperties();
-                    _ioManager.AddButtonRing(AdxIO4ButtonRing.GetDeviceName(),
-                                         inputSubscriptions: buttonRingCallbacks);
+                    deviceName = AdxIO4ButtonRing.GetDeviceName();
                 }
-                connPropertie.UpdateProperties(new Dictionary<string, dynamic>() 
-                { 
-                    { "PollingRateMs", MajInstances.Setting.Misc.IOPollingRateMs } 
-                });
+                _ioManager.AddButtonRing(AdxIO4ButtonRing.GetDeviceName(),
+                                         inputSubscriptions: buttonRingCallbacks,
+                                         connectionProperties: btnConnProperties);
+                _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
+                                         inputSubscriptions: touchPanelCallbacks,
+                                         connectionProperties: touchPanelConnProperties);
                 _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
                 
             }

@@ -114,7 +114,8 @@ namespace MajdataPlay.Types
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
         public DeviceType InputDevice { get; set; } = DeviceType.Keyboard;
-        public int IOPollingRateMs { get; set; } = 2;
+        public int CustomButtonPollingRateMs { get; set; } = 2;
+        public int CustomTouchPanelPollingRateMs { get; set; } = 2;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
     }
