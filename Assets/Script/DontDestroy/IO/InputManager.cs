@@ -13,6 +13,7 @@ using DeviceType = MajdataPlay.Types.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
+using MychIO.Connection;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -121,18 +122,26 @@ namespace MajdataPlay.IO
 
             try
             {
+                IConnectionProperties connPropertie;
+
                 _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
                                          inputSubscriptions: touchPanelCallbacks);
-                if(useHID)
+                if (useHID)
                 {
+                    connPropertie = AdxHIDButtonRing.GetDefaultConnectionProperties();
                     _ioManager.AddButtonRing(AdxHIDButtonRing.GetDeviceName(),
                                          inputSubscriptions: buttonRingCallbacks);
                 }
                 else
                 {
+                    connPropertie = AdxIO4ButtonRing.GetDefaultConnectionProperties();
                     _ioManager.AddButtonRing(AdxIO4ButtonRing.GetDeviceName(),
                                          inputSubscriptions: buttonRingCallbacks);
                 }
+                connPropertie.UpdateProperties(new Dictionary<string, dynamic>() 
+                { 
+                    { "PollingRateMs", MajInstances.Setting.Misc.IOPollingRateMs } 
+                });
                 _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
                 
             }
