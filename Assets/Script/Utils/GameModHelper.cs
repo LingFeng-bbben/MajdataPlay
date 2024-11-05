@@ -14,6 +14,15 @@ namespace MajdataPlay.Utils
     public static class GameModHelper
     {
         static MajGameMod[] _gameMods = Array.Empty<MajGameMod>();
+        public static bool IsAnyModActive
+        {
+            get
+            {
+                if (_gameMods.IsEmpty())
+                    return false;
+                return _gameMods.Any(x => x.Active);
+            }
+        }
         
         public static void Initialize()
         {
