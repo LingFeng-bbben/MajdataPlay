@@ -34,7 +34,10 @@ namespace MajdataPlay.Game.Notes
             if (!IsNoHead)
             {
                 _sensorPos = (SensorType)(StartPos - 1);
-                _ioManager.BindArea(Check, _sensorPos);
+                if (_gpManager.IsAutoplay)
+                    Autoplay();
+                else
+                    SubscribeEvent();
             }
             State = NoteStatus.Initialized;
         }
@@ -43,7 +46,10 @@ namespace MajdataPlay.Game.Notes
             if (!IsNoHead || IsFakeStar)
                 base.End(forceEnd);
             else
+            {
+                UnsubscribeEvent();
                 State = NoteStatus.Destroyed;
+            }
             if (forceEnd)
                 return;
             RendererState = RendererStatus.Off;

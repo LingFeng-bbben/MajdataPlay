@@ -53,7 +53,10 @@ namespace MajdataPlay.Game.Notes
 
             LoadSkin();
             _sensorPos = (SensorType)(StartPos - 1);
-            _ioManager.BindArea(Check, _sensorPos);
+            if (_gpManager.IsAutoplay)
+                Autoplay();
+            else
+                SubscribeEvent();
             State = NoteStatus.Initialized;
         }
         public override void End(bool forceEnd = false)
@@ -64,5 +67,6 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             notePoolManager.Collect(this);
         }
+        
     }
 }

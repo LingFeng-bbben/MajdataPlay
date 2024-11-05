@@ -108,19 +108,24 @@ namespace MajdataPlay.Game.Notes
                 var pos = TouchBase.GetAreaPos(_sensorPos);
                 transform.position = pos;
                 SetFansPosition(0.4f);
-                _ioManager.BindSensor(Check, _sensorPos);
                 RendererState = RendererStatus.Off;
             }
             for (var i = 0; i < 4; i++)
                 fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
             pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
+
+            if (_gpManager.IsAutoplay)
+                Autoplay();
+            else
+                SubscribeEvent();
+
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
-            _ioManager.UnbindSensor(Check, _sensorPos);
             State = NoteStatus.Destroyed;
+            UnsubscribeEvent();
             if (forceEnd)
                 return;
             EndJudge(ref _judgeResult);
@@ -182,7 +187,6 @@ namespace MajdataPlay.Game.Notes
             var pos = TouchBase.GetAreaPos(_sensorPos);
             transform.position = pos;
             SetFansPosition(0.4f);
-            _ioManager.BindSensor(Check, _sensorPos);
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
         }
@@ -299,7 +303,7 @@ namespace MajdataPlay.Game.Notes
                     return;
 
                 var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);
-                if (on)
+                if (on || _gpManager.IsAutoplay)
                     PlayHoldEffect();
                 else
                 {
@@ -494,7 +498,14 @@ namespace MajdataPlay.Game.Notes
                     controller.enabled = true;
             }
         }
-
+        void SubscribeEvent()
+        {
+            _ioManager.BindSensor(Check, _sensorPos);
+        }
+        void UnsubscribeEvent()
+        {
+            _ioManager.UnbindSensor(Check, _sensorPos);
+        }
 
         RendererStatus _rendererState = RendererStatus.Off;
     }

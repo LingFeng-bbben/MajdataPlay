@@ -255,6 +255,8 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isChecking)
                 return;
+            else if (_gpManager.IsAutoplay)
+                return;
             var queue = _judgeQueues[0];
             _isChecking = true;
             
@@ -417,6 +419,27 @@ namespace MajdataPlay.Game.Notes
                                     Mathf.MoveTowardsAngle(_b, _a, dAngle));
                     ApplyStarRotation(newRotation);
                 }
+            }
+
+            if(_gpManager.IsAutoplay)
+            {
+                var queue = _judgeQueues?[0];
+                if (queue is null || queue.IsEmpty())
+                    return;
+                else if(process >= 1)
+                {
+                    HideAllBar();
+                    _isJudged = true;
+                    _judgeResult = JudgeType.Perfect;
+                    _lastWaitTime = 0;
+                    _judgeDiff = 0;
+                    return;
+                }
+                var areaIndex = (int)(process * queue.Length) - 1;
+                if (areaIndex < 0)
+                    return;
+                var barIndex = queue[areaIndex].SlideIndex;
+                HideBar(barIndex);
             }
         }
         void ApplyStarRotation(Quaternion newRotation)

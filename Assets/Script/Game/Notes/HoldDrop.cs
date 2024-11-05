@@ -80,10 +80,12 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
             else
-            {
-                _ioManager.BindArea(Check, _sensorPos);
                 LoadSkin();
-            }
+
+            if(_gpManager.IsAutoplay)
+                Autoplay();
+            else
+                SubscribeEvent();
 
             thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
             exRenderer.sortingOrder = SortOrder - _exSortOrder;
@@ -94,7 +96,7 @@ namespace MajdataPlay.Game.Notes
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.Destroyed;
-            _ioManager.UnbindArea(Check, _sensorPos);
+            UnsubscribeEvent();
             if (forceEnd)
                 return;
             else if (!_isJudged)
@@ -143,7 +145,6 @@ namespace MajdataPlay.Game.Notes
             LoadSkin();
 
             _sensorPos = (SensorType)(StartPos - 1);
-            _ioManager.BindArea(Check, _sensorPos);
             transform.localScale = new Vector3(0, 0);
 
             State = NoteStatus.Initialized;
@@ -191,7 +192,7 @@ namespace MajdataPlay.Game.Notes
                     return;
 
                 var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
-                if (on)
+                if (on || _gpManager.IsAutoplay)
                 {
                     if (remainingTime == 0)
                         _effectManager.ResetHoldEffect(StartPos);
@@ -519,6 +520,14 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             endRenderer.enabled = false;
             renderer.sprite = holdSprite;
+        }
+        void SubscribeEvent()
+        {
+            _ioManager.BindArea(Check, _sensorPos);
+        }
+        void UnsubscribeEvent()
+        {
+            _ioManager.UnbindArea(Check, _sensorPos);
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }

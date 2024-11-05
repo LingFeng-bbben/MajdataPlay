@@ -75,6 +75,7 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
+        public bool IsAutoplay { get; private set; } = false;
         public float PlaybackSpeed 
         {
             get => _playbackSpeed;
@@ -174,6 +175,7 @@ namespace MajdataPlay.Game
             var mod2 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_BREAK);
             var mod3 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_EX);
             var mod4 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_TOUCH);
+            var mod5 = GameModHelper.GetGameMod(Types.Mods.ModType.AUTOPLAY);
 
             if (mod is not null && mod.Active && mod.Value > 0)
                 PlaybackSpeed = mod.Value;
@@ -183,6 +185,8 @@ namespace MajdataPlay.Game
                 _isAllEx = mod3.Active;
             if (mod4 is not null)
                 _isAllTouch = mod4.Active;
+            if (mod5 is not null) 
+                IsAutoplay = mod5.Active;
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online

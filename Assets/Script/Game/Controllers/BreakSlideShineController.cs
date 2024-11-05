@@ -46,16 +46,23 @@ namespace MajdataPlay.Game.Controllers
                 return;
             if (Parent is not null && Parent.CanShine)
             {
-                var param = _gpManager.BreakParam;
-                foreach (var renderer in Renderers)
+                try
                 {
-                    var material = renderer?.material;
-                    if (renderer is null)
-                        continue;
-                    if (material is null)
-                        continue;
-                    material.SetFloat("_Brightness", param.Brightness);
-                    material.SetFloat("_Contrast", param.Contrast);
+                    var param = _gpManager.BreakParam;
+                    foreach (var renderer in Renderers)
+                    {
+                        var material = renderer?.material;
+                        if (renderer is null)
+                            continue;
+                        if (material is null)
+                            continue;
+                        material.SetFloat("_Brightness", param.Brightness);
+                        material.SetFloat("_Contrast", param.Contrast);
+                    }
+                }
+                catch
+                {
+
                 }
             }
         }

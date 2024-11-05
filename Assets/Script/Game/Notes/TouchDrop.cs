@@ -98,7 +98,6 @@ namespace MajdataPlay.Game.Notes
                 justBorder.SetActive(false);
 
                 SetFansColor(new Color(1f, 1f, 1f, 0f));
-                _ioManager.BindSensor(Check, GetSensor());
                 _sensorPos = GetSensor();
                 SetFansPosition(0.4f);
                 RendererState = RendererStatus.Off;
@@ -108,12 +107,17 @@ namespace MajdataPlay.Game.Notes
             pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             justBorderRenderer.sortingOrder= SortOrder - _justBorderSortOrder;
 
+            if (_gpManager.IsAutoplay)
+                Autoplay();
+            else
+                SubscribeEvent();
+
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
-            _ioManager.UnbindSensor(Check, GetSensor());
             State = NoteStatus.Destroyed;
+            UnsubscribeEvent();
             if (!_isJudged || forceEnd)
                 return;
 
@@ -181,7 +185,6 @@ namespace MajdataPlay.Game.Notes
             justBorder.SetActive(false);
             
             SetFansColor(new Color(1f, 1f, 1f, 0f));
-            _ioManager.BindSensor(Check, GetSensor());
             _sensorPos = GetSensor();
             SetFansPosition(0.4f);
             State = NoteStatus.Initialized;
@@ -406,7 +409,14 @@ namespace MajdataPlay.Game.Notes
                     controller.enabled = true;
             }
         }
-
+        void SubscribeEvent()
+        {
+            _ioManager.BindSensor(Check, _sensorPos);
+        }
+        void UnsubscribeEvent()
+        {
+            _ioManager.UnbindSensor(Check, _sensorPos);
+        }
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }

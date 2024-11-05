@@ -58,5 +58,15 @@
         "Conflicts": [],
         "Icon": null, 
         "Active": false
+    },
+    {
+        "Name": "Autoplay",
+        "Description": "",
+        "Type": "AUTOPLAY",
+        "SortGroup": "Game",
+        "Value": -1,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
     }
 ]

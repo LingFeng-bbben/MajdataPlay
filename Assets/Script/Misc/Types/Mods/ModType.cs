@@ -14,6 +14,7 @@ namespace MajdataPlay.Types.Mods
         ALL_TOUCH,
         SLIDE_NO_HEAD,
         SLIDE_NO_TRACK,
+        AUTOPLAY,
         OTHER_MOD
     }
 }

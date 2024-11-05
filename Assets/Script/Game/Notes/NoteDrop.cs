@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Types.Attribute;
 using MajdataPlay.Utils;
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -136,6 +137,21 @@ namespace MajdataPlay.Game.Notes
 
             _judgeResult = result;
             _isJudged = true;
+        }
+        protected virtual async void Autoplay()
+        {
+            while(!_isJudged)
+            {
+                if (_gpManager is null)
+                    return;
+                else if (GetTimeSpanToJudgeTiming() >= 0)
+                {
+                    _judgeResult = JudgeType.Perfect;
+                    _isJudged = true;
+                    _judgeDiff = 0;
+                }
+                await Task.Delay(1);
+            }
         }
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度

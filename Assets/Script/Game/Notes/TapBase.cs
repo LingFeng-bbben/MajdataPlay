@@ -73,7 +73,7 @@ namespace MajdataPlay.Game.Notes
         public virtual void End(bool forceEnd = false)
         {
             State = NoteStatus.Destroyed;
-            _ioManager.UnbindArea(Check, _sensorPos);
+            UnsubscribeEvent();
             if (!_isJudged || forceEnd) 
                 return;
 
@@ -250,6 +250,14 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
             
+        }
+        protected void SubscribeEvent()
+        {
+            _ioManager.BindArea(Check, _sensorPos);
+        }
+        protected void UnsubscribeEvent()
+        {
+            _ioManager.UnbindArea(Check, _sensorPos);
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }
