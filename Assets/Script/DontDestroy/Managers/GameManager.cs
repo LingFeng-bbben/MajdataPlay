@@ -106,8 +106,10 @@ namespace MajdataPlay
                 Save();
             }
             MajInstances.Setting = Setting;
-            Setting.Misc.CustomButtonPollingRateMs = Math.Max(0, Setting.Misc.CustomButtonPollingRateMs);
-            Setting.Misc.CustomTouchPanelPollingRateMs = Math.Max(0, Setting.Misc.CustomTouchPanelPollingRateMs);
+            Setting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
+            Setting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.PollingRateMs);
+            Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 
