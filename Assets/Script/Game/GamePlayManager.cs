@@ -679,25 +679,50 @@ namespace MajdataPlay.Game
             int i = 0;
             await Task.Run(() =>
             {
+                var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
                 while (!_allTaskTokenSource.IsCancellationRequested)
                 {
-                    if (i >= _anwserSoundList.Count)
-                        return;
-
-                    var noteToPlay = _anwserSoundList[i].time;
-                    var delta = AudioTime - noteToPlay;
-
-                    if (delta > 0)
+                    
+                    try
                     {
-                        if (_anwserSoundList[i].isClock)
+                        if (i >= _anwserSoundList.Count)
+                            return;
+
+                        var noteToPlay = _anwserSoundList[i].time;
+                        var delta = AudioTime - noteToPlay;
+
+                        if (delta > 0)
                         {
-                            MajInstances.AudioManager.PlaySFX("answer_clock.wav");
-                            GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
+                            if (_anwserSoundList[i].isClock)
+                            {
+#if UNITY_EDITOR
+                                if (isUnityFMOD)
+                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
+                                else
+                                    MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+#else
+                                MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+#endif
+                                GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
+                            }
+                            else
+                            {
+#if UNITY_EDITOR
+                                if (isUnityFMOD)
+                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
+                                else
+                                    MajInstances.AudioManager.PlaySFX("answer.wav");
+#else
+                                MajInstances.AudioManager.PlaySFX("answer.wav");
+#endif
+                            }
+                            _anwserSoundList[i].isPlayed = true;
+                            i++;
                         }
-                        else
-                            MajInstances.AudioManager.PlaySFX("answer.wav");
-                        _anwserSoundList[i].isPlayed = true;
-                        i++;
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogException(e);
                     }
                     //await Task.Delay(1);
                 }
