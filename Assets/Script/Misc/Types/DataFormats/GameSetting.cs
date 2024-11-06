@@ -94,8 +94,8 @@ namespace MajdataPlay.Types
 
     public class ApiEndpoint
     {
-        public string Name { get; set; }
-        public string Url { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
         public string? Username { get; set; }
         public string? Password { get; set; }
     }
@@ -111,12 +111,28 @@ namespace MajdataPlay.Types
     }
     public class MiscOptions
     {
+        public InputDeviceOptions InputDevice { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
-        public DeviceType InputDevice { get; set; } = DeviceType.Keyboard;
-        public int CustomButtonPollingRateMs { get; set; } = 2;
-        public int CustomTouchPanelPollingRateMs { get; set; } = 2;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
+    }
+    public class InputDeviceOptions
+    {
+        public ButtonRingOptions ButtonRing { get; set; } = new();
+        public TouchPanelOptions TouchPanel { get; set; } = new();
+    }
+    public class ButtonRingOptions
+    {
+        public DeviceType Type { get; set; } = DeviceType.Keyboard;
+        public bool Debounce { get; set; } = true;
+        public int PollingRateMs { get; set; } = 2;
+        public int DebounceThresholdMs { get; set; } = 2;
+    }
+    public class TouchPanelOptions
+    {
+        public bool Debounce { get; set; } = true;
+        public int PollingRateMs { get; set; } = 2;
+        public int DebounceThresholdMs { get; set; } = 2;
     }
 }

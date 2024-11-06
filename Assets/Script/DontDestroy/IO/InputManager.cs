@@ -69,7 +69,7 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
-            switch(MajInstances.Setting.Misc.InputDevice)
+            switch(MajInstances.Setting.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
                     CheckEnvironment(false);
@@ -104,7 +104,7 @@ namespace MajdataPlay.IO
         {
             if(_ioManager is null)
                 _ioManager = new();
-            var useHID = MajInstances.Setting.Misc.InputDevice is DeviceType.HID;
+            var useHID = MajInstances.Setting.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
             var executionQueue = GameManager.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
@@ -122,9 +122,11 @@ namespace MajdataPlay.IO
 
             try
             {
-                string deviceName;
-                var btnPollingRate = MajInstances.Setting.Misc.CustomButtonPollingRateMs;
-                var touchPanelPollingRate = MajInstances.Setting.Misc.CustomTouchPanelPollingRateMs;
+                var deviceName = useHID ? AdxHIDButtonRing.GetDeviceName() : AdxIO4ButtonRing.GetDeviceName();
+                var btnPollingRate = MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs;
+                var btnDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs;
+                var touchPanelPollingRate = MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs;
+                var touchPanelDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs;
                 Dictionary<string, dynamic>? btnConnProperties = null;
                 Dictionary<string, dynamic>? touchPanelConnProperties = null;
 
@@ -132,38 +134,31 @@ namespace MajdataPlay.IO
                 {
                     btnConnProperties = new()
                     {
-                        { "PollingRateMs", btnPollingRate }
+                        { "PollingRateMs", btnPollingRate },
+                        { "DebounceTimeMs", btnDebounceThresholdMs }
                     };
                 }
                 if (touchPanelPollingRate != 0)
                 {
                     touchPanelConnProperties = new()
                     {
-                        { "PollingRateMs", touchPanelPollingRate }
+                        { "PollingRateMs", touchPanelPollingRate },
+                        { "DebounceTimeMs", touchPanelDebounceThresholdMs }
                     };
                 }
-                if (useHID)
-                {
-                    deviceName = AdxHIDButtonRing.GetDeviceName();
-                }
-                else
-                {
-                    deviceName = AdxIO4ButtonRing.GetDeviceName();
-                }
-                _ioManager.AddButtonRing(AdxIO4ButtonRing.GetDeviceName(),
+
+                _ioManager.AddButtonRing(deviceName,
                                          inputSubscriptions: buttonRingCallbacks,
                                          connectionProperties: btnConnProperties);
                 _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
                                          inputSubscriptions: touchPanelCallbacks,
                                          connectionProperties: touchPanelConnProperties);
                 _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
-                
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
-            
         }
         void StartInternalIOListener()
         {
