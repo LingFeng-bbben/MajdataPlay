@@ -431,12 +431,16 @@ namespace MajdataPlay.Game
             var noteTiming = (float)timing.time;
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+            var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = _noteSortOrder;
             bool isEach = false;
             bool isDouble = false;
             TapQueueInfo? queueInfo = null;
+
+            appearTiming = Math.Min(appearTiming, slideFadeInTiming);
+
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];

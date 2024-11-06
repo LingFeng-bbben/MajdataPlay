@@ -18,6 +18,8 @@ namespace MajdataPlay.Game.Notes
 
         public GameObject? SlideObject { get; set; }
 
+        float _slideFadeInTiming = 0f;
+
         public override void Initialize(TapPoolingInfo poolingInfo)
         {
             base.Initialize(poolingInfo);
@@ -39,6 +41,8 @@ namespace MajdataPlay.Game.Notes
                 else
                     SubscribeEvent();
             }
+            if(!IsFakeStar)
+                _slideFadeInTiming = (-3.926913f / Speed) + MajInstances.Setting.Game.SlideFadeInOffset + Timing;
             State = NoteStatus.Initialized;
         }
         public override void End(bool forceEnd = false)
@@ -57,12 +61,12 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Update()
         {
-            var songSpeed = _gpManager.PlaybackSpeed;
             var judgeTiming = GetTimeSpanToArriveTiming();
             var distance = judgeTiming * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
+            UpdateSlide();
             switch (State)
             {
                 case NoteStatus.Initialized:
@@ -92,15 +96,6 @@ namespace MajdataPlay.Game.Notes
                         }
                         else
                         {
-                            if (!IsFakeStar && !SlideObject!.activeSelf)
-                            {
-                                SlideObject.SetActive(true);
-                                if (IsNoHead)
-                                {
-                                    End();
-                                    return;
-                                }
-                            }
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
@@ -118,11 +113,29 @@ namespace MajdataPlay.Game.Notes
                 default:
                     return;
             }
-
             if (_gpManager.IsStart && !IsFakeStar && _gameSetting.Game.StarRotation)
                 transform.Rotate(0f, 0f, -180f * Time.deltaTime / RotateSpeed);
             else if (IsForceRotate)
                 transform.Rotate(0f, 0f, 400f * Time.deltaTime);
+        }
+        void UpdateSlide()
+        {
+            switch(State)
+            {
+                case NoteStatus.Initialized:
+                case NoteStatus.Scaling:
+                case NoteStatus.Running:
+                    if(CurrentSec >= _slideFadeInTiming)
+                    {
+                        if (!IsFakeStar && !SlideObject!.activeSelf)
+                        {
+                            SlideObject?.SetActive(true);
+                            if (IsNoHead)
+                                End();
+                        }
+                    }
+                    break;
+            }
         }
         protected override void LoadSkin()
         {
