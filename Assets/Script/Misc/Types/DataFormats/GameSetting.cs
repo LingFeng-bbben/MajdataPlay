@@ -125,12 +125,15 @@ namespace MajdataPlay.Types
     public class ButtonRingOptions
     {
         public DeviceType Type { get; set; } = DeviceType.Keyboard;
+        public int ProductId { get; set; } = 0x0021;
+        public int VendorId { get; set; } = 0x0CA3;
         public bool Debounce { get; set; } = true;
         public int PollingRateMs { get; set; } = 2;
         public int DebounceThresholdMs { get; set; } = 2;
     }
     public class TouchPanelOptions
     {
+        public int COMPort { get; set; } = 21;
         public bool Debounce { get; set; } = true;
         public int PollingRateMs { get; set; } = 2;
         public int DebounceThresholdMs { get; set; } = 2;

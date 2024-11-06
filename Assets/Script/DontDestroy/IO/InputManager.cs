@@ -123,29 +123,26 @@ namespace MajdataPlay.IO
             try
             {
                 var deviceName = useHID ? AdxHIDButtonRing.GetDeviceName() : AdxIO4ButtonRing.GetDeviceName();
+                var btnProductId = MajInstances.Setting.Misc.InputDevice.ButtonRing.ProductId;
+                var btnVendorId = MajInstances.Setting.Misc.InputDevice.ButtonRing.VendorId;
+                var comPortNum = MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort;
                 var btnPollingRate = MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs;
                 var btnDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs;
                 var touchPanelPollingRate = MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs;
                 var touchPanelDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs;
-                Dictionary<string, dynamic>? btnConnProperties = null;
-                Dictionary<string, dynamic>? touchPanelConnProperties = null;
-
-                if (btnPollingRate != 0)
+                var btnConnProperties = new Dictionary<string, dynamic>()
                 {
-                    btnConnProperties = new()
-                    {
-                        { "PollingRateMs", btnPollingRate },
-                        { "DebounceTimeMs", btnDebounceThresholdMs }
-                    };
-                }
-                if (touchPanelPollingRate != 0)
+                    { "PollingRateMs", btnPollingRate },
+                    { "DebounceTimeMs", btnDebounceThresholdMs },
+                    { "ProductId", btnProductId },
+                    { "VendorId", btnVendorId },
+                };
+                var touchPanelConnProperties = new Dictionary<string, dynamic>()
                 {
-                    touchPanelConnProperties = new()
-                    {
-                        { "PollingRateMs", touchPanelPollingRate },
-                        { "DebounceTimeMs", touchPanelDebounceThresholdMs }
-                    };
-                }
+                    { "PollingRateMs", touchPanelPollingRate },
+                    { "DebounceTimeMs", touchPanelDebounceThresholdMs },
+                    { "ComPortNumber", comPortNum }
+                };
 
                 _ioManager.AddButtonRing(deviceName,
                                          inputSubscriptions: buttonRingCallbacks,
