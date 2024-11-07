@@ -123,13 +123,19 @@ namespace MajdataPlay.IO
             try
             {
                 var deviceName = useHID ? AdxHIDButtonRing.GetDeviceName() : AdxIO4ButtonRing.GetDeviceName();
+                var btnDebounce = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
+                var touchPanelDebounce = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+
                 var btnProductId = MajInstances.Setting.Misc.InputDevice.ButtonRing.ProductId;
                 var btnVendorId = MajInstances.Setting.Misc.InputDevice.ButtonRing.VendorId;
                 var comPortNum = MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort;
+
                 var btnPollingRate = MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs;
-                var btnDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs;
+                var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
+
                 var touchPanelPollingRate = MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs;
-                var touchPanelDebounceThresholdMs = MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs;
+                var touchPanelDebounceThresholdMs = touchPanelDebounce ? MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs : 0;
+
                 var btnConnProperties = new Dictionary<string, dynamic>()
                 {
                     { "PollingRateMs", btnPollingRate },
