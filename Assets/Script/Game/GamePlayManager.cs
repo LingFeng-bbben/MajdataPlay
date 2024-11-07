@@ -114,6 +114,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         float _audioStartTime = -114514;
         float _playbackSpeed = 1f;
+        int _chartRotation = 0;
         bool _isAllBreak = false;
         bool _isAllEx = false;
         bool _isAllTouch = false;
@@ -159,6 +160,7 @@ namespace MajdataPlay.Game
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
+            _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
             LoadChart().Forget();
@@ -507,6 +509,7 @@ namespace MajdataPlay.Game
             else
                 _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
+            _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPool(_chart);

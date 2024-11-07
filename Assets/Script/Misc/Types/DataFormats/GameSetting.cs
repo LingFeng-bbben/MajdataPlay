@@ -23,6 +23,7 @@ namespace MajdataPlay.Types
         public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
+        public int Rotation { get; set; } = 0;
     }
     public class JudgeOptions
     {

@@ -11,6 +11,7 @@ using Unity.VisualScripting;
 using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Utils;
+using System.Runtime.CompilerServices;
 
 namespace MajdataPlay.Game
 {
@@ -21,6 +22,7 @@ namespace MajdataPlay.Game
         public long NoteLimit { get; set; } = 1000;
         public double Process { get; set; } = 0;
         public float NoteSpeed { get; set; } = 7f;
+        public int ChartRotation { get; set; } = 0;
         public float TouchSpeed
         {
             get => _touchSpeed;
@@ -308,6 +310,8 @@ namespace MajdataPlay.Game
                     {
                         var startPos = eachNotes[0].startPosition;
                         var endPos = eachNotes[1].startPosition;
+                        startPos = Rotation(startPos);
+                        endPos = Rotation(endPos);
                         endPos = endPos - startPos;
                         if (endPos == 0)
                             continue;
@@ -325,6 +329,8 @@ namespace MajdataPlay.Game
                         {
                             startPos = eachNotes[1].startPosition;
                             endPos = eachNotes[0].startPosition;
+                            startPos = Rotation(startPos);
+                            endPos = Rotation(endPos);
                             endPos = endPos - startPos;
                             endPos = endPos < 0 ? endPos + 8 : endPos;
                             endPos = endPos > 8 ? endPos - 8 : endPos;
@@ -364,6 +370,7 @@ namespace MajdataPlay.Game
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
+            var startPos = note.startPosition;
             var noteTiming = (float)timing.time;
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -374,10 +381,10 @@ namespace MajdataPlay.Game
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
+            startPos = Rotation(startPos);
             return new()
             {
-                StartPos = note.startPosition,
+                StartPos = startPos,
                 Timing = noteTiming,
                 AppearTiming = appearTiming,
                 NoteSortOrder = sortOrder,
@@ -391,13 +398,14 @@ namespace MajdataPlay.Game
                 IsForceRotate = note.isFakeRotate,
                 QueueInfo = new TapQueueInfo()
                 {
-                    Index = _noteIndex[note.startPosition]++,
-                    KeyIndex = note.startPosition
+                    Index = _noteIndex[startPos]++,
+                    KeyIndex = startPos
                 }
             };
         }
         HoldPoolingInfo CreateHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
+            var startPos = note.startPosition;
             var noteTiming = (float)timing.time;
             var speed = Math.Abs(NoteSpeed * timing.HSpeed);
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -407,10 +415,10 @@ namespace MajdataPlay.Game
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
+            startPos = Rotation(startPos);
             return new()
             {
-                StartPos = note.startPosition,
+                StartPos = startPos,
                 Timing = noteTiming,
                 LastFor = (float)note.holdTime,
                 AppearTiming = appearTiming,
@@ -421,13 +429,14 @@ namespace MajdataPlay.Game
                 IsEX = note.isEx,
                 QueueInfo = new TapQueueInfo()
                 {
-                    Index = _noteIndex[note.startPosition]++,
-                    KeyIndex = note.startPosition
+                    Index = _noteIndex[startPos]++,
+                    KeyIndex = startPos
                 }
             };
         }
         TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing,GameObject slide)
         {
+            var startPos = note.startPosition;
             var noteTiming = (float)timing.time;
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -460,18 +469,19 @@ namespace MajdataPlay.Game
                         isEach = true;
                 }
             }
+            startPos = Rotation(startPos);
             if(!note.isSlideNoHead)
             {
                 queueInfo = new TapQueueInfo()
                 {
-                    Index = _noteIndex[note.startPosition]++,
-                    KeyIndex = note.startPosition
+                    Index = _noteIndex[startPos]++,
+                    KeyIndex = startPos
                 };
             }
 
             return new()
             {
-                StartPos = note.startPosition,
+                StartPos = startPos,
                 Timing = noteTiming,
                 AppearTiming = appearTiming,
                 NoteSortOrder = sortOrder,
@@ -493,6 +503,7 @@ namespace MajdataPlay.Game
                                      in SimaiTimingPoint timing,
                                      in List<TouchPoolingInfo> members)
         {
+            note.startPosition = Rotation(note.startPosition);
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
             var queueInfo = new TouchQueueInfo()
             {
@@ -512,6 +523,7 @@ namespace MajdataPlay.Game
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
+            
             var poolingInfo = new TouchPoolingInfo()
             {
                 SensorPos = sensorPos,
@@ -533,8 +545,8 @@ namespace MajdataPlay.Game
         }
         TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
+            note.startPosition = Rotation(note.startPosition);
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
-
             var queueInfo = new TouchQueueInfo()
             {
                 SensorPos = sensorPos,
@@ -553,7 +565,7 @@ namespace MajdataPlay.Game
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-
+            sensorPos = Rotation(sensorPos);
             return new TouchHoldPoolingInfo()
             {
                 SensorPos = sensorPos,
@@ -887,16 +899,20 @@ namespace MajdataPlay.Game
                 isMirror = true;
                 slideShape = slideShape.Substring(1);
             }
-            int slideIndex = SLIDE_PREFAB_MAP[slideShape];
-
+            var slideIndex = SLIDE_PREFAB_MAP[slideShape];
             var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
             var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            //slide_star.GetComponent<SpriteRenderer>().sprite = customSkin.Star;
+            var SliCompo = slide.AddComponent<SlideDrop>();
+            var isJustR = detectJustType(note.noteContent, out int endPos);
+            var startPos = note.startPosition;
+
             slide_star.SetActive(false);
             slide.SetActive(false);
-            _poolManager.AddTap(CreateStar(note, timing, slide));
-            var SliCompo = slide.AddComponent<SlideDrop>();
+            startPos = Rotation(startPos);
+            endPos = Rotation(endPos);
 
+            _poolManager.AddTap(CreateStar(note, timing, slide));
+            
             SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
@@ -911,7 +927,7 @@ namespace MajdataPlay.Game
             SliCompo.IsBreak = note.isSlideBreak;
 
             SliCompo.IsMirror = isMirror;
-            SliCompo.IsJustR = detectJustType(note.noteContent, out int endPos);
+            SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
             if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
             {
@@ -928,7 +944,7 @@ namespace MajdataPlay.Game
             }
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
-            SliCompo.StartPos = note.startPosition;
+            SliCompo.StartPos = startPos;
             SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)note.slideStartTime;
             SliCompo.Length = (float)note.slideTime;
@@ -958,9 +974,14 @@ namespace MajdataPlay.Game
             endPos++;
 
             var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform.GetChild(3));
-            slideWifi.SetActive(false);
-            _poolManager.AddTap(CreateStar(note, timing, slideWifi));
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
+            var isJustR = detectJustType(note.noteContent, out endPos);
+
+            startPos = Rotation(startPos);
+            endPos = Rotation(endPos);
+            slideWifi.SetActive(false);
+
+            _poolManager.AddTap(CreateStar(note, timing, slideWifi));
 
             if (timing.noteList.Count > 1)
             {
@@ -972,11 +993,11 @@ namespace MajdataPlay.Game
 
             WifiCompo.IsBreak = note.isSlideBreak;
 
-            WifiCompo.IsJustR = detectJustType(note.noteContent, out endPos);
+            WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             WifiCompo.StartTiming = (float)timing.time;
-            WifiCompo.StartPos = note.startPosition;
+            WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)note.slideStartTime;
             WifiCompo.Length = (float)note.slideTime;
             var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
@@ -1017,6 +1038,7 @@ namespace MajdataPlay.Game
                 var digits = str.Split('>');
                 var startPos = int.Parse(digits[0]);
                 endPos = int.Parse(digits[1]);
+
                 if (isUpperHalf(startPos))
                     return true;
                 return false;
@@ -1028,6 +1050,7 @@ namespace MajdataPlay.Game
                 var digits = str.Split('<');
                 var startPos = int.Parse(digits[0]);
                 endPos = int.Parse(digits[1]);
+
                 if (!isUpperHalf(startPos))
                     return true;
                 return false;
@@ -1321,6 +1344,19 @@ namespace MajdataPlay.Game
             if (key == 7) return 3;
             if (key == 8) return 2;
             throw new Exception("Keys out of range: " + key);
+        }
+        int Rotation(int keyIndex)
+        {
+            if (!keyIndex.InRange(1, 8))
+                throw new ArgumentOutOfRangeException();
+            var key = (SensorType)(keyIndex - 1);
+            var newKey = key.Diff(ChartRotation);
+            return newKey.GetIndex();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        SensorType Rotation(SensorType sensorIndex)
+        {
+            return sensorIndex.Diff(ChartRotation);
         }
     }
 }

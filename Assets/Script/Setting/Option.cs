@@ -41,6 +41,7 @@ namespace MajdataPlay.Setting
         bool _isUp = false;
         float _pressTime = 0;
         float? _maxValue = null;
+        float? _minValue = null;
 
         int _lastIndex = 0;
         void Start()
@@ -101,20 +102,29 @@ namespace MajdataPlay.Setting
                     case "Voice":
                         _maxValue = 2;
                         _step = 0.05f;
+                        _minValue = 0;
                         break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
                     case "BackgroundDim":
                         _maxValue = 1;
                         _step = 0.05f;
+                        _minValue = 0;
                         break;
                     case "TouchSpeed":
                     case "TapSpeed":
                         _maxValue = null;
+                        _minValue = null;
                         _step = 0.25f;
+                        break;
+                    case "Rotation":
+                        _maxValue = 7;
+                        _minValue = -7;
+                        _step = 1;
                         break;
                     default:
                         _maxValue = null;
+                        _minValue = null;
                         _step = 0.001f;
                         break;
                 }
@@ -194,50 +204,33 @@ namespace MajdataPlay.Setting
         }
         void Up()
         {
-            if(_isNum) // 数值类
-            {
-                var valueObj = PropertyInfo.GetValue(OptionObject);
-                var value = (float)valueObj;
-                value += _step;
-                value = MathF.Round(value, 3);
-                if (_maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)_maxValue);
-                PropertyInfo.SetValue(OptionObject, value);
-            }
-            else //非数值类
-            {
-                _current++;
-                _current = _current.Clamp(0, _maxOptionIndex);
-                PropertyInfo.SetValue(OptionObject, _options[_current]);
-                switch(PropertyInfo.Name)
-                {
-                    case "Skin":
-                        var skins = MajInstances.SkinManager.LoadedSkins;
-                        var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
-                        MajInstances.SkinManager.SelectedSkin = newSkin;
-                        break;
-                    case "Language":
-                        Localization.SetLang((string)_options[_current]);
-                        break;
-                }
-            }
+            Diff(1);
             UpdateOption();
         }
         void Down()
         {
+            Diff(-1);
+            UpdateOption();
+        }
+        void Diff(int num)
+        {
+            num = num.Clamp(-1, 1);
             if (_isNum) // 数值类
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
-                var value = (float)valueObj;
-                value -= _step;
+                var valueType = valueObj.GetType();
+                var value = Convert.ToSingle(valueObj);
+                value += _step * num;
                 value = MathF.Round(value, 3);
                 if (_maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)_maxValue);
-                PropertyInfo.SetValue(OptionObject, value);
+                    value = Math.Min(value, (float)_maxValue);
+                if(_minValue is not null)
+                    value = Math.Max(value, (float)_minValue);
+                PropertyInfo.SetValue(OptionObject,Convert.ChangeType(value,valueType));
             }
             else //非数值类
             {
-                _current--;
+                _current += 1 * num;
                 _current = _current.Clamp(0, _maxOptionIndex);
                 PropertyInfo.SetValue(OptionObject, _options[_current]);
                 switch (PropertyInfo.Name)
@@ -252,7 +245,6 @@ namespace MajdataPlay.Setting
                         break;
                 }
             }
-            UpdateOption();
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
