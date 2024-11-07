@@ -181,6 +181,12 @@
         None
 
     }
+    public enum MirrorType
+    {
+        Off,
+        LRMirror,
+        UDMirror
+    }
     public enum RendererStatus
     {
         Off,

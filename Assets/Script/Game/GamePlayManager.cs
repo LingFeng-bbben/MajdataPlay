@@ -387,6 +387,7 @@ namespace MajdataPlay.Game
                 BackToList().Forget();
                 throw new TaskCanceledException("Empty chart");
             }
+            ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
             if (_chart.notelist.Count == 0)
             {
@@ -768,6 +769,13 @@ namespace MajdataPlay.Game
             MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
             await UniTask.DelayFrame(5);
             MajInstances.SceneSwitcher.SwitchScene("Result");
+        }
+        void ChartMirror(ref string chartContent)
+        {
+            var mirrorType = _setting.Game.Mirror;
+            if (mirrorType is MirrorType.Off)
+                return;
+            chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
         }
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         private static extern void GetSystemTimePreciseAsFileTime(out long filetime);

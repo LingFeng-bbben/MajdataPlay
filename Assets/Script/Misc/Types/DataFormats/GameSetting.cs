@@ -22,6 +22,7 @@ namespace MajdataPlay.Types
         public bool StarRotation { get; set; } = true;
         public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
+        public MirrorType Mirror { get; set; } = MirrorType.Off;
     }
     public class JudgeOptions
     {
