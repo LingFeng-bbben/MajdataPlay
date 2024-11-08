@@ -32,17 +32,17 @@ jobs:
           
       - if: env.CONFIGURATION == 'Debug'
         name: Debug build
-        uses: game-ci/unity-builder@v4.2.1
+        uses: game-ci/unity-builder@v4.3
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          customParameters: -buildOptions Development
+          customParameters: -development
 
       - if: env.CONFIGURATION == 'Release'
         name: Release build
-        uses: game-ci/unity-builder@v4.2.1
+        uses: game-ci/unity-builder@v4.3
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
