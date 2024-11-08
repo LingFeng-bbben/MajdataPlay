@@ -1,8 +1,12 @@
 name: Build Project
 run-name: Build exe for Windows Standalone
 on: [push]
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 jobs:
-  build:
+  ReleaseBuild:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -18,24 +22,40 @@ jobs:
           key: Library-StandaloneWindows
           restore-keys: Library-StandaloneWindows
 
-      - name: Release build
+      - name: Build
         uses: game-ci/unity-builder@v4.2.1
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: Release
 
-      - name: Debug build
+      - name: List files in build directory
+        run: ls -R Release
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3
+        with:
+          name: MajdataPlay-Release
+          path: Release
+  DebugBuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Cache libraries
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-StandaloneWindows
+          restore-keys: Library-StandaloneWindows
+
+      - name: Build
         uses: game-ci/unity-builder@v4.2.1
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
@@ -43,19 +63,10 @@ jobs:
           buildsPath: Debug
           customParameters: -buildOptions Development
 
-      - name: List files in release build directory
-        run: ls -R Release
-
-      - name: Upload release build
-        uses: actions/upload-artifact@v3
-        with:
-          name: MajdataPlay-Release
-          path: Release
-
-      - name: List files in debug build directory
+      - name: List files in build directory
         run: ls -R Debug
 
-      - name: Upload debug build
+      - name: Upload build
         uses: actions/upload-artifact@v3
         with:
           name: MajdataPlay-Debug
