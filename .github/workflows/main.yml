@@ -1,5 +1,5 @@
 name: Build Project
-run-name: Build exe for Windows Standalone
+run-name: MajdataPlay build
 on: [push]
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -37,13 +37,13 @@ jobs:
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          customParameters: ${{ matrix.configuration == 'Debug' && 'Development' || '' }}
+          customParameters: ${{ env.CONFIGURATION == 'Debug' && '-buildOptions Development' || '' }}
 
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }}
 
       - name: Upload build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.OUTPUT_NAME }}
           path: ${{ env.CONFIGURATION }}
