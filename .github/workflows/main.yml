@@ -38,7 +38,8 @@ jobs:
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          buildOptions: Development
+          buildMethod: MajdataPlay.Utils.CustomBuild.Build
+          customParameters: -buildOptions Development
 
       - if: env.CONFIGURATION == 'Release'
         name: Release build
