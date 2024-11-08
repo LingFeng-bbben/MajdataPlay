@@ -84,38 +84,44 @@ namespace MajdataPlay.Misc.Editor
             }
             buildSubtarget = (int)buildSubtargetValue;
 #endif
-            var buildOptions = BuildOptions.None;
+            BuildOptions? buildOptions = null;
             if(options.TryGetValue("buildOptions", out string buildOptionsStr) && !string.IsNullOrEmpty(buildOptionsStr))
             {
-                var _buildOptionsStr = buildOptionsStr.Split(",");
-                foreach(var option in Enum.GetValues(typeof(BuildOptions)))
+                var _buildOptionsStr = buildOptionsStr.Split(",",StringSplitOptions.RemoveEmptyEntries);
+                foreach(BuildOptions option in Enum.GetValues(typeof(BuildOptions)))
                 {
-                    var str = option.ToString();
-                    if (_buildOptionsStr.Contains(option))
+                    var optionStr = option.ToString();
+                    foreach(var s in _buildOptionsStr)
                     {
-                        var _option = (BuildOptions)option;
-                        if(_option == BuildOptions.None)
+                        if(s == optionStr)
                         {
-                            buildOptions = BuildOptions.None;
-                            break;
+                            if (buildOptions is null)
+                            {
+                                buildOptions = option;
+                                break;
+                            }
+                            else if ((buildOptions & option) == option)
+                                break;
+                            else
+                            {
+                                buildOptions |= option;
+                                break;
+                            }
                         }
-                        else if ((buildOptions & BuildOptions.None) == BuildOptions.None)
-                            buildOptions = _option;
-                        else if ((buildOptions & _option) == _option)
-                            continue;
-                        else
-                            buildOptions |= _option;
                     }
                 }
             }
-            List<string> output = new();
-            foreach (var optionObj in Enum.GetValues(typeof(BuildOptions)))
+            if(buildOptions is not null)
             {
-                var option = (BuildOptions)optionObj;
-                if ((buildOptions & option) == option)
-                    output.Add(option.ToString());
+                List<string> output = new();
+                foreach (BuildOptions option in Enum.GetValues(typeof(BuildOptions)))
+                {
+                    if ((buildOptions & option) == option)
+                        output.Add(option.ToString());
+                }
+                Console.WriteLine($"BuildOptions: {string.Join(',', output)}");
             }
-            Console.WriteLine($"BuildOptions: {string.Join(',',output)}");
+            
             // Custom build
             Build(buildTarget, buildSubtarget, options["customBuildPath"], buildOptions);
         }
@@ -196,8 +202,11 @@ namespace MajdataPlay.Misc.Editor
             }
         }
 
-        private static void Build(BuildTarget buildTarget, int buildSubtarget, string filePath,BuildOptions options)
+        private static void Build(BuildTarget buildTarget, int buildSubtarget, string filePath,BuildOptions? options)
         {
+            var buildOption = BuildOptions.None;
+            if (options is not null)
+                buildOption = (BuildOptions)options;
             string[] scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
             var buildPlayerOptions = new BuildPlayerOptions
             {
@@ -205,7 +214,7 @@ namespace MajdataPlay.Misc.Editor
                 target = buildTarget,
                 //                targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget),
                 locationPathName = filePath,
-                options = options,
+                options = buildOption,
 #if UNITY_2021_2_OR_NEWER
                 subtarget = buildSubtarget
 #endif
