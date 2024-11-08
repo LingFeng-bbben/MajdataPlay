@@ -29,15 +29,25 @@ jobs:
           path: Library
           key: Library-StandaloneWindows
           restore-keys: Library-StandaloneWindows
-
-      - name: Build
+          
+      - if: env.CONFIGURATION == 'Debug'
+        name: Debug build
         uses: game-ci/unity-builder@v4.2.1
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          customParameters: ${{ env.CONFIGURATION == 'Debug' && '-buildOptions Development' || '' }}
+          customParameters: -buildOptions Development
+
+      - if: env.CONFIGURATION == 'Release'
+        name: Release build
+        uses: game-ci/unity-builder@v4.2.1
+        with:
+          targetPlatform: StandaloneWindows
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
 
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }}
