@@ -15,6 +15,7 @@ jobs:
     env:
       OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
       CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: "StandaloneWindows64"
 
     steps:
       - name: Checkout the repository
@@ -27,14 +28,14 @@ jobs:
         uses: actions/cache@v3
         with:
           path: Library
-          key: Library-StandaloneWindows
-          restore-keys: Library-StandaloneWindows
+          key: Library-${{ env.TARGET_PLATFORM }}
+          restore-keys: Library-${{ env.TARGET_PLATFORM }}
           
       - if: env.CONFIGURATION == 'Debug'
         name: Debug build
         uses: game-ci/unity-builder@v4.3.0
         with:
-          targetPlatform: StandaloneWindows
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
@@ -44,7 +45,7 @@ jobs:
         name: Release build
         uses: game-ci/unity-builder@v4.3.0
         with:
-          targetPlatform: StandaloneWindows
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
