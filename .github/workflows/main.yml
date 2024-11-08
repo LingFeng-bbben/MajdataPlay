@@ -36,14 +36,14 @@ jobs:
           targetPlatform: StandaloneWindows
           versioning: Semantic
           buildName: MajdataPlay
-          buildsPath: ${{ enc.CONFIGURATION }}
+          buildsPath: ${{ env.CONFIGURATION }}
           customParameters: ${{ matrix.configuration == 'Debug' && 'Development' || '' }}
 
       - name: List files in build directory
-        run: ls -R ${{ enc.CONFIGURATION }}
+        run: ls -R ${{ env.CONFIGURATION }}
 
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.OUTPUT_NAME }}
-          path: ${{ enc.CONFIGURATION }}
+          path: ${{ env.CONFIGURATION }}
