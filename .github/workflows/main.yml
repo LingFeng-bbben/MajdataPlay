@@ -13,12 +13,14 @@ jobs:
       matrix:
         configuration: [Debug, Release]
     env:
-      COMMIT_HASH: ${{ github.sha::7 }}
       OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
       CONFIGURATION: ${{ matrix.configuration }}
       TARGET_PLATFORM: "StandaloneWindows64"
       
     steps:
+      - name: Get commit has
+        run: echo "COMMIT_HASH=${ github.sha::7 }" >> $GITHUB_ENV
+        
       - name: Setup output filename
         run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ matrix.configuration }}" >> $GITHUB_ENV
         
