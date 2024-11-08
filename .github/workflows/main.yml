@@ -19,8 +19,8 @@ jobs:
       TARGET_PLATFORM: "StandaloneWindows64"
       
     steps:
-      - name: Get commit has
-        run: echo "COMMIT_HASH=${ env.COMMIT_HASH_FULL:0:7 }" >> $GITHUB_ENV
+      - name: Get commit hash
+        run: echo "COMMIT_HASH=$(echo ${{ env.COMMIT_HASH_FULL }} | cut -c1-7)" >> $GITHUB_ENV
         
       - name: Setup output filename
         run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ matrix.configuration }}" >> $GITHUB_ENV
