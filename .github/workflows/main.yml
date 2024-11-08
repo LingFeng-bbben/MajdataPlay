@@ -6,8 +6,16 @@ env:
   UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 jobs:
-  ReleaseBuild:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    env:
+      OUTPUT_NAME: MajdataPlay-${{ matrux.configuration }}
+      CONFIGURATION: ${{ matrix.configuration }}
+
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -28,46 +36,14 @@ jobs:
           targetPlatform: StandaloneWindows
           versioning: Semantic
           buildName: MajdataPlay
-          buildsPath: Release
+          buildsPath: ${{ enc.CONFIGURATION }}
+          customParameters: ${{ matrix.configuration == 'Debug' && 'Development' || '' }}
 
       - name: List files in build directory
-        run: ls -R Release
+        run: ls -R ${{ enc.CONFIGURATION }}
 
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
-          name: MajdataPlay-Release
-          path: Release
-  DebugBuild:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Cache libraries
-        uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-StandaloneWindows
-          restore-keys: Library-StandaloneWindows
-
-      - name: Build
-        uses: game-ci/unity-builder@v4.2.1
-        with:
-          targetPlatform: StandaloneWindows
-          versioning: Semantic
-          buildName: MajdataPlay
-          buildsPath: Debug
-          customParameters: -buildOptions Development
-
-      - name: List files in build directory
-        run: ls -R Debug
-
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: MajdataPlay-Debug
-          path: Debug
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ enc.CONFIGURATION }}
