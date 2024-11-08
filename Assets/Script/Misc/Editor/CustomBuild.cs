@@ -101,11 +101,21 @@ namespace MajdataPlay.Misc.Editor
                         }
                         else if ((buildOptions & BuildOptions.None) == BuildOptions.None)
                             buildOptions = _option;
+                        else if ((buildOptions & _option) == _option)
+                            continue;
                         else
                             buildOptions |= _option;
                     }
                 }
             }
+            List<string> output = new();
+            foreach (var optionObj in Enum.GetValues(typeof(BuildOptions)))
+            {
+                var option = (BuildOptions)optionObj;
+                if ((buildOptions & option) == option)
+                    output.Add(option.ToString());
+            }
+            Console.WriteLine($"BuildOptions: {string.Join(',',output)}");
             // Custom build
             Build(buildTarget, buildSubtarget, options["customBuildPath"], buildOptions);
         }
@@ -200,14 +210,7 @@ namespace MajdataPlay.Misc.Editor
                 subtarget = buildSubtarget
 #endif
             };
-            List<string> output = new();
-            foreach (var optionObj in Enum.GetValues(typeof(BuildOptions)))
-            {
-                var option = (BuildOptions)optionObj;
-                if ((options & option) == option)
-                    output.Add(option.ToString());
-            }
-            Console.WriteLine($"BuildOptions: {string.Join(',',output)}");
+            
             BuildSummary buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
             ReportSummary(buildSummary);
             ExitWithResult(buildSummary.result);
