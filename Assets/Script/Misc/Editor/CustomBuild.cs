@@ -87,28 +87,13 @@ namespace MajdataPlay.Misc.Editor
             BuildOptions? buildOptions = null;
             if(options.TryGetValue("buildOptions", out string buildOptionsStr) && !string.IsNullOrEmpty(buildOptionsStr))
             {
-                var _buildOptionsStr = buildOptionsStr.Split(",",StringSplitOptions.RemoveEmptyEntries);
-                foreach(BuildOptions option in Enum.GetValues(typeof(BuildOptions)))
+                
+                if(buildOptionsStr.Contains("Development"))
                 {
-                    var optionStr = option.ToString();
-                    foreach(var s in _buildOptionsStr)
-                    {
-                        if(s == optionStr)
-                        {
-                            if (buildOptions is null)
-                            {
-                                buildOptions = option;
-                                break;
-                            }
-                            else if ((buildOptions & option) == option)
-                                break;
-                            else
-                            {
-                                buildOptions |= option;
-                                break;
-                            }
-                        }
-                    }
+                    if (buildOptions is null)
+                        buildOptions = BuildOptions.Development;
+                    else
+                        buildOptions |= BuildOptions.Development;
                 }
             }
             if(buildOptions is not null)
