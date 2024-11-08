@@ -13,7 +13,7 @@ jobs:
       matrix:
         configuration: [Debug, Release]
     env:
-      OUTPUT_NAME: MajdataPlay-${{ matrux.configuration }}
+      OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
       CONFIGURATION: ${{ matrix.configuration }}
 
     steps:
