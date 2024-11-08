@@ -13,7 +13,17 @@ namespace MajdataPlay.Misc.Editor
         private static readonly string[] Secrets =
             {"androidKeystorePass", "androidKeyaliasName", "androidKeyaliasPass"};
 
-        public static void Build()
+        public static void BuildRelease()
+        {
+            var (a, b, c) = Handle();
+            Build(a, b, c, null);
+        }
+        public static void BuildDebug()
+        {
+            var (a, b, c) = Handle();
+            Build(a, b, c, BuildOptions.Development);
+        }
+        static (BuildTarget, int, string) Handle()
         {
             // Gather values from args
             Dictionary<string, string> options = GetValidatedOptions();
@@ -84,31 +94,7 @@ namespace MajdataPlay.Misc.Editor
             }
             buildSubtarget = (int)buildSubtargetValue;
 #endif
-            BuildOptions? buildOptions = null;
-            if(options.TryGetValue("buildOptions", out string buildOptionsStr) && !string.IsNullOrEmpty(buildOptionsStr))
-            {
-                
-                if(buildOptionsStr.Contains("Development"))
-                {
-                    if (buildOptions is null)
-                        buildOptions = BuildOptions.Development;
-                    else
-                        buildOptions |= BuildOptions.Development;
-                }
-            }
-            if(buildOptions is not null)
-            {
-                List<string> output = new();
-                foreach (BuildOptions option in Enum.GetValues(typeof(BuildOptions)))
-                {
-                    if ((buildOptions & option) == option)
-                        output.Add(option.ToString());
-                }
-                Console.WriteLine($"BuildOptions: {string.Join(',', output)}");
-            }
-            
-            // Custom build
-            Build(buildTarget, buildSubtarget, options["customBuildPath"], buildOptions);
+            return (buildTarget, buildSubtarget, options["customBuildPath"]);
         }
 
         private static Dictionary<string, string> GetValidatedOptions()
