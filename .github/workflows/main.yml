@@ -13,10 +13,11 @@ jobs:
       matrix:
         configuration: [Debug, Release]
     env:
-      OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
+      COMMIT_HASH: ${{ github.sha::7 }}
+      OUTPUT_NAME: MajdataPlay-${{ env.COMMIT_HASH }}-${{ matrix.configuration }}
       CONFIGURATION: ${{ matrix.configuration }}
       TARGET_PLATFORM: "StandaloneWindows64"
-
+      
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
