@@ -1,13 +1,12 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Misc.Editor
 {
-    public static class CustomBuild
+    public class CustomBuild
     {
         private static readonly string Eol = Environment.NewLine;
 
@@ -201,7 +200,14 @@ namespace MajdataPlay.Utils
                 subtarget = buildSubtarget
 #endif
             };
-
+            List<string> output = new();
+            foreach (var optionObj in Enum.GetValues(typeof(BuildOptions)))
+            {
+                var option = (BuildOptions)optionObj;
+                if ((options & option) == option)
+                    output.Add(option.ToString());
+            }
+            Console.WriteLine($"BuildOptions: {string.Join(',',output)}");
             BuildSummary buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
             ReportSummary(buildSummary);
             ExitWithResult(buildSummary.result);
@@ -248,4 +254,3 @@ namespace MajdataPlay.Utils
         }
     }
 }
-#endif
