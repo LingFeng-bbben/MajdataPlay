@@ -6,18 +6,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
+
       - name: Cache libraries
-      - uses: actions/cache@v3
+        uses: actions/cache@v3
         with:
           path: Library
           key: Library-StandaloneWindows
           restore-keys: Library-StandaloneWindows
+
       - name: Release build
-      - uses: game-ci/unity-builder@v4.2.1
+        uses: game-ci/unity-builder@v4.2.1
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -29,7 +31,7 @@ jobs:
           buildsPath: Release
 
       - name: Debug build
-      - uses: game-ci/unity-builder@v4.2.1
+        uses: game-ci/unity-builder@v4.2.1
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
