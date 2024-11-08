@@ -41,16 +41,20 @@ jobs:
           buildsPath: Debug
           customParameters: -buildOptions Development
 
+      - name: List files in release build directory
+        run: ls -R Release
+
       - name: Upload release build
-      - run: ls -R
-      - uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: MajdataPlay-Release
           path: Release
-          
+
+      - name: List files in debug build directory
+        run: ls -R Debug
+
       - name: Upload debug build
-      - run: ls -R
-      - uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: MajdataPlay-Debug
           path: Debug
