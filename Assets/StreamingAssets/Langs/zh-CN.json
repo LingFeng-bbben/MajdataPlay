@@ -560,6 +560,26 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "默认"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror",
+      "Content": "镜像"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation",
+      "Content": "旋转"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation_MAJSETTING_DESC",
+      "Content": "正数为顺时针旋转\n负数为逆时针旋转"
     }
   ]
 }
