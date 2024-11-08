@@ -1,30 +1,67 @@
 name: Build Project
-run-name: Build exe for Windows Standalone
+run-name: MajdataPlay build
 on: [push]
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    env:
+      COMMIT_HASH_FULL: ${{ github.sha }}
+      OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
+      CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: "StandaloneWindows64"
+      
     steps:
-      - uses: actions/checkout@v4
+      - name: Get commit hash
+        run: echo "COMMIT_HASH=$(echo ${{ env.COMMIT_HASH_FULL }} | cut -c1-7)" >> $GITHUB_ENV
+        
+      - name: Setup output filename
+        run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ matrix.configuration }}" >> $GITHUB_ENV
+        
+      - name: Checkout the repository
+        uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
-      - uses: actions/cache@v3
+
+      - name: Cache libraries
+        uses: actions/cache@v3
         with:
           path: Library
-          key: Library-StandaloneWindows
-          restore-keys: Library-StandaloneWindows
-      - uses: game-ci/unity-builder@v4.2.1
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          key: Library-${{ env.TARGET_PLATFORM }}
+          restore-keys: Library-${{ env.TARGET_PLATFORM }}
+          
+      - if: env.CONFIGURATION == 'Debug'
+        name: Debug build
+        uses: game-ci/unity-builder@v4.3.0
         with:
-          targetPlatform: StandaloneWindows
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
           buildName: MajdataPlay
-      - run: ls -R
-      - uses: actions/upload-artifact@v3
+          buildsPath: ${{ env.CONFIGURATION }}
+          buildMethod: MajdataPlay.Misc.Editor.CustomBuild.BuildDebug
+
+      - if: env.CONFIGURATION == 'Release'
+        name: Release build
+        uses: game-ci/unity-builder@v4.3.0
         with:
-          name: Build
-          path: build
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+
+      - name: List files in build directory
+        run: ls -R ${{ env.CONFIGURATION }}
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ env.CONFIGURATION }}
