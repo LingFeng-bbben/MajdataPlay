@@ -32,7 +32,7 @@ jobs:
           
       - if: env.CONFIGURATION == 'Debug'
         name: Debug build
-        uses: game-ci/unity-builder@v4.3
+        uses: game-ci/unity-builder@v4.3.0
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
@@ -42,7 +42,7 @@ jobs:
 
       - if: env.CONFIGURATION == 'Release'
         name: Release build
-        uses: game-ci/unity-builder@v4.3
+        uses: game-ci/unity-builder@v4.3.0
         with:
           targetPlatform: StandaloneWindows
           versioning: Semantic
