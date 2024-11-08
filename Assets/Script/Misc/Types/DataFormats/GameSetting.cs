@@ -130,8 +130,8 @@ namespace MajdataPlay.Types
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
         public bool Debounce { get; set; } = true;
-        public int PollingRateMs { get; set; } = 2;
-        public int DebounceThresholdMs { get; set; } = 2;
+        public int PollingRateMs { get; set; } = 0;
+        public int DebounceThresholdMs { get; set; } = 5;
     }
     public class TouchPanelOptions
     {
