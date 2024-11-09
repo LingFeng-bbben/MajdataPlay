@@ -702,7 +702,7 @@ namespace MajdataPlay.Game
                 return c - '0';
             }
 
-            var subSlide = new List<SimaiNote>();
+            var subSlide = new List<SubSlideNote>();
             var subBarCount = new List<int>();
             var sumBarCount = 0;
 
@@ -720,7 +720,7 @@ namespace MajdataPlay.Game
                     // 读取到字符
                     var slideTypeChar = noteContent[ptr++].ToString();
 
-                    var slidePart = new SimaiNote();
+                    var slidePart = new SubSlideNote();
                     slidePart.noteType = SimaiNoteType.Slide;
                     slidePart.startPosition = latestStartIndex;
                     if (slideTypeChar == "V")
@@ -783,6 +783,7 @@ namespace MajdataPlay.Game
                     subBarCount.Add(barCount);
                     sumBarCount += barCount;
 
+                    slidePart.Origin = note;
                     subSlide.Add(slidePart);
                 }
                 else
@@ -917,10 +918,11 @@ namespace MajdataPlay.Game
                 s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
             });
         }
-        private IConnectableSlide CreateSlide(SimaiTimingPoint timing, SimaiNote note, ConnSlideInfo info)
+        private IConnectableSlide CreateSlide(SimaiTimingPoint timing, SubSlideNote note, ConnSlideInfo info)
         {
             string slideShape = detectShapeFromText(note.noteContent);
             var isMirror = false;
+            var isEach = false;
             if (slideShape.StartsWith("-"))
             {
                 isMirror = true;
@@ -944,15 +946,22 @@ namespace MajdataPlay.Game
 
             if (timing.noteList.Count > 1)
             {
-                if (timing.noteList.FindAll(o => o.noteType == SimaiNoteType.Slide).Count > 1)
+                var slides = timing.noteList.FindAll(o => o.noteType == SimaiNoteType.Slide);
+                var index = slides.FindIndex(x => x == note.Origin) + 1;
+                if (slides.Count > 1)
                 {
-                    SliCompo.IsEach = true;
+                    isEach = true;
+                    if (_gpManager.IsClassicMode)
+                    {
+                        if (index == slides.Count && index % 2 != 0)
+                            isEach = false;
+                    }
                 }
             }
 
             SliCompo.ConnectInfo = info;
             SliCompo.IsBreak = note.isSlideBreak;
-
+            SliCompo.IsEach = isEach;
             SliCompo.IsMirror = isMirror;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
@@ -989,12 +998,22 @@ namespace MajdataPlay.Game
             //slideLayer += 5;
             return SliCompo;
         }
-        private GameObject CreateWifi(SimaiTimingPoint timing, SimaiNote note)
+        int FindSlide(List<SimaiNote> notes,in SimaiNote note)
+        {
+            for (int i = 0; i < notes.Count; i++)
+            {
+                if (note == notes[i])
+                    return i;
+            }
+            return -1;
+        }
+        private GameObject CreateWifi(SimaiTimingPoint timing, SubSlideNote note)
         {
             var str = note.noteContent.Substring(0, 3);
             var digits = str.Split('w');
             var startPos = int.Parse(digits[0]);
             var endPos = int.Parse(digits[1]);
+            var isEach = false;
             endPos = endPos - startPos;
             endPos = endPos < 0 ? endPos + 8 : endPos;
             endPos = endPos > 8 ? endPos - 8 : endPos;
@@ -1012,14 +1031,21 @@ namespace MajdataPlay.Game
 
             if (timing.noteList.Count > 1)
             {
-                if (timing.noteList.FindAll(
-                        o => o.noteType == SimaiNoteType.Slide).Count
-                    > 1)
-                    WifiCompo.IsEach = true;
+                var slides = timing.noteList.FindAll(o => o.noteType == SimaiNoteType.Slide);
+                var index = slides.FindIndex(x => x == note.Origin) + 1;
+                if (slides.Count > 1)
+                {
+                    isEach = true;
+                    if(_gpManager.IsClassicMode)
+                    {
+                        if(index == slides.Count && index % 2 != 0)
+                            isEach = false;
+                    }
+                }
             }
 
             WifiCompo.IsBreak = note.isSlideBreak;
-
+            WifiCompo.IsEach = isEach;
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
@@ -1379,6 +1405,10 @@ namespace MajdataPlay.Game
             var key = (SensorType)(keyIndex - 1);
             var newKey = key.Diff(ChartRotation);
             return newKey.GetIndex();
+        }
+        class SubSlideNote : SimaiNote
+        {
+            public SimaiNote Origin { get; set; } = new();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         SensorType Rotation(SensorType sensorIndex)

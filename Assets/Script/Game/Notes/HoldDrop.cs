@@ -213,7 +213,14 @@ namespace MajdataPlay.Game.Notes
                 if (on || _gpManager.IsAutoplay)
                 {
                     if (remainingTime == 0)
+                    {
                         _effectManager.ResetHoldEffect(StartPos);
+                        if(_gpManager.IsAutoplay)
+                        {
+                            End();
+                            return;
+                        }
+                    }
                     else
                         PlayHoldEffect();
                             

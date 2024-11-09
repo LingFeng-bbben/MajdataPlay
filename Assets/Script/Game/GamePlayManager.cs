@@ -26,6 +26,7 @@ namespace MajdataPlay.Game
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
+        public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
         // Timeline
         /// <summary>
         /// Time provider
