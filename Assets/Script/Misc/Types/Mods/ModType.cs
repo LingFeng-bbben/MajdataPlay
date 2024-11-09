@@ -15,6 +15,7 @@ namespace MajdataPlay.Types.Mods
         SLIDE_NO_HEAD,
         SLIDE_NO_TRACK,
         AUTOPLAY,
+        JUDGE_STYLE,
         OTHER_MOD
     }
 }

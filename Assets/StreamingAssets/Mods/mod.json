@@ -68,5 +68,15 @@
         "Conflicts": [],
         "Icon": null, 
         "Active": false
+    },
+    {
+        "Name": "Judge Style",
+        "Description": "",
+        "Type": "JUDGE_STYLE",
+        "SortGroup": "Judge",
+        "Value": 0,
+        "Conflicts": [],
+        "Icon": null,
+        "Active": false
     }
 ]

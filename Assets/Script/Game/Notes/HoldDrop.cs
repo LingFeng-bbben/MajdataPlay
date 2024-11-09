@@ -109,7 +109,7 @@ namespace MajdataPlay.Game.Notes
                 EndJudge_Classic(ref _judgeResult);
             else
                 EndJudge(ref _judgeResult);
-
+            ConvertJudgeResult(ref _judgeResult);
 
             var result = new JudgeResult()
             {

@@ -245,6 +245,7 @@ namespace MajdataPlay.Game.Notes
                 _judgeResult = JudgeType.LateGood;
             else
                 _judgeResult = JudgeType.Miss;
+            ConvertJudgeResult(ref _judgeResult);
             _isJudged = true;
         }
         /// <summary>

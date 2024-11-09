@@ -174,6 +174,7 @@ namespace MajdataPlay.Game
             var mod3 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_EX);
             var mod4 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_TOUCH);
             var mod5 = GameModHelper.GetGameMod(Types.Mods.ModType.AUTOPLAY);
+            var mod6 = GameModHelper.GetGameMod(Types.Mods.ModType.JUDGE_STYLE);
 
             if (mod is not null && mod.Active && mod.Value > 0)
                 PlaybackSpeed = mod.Value;
@@ -185,6 +186,8 @@ namespace MajdataPlay.Game
                 _isAllTouch = mod4.Active;
             if (mod5 is not null) 
                 IsAutoplay = mod5.Active;
+            if (mod6 is not null && mod6.Active)
+                JudgeStyle = (JudgeStyleType)mod6.Value;
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
