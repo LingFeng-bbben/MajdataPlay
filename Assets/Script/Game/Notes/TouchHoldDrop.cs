@@ -6,6 +6,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
@@ -69,6 +70,29 @@ namespace MajdataPlay.Game.Notes
         const int _borderSortOrder = 6;
         const int _pointBorderSortOrder = 1;
 
+        protected override async void Autoplay()
+        {
+            while (!_isJudged)
+            {
+                if (_gpManager is null)
+                    return;
+                else if (GetTimeSpanToJudgeTiming() >= 0)
+                {
+                    _judgeResult = JudgeType.Perfect;
+                    _isJudged = true;
+                    _judgeDiff = 0;
+                    PlayJudgeSFX(new JudgeResult()
+                    {
+                        Result = _judgeResult,
+                        IsBreak = IsBreak,
+                        IsEX = IsEX,
+                        Diff = _judgeDiff
+                    });
+                    PlayHoldEffect();
+                }
+                await Task.Delay(1);
+            }
+        }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -146,13 +170,10 @@ namespace MajdataPlay.Game.Notes
             if (!_isJudged)
                 _noteManager.NextTouch(QueueInfo);
             if (isFirework && !result.IsMiss)
-            {
                 _effectManager.PlayFireworkEffect(transform.position);
-                _audioEffMana.PlayHanabiSound();
-            }
-            _audioEffMana.PlayTapSound(result);
-            _audioEffMana.StopTouchHoldSound();
 
+            PlayJudgeSFX(result);
+            _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
             notePoolManager.Collect(this);
@@ -511,6 +532,21 @@ namespace MajdataPlay.Game.Notes
         void UnsubscribeEvent()
         {
             _ioManager.UnbindSensor(Check, _sensorPos);
+        }
+        protected override void PlaySFX()
+        {
+            _audioEffMana.PlayTouchHoldSound();
+        }
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            if (judgeResult.IsMiss)
+                return;
+            if (judgeResult.IsBreak)
+                _audioEffMana.PlayTapSound(judgeResult);
+            else
+                _audioEffMana.PlayTouchSound();
+            if (isFirework)
+                _audioEffMana.PlayHanabiSound();
         }
 
         RendererStatus _rendererState = RendererStatus.Off;

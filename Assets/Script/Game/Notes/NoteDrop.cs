@@ -91,6 +91,8 @@ namespace MajdataPlay.Game.Notes
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
+        protected abstract void PlaySFX();
+        protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
             const int JUDGE_GOOD_AREA = 150;

@@ -158,11 +158,8 @@ namespace MajdataPlay.Game.Notes
                 first.Judge(t, sensor.Status);
             }
 
-            if (!_isSoundPlayed && first.On)
-            {
-                _audioEffMana.PlaySlideSound(IsBreak);
-                _isSoundPlayed = true;
-            }
+            if (first.On)
+                PlaySFX();
 
             if (second is not null && (first.CanSkip || first.On))
             {
@@ -282,6 +279,8 @@ namespace MajdataPlay.Game.Notes
                     _judgeDiff = 0;
                     return;
                 }
+                else if (process > 0)
+                    PlaySFX();
                 var areaIndex = (int)(process * queue.Length) - 1;
                 if (areaIndex < 0)
                     return;
@@ -327,9 +326,9 @@ namespace MajdataPlay.Game.Notes
             {
                 var anim = _slideOK.GetComponent<Animator>();
                 anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-                _audioEffMana.PlayBreakSlideEndSound();
             }
             _slideOK.GetComponent<LoadJustSprite>().SetResult(_judgeResult);
+            PlayJudgeSFX(result);
             PlaySlideOK(result);
             Destroy(gameObject);
         }

@@ -136,25 +136,20 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             justBorder.SetActive(false);
 
-            _effectManager.PlayTouchEffect(_sensorPos, result);
-
-            if (GroupInfo is not null && _judgeResult != JudgeType.Miss)
+            if (GroupInfo is not null && !result.IsMiss)
             {
                 GroupInfo.JudgeResult = _judgeResult;
                 GroupInfo.JudgeDiff = _judgeDiff;
                 GroupInfo.RegisterResult(_judgeResult);
             }
 
-            if (_judgeResult != JudgeType.Miss)
-                _audioEffMana.PlayTouchSound();
+            if (isFirework && !result.IsMiss)
+                _effectManager.PlayFireworkEffect(transform.position);
+
+            PlayJudgeSFX(result);
+            _effectManager.PlayTouchEffect(_sensorPos, result);
             _objectCounter.ReportResult(this, result);
             _noteManager.NextTouch(QueueInfo);
-
-            if (isFirework && _judgeResult != JudgeType.Miss)
-            {
-                _effectManager.PlayFireworkEffect(transform.position);
-                _audioEffMana.PlayHanabiSound();
-            }
             notePoolManager.Collect(this);
         }
         protected override void Start()
@@ -422,6 +417,27 @@ namespace MajdataPlay.Game.Notes
         void UnsubscribeEvent()
         {
             _ioManager.UnbindSensor(Check, _sensorPos);
+        }
+        protected override void PlaySFX()
+        {
+            PlayJudgeSFX(new JudgeResult()
+            {
+                Result = _judgeResult,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
+                Diff = _judgeDiff
+            });
+        }
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            if (judgeResult.IsMiss)
+                return;
+            if (judgeResult.IsBreak)
+                _audioEffMana.PlayTapSound(judgeResult);
+            else
+                _audioEffMana.PlayTouchSound();
+            if(isFirework)
+                _audioEffMana.PlayHanabiSound();
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }

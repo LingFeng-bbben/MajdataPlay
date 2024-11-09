@@ -239,6 +239,19 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
+        protected override void PlaySFX()
+        {
+            if(!_isSoundPlayed)
+            {
+                _audioEffMana.PlaySlideSound(IsBreak);
+                _isSoundPlayed = true;
+            }
+        }
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            if(judgeResult.IsBreak && !judgeResult.IsMiss)
+                _audioEffMana.PlayBreakSlideEndSound();
+        }
         protected virtual void TooLateJudge()
         {
             if (QueueRemaining == 1)

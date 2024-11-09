@@ -6,6 +6,7 @@ using MajdataPlay.Types;
 using System;
 using UnityEngine;
 using MajdataPlay.Buffers;
+using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -60,6 +61,23 @@ namespace MajdataPlay.Game.Notes
         const int _exSortOrder = 0;
         const int _endSortOrder = 2;
 
+        protected override async void Autoplay()
+        {
+            while (!_isJudged)
+            {
+                if (_gpManager is null)
+                    return;
+                else if (GetTimeSpanToJudgeTiming() >= 0)
+                {
+                    _judgeResult = JudgeType.Perfect;
+                    _isJudged = true;
+                    _judgeDiff = 0;
+                    PlaySFX();
+                    PlayHoldEffect();
+                }
+                await Task.Delay(1);
+            }
+        }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -118,9 +136,9 @@ namespace MajdataPlay.Game.Notes
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
+            PlayJudgeSFX(result);
             RendererState = RendererStatus.Off;
             _effectManager.ResetHoldEffect(StartPos);
-            _audioEffMana.PlayTapSound(result);
             _effectManager.PlayEffect(StartPos, result);
             _objectCounter.ReportResult(this, result);
             poolManager.Collect(this);
@@ -247,16 +265,23 @@ namespace MajdataPlay.Game.Notes
             base.Judge(currentSec);
             if (!_isJudged)
                 return;
-            _audioEffMana.PlayTapSound(new JudgeResult()
+            PlaySFX();
+            PlayHoldEffect();
+        }
+        protected override void PlaySFX()
+        {
+            PlayJudgeSFX(new JudgeResult()
             {
                 Result = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
             });
-            PlayHoldEffect();
         }
-        // Update is called once per frame
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            _audioEffMana.PlayTapSound(judgeResult);
+        }
         void Update()
         {
             var timing = GetTimeSpanToArriveTiming();

@@ -87,8 +87,8 @@ namespace MajdataPlay.Game.Notes
             CanShine = false;
             if (breakShineController is not null)
                 breakShineController.enabled = false;
+            PlayJudgeSFX(result);
             _effectManager.PlayEffect(StartPos, result);
-            _audioEffMana.PlayTapSound(result);
             _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
         }
@@ -107,7 +107,20 @@ namespace MajdataPlay.Game.Notes
 
             transform.localScale = new Vector3(0, 0);
         }
-        
+        protected override void PlaySFX()
+        {
+            PlayJudgeSFX(new JudgeResult()
+            {
+                Result = _judgeResult,
+                IsBreak = IsBreak,
+                IsEX = IsEX,
+                Diff = _judgeDiff
+            });
+        }
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            _audioEffMana.PlayTapSound(judgeResult);
+        }
         protected void FixedUpdate()
         {
             if (State < NoteStatus.Running|| IsDestroyed)
