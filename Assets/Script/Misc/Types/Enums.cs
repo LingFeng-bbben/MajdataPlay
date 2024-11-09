@@ -340,4 +340,11 @@
         /// </summary>
         Open
     }
+    public enum JudgeStyleType
+    {
+        DEFAULT,
+        MAJI,
+        GACHI,
+        GORI
+    }
 }

@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Types.Attribute;
 using MajdataPlay.Utils;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -110,31 +111,26 @@ namespace MajdataPlay.Game.Notes
             _judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
 
-            JudgeType result;
             if (diff > JUDGE_GOOD_AREA && isFast)
                 return;
-            else if (diff < JUDGE_SEG_PERFECT1)
-                result = JudgeType.Perfect;
-            else if (diff < JUDGE_SEG_PERFECT2)
-                result = JudgeType.LatePerfect1;
-            else if (diff < JUDGE_PERFECT_AREA)
-                result = JudgeType.LatePerfect2;
-            else if (diff < JUDGE_SEG_GREAT1)
-                result = JudgeType.LateGreat;
-            else if (diff < JUDGE_SEG_GREAT2)
-                result = JudgeType.LateGreat1;
-            else if (diff < JUDGE_GREAT_AREA)
-                result = JudgeType.LateGreat;
-            else if (diff < JUDGE_GOOD_AREA)
-                result = JudgeType.LateGood;
-            else
-                result = JudgeType.Miss;
+            var result = diff switch
+            {
+                < JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                < JUDGE_SEG_PERFECT2 => JudgeType.LatePerfect1,
+                < JUDGE_PERFECT_AREA => JudgeType.LatePerfect2,
+                < JUDGE_SEG_GREAT1 => JudgeType.LateGreat,
+                < JUDGE_SEG_GREAT2 => JudgeType.LateGreat1,
+                < JUDGE_GREAT_AREA => JudgeType.LateGreat,
+                < JUDGE_GOOD_AREA => JudgeType.LateGood,
+                _ => JudgeType.Miss
+            };
 
             if (result != JudgeType.Miss && isFast)
                 result = 14 - result;
             if (result != JudgeType.Miss && IsEX)
                 result = JudgeType.Perfect;
 
+            ConvertJudgeResult(ref result);
             _judgeResult = result;
             _isJudged = true;
         }
@@ -183,7 +179,112 @@ namespace MajdataPlay.Game.Notes
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void ConvertJudgeResult(ref JudgeType judgeType)
+        {
+            var judgeStyle = _gpManager.JudgeStyle;
+            switch(judgeStyle)
+            {
+                case JudgeStyleType.MAJI:
+                    ConvertToMAJI(ref judgeType); 
+                    break;
+                case JudgeStyleType.GACHI:
+                    ConvertToGACHI(ref judgeType);
+                    break;
+                case JudgeStyleType.GORI:
+                    ConvertToGORI(ref judgeType);
+                    break;
+                case JudgeStyleType.DEFAULT:
+                default:
+                    return;
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void ConvertToMAJI(ref JudgeType judgeType)
+        {
+            var isFast = (int)judgeType > 7;
+            switch(judgeType)
+            {
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat2:
+                    if (isFast)
+                        judgeType = JudgeType.FastGood;
+                    else
+                        judgeType = JudgeType.LateGood;
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                    if (isFast)
+                        judgeType = JudgeType.FastGreat;
+                    else
+                        judgeType = JudgeType.LateGreat;
+                    break;
+                default:
+                    judgeType = JudgeType.Miss;
+                    break;
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                case JudgeType.Perfect:
+                case JudgeType.Miss:
+                    return;
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void ConvertToGACHI(ref JudgeType judgeType)
+        {
+            var isFast = (int)judgeType > 7;
+            switch (judgeType)
+            {
+                case JudgeType.LateGreat:
+                case JudgeType.LateGreat1:
+                case JudgeType.LateGreat2:
+                case JudgeType.FastGreat:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat2:
+                    if (isFast)
+                        judgeType = JudgeType.FastGood;
+                    else
+                        judgeType = JudgeType.LateGood;
+                    break;
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
+                    if (isFast)
+                        judgeType = JudgeType.FastGreat1;
+                    else
+                        judgeType = JudgeType.LateGreat1;
+                    break;
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                    if (isFast)
+                        judgeType = JudgeType.FastGreat;
+                    else
+                        judgeType = JudgeType.LateGreat;
+                    break;
+                default:
+                    judgeType = JudgeType.Miss;
+                    break;
+                case JudgeType.Perfect:
+                case JudgeType.Miss:
+                    return;
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void ConvertToGORI(ref JudgeType judgeType)
+        {
+            switch (judgeType)
+            { 
+                case JudgeType.Perfect:
+                case JudgeType.Miss:
+                    return;
+                default:
+                    judgeType = JudgeType.Miss;
+                    break;
+            }
+        }
         [ReadOnlyField]
         [SerializeField]
         protected int _startPos;

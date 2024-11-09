@@ -283,7 +283,10 @@ namespace MajdataPlay.Game.Notes
             const int JUDGE_GREAT_AREA = 250;
             const int JUDGE_PERFECT_AREA = 200;
 
-            const float JUDGE_SEG_PERFECT = 150f;
+            const float JUDGE_SEG_PERFECT1 = 150f;
+            const float JUDGE_SEG_PERFECT2 = 175f;
+            const float JUDGE_SEG_GREAT1 = 216.6667f;
+            const float JUDGE_SEG_GREAT2 = 233.3334f;
 
             if (_isJudged)
                 return;
@@ -292,20 +295,23 @@ namespace MajdataPlay.Game.Notes
             var isFast = timing < 0;
             _judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
-            JudgeType result;
-            if (diff > JUDGE_SEG_PERFECT && isFast)
-                return;
-            else if (diff < JUDGE_SEG_PERFECT)
-                result = JudgeType.Perfect;
-            else if (diff < JUDGE_PERFECT_AREA)
-                result = JudgeType.LatePerfect2;
-            else if (diff < JUDGE_GREAT_AREA)
-                result = JudgeType.LateGreat;
-            else if (diff < JUDGE_GOOD_AREA)
-                result = JudgeType.LateGood;
-            else
-                result = JudgeType.Miss;
 
+            if (diff > JUDGE_SEG_PERFECT1 && isFast)
+                return;
+
+            JudgeType result = diff switch
+            {
+                < JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                < JUDGE_SEG_PERFECT2 => JudgeType.LatePerfect1,
+                < JUDGE_PERFECT_AREA => JudgeType.LatePerfect2,
+                < JUDGE_SEG_GREAT1 => JudgeType.LateGreat,
+                < JUDGE_SEG_GREAT2 => JudgeType.LateGreat1,
+                < JUDGE_GREAT_AREA => JudgeType.LateGreat2,
+                < JUDGE_GOOD_AREA => JudgeType.LateGood,
+                _ => JudgeType.Miss
+            };
+
+            ConvertJudgeResult(ref result);
             _judgeResult = result;
             _isJudged = true;
         }

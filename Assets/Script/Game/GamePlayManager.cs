@@ -70,6 +70,7 @@ namespace MajdataPlay.Game
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
         public bool IsAutoplay { get; private set; } = false;
+        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
         public float PlaybackSpeed 
         {
             get => _playbackSpeed;

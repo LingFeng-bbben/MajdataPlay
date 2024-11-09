@@ -133,13 +133,13 @@ namespace MajdataPlay.Game.Notes
             var perfect = 0.2333333f + ext;
 
             diff = MathF.Abs(diff);
-            JudgeType? judge = null;
+            JudgeType result;
 
             if (diff <= perfect)// 其实最小0.2833333f, 17帧
-                judge = JudgeType.Perfect;
+                result = JudgeType.Perfect;
             else
             {
-                judge = diff switch
+                result = diff switch
                 {
                     <= 0.35f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
                     <= 0.4166667f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
@@ -149,7 +149,8 @@ namespace MajdataPlay.Game.Notes
             }
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            _judgeResult = judge ?? JudgeType.Miss;
+            ConvertJudgeResult(ref result);
+            _judgeResult = result;
             _isJudged = true;
 
             var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
