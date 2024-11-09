@@ -305,6 +305,8 @@ namespace MajdataPlay.Game
                 default:
                     return;
             }
+            if(_gpManager.IsAutoplay)
+                bgInfoHeader.text = "AUTOPLAY";
         }
 
         // Update is called once per frame
