@@ -10,8 +10,10 @@ namespace MajdataPlay.Types
 {
     public readonly struct Range<T> where T : IComparable<T>
     {
+        public T Start => _left;
+        public T End => _right;
         public ContainsType Type { get; init; }
-
+        
         readonly T _left;
         readonly T _right;
 
