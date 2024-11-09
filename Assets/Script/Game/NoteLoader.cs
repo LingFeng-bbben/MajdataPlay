@@ -377,8 +377,16 @@ namespace MajdataPlay.Game
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = _noteSortOrder;
-            if(appearTiming < -5f)
+            var isEach = timing.noteList.Count > 1;
+            if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+            if(isEach)
+            {
+                var noteCount = timing.noteList.Count;
+                var noHeadSlideCount = timing.noteList.FindAll(x => x.noteType == SimaiNoteType.Slide && x.isSlideNoHead).Count;
+                if (noteCount - noHeadSlideCount == 1)
+                    isEach = false;
+            }
 
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             startPos = Rotation(startPos);
@@ -389,7 +397,7 @@ namespace MajdataPlay.Game
                 AppearTiming = appearTiming,
                 NoteSortOrder = sortOrder,
                 Speed = speed,
-                IsEach = timing.noteList.Count > 1,
+                IsEach = isEach,
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 IsStar = note.isForceStar,
@@ -412,8 +420,16 @@ namespace MajdataPlay.Game
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = _noteSortOrder;
+            var isEach = timing.noteList.Count > 1;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+            if (isEach)
+            {
+                var noteCount = timing.noteList.Count;
+                var noHeadSlideCount = timing.noteList.FindAll(x => x.noteType == SimaiNoteType.Slide && x.isSlideNoHead).Count;
+                if (noteCount - noHeadSlideCount == 1)
+                    isEach = false;
+            }
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             startPos = Rotation(startPos);
             return new()
@@ -424,7 +440,7 @@ namespace MajdataPlay.Game
                 AppearTiming = appearTiming,
                 NoteSortOrder = sortOrder,
                 Speed = speed,
-                IsEach = timing.noteList.Count > 1,
+                IsEach = isEach,
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 QueueInfo = new TapQueueInfo()
@@ -444,7 +460,7 @@ namespace MajdataPlay.Game
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = noteTiming + appearDiff;
             var sortOrder = _noteSortOrder;
-            bool isEach = false;
+            var isEach = timing.noteList.Count > 1;
             bool isDouble = false;
             TapQueueInfo? queueInfo = null;
 
@@ -454,19 +470,23 @@ namespace MajdataPlay.Game
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _noteSortOrder -= NOTE_LAYER_COUNT[note.noteType];
 
-            if(timing.noteList.Count > 1)
+            if(isEach)
             {
-                isEach = true;
                 var count = timing.noteList.FindAll(
                     o => o.noteType == SimaiNoteType.Slide &&
-                         o.startPosition == note.startPosition).Count;
+                         o.startPosition == startPos).Count;
                 if (count > 1)
                 {
                     isDouble = true;
                     if (count == timing.noteList.Count)
                         isEach = false;
                     else
-                        isEach = true;
+                    {
+                        var noteCount = timing.noteList.Count;
+                        var noHeadSlideCount = timing.noteList.FindAll(x => x.noteType == SimaiNoteType.Slide && x.isSlideNoHead).Count;
+                        if (noteCount - noHeadSlideCount == 1)
+                            isEach = false;
+                    }
                 }
             }
             startPos = Rotation(startPos);
@@ -523,7 +543,13 @@ namespace MajdataPlay.Game
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
-            
+            if (isEach)
+            {
+                var noteCount = timing.noteList.Count;
+                var noHeadSlideCount = timing.noteList.FindAll(x => x.noteType == SimaiNoteType.Slide && x.isSlideNoHead).Count;
+                if (noteCount - noHeadSlideCount == 1)
+                    isEach = false;
+            }
             var poolingInfo = new TouchPoolingInfo()
             {
                 SensorPos = sensorPos,
@@ -564,6 +590,7 @@ namespace MajdataPlay.Game
             var noteSortOrder = _touchSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             sensorPos = Rotation(sensorPos);
             return new TouchHoldPoolingInfo()

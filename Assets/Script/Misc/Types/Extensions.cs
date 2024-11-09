@@ -73,7 +73,10 @@ namespace MajdataPlay.Extensions
                         case SimaiNoteType.Slide:
                             {
                                 if (note.isSlideNoHead)
+                                {
+                                    newNoteList.Add(note);
                                     continue;
+                                }
                                 note.isSlideNoHead = true;
                                 var startKey = note.startPosition;
                                 newNoteList.Add(note);
