@@ -86,6 +86,7 @@ namespace MajdataPlay.Game
         Dictionary<JudgeType, int> judgedBreakCount;
         Dictionary<JudgeType, int> totalJudgedCount;
 
+        OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
         void Awake()
@@ -98,6 +99,7 @@ namespace MajdataPlay.Game
         }
         private void Start()
         {
+            _outline = MajInstanceHelper<OutlineLoader>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
@@ -603,7 +605,16 @@ namespace MajdataPlay.Game
             }
 
             if (!judgeResult.IsMiss)
+            {
                 combo++;
+                switch(noteType)
+                {
+                    case SimaiNoteType.Tap:
+                    case SimaiNoteType.Hold:
+                        _outline.Play();
+                        break;
+                }
+            }
 
             switch (result)
             {

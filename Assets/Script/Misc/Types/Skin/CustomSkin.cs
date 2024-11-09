@@ -12,6 +12,7 @@ namespace MajdataPlay.Types
     public class CustomSkin
     {
         public string Name { get; private set; }
+        public bool IsOutlineAvailable { get; private set; } = false;
         public Sprite SubDisplay { get; private set; }
 
         public Sprite Tap { get; private set; }
@@ -85,6 +86,8 @@ namespace MajdataPlay.Types
                 Directory.CreateDirectory(skinCollectionPath);
             Name = new DirectoryInfo(skinCollectionPath).Name;
 
+            if (File.Exists(skinCollectionPath + "/outline.png"))
+                IsOutlineAvailable = true;
             Outline = SpriteLoader.Load(skinCollectionPath + "/outline.png");
             SubDisplay = SpriteLoader.Load(skinCollectionPath + "/SubBackgourd.png");
 
