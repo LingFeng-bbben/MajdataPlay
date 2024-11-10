@@ -118,35 +118,35 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
-            //var stayTime = time + LastFor - judgeTiming; // 停留时间
             var stayTime = _lastWaitTime; // 停留时间
 
             // By Minepig
             var diff = currentSec - JudgeTiming;
-            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
-
+            _judgeDiff = diff * 1000;
             // input latency simulation
             //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
             var ext = MathF.Min(stayTime / 4, 0.36666667f);
 
-            var perfect = 0.2333333f + ext;
+            const float JUDGE_GREAT_AREA = 0.4833333f;
+            const float JUDGE_SEG_GREAT1 = 0.35f;
+            const float JUDGE_SEG_GREAT2 = 0.4166667f;
 
+            var JUDGE_PERFECT_AREA = 0.2333333f + ext;
+            var JUDGE_SEG_PERFECT1 = JUDGE_PERFECT_AREA * 0.333333f;
+            var JUDGE_SEG_PERFECT2 = JUDGE_PERFECT_AREA * 0.666666f;
             diff = MathF.Abs(diff);
-            JudgeType result;
 
-            if (diff <= perfect)// 其实最小0.2833333f, 17帧
-                result = JudgeType.Perfect;
-            else
+            var result = diff switch
             {
-                result = diff switch
-                {
-                    <= 0.35f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                    <= 0.4166667f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                    <= 0.4833333f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
-                };
-            }
+                _ when diff <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
             ConvertJudgeResult(ref result);
@@ -165,31 +165,32 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
+            const float JUDGE_GREAT_AREA = 0.3916672f;
+            const float JUDGE_PERFECT_AREA = 0.15f;
+
+            const float JUDGE_SEG_PERFECT1 = 0.05f;
+            const float JUDGE_SEG_PERFECT2 = 0.1f;
+            const float JUDGE_SEG_GREAT1 = 0.2305557f;
+            const float JUDGE_SEG_GREAT2 = 0.3111114f;
 
             var diff = currentSec - JudgeTiming;
-            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
-
-            var perfect = 0.15f;
-
+            _judgeDiff = diff * 1000;
             diff = MathF.Abs(diff);
-            JudgeType? judge = null;
 
-            if (diff <= perfect)
-                judge = JudgeType.Perfect;
-            else
+            var judge = diff switch
             {
-                judge = diff switch
-                {
-                    <= 0.2305557f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                    <= 0.3111114f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                    <= 0.3916672f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
-                };
-            }
+                <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            _judgeResult = judge ?? JudgeType.Miss;
+            _judgeResult = judge;
             _isJudged = true;
 
             var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
