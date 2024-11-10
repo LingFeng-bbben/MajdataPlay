@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Interfaces;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -32,7 +33,7 @@ namespace MajdataPlay.Types
 
         public void RegisterResult(in JudgeType result)
         {
-            if (result == JudgeType.Miss)
+            if (result.IsMissOrTooFast())
                 return;
             results.Add(result);
         }

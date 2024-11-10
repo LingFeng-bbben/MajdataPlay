@@ -136,14 +136,14 @@ namespace MajdataPlay.Game.Notes
             point.SetActive(false);
             justBorder.SetActive(false);
 
-            if (GroupInfo is not null && !result.IsMiss)
+            if (GroupInfo is not null && !result.IsMissOrTooFast)
             {
                 GroupInfo.JudgeResult = _judgeResult;
                 GroupInfo.JudgeDiff = _judgeDiff;
                 GroupInfo.RegisterResult(_judgeResult);
             }
 
-            if (isFirework && !result.IsMiss)
+            if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
@@ -430,7 +430,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsMiss)
+            if (judgeResult.IsMissOrTooFast)
                 return;
             if (judgeResult.IsBreak)
                 _audioEffMana.PlayTapSound(judgeResult);

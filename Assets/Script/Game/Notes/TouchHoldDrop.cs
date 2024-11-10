@@ -169,7 +169,7 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             if (!_isJudged)
                 _noteManager.NextTouch(QueueInfo);
-            if (isFirework && !result.IsMiss)
+            if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
@@ -426,7 +426,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if (percent >= 1f)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.LateGood;
                     else if (MathF.Abs((int)_judgeResult - 7) == 6)
                         result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
@@ -435,7 +435,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 else if (percent >= 0.67f)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.LateGood;
                     else if (MathF.Abs((int)_judgeResult - 7) == 6)
                         result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
@@ -453,7 +453,7 @@ namespace MajdataPlay.Game.Notes
                     result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 else if (percent >= 0)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.Miss;
                     else
                         result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
@@ -539,7 +539,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsMiss)
+            if (judgeResult.IsMissOrTooFast)
                 return;
             if (judgeResult.IsBreak)
                 _audioEffMana.PlayTapSound(judgeResult);

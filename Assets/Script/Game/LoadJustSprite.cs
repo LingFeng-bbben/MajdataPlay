@@ -42,6 +42,9 @@ namespace MajdataPlay.Game
                 case JudgeType.LateGreat:
                     SetLateGr();
                     break;
+                case JudgeType.TooFast:
+                    SetTooFast();
+                    break;
                 default:
                     SetMiss();
                     break;
@@ -102,6 +105,11 @@ namespace MajdataPlay.Game
         public void SetMiss()
         {
             judgeOffset = 48;
+            RefreshSprite();
+        }
+        public void SetTooFast()
+        {
+            judgeOffset = 54;
             RefreshSprite();
         }
         private void RefreshSprite()

@@ -58,7 +58,7 @@ namespace MajdataPlay.Game
         public void PlayEffect(in JudgeResult judgeResult)
         {
             var result = judgeResult.Result;
-            if (!judgeResult.IsMiss)
+            if (!judgeResult.IsMissOrTooFast)
                 Reset();
             else
                 return;

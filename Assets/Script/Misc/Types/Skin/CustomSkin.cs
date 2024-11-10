@@ -12,6 +12,7 @@ namespace MajdataPlay.Types
     public class CustomSkin
     {
         public string Name { get; private set; }
+        public bool IsOutlineAvailable { get; private set; } = false;
         public Sprite SubDisplay { get; private set; }
 
         public Sprite Tap { get; private set; }
@@ -44,7 +45,7 @@ namespace MajdataPlay.Types
         public Sprite Hold_Break { get; private set; }
         public Sprite Hold_Break_On { get; private set; }
         
-        public Sprite[] Just { get; private set; } = new Sprite[54];
+        public Sprite[] Just { get; private set; } = new Sprite[60];
         public Sprite[] JudgeText { get; private set; } = new Sprite[5];
 
         public Sprite CriticalPerfect_Break { get; private set; }
@@ -85,6 +86,8 @@ namespace MajdataPlay.Types
                 Directory.CreateDirectory(skinCollectionPath);
             Name = new DirectoryInfo(skinCollectionPath).Name;
 
+            if (File.Exists(skinCollectionPath + "/outline.png"))
+                IsOutlineAvailable = true;
             Outline = SpriteLoader.Load(skinCollectionPath + "/outline.png");
             SubDisplay = SpriteLoader.Load(skinCollectionPath + "/SubBackgourd.png");
 
@@ -215,6 +218,14 @@ namespace MajdataPlay.Types
             Just[51] = SpriteLoader.Load(skinCollectionPath + "/miss_curv_l.png");
             Just[52] = SpriteLoader.Load(skinCollectionPath + "/miss_str_l.png");
             Just[53] = SpriteLoader.Load(skinCollectionPath + "/miss_wifi_d.png");
+
+            // TooFast
+            Just[54] = SpriteLoader.Load(skinCollectionPath + "/toofast_curv_r.png");
+            Just[55] = SpriteLoader.Load(skinCollectionPath + "/toofast_str_r.png");
+            Just[56] = SpriteLoader.Load(skinCollectionPath + "/toofast_wifi_u.png");
+            Just[57] = SpriteLoader.Load(skinCollectionPath + "/toofast_curv_l.png");
+            Just[58] = SpriteLoader.Load(skinCollectionPath + "/toofast_str_l.png");
+            Just[59] = SpriteLoader.Load(skinCollectionPath + "/toofast_wifi_d.png");
 
             JudgeText[0] = SpriteLoader.Load(skinCollectionPath + "/judge_text_miss.png");
             JudgeText[1] = SpriteLoader.Load(skinCollectionPath + "/judge_text_good.png");

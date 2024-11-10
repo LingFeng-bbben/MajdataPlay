@@ -21,7 +21,7 @@ namespace MajdataPlay.Game
             var isBreak = judgeResult.IsBreak;
             var isEx = judgeResult.IsEX;
 
-            if (judgeResult.IsMiss)
+            if (judgeResult.IsMissOrTooFast)
                 return;
             else if (isBreak)
             {

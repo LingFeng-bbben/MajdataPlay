@@ -15,6 +15,14 @@ using UnityEngine.SocialPlatforms;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
+    public static class JudgeTypeExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMissOrTooFast(this JudgeType source)
+        {
+            return source is (JudgeType.Miss or JudgeType.TooFast);
+        }
+    }
     public static class SimaiProcessExtensions
     {
         public static void Scale(this SimaiProcess source,float timeScale)

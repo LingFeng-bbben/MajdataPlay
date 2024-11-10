@@ -12,7 +12,7 @@ namespace MajdataPlay.Types
         public bool IsBreak { get; init; }
         public bool IsEX { get; init; }
         public bool IsFast => Diff < 0;
-        public bool IsMiss => Result == JudgeType.Miss;
+        public bool IsMissOrTooFast => Result is (JudgeType.Miss or JudgeType.TooFast);
         /// <summary>
         /// in milliseconds , less than zero is "Fast"
         /// </summary>

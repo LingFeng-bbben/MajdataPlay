@@ -226,12 +226,16 @@ namespace MajdataPlay.Game.Notes
                         judgeType = JudgeType.LateGreat;
                     break;
                 default:
-                    judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeType.Perfect)
+                        judgeType = JudgeType.TooFast;
+                    else if (judgeType < JudgeType.Perfect)
+                        judgeType = JudgeType.Miss;
                     break;
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
                 case JudgeType.Perfect:
                 case JudgeType.Miss:
+                case JudgeType.TooFast:
                     return;
             }
         }
@@ -267,7 +271,10 @@ namespace MajdataPlay.Game.Notes
                         judgeType = JudgeType.LateGreat;
                     break;
                 default:
-                    judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeType.Perfect)
+                        judgeType = JudgeType.TooFast;
+                    else if (judgeType < JudgeType.Perfect)
+                        judgeType = JudgeType.Miss;
                     break;
                 case JudgeType.Perfect:
                 case JudgeType.Miss:
@@ -283,7 +290,10 @@ namespace MajdataPlay.Game.Notes
                 case JudgeType.Miss:
                     return;
                 default:
-                    judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeType.Perfect)
+                        judgeType = JudgeType.TooFast;
+                    else if (judgeType < JudgeType.Perfect)
+                        judgeType = JudgeType.Miss;
                     break;
             }
         }
