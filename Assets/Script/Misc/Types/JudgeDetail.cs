@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using MajdataPlay.Extensions;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MajdataPlay.Types
@@ -41,7 +42,7 @@ namespace MajdataPlay.Types
 
             foreach (var kv in judgeInfo)
             {
-                if(kv.Key is not (JudgeType.Miss or JudgeType.TooFast))
+                if(!kv.Key.IsMissOrTooFast())
                 {
                     if (kv.Key > JudgeType.Perfect)
                         fast += kv.Value;

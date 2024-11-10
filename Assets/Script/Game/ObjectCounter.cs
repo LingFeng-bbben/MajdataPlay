@@ -431,6 +431,7 @@ namespace MajdataPlay.Game
                             score += (long)(baseScore * 0.5) * count;
                             lostScore += (long)(baseScore * 0.5) * count;
                             break;
+                        case JudgeType.TooFast:
                         case JudgeType.Miss:
                             lostScore += baseScore * count;
                             break;

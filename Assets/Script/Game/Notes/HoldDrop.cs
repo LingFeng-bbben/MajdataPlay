@@ -7,6 +7,7 @@ using System;
 using UnityEngine;
 using MajdataPlay.Buffers;
 using System.Threading.Tasks;
+using MajdataPlay.Extensions;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -410,7 +411,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if (percent >= 1f)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.LateGood;
                     else if (MathF.Abs((int)_judgeResult - 7) == 6)
                         result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
@@ -419,7 +420,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 else if (percent >= 0.67f)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.LateGood;
                     else if (MathF.Abs((int)_judgeResult - 7) == 6)
                         result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
@@ -437,7 +438,7 @@ namespace MajdataPlay.Game.Notes
                     result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 else if (percent >= 0)
                 {
-                    if (_judgeResult == JudgeType.Miss)
+                    if (_judgeResult.IsMissOrTooFast())
                         result = JudgeType.Miss;
                     else
                         result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
@@ -449,7 +450,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (!_isJudged)
                 return;
-            else if (result == JudgeType.Miss)
+            else if (result.IsMissOrTooFast())
                 return;
 
             var releaseTiming = _gpManager.AudioTime;
