@@ -68,7 +68,8 @@
         FastGreat,
         FastGreat1,
         FastGreat2,
-        FastGood
+        FastGood,
+        TooFast
     }
     public enum NoteStatus
     {

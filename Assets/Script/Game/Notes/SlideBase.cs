@@ -249,7 +249,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
-            if(judgeResult.IsBreak && !judgeResult.IsMiss)
+            if(judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
                 _audioEffMana.PlayBreakSlideEndSound();
         }
         protected virtual void TooLateJudge()
@@ -321,6 +321,18 @@ namespace MajdataPlay.Game.Notes
             while (CurrentSec < num)
                 await UniTask.Yield();
             SetSlideBarAlpha(1f);
+        }
+        protected void JudgeResultCorrection(ref JudgeType result)
+        {
+            switch(result)
+            {
+                case JudgeType.LatePerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                case JudgeType.FastPerfect2:
+                    result = JudgeType.Perfect;
+                    break;
+            }
         }
         [ReadOnlyField]
         [SerializeField]

@@ -169,7 +169,7 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             if (!_isJudged)
                 _noteManager.NextTouch(QueueInfo);
-            if (isFirework && !result.IsMiss)
+            if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
@@ -539,7 +539,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsMiss)
+            if (judgeResult.IsMissOrTooFast)
                 return;
             if (judgeResult.IsBreak)
                 _audioEffMana.PlayTapSound(judgeResult);

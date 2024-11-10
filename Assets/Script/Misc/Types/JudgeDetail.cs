@@ -47,6 +47,7 @@ namespace MajdataPlay.Types
                     late += kv.Value;
                 switch (kv.Key)
                 {
+                    case JudgeType.TooFast:
                     case JudgeType.Miss:
                         miss += kv.Value;
                         break;

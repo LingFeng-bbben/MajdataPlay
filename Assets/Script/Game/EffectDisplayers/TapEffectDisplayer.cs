@@ -102,7 +102,7 @@ namespace MajdataPlay.Game
         {
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Result;
-            if (!judgeResult.IsMiss)
+            if (!judgeResult.IsMissOrTooFast)
                 Reset();
             else
                 return;

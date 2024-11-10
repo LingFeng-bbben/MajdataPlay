@@ -87,7 +87,7 @@ namespace MajdataPlay.Game
                 JudgeDisplayType.BelowCP => resultValue != 7,
                 JudgeDisplayType.BelowP => absValue > 2,
                 JudgeDisplayType.BelowGR => absValue > 5,
-                JudgeDisplayType.MissOnly => judgeResult.IsMiss,
+                JudgeDisplayType.MissOnly => judgeResult.IsMissOrTooFast,
                 _ => false
             };
         }
