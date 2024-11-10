@@ -312,7 +312,7 @@ namespace MajdataPlay.Game.Notes
                 Destroy(gameObject);
                 return;
             }
-            
+            ConvertJudgeResult(ref _judgeResult);
             var result = new JudgeResult()
             {
                 Result = _judgeResult,

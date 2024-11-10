@@ -182,7 +182,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if(IsClassic)
                 {
-                    if (endTiming >= 0.333334f)
+                    if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
                     {
                         End();
                         return;
