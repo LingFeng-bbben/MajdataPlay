@@ -41,10 +41,13 @@ namespace MajdataPlay.Types
 
             foreach (var kv in judgeInfo)
             {
-                if (kv.Key > JudgeType.Perfect)
-                    fast += kv.Value;
-                else if (kv.Key is not (JudgeType.Miss or JudgeType.Perfect))
-                    late += kv.Value;
+                if(kv.Key is not (JudgeType.Miss or JudgeType.TooFast))
+                {
+                    if (kv.Key > JudgeType.Perfect)
+                        fast += kv.Value;
+                    else if (kv.Key is not JudgeType.Perfect)
+                        late += kv.Value;
+                }
                 switch (kv.Key)
                 {
                     case JudgeType.TooFast:
