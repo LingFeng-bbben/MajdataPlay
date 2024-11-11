@@ -426,8 +426,12 @@ namespace MajdataPlay.Game.Notes
                 else if(process >= 1)
                 {
                     HideAllBar();
+                    var autoplayParam = _gpManager.AutoplayParam;
+                    if (autoplayParam.InRange(0, 14))
+                        _judgeResult = (JudgeType)autoplayParam;
+                    else
+                        _judgeResult = (JudgeType)_randomizer.Next(0, 15);
                     _isJudged = true;
-                    _judgeResult = JudgeType.Perfect;
                     _lastWaitTime = 0;
                     _judgeDiff = 0;
                     return;

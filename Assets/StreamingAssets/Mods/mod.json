@@ -14,7 +14,7 @@
         "Description": "",
         "Type": "ALL_BREAK",
         "SortGroup": "Game",
-        "Value": -1,
+        "Value": null,
         "Conflicts": [],
         "Icon": null, 
         "Active": false
@@ -24,7 +24,7 @@
         "Description": "",
         "Type": "ALL_EX",
         "SortGroup": "Game",
-        "Value": -1,
+        "Value": null,
         "Conflicts": [],
         "Icon": null, 
         "Active": false
@@ -34,7 +34,7 @@
         "Description": "",
         "Type": "ALL_TOUCH",
         "SortGroup": "Game",
-        "Value": -1,
+        "Value": null,
         "Conflicts": [],
         "Icon": null, 
         "Active": false
@@ -44,7 +44,7 @@
         "Description": "",
         "Type": "SLIDE_NO_HEAD",
         "SortGroup": "Display",
-        "Value": -1,
+        "Value": null,
         "Conflicts": [],
         "Icon": null, 
         "Active": false
@@ -54,7 +54,7 @@
         "Description": "",
         "Type": "SLIDE_NO_Track",
         "SortGroup": "Display",
-        "Value": -1,
+        "Value": null,
         "Conflicts": [],
         "Icon": null, 
         "Active": false

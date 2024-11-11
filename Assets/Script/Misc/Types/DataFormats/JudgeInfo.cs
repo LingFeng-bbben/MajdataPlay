@@ -40,6 +40,7 @@ namespace MajdataPlay.Types
         }
         public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeType,int>()
         {
+            {JudgeType.TooFast, 0 },
             {JudgeType.FastGood, 0 },
             {JudgeType.FastGreat2, 0 },
             {JudgeType.FastGreat1, 0 },

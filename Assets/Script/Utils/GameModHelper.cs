@@ -138,7 +138,7 @@ namespace MajdataPlay.Utils
         {
             public ModType Type { get; init; }
             public bool Active { get; init; }
-            public float Value { get; init; }
+            public float? Value { get; init; }
         }
     }
 }

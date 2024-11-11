@@ -16,8 +16,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
-using MychIO;
-
 
 namespace MajdataPlay.Game
 {
@@ -71,6 +69,7 @@ namespace MajdataPlay.Game
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
         public bool IsAutoplay { get; private set; } = false;
+        public float AutoplayParam { get; private set; } = 7;
         public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
         public float PlaybackSpeed 
         {
@@ -178,17 +177,20 @@ namespace MajdataPlay.Game
             var mod6 = GameModHelper.GetGameMod(Types.Mods.ModType.JUDGE_STYLE);
 
             if (mod is not null && mod.Active && mod.Value > 0)
-                PlaybackSpeed = mod.Value;
+                PlaybackSpeed = mod.Value ?? 0;
             if (mod2 is not null)
                 _isAllBreak = mod2.Active;
             if (mod3 is not null)
                 _isAllEx = mod3.Active;
             if (mod4 is not null)
                 _isAllTouch = mod4.Active;
-            if (mod5 is not null) 
+            if (mod5 is not null)
+            {
                 IsAutoplay = mod5.Active;
+                AutoplayParam = mod5.Value ?? 7;
+            }
             if (mod6 is not null && mod6.Active)
-                JudgeStyle = (JudgeStyleType)mod6.Value;
+                JudgeStyle = (JudgeStyleType)(mod6.Value ?? 0);
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online

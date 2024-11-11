@@ -8,6 +8,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
+using Random = System.Random;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -80,6 +81,7 @@ namespace MajdataPlay.Game.Notes
         protected NoteEffectManager _effectManager;
         protected NoteAudioManager _audioEffMana;
         protected GameSetting _gameSetting = MajInstances.Setting;
+        protected static readonly Random _randomizer = new();
         protected virtual void Start()
         {
             _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
@@ -144,7 +146,12 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (GetTimeSpanToJudgeTiming() >= 0)
                 {
-                    _judgeResult = JudgeType.Perfect;
+                    var autoplayParam = _gpManager.AutoplayParam;
+                    if (autoplayParam.InRange(0, 14))
+                        _judgeResult = (JudgeType)autoplayParam;
+                    else
+                        _judgeResult = (JudgeType)_randomizer.Next(0, 15);
+                    ConvertJudgeResult(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = 0;
                 }

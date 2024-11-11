@@ -14,7 +14,7 @@ namespace MajdataPlay.Types.Mods
         public ModType Type { get; init; } = ModType.OTHER_MOD;
         public ModGroupingType SortGroup { get; init; } = ModGroupingType.Other;
         public ModType[] Conflicts { get; init; } = Array.Empty<ModType>();
-        public float Value { get; set; }
+        public float? Value { get; set; } = null;
         public Sprite? Icon { get; init; }
         public bool Active { get; set; } = false;
     }
