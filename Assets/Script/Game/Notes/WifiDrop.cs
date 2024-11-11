@@ -280,7 +280,12 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeType)_randomizer.Next(0, 15);
                     _isJudged = true;
                     _lastWaitTime = 0;
-                    _judgeDiff = 0;
+                    _judgeDiff = _judgeResult switch
+                    {
+                        < JudgeType.Perfect => 1,
+                        > JudgeType.Perfect => -1,
+                        _ => 0
+                    };
                     return;
                 }
                 else if (process > 0)

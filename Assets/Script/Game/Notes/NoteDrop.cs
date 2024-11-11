@@ -153,7 +153,12 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeType)_randomizer.Next(0, 15);
                     ConvertJudgeResult(ref _judgeResult);
                     _isJudged = true;
-                    _judgeDiff = 0;
+                    _judgeDiff = _judgeResult switch
+                    {
+                        < JudgeType.Perfect => 1,
+                        > JudgeType.Perfect => -1,
+                        _ => 0
+                    };
                 }
                 await Task.Delay(1);
             }
@@ -251,24 +256,13 @@ namespace MajdataPlay.Game.Notes
         {
             var isFast = (int)judgeType > 7;
             switch (judgeType)
-            {
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat2:
+            {                    
+                case JudgeType.LatePerfect2:
+                case JudgeType.FastPerfect2:
                     if (isFast)
                         judgeType = JudgeType.FastGood;
                     else
                         judgeType = JudgeType.LateGood;
-                    break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                    if (isFast)
-                        judgeType = JudgeType.FastGreat1;
-                    else
-                        judgeType = JudgeType.LateGreat1;
                     break;
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:

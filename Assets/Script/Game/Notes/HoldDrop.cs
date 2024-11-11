@@ -77,7 +77,12 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeType)_randomizer.Next(0, 15);
                     ConvertJudgeResult(ref _judgeResult);
                     _isJudged = true;
-                    _judgeDiff = 0;
+                    _judgeDiff = _judgeResult switch
+                    {
+                        < JudgeType.Perfect => 1,
+                        > JudgeType.Perfect => -1,
+                        _ => 0
+                    };
                     PlaySFX();
                     PlayHoldEffect();
                 }
