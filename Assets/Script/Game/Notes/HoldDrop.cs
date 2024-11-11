@@ -40,7 +40,7 @@ namespace MajdataPlay.Game.Notes
         }
         public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
         public float Distance { get; private set; } = -100;
-        bool holdAnimStart;
+        bool _holdAnimStart;
 
         public GameObject tapLine;
 
@@ -106,6 +106,8 @@ namespace MajdataPlay.Game.Notes
             Distance = -100;
             Length = poolingInfo.LastFor;
             _sensorPos = (SensorType)(StartPos - 1);
+            _holdAnimStart = false;
+            _playerIdleTime = 0;
             if (State == NoteStatus.Start)
                 Start();
             else
@@ -490,9 +492,9 @@ namespace MajdataPlay.Game.Notes
             _effectManager.ResetEffect(StartPos);
             if (Length <= 0.3)
                 return;
-            else if (!holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
+            else if (!_holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
-                holdAnimStart = true;
+                _holdAnimStart = true;
                 shineAnimator.enabled = true;
                 
                 if(breakShineController is not null && breakShineController.enabled)
@@ -507,7 +509,7 @@ namespace MajdataPlay.Game.Notes
         void StopHoldEffect()
         {
             _effectManager.ResetHoldEffect(StartPos);
-            holdAnimStart = false;
+            _holdAnimStart = false;
             shineAnimator.enabled = false;
             var sprRenderer = GetComponent<SpriteRenderer>();
             sprRenderer.sprite = holdOffSprite;

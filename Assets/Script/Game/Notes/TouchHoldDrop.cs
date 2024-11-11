@@ -122,6 +122,7 @@ namespace MajdataPlay.Game.Notes
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
+            _playerIdleTime = 0;
             if (State == NoteStatus.Start)
                 Start();
             else
