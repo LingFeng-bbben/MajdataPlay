@@ -10,8 +10,6 @@ namespace MajdataPlay.IO
     public class Sensor : MonoBehaviour, IEventPublisher<EventHandler<InputEventArgs>>
     {
         public bool IsJudging { get; set; } = false;
-        private bool IsDebug = false;
-        private Image image;
         public SensorStatus Status = SensorStatus.Off;
         public SensorType Type;
         public SensorGroup Group
@@ -32,6 +30,10 @@ namespace MajdataPlay.IO
             }
         }
 
+        bool _isDebug = false;
+
+        MeshRenderer _meshRenderer;
+        Material _material;
         event EventHandler<InputEventArgs>? OnStatusChanged;//oStatus nStatus
         public void AddSubscriber(EventHandler<InputEventArgs> handler)
         {
@@ -50,18 +52,25 @@ namespace MajdataPlay.IO
         public void ClearSubscriber() => OnStatusChanged = null;
         void Start()
         {
-            IsDebug = MajInstances.Setting.Debug.DisplaySensor;
-            image = GetComponent<Image>();
-            if (!IsDebug)
+            _isDebug = MajInstances.Setting.Debug.DisplaySensor;
+            _meshRenderer = GetComponent<MeshRenderer>();
+            _material = new Material(Shader.Find("Sprites/Default"));
+            var color = Color.black;
+            _meshRenderer.material = _material;
+            color.a = 0;
+            _material.color = color; 
+
+            if(Group == SensorGroup.C)
             {
-                Destroy(image);
+                var c2MeshRenderer = transform.GetChild(0).GetComponent<MeshRenderer>();
+                c2MeshRenderer.material = _material;
             }
         }
         private void Update()
         {
-            if (IsDebug)
+            if (_isDebug)
             {
-                image.color = Status == SensorStatus.On ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
+                _material.color = Status == SensorStatus.On ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
             }
         }
     }
