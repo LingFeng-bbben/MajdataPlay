@@ -768,6 +768,7 @@ namespace MajdataPlay.Game
         public async UniTaskVoid EndGame(int delayMiliseconds = 100)
         {
             State = ComponentState.Finished;
+            MajInstances.InputManager.ClearAllSubscriber();
             _bgManager.CancelTimeRef();
 
             await UniTask.Delay(delayMiliseconds);
