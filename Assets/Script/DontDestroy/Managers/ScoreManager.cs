@@ -34,12 +34,12 @@ namespace MajdataPlay
                 return;
             }
             var content = File.ReadAllText(path);
-            List<MaiScore>? result;
-
-            if (!Serializer.Json.TryDeserialize(content, out result, option) || result is null)
-                scores = new();
-            else
-                scores = result;
+            List<MaiScore>? result = Serializer.Json.Deserialize<List<MaiScore>>(content, option);
+            
+            //if (!Serializer.Json.TryDeserialize(content, out result, option) || result is null)
+            //    scores = new();
+            //else
+            //    scores = result;
         }
         public MaiScore GetScore(SongDetail song, ChartLevel level)
         {
