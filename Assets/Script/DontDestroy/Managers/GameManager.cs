@@ -13,7 +13,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
-using UnityEngine.Scripting;
+using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
 using MajdataPlay.Types.Attribute;
 using MajdataPlay.Net;
 using System.Collections.Concurrent;
