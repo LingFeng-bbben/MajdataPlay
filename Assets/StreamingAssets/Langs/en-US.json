@@ -60,7 +60,7 @@
     {
       "Type": "LOADING_CHART",
       "Origin": "Loading Chart",
-      "Content": "Loading"
+      "Content": "Loading chart"
     },
     {
       "Type": "GAME",
