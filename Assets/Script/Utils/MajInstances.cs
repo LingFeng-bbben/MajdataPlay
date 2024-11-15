@@ -7,7 +7,11 @@ namespace MajdataPlay.Utils
 {
     public static class MajInstances
     {
+#if UNITY_EDITOR
+        public static SemVersion GameVersion { get; } = SemVersion.Parse("0.1.0", SemVersionStyles.Strict);
+#else
         public static SemVersion GameVersion { get; } = SemVersion.Parse(Application.version,SemVersionStyles.Strict);
+#endif
         public static GameManager GameManager
         {
             get => MajInstanceHelper<GameManager>.Instance!;
