@@ -25,7 +25,7 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => _tokenSource.Token; }
+        public CancellationToken AllTaskToken { get => _cts.Token; }
         public static DateTime StartAt { get; } = DateTime.Now;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -57,16 +57,13 @@ namespace MajdataPlay
         /// Current difficult
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public bool UseUnityTimer 
-        { 
-            get => _useUnityTimer; 
-            set => _useUnityTimer = value; 
-        }
 
-        CancellationTokenSource _tokenSource = new();
+
+        [SerializeField]
+        TimerType _timer = MajTimeline.Timer;
         Task? _logWritebackTask = null;
         Queue<GameLog> _logQueue = new();
-        
+        CancellationTokenSource _cts = new();
 
         void Awake()
         {
@@ -148,12 +145,23 @@ namespace MajdataPlay
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
         }
+        void Update()
+        {
+            if (!MajTimeline.IsInitialized)
+                MajTimeline.Initialize();
+
+            if(MajTimeline.Timer != _timer)
+            {
+                Debug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
+                MajTimeline.Timer = _timer;
+            }
+        }
         private void OnApplicationQuit()
         {
             Save();
             GameModHelper.Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            _tokenSource.Cancel();
+            _cts.Cancel();
             foreach (var log in _logQueue)
                 File.AppendAllText(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
         }
@@ -217,7 +225,5 @@ namespace MajdataPlay
             public string? StackTrace { get; set; }
             public LogType? Type { get; set; }
         }
-        [SerializeField]
-        bool _useUnityTimer = false;
     }
 }

@@ -348,4 +348,10 @@
         GACHI,
         GORI
     }
+    public enum TimerType
+    {
+        Unity,
+        Winapi,
+        Stopwatch
+    }
 }

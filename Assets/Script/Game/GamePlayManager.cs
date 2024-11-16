@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
+using MajdataPlay.Timer;
 
 namespace MajdataPlay.Game
 {
@@ -26,22 +27,6 @@ namespace MajdataPlay.Game
         public float TouchSpeed { get; private set; } = 7f;
         public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
         // Timeline
-        /// <summary>
-        /// Time provider
-        /// </summary>
-        public float TimeSource
-        {
-            get
-            {
-                if (MajInstances.GameManager.UseUnityTimer)
-                    return Time.unscaledTime;
-
-                GetSystemTimePreciseAsFileTime(out var filetime);
-                filetime = filetime - _fileTimeAtStart;
-                //print(filetime);
-                return (float)(filetime / 10000000d);
-            }
-        }
         /// <summary>
         /// The timing of the current FixedUpdate<para>Unit: Second</para>
         /// </summary>
@@ -122,6 +107,7 @@ namespace MajdataPlay.Game
         long _fileTimeAtStart = 0;
 
         Text _errText;
+        MajTimer _timer = MajTimeline.CreateTimer();
 
         HttpTransporter _httpDownloader = new();
         SimaiProcess _chart;
@@ -142,7 +128,7 @@ namespace MajdataPlay.Game
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = SongStorage.WorkingCollection.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
-            GetSystemTimePreciseAsFileTime(out _fileTimeAtStart);
+            _timer = MajTimeline.CreateTimer();
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
@@ -565,17 +551,17 @@ namespace MajdataPlay.Game
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
-            _audioStartTime = TimeSource + (float)_audioSample.CurrentSec + extraTime;
+            _audioStartTime = (float)(_timer.TotalSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             StartToPlayAnswer();
 
             State = ComponentState.Running;
 
-            while (TimeSource - AudioStartTime < 0)
+            while (_timer.TotalSecondsAsFloat - AudioStartTime < 0)
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
-            _audioStartTime = TimeSource;
+            _audioStartTime = _timer.TotalSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
         }
 
@@ -673,11 +659,11 @@ namespace MajdataPlay.Game
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
                 var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                var timeOffset = TimeSource - AudioStartTime;
+                var timeOffset = _timer.TotalSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
                 _audioTimeNoOffset = timeOffset;
 
-                var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
+                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.TotalSecondsAsFloat - AudioStartTime);
                 if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
                 {
                     _errText.text = "修正音频哟\n" + realTimeDifference;
@@ -788,8 +774,6 @@ namespace MajdataPlay.Game
                 return;
             chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
         }
-        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
-        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
         class AnwserSoundPoint
         {
             public double time;
