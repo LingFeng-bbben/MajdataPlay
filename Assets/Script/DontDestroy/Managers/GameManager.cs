@@ -81,6 +81,7 @@ namespace MajdataPlay
             _logWritebackTask = LogWriteback();
             Debug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
+            _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
