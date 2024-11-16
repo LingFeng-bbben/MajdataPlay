@@ -551,17 +551,17 @@ namespace MajdataPlay.Game
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
-            _audioStartTime = (float)(_timer.TotalSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
+            _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             StartToPlayAnswer();
 
             State = ComponentState.Running;
 
-            while (_timer.TotalSecondsAsFloat - AudioStartTime < 0)
+            while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
-            _audioStartTime = _timer.TotalSecondsAsFloat;
+            _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
         }
 
@@ -659,11 +659,11 @@ namespace MajdataPlay.Game
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
                 var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                var timeOffset = _timer.TotalSecondsAsFloat - AudioStartTime;
+                var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
                 _audioTimeNoOffset = timeOffset;
 
-                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.TotalSecondsAsFloat - AudioStartTime);
+                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime);
                 if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
                 {
                     _errText.text = "修正音频哟\n" + realTimeDifference;

@@ -1,24 +1,20 @@
 ﻿using MajdataPlay.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Timer
 {
     public struct MajTimer
     {
-        public TimeSpan Time
+        public TimeSpan ElapsedTime
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return UnscaledTime * TimeScale;
+                return UnscaledElapsedTime * TimeScale;
             }
         }
-        public TimeSpan UnscaledTime
+        public TimeSpan UnscaledElapsedTime
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -28,10 +24,16 @@ namespace MajdataPlay.Timer
                 return now - offset;
             }
         }
-        public double TotalSeconds => Time.TotalSeconds;
-        public float TotalSecondsAsFloat => (float)TotalSeconds;
-        public double TotalMilliseconds => Time.TotalMilliseconds;
-        public float TotalMillisecondsAsFloat => (float)TotalMilliseconds;
+        public double ElapsedSeconds => ElapsedTime.TotalSeconds;
+        public float ElapsedSecondsAsFloat => (float)ElapsedSeconds;
+        public double ElapsedMilliseconds => ElapsedTime.TotalMilliseconds;
+        public float ElapsedMillisecondsAsFloat => (float)ElapsedMilliseconds;
+        public long ElapsedTicks => ElapsedTime.Ticks;
+        public double UnscaledElapsedSeconds => UnscaledElapsedTime.TotalSeconds;
+        public float UnscaledElapsedSecondsAsFloat => (float)UnscaledElapsedSeconds;
+        public double UnscaledElapsedMilliseconds => UnscaledElapsedTime.TotalMilliseconds;
+        public float UnscaledElapsedMillisecondsAsFloat => (float)UnscaledElapsedMilliseconds;
+        public long UnscaledElapsedTicks => UnscaledElapsedTime.Ticks;
         public double TimeScale { get; set; }
         public DateTime StartAt { get; init; }
 
