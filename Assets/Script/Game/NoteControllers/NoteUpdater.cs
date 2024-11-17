@@ -1,11 +1,9 @@
 ﻿using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using MajdataPlay.Types.Attribute;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -13,10 +11,23 @@ namespace MajdataPlay.Game
 {
     public class NoteUpdater : MonoBehaviour
     {
+        public double UpdateElapsedMs => _updateElapsedMs;
+        public double FixedUpdateElapsedMs => _fixedUpdateElapsedMs;
+        public double LateUpdateElapsedMs => _lateUpdateElapsedMs;
+
         NoteInfo[] _updatableComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _fixedUpdatableComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _lateUpdatableComponents = Array.Empty<NoteInfo>();
-        Stopwatch _stopwatch = new Stopwatch();
+
+        [ReadOnlyField]
+        [SerializeField]
+        double _updateElapsedMs = 0;
+        [ReadOnlyField]
+        [SerializeField]
+        double _fixedUpdateElapsedMs = 0;
+        [ReadOnlyField]
+        [SerializeField]
+        double _lateUpdateElapsedMs = 0;
         public void Initialize()
         {
             Transform[] childs = new Transform[transform.childCount];
@@ -52,7 +63,7 @@ namespace MajdataPlay.Game
 
         void Update()
         {
-            //_stopwatch.Restart();
+            var start = MajTimeline.UnscaledTime;
             foreach (var component in _updatableComponents)
             {
                 try
@@ -67,10 +78,13 @@ namespace MajdataPlay.Game
                     Debug.LogException(e);
                 }
             }
-            //Debug.Log($"NoteUpdate: time consuming {_stopwatch.ElapsedMilliseconds}ms");
+            var end = MajTimeline.UnscaledTime;
+            var timeSpan = end - start;
+            _updateElapsedMs = timeSpan.TotalMilliseconds;
         }
         void FixedUpdate()
         {
+            var start = MajTimeline.UnscaledTime;
             foreach (var component in _fixedUpdatableComponents)
             {
                 try
@@ -85,9 +99,13 @@ namespace MajdataPlay.Game
                     Debug.LogException(e);
                 }
             }
+            var end = MajTimeline.UnscaledTime;
+            var timeSpan = end - start;
+            _fixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
         void LateUpdate()
         {
+            var start = MajTimeline.UnscaledTime;
             foreach (var component in _lateUpdatableComponents)
             {
                 try
@@ -102,6 +120,9 @@ namespace MajdataPlay.Game
                     Debug.LogException(e);
                 }
             }
+            var end = MajTimeline.UnscaledTime;
+            var timeSpan = end - start;
+            _lateUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
     }
 }
