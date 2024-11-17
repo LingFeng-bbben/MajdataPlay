@@ -191,7 +191,10 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Start()
         {
+            if (IsInitialized)
+                return;
             base.Start();
+            Active = true;
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;

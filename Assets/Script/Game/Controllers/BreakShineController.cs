@@ -7,6 +7,7 @@ namespace MajdataPlay.Game.Controllers
 {
     public class BreakShineController : MonoBehaviour, IUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; private set; }
         public NoteStatus State => ((IStatefulNote?)Parent)?.State ?? NoteStatus.Destroyed;
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer? Renderer { get; set; } = null;
@@ -17,6 +18,11 @@ namespace MajdataPlay.Game.Controllers
             if(Renderer is null)
                 Renderer = GetComponent<SpriteRenderer>();
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            Active = true;
+        }
+        void OnDestroy()
+        {
+            Active = false;
         }
         public void ComponentUpdate()
         {

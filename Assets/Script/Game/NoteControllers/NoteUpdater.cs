@@ -52,7 +52,7 @@ namespace MajdataPlay.Game
 
         void Update()
         {
-            _stopwatch.Restart();
+            //_stopwatch.Restart();
             foreach (var component in _updatableComponents)
             {
                 try
@@ -67,7 +67,7 @@ namespace MajdataPlay.Game
                     Debug.LogException(e);
                 }
             }
-            Debug.Log($"NoteUpdate: time consuming {_stopwatch.ElapsedMilliseconds}ms");
+            //Debug.Log($"NoteUpdate: time consuming {_stopwatch.ElapsedMilliseconds}ms");
         }
         void FixedUpdate()
         {

@@ -97,6 +97,7 @@ namespace MajdataPlay.Game.Notes
             if (IsInitialized)
                 return;
             base.Start();
+            Active = true;
             notePoolManager = FindObjectOfType<NotePoolManager>();
             thisRenderer = GetComponent<SpriteRenderer>();
             exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();

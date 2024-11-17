@@ -8,6 +8,7 @@ namespace MajdataPlay.Interfaces
 {
     public interface ILateUpdatableComponent<TState> : IStateful<TState>
     {
+        bool Active { get; }
         void ComponentLateUpdate();
     }
 }

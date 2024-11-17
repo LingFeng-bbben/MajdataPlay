@@ -161,6 +161,7 @@ namespace MajdataPlay.Game.Notes
             if (IsInitialized)
                 return;
             base.Start();
+            Active = true;
             var notes = _noteManager.gameObject.transform;
 
             tapLine = Instantiate(tapLine, notes.GetChild(7));

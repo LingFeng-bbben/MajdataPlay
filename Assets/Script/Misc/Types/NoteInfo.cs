@@ -23,14 +23,27 @@ namespace MajdataPlay.Types
         ComponentMethod? _update = null;
         ComponentMethod? _fixedUpdate = null;
         ComponentMethod? _lateUpdate = null;
+
+        IUpdatableComponent<NoteStatus>? _updatableComponent = null;
+        IFixedUpdatableComponent<NoteStatus>? _fixedUpdatableComponent = null;
+        ILateUpdatableComponent<NoteStatus>? _lateUpdatableComponent = null;
         public NoteInfo(IStateful<NoteStatus> noteObj)
         {
             if (noteObj is IUpdatableComponent<NoteStatus> component)
+            {
+                _updatableComponent = component;
                 _update = new ComponentMethod(component.ComponentUpdate);
+            }
             if (noteObj is IFixedUpdatableComponent<NoteStatus> _component)
+            {
+                _fixedUpdatableComponent = _component;
                 _fixedUpdate = new ComponentMethod(_component.ComponentFixedUpdate);
+            }
             if (noteObj is ILateUpdatableComponent<NoteStatus> __component)
+            {
+                _lateUpdatableComponent = __component;
                 _lateUpdate = new ComponentMethod(__component.ComponentLateUpdate);
+            }
             Object = noteObj;
         }
         public override void Update()
@@ -58,6 +71,10 @@ namespace MajdataPlay.Types
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CanExecute() => State is not (NoteStatus.Start or NoteStatus.Destroyed);
+        public bool CanExecute()
+        {
+            return State is not (NoteStatus.Start or NoteStatus.Destroyed) &&
+                   ((_updatableComponent?.Active ?? _fixedUpdatableComponent?.Active ?? _lateUpdatableComponent?.Active) ?? false);
+        }
     }
 }

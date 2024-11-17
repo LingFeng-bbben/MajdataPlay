@@ -14,6 +14,7 @@ namespace MajdataPlay.Game.Controllers
 {
     public class BreakSlideShineController : MonoBehaviour, IUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; private set; }
         public NoteStatus State => ((IStatefulNote?)Parent)?.State ?? NoteStatus.Destroyed;
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer[] Renderers { get; set; } = ArrayPool<SpriteRenderer>.Shared.Rent(0);
@@ -36,10 +37,12 @@ namespace MajdataPlay.Game.Controllers
                 for (int i = 0; i < barCount; i++)
                     Renderers[i] = parentObject.transform.GetChild(i).GetComponent<SpriteRenderer>();
             }
+            _state = NoteStatus.Initialized;
         }
         void Start()
         {
             Initialize();
+            Active = true;
         }
         public void ComponentUpdate()
         {
@@ -70,6 +73,7 @@ namespace MajdataPlay.Game.Controllers
         void OnDestroy()
         {
             ArrayPool<SpriteRenderer>.Shared.Return(Renderers);
+            Active = false;
         }
     }
 

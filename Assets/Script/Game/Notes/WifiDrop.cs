@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Notes
         {
             
             Initialize();
-
+            Active = true;
             var wifiConst = 0.162870f;
             _judgeTiming = Timing + (Length * (1 - wifiConst));
             _lastWaitTime = Length * wifiConst;

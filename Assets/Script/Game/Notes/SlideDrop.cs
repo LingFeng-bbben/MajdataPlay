@@ -130,6 +130,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Start()
         {
             Initialize();
+            Active = true;
             if (ConnectInfo.IsConnSlide)
             {
                 Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * GetSlideLength();

@@ -14,6 +14,7 @@ namespace MajdataPlay.Game.Notes
 {
     public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; protected set; } = false;
         public int StartPos 
         { 
             get => _startPos; 
@@ -97,6 +98,10 @@ namespace MajdataPlay.Game.Notes
             _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             _judgeTiming = Timing;
+        }
+        void OnDestroy()
+        {
+            Active = false;
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
