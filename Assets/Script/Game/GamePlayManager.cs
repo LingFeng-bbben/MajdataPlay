@@ -117,6 +117,7 @@ namespace MajdataPlay.Game
 
         BGManager _bgManager;
         NoteLoader _noteLoader;
+        NoteManager _noteManager;
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
@@ -142,6 +143,7 @@ namespace MajdataPlay.Game
         {
             State = ComponentState.Loading;
 
+            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
@@ -539,7 +541,7 @@ namespace MajdataPlay.Game
                     throw noteLoaderTask.Exception;
                 await UniTask.Yield();
             }
-
+            _noteManager.InitializeUpdater();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             MajInstances.SceneSwitcher.FadeOut();
 

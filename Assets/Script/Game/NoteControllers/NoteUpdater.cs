@@ -2,10 +2,12 @@
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace MajdataPlay.Game
 {
@@ -14,12 +16,15 @@ namespace MajdataPlay.Game
         NoteInfo[] _updatableComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _fixedUpdatableComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _lateUpdatableComponents = Array.Empty<NoteInfo>();
+        Stopwatch _stopwatch = new Stopwatch();
         public void Initialize()
         {
             Transform[] childs = new Transform[transform.childCount];
             List<NoteInfo> updatableComponents = new();
             List<NoteInfo> fixedUpdatableComponents = new();
             List<NoteInfo> lateUpdatableComponents = new();
+            for (int i = 0; i < childs.Length; i++)
+                childs[i] = transform.GetChild(i);
             foreach(var child in childs)
             {
                 var childComponents = child.GetComponents<IStateful<NoteStatus>>();
@@ -47,17 +52,22 @@ namespace MajdataPlay.Game
 
         void Update()
         {
+            _stopwatch.Restart();
             foreach (var component in _updatableComponents)
             {
                 try
                 {
-                    component.Update();
+                    if (component.CanExecute())
+                        component.Update();
+                    else
+                        continue;
                 }
                 catch (Exception e)
                 {
                     Debug.LogException(e);
                 }
             }
+            Debug.Log($"NoteUpdate: time consuming {_stopwatch.ElapsedMilliseconds}ms");
         }
         void FixedUpdate()
         {
@@ -65,7 +75,10 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    component.Update();
+                    if (component.CanExecute())
+                        component.FixedUpdate();
+                    else
+                        continue;
                 }
                 catch (Exception e)
                 {
@@ -79,7 +92,10 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    component.LateUpdate();
+                    if (component.CanExecute())
+                        component.LateUpdate();
+                    else
+                        continue;
                 }
                 catch (Exception e)
                 {

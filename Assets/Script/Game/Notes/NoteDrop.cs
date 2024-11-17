@@ -60,11 +60,18 @@ namespace MajdataPlay.Game.Notes
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
-        public NoteStatus State { get; protected set; } = NoteStatus.Start;
+        public NoteStatus State 
+        { 
+            get => _state; 
+            protected set => _state = value; 
+        }
         public bool CanShine { get; protected set; } = false;
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
 
+        [ReadOnlyField]
+        [SerializeField]
+        protected NoteStatus _state = NoteStatus.Start;
         protected GamePlayManager _gpManager;
         protected InputManager _ioManager = MajInstances.InputManager;
         protected bool _isJudged = false;

@@ -2,13 +2,15 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Game
 {
     public class NoteManager : MonoBehaviour
     {
-        Dictionary<int, int> noteCurrentIndex = new();
-        Dictionary<SensorType, int> touchCurrentIndex = new();
+        [SerializeField]
+        NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
+        Dictionary<int, int> _noteCurrentIndex = new();
+        Dictionary<SensorType, int> _touchCurrentIndex = new();
 
         void Awake()
         {
@@ -18,35 +20,40 @@ namespace MajdataPlay.Game
         {
             MajInstanceHelper<NoteManager>.Free();
         }
+        public void InitializeUpdater()
+        {
+            foreach(var updater in _noteUpdaters)
+                updater.Initialize();
+        }
         public void ResetCounter()
         {
-            noteCurrentIndex.Clear();
-            touchCurrentIndex.Clear();
+            _noteCurrentIndex.Clear();
+            _touchCurrentIndex.Clear();
             //八条轨道 判定到此轨道上的第几个note了
             for (int i = 1; i < 9; i++)
-                noteCurrentIndex.Add(i, 0);
+                _noteCurrentIndex.Add(i, 0);
             for (int i = 0; i < 33; i++)
-                touchCurrentIndex.Add((SensorType)i, 0);
+                _touchCurrentIndex.Add((SensorType)i, 0);
         }
         public bool CanJudge(in TapQueueInfo queueInfo)
         {
-            if (!noteCurrentIndex.ContainsKey(queueInfo.KeyIndex))
+            if (!_noteCurrentIndex.ContainsKey(queueInfo.KeyIndex))
                 return false;
             var index = queueInfo.Index;
-            var currentIndex = noteCurrentIndex[queueInfo.KeyIndex];
+            var currentIndex = _noteCurrentIndex[queueInfo.KeyIndex];
 
             return index <= currentIndex;
         }
         public bool CanJudge(in TouchQueueInfo queueInfo)
         {
-            if (!touchCurrentIndex.ContainsKey(queueInfo.SensorPos))
+            if (!_touchCurrentIndex.ContainsKey(queueInfo.SensorPos))
                 return false;
             var index = queueInfo.Index;
-            var currentIndex = touchCurrentIndex[queueInfo.SensorPos];
+            var currentIndex = _touchCurrentIndex[queueInfo.SensorPos];
 
             return index <= currentIndex;
         }
-        public void NextNote(in TapQueueInfo queueInfo) => noteCurrentIndex[queueInfo.KeyIndex]++;
-        public void NextTouch(in TouchQueueInfo queueInfo) => touchCurrentIndex[queueInfo.SensorPos]++;
+        public void NextNote(in TapQueueInfo queueInfo) => _noteCurrentIndex[queueInfo.KeyIndex]++;
+        public void NextTouch(in TouchQueueInfo queueInfo) => _touchCurrentIndex[queueInfo.SensorPos]++;
     }
 }
