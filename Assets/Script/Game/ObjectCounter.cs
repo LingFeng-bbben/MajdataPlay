@@ -378,8 +378,9 @@ namespace MajdataPlay.Game
             long lostExtraScore = 0;
             long lostExtraScoreClassic = 0;
             int baseScore = 500;
+            Span<SimaiNoteType> types = stackalloc SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch, SimaiNoteType.TouchHold };
 
-            foreach (var type in new SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch, SimaiNoteType.TouchHold })
+            foreach (var type in types)
             {
                 switch (type)
                 {

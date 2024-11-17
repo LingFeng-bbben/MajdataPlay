@@ -35,8 +35,9 @@ namespace MajdataPlay.Game.Notes
         { 
             get
             {
-                int[] reamaining = new int[3];
-                foreach (var (i, queue) in _judgeQueues.WithIndex())
+                Span<int> reamaining = stackalloc int[3];
+                var judgeQueues = _judgeQueues.AsSpan();
+                foreach (var (i, queue) in judgeQueues.WithIndex())
                     reamaining[i] = queue.Length;
                 return reamaining.Max();
             }

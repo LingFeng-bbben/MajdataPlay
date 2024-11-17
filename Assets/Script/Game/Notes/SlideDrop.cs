@@ -260,8 +260,8 @@ namespace MajdataPlay.Game.Notes
                 return;
             var queue = _judgeQueues[0];
             _isChecking = true;
-            
-            
+
+
             var first = queue.First();
             var fType = first.GetSensorTypes();
             var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;

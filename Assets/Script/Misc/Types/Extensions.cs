@@ -342,6 +342,70 @@ namespace MajdataPlay.Extensions
             return -1;
         }
     }
+    public static class SpanExtensions
+    {
+        public static T Max<T>(this Span<T> source) where T: IComparable<T>
+        {
+            if (source.Length == 0)
+                throw new InvalidOperationException();
+            else if(source.Length == 1)
+                return source[0];
+            var max = source[0];
+            for (int i = 1; i < source.Length; i++)
+            {
+                var value = source[i];
+                if (value.CompareTo(max) > 0)
+                    max = value;
+            }
+            return max;
+        }
+        public static T Min<T>(this Span<T> source) where T : IComparable<T>
+        {
+            if (source.Length == 0)
+                throw new InvalidOperationException();
+            else if (source.Length == 1)
+                return source[0];
+            var min = source[0];
+            for (int i = 1; i < source.Length; i++)
+            {
+                var value = source[i];
+                if (value.CompareTo(min) < 0)
+                    min = value;
+            }
+            return min;
+        }
+        public static WithIndexEnumerable<T> WithIndex<T>(this Span<T> source)
+        {
+            return new WithIndexEnumerable<T>(source);
+        }
+        public ref struct WithIndexEnumerable<T>
+        {
+            Span<T> _source;
+            public WithIndexEnumerable(Span<T> source)
+            {
+                _source = source;
+            }
+            public Enumerator GetEnumerator() => new Enumerator(_source);
+            public ref struct Enumerator
+            {
+                int _index;
+                Span<T> _source;
+                Span<T>.Enumerator _enumerator;
+                public (int, T) Current => (_index, _enumerator.Current);
+                public Enumerator(Span<T> source)
+                {
+                    _source = source;
+                    _index = -1;
+                    _enumerator = source.GetEnumerator();
+                }
+                public bool MoveNext()
+                {
+                    _index++;
+                    return _enumerator.MoveNext();
+                }
+            }
+        }
+    }
     public static class TransformExtensions
     {
         public static IEnumerable<Transform> ToEnumerable(this Transform source)
