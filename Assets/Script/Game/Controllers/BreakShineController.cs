@@ -1,11 +1,13 @@
 using MajdataPlay.Interfaces;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Controllers
 {
-    public class BreakShineController : MonoBehaviour
+    public class BreakShineController : MonoBehaviour, IUpdatableComponent<NoteStatus>
     {
+        public NoteStatus State => ((IStatefulNote?)Parent)?.State ?? NoteStatus.Destroyed;
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer? Renderer { get; set; } = null;
         GamePlayManager _gpManager;
@@ -16,7 +18,7 @@ namespace MajdataPlay.Game.Controllers
                 Renderer = GetComponent<SpriteRenderer>();
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
-        void Update()
+        public void ComponentUpdate()
         {
             if (Renderer is null)
                 return;

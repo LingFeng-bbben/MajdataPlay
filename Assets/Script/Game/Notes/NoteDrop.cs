@@ -12,7 +12,7 @@ using Random = System.Random;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider
+    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
     {
         public int StartPos 
         { 
@@ -93,6 +93,8 @@ namespace MajdataPlay.Game.Notes
         }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
+        public abstract void ComponentUpdate();
+        public abstract void ComponentFixedUpdate();
         protected abstract void PlaySFX();
         protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)

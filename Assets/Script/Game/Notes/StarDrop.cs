@@ -59,7 +59,7 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             notePoolManager.Collect(this);
         }
-        protected override void Update()
+        public override void ComponentUpdate()
         {
             var judgeTiming = GetTimeSpanToArriveTiming();
             var distance = judgeTiming * Speed + 4.8f;

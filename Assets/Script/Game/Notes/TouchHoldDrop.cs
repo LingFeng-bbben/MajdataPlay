@@ -320,7 +320,7 @@ namespace MajdataPlay.Game.Notes
             _isJudged = true;
             PlayHoldEffect();
         }
-        void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running || IsDestroyed)
                 return;
@@ -358,7 +358,7 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.NextTouch(QueueInfo);
             }
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 

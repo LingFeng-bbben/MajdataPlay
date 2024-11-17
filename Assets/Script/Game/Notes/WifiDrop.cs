@@ -91,7 +91,7 @@ namespace MajdataPlay.Game.Notes
                 _ioManager.BindSensor(Check, sensor);
             FadeIn().Forget();
         }
-        private void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
@@ -215,7 +215,7 @@ namespace MajdataPlay.Game.Notes
 
             return _judgeQueues[index].First().SlideIndex;
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             foreach (var star in _stars)
                 star.SetActive(true);

@@ -180,7 +180,7 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        private void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running || IsDestroyed)
                 return;
@@ -302,7 +302,7 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;

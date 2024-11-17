@@ -121,7 +121,7 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        protected void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running|| IsDestroyed)
                 return;
@@ -137,7 +137,7 @@ namespace MajdataPlay.Game.Notes
                 End();
         }
         // Update is called once per frame
-        protected virtual void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;

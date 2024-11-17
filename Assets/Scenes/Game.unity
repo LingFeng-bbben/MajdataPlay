@@ -1065,6 +1065,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 470916934}
+  - component: {fileID: 470916935}
   m_Layer: 0
   m_Name: HoldPool
   m_TagString: Untagged
@@ -1087,6 +1088,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &470916935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 470916933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &481412464
 GameObject:
   m_ObjectHideFlags: 0
@@ -1164,6 +1177,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 531443363}
+  - component: {fileID: 531443364}
   m_Layer: 0
   m_Name: EachLines
   m_TagString: Untagged
@@ -1186,6 +1200,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &531443364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531443362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &533943267
 GameObject:
   m_ObjectHideFlags: 0
@@ -2682,6 +2708,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1006855706}
+  - component: {fileID: 1006855707}
   m_Layer: 0
   m_Name: TouchHoldPool
   m_TagString: Untagged
@@ -2704,6 +2731,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1006855707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006855705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1052358479
 GameObject:
   m_ObjectHideFlags: 0
@@ -2973,6 +3012,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1241949066}
+  - component: {fileID: 1241949067}
   m_Layer: 0
   m_Name: StarPool
   m_TagString: Untagged
@@ -2995,6 +3035,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1241949067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241949065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1265281306
 GameObject:
   m_ObjectHideFlags: 0
@@ -3004,6 +3056,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1265281307}
+  - component: {fileID: 1265281308}
   m_Layer: 0
   m_Name: TouchPool
   m_TagString: Untagged
@@ -3026,6 +3079,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1265281308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1265281306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1266538412
 GameObject:
   m_ObjectHideFlags: 0
@@ -3114,6 +3179,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1266702672}
+  - component: {fileID: 1266702673}
   m_Layer: 0
   m_Name: TapLines
   m_TagString: Untagged
@@ -3136,6 +3202,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1266702673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1266702671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1313218768
 GameObject:
   m_ObjectHideFlags: 0
@@ -3365,6 +3443,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1390256244}
+  - component: {fileID: 1390256245}
   m_Layer: 0
   m_Name: SlidePool
   m_TagString: Untagged
@@ -3387,6 +3466,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1390256245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390256243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1442909523
 GameObject:
   m_ObjectHideFlags: 0
@@ -3496,6 +3587,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1469190172}
+  - component: {fileID: 1469190173}
   m_Layer: 0
   m_Name: TapPool
   m_TagString: Untagged
@@ -3518,6 +3610,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1469190173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1469190171}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1742131988
 GameObject:
   m_ObjectHideFlags: 0
