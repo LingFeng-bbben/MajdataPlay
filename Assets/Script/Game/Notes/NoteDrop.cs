@@ -178,6 +178,17 @@ namespace MajdataPlay.Game.Notes
             }
         }
         /// <summary>
+        /// Sets whether the camera renders this GameObject
+        /// </summary>
+        /// <param name="state"></param>
+        public virtual void SetActive(bool state)
+        {
+            if (state)
+                GameObject.layer = 0;
+            else
+                GameObject.layer = 3;
+        }
+        /// <summary>
         /// 获取当前时刻距离抵达判定线的长度
         /// </summary>
         /// <returns>

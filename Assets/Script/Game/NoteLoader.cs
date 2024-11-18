@@ -935,8 +935,8 @@ namespace MajdataPlay.Game
             var isJustR = detectJustType(note.noteContent, out int endPos);
             var startPos = note.startPosition;
 
-            slide_star.SetActive(false);
-            slide.SetActive(false);
+            slide_star.SetActive(true);
+            slide.SetActive(true);
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
 
@@ -1025,7 +1025,7 @@ namespace MajdataPlay.Game
 
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
-            slideWifi.SetActive(false);
+            slideWifi.SetActive(true);
 
             _poolManager.AddTap(CreateStar(note, timing, slideWifi));
 

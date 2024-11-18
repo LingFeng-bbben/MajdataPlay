@@ -106,7 +106,7 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// Slide star
         /// </summary>
-        public GameObject[] _stars = new GameObject[3];
+        public GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
         protected bool _isSoundPlayed = false;
@@ -248,6 +248,40 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
+        public override void SetActive(bool state)
+        {
+            base.SetActive(state);
+            if (state)
+            {
+                if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
+                {
+                    foreach (var sensor in _judgeAreas)
+                        _ioManager.BindSensor(Check, sensor);
+                    State = NoteStatus.Running;
+                }
+                Active = true;
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 0;
+                foreach (var star in _stars.AsSpan())
+                {
+                    if (star is null)
+                        continue;
+                    star.layer = 0;
+                }
+            }
+            else
+            {
+                Active = false;
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 3;
+                foreach (var star in _stars.AsSpan())
+                {
+                    if (star is null)
+                        continue;
+                    star.layer = 3;
+                }
+            }
+        }
         protected override void PlaySFX()
         {
             if(!_isSoundPlayed)
@@ -301,12 +335,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (_stars.IsEmpty())
                 return;
-            foreach (var star in _stars)
-            {
-                if (star != null)
-                    Destroy(star);
-            }
-            _stars = Array.Empty<GameObject>();
+            GameObjectHelper.Destroy(ref _stars);
         }
         protected async UniTaskVoid FadeIn()
         {
@@ -315,6 +344,8 @@ namespace MajdataPlay.Game.Notes
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
+            while (!Active)
+                await UniTask.Yield();
             while (CurrentSec < fullFadeInTiming) 
             {
                 var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);

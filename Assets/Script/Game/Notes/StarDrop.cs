@@ -17,6 +17,7 @@ namespace MajdataPlay.Game.Notes
         public bool IsForceRotate { get; set; } = false;
 
         public GameObject? SlideObject { get; set; }
+        public SlideBase? SlideComponent { get; private set; }
 
         float _slideFadeInTiming = 0f;
 
@@ -30,6 +31,7 @@ namespace MajdataPlay.Game.Notes
             IsFakeStar = poolingInfo.IsFakeStar;
             IsForceRotate = poolingInfo.IsForceRotate;
             SlideObject = poolingInfo.Slide;
+            SlideComponent = SlideObject?.GetComponent<SlideBase>();
             if (SlideObject is null && !IsFakeStar)
                 throw new NullReferenceException("Slide launcher has no slide reference");
             LoadSkin();
@@ -127,9 +129,9 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     if(CurrentSec >= _slideFadeInTiming)
                     {
-                        if (!IsFakeStar && !SlideObject!.activeSelf)
+                        if (!IsFakeStar && !(SlideComponent?.Active ?? true))
                         {
-                            SlideObject?.SetActive(true);
+                            SlideComponent.SetActive(true);
                             if (IsNoHead)
                                 End();
                         }

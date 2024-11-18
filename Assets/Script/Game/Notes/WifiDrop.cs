@@ -23,10 +23,10 @@ namespace MajdataPlay.Game.Notes
 
         public override void Initialize()
         {
-            if (IsInitialized)
+            if (State >= NoteStatus.PreInitialized)
                 return;
             base.Start();
-            State = NoteStatus.Initialized;
+            State = NoteStatus.PreInitialized;
             ConnectInfo.StartTiming = Timing;
             _judgeQueues = SlideTables.GetWifiTable(StartPos);
 
@@ -77,12 +77,12 @@ namespace MajdataPlay.Game.Notes
             }
 
             LoadSkin();
+            SetActive(false);
             SetSlideBarAlpha(0f);
         }
         protected override void Start()
         {
             Initialize();
-            Active = true;
             var wifiConst = 0.162870f;
             _judgeTiming = Timing + (Length * (1 - wifiConst));
             _lastWaitTime = Length * wifiConst;
@@ -90,9 +90,7 @@ namespace MajdataPlay.Game.Notes
             _judgeAreas = _judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
                                     .GroupBy(x => x)
                                     .Select(x => x.Key);
-
-            foreach (var sensor in _judgeAreas)
-                _ioManager.BindSensor(Check, sensor);
+            
             FadeIn().Forget();
         }
         public override void ComponentFixedUpdate()
