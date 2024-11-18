@@ -42,8 +42,16 @@ namespace MajdataPlay.IO
             DontDestroyOnLoad(this);
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
+                var collider = child.GetComponent<Collider>();
+                var type = (SensorType)index;
                 _sensors[index] = child.GetComponent<Sensor>();
-                _sensors[index].Type = (SensorType)index;
+                _sensors[index].Type = type;
+                _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = type;
+                if(type.GetGroup() == SensorGroup.C)
+                {
+                    var childCollider = child.GetChild(0).GetComponent<Collider>();
+                    _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = type;
+                }
             }
             
         }

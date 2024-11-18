@@ -6161,7 +6161,6 @@ GameObject:
   - component: {fileID: 2109896986}
   - component: {fileID: 2109896985}
   - component: {fileID: 2109896984}
-  - component: {fileID: 2109896983}
   m_Layer: 0
   m_Name: C2
   m_TagString: Untagged
@@ -6184,20 +6183,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 642235521}
   m_LocalEulerAnglesHint: {x: 0, y: -0.001, z: -180}
---- !u!114 &2109896983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2109896981}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 774152cf44ea13e4da583e983e6fd1dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Status: 1
-  Type: 16
 --- !u!64 &2109896984
 MeshCollider:
   m_ObjectHideFlags: 0

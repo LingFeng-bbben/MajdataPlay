@@ -10,6 +10,7 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
+        Dictionary<int, SensorType> _instanceID2SensorTypeMappingTable = new();
         void UpdateMousePosition()
         {
             if (Input.GetMouseButton(0))
@@ -23,12 +24,15 @@ namespace MajdataPlay.IO
 
                 if (ishit)
                 {
-                    var sensor = hitInfo.collider.gameObject.GetComponent<Sensor>();
-                    newSensorsState[sensor.Type] = SensorStatus.On;
+                    var id = hitInfo.colliderInstanceID;
+                    if (_instanceID2SensorTypeMappingTable.TryGetValue(id,out var type))
+                    {
+                        newSensorsState[type] = SensorStatus.On;
+                    }
                 }
                 else
                 {
-                    foreach (var s in _sensors)
+                    foreach (var s in _sensors.AsSpan())
                         SetSensorState(s.Type, SensorStatus.Off);
                 }
 
