@@ -68,15 +68,19 @@ namespace MajdataPlay.Game.Notes
 
             transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             _slideBars = new GameObject[transform.childCount - 1];
+            _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
 
             for (var i = 0; i < transform.childCount - 1; i++)
+            {
                 _slideBars[i] = transform.GetChild(i).gameObject;
+                _slideBarRenderers[i] = _slideBars[i].GetComponent<SpriteRenderer>();
+            }
 
             LoadSkin();
+            SetSlideBarAlpha(0f);
         }
         protected override void Start()
         {
-            
             Initialize();
             Active = true;
             var wifiConst = 0.162870f;

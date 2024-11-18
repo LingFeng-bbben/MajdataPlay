@@ -47,8 +47,13 @@ namespace MajdataPlay.Game.Notes
             _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
             _starRenderer = _stars[0].GetComponent<SpriteRenderer>();
             _slideBars = new GameObject[transform.childCount - 1];
+            _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
+
             for (var i = 0; i < transform.childCount - 1; i++)
+            {
                 _slideBars[i] = transform.GetChild(i).gameObject;
+                _slideBarRenderers[i] = _slideBars[i].GetComponent<SpriteRenderer>();
+            }
 
 
             if (_isMirror)

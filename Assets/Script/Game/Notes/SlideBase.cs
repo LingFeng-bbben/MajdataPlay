@@ -81,22 +81,30 @@ namespace MajdataPlay.Game.Notes
             get => _slideType;
             set => _slideType = value;
         }
-
         protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>()
         }; // 判定队列
+        /// <summary>
+        /// Arrows
+        /// </summary>
         [ReadOnlyField]
         [SerializeField]
-        protected GameObject[] _slideBars = { }; // Arrows
+        protected GameObject[] _slideBars = { };
+        /// <summary>
+        /// Arrow Renderers
+        /// </summary>
+        [ReadOnlyField]
+        [SerializeField]
+        protected SpriteRenderer[] _slideBarRenderers = { };
 
 
         
 
         /// <summary>
-        /// 引导Star
+        /// Slide star
         /// </summary>
         public GameObject[] _stars = new GameObject[3];
 
@@ -205,7 +213,7 @@ namespace MajdataPlay.Game.Notes
             endIndex = endIndex - 1;
             endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                _slideBars[i].SetActive(false);
+                _slideBarRenderers[i].forceRenderingOff = true;
         }
         protected void PlaySlideOK(in JudgeResult result)
         {
@@ -226,11 +234,10 @@ namespace MajdataPlay.Game.Notes
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var gm in _slideBars)
+            foreach (var sr in _slideBarRenderers.AsSpan())
             {
                 if (IsDestroyed)
                     return;
-                var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
