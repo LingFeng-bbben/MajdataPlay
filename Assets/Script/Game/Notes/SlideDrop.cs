@@ -262,7 +262,7 @@ namespace MajdataPlay.Game.Notes
             _isChecking = true;
 
 
-            var first = queue.First();
+            var first = queue[0];
             var fType = first.GetSensorTypes();
             var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
             JudgeArea? second = null;
