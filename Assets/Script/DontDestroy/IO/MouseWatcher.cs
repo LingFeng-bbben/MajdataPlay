@@ -14,13 +14,30 @@ namespace MajdataPlay.IO
         {
             if (Input.GetMouseButton(0))
             {
-                var x = Input.mousePosition.x / Screen.width * 2 - 1;
+                Vector3 cubeRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var ray = new Ray(cubeRay, Vector3.forward);
+                var ishit = Physics.Raycast(ray, out var hitInfo);
+
+                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type, s => s.Status);
+                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type, x => SensorStatus.Off);
+
+                if (ishit)
+                {
+                    var sensor = hitInfo.collider.gameObject.GetComponent<Sensor>();
+                    newSensorsState[sensor.Type] = SensorStatus.On;
+                }
+                else
+                {
+                    foreach (var s in _sensors)
+                        SetSensorState(s.Type, SensorStatus.Off);
+                }
+
+                /*var x = Input.mousePosition.x / Screen.width * 2 - 1;
                 var y = Input.mousePosition.y / Screen.width * 2 - 1;
                 var distance = Math.Sqrt(x * x + y * y);
                 var angle = Mathf.Atan2(y, x) * Mathf.Rad2Deg;
 
-                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type,s => s.Status);
-                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type,x => SensorStatus.Off);
+
 
                 if (distance > 0.75)
                 {
@@ -102,9 +119,9 @@ namespace MajdataPlay.IO
                 {
                     if (isInRange(angle, 0, 90) || isInRange(angle, 180, 90))
                         newSensorsState[SensorType.C] = SensorStatus.On;
-                }
+                }*/
 
-                foreach (var pair in newSensorsState) 
+                foreach (var pair in newSensorsState)
                 {
                     var type = pair.Key;
                     var nState = newSensorsState[type];
