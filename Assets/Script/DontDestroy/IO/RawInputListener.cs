@@ -45,9 +45,10 @@ namespace MajdataPlay.IO
         {
             if (!_buttonCheckerMutex.WaitOne(4))
                 return;
-            foreach (var keyId in _bindingKeys)
+            var buttons = _buttons.AsSpan();
+            foreach (var keyId in _bindingKeys.AsSpan())
             {
-                var button = _buttons.Find(x => x.BindingKey == keyId);
+                var button = buttons.Find(x => x.BindingKey == keyId);
                 if (button == null)
                 {
                     Debug.LogError($"Key not found:\n{keyId}");
@@ -74,14 +75,14 @@ namespace MajdataPlay.IO
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = _buttons.Find(x => x?.Type == sType);
+            var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.AddSubscriber(checker);
         }
         public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = _buttons.Find(x => x?.Type == sType);
+            var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.RemoveSubscriber(checker);
@@ -113,7 +114,8 @@ namespace MajdataPlay.IO
                 return;
             if (_bindingKeys.All(x => x != key))
                 return;
-            var button = _buttons.Find(x => x.BindingKey == key);
+            var buttons = _buttons.AsSpan();
+            var button = buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {
                 Debug.LogError($"Key not found:\n{key}");

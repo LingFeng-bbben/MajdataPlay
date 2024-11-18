@@ -14,6 +14,8 @@ using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
 using MychIO.Connection;
+using static UnityEngine.GraphicsBuffer;
+using System.Runtime.CompilerServices;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -241,8 +243,8 @@ namespace MajdataPlay.IO
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = _sensors.Find(x => x.Type == sType);
-            var button = _buttons.Find(x => x.Type == sType);
+            var sensor = GetSensor(sType);
+            var button = GetButton(sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -252,8 +254,8 @@ namespace MajdataPlay.IO
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = _sensors.Find(x => x.Type == sType);
-            var button = _buttons.Find(x => x.Type == sType);
+            var sensor = GetSensor(sType);
+            var button = GetButton(sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -275,7 +277,7 @@ namespace MajdataPlay.IO
         {
             if (target > SensorType.A8)
                 throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
-            var button = _buttons.Find(x => x.Type == target);
+            var button = GetButton(target);
 
             if (button is null)
                 throw new Exception($"{target} Button not found.");
@@ -344,15 +346,23 @@ namespace MajdataPlay.IO
             }
             return isIdle;
         }
-        public Button? GetButton(SensorType type) => _buttons.Find(x => x.Type == type);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Button? GetButton(SensorType type)
+        {
+            var buttons = _buttons.AsSpan();
+            return buttons.Find(x => x.Type == type);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor GetSensor(SensorType target) => _sensors[(int)target];
-        public Sensor[] GetSensors() => _sensors.ToArray();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Sensor[] GetSensors() => _sensors;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor[] GetSensors(SensorGroup group) => _sensors.Where(x => x.Group == group).ToArray();
         public void ClearAllSubscriber()
         {
-            foreach(var sensor in _sensors)
+            foreach(var sensor in _sensors.AsSpan())
                 sensor.ClearSubscriber();
-            foreach(var button in _buttons)
+            foreach(var button in _buttons.AsSpan())
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }

@@ -319,14 +319,14 @@ namespace MajdataPlay.Extensions
             foreach (var item in source)
                 yield return (index++, item);
         }
-        public static T? Find<T>(this IEnumerable<T> source,Predicate<T> matcher)
+        public static T? Find<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             foreach(var item in source)
                 if(matcher(item))
                     return item;
             return default;
         }
-        public static T[] FindAll<T>(this IEnumerable<T> source, Predicate<T> matcher)
+        public static T[] FindAll<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             List<T> items = new();
             foreach (var item in source)
@@ -334,7 +334,7 @@ namespace MajdataPlay.Extensions
                     items.Add(item);
             return items.ToArray();
         }
-        public static int FindIndex<T>(this IEnumerable<T> source, Predicate<T> matcher)
+        public static int FindIndex<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             foreach(var (index,item) in source.WithIndex())
                 if (matcher(item))
@@ -344,6 +344,7 @@ namespace MajdataPlay.Extensions
     }
     public static class SpanExtensions
     {
+        public static bool IsEmpty<T>(this Span<T> source) => source.Length == 0;
         public static T Max<T>(this Span<T> source) where T: IComparable<T>
         {
             if (source.Length == 0)
@@ -377,6 +378,29 @@ namespace MajdataPlay.Extensions
         public static WithIndexEnumerable<T> WithIndex<T>(this Span<T> source)
         {
             return new WithIndexEnumerable<T>(source);
+        }
+        public static T? Find<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            foreach (var item in source)
+                if (matcher(item))
+                    return item;
+            return default;
+        }
+        public static Span<T> FindAll<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            Span<T> results = new T[source.Length];
+            int index = 0;
+            foreach (var item in source)
+                if (matcher(item))
+                    results[index++] = item;
+            return results.Slice(0, index);
+        }
+        public static int FindIndex<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            foreach (var (index, item) in source.WithIndex())
+                if (matcher(item))
+                    return index;
+            return -1;
         }
         public ref struct WithIndexEnumerable<T>
         {
