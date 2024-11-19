@@ -9,21 +9,21 @@ using System.Threading.Tasks;
 #pragma warning disable CS8500
 namespace MajdataPlay.References
 {
-    public unsafe readonly struct Ref<T> : IDisposable
+    public unsafe struct Ref<T> : IDisposable
     {
         public ref T? Target
         {
-            get => ref *_pointer;
+            get => ref Unsafe.AsRef<T?>(_pointer);
         }
 
-        readonly T* _pointer;
-        readonly IntPtr _handle;
+        void* _pointer;
+        IntPtr _handle;
         public Ref(ref T obj)
         {
             var handle = GCHandle.Alloc(obj, GCHandleType.Pinned);
             handle.AddrOfPinnedObject();
 
-            _pointer = (T*)Unsafe.AsPointer(ref obj);
+            _pointer = Unsafe.AsPointer(ref obj);
             _handle = GCHandle.ToIntPtr(handle);
         }
         public void Dispose()
