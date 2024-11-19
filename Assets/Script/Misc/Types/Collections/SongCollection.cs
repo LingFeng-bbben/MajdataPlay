@@ -1,4 +1,5 @@
 using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay.Collections
 {
     public class SongCollection : IEnumerable<SongDetail>
     {
@@ -17,7 +18,7 @@ namespace MajdataPlay.Types
             get => _index;
             set
             {
-                if(IsEmpty)
+                if (IsEmpty)
                     throw new ArgumentOutOfRangeException("this collection is empty");
                 _index = value.Clamp(0, origin.Length - 1);
             }
@@ -30,7 +31,7 @@ namespace MajdataPlay.Types
         SongDetail[] sorted;
         SongDetail[] origin;
         public SongDetail this[int index] => sorted[index];
-        public SongCollection(string name,in SongDetail[] pArray)
+        public SongCollection(string name, in SongDetail[] pArray)
         {
             sorted = pArray;
             origin = pArray;
@@ -44,7 +45,7 @@ namespace MajdataPlay.Types
         }
         public bool MoveNext()
         {
-            if(Index >= Count - 1)
+            if (Index >= Count - 1)
                 return false;
             Index++;
             return true;
@@ -53,7 +54,7 @@ namespace MajdataPlay.Types
         public void SortAndFilter(SongOrder orderBy)
         {
             IsSorted = true;
-            var filtered = Filter(origin,orderBy.Keyword);
+            var filtered = Filter(origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
             var newIndex = sorted.FindIndex(x => x == Current);
@@ -80,12 +81,12 @@ namespace MajdataPlay.Types
             }
             sorted = origin;
         }
-        static SongDetail[] Sort(SongDetail[] origin,SortType sortType)
+        static SongDetail[] Sort(SongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())
                 return origin;
             IEnumerable<SongDetail> result;
-            switch(sortType)
+            switch (sortType)
             {
                 case SortType.ByTime:
                     result = origin.OrderByDescending(o => o.AddTime);
@@ -104,14 +105,14 @@ namespace MajdataPlay.Types
             }
             return result.ToArray();
         }
-        static SongDetail[] Filter(SongDetail[] origin,string keyword)
+        static SongDetail[] Filter(SongDetail[] origin, string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
                 return origin;
             keyword = keyword.ToLower();
             var result = new Span<SongDetail>(new SongDetail[origin.Length]);
-            int i = 0;
-            foreach(var song in origin)
+            var i = 0;
+            foreach (var song in origin)
             {
                 var isTitleMatch = song.Title.ToLower().Contains(keyword);
                 var isArtistMatch = song.Artist.ToLower().Contains(keyword);
@@ -129,7 +130,7 @@ namespace MajdataPlay.Types
 
         // Implementation for the GetEnumerator method.
         IEnumerator IEnumerable.GetEnumerator() => origin.GetEnumerator();
-        struct Enumerator: IEnumerator<SongDetail>
+        struct Enumerator : IEnumerator<SongDetail>
         {
             SongDetail[] songs;
             public SongDetail Current { get; private set; }
@@ -141,9 +142,9 @@ namespace MajdataPlay.Types
                 Current = default;
                 index = 0;
             }
-            public bool MoveNext() 
+            public bool MoveNext()
             {
-                if(index >= songs.Length)
+                if (index >= songs.Length)
                     return false;
                 Current = songs[index++];
                 return true;

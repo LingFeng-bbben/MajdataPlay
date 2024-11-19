@@ -1,10 +1,11 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.Collections
 {
-    public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType,JudgeInfo>
+    public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType, JudgeInfo>
     {
         public JudgeInfo TotalJudgeInfo => total;
         IReadOnlyDictionary<ScoreNoteType, JudgeInfo> db;
@@ -42,7 +43,7 @@ namespace MajdataPlay.Types
 
             foreach (var kv in judgeInfo)
             {
-                if(!kv.Key.IsMissOrTooFast())
+                if (!kv.Key.IsMissOrTooFast())
                 {
                     if (kv.Key > JudgeType.Perfect)
                         fast += kv.Value;

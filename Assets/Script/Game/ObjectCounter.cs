@@ -8,6 +8,7 @@ using System.Linq;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Game
 {
