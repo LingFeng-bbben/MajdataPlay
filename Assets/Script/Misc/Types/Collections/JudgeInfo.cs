@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.Collections
 {
-    public class JudgeInfo : IReadOnlyDictionary<JudgeType,int>
+    public class JudgeInfo : IReadOnlyDictionary<JudgeType, int>
     {
         IReadOnlyDictionary<JudgeType, int> db;
-        public JudgeInfo(IReadOnlyDictionary<JudgeType, int> source) 
+        public JudgeInfo(IReadOnlyDictionary<JudgeType, int> source)
         {
             db = source;
         }
@@ -29,7 +29,7 @@ namespace MajdataPlay.Types
         public bool TryGetValue(JudgeType key, out int value) => db.TryGetValue(key, out value);
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)db).GetEnumerator();
 
-        public static JudgeInfo operator +(JudgeInfo left,JudgeInfo right)
+        public static JudgeInfo operator +(JudgeInfo left, JudgeInfo right)
         {
             var newRecord = left.ToDictionary(
                 kv => kv.Key,
@@ -38,7 +38,7 @@ namespace MajdataPlay.Types
 
             return new JudgeInfo(newRecord);
         }
-        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeType,int>()
+        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeType, int>()
         {
             {JudgeType.TooFast, 0 },
             {JudgeType.FastGood, 0 },

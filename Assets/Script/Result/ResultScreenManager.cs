@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Result
 {

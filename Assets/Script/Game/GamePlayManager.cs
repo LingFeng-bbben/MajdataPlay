@@ -17,6 +17,7 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Game
 {
