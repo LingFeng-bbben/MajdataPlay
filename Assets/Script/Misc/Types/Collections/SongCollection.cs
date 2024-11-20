@@ -85,24 +85,14 @@ namespace MajdataPlay.Collections
         {
             if (origin.IsEmpty())
                 return origin;
-            IEnumerable<SongDetail> result;
-            switch (sortType)
+            IEnumerable<SongDetail> result = sortType switch
             {
-                case SortType.ByTime:
-                    result = origin.OrderByDescending(o => o.AddTime);
-                    break;
-                case SortType.ByDiff:
-                    result = origin.OrderByDescending(o => o.Levels[4]);
-                    break;
-                case SortType.ByDes:
-                    result = origin.OrderBy(o => o.Designers[4]);
-                    break;
-                case SortType.ByTitle:
-                    result = origin.OrderBy(o => o.Title);
-                    break;
-                default:
-                    return origin;
-            }
+                SortType.ByTime => origin.OrderByDescending(o => o.AddTime),
+                SortType.ByDiff => origin.OrderByDescending(o => o.Levels[4]),
+                SortType.ByDes => origin.OrderBy(o => o.Designers[4]),
+                SortType.ByTitle => origin.OrderBy(o => o.Title),
+                _ => origin
+            };
             return result.ToArray();
         }
         static SongDetail[] Filter(SongDetail[] origin, string keyword)
