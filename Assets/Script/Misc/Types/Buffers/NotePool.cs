@@ -109,7 +109,7 @@ namespace MajdataPlay.Buffers
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Cannot destroy note:\n{e}");
+                    Debug.LogWarning($"Cannot destroy note:\n{e}");
                 }
             }
             foreach (var note in _inUseNotes)
@@ -121,7 +121,7 @@ namespace MajdataPlay.Buffers
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Cannot destroy note:\n{e}");
+                    Debug.LogWarning($"Cannot destroy note:\n{e}");
                 }
             }
         }
