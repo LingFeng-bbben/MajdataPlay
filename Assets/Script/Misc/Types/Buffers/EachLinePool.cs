@@ -6,7 +6,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Buffers
 {
-    public class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
+    public sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {
