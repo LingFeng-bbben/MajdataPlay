@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
 
-            transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             _thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
             _exRenderer.sortingOrder = SortOrder - _exSortOrder;
@@ -193,8 +193,8 @@ namespace MajdataPlay.Game.Notes
                         if (distance < 1.225f)
                         {
                             Distance = distance;
-                            transform.localScale = new Vector3(destScale, destScale);
-                            transform.position = GetPositionFromDistance(1.225f);
+                            Transform.localScale = new Vector3(destScale, destScale);
+                            Transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
                             _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
@@ -208,8 +208,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     {
                         Distance = distance;
-                        transform.position = GetPositionFromDistance(distance);
-                        transform.localScale = new Vector3(1f, 1f);
+                        Transform.position = GetPositionFromDistance(distance);
+                        Transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
                         _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
@@ -220,7 +220,7 @@ namespace MajdataPlay.Game.Notes
             if(IsStar)
             {
                 if (_gpManager.IsStart && _gameSetting.Game.StarRotation)
-                    transform.Rotate(0f, 0f, -180f * Time.deltaTime / RotateSpeed);
+                    Transform.Rotate(0f, 0f, -180f * Time.deltaTime / RotateSpeed);
             }
         }
         protected override void Check(object sender, InputEventArgs arg)
@@ -271,6 +271,8 @@ namespace MajdataPlay.Game.Notes
                     _exObject.layer = 0;
                     break;
             }
+            if (_breakShineController is not null)
+                _breakShineController.Active = state;
             SetTapLineActive(state);
             Active = state;
         }

@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -100,6 +101,8 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected SpriteRenderer[] _slideBarRenderers = { };
 
+        protected Transform[] _starTransforms = { };
+        protected Transform[] _slideBarTransforms = { };
         /// <summary>
         /// Slide star
         /// </summary>
@@ -108,7 +111,9 @@ namespace MajdataPlay.Game.Notes
         protected GameObject _slideOK;
         protected Animator _slideOKAnim;
         protected LoadJustSprite _slideOKController;
-        
+        protected BreakShineController? _starShineController;
+        protected BreakSlideShineController? _slideBarShineController;
+
         protected float _lastWaitTime;
         protected bool _canCheck = false;
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
@@ -117,8 +122,9 @@ namespace MajdataPlay.Game.Notes
         protected bool _isSoundPlayed = false;
         protected bool _isChecking = false;
         protected bool _isStarActive = false;
-        
-        
+        protected bool _isArrived = false;
+
+
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
@@ -296,6 +302,10 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
             }
+            if (_starShineController is not null)
+                _starShineController.Active = state;
+            if (_slideBarShineController is not null)
+                _slideBarShineController.Active = state;
         }
         protected override void PlaySFX()
         {
@@ -351,7 +361,10 @@ namespace MajdataPlay.Game.Notes
         {
             if (_stars.IsEmpty())
                 return;
-            GameObjectHelper.Destroy(ref _stars);
+            SetStarActive(false);
+            foreach (ref var star in _stars.AsSpan())
+                star = null;
+            //GameObjectHelper.Destroy(ref _stars);
         }
         protected async UniTaskVoid FadeIn()
         {

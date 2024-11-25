@@ -54,27 +54,31 @@ namespace MajdataPlay.Game.Notes
             _slideOKAnim = _slideOK.GetComponent<Animator>();
             _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
 
+            _starTransforms = new Transform[1];
+            _starTransforms[0] = star.transform;
             _starRenderer = star.GetComponent<SpriteRenderer>();
             _slideBars = new GameObject[transform.childCount - 1];
+            _slideBarTransforms = new Transform[transform.childCount - 1];
             _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
 
-            for (var i = 0; i < transform.childCount - 1; i++)
+            for (var i = 0; i < Transform.childCount - 1; i++)
             {
-                _slideBars[i] = transform.GetChild(i).gameObject;
+                _slideBars[i] = Transform.GetChild(i).gameObject;
                 _slideBarRenderers[i] = _slideBars[i].GetComponent<SpriteRenderer>();
+                _slideBarTransforms[i] = _slideBars[i].transform;
             }
 
 
             if (_isMirror)
             {
                 _table.Mirror();
-                transform.localScale = new Vector3(-1f, 1f, 1f);
-                transform.rotation = Quaternion.Euler(0f, 0f, -45f * StartPos);
+                Transform.localScale = new Vector3(-1f, 1f, 1f);
+                Transform.rotation = Quaternion.Euler(0f, 0f, -45f * StartPos);
                 _slideOK.transform.localScale = new Vector3(-1f, 1f, 1f);
             }
             else
             {
-                transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
+                Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             }
 
             var diff = Math.Abs(1 - StartPos);
@@ -100,8 +104,8 @@ namespace MajdataPlay.Game.Notes
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
             SetSlideBarAlpha(0f);
-            star.transform.position = _slidePositions[0];
-            star.transform.localScale = new Vector3(0f, 0f, 1f);
+            _starTransforms[0].position = _slidePositions[0];
+            _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
             _judgeQueues[0] = _table.JudgeQueue;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
@@ -226,10 +230,12 @@ namespace MajdataPlay.Game.Notes
         {
             // ConnSlide
             var star = _stars[0];
-            if (_stars.IsEmpty() || star is null)
+            var starTransform = _starTransforms[0];
+            if (_stars.IsEmpty() || star is null || _isArrived)
             {
                 if (IsFinished)
                     End();
+                Check();
                 return;
             }
 
@@ -254,12 +260,14 @@ namespace MajdataPlay.Game.Notes
                 }
 
                 _starRenderer.color = new Color(1, 1, 1, alpha);
-                star.transform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-                star.transform.position = _slidePositions[0];
+                starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                starTransform.position = _slidePositions[0];
                 ApplyStarRotation(_slideRotations[0]);
             }
             else
-                UpdateStar();
+            {
+                StarUpdate();
+            }
             Check();
         }        
         /// <summary>
@@ -398,13 +406,12 @@ namespace MajdataPlay.Game.Notes
         /// 更新引导Star状态
         /// <para>包括位置，角度</para>
         /// </summary>
-        void UpdateStar()
+        void StarUpdate()
         {
-            var star = _stars[0];
-            if (star is null)
-                return;
+            var starTransform = _starTransforms[0];
+
             _starRenderer.color = Color.white;
-            star.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
 
             var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
             var indexProcess = (_slidePositions.Count - 1) * process;
@@ -413,10 +420,11 @@ namespace MajdataPlay.Game.Notes
 
             if (process == 1)
             {
-                star.transform.position = _slidePositions.LastOrDefault();
-                ApplyStarRotation(_slideRotations.LastOrDefault());
+                starTransform.position = _slidePositions[_slidePositions.Count - 1];
+                ApplyStarRotation(_slideRotations[_slideRotations.Count - 1]);
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
                     DestroyStars();
+                _isArrived = true;
             }
             else
             {
@@ -425,7 +433,7 @@ namespace MajdataPlay.Game.Notes
                 var ba = a - b;
                 var newPos = ba * pos + b;
 
-                star.transform.position = newPos;
+                starTransform.position = newPos;
                 if (index < _slideRotations.Count - 1)
                 {
                     var _a = _slideRotations[index + 1].eulerAngles.z;
@@ -473,14 +481,18 @@ namespace MajdataPlay.Game.Notes
         }
         void ApplyStarRotation(Quaternion newRotation)
         {
+            
+            var star = _stars[0];
+            var starTransform = _starTransforms[0];
+            if (star is null)
+                return;
             var halfFlip = newRotation.eulerAngles;
-            var star = _stars[0]!;
 
             halfFlip.z += 180f;
             if (_isSpecialFlip)
-                star.transform.rotation = Quaternion.Euler(halfFlip);
+                starTransform.rotation = Quaternion.Euler(halfFlip);
             else
-                star.transform.rotation = newRotation;
+                starTransform.rotation = newRotation;
         }
         void LoadPath()
         {
@@ -514,9 +526,9 @@ namespace MajdataPlay.Game.Notes
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;
                 breakMaterial = skin.BreakMaterial;
-                var controller = gameObject.AddComponent<BreakSlideShineController>();
-                controller.Parent = this;
-                controller.Initialize();
+                _slideBarShineController = gameObject.AddComponent<BreakSlideShineController>();
+                _slideBarShineController.Parent = this;
+                _slideBarShineController.Initialize();
             }
 
             foreach(var bar in bars)
@@ -543,8 +555,8 @@ namespace MajdataPlay.Game.Notes
             if (breakMaterial != null)
             {
                 starRenderer.material = breakMaterial;
-                var controller = star.AddComponent<BreakShineController>();
-                controller.Parent = this;
+                _starShineController = star.AddComponent<BreakShineController>();
+                _starShineController.Parent = this;
             }
 
             if (_isJustR)

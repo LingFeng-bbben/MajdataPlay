@@ -7,18 +7,24 @@ namespace MajdataPlay.Game.Controllers
 {
     public class BreakShineController : MonoBehaviour, IUpdatableComponent<NoteStatus>
     {
-        public bool Active { get; private set; }
+        public bool Active { get; set; }
         public NoteStatus State => ((IStatefulNote?)Parent)?.State ?? NoteStatus.Destroyed;
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer? Renderer { get; set; } = null;
+
+        static readonly int _id1 = Shader.PropertyToID("_Brightness");
+        static readonly int _id2 = Shader.PropertyToID("_Contrast");
+
         GamePlayManager _gpManager;
+        Material _material;
 
         void Start()
         {
             if(Renderer is null)
                 Renderer = GetComponent<SpriteRenderer>();
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            Active = true;
+            _material = Renderer.material;
+            //Active = true;
         }
         void OnDestroy()
         {
@@ -31,11 +37,10 @@ namespace MajdataPlay.Game.Controllers
             if (Parent is not null && Parent.CanShine)
             {
                 var param = _gpManager.BreakParam;
-                var material = Renderer.material;
-                if (material is null)
+                if (_material is null)
                     return;
-                material.SetFloat("_Brightness", param.Brightness);
-                material.SetFloat("_Contrast", param.Contrast);
+                _material.SetFloat(_id1, param.Brightness);
+                _material.SetFloat(_id2, param.Contrast);
             }
         }
     }
