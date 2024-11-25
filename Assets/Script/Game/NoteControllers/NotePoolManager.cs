@@ -20,8 +20,6 @@ namespace MajdataPlay.Game
         [SerializeField]
         GameObject tapPrefab;
         [SerializeField]
-        GameObject starPrefab;
-        [SerializeField]
         GameObject holdPrefab;
         [SerializeField]
         GameObject touchPrefab;
@@ -45,13 +43,11 @@ namespace MajdataPlay.Game
         {
             var tapParent = transform.GetChild(0);
             var holdParent = transform.GetChild(1);
-            //var starParent = transform.GetChild(2);
             var touchParent = transform.GetChild(4);
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
             tapPool = new (tapPrefab, tapParent, tapInfos.ToArray(),128);
             holdPool = new (holdPrefab, holdParent, holdInfos.ToArray(),64);
-            //starPool = new (starPrefab, starParent, starInfos.ToArray(),128);
             touchPool = new (touchPrefab, touchParent, touchInfos.ToArray(),64);
             touchHoldPool = new (touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(),64);
             eachLinePool = new (eachLinePrefab, eachLineParent, eachLineInfos.ToArray(),64);
@@ -68,7 +64,6 @@ namespace MajdataPlay.Game
             var currentSec = _gpManager.AudioTime;
             tapPool.Update(currentSec);
             holdPool.Update(currentSec);
-            //starPool.Update(currentSec);
             touchPool.Update(currentSec);
             touchHoldPool.Update(currentSec);
             eachLinePool.Update(currentSec);

@@ -49,7 +49,11 @@ namespace MajdataPlay.Game.Notes
                 throw new MissingComponentException("Slide star not found");
 
             _table = slideTable;
-            _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one        
+
+            _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
+            _slideOKAnim = _slideOK.GetComponent<Animator>();
+            _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
+
             _starRenderer = star.GetComponent<SpriteRenderer>();
             _slideBars = new GameObject[transform.childCount - 1];
             _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
@@ -80,6 +84,7 @@ namespace MajdataPlay.Game.Notes
             LoadPath();
             LoadSkin();
             SetActive(false);
+            SetStarActive(false);
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             _fadeInTiming = -3.926913f / Speed;
@@ -95,6 +100,8 @@ namespace MajdataPlay.Game.Notes
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
             SetSlideBarAlpha(0f);
+            star.transform.position = _slidePositions[0];
+            star.transform.localScale = new Vector3(0f, 0f, 1f);
             _judgeQueues[0] = _table.JudgeQueue;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
@@ -226,7 +233,11 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            star.SetActive(true);
+            if(!_isStarActive)
+            {
+                SetStarActive(true);
+                _isStarActive = true;
+            }
             var timing = CurrentSec - Timing;
             if (timing <= 0f)
             {
@@ -372,16 +383,16 @@ namespace MajdataPlay.Game.Notes
 
                 if (IsBreak && _judgeResult == JudgeType.Perfect)
                 {
-                    var anim = _slideOK.GetComponent<Animator>();
-                    anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                    _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                 }
-                _slideOK.GetComponent<LoadJustSprite>().SetResult(_judgeResult);
+                _slideOKController.SetResult(_judgeResult);
                 PlayJudgeSFX(result);
                 PlaySlideOK(result);
             }
             else
                 Destroy(_slideOK);
-            Destroy(gameObject);
+            // Destroy(gameObject);
+            //SetActive(false);
         }
         /// <summary>
         /// 更新引导Star状态

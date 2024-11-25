@@ -190,4 +190,4 @@ MonoBehaviour:
   _isEach: 0
   _isBreak: 0
   _isEX: 0
-  tapLine: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}
+  _tapLinePrefab: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}

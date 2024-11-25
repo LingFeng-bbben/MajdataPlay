@@ -7,6 +7,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 #nullable enable
@@ -65,6 +66,8 @@ namespace MajdataPlay.Game.Notes
             }
 
             _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
+            _slideOKAnim = _slideOK.GetComponent<Animator>();
+            _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
 
             transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             _slideBars = new GameObject[transform.childCount - 1];
@@ -78,7 +81,17 @@ namespace MajdataPlay.Game.Notes
 
             LoadSkin();
             SetActive(false);
+            SetStarActive(false);
             SetSlideBarAlpha(0f);
+            for (var i = 0; i < _stars.Length; i++)
+            {
+                var star = _stars[i];
+                if (star is null)
+                    continue;
+                star.transform.position = _slideStartPositions[i];
+                star.transform.localScale = new Vector3(0f, 0f, 1f);
+                star.SetActive(true);
+            }
         }
         protected override void Start()
         {
@@ -219,9 +232,11 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentUpdate()
         {
-            foreach (var star in _stars)
-                star.SetActive(true);
-
+            if (!_isStarActive)
+            {
+                SetStarActive(true);
+                _isStarActive = true;
+            }
             var timing = CurrentSec - _timing;
             if (timing <= 0f)
             {
@@ -233,9 +248,12 @@ namespace MajdataPlay.Game.Notes
 
                 for (var i = 0; i < _stars.Length; i++)
                 {
+                    var star = _stars[i];
+                    if (star is null)
+                        continue;
                     _starRenderers[i].color = new Color(1, 1, 1, alpha);
-                    _stars[i].transform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-                    _stars[i].transform.position = _slideStartPositions[i];
+                    star.transform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                    star.transform.position = _slideStartPositions[i];
                 }
             }
             else
@@ -336,13 +354,12 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             if (IsBreak && _judgeResult == JudgeType.Perfect)
             {
-                var anim = _slideOK.GetComponent<Animator>();
-                anim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
             }
-            _slideOK.GetComponent<LoadJustSprite>().SetResult(_judgeResult);
+            _slideOKController.SetResult(_judgeResult);
             PlayJudgeSFX(result);
             PlaySlideOK(result);
-            Destroy(gameObject);
+            //Destroy(gameObject);
         }
         protected override void LoadSkin()
         {

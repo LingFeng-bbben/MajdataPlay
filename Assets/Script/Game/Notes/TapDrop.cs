@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>
+    public sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>
     {
         public RendererStatus RendererState
         {
@@ -22,14 +22,14 @@ namespace MajdataPlay.Game.Notes
                 switch(value)
                 {
                     case RendererStatus.Off:
-                        thisRenderer.forceRenderingOff = true;
-                        exRenderer.forceRenderingOff = true;
-                        tapLineRenderer.forceRenderingOff = true;
+                        _thisRenderer.forceRenderingOff = true;
+                        _exRenderer.forceRenderingOff = true;
+                        _tapLineRenderer.forceRenderingOff = true;
                         break;
                     case RendererStatus.On:
-                        thisRenderer.forceRenderingOff = false;
-                        exRenderer.forceRenderingOff = !IsEX;
-                        tapLineRenderer.forceRenderingOff = false;
+                        _thisRenderer.forceRenderingOff = false;
+                        _exRenderer.forceRenderingOff = !IsEX;
+                        _tapLineRenderer.forceRenderingOff = false;
                         break;
                 }
             }
@@ -38,20 +38,26 @@ namespace MajdataPlay.Game.Notes
         public float RotateSpeed { get; set; } = 0.0000000000000000000000000000001f;
         public bool IsDouble { get; set; } = false;
         public bool IsStar { get; set; } = false;
-        public float Distance { get; protected set; } = -100;
-        public GameObject tapLine;
+        public float Distance { get; set; } = -100;
 
-        protected BreakShineController? breakShineController = null;
-        protected SpriteRenderer thisRenderer;
-        protected SpriteRenderer exRenderer;
-        protected SpriteRenderer tapLineRenderer;
-        protected NotePoolManager notePoolManager;
+        [SerializeField]
+        GameObject _tapLinePrefab;
+
+        GameObject _tapLineObject;
+        GameObject _exObject;
+
+        
+        SpriteRenderer _thisRenderer;
+        SpriteRenderer _exRenderer;
+        SpriteRenderer _tapLineRenderer;
+        NotePoolManager _notePoolManager;
+        BreakShineController? _breakShineController = null;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
 
 
-        public virtual void Initialize(TapPoolingInfo poolingInfo)
+        public void Initialize(TapPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
                 return;
@@ -72,10 +78,14 @@ namespace MajdataPlay.Game.Notes
             if (State == NoteStatus.Start)
                 Start();
 
-            thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
-            exRenderer.sortingOrder = SortOrder - _exSortOrder;
+            transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            _thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
+            _exRenderer.sortingOrder = SortOrder - _exSortOrder;
 
             LoadSkin();
+            SetActive(true);
+            SetTapLineActive(false);
             _sensorPos = (SensorType)(StartPos - 1);
             if (_gpManager.IsAutoplay)
                 Autoplay();
@@ -83,13 +93,14 @@ namespace MajdataPlay.Game.Notes
                 SubscribeEvent();
             State = NoteStatus.Initialized;
         }
-        public virtual void End(bool forceEnd = false)
+        public void End(bool forceEnd = false)
         {
             State = NoteStatus.Destroyed;
             UnsubscribeEvent();
             if (!_isJudged || forceEnd) 
                 return;
 
+            SetActive(false);
             RendererState = RendererStatus.Off;
             var result = new JudgeResult()
             {
@@ -99,13 +110,13 @@ namespace MajdataPlay.Game.Notes
                 Diff = _judgeDiff
             };
             CanShine = false;
-            if (breakShineController is not null)
-                breakShineController.enabled = false;
+            if (_breakShineController is not null)
+                _breakShineController.enabled = false;
             PlayJudgeSFX(result);
             _effectManager.PlayEffect(StartPos, result);
             _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
-            notePoolManager.Collect(this);
+            _notePoolManager.Collect(this);
         }
         protected override void Start()
         {
@@ -113,13 +124,15 @@ namespace MajdataPlay.Game.Notes
                 return;
             base.Start();
             Active = true;
-            notePoolManager = FindObjectOfType<NotePoolManager>();
-            thisRenderer = GetComponent<SpriteRenderer>();
-            exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            _notePoolManager = FindObjectOfType<NotePoolManager>();
+            _thisRenderer = GetComponent<SpriteRenderer>();
 
-            tapLine = Instantiate(tapLine, _noteManager.gameObject.transform.GetChild(7));
-            tapLine.SetActive(false);
-            tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            _exObject = transform.GetChild(0).gameObject;
+            _exRenderer = _exObject.GetComponent<SpriteRenderer>();
+
+            _tapLineObject = Instantiate(_tapLinePrefab, _noteManager.gameObject.transform.GetChild(7));
+            _tapLineObject.SetActive(true);
+            _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
 
             transform.localScale = new Vector3(0, 0);
         }
@@ -165,9 +178,6 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
-                        tapLine.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
-
                         RendererState = RendererStatus.On;
                         CanShine = true;
                         State = NoteStatus.Scaling;
@@ -179,14 +189,14 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f)
-                            tapLine.SetActive(true);
+                            SetTapLineActive(true);
                         if (distance < 1.225f)
                         {
                             Distance = distance;
                             transform.localScale = new Vector3(destScale, destScale);
                             transform.position = GetPositionFromDistance(1.225f);
                             var lineScale = Mathf.Abs(1.225f / 4.8f);
-                            tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                            _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
                         else
                         {
@@ -201,7 +211,7 @@ namespace MajdataPlay.Game.Notes
                         transform.position = GetPositionFromDistance(distance);
                         transform.localScale = new Vector3(1f, 1f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
-                        tapLine.transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                        _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
                     break;
                 default:
@@ -235,18 +245,10 @@ namespace MajdataPlay.Game.Notes
                     End();
             }
         }
-        protected void SubscribeEvent()
-        {
-            _ioManager.BindArea(Check, _sensorPos);
-        }
-        protected void UnsubscribeEvent()
-        {
-            _ioManager.UnbindArea(Check, _sensorPos);
-        }
         protected override void LoadSkin()
         {
-            if (breakShineController is null)
-                breakShineController = gameObject.AddComponent<BreakShineController>();
+            if (_breakShineController is null)
+                _breakShineController = gameObject.AddComponent<BreakShineController>();
 
             RendererState = RendererStatus.Off;
 
@@ -255,12 +257,49 @@ namespace MajdataPlay.Game.Notes
             else
                 LoadTapSkin();
         }
+        public override void SetActive(bool state)
+        {
+            if (Active == state)
+                return;
+            base.SetActive(state);
+            switch(state)
+            {
+                case true:
+                    _exObject.layer = 0;
+                    break;
+                case false:
+                    _exObject.layer = 0;
+                    break;
+            }
+            SetTapLineActive(state);
+            Active = state;
+        }
+        void SetTapLineActive(bool state)
+        {
+            switch (state)
+            {
+                case true:
+                    _tapLineObject.layer = 0;
+                    break;
+                case false:
+                    _tapLineObject.layer = 3;
+                    break;
+            }
+        }
+        void SubscribeEvent()
+        {
+            _ioManager.BindArea(Check, _sensorPos);
+        }
+        void UnsubscribeEvent()
+        {
+            _ioManager.UnbindArea(Check, _sensorPos);
+        }
         void LoadTapSkin()
         {
             var skin = MajInstances.SkinManager.GetTapSkin();
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
 
             renderer.sprite = skin.Normal;
             renderer.material = skin.DefaultMaterial;
@@ -268,9 +307,9 @@ namespace MajdataPlay.Game.Notes
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
 
-            if (breakShineController is null)
-                throw new MissingComponentException(nameof(breakShineController));
-            breakShineController.enabled = false;
+            if (_breakShineController is null)
+                throw new MissingComponentException(nameof(_breakShineController));
+            _breakShineController.enabled = false;
             if (IsEach)
             {
                 renderer.sprite = skin.Each;
@@ -284,8 +323,8 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Break;
                 renderer.material = skin.BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
-                breakShineController.enabled = true;
-                breakShineController.Parent = this;
+                _breakShineController.enabled = true;
+                _breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
 
             }
@@ -294,16 +333,16 @@ namespace MajdataPlay.Game.Notes
         {
             var renderer = GetComponent<SpriteRenderer>();
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            var tapLineRenderer = tapLine.GetComponent<SpriteRenderer>();
+            var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
             var skin = MajInstances.SkinManager.GetStarSkin();
             renderer.material = skin.DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
 
-            if (breakShineController is null)
-                throw new MissingComponentException(nameof(breakShineController));
+            if (_breakShineController is null)
+                throw new MissingComponentException(nameof(_breakShineController));
 
-            breakShineController.enabled = false;
+            _breakShineController.enabled = false;
 
             if (IsDouble)
             {
@@ -321,8 +360,8 @@ namespace MajdataPlay.Game.Notes
                     renderer.sprite = skin.BreakDouble;
                     renderer.material = skin.BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    breakShineController.enabled = true;
-                    breakShineController.Parent = this;
+                    _breakShineController.enabled = true;
+                    _breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }
@@ -342,8 +381,8 @@ namespace MajdataPlay.Game.Notes
                     renderer.sprite = skin.Break;
                     renderer.material = skin.BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    breakShineController.enabled = true;
-                    breakShineController.Parent = this;
+                    _breakShineController.enabled = true;
+                    _breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }
