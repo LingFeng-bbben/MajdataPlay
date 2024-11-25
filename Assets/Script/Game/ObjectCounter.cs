@@ -952,7 +952,7 @@ namespace MajdataPlay.Game
         SimaiNoteType GetNoteType(NoteDrop note) => note switch
         {
             TapDrop => SimaiNoteType.Tap,
-            StarDrop => SimaiNoteType.Tap,
+            //StarDrop => SimaiNoteType.Tap,
             HoldDrop => SimaiNoteType.Hold,
             SlideDrop => SimaiNoteType.Slide,
             WifiDrop => SimaiNoteType.Slide,

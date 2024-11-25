@@ -157,7 +157,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1842247769
-  m_SortingLayer: 3
+  m_SortingLayer: 7
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: a637bcfa9453838428b7b6d590d4bf1b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -179,25 +179,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7955322054321000439}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c57176cc05c23a743af16831f7ec76ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 43a4a1be0a3c9af41918c882a121a7f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPosition: 0
-  time: 0
-  noteSortOrder: 0
-  speed: 1
-  isEach: 0
-  isBreak: 0
-  isEX: 0
-  tapSpr: {fileID: 0}
-  eachSpr: {fileID: 0}
-  breakSpr: {fileID: 0}
-  exSpr: {fileID: 0}
-  eachLine: {fileID: 21300000, guid: 1a40750ad0e4fb747aeeb83536f52d09, type: 3}
-  breakLine: {fileID: 21300000, guid: c190fb744a4bc94429a7cbce66f9fa9b, type: 3}
-  BreakShine: {fileID: 0}
-  tapLine: {fileID: 8134463029818261665, guid: 603ad5913a835274bafe6accdd5d812e, type: 3}
-  exEffectTap: {r: 1, g: 0.6745098, b: 0.88235295, a: 1}
-  exEffectEach: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}
-  exEffectBreak: {r: 1, g: 0.99607843, b: 0.46666667, a: 1}
-  breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
+  _state: 0
+  _startPos: 0
+  _timing: 0
+  _speed: 7
+  _sortOrder: 0
+  _isEach: 0
+  _isBreak: 0
+  _isEX: 0
+  tapLine: {fileID: 8134463029818261665, guid: ed6ad005bb60e9c409c75936f65b7f86, type: 3}

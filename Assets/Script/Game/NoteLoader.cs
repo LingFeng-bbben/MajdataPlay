@@ -406,9 +406,7 @@ namespace MajdataPlay.Game
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 IsStar = note.isForceStar,
-                IsNoHead = false,
-                IsFakeStar = note.isForceStar,
-                IsForceRotate = note.isFakeRotate,
+                RotateSpeed = note.isFakeRotate ? -2.22222222f: 0.0000000000000000000000000000001f,
                 QueueInfo = new TapQueueInfo()
                 {
                     Index = _noteIndex[startPos]++,
@@ -455,7 +453,7 @@ namespace MajdataPlay.Game
                 }
             };
         }
-        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing,GameObject slide)
+        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing)
         {
             var startPos = note.startPosition;
             var noteTiming = (float)timing.time;
@@ -515,12 +513,8 @@ namespace MajdataPlay.Game
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 IsStar = true,
-                IsNoHead = note.isSlideNoHead,
-                IsFakeStar = true,
-                IsForceRotate = false,
                 IsDouble = isDouble,
                 RotateSpeed = (float)note.slideTime,
-                Slide = null,
                 QueueInfo = queueInfo ?? TapQueueInfo.Default
             };
         }
@@ -964,8 +958,9 @@ namespace MajdataPlay.Game
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
 
-            _poolManager.AddTap(CreateStar(note, timing, slide));
-            
+            if(!note.isSlideNoHead)
+                _poolManager.AddTap(CreateStar(note, timing));
+
             SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
@@ -1043,7 +1038,8 @@ namespace MajdataPlay.Game
             endPos = Rotation(endPos);
             slideWifi.SetActive(true);
 
-            _poolManager.AddTap(CreateStar(note, timing, slideWifi));
+            if (!note.isSlideNoHead)
+                _poolManager.AddTap(CreateStar(note, timing));
 
             if (timing.noteList.Count > 1)
             {
