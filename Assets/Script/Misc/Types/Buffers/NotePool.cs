@@ -99,7 +99,7 @@ namespace MajdataPlay.Buffers
             if (!obj.activeSelf)
                 obj.SetActive(true);
         }
-        public virtual void Collect(IPoolableNote<TInfo, TMember> endNote)
+        public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)
         {
             _inUseNotes.Remove(endNote);
             _idleNotes.Add(endNote);

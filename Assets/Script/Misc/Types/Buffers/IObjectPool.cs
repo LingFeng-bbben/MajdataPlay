@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Buffers
 {
-    public interface IObjectPool<TElement> where TElement : IEquatable<TElement>
+    public interface IObjectPool<TElement>
     {
         int Capacity { get; set; }
         /// <summary>
