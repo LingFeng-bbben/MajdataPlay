@@ -935,12 +935,12 @@ namespace MajdataPlay.Game
         void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result,float totalLen,float totalSlideLen) where T: SlideBase
         {
             var speed = totalSlideLen / (totalLen * 1000);
-            var ratio = speed / 0.10153507236f;
+            var ratio = speed / 0.0034803742562305f;
 
             if (result.StarInfo is not null)
             {
                 var starInfo = result.StarInfo;
-                starInfo.RotateSpeed = -(2142.857142857143f) * ratio;
+                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio,-1080);
             }
         }
         void AddSlideToQueue<T>(SimaiTimingPoint timing,T SliCompo) where T :SlideBase
