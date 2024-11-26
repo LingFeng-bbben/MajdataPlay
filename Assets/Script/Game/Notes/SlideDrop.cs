@@ -231,10 +231,18 @@ namespace MajdataPlay.Game.Notes
             // ConnSlide
             var star = _stars[0];
             var starTransform = _starTransforms[0];
-            if (_stars.IsEmpty() || star is null || _isArrived)
+            if (_stars.IsEmpty() || star is null)
             {
                 if (IsFinished)
+                {
                     End();
+                    return;
+                }
+                Check();
+                return;
+            }
+            else if(_isArrived)
+            {
                 Check();
                 return;
             }
