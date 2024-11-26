@@ -11,7 +11,7 @@ namespace MajdataPlay.Types
     {
         public bool IsStar { get; init; }
         public bool IsDouble { get; init; }
-        public float RotateSpeed { get; init; } = 1f;
+        public float RotateSpeed { get; set; } = 1f;
         public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;
     }
 }

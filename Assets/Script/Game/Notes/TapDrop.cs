@@ -220,7 +220,7 @@ namespace MajdataPlay.Game.Notes
             if(IsStar)
             {
                 if (_gpManager.IsStart && _gameSetting.Game.StarRotation)
-                    Transform.Rotate(0f, 0f, -180f * Time.deltaTime / RotateSpeed);
+                    Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
             }
         }
         protected override void Check(object sender, InputEventArgs arg)
