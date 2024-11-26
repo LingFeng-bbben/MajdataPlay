@@ -481,7 +481,6 @@ namespace MajdataPlay.Game.Notes
         }
         void ApplyStarRotation(Quaternion newRotation)
         {
-            
             var star = _stars[0];
             var starTransform = _starTransforms[0];
             if (star is null)
@@ -493,19 +492,52 @@ namespace MajdataPlay.Game.Notes
                 starTransform.rotation = Quaternion.Euler(halfFlip);
             else
                 starTransform.rotation = newRotation;
+            //starTransform.rotation = newRotation;
         }
         void LoadPath()
         {
             _slidePositions.Add(GetPositionFromDistance(4.8f));
-            foreach (var bar in _slideBars)
+            for (int i = 0; i < _slideBars.Length; i++)
             {
+                var bar = _slideBars[i];
                 _slidePositions.Add(bar.transform.position);
 
                 _slideRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                if(i == _slideBars.Length - 1)
+                {
+                    var a = _slideBars[i - 1].transform.rotation.normalized.eulerAngles;
+                    var b = bar.transform.rotation.normalized.eulerAngles;
+                    var diff = a - b;
+                    var newEulerAugle = b - diff;
+                    _slideRotations.Add(Quaternion.Euler(newEulerAugle + new Vector3(0f, 0f, 18f)));
+                    //if(diff.z != 0)
+                    //{
+                    //    var _a = _slideBars[i - 1].transform.position;
+                    //    var _b = bar.transform.position;
+                    //    var m = (_a - _b).magnitude;
+                    //    var _c = m / Mathf.Tan(Mathf.Deg2Rad * 5.625f);
+                    //    var d = GetPositionFromDistance(4.8f, _endPos);
+
+                    //    var _m = (_b - d).magnitude;
+                    //    var angle = Mathf.Atan(_m / _c) * Mathf.Rad2Deg;
+                    //    var newEulerAugle = new Vector3(0, 0, angle);
+                    //    var magicNum = angle / 5.625f * 18f;
+                    //    if (diff.z < 0) 
+                    //    {
+                    //        newEulerAugle = new Vector3(0, 0, -angle);
+                    //    }
+                    //    newEulerAugle = b - newEulerAugle;
+                    //    _slideRotations.Add(Quaternion.Euler(newEulerAugle + new Vector3(0f, 0f, magicNum)));
+                    //}
+                    //else
+                    //{
+                    //    _slideRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                    //}
+                }
             }
             var endPos = GetPositionFromDistance(4.8f, _endPos);
             _slidePositions.Add(endPos);
-            _slideRotations.Add(_slideRotations.LastOrDefault());
+            //_slideRotations.Add(_slideRotations.LastOrDefault());
         }
         protected override void LoadSkin()
         {
