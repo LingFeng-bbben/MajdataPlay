@@ -255,7 +255,6 @@ namespace MajdataPlay.Game.Notes
             var timing = CurrentSec - Timing;
             if (timing <= 0f)
             {
-                CanShine = true;
                 float alpha;
                 if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
                     alpha = 0;
@@ -565,10 +564,7 @@ namespace MajdataPlay.Game.Notes
             {
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;
-                breakMaterial = skin.BreakMaterial;
-                _slideBarShineController = gameObject.AddComponent<BreakSlideShineController>();
-                _slideBarShineController.Parent = this;
-                _slideBarShineController.Initialize();
+                breakMaterial = BreakMaterial;
             }
 
             foreach(var bar in bars)
@@ -582,9 +578,9 @@ namespace MajdataPlay.Game.Notes
                 barRenderer.sprite = barSprite;
                 
 
-                if(breakMaterial != null)
+                if(breakMaterial is not null)
                 {
-                    barRenderer.material = breakMaterial;
+                    barRenderer.sharedMaterial = breakMaterial;
                     //var controller = bar.AddComponent<BreakShineController>();
                     //controller.Parent = this;
                 }
@@ -592,11 +588,9 @@ namespace MajdataPlay.Game.Notes
 
             var starRenderer = star.GetComponent<SpriteRenderer>();
             starRenderer.sprite = starSprite;
-            if (breakMaterial != null)
+            if (breakMaterial is not null)
             {
-                starRenderer.material = breakMaterial;
-                _starShineController = star.AddComponent<BreakShineController>();
-                _starShineController.Parent = this;
+                starRenderer.sharedMaterial = breakMaterial;
             }
 
             if (_isJustR)

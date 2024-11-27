@@ -111,8 +111,6 @@ namespace MajdataPlay.Game.Notes
         protected GameObject _slideOK;
         protected Animator _slideOKAnim;
         protected LoadJustSprite _slideOKController;
-        protected BreakShineController? _starShineController;
-        protected BreakSlideShineController? _slideBarShineController;
 
         protected float _lastWaitTime;
         protected bool _canCheck = false;
@@ -305,10 +303,6 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
             }
-            if (_starShineController is not null)
-                _starShineController.Active = state;
-            if (_slideBarShineController is not null)
-                _slideBarShineController.Active = state;
         }
         protected override void PlaySFX()
         {
@@ -341,7 +335,6 @@ namespace MajdataPlay.Game.Notes
         {
             if (Parent is not null && !Parent.IsDestroyed)
                 Parent.End(true);
-            CanShine = false;
             //foreach (var obj in _slideBars.AsSpan())
             //    obj.SetActive(false);
             //DestroyStars();

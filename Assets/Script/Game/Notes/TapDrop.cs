@@ -51,7 +51,6 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _exRenderer;
         SpriteRenderer _tapLineRenderer;
         NotePoolManager _notePoolManager;
-        BreakShineController? _breakShineController = null;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
@@ -109,9 +108,6 @@ namespace MajdataPlay.Game.Notes
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            CanShine = false;
-            if (_breakShineController is not null)
-                _breakShineController.enabled = false;
             PlayJudgeSFX(result);
             _effectManager.PlayEffect(StartPos, result);
             _noteManager.NextNote(QueueInfo);
@@ -179,7 +175,6 @@ namespace MajdataPlay.Game.Notes
                     if (destScale >= 0f)
                     {
                         RendererState = RendererStatus.On;
-                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -247,8 +242,6 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void LoadSkin()
         {
-            if (_breakShineController is null)
-                _breakShineController = gameObject.AddComponent<BreakShineController>();
 
             RendererState = RendererStatus.Off;
 
@@ -271,8 +264,6 @@ namespace MajdataPlay.Game.Notes
                     _exObject.layer = 0;
                     break;
             }
-            if (_breakShineController is not null)
-                _breakShineController.Active = state;
             SetTapLineActive(state);
             Active = state;
         }
@@ -309,15 +300,11 @@ namespace MajdataPlay.Game.Notes
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
 
-            if (_breakShineController is null)
-                throw new MissingComponentException(nameof(_breakShineController));
-            _breakShineController.enabled = false;
             if (IsEach)
             {
                 renderer.sprite = skin.Each;
                 tapLineRenderer.sprite = skin.NoteLines[1];
                 exRenderer.color = skin.ExEffects[1];
-
             }
 
             if (IsBreak)
@@ -325,10 +312,7 @@ namespace MajdataPlay.Game.Notes
                 renderer.sprite = skin.Break;
                 renderer.sharedMaterial = BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
-                _breakShineController.enabled = true;
-                _breakShineController.Parent = this;
                 exRenderer.color = skin.ExEffects[2];
-
             }
         }
         void LoadStarSkin()
@@ -340,11 +324,6 @@ namespace MajdataPlay.Game.Notes
             renderer.sharedMaterial = DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
-
-            if (_breakShineController is null)
-                throw new MissingComponentException(nameof(_breakShineController));
-
-            _breakShineController.enabled = false;
 
             if (IsDouble)
             {
@@ -362,8 +341,6 @@ namespace MajdataPlay.Game.Notes
                     renderer.sprite = skin.BreakDouble;
                     renderer.sharedMaterial = BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    _breakShineController.enabled = true;
-                    _breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }
@@ -383,8 +360,6 @@ namespace MajdataPlay.Game.Notes
                     renderer.sprite = skin.Break;
                     renderer.sharedMaterial = BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
-                    _breakShineController.enabled = true;
-                    _breakShineController.Parent = this;
                     exRenderer.color = skin.ExEffects[2];
                 }
             }

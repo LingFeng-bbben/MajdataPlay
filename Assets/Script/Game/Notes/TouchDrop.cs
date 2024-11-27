@@ -58,7 +58,6 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer justBorderRenderer;
         MultTouchHandler multTouchHandler;
         NotePoolManager notePoolManager;
-        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
         const int _fanSpriteSortOrder = 3;
         const int _justBorderSortOrder = 1;
@@ -131,8 +130,6 @@ namespace MajdataPlay.Game.Notes
             };
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
-            DisableBreakShine();
-            CanShine = false;
             point.SetActive(false);
             justBorder.SetActive(false);
 
@@ -192,23 +189,12 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-                var controller = breakShineControllers[i];
-                if(controller is null)
-                {
-                    controller = gameObject.AddComponent<BreakShineController>();
-                    controller.enabled = false;
-                    controller.Parent = this;
-                    controller.Renderer = fanRenderers[i];
-                    breakShineControllers[i] = controller;
-                }
             }
-            DisableBreakShine();
-            SetFansMaterial(skin.DefaultMaterial);
+            SetFansMaterial(DefaultMaterial);
             if (IsBreak)
             {
-                EnableBreakShine();
                 SetFansSprite(skin.Break);
-                SetFansMaterial(skin.BreakMaterial);
+                SetFansMaterial(BreakMaterial);
                 pointRenderer.sprite = skin.Point_Break;
             }
             else if (IsEach)
@@ -323,7 +309,6 @@ namespace MajdataPlay.Game.Notes
                         multTouchHandler.Register(_sensorPos,IsEach,IsBreak);
                         RendererState = RendererStatus.On;
                         point.SetActive(true);
-                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -391,25 +376,7 @@ namespace MajdataPlay.Game.Notes
         void SetFansMaterial(Material material)
         {
             for (var i = 0; i < 4; i++)
-                fanRenderers[i].material = material;
-        }
-        void DisableBreakShine()
-        {
-            for (var i = 0; i < 4; i++)
-            {
-                var controller = breakShineControllers[i];
-                if (controller is not null)
-                    controller.enabled = false;
-            }
-        }
-        void EnableBreakShine()
-        {
-            for (var i = 0; i < 4; i++)
-            {
-                var controller = breakShineControllers[i];
-                if (controller is not null)
-                    controller.enabled = true;
-            }
+                fanRenderers[i].sharedMaterial = material;
         }
         void SubscribeEvent()
         {

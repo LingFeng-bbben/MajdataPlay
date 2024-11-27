@@ -249,7 +249,6 @@ namespace MajdataPlay.Game.Notes
             var timing = CurrentSec - _timing;
             if (timing <= 0f)
             {
-                CanShine = true;
                 float alpha;
                 alpha = 1f - -timing / (_timing - _startTiming);
                 alpha = alpha > 1f ? 1f : alpha;
@@ -390,10 +389,7 @@ namespace MajdataPlay.Game.Notes
             {
                 barSprites = skin.Break;
                 starSprite = skin.Star.Break;
-                breakMaterial = skin.BreakMaterial;
-                _slideBarShineController = gameObject.AddComponent<BreakSlideShineController>();
-                _slideBarShineController.Parent = this;
-                _slideBarShineController.Initialize();
+                breakMaterial = BreakMaterial;
             }
             foreach(var (i,bar) in bars.WithIndex())
             {
@@ -404,23 +400,21 @@ namespace MajdataPlay.Game.Notes
                 barRenderer.sortingLayerName = "Slides";
 
                 barRenderer.sprite = barSprites[i];
-                if (breakMaterial != null)
+                if (breakMaterial is not null)
                 {
-                    barRenderer.material = breakMaterial;
+                    barRenderer.sharedMaterial = breakMaterial;
                     //var controller = bar.AddComponent<BreakShineController>();
                     //controller.Parent = this;
                 }
             }
             foreach(var (i, star) in _stars.WithIndex())
             {
-                var starRenderer = star.GetComponent<SpriteRenderer>();
+                var starRenderer = star!.GetComponent<SpriteRenderer>();
                 _starRenderers[i] = starRenderer;
                 starRenderer.sprite = starSprite;
-                if (breakMaterial != null)
+                if (breakMaterial is not null)
                 {
-                    starRenderer.material = breakMaterial;
-                    _starShineController = star.AddComponent<BreakShineController>();
-                    _starShineController.Parent = this;
+                    starRenderer.sharedMaterial = breakMaterial;
                 }
                 star.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (StartPos - 1)));
                 star.SetActive(false);

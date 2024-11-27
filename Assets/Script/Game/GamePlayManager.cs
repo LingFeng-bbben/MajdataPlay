@@ -82,6 +82,9 @@ namespace MajdataPlay.Game
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
 
+        static readonly int _id1 = Shader.PropertyToID("_Brightness");
+        static readonly int _id2 = Shader.PropertyToID("_Contrast");
+
         [SerializeField]
         Animator _bgInfoHeaderAnim;
         [SerializeField]
@@ -591,6 +594,8 @@ namespace MajdataPlay.Game
         }
         void Update()
         {
+            _breakMaterial.SetFloat(_id1, BreakParam.Brightness);
+            _breakMaterial.SetFloat(_id2, BreakParam.Contrast);
             UpdateAudioTime();
             if (_audioSample is null)
                 return;

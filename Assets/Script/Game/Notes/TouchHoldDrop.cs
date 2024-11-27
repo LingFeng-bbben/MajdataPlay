@@ -64,7 +64,6 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer pointRenderer;
         SpriteRenderer borderRenderer;
         NotePoolManager notePoolManager;
-        BreakShineController?[] breakShineControllers = new BreakShineController[4];
 
         const int _fanSpriteSortOrder = 2;
         const int _borderSortOrder = 6;
@@ -174,8 +173,6 @@ namespace MajdataPlay.Game.Notes
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            DisableBreakShine();
-            CanShine = false;
             point.SetActive(false);
             RendererState = RendererStatus.Off;
 
@@ -253,28 +250,16 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
             {
                 fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-                
-                var controller = breakShineControllers[i];
-                if (controller is null)
-                {
-                    controller = gameObject.AddComponent<BreakShineController>();
-                    controller.enabled = false;
-                    controller.Parent = this;
-                    controller.Renderer = fanRenderers[i];
-                    breakShineControllers[i] = controller;
-                }
             }
-            DisableBreakShine();
-            SetFansMaterial(skin.DefaultMaterial);
+            SetFansMaterial(DefaultMaterial);
             if(IsBreak)
             {
-                EnableBreakShine();
                 for (var i = 0; i < 4; i++)
                     fanRenderers[i].sprite = skin.Fans_Break[i];
                 borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
                 pointRenderer.sprite = skin.Point_Break;
                 board_On = skin.Boader_Break;
-                SetFansMaterial(skin.BreakMaterial);
+                SetFansMaterial(BreakMaterial);
             }
             else
             {
@@ -374,7 +359,6 @@ namespace MajdataPlay.Game.Notes
                     {
                         point.SetActive(true);
                         RendererState = RendererStatus.On;
-                        CanShine = true;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -479,35 +463,17 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            if(IsBreak)
-            {
-                foreach(var fanRenderer in fanRenderers)
-                {
-                    fanRenderer.material.SetFloat("_Brightness", 1);
-                    fanRenderer.material.SetFloat("_Contrast", 1);
-                }
-                DisableBreakShine();
-            }
-            CanShine = false;
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _audioEffMana.PlayTouchHoldSound();
             borderRenderer.sprite = board_On;
+            SetFansMaterial(DefaultMaterial);
         }
         void StopHoldEffect()
         {
-            if (IsBreak)
-            {
-                foreach (var fanRenderer in fanRenderers)
-                {
-                    fanRenderer.material.SetFloat("_Brightness", 1);
-                    fanRenderer.material.SetFloat("_Contrast", 1);
-                }
-                DisableBreakShine();
-            }
-            CanShine = false;
             _effectManager.ResetHoldEffect(_sensorPos);
             _audioEffMana.StopTouchHoldSound();
             borderRenderer.sprite = board_Off;
+            SetFansMaterial(DefaultMaterial);
         }
         Vector3 GetAngle(int index)
         {
@@ -521,25 +487,7 @@ namespace MajdataPlay.Game.Notes
         void SetFansMaterial(Material material)
         {
             for (var i = 0; i < 4; i++)
-                fanRenderers[i].material = material;
-        }
-        void DisableBreakShine()
-        {
-            for (var i = 0; i < 4; i++)
-            {
-                var controller = breakShineControllers[i];
-                if (controller is not null)
-                    controller.enabled = false;
-            }
-        }
-        void EnableBreakShine()
-        {
-            for (var i = 0; i < 4; i++)
-            {
-                var controller = breakShineControllers[i];
-                if (controller is not null)
-                    controller.enabled = true;
-            }
+                fanRenderers[i].sharedMaterial = material;
         }
         void SubscribeEvent()
         {

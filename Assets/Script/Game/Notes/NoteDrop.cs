@@ -12,7 +12,7 @@ using Random = System.Random;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
+    public abstract class NoteDrop : MonoBehaviour, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
     {
         public bool Active { get; protected set; } = false;
         public int StartPos 
@@ -73,7 +73,6 @@ namespace MajdataPlay.Game.Notes
             get => _state; 
             protected set => _state = value; 
         }
-        public bool CanShine { get; protected set; } = false;
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
 

@@ -17,7 +17,5 @@ namespace MajdataPlay.Types
         public Sprite Point_Break { get; init; }
         public Sprite Off {  get; init; }
 
-        public Material BreakMaterial { get; init; }
-        public Material DefaultMaterial { get; init; }
     }
 }

@@ -8,8 +8,6 @@ namespace MajdataPlay.Types
         public Sprite Each { get; init; }
         public Sprite Break { get; init; }
         public Sprite Ex { get; init; }
-        public Material BreakMaterial { get; init; }
-        public Material DefaultMaterial { get; init; }
 
         public Sprite[] NoteLines { get; init; }
         public Color[] ExEffects { get; init; }

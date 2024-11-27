@@ -21,8 +21,6 @@ namespace MajdataPlay
 
         public Sprite[] TapLines;
         public Sprite[] StarLines;
-        public Material BreakMaterial;
-        public Material DefaultMaterial;
         public RuntimeAnimatorController JustBreak;
 
         private void Awake()
@@ -87,8 +85,6 @@ namespace MajdataPlay
                 Break = SelectedSkin.Tap_Break,
                 Ex = SelectedSkin.Tap_Ex,
 
-                DefaultMaterial = DefaultMaterial,
-                BreakMaterial = BreakMaterial,
                 NoteLines = TapLines,
                 ExEffects = new Color[]
                 {
@@ -111,8 +107,6 @@ namespace MajdataPlay
                 Ex = SelectedSkin.Star_Ex,
                 ExDouble = SelectedSkin.Star_Ex_Double,
 
-                DefaultMaterial = DefaultMaterial,
-                BreakMaterial = BreakMaterial,
                 NoteLines = StarLines,
                 ExEffects = new Color[]
                 {
@@ -135,8 +129,6 @@ namespace MajdataPlay
                 Break_On = SelectedSkin.Hold_Break_On,
                 Ex = SelectedSkin.Hold_Ex,
 
-                DefaultMaterial = DefaultMaterial,
-                BreakMaterial = BreakMaterial,
                 NoteLines = TapLines,
                 Ends = new Sprite[3]
                 {
@@ -160,7 +152,6 @@ namespace MajdataPlay
                 Normal = SelectedSkin.Slide,
                 Each = SelectedSkin.Slide_Each,
                 Break = SelectedSkin.Slide_Break,
-                BreakMaterial = BreakMaterial
             };
         }
         public WifiSkin GetWifiSkin()
@@ -171,7 +162,6 @@ namespace MajdataPlay
                 Normal = SelectedSkin.Wifi,
                 Each = SelectedSkin.Wifi_Each,
                 Break = SelectedSkin.Wifi_Break,
-                BreakMaterial = BreakMaterial
             };
         }
         public TouchHoldSkin GetTouchHoldSkin()
@@ -197,8 +187,6 @@ namespace MajdataPlay
                 Point = SelectedSkin.TouchPoint,
                 Point_Break = SelectedSkin.TouchPoint_Break,
                 Off = SelectedSkin.TouchHold_Off,
-                DefaultMaterial = DefaultMaterial,
-                BreakMaterial = BreakMaterial,
             };
         }
         public TouchSkin GetTouchSkin()
@@ -214,8 +202,6 @@ namespace MajdataPlay
                 Border_Each = SelectedSkin.TouchBorder_Each,
                 Border_Normal = SelectedSkin.TouchBorder,
                 Border_Break = SelectedSkin.TouchBorder_Break,
-                DefaultMaterial = DefaultMaterial,
-                BreakMaterial = BreakMaterial,
                 JustBorder = SelectedSkin.TouchJust
             };
         }

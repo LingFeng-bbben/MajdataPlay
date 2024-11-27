@@ -13,6 +13,5 @@ namespace MajdataPlay.Types
         public Sprite Normal { get; init; }
         public Sprite Each { get; init; }
         public Sprite Break { get; init; }
-        public Material BreakMaterial { get; init; }
     }
 }
