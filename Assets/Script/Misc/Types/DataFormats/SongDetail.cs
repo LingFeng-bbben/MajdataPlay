@@ -55,41 +55,59 @@ namespace MajdataPlay.Types
             string[] levels = new string[7];
             string? coverPath = null;
 
-
-
             var maidata = Encoding.UTF8.GetString(maibyte).Split('\n');
             await Task.Run(() =>
             {
+
                 for (int i = 0; i < maidata.Length; i++)
                 {
-                    if (maidata[i].StartsWith("&title="))
-                        title = GetValue(maidata[i]);
-                    else if (maidata[i].StartsWith("&artist="))
-                        artist = GetValue(maidata[i]);
-                    else if (maidata[i].StartsWith("&des="))
+                    try
                     {
-                        for (int k = 0; k < designers.Length; k++)
+                        if (maidata[i].StartsWith("&title="))
+                            title = GetValue(maidata[i]);
+                        else if (maidata[i].StartsWith("&artist="))
+                            artist = GetValue(maidata[i]);
+                        else if (maidata[i].StartsWith("&des="))
                         {
-                            designers[k] = GetValue(maidata[i]);
+                            for (int k = 0; k < designers.Length; k++)
+                            {
+                                designers[k] = GetValue(maidata[i]);
+                            }
+                        }
+                        else if (maidata[i].StartsWith("&freemsg="))
+                            description = GetValue(maidata[i]);
+                        else if (maidata[i].StartsWith("&clock_count="))
+                            clockCount = int.Parse(GetValue(maidata[i]));
+                        else if (maidata[i].StartsWith("&first="))
+                        {
+                            if (double.TryParse(GetValue(maidata[i]), out double result))
+                            {
+                                first = result;
+                            }
+                            else
+                            {
+                                first = 0;
+                            }
+                        }
+                        else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&des_"))
+                        {
+                            for (int j = 1; j < 8 && i < maidata.Length; j++)
+                            {
+                                if (maidata[i].StartsWith("&lv_" + j + "="))
+                                    levels[j - 1] = GetValue(maidata[i]);
+                                else if (maidata[i].StartsWith("&des_" + j + "="))
+                                    designers[j - 1] = GetValue(maidata[i]);
+                            }
                         }
                     }
-                    else if (maidata[i].StartsWith("&freemsg="))
-                        description = GetValue(maidata[i]);
-                    else if (maidata[i].StartsWith("&clock_count="))
-                        clockCount = int.Parse(GetValue(maidata[i]));
-                    else if (maidata[i].StartsWith("&first="))
-                        first = double.Parse(GetValue(maidata[i]));
-                    else if (maidata[i].StartsWith("&lv_") || maidata[i].StartsWith("&des_"))
+                    catch (Exception ex)
                     {
-                        for (int j = 1; j < 8 && i < maidata.Length; j++)
-                        {
-                            if (maidata[i].StartsWith("&lv_" + j + "="))
-                                levels[j - 1] = GetValue(maidata[i]);
-                            else if (maidata[i].StartsWith("&des_" + j + "="))
-                                designers[j - 1] = GetValue(maidata[i]);
-                        }
+                        Debug.LogError("Failed to Load " + maidataPath + "at line " + i);
+                        Debug.LogError(ex.Message);
+                        throw ex;
                     }
                 }
+
             });
             if (coverFile != null)
                 coverPath = coverFile.FullName;
