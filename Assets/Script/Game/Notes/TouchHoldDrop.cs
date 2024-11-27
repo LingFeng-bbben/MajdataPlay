@@ -149,6 +149,8 @@ namespace MajdataPlay.Game.Notes
                 fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
             pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
+            mask.frontSortingOrder = SortOrder - _borderSortOrder;
+            mask.backSortingOrder = SortOrder - _borderSortOrder - 1;
 
             if (_gpManager.IsAutoplay)
                 Autoplay();

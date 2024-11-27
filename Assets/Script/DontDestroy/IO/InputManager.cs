@@ -30,6 +30,8 @@ namespace MajdataPlay.IO
 
         public event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
+        TimeSpan _btnDebounceTime = TimeSpan.Zero;
+        TimeSpan _sensorDebounceTime = TimeSpan.Zero;
         bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
         Task? _recvTask = null;
         Mutex _buttonCheckerMutex = new();
@@ -53,7 +55,44 @@ namespace MajdataPlay.IO
                     _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = type;
                 }
             }
-            
+            foreach(SensorType zone in Enum.GetValues(typeof(SensorType)))
+            {
+                if (((int)zone).InRange(0, 7))
+                {
+                    _btnLastTriggerTimes[zone] = DateTime.MinValue;
+                }
+                _sensorLastTriggerTimes[zone] = DateTime.MinValue;
+            }
+        }
+        /// <summary>
+        /// Used to check whether the device activation is caused by abnormal jitter
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <returns>
+        /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected bool JitterDetect(SensorType zone, DateTime now,bool isBtn = false)
+        {
+            DateTime lastTriggerTime;
+            TimeSpan debounceTime;
+            if(isBtn)
+            {
+                _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _btnDebounceTime;
+            }
+            else
+            {
+                _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _sensorDebounceTime;
+            }
+            var diff = now - lastTriggerTime;
+            if (diff < debounceTime)
+            {
+                Debug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                return true;
+            }
+            return false;
         }
         void CheckEnvironment(bool forceQuit = true)
         {
@@ -97,6 +136,8 @@ namespace MajdataPlay.IO
         }
         void StartInternalIOManager()
         {
+            _btnDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _sensorDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
             RawInput.Start();
             RawInput.OnKeyDown += OnRawKeyDown;
             RawInput.OnKeyUp += OnRawKeyUp;

@@ -10,7 +10,8 @@ namespace MajdataPlay.Buffers
     public class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {
-        public int Capacity { get; private set; } = 64;
+        public int Capacity { get; set; } = 64;
+        public bool IsStatic { get; } = true;
 
         protected TimingPoint<TInfo>?[] _timingPoints;
         protected List<IPoolableNote<TInfo, TMember>> _idleNotes;
@@ -69,31 +70,36 @@ namespace MajdataPlay.Buffers
             {
                 if (info is null)
                     continue;
-                else if (!Dequeue(info))
+                var idleNote = Dequeue();
+                if (idleNote is null)
                     return false;
+                ActiveObject(idleNote, info);
                 infos[i] = null;
             }
             return true;
         }
-        bool Dequeue(TInfo info)
+        public IPoolableNote<TInfo, TMember>? Dequeue()
         {
 
             if (_idleNotes.IsEmpty())
             {
                 Debug.LogWarning($"No more Note can use");
-                return false;
+                return null;
             }
             var idleNote = _idleNotes[0];
-            var obj = idleNote.GameObject;
-            info.Instance = obj;
-            _inUseNotes.Add(idleNote);
             _idleNotes.RemoveAt(0);
-            idleNote.Initialize(info);
+            return idleNote;
+        }
+        void ActiveObject(IPoolableNote<TInfo, TMember> element, TInfo info)
+        {
+            var obj = element.GameObject;
+            info.Instance = obj;
+            _inUseNotes.Add(element);
+            element.Initialize(info);
             if (!obj.activeSelf)
                 obj.SetActive(true);
-            return true;
         }
-        public virtual void Collect(IPoolableNote<TInfo, TMember> endNote)
+        public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)
         {
             _inUseNotes.Remove(endNote);
             _idleNotes.Add(endNote);

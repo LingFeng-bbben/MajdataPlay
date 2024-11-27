@@ -327,13 +327,13 @@ SpriteMask:
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 3b4060a5b8c39a84886b03d91d541a79, type: 3}
   m_MaskAlphaCutoff: 0
-  m_FrontSortingLayerID: 0
-  m_BackSortingLayerID: 0
-  m_FrontSortingLayer: 0
-  m_BackSortingLayer: 0
-  m_FrontSortingOrder: 0
-  m_BackSortingOrder: 0
-  m_IsCustomRangeActive: 0
+  m_FrontSortingLayerID: -1967659789
+  m_BackSortingLayerID: -1967659789
+  m_FrontSortingLayer: 8
+  m_BackSortingLayer: 8
+  m_FrontSortingOrder: 5
+  m_BackSortingOrder: 5
+  m_IsCustomRangeActive: 1
   m_SpriteSortPoint: 0
 --- !u!1 &4570065832111625927
 GameObject:
@@ -638,6 +638,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6839bc41b7edde469c9fc7c4c009e2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _state: 0
   _startPos: 0
   _timing: 0
   _speed: 0

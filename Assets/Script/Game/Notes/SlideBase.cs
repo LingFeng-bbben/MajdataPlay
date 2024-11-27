@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -100,21 +101,30 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected SpriteRenderer[] _slideBarRenderers = { };
 
-
-        
-
+        protected Transform[] _starTransforms = { };
+        protected Transform[] _slideBarTransforms = { };
         /// <summary>
         /// Slide star
         /// </summary>
         public GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
-        protected bool _isSoundPlayed = false;
+        protected Animator _slideOKAnim;
+        protected LoadJustSprite _slideOKController;
+        protected BreakShineController? _starShineController;
+        protected BreakSlideShineController? _slideBarShineController;
+
         protected float _lastWaitTime;
         protected bool _canCheck = false;
-        protected bool _isChecking = false;
-        
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+
+        // Flags
+        protected bool _isSoundPlayed = false;
+        protected bool _isChecking = false;
+        protected bool _isStarActive = false;
+        protected bool _isArrived = false;
+
+
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
@@ -259,28 +269,43 @@ namespace MajdataPlay.Game.Notes
                         _ioManager.BindSensor(Check, sensor);
                     State = NoteStatus.Running;
                 }
-                Active = true;
                 foreach (var slideBar in _slideBars.AsSpan())
                     slideBar.layer = 0;
-                foreach (var star in _stars.AsSpan())
-                {
-                    if (star is null)
-                        continue;
-                    star.layer = 0;
-                }
             }
             else
             {
-                Active = false;
+                
                 foreach (var slideBar in _slideBars.AsSpan())
                     slideBar.layer = 3;
-                foreach (var star in _stars.AsSpan())
-                {
-                    if (star is null)
-                        continue;
-                    star.layer = 3;
-                }
             }
+            SetStarActive(state);
+            Active = state;
+        }
+        protected void SetStarActive(bool state)
+        {
+            switch(state)
+            {
+                case true:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 0;
+                    }
+                    break;
+                case false:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 3;
+                    }
+                    break;
+            }
+            if (_starShineController is not null)
+                _starShineController.Active = state;
+            if (_slideBarShineController is not null)
+                _slideBarShineController.Active = state;
         }
         protected override void PlaySFX()
         {
@@ -314,9 +339,10 @@ namespace MajdataPlay.Game.Notes
             if (Parent is not null && !Parent.IsDestroyed)
                 Parent.End(true);
             CanShine = false;
-            foreach (GameObject obj in _slideBars)
-                obj.SetActive(false);
-            DestroyStars();
+            //foreach (var obj in _slideBars.AsSpan())
+            //    obj.SetActive(false);
+            //DestroyStars();
+            SetActive(false);
         }
         /// <summary>
         /// Connection Slide
@@ -335,7 +361,10 @@ namespace MajdataPlay.Game.Notes
         {
             if (_stars.IsEmpty())
                 return;
-            GameObjectHelper.Destroy(ref _stars);
+            SetStarActive(false);
+            foreach (ref var star in _stars.AsSpan())
+                star = null;
+            //GameObjectHelper.Destroy(ref _stars);
         }
         protected async UniTaskVoid FadeIn()
         {

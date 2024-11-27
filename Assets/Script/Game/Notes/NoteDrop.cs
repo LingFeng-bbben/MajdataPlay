@@ -57,7 +57,14 @@ namespace MajdataPlay.Game.Notes
             set => _isEX = value; 
         }
 
-        public GameObject GameObject => gameObject;
+        /// <summary>
+        /// Provides a cached GameObject instance
+        /// </summary>
+        public GameObject GameObject => _gameObject;
+        /// <summary>
+        /// Provides a cached Transform instance
+        /// </summary>
+        public Transform Transform => _transform;
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
@@ -90,6 +97,14 @@ namespace MajdataPlay.Game.Notes
         protected NoteAudioManager _audioEffMana;
         protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
+
+        GameObject _gameObject;
+        Transform _transform;
+        void Awake()
+        {
+            _gameObject = gameObject;
+            _transform = transform;
+        }
         protected virtual void Start()
         {
             _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;

@@ -49,11 +49,14 @@ namespace MajdataPlay.Game
         int _slideLayer = -1;
         int _noteSortOrder = 0;
         int _touchSortOrder = 0;
+        int _slideIndex = 0;
 
+        List<SlideQueueInfo> _slideQueueInfos = new();
         NoteManager _noteManager;
         Dictionary<int, int> _noteIndex = new();
         Dictionary<SensorType, int> _touchIndex = new();
 
+        SlideUpdater _slideUpdater;
         GamePlayManager _gpManager;
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
@@ -206,6 +209,7 @@ namespace MajdataPlay.Game
             _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _poolManager = MajInstanceHelper<NotePoolManager>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _slideUpdater = MajInstanceHelper<SlideUpdater>.Instance!;
         }
         public async UniTask LoadNotesIntoPool(SimaiProcess simaiProcess)
         {
@@ -365,6 +369,7 @@ namespace MajdataPlay.Game
                 State = NoteLoaderStatus.Error;
                 throw e;
             }
+            _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
             State = NoteLoaderStatus.Finished;
         }
@@ -401,9 +406,7 @@ namespace MajdataPlay.Game
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 IsStar = note.isForceStar,
-                IsNoHead = false,
-                IsFakeStar = note.isForceStar,
-                IsForceRotate = note.isFakeRotate,
+                RotateSpeed = note.isFakeRotate ? -440f: 0,
                 QueueInfo = new TapQueueInfo()
                 {
                     Index = _noteIndex[startPos]++,
@@ -450,7 +453,7 @@ namespace MajdataPlay.Game
                 }
             };
         }
-        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing,GameObject slide)
+        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing)
         {
             var startPos = note.startPosition;
             var noteTiming = (float)timing.time;
@@ -510,12 +513,8 @@ namespace MajdataPlay.Game
                 IsBreak = note.isBreak,
                 IsEX = note.isEx,
                 IsStar = true,
-                IsNoHead = note.isSlideNoHead,
-                IsFakeStar = false,
-                IsForceRotate = false,
                 IsDouble = isDouble,
-                RotateSpeed = (float)note.slideTime,
-                Slide = slide,
+                RotateSpeed = -180 / (float)note.slideTime,
                 QueueInfo = queueInfo ?? TapQueueInfo.Default
             };
         }
@@ -871,16 +870,22 @@ namespace MajdataPlay.Game
             float totalLen = (float)subSlide.Select(x => x.slideTime).Sum();
             float startTiming = (float)subSlide[0].slideStartTime;
             float totalSlideLen = 0;
+            CreateSlideResult<SlideDrop>? slideResult = null;
             for (var i = 0; i <= subSlide.Count - 1; i++)
             {
                 bool isConn = subSlide.Count != 1;
                 bool isGroupHead = i == 0;
                 bool isGroupEnd = i == subSlide.Count - 1;
+                SlideBase sliObj;
+                
                 if (note.noteContent!.Contains('w')) //wifi
                 {
                     if (isConn)
                         throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
-                    CreateWifi(timing, subSlide[i]);
+                    var result = CreateWifi(timing, subSlide[i]);
+                    sliObj = result.SlideInstance;
+                    AddSlideToQueue(timing, result.SlideInstance);
+                    UpdateStarRotateSpeed(result, (float)subSlide[i].slideTime, 8.93760109f);
                 }
                 else
                 {
@@ -893,9 +898,14 @@ namespace MajdataPlay.Game
                         Parent = parent,
                         StartTiming = startTiming
                     };
-                    parent = CreateSlide(timing, subSlide[i], info);
-                    subSlides.Add(parent.GameObject.GetComponent<SlideDrop>());
+                    var result = CreateSlide(timing, subSlide[i], info);
+                    parent = result.SlideInstance;
+                    sliObj = result.SlideInstance;
+                    subSlides.Add(result.SlideInstance);
+                    if(i == 0)
+                        slideResult = result;
                 }
+                AddSlideToQueue(timing, sliObj);
             }
             long judgeQueueLen = 0;
             var slideCount = subSlides.Count;
@@ -917,8 +927,37 @@ namespace MajdataPlay.Game
                 s.ConnectInfo.TotalSlideLen = totalSlideLen;
                 s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
             });
+            if(slideResult is not null)
+            {
+                UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
+            }
         }
-        private IConnectableSlide CreateSlide(SimaiTimingPoint timing, SubSlideNote note, ConnSlideInfo info)
+        void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result,float totalLen,float totalSlideLen) where T: SlideBase
+        {
+            var speed = totalSlideLen / (totalLen * 1000);
+            var ratio = speed / 0.0034803742562305f;
+
+            if (result.StarInfo is not null)
+            {
+                var starInfo = result.StarInfo;
+                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio,-1080);
+            }
+        }
+        void AddSlideToQueue<T>(SimaiTimingPoint timing,T SliCompo) where T :SlideBase
+        {
+            var speed = NoteSpeed * timing.HSpeed;
+            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+            var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
+            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
+            var appearTiming = (float)timing.time + appearDiff;
+            _slideQueueInfos.Add(new()
+            {
+                Index = _slideIndex++,
+                SlideObject = SliCompo,
+                AppearTiming = Math.Min(appearTiming, slideFadeInTiming)
+            });
+        }
+        private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing, SubSlideNote note, ConnSlideInfo info)
         {
             string slideShape = detectShapeFromText(note.noteContent);
             var isMirror = false;
@@ -940,8 +979,14 @@ namespace MajdataPlay.Game
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
 
-            _poolManager.AddTap(CreateStar(note, timing, slide));
-            
+            TapPoolingInfo? starInfo = null;
+            if(!note.isSlideNoHead)
+            {
+                var _info = CreateStar(note, timing);
+                _poolManager.AddTap(_info);
+                starInfo = _info;
+            }
+
             SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
@@ -996,18 +1041,14 @@ namespace MajdataPlay.Game
                 _slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
             }
             //slideLayer += 5;
-            return SliCompo;
-        }
-        int FindSlide(List<SimaiNote> notes,in SimaiNote note)
-        {
-            for (int i = 0; i < notes.Count; i++)
+            
+            return new()
             {
-                if (note == notes[i])
-                    return i;
-            }
-            return -1;
+                SlideInstance = SliCompo,
+                StarInfo = starInfo
+            };
         }
-        private GameObject CreateWifi(SimaiTimingPoint timing, SubSlideNote note)
+        private CreateSlideResult<WifiDrop> CreateWifi(SimaiTimingPoint timing, SubSlideNote note)
         {
             var str = note.noteContent.Substring(0, 3);
             var digits = str.Split('w');
@@ -1027,7 +1068,13 @@ namespace MajdataPlay.Game
             endPos = Rotation(endPos);
             slideWifi.SetActive(true);
 
-            _poolManager.AddTap(CreateStar(note, timing, slideWifi));
+            TapPoolingInfo? starInfo = null;
+            if (!note.isSlideNoHead)
+            {
+                var _info = CreateStar(note, timing);
+                _poolManager.AddTap(_info);
+                starInfo = _info;
+            }
 
             if (timing.noteList.Count > 1)
             {
@@ -1074,7 +1121,11 @@ namespace MajdataPlay.Game
             }
             //slideLayer += 5;
 
-            return slideWifi;
+            return new()
+            {
+                SlideInstance = WifiCompo,
+                StarInfo = starInfo
+            };
         }
         /// <summary>
         /// 判断Slide SlideOK是否需要镜像翻转
@@ -1406,14 +1457,20 @@ namespace MajdataPlay.Game
             var newKey = key.Diff(ChartRotation);
             return newKey.GetIndex();
         }
-        class SubSlideNote : SimaiNote
-        {
-            public SimaiNote Origin { get; set; } = new();
-        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         SensorType Rotation(SensorType sensorIndex)
         {
             return sensorIndex.Diff(ChartRotation);
+        }
+        class SubSlideNote : SimaiNote
+        {
+            public SimaiNote Origin { get; set; } = new();
+        }
+        readonly struct CreateSlideResult<T> where T : SlideBase
+        {
+            public T SlideInstance { get; init; }
+            public TapPoolingInfo? StarInfo { get; init; }
         }
     }
 }
