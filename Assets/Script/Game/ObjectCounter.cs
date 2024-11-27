@@ -729,10 +729,14 @@ namespace MajdataPlay.Game
         void UpdateCombo(long combo)
         {
             if (combo == 0)
-                bgInfoText.gameObject.SetActive(false);
+            {
+                bgInfoText.gameObject.layer = 3;
+                bgInfoHeader.gameObject.layer = 3;
+            }
             else
             {
-                bgInfoText.gameObject.SetActive(true);
+                bgInfoText.gameObject.layer = 0;
+                bgInfoHeader.gameObject.layer = 0;
                 bgInfoText.text = $"{combo}";
             }
         }

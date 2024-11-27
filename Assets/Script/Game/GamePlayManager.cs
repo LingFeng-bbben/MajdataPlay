@@ -81,6 +81,8 @@ namespace MajdataPlay.Game
         public GameObject FullComboAnimation;
 
         [SerializeField]
+        Animator _bgInfoHeaderAnim;
+        [SerializeField]
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
@@ -558,7 +560,7 @@ namespace MajdataPlay.Game
             StartToPlayAnswer();
 
             State = ComponentState.Running;
-
+            
             while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
@@ -566,6 +568,7 @@ namespace MajdataPlay.Game
             _audioSample.CurrentSec = 0;
             _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            _bgInfoHeaderAnim.SetTrigger("fadeIn");
         }
 
         void OnDestroy()
