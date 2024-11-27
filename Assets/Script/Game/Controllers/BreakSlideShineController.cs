@@ -12,14 +12,19 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Controllers
 {
-    public class BreakSlideShineController : MonoBehaviour
+    public class BreakSlideShineController : MonoBehaviour, IUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; set; }
+        public NoteStatus State => ((IStatefulNote?)Parent)?.State ?? NoteStatus.Destroyed;
         public IFlasher? Parent { get; set; } = null;
         public SpriteRenderer[] Renderers { get; set; } = ArrayPool<SpriteRenderer>.Shared.Rent(0);
 
         NoteStatus _state = NoteStatus.Start;
         GamePlayManager _gpManager;
+        Material[] _materials = { };
 
+        static readonly int _id1 = Shader.PropertyToID("_Brightness");
+        static readonly int _id2 = Shader.PropertyToID("_Contrast");
         public void Initialize()
         {
             if (_state >= NoteStatus.Initialized)
@@ -31,16 +36,25 @@ namespace MajdataPlay.Game.Controllers
             {
                 var parentObject = Parent.GameObject;
                 var barCount = parentObject.transform.childCount - 1;
-                Renderers = ArrayPool<SpriteRenderer>.Shared.Rent(barCount);
+                Renderers = new SpriteRenderer[barCount];
                 for (int i = 0; i < barCount; i++)
                     Renderers[i] = parentObject.transform.GetChild(i).GetComponent<SpriteRenderer>();
             }
+            
+            _state = NoteStatus.Initialized;
         }
         void Start()
         {
             Initialize();
+            //Active = true;
+            _materials = new Material[Renderers.Length];
+            for (var i = 0; i < _materials.Length; i++)
+            {
+                var renderer = Renderers[i];
+                _materials[i] = renderer.material;
+            }
         }
-        void Update()
+        public void ComponentUpdate()
         {
             if (Renderers.IsEmpty())
                 return;
@@ -49,15 +63,10 @@ namespace MajdataPlay.Game.Controllers
                 try
                 {
                     var param = _gpManager.BreakParam;
-                    foreach (var renderer in Renderers)
+                    foreach(var material in _materials.AsSpan())
                     {
-                        var material = renderer?.material;
-                        if (renderer is null)
-                            continue;
-                        if (material is null)
-                            continue;
-                        material.SetFloat("_Brightness", param.Brightness);
-                        material.SetFloat("_Contrast", param.Contrast);
+                        material.SetFloat(_id1, param.Brightness);
+                        material.SetFloat(_id2, param.Contrast);
                     }
                 }
                 catch
@@ -68,7 +77,8 @@ namespace MajdataPlay.Game.Controllers
         }
         void OnDestroy()
         {
-            ArrayPool<SpriteRenderer>.Shared.Return(Renderers);
+            //ArrayPool<SpriteRenderer>.Shared.Return(Renderers);
+            Active = false;
         }
     }
 

@@ -12,8 +12,9 @@ using Random = System.Random;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider
+    public abstract class NoteDrop : MonoBehaviour, IFlasher, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; protected set; } = false;
         public int StartPos 
         { 
             get => _startPos; 
@@ -56,15 +57,29 @@ namespace MajdataPlay.Game.Notes
             set => _isEX = value; 
         }
 
-        public GameObject GameObject => gameObject;
+        /// <summary>
+        /// Provides a cached GameObject instance
+        /// </summary>
+        public GameObject GameObject => _gameObject;
+        /// <summary>
+        /// Provides a cached Transform instance
+        /// </summary>
+        public Transform Transform => _transform;
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsDestroyed => State == NoteStatus.Destroyed;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
-        public NoteStatus State { get; protected set; } = NoteStatus.Start;
+        public NoteStatus State 
+        { 
+            get => _state; 
+            protected set => _state = value; 
+        }
         public bool CanShine { get; protected set; } = false;
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
 
+        [ReadOnlyField]
+        [SerializeField]
+        protected NoteStatus _state = NoteStatus.Start;
         protected GamePlayManager _gpManager;
         protected InputManager _ioManager = MajInstances.InputManager;
         protected bool _isJudged = false;
@@ -82,6 +97,14 @@ namespace MajdataPlay.Game.Notes
         protected NoteAudioManager _audioEffMana;
         protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
+
+        GameObject _gameObject;
+        Transform _transform;
+        void Awake()
+        {
+            _gameObject = gameObject;
+            _transform = transform;
+        }
         protected virtual void Start()
         {
             _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
@@ -91,8 +114,14 @@ namespace MajdataPlay.Game.Notes
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             _judgeTiming = Timing;
         }
+        void OnDestroy()
+        {
+            Active = false;
+        }
         protected abstract void LoadSkin();
         protected abstract void Check(object sender, InputEventArgs arg);
+        public abstract void ComponentUpdate();
+        public abstract void ComponentFixedUpdate();
         protected abstract void PlaySFX();
         protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
@@ -162,6 +191,17 @@ namespace MajdataPlay.Game.Notes
                 }
                 await Task.Delay(1);
             }
+        }
+        /// <summary>
+        /// Sets whether the camera renders this GameObject
+        /// </summary>
+        /// <param name="state"></param>
+        public virtual void SetActive(bool state)
+        {
+            if (state)
+                GameObject.layer = 0;
+            else
+                GameObject.layer = 3;
         }
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度

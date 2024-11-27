@@ -14,6 +14,8 @@ using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
 using MychIO.Connection;
+using static UnityEngine.GraphicsBuffer;
+using System.Runtime.CompilerServices;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -28,6 +30,8 @@ namespace MajdataPlay.IO
 
         public event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
+        TimeSpan _btnDebounceTime = TimeSpan.Zero;
+        TimeSpan _sensorDebounceTime = TimeSpan.Zero;
         bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
         Task? _recvTask = null;
         Mutex _buttonCheckerMutex = new();
@@ -40,10 +44,55 @@ namespace MajdataPlay.IO
             DontDestroyOnLoad(this);
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
+                var collider = child.GetComponent<Collider>();
+                var type = (SensorType)index;
                 _sensors[index] = child.GetComponent<Sensor>();
-                _sensors[index].Type = (SensorType)index;
+                _sensors[index].Type = type;
+                _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = type;
+                if(type.GetGroup() == SensorGroup.C)
+                {
+                    var childCollider = child.GetChild(0).GetComponent<Collider>();
+                    _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = type;
+                }
             }
-            
+            foreach(SensorType zone in Enum.GetValues(typeof(SensorType)))
+            {
+                if (((int)zone).InRange(0, 7))
+                {
+                    _btnLastTriggerTimes[zone] = DateTime.MinValue;
+                }
+                _sensorLastTriggerTimes[zone] = DateTime.MinValue;
+            }
+        }
+        /// <summary>
+        /// Used to check whether the device activation is caused by abnormal jitter
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <returns>
+        /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected bool JitterDetect(SensorType zone, DateTime now,bool isBtn = false)
+        {
+            DateTime lastTriggerTime;
+            TimeSpan debounceTime;
+            if(isBtn)
+            {
+                _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _btnDebounceTime;
+            }
+            else
+            {
+                _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _sensorDebounceTime;
+            }
+            var diff = now - lastTriggerTime;
+            if (diff < debounceTime)
+            {
+                Debug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                return true;
+            }
+            return false;
         }
         void CheckEnvironment(bool forceQuit = true)
         {
@@ -87,6 +136,8 @@ namespace MajdataPlay.IO
         }
         void StartInternalIOManager()
         {
+            _btnDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _sensorDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
             RawInput.Start();
             RawInput.OnKeyDown += OnRawKeyDown;
             RawInput.OnKeyUp += OnRawKeyUp;
@@ -241,8 +292,8 @@ namespace MajdataPlay.IO
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = _sensors.Find(x => x.Type == sType);
-            var button = _buttons.Find(x => x.Type == sType);
+            var sensor = GetSensor(sType);
+            var button = GetButton(sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -252,8 +303,8 @@ namespace MajdataPlay.IO
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
         public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var sensor = _sensors.Find(x => x.Type == sType);
-            var button = _buttons.Find(x => x.Type == sType);
+            var sensor = GetSensor(sType);
+            var button = GetButton(sType);
             if (sensor == null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
@@ -275,7 +326,7 @@ namespace MajdataPlay.IO
         {
             if (target > SensorType.A8)
                 throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
-            var button = _buttons.Find(x => x.Type == target);
+            var button = GetButton(target);
 
             if (button is null)
                 throw new Exception($"{target} Button not found.");
@@ -344,15 +395,23 @@ namespace MajdataPlay.IO
             }
             return isIdle;
         }
-        public Button? GetButton(SensorType type) => _buttons.Find(x => x.Type == type);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Button? GetButton(SensorType type)
+        {
+            var buttons = _buttons.AsSpan();
+            return buttons.Find(x => x.Type == type);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor GetSensor(SensorType target) => _sensors[(int)target];
-        public Sensor[] GetSensors() => _sensors.ToArray();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Sensor[] GetSensors() => _sensors;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor[] GetSensors(SensorGroup group) => _sensors.Where(x => x.Group == group).ToArray();
         public void ClearAllSubscriber()
         {
-            foreach(var sensor in _sensors)
+            foreach(var sensor in _sensors.AsSpan())
                 sensor.ClearSubscriber();
-            foreach(var button in _buttons)
+            foreach(var button in _buttons.AsSpan())
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }

@@ -149,6 +149,8 @@ namespace MajdataPlay.Game.Notes
                 fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
             pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
+            mask.frontSortingOrder = SortOrder - _borderSortOrder;
+            mask.backSortingOrder = SortOrder - _borderSortOrder - 1;
 
             if (_gpManager.IsAutoplay)
                 Autoplay();
@@ -191,7 +193,10 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Start()
         {
+            if (IsInitialized)
+                return;
             base.Start();
+            Active = true;
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
@@ -320,7 +325,7 @@ namespace MajdataPlay.Game.Notes
             _isJudged = true;
             PlayHoldEffect();
         }
-        void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running || IsDestroyed)
                 return;
@@ -358,7 +363,7 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.NextTouch(QueueInfo);
             }
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 

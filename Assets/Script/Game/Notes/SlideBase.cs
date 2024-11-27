@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -35,8 +36,9 @@ namespace MajdataPlay.Game.Notes
         { 
             get
             {
-                int[] reamaining = new int[3];
-                foreach (var (i, queue) in _judgeQueues.WithIndex())
+                Span<int> reamaining = stackalloc int[3];
+                var judgeQueues = _judgeQueues.AsSpan();
+                foreach (var (i, queue) in judgeQueues.WithIndex())
                     reamaining[i] = queue.Length;
                 return reamaining.Max();
             }
@@ -80,32 +82,49 @@ namespace MajdataPlay.Game.Notes
             get => _slideType;
             set => _slideType = value;
         }
-
         protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>()
         }; // 判定队列
+        /// <summary>
+        /// Arrows
+        /// </summary>
         [ReadOnlyField]
         [SerializeField]
-        protected GameObject[] _slideBars = { }; // Arrows
-
-
-        
-
+        protected GameObject[] _slideBars = { };
         /// <summary>
-        /// 引导Star
+        /// Arrow Renderers
         /// </summary>
-        public GameObject[] _stars = new GameObject[3];
+        [ReadOnlyField]
+        [SerializeField]
+        protected SpriteRenderer[] _slideBarRenderers = { };
+
+        protected Transform[] _starTransforms = { };
+        protected Transform[] _slideBarTransforms = { };
+        /// <summary>
+        /// Slide star
+        /// </summary>
+        public GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
-        protected bool _isSoundPlayed = false;
+        protected Animator _slideOKAnim;
+        protected LoadJustSprite _slideOKController;
+        protected BreakShineController? _starShineController;
+        protected BreakSlideShineController? _slideBarShineController;
+
         protected float _lastWaitTime;
         protected bool _canCheck = false;
-        protected bool _isChecking = false;
-        
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+
+        // Flags
+        protected bool _isSoundPlayed = false;
+        protected bool _isChecking = false;
+        protected bool _isStarActive = false;
+        protected bool _isArrived = false;
+
+
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
@@ -204,7 +223,7 @@ namespace MajdataPlay.Game.Notes
             endIndex = endIndex - 1;
             endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                _slideBars[i].SetActive(false);
+                _slideBarRenderers[i].forceRenderingOff = true;
         }
         protected void PlaySlideOK(in JudgeResult result)
         {
@@ -225,11 +244,10 @@ namespace MajdataPlay.Game.Notes
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var gm in _slideBars)
+            foreach (var sr in _slideBarRenderers.AsSpan())
             {
                 if (IsDestroyed)
                     return;
-                var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
@@ -239,6 +257,55 @@ namespace MajdataPlay.Game.Notes
                     sr.color = new Color(1f, 1f, 1f, alpha);
                 }
             }
+        }
+        public override void SetActive(bool state)
+        {
+            base.SetActive(state);
+            if (state)
+            {
+                if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
+                {
+                    foreach (var sensor in _judgeAreas)
+                        _ioManager.BindSensor(Check, sensor);
+                    State = NoteStatus.Running;
+                }
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 0;
+            }
+            else
+            {
+                
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 3;
+            }
+            SetStarActive(state);
+            Active = state;
+        }
+        protected void SetStarActive(bool state)
+        {
+            switch(state)
+            {
+                case true:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 0;
+                    }
+                    break;
+                case false:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 3;
+                    }
+                    break;
+            }
+            if (_starShineController is not null)
+                _starShineController.Active = state;
+            if (_slideBarShineController is not null)
+                _slideBarShineController.Active = state;
         }
         protected override void PlaySFX()
         {
@@ -272,9 +339,10 @@ namespace MajdataPlay.Game.Notes
             if (Parent is not null && !Parent.IsDestroyed)
                 Parent.End(true);
             CanShine = false;
-            foreach (GameObject obj in _slideBars)
-                obj.SetActive(false);
-            DestroyStars();
+            //foreach (var obj in _slideBars.AsSpan())
+            //    obj.SetActive(false);
+            //DestroyStars();
+            SetActive(false);
         }
         /// <summary>
         /// Connection Slide
@@ -293,12 +361,10 @@ namespace MajdataPlay.Game.Notes
         {
             if (_stars.IsEmpty())
                 return;
-            foreach (var star in _stars)
-            {
-                if (star != null)
-                    Destroy(star);
-            }
-            _stars = Array.Empty<GameObject>();
+            SetStarActive(false);
+            foreach (ref var star in _stars.AsSpan())
+                star = null;
+            //GameObjectHelper.Destroy(ref _stars);
         }
         protected async UniTaskVoid FadeIn()
         {
@@ -307,6 +373,8 @@ namespace MajdataPlay.Game.Notes
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
+            while (!Active)
+                await UniTask.Yield();
             while (CurrentSec < fullFadeInTiming) 
             {
                 var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);

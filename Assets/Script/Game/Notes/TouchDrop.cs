@@ -157,6 +157,7 @@ namespace MajdataPlay.Game.Notes
             if (IsInitialized)
                 return;
             base.Start();
+            Active = true;
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
             displayDuration = 0.2f * wholeDuration;
@@ -244,7 +245,7 @@ namespace MajdataPlay.Game.Notes
                     End();
             }
         }
-        private void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running || IsDestroyed)
                 return;
@@ -310,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             

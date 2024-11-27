@@ -182,6 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c57176cc05c23a743af16831f7ec76ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _state: 0
   _startPos: 0
   _timing: 0
   _speed: 7
@@ -189,4 +190,4 @@ MonoBehaviour:
   _isEach: 0
   _isBreak: 0
   _isEX: 0
-  tapLine: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}
+  _tapLinePrefab: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}

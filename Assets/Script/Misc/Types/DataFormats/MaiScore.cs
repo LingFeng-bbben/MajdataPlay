@@ -1,4 +1,5 @@
-﻿using MajSimaiDecode;
+﻿using MajdataPlay.Collections;
+using MajSimaiDecode;
 using System;
 using System.Collections.Generic;
 

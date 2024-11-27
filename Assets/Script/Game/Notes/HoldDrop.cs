@@ -161,6 +161,7 @@ namespace MajdataPlay.Game.Notes
             if (IsInitialized)
                 return;
             base.Start();
+            Active = true;
             var notes = _noteManager.gameObject.transform;
 
             tapLine = Instantiate(tapLine, notes.GetChild(7));
@@ -180,7 +181,7 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        private void FixedUpdate()
+        public override void ComponentFixedUpdate()
         {
             if (State < NoteStatus.Running || IsDestroyed)
                 return;
@@ -302,7 +303,7 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        void Update()
+        public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;

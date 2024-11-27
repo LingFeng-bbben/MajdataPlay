@@ -2,6 +2,7 @@
 using MajdataPlay.Types;
 using MychIO.Device;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -26,6 +27,7 @@ namespace MajdataPlay.IO
             RawKey.Numpad7,
             RawKey.Numpad3,
         };
+        readonly Dictionary<SensorType, DateTime> _btnLastTriggerTimes = new();
         Button[] _buttons = new Button[12]
         {
             new Button(RawKey.W,SensorType.A1),
@@ -45,9 +47,10 @@ namespace MajdataPlay.IO
         {
             if (!_buttonCheckerMutex.WaitOne(4))
                 return;
-            foreach (var keyId in _bindingKeys)
+            var buttons = _buttons.AsSpan();
+            foreach (var keyId in _bindingKeys.AsSpan())
             {
-                var button = _buttons.Find(x => x.BindingKey == keyId);
+                var button = buttons.Find(x => x.BindingKey == keyId);
                 if (button == null)
                 {
                     Debug.LogError($"Key not found:\n{keyId}");
@@ -55,8 +58,12 @@ namespace MajdataPlay.IO
                 }
                 var oldState = button.Status;
                 var newState = RawInput.IsKeyDown(keyId) ? SensorStatus.On : SensorStatus.Off;
+                var now = DateTime.Now;
                 if (oldState == newState)
                     continue;
+                else if (JitterDetect(button.Type, now, true))
+                    continue;
+                _btnLastTriggerTimes[button.Type] = now;
                 button.Status = newState;
                 Debug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()
@@ -74,14 +81,14 @@ namespace MajdataPlay.IO
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = _buttons.Find(x => x?.Type == sType);
+            var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.AddSubscriber(checker);
         }
         public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
-            var button = _buttons.Find(x => x?.Type == sType);
+            var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.RemoveSubscriber(checker);
@@ -113,7 +120,8 @@ namespace MajdataPlay.IO
                 return;
             if (_bindingKeys.All(x => x != key))
                 return;
-            var button = _buttons.Find(x => x.BindingKey == key);
+            var buttons = _buttons.AsSpan();
+            var button = buttons.Find(x => x.BindingKey == key);
             if (button == null)
             {
                 Debug.LogError($"Key not found:\n{key}");
@@ -121,8 +129,12 @@ namespace MajdataPlay.IO
             }
             var oldState = button.Status;
             var newState = state;
+            var now = DateTime.Now;
             if (oldState == newState)
                 return;
+            else if (JitterDetect(button.Type, now, true))
+                return;
+            _btnLastTriggerTimes[button.Type] = now;
             button.Status = newState;
             Debug.Log($"Key \"{button.BindingKey}\": {newState}");
             var msg = new InputEventArgs()
