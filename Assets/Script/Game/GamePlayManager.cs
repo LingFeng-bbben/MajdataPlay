@@ -65,17 +65,6 @@ namespace MajdataPlay.Game
         public ComponentState State { get; private set; } = ComponentState.Idle;
         // Data
         public MaiScore? HistoryScore { get; private set; }
-        public BreakShineParam BreakParam
-        {
-            get
-            {
-                return new BreakShineParam()
-                {
-                    Brightness = 0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0),
-                    Contrast = 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0)
-                };
-            }
-        }
         public Material BreakMaterial => _breakMaterial;
         public Material DefaultMaterial => _defaultMaterial;
 
@@ -594,8 +583,6 @@ namespace MajdataPlay.Game
         }
         void Update()
         {
-            _breakMaterial.SetFloat(_id1, BreakParam.Brightness);
-            _breakMaterial.SetFloat(_id2, BreakParam.Contrast);
             UpdateAudioTime();
             if (_audioSample is null)
                 return;
