@@ -237,7 +237,7 @@ namespace MajdataPlay.Game
                 {JudgeType.Miss, 0 },
             };
 
-            bgInfoText.gameObject.SetActive(true);
+            SetBgInfoActive(true);
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
@@ -308,7 +308,7 @@ namespace MajdataPlay.Game
                     bgInfoText.text = "";
                     break;
                 case BGInfoType.None:
-                    bgInfoText.gameObject.SetActive(false);
+                    SetBgInfoActive(false);
                     break;
                 default:
                     return;
@@ -730,13 +730,11 @@ namespace MajdataPlay.Game
         {
             if (combo == 0)
             {
-                bgInfoText.gameObject.layer = 3;
-                bgInfoHeader.gameObject.layer = 3;
+                SetBgInfoActive(false);
             }
             else
             {
-                bgInfoText.gameObject.layer = 0;
-                bgInfoHeader.gameObject.layer = 0;
+                SetBgInfoActive(true);
                 bgInfoText.text = $"{combo}";
             }
         }
@@ -840,7 +838,21 @@ namespace MajdataPlay.Game
             if (rate >= 0)
                 bgInfoText.text = $"{rate:F4}%";
             else
-                bgInfoText.gameObject.SetActive(false);
+                SetBgInfoActive(false);
+        }
+        void SetBgInfoActive(bool state)
+        {
+            switch(state)
+            {
+                case true:
+                    bgInfoText.gameObject.layer = 0;
+                    bgInfoHeader.gameObject.layer = 0;
+                    break;
+                case false:
+                    bgInfoText.gameObject.layer = 3;
+                    bgInfoHeader.gameObject.layer = 3;
+                    break;
+            }
         }
         void UpdateDXScoreRank()
         {
@@ -849,11 +861,13 @@ namespace MajdataPlay.Game
             var num = remainingDXScore - (dxRank.Lower + 1);
             if (dxRank.Rank == 0)
             {
-                bgInfoText.gameObject.SetActive(false);
+                SetBgInfoActive(false);
                 return;
             }
             else
-                bgInfoText.gameObject.SetActive(true);
+            {
+                SetBgInfoActive(true);
+            }
             bgInfoHeader.text = $"✧{dxRank.Rank}";
             bgInfoText.text = $"+{num}";
             switch (dxRank.Rank)
