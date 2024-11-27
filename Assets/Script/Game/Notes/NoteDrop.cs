@@ -77,6 +77,9 @@ namespace MajdataPlay.Game.Notes
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
 
+        protected Material BreakMaterial => _breakMaterial;
+        protected Material DefaultMaterial => _defaultMaterial;
+
         [ReadOnlyField]
         [SerializeField]
         protected NoteStatus _state = NoteStatus.Start;
@@ -98,6 +101,9 @@ namespace MajdataPlay.Game.Notes
         protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
+        Material _breakMaterial;
+        Material _defaultMaterial;
+
         GameObject _gameObject;
         Transform _transform;
         void Awake()
@@ -113,6 +119,8 @@ namespace MajdataPlay.Game.Notes
             _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             _judgeTiming = Timing;
+            _breakMaterial = _gpManager.BreakMaterial;
+            _defaultMaterial = _gpManager.DefaultMaterial;
         }
         void OnDestroy()
         {

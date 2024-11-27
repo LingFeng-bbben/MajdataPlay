@@ -258,53 +258,60 @@ namespace MajdataPlay.Game
                         if (_noteCount % 30 == 0)
                             await UniTask.Yield();
 
-                        switch (note.noteType)
+                        try
                         {
-                            case SimaiNoteType.Tap:
-                                {
-                                    var obj = CreateTap(note, timing);
-                                    _poolManager.AddTap(obj);
-                                    if (eachNotes.Count > 1 && i < 2)
+                            switch (note.noteType)
+                            {
+                                case SimaiNoteType.Tap:
                                     {
-                                        if (num is null)
-                                            num = 0;
-                                        else if (num != 0)
-                                            break;
+                                        var obj = CreateTap(note, timing);
+                                        _poolManager.AddTap(obj);
+                                        if (eachNotes.Count > 1 && i < 2)
+                                        {
+                                            if (num is null)
+                                                num = 0;
+                                            else if (num != 0)
+                                                break;
 
-                                        if (noteA is null)
-                                            noteA = obj;
-                                        else
-                                            noteB = obj;
+                                            if (noteA is null)
+                                                noteA = obj;
+                                            else
+                                                noteB = obj;
+                                        }
                                     }
-                                }
-                                break;
-                            case SimaiNoteType.Hold:
-                                {
-                                    var obj = CreateHold(note, timing);
-                                    _poolManager.AddHold(obj);
-                                    if (eachNotes.Count > 1 && i < 2)
+                                    break;
+                                case SimaiNoteType.Hold:
                                     {
-                                        if (num is null)
-                                            num = 1;
-                                        else if (num != 1)
-                                            break;
+                                        var obj = CreateHold(note, timing);
+                                        _poolManager.AddHold(obj);
+                                        if (eachNotes.Count > 1 && i < 2)
+                                        {
+                                            if (num is null)
+                                                num = 1;
+                                            else if (num != 1)
+                                                break;
 
-                                        if (noteA is null)
-                                            noteA = obj;
-                                        else
-                                            noteB = obj;
+                                            if (noteA is null)
+                                                noteA = obj;
+                                            else
+                                                noteB = obj;
+                                        }
                                     }
-                                }
-                                break;
-                            case SimaiNoteType.TouchHold:
-                                _poolManager.AddTouchHold(CreateTouchHold(note, timing));
-                                break;
-                            case SimaiNoteType.Touch:
-                                _poolManager.AddTouch(CreateTouch(note, timing, members));
-                                break;
-                            case SimaiNoteType.Slide:
-                                CreateSlideGroup(timing, note); // 星星组
-                                break;
+                                    break;
+                                case SimaiNoteType.TouchHold:
+                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing));
+                                    break;
+                                case SimaiNoteType.Touch:
+                                    _poolManager.AddTouch(CreateTouch(note, timing, members));
+                                    break;
+                                case SimaiNoteType.Slide:
+                                    CreateSlideGroup(timing, note); // 星星组
+                                    break;
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            throw new InvalidChartSyntaxException(timing, e);
                         }
                     }
                     if (members.Count != 0)

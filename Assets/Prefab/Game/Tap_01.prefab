@@ -183,6 +183,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _state: 0
+  _breakMaterial: {fileID: 2100000, guid: 236ca777eb286d94099e0750c7df85fe, type: 2}
+  _defaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   _startPos: 0
   _timing: 0
   _speed: 7

@@ -223,7 +223,10 @@ namespace MajdataPlay.Game.Notes
             endIndex = endIndex - 1;
             endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                _slideBarRenderers[i].forceRenderingOff = true;
+            {
+                //_slideBarRenderers[i].forceRenderingOff = true;
+                _slideBars[i].layer = 3;
+            }
         }
         protected void PlaySlideOK(in JudgeResult result)
         {

@@ -23,7 +23,7 @@ namespace MajdataPlay.Game.Controllers
             if(Renderer is null)
                 Renderer = GetComponent<SpriteRenderer>();
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            _material = Renderer.material;
+            _material = Renderer.sharedMaterial;
             //Active = true;
         }
         void OnDestroy()

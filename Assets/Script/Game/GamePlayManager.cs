@@ -76,6 +76,8 @@ namespace MajdataPlay.Game
                 };
             }
         }
+        public Material BreakMaterial => _breakMaterial;
+        public Material DefaultMaterial => _defaultMaterial;
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
@@ -86,6 +88,10 @@ namespace MajdataPlay.Game
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
+        [SerializeField]
+        Material _breakMaterial;
+        [SerializeField]
+        Material _defaultMaterial;
 
         [ReadOnlyField]
         [SerializeField]
@@ -519,7 +525,7 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
-                    Debug.LogError(e);
+                    Debug.LogException(e);
                     StopAllCoroutines();
                     throw e;
                 }
@@ -538,10 +544,12 @@ namespace MajdataPlay.Game
             await InitBackground();
             var noteLoaderTask = LoadNotes().AsTask();
 
-            while (!noteLoaderTask.IsCompleted)
+            while (true)
             {
                 if (noteLoaderTask.IsFaulted)
-                    throw noteLoaderTask.Exception;
+                    throw noteLoaderTask.Exception.InnerException;
+                else if (noteLoaderTask.IsCompleted)
+                    break;
                 await UniTask.Yield();
             }
             _noteManager.InitializeUpdater();

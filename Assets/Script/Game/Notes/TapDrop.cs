@@ -304,7 +304,7 @@ namespace MajdataPlay.Game.Notes
             var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
 
             renderer.sprite = skin.Normal;
-            renderer.material = skin.DefaultMaterial;
+            renderer.sharedMaterial = DefaultMaterial;
             exRenderer.sprite = skin.Ex;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
@@ -323,7 +323,7 @@ namespace MajdataPlay.Game.Notes
             if (IsBreak)
             {
                 renderer.sprite = skin.Break;
-                renderer.material = skin.BreakMaterial;
+                renderer.sharedMaterial = BreakMaterial;
                 tapLineRenderer.sprite = skin.NoteLines[2];
                 _breakShineController.enabled = true;
                 _breakShineController.Parent = this;
@@ -337,7 +337,7 @@ namespace MajdataPlay.Game.Notes
             var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
             var skin = MajInstances.SkinManager.GetStarSkin();
-            renderer.material = skin.DefaultMaterial;
+            renderer.sharedMaterial = DefaultMaterial;
             exRenderer.color = skin.ExEffects[0];
             tapLineRenderer.sprite = skin.NoteLines[0];
 
@@ -360,7 +360,7 @@ namespace MajdataPlay.Game.Notes
                 if (IsBreak)
                 {
                     renderer.sprite = skin.BreakDouble;
-                    renderer.material = skin.BreakMaterial;
+                    renderer.sharedMaterial = BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
                     _breakShineController.enabled = true;
                     _breakShineController.Parent = this;
@@ -381,7 +381,7 @@ namespace MajdataPlay.Game.Notes
                 if (IsBreak)
                 {
                     renderer.sprite = skin.Break;
-                    renderer.material = skin.BreakMaterial;
+                    renderer.sharedMaterial = BreakMaterial;
                     tapLineRenderer.sprite = skin.NoteLines[2];
                     _breakShineController.enabled = true;
                     _breakShineController.Parent = this;
