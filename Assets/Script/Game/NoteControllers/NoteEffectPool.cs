@@ -112,9 +112,7 @@ namespace MajdataPlay.Game
         public void Play(in JudgeResult judgeResult, SensorType sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
-            effectDisplayer.PlayEffect(judgeResult);
-            effectDisplayer.PlayResult(judgeResult);
-            effectDisplayer.PlayFastLate(judgeResult);
+            effectDisplayer.Play(judgeResult);
         }
         /// <summary>
         /// TouchHold
