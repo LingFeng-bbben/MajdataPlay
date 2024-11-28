@@ -26,127 +26,183 @@ namespace MajdataPlay.Game
         [SerializeField]
         SpriteRenderer breakRenderer;
 
-        Sprite breakSprite;
-        Sprite cPerfectSprite;
-        Sprite perfectSprite;
-        Sprite greatSprite;
-        Sprite goodSprite;
-        Sprite missSprite;
+
+        JudgeTextSkin _skin;
 
         bool _displayBreakScore = false;
+        bool _displayCriticalPerfect = false;
         void Start() 
         {
-            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
+            _skin = MajInstances.SkinManager.GetJudgeTextSkin();
             _displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
+            _displayCriticalPerfect = MajInstances.Setting.Display.DisplayCriticalPerfect;
+            Sprite breakSprite;
 
-            if (MajInstances.Setting.Display.DisplayCriticalPerfect)
+            if (_displayCriticalPerfect)
             {
-                //breakSprite = skin.CP_Break;
                 if (_displayBreakScore)
-                    breakSprite = skin.Break_2600_Shine;
+                    breakSprite = _skin.Break_2600_Shine;
                 else
-                    breakSprite = skin.CP_Shine;
-                cPerfectSprite = skin.CriticalPerfect;
+                    breakSprite = _skin.CP_Shine;
             }
             else
             {
-                //breakSprite = skin.P_Break;
-                breakSprite = skin.Break_2600_Shine;
-                cPerfectSprite = skin.Perfect;
+                if (_displayBreakScore)
+                    breakSprite = _skin.Break_2600_Shine;
+                else
+                    breakSprite = _skin.P_Shine;
             }
             breakRenderer.sprite = breakSprite;
-            perfectSprite = skin.Perfect;
-            greatSprite = skin.Great;
-            goodSprite = skin.Good;
-            missSprite = skin.Miss;
-            
         }
         public void Reset()
         {
             effectObject.SetActive(false);
         }
-        public void Play(in JudgeResult judgeResult)
+        public void Play(in JudgeResult judgeResult, bool isClassC = false)
         {
             effectObject.SetActive(true);
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Result;
 
             if (isBreak && _displayBreakScore)
-                LoadBreakSkin(judgeResult);
+                LoadBreakSkin(judgeResult,isClassC);
             else
-                LoadTapSkin(judgeResult);
+                LoadTapSkin(judgeResult,isClassC);
             
             if (isBreak && result == JudgeType.Perfect)
                 animator.SetTrigger("break");
             else
                 animator.SetTrigger("perfect");
         }
-        void LoadTapSkin(in JudgeResult judgeResult)
+        void LoadTapSkin(in JudgeResult judgeResult,bool isClassC = false)
         {
             switch (judgeResult.Result)
             {
                 case JudgeType.LateGood:
+                    textRenderer.sprite = isClassC ? _skin.Good.Late : _skin.Good.Normal;
+                    break;
                 case JudgeType.FastGood:
-                    textRenderer.sprite = goodSprite;
+                    textRenderer.sprite = isClassC ? _skin.Good.Fast : _skin.Good.Normal;
                     break;
                 case JudgeType.LateGreat:
                 case JudgeType.LateGreat1:
                 case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                    textRenderer.sprite = greatSprite;
+                    textRenderer.sprite = isClassC ? _skin.Great.Late : _skin.Great.Normal;
                     break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
+                case JudgeType.FastGreat:
+                case JudgeType.FastGreat1:
+                case JudgeType.FastGreat2:
+                    textRenderer.sprite = isClassC ? _skin.Great.Fast : _skin.Great.Normal;
+                    break;
                 case JudgeType.LatePerfect1:
+                case JudgeType.LatePerfect2:
+                    textRenderer.sprite = isClassC ? _skin.Perfect.Late : _skin.Perfect.Normal;
+                    break;
                 case JudgeType.FastPerfect1:
-                    textRenderer.sprite = perfectSprite;
+                case JudgeType.FastPerfect2:
+                    textRenderer.sprite = isClassC ? _skin.Perfect.Fast : _skin.Perfect.Normal;
                     break;
                 case JudgeType.Perfect:
-                    textRenderer.sprite = cPerfectSprite;
+                    if (isClassC)
+                    {
+                        var isJust = judgeResult.Diff == 0;
+                        var isFast = judgeResult.IsFast;
+                        if(_displayCriticalPerfect)
+                        {
+                            if (isJust)
+                                textRenderer.sprite = _skin.CriticalPerfect.Normal;
+                            else if (isFast)
+                                textRenderer.sprite = _skin.CriticalPerfect.Fast;
+                            else
+                                textRenderer.sprite = _skin.CriticalPerfect.Late;
+                        }
+                        else
+                        {
+                            if (isJust)
+                                textRenderer.sprite = _skin.Perfect.Normal;
+                            else if (isFast)
+                                textRenderer.sprite = _skin.Perfect.Fast;
+                            else
+                                textRenderer.sprite = _skin.Perfect.Late;
+                        }
+                    }
+                    else
+                    {
+                        if(_displayCriticalPerfect)
+                            textRenderer.sprite = _skin.CriticalPerfect.Normal;
+                        else
+                            textRenderer.sprite = _skin.Perfect.Normal;
+                    }
                     break;
                 default:
-                    textRenderer.sprite = missSprite;
+                    textRenderer.sprite = _skin.Miss;
                     break;
             }
         }
-        void LoadBreakSkin(in JudgeResult judgeResult)
+        void LoadBreakSkin(in JudgeResult judgeResult, bool isClassC = false)
         {
-            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
             switch (judgeResult.Result)
             {
                 case JudgeType.LateGood:
+                    textRenderer.sprite = isClassC ? _skin.Break_1000.Late : _skin.Break_1000.Normal;
+                    break;
                 case JudgeType.FastGood:
-                    textRenderer.sprite = skin.Break_1000;
-                    break;
-                case JudgeType.LateGreat:
-                case JudgeType.FastGreat:
-                    textRenderer.sprite = skin.Break_1250;
-                    break;
-                case JudgeType.LateGreat1:
-                case JudgeType.FastGreat1:
-                    textRenderer.sprite = skin.Break_1500;
+                    textRenderer.sprite = isClassC ? _skin.Break_1000.Fast : _skin.Break_1000.Normal;
                     break;
                 case JudgeType.LateGreat2:
+                    textRenderer.sprite = isClassC ? _skin.Break_1250.Late : _skin.Break_1250.Normal;
+                    break;
                 case JudgeType.FastGreat2:
-                    textRenderer.sprite = skin.Break_2000;
+                    textRenderer.sprite = isClassC ? _skin.Break_1250.Fast : _skin.Break_1250.Normal;
+                    break;
+                case JudgeType.LateGreat1:
+                    textRenderer.sprite = isClassC ? _skin.Break_1500.Late : _skin.Break_1500.Normal;
+                    break;
+                case JudgeType.FastGreat1:
+                    textRenderer.sprite = isClassC ? _skin.Break_1500.Fast : _skin.Break_1500.Normal;
+                    break;
+                case JudgeType.LateGreat:
+                    textRenderer.sprite = isClassC ? _skin.Break_2000.Late : _skin.Break_2000.Normal;
+                    break;
+                case JudgeType.FastGreat:
+                    textRenderer.sprite = isClassC ? _skin.Break_2000.Fast : _skin.Break_2000.Normal;
                     break;
                 case JudgeType.LatePerfect2:
+                    textRenderer.sprite = isClassC ? _skin.Break_2500.Late : _skin.Break_1500.Normal;
+                    break;
                 case JudgeType.FastPerfect2:
-                    textRenderer.sprite = skin.Break_2500;
+                    textRenderer.sprite = isClassC ? _skin.Break_2500.Fast : _skin.Break_1500.Normal;
                     break;
                 case JudgeType.LatePerfect1:
+                    textRenderer.sprite = isClassC ? _skin.Break_2550.Late : _skin.Break_2550.Normal;
+                    break;
                 case JudgeType.FastPerfect1:
-                    textRenderer.sprite = skin.Break_2550;
+                    textRenderer.sprite = isClassC ? _skin.Break_2550.Fast : _skin.Break_2550.Normal;
                     break;
                 case JudgeType.Perfect:
-                    textRenderer.sprite = skin.Break_2600;
+                    {
+                        if(isClassC)
+                        {
+                            var isJust = judgeResult.Diff == 0;
+                            var isFast = judgeResult.IsFast;
+                            if (isJust)
+                                textRenderer.sprite = _skin.Break_2600.Normal;
+                            else if (isFast)
+                                textRenderer.sprite = _skin.Break_2600.Fast;
+                            else
+                                textRenderer.sprite = _skin.Break_2600.Late;
+                        }
+                        else
+                        {
+                            textRenderer.sprite = _skin.Break_2600.Normal;
+                        }
+                    }
                     break;
                 default:
-                    textRenderer.sprite = skin.Break_0;
+                    textRenderer.sprite = _skin.Break_0;
                     break;
             }
         }
+        
     }
 }

@@ -103,7 +103,7 @@ namespace MajdataPlay.Game
             PlayEffect(judgeResult);
             if(IsClassCAvailable(judgeResult))
             {
-
+                judgeTextDisplayer.Play(judgeResult,true);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace MajdataPlay.Game
             }
             fastLateDisplayer.Play(judgeResult);
         }
-        static bool IsClassCAvailable(in JudgeResult judgeResult)
+        public static bool IsClassCAvailable(in JudgeResult judgeResult)
         {
             bool canPlay;
             var isBreak = judgeResult.IsBreak;
