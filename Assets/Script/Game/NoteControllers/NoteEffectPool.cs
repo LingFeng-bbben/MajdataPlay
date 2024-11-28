@@ -102,9 +102,7 @@ namespace MajdataPlay.Game
         public void Play(in JudgeResult judgeResult,int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
-            effectDisplayer.PlayEffect(judgeResult);
-            effectDisplayer.PlayResult(judgeResult);
-            effectDisplayer.PlayFastLate(judgeResult);
+            effectDisplayer.Play(judgeResult);
         }
         /// <summary>
         /// Touch
@@ -126,9 +124,7 @@ namespace MajdataPlay.Game
         public void PlayTouchHoldEffect(in JudgeResult judgeResult, SensorType sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
-            effectDisplayer.PlayEffect(judgeResult);
-            effectDisplayer.PlayResult(judgeResult);
-            effectDisplayer.PlayFastLate(judgeResult);
+            effectDisplayer.Play(judgeResult);
         }
         public void PlayHoldEffect(in JudgeType judgeType,int keyIndex)
         {

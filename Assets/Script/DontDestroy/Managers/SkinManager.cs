@@ -55,25 +55,80 @@ namespace MajdataPlay
         {
             return new()
             {
-                CP_Break = SelectedSkin.CriticalPerfect_Break,
-                P_Break = SelectedSkin.Perfect_Break,
+                CP_Shine = SelectedSkin.CriticalPerfect_Shine,
+                P_Shine = SelectedSkin.Perfect_Shine,
                 Break_2600_Shine = SelectedSkin.Break_2600_Shine,
-                Break_2600 = SelectedSkin.Break_2600,
-                Break_2550 = SelectedSkin.Break_2550,
-                Break_2500 = SelectedSkin.Break_2500,
-                Break_2000 = SelectedSkin.Break_2000,
-                Break_1500 = SelectedSkin.Break_1500,
-                Break_1250 = SelectedSkin.Break_1250,
-                Break_1000 = SelectedSkin.Break_1000,
+                Break_2600 = new()
+                {
+                    Fast = SelectedSkin.Break_2600_Fast,
+                    Normal = SelectedSkin.Break_2600,
+                    Late = SelectedSkin.Break_2600_Late
+                },
+                Break_2550 = new()
+                {
+                    Fast = SelectedSkin.Break_2550_Fast,
+                    Normal = SelectedSkin.Break_2550,
+                    Late = SelectedSkin.Break_2550_Late
+                },
+                Break_2500 = new()
+                {
+                    Fast = SelectedSkin.Break_2500_Fast,
+                    Normal = SelectedSkin.Break_2500,
+                    Late = SelectedSkin.Break_2500_Late
+                },
+                Break_2000 = new()
+                {
+                    Fast = SelectedSkin.Break_2000_Fast,
+                    Normal = SelectedSkin.Break_2000,
+                    Late = SelectedSkin.Break_2000_Late
+                },
+                Break_1500 = new()
+                {
+                    Fast = SelectedSkin.Break_1500_Fast,
+                    Normal = SelectedSkin.Break_1500,
+                    Late = SelectedSkin.Break_1500_Late
+                },
+                Break_1250 = new()
+                {
+                    Fast = SelectedSkin.Break_1250_Fast,
+                    Normal = SelectedSkin.Break_1250,
+                    Late = SelectedSkin.Break_1250_Late
+                },
+                Break_1000 = new()
+                {
+                    Fast = SelectedSkin.Break_1000_Fast,
+                    Normal = SelectedSkin.Break_1000,
+                    Late = SelectedSkin.Break_1000_Late
+                },
                 Break_0 = SelectedSkin.Break_0,
-                CriticalPerfect = SelectedSkin.JudgeText[4],
-                Perfect = SelectedSkin.JudgeText[3],
-                Great = SelectedSkin.JudgeText[2],
-                Good = SelectedSkin.JudgeText[1],
-                Miss = SelectedSkin.JudgeText[0],
+                CriticalPerfect = new()
+                {
+                    Fast = SelectedSkin.CriticalPerfect_Fast,
+                    Normal = SelectedSkin.CriticalPerfect,
+                    Late = SelectedSkin.CriticalPerfect_Late
+                },
+                Perfect = new()
+                {
+                    Fast = SelectedSkin.Perfect_Fast,
+                    Normal = SelectedSkin.Perfect,
+                    Late = SelectedSkin.Perfect_Late
+                },
+                Great = new()
+                {
+                    Fast = SelectedSkin.Great_Fast,
+                    Normal = SelectedSkin.Great,
+                    Late = SelectedSkin.Great_Late
+                },
+                Good = new()
+                {
+                    Fast = SelectedSkin.Good_Fast,
+                    Normal = SelectedSkin.Good,
+                    Late = SelectedSkin.Good_Late
+                },
+                Miss = SelectedSkin.Miss,
 
-                Fast = SelectedSkin.FastText,
-                Late = SelectedSkin.LateText
+                Fast = SelectedSkin.Fast,
+                Late = SelectedSkin.Late
             };
         }
         public TapSkin GetTapSkin()

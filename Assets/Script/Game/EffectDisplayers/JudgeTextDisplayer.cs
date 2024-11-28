@@ -45,7 +45,7 @@ namespace MajdataPlay.Game
                 if (_displayBreakScore)
                     breakSprite = skin.Break_2600_Shine;
                 else
-                    breakSprite = skin.CP_Break;
+                    breakSprite = skin.CP_Shine;
                 cPerfectSprite = skin.CriticalPerfect;
             }
             else

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Types
 {
     public class CustomSkin
@@ -46,11 +46,17 @@ namespace MajdataPlay.Types
         public Sprite Hold_Break_On { get; private set; }
         
         public Sprite[] Just { get; private set; } = new Sprite[60];
-        public Sprite[] JudgeText { get; private set; } = new Sprite[5];
 
-        public Sprite CriticalPerfect_Break { get; private set; }
-        public Sprite Perfect_Break { get; private set; }
+        public Sprite CriticalPerfect_Shine { get; private set; }
+        public Sprite Perfect_Shine { get; private set; }
         public Sprite Break_2600_Shine { get; private set; }
+
+        public Sprite CriticalPerfect { get; private set; }
+        public Sprite Perfect { get; private set; }
+        public Sprite Great { get; private set; }
+        public Sprite Good { get; private set; }
+        public Sprite Miss { get; private set; }
+
         public Sprite Break_2600 { get; private set; }
         public Sprite Break_2550 { get; private set; }
         public Sprite Break_2500 { get; private set; }
@@ -59,8 +65,34 @@ namespace MajdataPlay.Types
         public Sprite Break_1250 { get; private set; }
         public Sprite Break_1000 { get; private set; }
         public Sprite Break_0 { get; private set; }
-        public Sprite FastText { get; private set; }
-        public Sprite LateText { get; private set; }
+        public Sprite Fast { get; private set; }
+        public Sprite Late { get; private set; }
+
+        public Sprite? CriticalPerfect_Fast { get; private set; } = null;
+        public Sprite? Perfect_Fast { get; private set; } = null;
+        public Sprite? Great_Fast { get; private set; } = null;
+        public Sprite? Good_Fast { get; private set; } = null;
+
+        public Sprite? Break_2600_Fast { get; private set; } = null;
+        public Sprite? Break_2550_Fast { get; private set; } = null;
+        public Sprite? Break_2500_Fast { get; private set; } = null;
+        public Sprite? Break_2000_Fast { get; private set; } = null;
+        public Sprite? Break_1500_Fast { get; private set; } = null;
+        public Sprite? Break_1250_Fast { get; private set; } = null;
+        public Sprite? Break_1000_Fast { get; private set; } = null;
+
+        public Sprite? CriticalPerfect_Late { get; private set; } = null;
+        public Sprite? Perfect_Late { get; private set; } = null;
+        public Sprite? Great_Late { get; private set; } = null;
+        public Sprite? Good_Late { get; private set; } = null;
+
+        public Sprite? Break_2600_Late { get; private set; } = null;
+        public Sprite? Break_2550_Late { get; private set; } = null;
+        public Sprite? Break_2500_Late { get; private set; } = null;
+        public Sprite? Break_2000_Late { get; private set; } = null;
+        public Sprite? Break_1500_Late { get; private set; } = null;
+        public Sprite? Break_1250_Late { get; private set; } = null;
+        public Sprite? Break_1000_Late { get; private set; } = null;
 
         public Sprite Touch { get; private set; }
         public Sprite Touch_Each { get; private set; }
@@ -227,27 +259,70 @@ namespace MajdataPlay.Types
             Just[58] = SpriteLoader.Load(skinCollectionPath + "/toofast_str_l.png");
             Just[59] = SpriteLoader.Load(skinCollectionPath + "/toofast_wifi_d.png");
 
-            JudgeText[0] = SpriteLoader.Load(skinCollectionPath + "/judge_text_miss.png");
-            JudgeText[1] = SpriteLoader.Load(skinCollectionPath + "/judge_text_good.png");
-            JudgeText[2] = SpriteLoader.Load(skinCollectionPath + "/judge_text_great.png");
-            JudgeText[3] = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect.png");
-            JudgeText[4] = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect.png");
+            Miss = SpriteLoader.Load(skinCollectionPath + "/judge_text_miss.png");
+            Good = SpriteLoader.Load(skinCollectionPath + "/judge_text_good.png");
+            Great = SpriteLoader.Load(skinCollectionPath + "/judge_text_great.png");
+            Perfect = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect.png");
+            CriticalPerfect = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect.png");
 
-            CriticalPerfect_Break = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect_break.png");
-            Perfect_Break = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect_break.png");
+            if (File.Exists(skinCollectionPath + "/judge_text_cPerfect_fast.png"))
+                CriticalPerfect_Fast = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect_fast.png");
+            if (File.Exists(skinCollectionPath + "/judge_text_cPerfect_late.png"))
+                CriticalPerfect_Late = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect_late.png");
 
+            if (File.Exists(skinCollectionPath + "/judge_text_perfect_fast.png"))
+                Perfect_Fast = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect_fast.png");
+            if (File.Exists(skinCollectionPath + "/judge_text_perfect_late.png"))
+                Perfect_Late = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect_late.png");
+
+            if (File.Exists(skinCollectionPath + "/judge_text_great_fast.png"))
+                Great_Fast = SpriteLoader.Load(skinCollectionPath + "/judge_text_great_fast.png");
+            if (File.Exists(skinCollectionPath + "/judge_text_great_late.png"))
+                Great_Late = SpriteLoader.Load(skinCollectionPath + "/judge_text_great_late.png");
+
+            if (File.Exists(skinCollectionPath + "/judge_text_good_fast.png"))
+                Good_Fast = SpriteLoader.Load(skinCollectionPath + "/judge_text_good_fast.png");
+            if (File.Exists(skinCollectionPath + "/judge_text_good_late.png"))
+                Good_Late = SpriteLoader.Load(skinCollectionPath + "/judge_text_good_late.png");
+
+
+
+            CriticalPerfect_Shine = SpriteLoader.Load(skinCollectionPath + "/judge_text_cPerfect_break.png");
             Break_2600_Shine = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600_shine.png");
-            Break_2600 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600.png");
-            Break_2550 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2550.png");
-            Break_2500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2500.png");
-            Break_2000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2000.png");
-            Break_1500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1500.png");
-            Break_1250 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1250.png");
-            Break_1000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1000.png");
-            Break_0 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_0.png");
+            Perfect_Shine = SpriteLoader.Load(skinCollectionPath + "/judge_text_perfect_break.png");
 
-            FastText = SpriteLoader.Load(skinCollectionPath + "/fast.png");
-            LateText = SpriteLoader.Load(skinCollectionPath + "/late.png");
+
+            //Break_2600 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600.png");
+            //Break_2550 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2550.png");
+            //Break_2500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2500.png");
+            //Break_2000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2000.png");
+            //Break_1500 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1500.png");
+            //Break_1250 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1250.png");
+            //Break_1000 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_1000.png");
+            //Break_0 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_0.png");
+
+
+            foreach (var value in new int[] { 2600, 2550, 2500, 2000, 1500, 1250, 1000, 0 })
+            {
+                var path = $"{skinCollectionPath}/judge_text_break_{value}.png";
+                var _path = $"{skinCollectionPath}/judge_text_break_{value}_fast.png";
+                var __path = $"{skinCollectionPath}/judge_text_break_{value}_late.png";
+                var type = typeof(CustomSkin);
+                type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.Load(path));
+                if (value == 0)
+                    continue;
+                if(File.Exists(_path))
+                {
+                    type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.Load(_path));
+                }
+                if (File.Exists(__path))
+                {
+                    type.GetProperty($"Break_{value}_Late").SetValue(this, SpriteLoader.Load(__path));
+                }
+            }
+
+            Fast = SpriteLoader.Load(skinCollectionPath + "/fast.png");
+            Late = SpriteLoader.Load(skinCollectionPath + "/late.png");
 
             Touch = SpriteLoader.Load(skinCollectionPath + "/touch.png");
             Touch_Each = SpriteLoader.Load(skinCollectionPath + "/touch_each.png");
