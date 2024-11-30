@@ -62,7 +62,7 @@ Shader "Custom/BrightnessAdjustAnimate"
 				//从_MainTex中根据uv坐标进行采样
 				fixed4 renderTex = tex2D(_MainTex, i.uv)*i.color;
 				float brightness = 1;
-				brightness = clamp( sin(_Time * 260) * 0.1, 0, 1);
+				brightness = clamp( sin(_Time * 260) * 0.2, 0, 1);
 				//brigtness亮度直接乘以一个系数，也就是RGB整体缩放，调整亮度
 				fixed3 finalColor = renderTex + brightness;
 				//返回结果，alpha通道不变
