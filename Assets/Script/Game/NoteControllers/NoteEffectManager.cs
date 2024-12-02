@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -45,6 +46,8 @@ namespace MajdataPlay.Game
             if (!args.IsClick)
                 return;
             else if (pos > SensorType.E8)
+                return;
+            else if (pos.GetGroup() == SensorGroup.D)
                 return;
             var now = MajTimeline.Time;
             var lastTriggerTime = _lastTriggerTimes[pos];
