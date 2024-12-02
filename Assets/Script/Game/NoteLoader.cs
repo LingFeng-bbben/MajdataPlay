@@ -117,14 +117,14 @@ namespace MajdataPlay.Game
 
         static readonly Dictionary<SensorType, SensorType[]> TOUCH_GROUPS = new()
         {
-            { SensorType.A1, new SensorType[]{ SensorType.D1, SensorType.D2, SensorType.E1, SensorType.E2 } },
-            { SensorType.A2, new SensorType[]{ SensorType.D2, SensorType.D3, SensorType.E2, SensorType.E3 } },
-            { SensorType.A3, new SensorType[]{ SensorType.D3, SensorType.D4, SensorType.E3, SensorType.E4 } },
-            { SensorType.A4, new SensorType[]{ SensorType.D4, SensorType.D5, SensorType.E4, SensorType.E5 } },
-            { SensorType.A5, new SensorType[]{ SensorType.D5, SensorType.D6, SensorType.E5, SensorType.E6 } },
-            { SensorType.A6, new SensorType[]{ SensorType.D6, SensorType.D7, SensorType.E6, SensorType.E7 } },
-            { SensorType.A7, new SensorType[]{ SensorType.D7, SensorType.D8, SensorType.E7, SensorType.E8 } },
-            { SensorType.A8, new SensorType[]{ SensorType.D8, SensorType.D1, SensorType.E8, SensorType.E1 } },
+            { SensorType.A1, new SensorType[]{ SensorType.D1, SensorType.D2, SensorType.E1, SensorType.E2, SensorType.B1 } },
+            { SensorType.A2, new SensorType[]{ SensorType.D2, SensorType.D3, SensorType.E2, SensorType.E3, SensorType.B2 } },
+            { SensorType.A3, new SensorType[]{ SensorType.D3, SensorType.D4, SensorType.E3, SensorType.E4, SensorType.B3 } },
+            { SensorType.A4, new SensorType[]{ SensorType.D4, SensorType.D5, SensorType.E4, SensorType.E5, SensorType.B4 } },
+            { SensorType.A5, new SensorType[]{ SensorType.D5, SensorType.D6, SensorType.E5, SensorType.E6, SensorType.B5 } },
+            { SensorType.A6, new SensorType[]{ SensorType.D6, SensorType.D7, SensorType.E6, SensorType.E7, SensorType.B6 } },
+            { SensorType.A7, new SensorType[]{ SensorType.D7, SensorType.D8, SensorType.E7, SensorType.E8, SensorType.B7 } },
+            { SensorType.A8, new SensorType[]{ SensorType.D8, SensorType.D1, SensorType.E8, SensorType.E1, SensorType.B8 } },
 
             { SensorType.D1, new SensorType[]{ SensorType.A1, SensorType.A8, SensorType.E1 } },
             { SensorType.D2, new SensorType[]{ SensorType.A2, SensorType.A1, SensorType.E2 } },
@@ -628,26 +628,48 @@ namespace MajdataPlay.Game
                 while (sensorTypes.Count > 0)
                 {
                     var sensorType = sensorTypes[0];
-                    var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
-                    var groupMap = TOUCH_GROUPS[sensorType];
-                    existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupMap.Contains(y))));
-
-                    var groupMembers = existsGroup.SelectMany(x => x)
-                                                  .ToList();
-                    var newMembers = sensorTypes.FindAll(x => groupMap.Contains(x));
-
-                    groupMembers.AddRange(newMembers);
+                    List<SensorType> groupMembers = new();
                     groupMembers.Add(sensorType);
-                    var newGroup = groupMembers.GroupBy(x => x)
-                                               .Select(x => x.Key)
-                                               .ToList();
 
-                    foreach (var newMember in newGroup)
-                        sensorTypes.Remove(newMember);
-                    foreach (var oldGroup in existsGroup)
-                        sensorGroups.Remove(oldGroup);
+                    for (var i = 0; i < groupMembers.Count; i++)
+                    {
+                        var currentArea = groupMembers[i];
+                        var nearbyArea = TOUCH_GROUPS[currentArea];
+                        for(var j = 0;j < sensorTypes.Count;j++)
+                        {
+                            var area = sensorTypes[j];
+                            if (groupMembers.Contains(area))
+                                continue;
+                            else if(nearbyArea.Contains(area))
+                                groupMembers.Add(area);
+                        }
+                    }
 
-                    sensorGroups.Add(newGroup);
+                    foreach(var area in groupMembers)
+                        sensorTypes.Remove(area);
+
+                    sensorGroups.Add(groupMembers);
+                    //var sensorType = sensorTypes[0];
+                    //var existsGroup = sensorGroups.FindAll(x => x.Contains(sensorType));
+                    //var groupTable = TOUCH_GROUPS[sensorType];
+                    //existsGroup.AddRange(sensorGroups.FindAll(x => x.Any(y => groupTable.Contains(y))));
+
+                    //var groupMembers = existsGroup.SelectMany(x => x)
+                    //                              .ToList();
+                    //var newMembers = sensorTypes.FindAll(x => groupTable.Contains(x));
+
+                    //groupMembers.AddRange(newMembers);
+                    //groupMembers.Add(sensorType);
+                    //var newGroup = groupMembers.GroupBy(x => x)
+                    //                           .Select(x => x.Key)
+                    //                           .ToList();
+
+                    //foreach (var newMember in newGroup)
+                    //    sensorTypes.Remove(newMember);
+                    //foreach (var oldGroup in existsGroup)
+                    //    sensorGroups.Remove(oldGroup);
+
+                    //sensorGroups.Add(newGroup);
                 }
                 List<TouchGroup> touchGroups = new();
                 var memberMapping = members.ToDictionary(x => x.SensorPos);
