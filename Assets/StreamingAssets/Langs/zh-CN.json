@@ -313,6 +313,16 @@
       "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback",
+      "Content": "触摸反馈"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback_MAJSETTING_DESC",
+      "Content": "设置触摸反馈的显示级别"
+    },
+    {
       "Type": "RESOLUTION",
       "Origin": "Resolution",
       "Content": "分辨率"
@@ -451,6 +461,16 @@
       "Type": "DISABLE_GC_IN_GAMING_DESC",
       "Origin": "DisableGCInGameing_MAJSETTING_DESC",
       "Content": "开启后，有可能解决音频卡顿的问题"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer_Only",
+      "Content": "仅外部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner_Only",
+      "Content": "仅内部"
     },
     {
       "Type": "OTHER_MAJTEXT",

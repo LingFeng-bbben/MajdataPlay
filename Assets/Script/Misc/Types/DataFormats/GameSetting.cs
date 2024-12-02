@@ -20,10 +20,10 @@ namespace MajdataPlay.Types
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
-        public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
+        public string Language { get; set; } = "zh-CN - Majdata";
     }
     public class JudgeOptions
     {
@@ -51,6 +51,7 @@ namespace MajdataPlay.Types
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
+        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
         public string Resolution { get; set; } = "Auto";
     }
     public class SoundOptions

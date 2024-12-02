@@ -168,7 +168,7 @@ namespace MajdataPlay.Setting
         }
         void Update()
         {
-            if (_pressTime >= 1.5f)
+            if (_pressTime >= 0.4f)
             {
                 if (_isUp)
                     Up();

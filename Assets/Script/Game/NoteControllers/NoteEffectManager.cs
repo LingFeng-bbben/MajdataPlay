@@ -23,12 +23,31 @@ namespace MajdataPlay.Game
         public Color buttonPerfectColor = Color.yellow;
 
         Dictionary<SensorType, TimeSpan> _lastTriggerTimes = new();
-
+        GameSetting _setting;
+        Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
         void Awake()
         {
             MajInstanceHelper<NoteEffectManager>.Instance = this;
             _inputManager = MajInstances.InputManager;
-            _inputManager.BindAnyArea(OnAnyAreaClick);
+            _setting = MajInstances.Setting;
+            if(_setting.Display.TouchFeedback != TouchFeedbackLevel.Disable)
+            {
+                _inputManager.BindAnyArea(OnAnyAreaClick);
+                switch(_setting.Display.TouchFeedback)
+                {
+                    case TouchFeedbackLevel.All:
+                        _touchFeedbackLevel = new Range<int>(0, 32, ContainsType.Closed);
+                        break;
+                    case TouchFeedbackLevel.Outer_Only:
+                        _touchFeedbackLevel = new Range<int>(0, 7, ContainsType.Closed);
+                        break;
+                    case TouchFeedbackLevel.Inner_Only:
+                        _touchFeedbackLevel = new Range<int>(8, 32, ContainsType.Closed);
+                        break;
+                }
+            }
+
+
             for (var i = 0; i < 33; i++)
             {
                 var pos = (SensorType)i;
@@ -49,6 +68,9 @@ namespace MajdataPlay.Game
                 return;
             else if (pos.GetGroup() == SensorGroup.D)
                 return;
+            else if (!_touchFeedbackLevel.InRange((int)pos))
+                return;
+
             var now = MajTimeline.Time;
             var lastTriggerTime = _lastTriggerTimes[pos];
 
