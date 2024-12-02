@@ -14,6 +14,8 @@ namespace MajdataPlay.Game
         GameObject touchEffectPrefab;
         [SerializeField]
         GameObject holdEffectPrefab;
+        [SerializeField]
+        GameObject _touchFeedbackEffectPrefab;
 
         TapEffectDisplayer[] _tapJudgeEffects = new TapEffectDisplayer[8];
         TapEffectDisplayer[] _touchHoldJudgeEffects = new TapEffectDisplayer[33];
@@ -21,6 +23,8 @@ namespace MajdataPlay.Game
 
         HoldEffectDisplayer[] _holdEffects = new HoldEffectDisplayer[8];
         HoldEffectDisplayer[] _touchHoldEffects = new HoldEffectDisplayer[33];
+
+        TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
         void Awake()
         {
@@ -35,6 +39,7 @@ namespace MajdataPlay.Game
             var tapParent = transform.GetChild(0);
             var touchParent = transform.GetChild(1);
             var touchHoldParent = transform.GetChild(2);
+            var touchFeedbackParent = transform.GetChild(3);
             // Judge Effect
             for(int i = 0;i < 8;i++)
             {
@@ -92,6 +97,27 @@ namespace MajdataPlay.Game
                 displayer.Position = position;
                 displayer.Reset();
                 _touchHoldEffects[i] = displayer;
+            }
+            // Touch Feedback Effect
+            for (var i = 0; i < 33; i++)
+            {
+                var pos = (SensorType)i;
+                var obj = Instantiate(_touchFeedbackEffectPrefab, touchFeedbackParent);
+                obj.name = $"{pos}";
+                if(pos < SensorType.B1)
+                {
+                    var position = NoteDrop.GetPositionFromDistance(4.8f, i + 1);
+                    obj.transform.position = position;
+                }
+                else
+                {
+                    var position = TouchBase.GetAreaPos(pos);
+                    obj.transform.position = position;
+                }
+                var displayer = obj.GetComponent<TouchFeedbackDisplayer>();
+                displayer.Reset();
+                obj.transform.localScale = new Vector3(0.5f, 0.5f, 1);
+                _touchFeedbackEffects[i] = displayer;
             }
         }
         /// <summary>
@@ -152,6 +178,16 @@ namespace MajdataPlay.Game
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Reset();
+        }
+        public void PlayFeedbackEffect(SensorType sensorPos)
+        {
+            var effect = _touchFeedbackEffects[(int)sensorPos];
+            effect.Play();
+        }
+        public void ResetFeedbackEffect(SensorType sensorPos)
+        {
+            var effect = _touchFeedbackEffects[(int)sensorPos];
+            effect.Reset();
         }
     }
 }

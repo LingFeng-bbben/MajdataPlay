@@ -14,6 +14,8 @@ namespace MajdataPlay.Game
         GameObject _fireworkEffect;
         Animator _fireworkEffectAnimator;
 
+        InputManager _inputManager;
+
         public Color buttonGoodColor = Color.green;
         public Color buttonGreatColor = Color.red;
         public Color buttonPerfectColor = Color.yellow;
@@ -21,10 +23,22 @@ namespace MajdataPlay.Game
         void Awake()
         {
             MajInstanceHelper<NoteEffectManager>.Instance = this;
+            _inputManager = MajInstances.InputManager;
+            _inputManager.BindAnyArea(OnAnyAreaClick);
         }
         void OnDestroy()
         {
             MajInstanceHelper<NoteEffectManager>.Free();
+            _inputManager.UnbindAnyArea(OnAnyAreaClick);
+        }
+        void OnAnyAreaClick(object? sender, InputEventArgs args)
+        {
+            if (!args.IsClick)
+                return;
+            else if (args.Type > SensorType.E8)
+                return;
+
+            _effectPool.PlayFeedbackEffect(args.Type);
         }
         void Start()
         {

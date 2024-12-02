@@ -1391,6 +1391,7 @@ Transform:
   - {fileID: 675884409}
   - {fileID: 1188181739}
   - {fileID: 1877497682}
+  - {fileID: 930651293}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &592746512
@@ -1408,6 +1409,7 @@ MonoBehaviour:
   tapEffectPrefab: {fileID: 168526653925081510, guid: d7b45f83b7b4735418ff3170d6612a0c, type: 3}
   touchEffectPrefab: {fileID: 4052947365030852655, guid: e983e32249b1ccd4194518cc44c0139d, type: 3}
   holdEffectPrefab: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
+  _touchFeedbackEffectPrefab: {fileID: 6657294716856547335, guid: 21d85749a0900ed41bbc27ac0367710f, type: 3}
 --- !u!1 &620892873
 GameObject:
   m_ObjectHideFlags: 0
@@ -2471,6 +2473,37 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &930651292
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 930651293}
+  m_Layer: 0
+  m_Name: TouchFeedbackEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &930651293
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 930651292}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 592746511}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &959806005
 GameObject:
