@@ -2,8 +2,10 @@
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 
 namespace MajdataPlay.Game
 {
@@ -20,11 +22,18 @@ namespace MajdataPlay.Game
         public Color buttonGreatColor = Color.red;
         public Color buttonPerfectColor = Color.yellow;
 
+        Dictionary<SensorType, TimeSpan> _lastTriggerTimes = new();
+
         void Awake()
         {
             MajInstanceHelper<NoteEffectManager>.Instance = this;
             _inputManager = MajInstances.InputManager;
             _inputManager.BindAnyArea(OnAnyAreaClick);
+            for (var i = 0; i < 33; i++)
+            {
+                var pos = (SensorType)i;
+                _lastTriggerTimes[pos] = TimeSpan.Zero; 
+            }
         }
         void OnDestroy()
         {
@@ -33,9 +42,15 @@ namespace MajdataPlay.Game
         }
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
+            var pos = args.Type;
             if (!args.IsClick)
                 return;
-            else if (args.Type > SensorType.E8)
+            else if (pos > SensorType.E8)
+                return;
+            var now = MajTimeline.Time;
+            var lastTriggerTime = _lastTriggerTimes[pos];
+
+            if ((now - lastTriggerTime).TotalMilliseconds < 416.6675f)
                 return;
 
             _effectPool.PlayFeedbackEffect(args.Type);
@@ -60,7 +75,11 @@ namespace MajdataPlay.Game
         /// <param name="judge"></param>
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
+            var pos = (SensorType)(position - 1);
             MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Result), position - 1);
+
+            _lastTriggerTimes[pos] = MajTimeline.Time;
+            _effectPool.ResetFeedbackEffect(pos);
             _effectPool.Play(judgeResult, position);
         }
         public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
@@ -83,6 +102,8 @@ namespace MajdataPlay.Game
         }
         public void PlayTouchEffect(SensorType sensorPos, in JudgeResult judgeResult)
         {
+            _lastTriggerTimes[sensorPos] = MajTimeline.Time;
+            _effectPool.ResetFeedbackEffect(sensorPos);
             _effectPool.Play(judgeResult, sensorPos);
         }
         public void PlayTouchHoldEffect(SensorType sensorPos, in JudgeResult judgeResult)
