@@ -14,6 +14,7 @@ namespace MajdataPlay.Game.Notes
 {
     public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer,IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>
     {
+        public TouchGroup? GroupInfo { get; set; } = null;
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
@@ -117,6 +118,7 @@ namespace MajdataPlay.Game.Notes
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
+            GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
@@ -239,6 +241,12 @@ namespace MajdataPlay.Game.Notes
                 //ioManager.SetIdle(arg);
                 if (_isJudged)
                 {
+                    if(GroupInfo is not null)
+                    {
+                        GroupInfo.RegisterResult(_judgeResult);
+                        GroupInfo.JudgeDiff = _judgeDiff;
+                        GroupInfo.JudgeResult = _judgeResult;
+                    }
                     _ioManager.UnbindSensor(Check, _sensorPos);
                     _noteManager.NextTouch(QueueInfo);
                 }
@@ -337,6 +345,20 @@ namespace MajdataPlay.Game.Notes
                 {
                     _playerIdleTime += Time.fixedDeltaTime;
                     StopHoldEffect();
+                }
+            }
+            else if (!_isJudged && !isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeType)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                        _noteManager.NextTouch(QueueInfo);
+                        _ioManager.UnbindSensor(Check, SensorType.C);
+                    }
                 }
             }
             else if (isTooLate)

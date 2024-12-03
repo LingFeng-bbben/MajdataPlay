@@ -250,7 +250,7 @@ namespace MajdataPlay.Game
                     //IStatefulNote? noteB = null;
                     NotePoolingInfo? noteA = null;
                     NotePoolingInfo? noteB = null;
-                    List<TouchPoolingInfo> members = new();
+                    List<ITouchGroupInfoProvider> members = new();
                     foreach (var (i, note) in timing.noteList.WithIndex())
                     {
                         _noteCount++;
@@ -299,7 +299,7 @@ namespace MajdataPlay.Game
                                     }
                                     break;
                                 case SimaiNoteType.TouchHold:
-                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing));
+                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing, members));
                                     break;
                                 case SimaiNoteType.Touch:
                                     _poolManager.AddTouch(CreateTouch(note, timing, members));
@@ -527,7 +527,7 @@ namespace MajdataPlay.Game
         }
         TouchPoolingInfo CreateTouch(in SimaiNote note,
                                      in SimaiTimingPoint timing,
-                                     in List<TouchPoolingInfo> members)
+                                     in List<ITouchGroupInfoProvider> members)
         {
             note.startPosition = Rotation(note.startPosition);
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
@@ -575,7 +575,9 @@ namespace MajdataPlay.Game
                 members.Add(poolingInfo);
             return poolingInfo;
         }
-        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, in SimaiTimingPoint timing)
+        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, 
+                                             in SimaiTimingPoint timing,
+                                             in List<ITouchGroupInfoProvider> members)
         {
             note.startPosition = Rotation(note.startPosition);
             var sensorPos = TouchBase.GetSensor(note.touchArea, note.startPosition);
@@ -591,6 +593,7 @@ namespace MajdataPlay.Game
             var speed = TouchSpeed * Math.Abs(timing.HSpeed);
             var isFirework = note.isHanabi;
             var isBreak = note.isBreak;
+            var isEach = timing.noteList.Count > 1;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = noteTiming - moveDuration;
             var noteSortOrder = _touchSortOrder;
@@ -599,7 +602,7 @@ namespace MajdataPlay.Game
 
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
             sensorPos = Rotation(sensorPos);
-            return new TouchHoldPoolingInfo()
+            var poolingInfo = new TouchHoldPoolingInfo()
             {
                 SensorPos = sensorPos,
                 Timing = noteTiming,
@@ -608,15 +611,18 @@ namespace MajdataPlay.Game
                 StartPos = startPosition,
                 Speed = speed,
                 IsFirework = isFirework,
-                IsEach = false,
+                IsEach = isEach,
                 IsBreak = isBreak,
                 IsEX = false,
                 LastFor = lastFor,
                 NoteSortOrder = noteSortOrder,
                 QueueInfo = queueInfo,
             };
+            if (isEach)
+                members.Add(poolingInfo);
+            return poolingInfo;
         }
-        async Task AllocTouchGroup(List<TouchPoolingInfo> members)
+        async Task AllocTouchGroup(List<ITouchGroupInfoProvider> members)
         {
             await Task.Run(() =>
             {
