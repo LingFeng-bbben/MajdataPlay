@@ -582,10 +582,8 @@ namespace MajdataPlay.Game
                 var acc = _objectCounter.CalculateFinalResult();
                 print("GameResult: " + acc);
                 GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-                var judgerecord = ((GameResult)GameManager.LastGameResult).JudgeRecord;
-                var unpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord.TotalJudgeInfo);
-                var breakunpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord[ScoreNoteType.Break]);
-                if (unpackedinfo.IsAllPerfect && breakunpackedinfo.IsTheoretical)
+                var result = (GameResult)GameManager.LastGameResult;
+                if (result.ComboState == ComboState.APPlus)
                 {
                     //AP+
                     AllPerfectAnimation.SetActive(true);
@@ -594,7 +592,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsAllPerfect)
+                else if (result.ComboState == ComboState.AP)
                 {
                     //AP
                     AllPerfectAnimation.SetActive(true);
@@ -603,7 +601,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsFullComboPlus)
+                else if (result.ComboState == ComboState.FCPlus)
                 {
                     //FC+
                     FullComboAnimation.SetActive(true);
@@ -612,7 +610,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsFullCombo)
+                else if (result.ComboState == ComboState.FC)
                 {
                     //FC
                     FullComboAnimation.SetActive(true);

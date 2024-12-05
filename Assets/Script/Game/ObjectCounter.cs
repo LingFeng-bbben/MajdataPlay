@@ -345,6 +345,26 @@ namespace MajdataPlay.Game
             };
             var judgeRecord = new JudgeDetail(record);
 
+            var unpackedinfo = JudgeDetail.UnpackJudgeRecord(judgeRecord.TotalJudgeInfo);
+            var breakunpackedinfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            var cState = ComboState.None;
+            if (unpackedinfo.IsAllPerfect && breakunpackedinfo.IsTheoretical)
+            {
+                cState = ComboState.APPlus;
+            }
+            else if (unpackedinfo.IsAllPerfect)
+            {
+                cState = ComboState.AP;
+            }
+            else if (unpackedinfo.IsFullComboPlus)
+            {
+                cState = ComboState.FCPlus;
+            }
+            else if (unpackedinfo.IsFullCombo)
+            {
+                cState = ComboState.FC;
+            }
+
             return new GameResult()
             {
                 Acc = new()
@@ -359,7 +379,7 @@ namespace MajdataPlay.Game
                 Late = late,
                 DXScore = totalDXScore + lostDXScore,
                 TotalDXScore = totalDXScore,
-                ComboState = ComboState.None
+                ComboState = cState
             };
         }
 

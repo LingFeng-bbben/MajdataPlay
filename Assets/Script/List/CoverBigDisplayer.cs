@@ -20,6 +20,8 @@ namespace MajdataPlay.List
         public TMP_Text Title;
         public TMP_Text Artist;
         public TMP_Text ArchieveRate;
+        public GameObject APbg;
+        public TMP_Text ClearMark;
 
         public Color[] diffColors = new Color[6];
 
@@ -83,11 +85,36 @@ namespace MajdataPlay.List
         public void SetScore(MaiScore score)
         {
             if (score.PlayCount == 0)
+            {
+                APbg.SetActive(false);
                 ArchieveRate.enabled = false;
+            }
             else
             {
-                ArchieveRate.text = $"{score.Acc.DX:F4}%";
+                var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+                ArchieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
                 ArchieveRate.enabled = true;
+                APbg.SetActive(false);
+                if (score.ComboState == ComboState.APPlus)
+                {
+                    APbg.SetActive(true);
+                    ClearMark.text = "AP+";
+                }
+                else if (score.ComboState == ComboState.AP)
+                {
+                    APbg.SetActive(true);
+                    ClearMark.text = "AP";
+                }
+                else if (score.ComboState == ComboState.FCPlus)
+                {
+                    APbg.SetActive(true);
+                    ClearMark.text = "FC+";
+                }
+                else if (score.ComboState == ComboState.FC)
+                {
+                    APbg.SetActive(true);
+                    ClearMark.text = "FC";
+                }
             }
         }
     }
