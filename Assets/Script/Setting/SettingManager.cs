@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -24,11 +25,11 @@ namespace MajdataPlay.Setting
                              .SkipLast(2)
                              .ToArray();
             menus = new Menu[properties.Length];
-            foreach(var (i, property) in properties.WithIndex())
+            foreach (var (i, property) in properties.WithIndex())
             {
                 object root = Setting;
                 var _property = property;
-                if(property.Name == "Audio")
+                if (property.Name == "Audio")
                 {
                     root = property.GetValue(Setting);
                     _property = property.PropertyType.GetProperty("Volume");
@@ -40,11 +41,6 @@ namespace MajdataPlay.Setting
                 menu.SubOptionObject = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
-            foreach(var (i, menu) in menus.WithIndex())
-            {
-                if (i != Index)
-                    menu.gameObject.SetActive(false);
-            }
 
             MajInstances.LightManager.SetAllLight(Color.white);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
@@ -54,8 +50,17 @@ namespace MajdataPlay.Setting
             MajInstances.LightManager.SetButtonLight(Color.blue, 0);
             MajInstances.LightManager.SetButtonLight(Color.blue, 7);
 
+            SwitchToDesiredIndex().Forget();
             BindArea();
         }
+
+        async UniTaskVoid SwitchToDesiredIndex()
+        {
+            await UniTask.Yield();
+            Index = MajInstances.GameManager.LastSettingPage;
+            UpdateMenu(0, Index);
+        }
+
         void OnAreaDown(object sender, InputEventArgs e)
         {
             if (!e.IsClick)
@@ -82,13 +87,15 @@ namespace MajdataPlay.Setting
         public void PreviousMenu()
         {
             var oldIndex = Index;
-            Index = (--Index).Clamp(0, menus.Length - 1);
+            Index--;
+            if (Index < 0) Index = menus.Length - 1;
             UpdateMenu(oldIndex,Index);
         }
         public void NextMenu()
         {
             var oldIndex = Index;
-            Index = (++Index).Clamp(0, menus.Length - 1);
+            Index++;
+            if (Index >= menus.Length) Index = 0;
             UpdateMenu(oldIndex, Index);
         }
         void UpdateMenu(int oldIndex,int newIndex)

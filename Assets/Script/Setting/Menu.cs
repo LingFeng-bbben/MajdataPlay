@@ -76,7 +76,6 @@ namespace MajdataPlay.Setting
                     _selectedIndex++;
                     if (_selectedIndex > options.Length - 1)
                         manager.NextMenu();
-
                     _selectedIndex = _selectedIndex.Clamp(0, options.Length - 1);
                     break;
                 default:

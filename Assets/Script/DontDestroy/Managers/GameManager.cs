@@ -55,7 +55,7 @@ namespace MajdataPlay
         /// Current difficult
         /// </summary>
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-
+        public int LastSettingPage { get; set; } = 0;
 
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
@@ -94,7 +94,11 @@ namespace MajdataPlay
                     Debug.LogError("Failed to read setting from file");
                 }
                 else
+                {
                     Setting = setting;
+                    //Reset Mod option after reboot
+                    Setting.Mod = new ModOptions();
+                }
             }
             else
             {
