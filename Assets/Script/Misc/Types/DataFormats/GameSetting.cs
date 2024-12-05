@@ -8,10 +8,10 @@ namespace MajdataPlay.Types
         public JudgeOptions Judge { get; set; } = new();
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
+        public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public OnlineOptions Online { get; set; } = new();
         public MiscOptions Misc { get; set; } = new();
-        
     }
     public class GameOptions
     {
@@ -71,26 +71,46 @@ namespace MajdataPlay.Types
         public float Touch { get; set; } = 0.3f;
         public float Voice { get; set; } = 1f;
     }
+
+    public class ModOptions
+    {
+        public float PlaybackSpeed { get; set; } = 1f;
+        public bool AllBreak { get; set; } = false;
+        public bool AllEx { get; set; } = false;
+        public bool AllTouch { get; set; } = false;
+        public bool SlideNoHead { get; set; } = false;
+        public bool SlideNoTrack { get; set; } = false;
+
+        public bool AutoPlay { get; set; } = false;
+        public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
+
+        public bool IsAnyModActive()
+        {
+            //TODO
+            return false;
+        }
+
+    }
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> 
+        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
         {
-            { 
+            {
                 new ApiEndpoint()
-                { 
+                {
                     Name = "Majnet",
                     Url = "https://majdata.net/api3/api" ,
                     Username = "YourUsername",
                     Password = "YourPassword"
-                } 
+                }
             },
-            { 
+            {
                 new ApiEndpoint()
-                { 
-                    Name = "Contest", 
+                {
+                    Name = "Contest",
                     Url = "https://majdata.net/api1/api"
-                } 
+                }
             }
         };
     }

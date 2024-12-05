@@ -157,29 +157,14 @@ namespace MajdataPlay.Game
         }
         void LoadGameMod()
         {
-            GameModHelper.Refresh();
-            var mod = GameModHelper.GetGameMod(Types.Mods.ModType.TIME_SCALE);
-            var mod2 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_BREAK);
-            var mod3 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_EX);
-            var mod4 = GameModHelper.GetGameMod(Types.Mods.ModType.ALL_TOUCH);
-            var mod5 = GameModHelper.GetGameMod(Types.Mods.ModType.AUTOPLAY);
-            var mod6 = GameModHelper.GetGameMod(Types.Mods.ModType.JUDGE_STYLE);
-
-            if (mod is not null && mod.Active && mod.Value > 0)
-                PlaybackSpeed = mod.Value ?? 0;
-            if (mod2 is not null)
-                _isAllBreak = mod2.Active;
-            if (mod3 is not null)
-                _isAllEx = mod3.Active;
-            if (mod4 is not null)
-                _isAllTouch = mod4.Active;
-            if (mod5 is not null)
-            {
-                IsAutoplay = mod5.Active;
-                AutoplayParam = mod5.Value ?? 7;
-            }
-            if (mod6 is not null && mod6.Active)
-                JudgeStyle = (JudgeStyleType)(mod6.Value ?? 0);
+            var modsetting = MajInstances.GameManager.Setting.Mod;
+            PlaybackSpeed = modsetting.PlaybackSpeed;
+            _isAllBreak = modsetting.AllBreak;
+            _isAllEx = modsetting.AllEx;
+            _isAllTouch = modsetting.AllTouch;
+            IsAutoplay = modsetting.AutoPlay;
+            //AutoplayParam = mod5.Value ?? 7;
+            JudgeStyle = modsetting.JudgeStyle;
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online

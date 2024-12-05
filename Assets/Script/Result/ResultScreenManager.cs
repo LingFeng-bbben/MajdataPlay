@@ -105,7 +105,7 @@ namespace MajdataPlay.Result
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX,song).Forget();
-            if(!GameModHelper.IsAnyModActive)
+            if(!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
                 MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
         }
 

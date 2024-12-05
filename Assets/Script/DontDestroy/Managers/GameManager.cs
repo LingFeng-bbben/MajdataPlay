@@ -26,7 +26,6 @@ namespace MajdataPlay
     {
         public static GameResult? LastGameResult { get; set; } = null;
         public CancellationToken AllTaskToken { get => _cts.Token; }
-        public static DateTime StartAt { get; } = DateTime.Now;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
@@ -35,7 +34,6 @@ namespace MajdataPlay
         public static string CachePath { get; } = Path.Combine(AssestsPath, "Cache");
         public static string LogsPath { get; } = Path.Combine(AssestsPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
-        public static string ModPath { get; } = Path.Combine(Application.streamingAssetsPath, "Mods");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
         public static JsonSerializerOptions JsonReaderOption { get; } = new()
@@ -139,7 +137,6 @@ namespace MajdataPlay
                 Setting.Game.Language = lang.ToString();
             }
             Localization.Current = lang;
-            GameModHelper.Initialize();
         }
         void Start()
         {
@@ -160,7 +157,6 @@ namespace MajdataPlay
         private void OnApplicationQuit()
         {
             Save();
-            GameModHelper.Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             _cts.Cancel();
             foreach (var log in _logQueue)
