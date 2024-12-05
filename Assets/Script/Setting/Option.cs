@@ -235,7 +235,8 @@ namespace MajdataPlay.Setting
             else //非数值类
             {
                 _current += 1 * num;
-                _current = _current.Clamp(0, _maxOptionIndex);
+                if (_current < 0) _current = _maxOptionIndex;
+                if (_current>_maxOptionIndex) _current = 0;
                 PropertyInfo.SetValue(OptionObject, _options[_current]);
                 switch (PropertyInfo.Name)
                 {
