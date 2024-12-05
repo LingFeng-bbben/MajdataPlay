@@ -560,6 +560,66 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "デフォルト"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed",
+      "Content": "再生スピード"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Content": "譜面再生のスピードを調整"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak",
+      "Content": "全Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Content": "全てのNoteがBreakになる"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx",
+      "Content": "全Ex"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx_MAJSETTING_DESC",
+      "Content": "全てのNoteがExになる"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch",
+      "Content": "全Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Content": "全てのNoteがTouchになる"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay",
+      "Content": "自動遊ぶ"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Content": "オートプレイのこと"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle",
+      "Content": "判定モード"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Content": "判定の厳しさを調整"
     }
   ]
 }

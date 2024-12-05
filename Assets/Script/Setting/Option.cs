@@ -122,6 +122,10 @@ namespace MajdataPlay.Setting
                         _minValue = -7;
                         _step = 1;
                         break;
+                    case "PlaybackSpeed":
+                        _minValue = 0;
+                        _step = 0.1f;
+                        break;
                     default:
                         _maxValue = null;
                         _minValue = null;

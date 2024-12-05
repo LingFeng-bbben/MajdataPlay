@@ -600,6 +600,86 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Rotation_MAJSETTING_DESC",
       "Content": "正数为顺时针旋转\n负数为逆时针旋转"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed",
+      "Content": "游玩速度"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Content": "就是变速齿轮的意思啦"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak",
+      "Content": "全Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx",
+      "Content": "全Ex"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Ex"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch",
+      "Content": "全Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoHead",
+      "Content": "无头星星"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoHead_MAJSETTING_DESC",
+      "Content": "去掉所有星星头"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoTrack",
+      "Content": "去掉Slide"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoTrack_MAJSETTING_DESC",
+      "Content": "去掉所有星星的Slide"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay",
+      "Content": "自动游玩"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Content": "小小蓝白帮你打"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle",
+      "Content": "判定风格"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Content": "调整判定的松严"
     }
   ]
 }

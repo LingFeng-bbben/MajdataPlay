@@ -78,16 +78,16 @@ namespace MajdataPlay.Types
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
         public bool AllTouch { get; set; } = false;
-        public bool SlideNoHead { get; set; } = false;
-        public bool SlideNoTrack { get; set; } = false;
+        //public bool SlideNoHead { get; set; } = false;
+        //public bool SlideNoTrack { get; set; } = false;
 
         public bool AutoPlay { get; set; } = false;
         public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
 
         public bool IsAnyModActive()
         {
-            //TODO
-            return false;
+            return !(PlaybackSpeed == 1f &&
+                !AllBreak&&!AllEx&&!AllTouch&&!AutoPlay&& JudgeStyle == JudgeStyleType.DEFAULT);
         }
 
     }

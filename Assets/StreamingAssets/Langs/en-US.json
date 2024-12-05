@@ -560,6 +560,66 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "Default Sort"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed",
+      "Content": "Playback Speed"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Content": "How fast will the track will play"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak",
+      "Content": "All Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Content": "All notes become break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx",
+      "Content": "All EX"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx_MAJSETTING_DESC",
+      "Content": "All notes become EX"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch",
+      "Content": "All Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Content": "All notes become touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay",
+      "Content": "Auto Play"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Content": "XXLB help you play the chart"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle",
+      "Content": "Judge Style"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Content": "How difficult will the judge be"
     }
   ]
 }
