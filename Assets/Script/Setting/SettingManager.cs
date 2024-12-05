@@ -41,6 +41,11 @@ namespace MajdataPlay.Setting
                 menu.SubOptionObject = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
+            foreach (var (i, menu) in menus.WithIndex())
+            {
+                if (i != Index)
+                    menu.gameObject.SetActive(false);
+            }
 
             MajInstances.LightManager.SetAllLight(Color.white);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);

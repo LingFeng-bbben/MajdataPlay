@@ -17,8 +17,9 @@ namespace MajdataPlay.Result
         public TextMeshProUGUI level;
 
         public TextMeshProUGUI accDX;
-        public TextMeshProUGUI accClassic;
+        public TextMeshProUGUI accHistory;
         public TextMeshProUGUI dxScore;
+        public TextMeshProUGUI rank;
 
         public TextMeshProUGUI perfectCount;
         public TextMeshProUGUI greatCount;
@@ -41,8 +42,10 @@ namespace MajdataPlay.Result
 
         void Start()
         {
+            rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = (GameResult)GameManager.LastGameResult;
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
             GameManager.LastGameResult = null;
 
             MajInstances.LightManager.SetAllLight(Color.white);
@@ -50,6 +53,7 @@ namespace MajdataPlay.Result
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongInfo;
+            var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
             GetComponent<OnlineInteractionSender>().Init(song);
 
@@ -69,8 +73,10 @@ namespace MajdataPlay.Result
             designer.text = song.Designers[(int)gameManager.SelectedDiff];
             level.text = gameManager.SelectedDiff.ToString() + " " + song.Levels[(int)gameManager.SelectedDiff];
 
-            accDX.text = $"{result.Acc.DX:F4}%";
-            accClassic.text = $"{result.Acc.Classic:F2}%";
+            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%": $"{result.Acc.DX:F4}%";
+            var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
+            var historyacc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
+            accHistory.text = $"{nowacc-historyacc:+0.0000;-0.0000;0}%";
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
                 dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
@@ -129,25 +135,31 @@ namespace MajdataPlay.Result
             if (dxacc >= 100.5f)
             {
                 MajInstances.AudioManager.PlaySFX("SSS+.wav");
+                rank.text = "SSS+";
             }else if (dxacc >= 100f)
             {
                 MajInstances.AudioManager.PlaySFX("SSS.wav");
+                rank.text = "SSS";
             }
             else if (dxacc >= 99.5f)
             {
                 MajInstances.AudioManager.PlaySFX("SS+.wav");
+                rank.text = "SS+";
             }
             else if (dxacc >= 99f)
             {
                 MajInstances.AudioManager.PlaySFX("SS.wav");
+                rank.text = "SS";
             }
             else if (dxacc >= 98f)
             {
                 MajInstances.AudioManager.PlaySFX("S+.wav");
+                rank.text = "S+";
             }
             else if (dxacc >= 97f)
             {
                 MajInstances.AudioManager.PlaySFX("S.wav");
+                rank.text = "S";
             }
             if (dxacc > 97)
             {
