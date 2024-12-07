@@ -47,8 +47,8 @@ namespace MajdataPlay.Game
         float _touchSpeed = 7.5f;
         long _noteCount = 0;
         int _slideLayer = -1;
-        int _noteSortOrder = 0;
-        int _touchSortOrder = 0;
+        int _noteSortOrder = short.MaxValue;
+        int _touchSortOrder = short.MaxValue;
         int _slideIndex = 0;
 
         List<SlideQueueInfo> _slideQueueInfos = new();
