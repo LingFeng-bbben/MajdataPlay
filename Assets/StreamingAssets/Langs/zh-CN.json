@@ -521,7 +521,8 @@
       "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "不可用"
-    },{
+    },
+    {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Audio Track",
       "Content": "下载音频中"
@@ -583,6 +584,16 @@
     },
     {
       "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner",
+      "Content": "内"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer",
+      "Content": "外"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
       "Origin": "Mirror",
       "Content": "镜像"
     },
@@ -610,6 +621,16 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed_MAJSETTING_DESC",
       "Content": "就是变速齿轮的意思啦"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask",
+      "Content": "Note遮罩"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask_MAJSETTING_DESC",
+      "Content": "更适合中出式音游的遮罩"
     },
     {
       "Type": "OTHER_MAJTEXT",
