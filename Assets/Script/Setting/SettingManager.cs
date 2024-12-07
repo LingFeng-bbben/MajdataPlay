@@ -36,6 +36,7 @@ namespace MajdataPlay.Setting
                 }
 
                 var menuObj = Instantiate(menuPrefab, transform);
+                menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i] = menu;
                 menu.SubOptionObject = _property.GetValue(root);
@@ -43,8 +44,7 @@ namespace MajdataPlay.Setting
             }
             foreach (var (i, menu) in menus.WithIndex())
             {
-                if (i != Index)
-                    menu.gameObject.SetActive(false);
+                menu.gameObject.SetActive(true);
             }
 
             MajInstances.LightManager.SetAllLight(Color.white);
@@ -55,6 +55,17 @@ namespace MajdataPlay.Setting
             MajInstances.LightManager.SetButtonLight(Color.blue, 0);
             MajInstances.LightManager.SetButtonLight(Color.blue, 7);
 
+            InitializeAllMenu().Forget();
+        }
+        async UniTaskVoid InitializeAllMenu()
+        {
+            await UniTask.DelayFrame(1);
+            foreach (var (i, menu) in menus.WithIndex())
+            {
+                if (i != Index)
+                    menu.gameObject.SetActive(false);
+            }
+            await UniTask.DelayFrame(3);
             SwitchToDesiredIndex().Forget();
             BindArea();
         }
@@ -93,14 +104,22 @@ namespace MajdataPlay.Setting
         {
             var oldIndex = Index;
             Index--;
-            if (Index < 0) Index = menus.Length - 1;
+            if (Index < 0)
+            {
+                oldIndex = menus.Length;
+                Index = menus.Length - 1;
+            }
             UpdateMenu(oldIndex,Index);
         }
         public void NextMenu()
         {
             var oldIndex = Index;
             Index++;
-            if (Index >= menus.Length) Index = 0;
+            if (Index >= menus.Length)
+            {
+                oldIndex = -1;
+                Index = 0;
+            }
             UpdateMenu(oldIndex, Index);
         }
         void UpdateMenu(int oldIndex,int newIndex)
