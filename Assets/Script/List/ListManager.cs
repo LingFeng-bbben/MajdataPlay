@@ -96,7 +96,7 @@ namespace MajdataPlay.List
                     case SensorType.A4:
                     case SensorType.A5:
                     case SensorType.D5:
-                        var list = new string[] { "notouch.wav", "notouch_2.wav", "notouch_3.wav", "notouch_4.wav" };
+                        var list = new string[] { "notouch.wav", "notouch_2.wav", "notouch_3.wav", "notouch_4.wav", "notouch_5.wav" };
                         MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                         XxlbAnimation.instance.PlayTouchAnimation();
                         break;
