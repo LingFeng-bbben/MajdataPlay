@@ -317,10 +317,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AllPerfectAnimation: {fileID: 1313218768}
   FullComboAnimation: {fileID: 222767786}
+  _maskSpriteA: {fileID: 21300000, guid: bf8bb354d75a8554db54dfa73a69ab97, type: 3}
+  _maskSpriteB: {fileID: 21300000, guid: f9d399b34042aa343be8edc8ada4b79a, type: 3}
   _bgInfoHeaderAnim: {fileID: 336157907}
   _skipBtn: {fileID: 401781753}
   _breakMaterial: {fileID: 2100000, guid: 236ca777eb286d94099e0750c7df85fe, type: 2}
   _defaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  _noteMask: {fileID: 1383793877}
   _thisFrameSec: 0
   _firstNoteAppearTiming: 0
   _audioTime: -114514
@@ -3414,7 +3417,7 @@ SpriteMask:
   m_BackSortingLayerID: -1971309499
   m_FrontSortingLayer: 7
   m_BackSortingLayer: 6
-  m_FrontSortingOrder: 0
+  m_FrontSortingOrder: 32767
   m_BackSortingOrder: -32768
   m_IsCustomRangeActive: 1
   m_SpriteSortPoint: 0

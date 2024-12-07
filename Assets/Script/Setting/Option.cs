@@ -135,7 +135,7 @@ namespace MajdataPlay.Setting
             }
             else // string
             {
-                switch(PropertyInfo.Name)
+                switch (PropertyInfo.Name)
                 {
                     case "Resolution":
                         _isReadOnly = true;
@@ -151,7 +151,7 @@ namespace MajdataPlay.Setting
                         break;
                     case "Language":
                         var availableLangs = Localization.Available;
-                        if(availableLangs.IsEmpty())
+                        if (availableLangs.IsEmpty())
                         {
                             _current = 0;
                             _options = new object[] { "Unavailable" };
@@ -166,6 +166,17 @@ namespace MajdataPlay.Setting
                         _options = langNames;
                         _maxOptionIndex = _options.Length - 1;
                         _current = availableLangs.FindIndex(x => x == currentLang);
+                        break;
+                    case "NoteMask":
+                        _options = new string[3]
+                        {
+                            "Disable",
+                            "Inner",
+                            "Outer"
+                        };
+                        var current = PropertyInfo.GetValue(OptionObject);
+                        _maxOptionIndex = _options.Length - 1;
+                        _current = _options.FindIndex(x => x == current);
                         break;
                 }
             }

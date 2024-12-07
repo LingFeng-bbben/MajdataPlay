@@ -71,9 +71,11 @@ namespace MajdataPlay.Game
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
 
-        static readonly int _id1 = Shader.PropertyToID("_Brightness");
-        static readonly int _id2 = Shader.PropertyToID("_Contrast");
 
+        [SerializeField]
+        Sprite _maskSpriteA;
+        [SerializeField]
+        Sprite _maskSpriteB;
         [SerializeField]
         Animator _bgInfoHeaderAnim;
         [SerializeField]
@@ -84,7 +86,8 @@ namespace MajdataPlay.Game
         Material _breakMaterial;
         [SerializeField]
         Material _defaultMaterial;
-
+        [SerializeField]
+        SpriteMask _noteMask;
         [ReadOnlyField]
         [SerializeField]
         float _thisFrameSec = 0f;
@@ -165,6 +168,20 @@ namespace MajdataPlay.Game
             IsAutoplay = modsetting.AutoPlay;
             //AutoplayParam = mod5.Value ?? 7;
             JudgeStyle = modsetting.JudgeStyle;
+            switch(modsetting.NoteMask)
+            {
+                case "Inner":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteB;
+                    break;
+                case "Outer":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteA;
+                    break;
+                case "Disable":
+                    _noteMask.gameObject.SetActive(false); 
+                    break;
+            }
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
