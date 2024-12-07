@@ -55,10 +55,23 @@ namespace MajdataPlay.Game
             judgeTextDisplayer.Reset();
             fastLateDisplayer.Reset();
         }
-        public void PlayEffect(in JudgeResult judgeResult)
+        public void Play(in JudgeResult judgeResult)
+        {
+            PlayEffect(judgeResult);
+            if (IsClassCAvailable(judgeResult))
+            {
+                judgeTextDisplayer.Play(judgeResult,true);
+            }
+            else
+            {
+                PlayResult(judgeResult);
+                PlayFastLate(judgeResult);
+            }
+        }
+        void PlayEffect(in JudgeResult judgeResult)
         {
             var result = judgeResult.Result;
-            if (!judgeResult.IsMiss)
+            if (!judgeResult.IsMissOrTooFast)
                 Reset();
             else
                 return;
@@ -88,7 +101,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        public void PlayResult(in JudgeResult judgeResult)
+        void PlayResult(in JudgeResult judgeResult)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -102,7 +115,7 @@ namespace MajdataPlay.Game
             }
             judgeTextDisplayer.Play(judgeResult);
         }
-        public void PlayFastLate(in JudgeResult judgeResult)
+        void PlayFastLate(in JudgeResult judgeResult)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -115,6 +128,162 @@ namespace MajdataPlay.Game
                 return;
             }
             fastLateDisplayer.Play(judgeResult);
+        }
+        static bool IsClassCAvailable(in JudgeResult judgeResult)
+        {
+            bool canPlay;
+            var isBreak = judgeResult.IsBreak;
+
+            if (judgeResult.IsMissOrTooFast)
+                return false;
+            if (isBreak)
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, judgeResult);
+                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakFastLateType, judgeResult);
+            }
+            else
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
+                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
+            }
+            if (!canPlay)
+                return canPlay;
+            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
+            var isCritical = MajInstances.Setting.Display.DisplayCriticalPerfect;
+            var displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
+            if (isBreak)
+            {
+                if (displayBreakScore)
+                {
+                    switch (judgeResult.Result)
+                    {
+                        case JudgeType.LateGood:
+                            return canPlay && skin.Break_1000.Late is not null;
+                        case JudgeType.FastGood:
+                            return canPlay && skin.Break_1000.Fast is not null;
+
+                        case JudgeType.LateGreat2:
+                            return canPlay && skin.Break_1250.Late is not null;
+                        case JudgeType.FastGreat2:
+                            return canPlay && skin.Break_1250.Fast is not null;
+
+                        case JudgeType.LateGreat1:
+                            return canPlay && skin.Break_1500.Late is not null;
+                        case JudgeType.FastGreat1:
+                            return canPlay && skin.Break_1500.Fast is not null;
+
+                        case JudgeType.LateGreat:
+                            return canPlay && skin.Break_2000.Late is not null;
+                        case JudgeType.FastGreat:
+                            return canPlay && skin.Break_2000.Fast is not null;
+
+                        case JudgeType.LatePerfect2:
+                            return canPlay && skin.Break_2500.Late is not null;
+                        case JudgeType.FastPerfect2:
+                            return canPlay && skin.Break_2500.Fast is not null;
+
+                        case JudgeType.LatePerfect1:
+                            return canPlay && skin.Break_2550.Late is not null;
+                        case JudgeType.FastPerfect1:
+                            return canPlay && skin.Break_2550.Fast is not null;
+
+                        case JudgeType.Perfect:
+                            return canPlay && skin.Break_2600.Late is not null;
+                    }
+                }
+                else
+                {
+                    switch (judgeResult.Result)
+                    {
+                        case JudgeType.LateGood:
+                            return canPlay && skin.Good.Late is not null;
+                        case JudgeType.FastGood:
+                            return canPlay && skin.Good.Fast is not null;
+
+                        case JudgeType.LateGreat:
+                        case JudgeType.LateGreat1:
+                        case JudgeType.LateGreat2:
+                            return canPlay && skin.Great.Late is not null;
+                        case JudgeType.FastGreat:
+                        case JudgeType.FastGreat1:
+                        case JudgeType.FastGreat2:
+                            return canPlay && skin.Great.Fast is not null;
+                        case JudgeType.LatePerfect1:
+                        case JudgeType.LatePerfect2:
+                            return canPlay && skin.Perfect.Late is not null;
+                        case JudgeType.FastPerfect1:
+                        case JudgeType.FastPerfect2:
+                            return canPlay && skin.Perfect.Fast is not null;
+                        case JudgeType.Perfect:
+                            {
+                                var isJust = judgeResult.Diff == 0;
+                                var isFast = judgeResult.IsFast;
+                                if (isJust)
+                                    return false;
+                                else if (isFast)
+                                {
+                                    if (isCritical)
+                                        return canPlay && skin.CriticalPerfect.Fast is not null;
+                                    else
+                                        return canPlay && skin.Perfect.Fast is not null;
+                                }
+                                else
+                                {
+                                    if (isCritical)
+                                        return canPlay && skin.CriticalPerfect.Late is not null;
+                                    else
+                                        return canPlay && skin.Perfect.Late is not null;
+                                }
+                            }
+                    }
+                }
+            }
+            else
+            {
+                switch (judgeResult.Result)
+                {
+                    case JudgeType.LateGood:
+                        return canPlay && skin.Good.Late is not null;
+                    case JudgeType.FastGood:
+                        return canPlay && skin.Good.Fast is not null;
+
+                    case JudgeType.LateGreat2:
+                    case JudgeType.LateGreat1:
+                    case JudgeType.LateGreat:
+                        return canPlay && skin.Great.Late is not null;
+                    case JudgeType.FastGreat2:
+                    case JudgeType.FastGreat1:
+                    case JudgeType.FastGreat:
+                        return canPlay && skin.Great.Fast is not null;
+                    case JudgeType.LatePerfect1:
+                    case JudgeType.LatePerfect2:
+                        return canPlay && skin.Perfect.Late is not null;
+                    case JudgeType.FastPerfect1:
+                    case JudgeType.FastPerfect2:
+                        return canPlay && skin.Perfect.Fast is not null;
+                    case JudgeType.Perfect:
+                        {
+                            if (judgeResult.Diff == 0)
+                                return false;
+                            if (judgeResult.IsFast)
+                            {
+                                if (isCritical)
+                                    return canPlay && skin.CriticalPerfect.Fast is not null;
+                                else
+                                    return canPlay && skin.Perfect.Fast is not null;
+                            }
+                            else
+                            {
+                                if (isCritical)
+                                    return canPlay && skin.CriticalPerfect.Late is not null;
+                                else
+                                    return canPlay && skin.Perfect.Late is not null;
+                            }
+                        }
+                }
+            }
+
+            return canPlay;
         }
     }
 }

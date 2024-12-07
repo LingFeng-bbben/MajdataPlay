@@ -7,8 +7,9 @@ using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IRendererContainer
+    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer, IUpdatableComponent<NoteStatus>
     {
+        public bool Active { get; private set; }
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -84,8 +85,9 @@ namespace MajdataPlay.Game.Notes
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
             RendererState = RendererStatus.Off;
+            Active = true;
         }
-        private void Update()
+        public void ComponentUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
@@ -135,7 +137,10 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
         }
-
+        void OnDestroy()
+        {
+            Active = false;
+        }
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }

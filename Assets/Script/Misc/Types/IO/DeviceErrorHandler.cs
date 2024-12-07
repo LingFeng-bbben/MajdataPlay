@@ -39,6 +39,7 @@ namespace MajdataPlay.IO
             {
                 case IOEventType.Attach:
                 case IOEventType.Debug:
+                case IOEventType.InvalidDevicePropertyError:
                     return;
             }
             _deviceHandleState[deviceType] = true;
@@ -54,19 +55,25 @@ namespace MajdataPlay.IO
             }
             else
             {
+                var isConn = true;
                 if(!_ioManager.IsReading(deviceType))
                 {
                     Warning($"Device of \"{deviceType}\" has not started reading, trying to start a read loop...");
                     if (!_ioManager.StartReading(deviceType))
                         Error($"Unable to start read loop for \"{deviceType}\"");
+                    isConn = false;
                 }
                 if(!_ioManager.IsConnected(deviceType))
                 {
                     Warning($"Device of \"{deviceType}\" has not connected, trying to connect the device...");
                     if (!_ioManager.ReConnect(deviceType))
                         Error($"Unable to connect to device: \"{deviceType}\"");
+                    isConn = false;
                 }
-                _retryCount++;
+                if (!isConn)
+                    _retryCount++;
+                else
+                    Debug.LogWarning("[DeviceErrHandler] Received a error event but the device connection is OK");
             }
             _deviceHandleState[deviceType] = false;
         }

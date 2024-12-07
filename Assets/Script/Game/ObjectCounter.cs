@@ -8,6 +8,7 @@ using System.Linq;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Game
 {
@@ -86,6 +87,7 @@ namespace MajdataPlay.Game
         Dictionary<JudgeType, int> judgedBreakCount;
         Dictionary<JudgeType, int> totalJudgedCount;
 
+        OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
         void Awake()
@@ -98,6 +100,7 @@ namespace MajdataPlay.Game
         }
         private void Start()
         {
+            _outline = MajInstanceHelper<OutlineLoader>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
@@ -108,126 +111,133 @@ namespace MajdataPlay.Game
             bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
 
             judgedTapCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             judgedHoldCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             judgedTouchCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             judgedTouchHoldCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             judgedSlideCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             judgedBreakCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
             totalJudgedCount = new()
-        {
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
-        };
+            {
+                {JudgeType.TooFast, 0 },
+                {JudgeType.FastGood, 0 },
+                {JudgeType.FastGreat2, 0 },
+                {JudgeType.FastGreat1, 0 },
+                {JudgeType.FastGreat, 0 },
+                {JudgeType.FastPerfect2, 0 },
+                {JudgeType.FastPerfect1, 0 },
+                {JudgeType.Perfect, 0 },
+                {JudgeType.LatePerfect1, 0 },
+                {JudgeType.LatePerfect2, 0 },
+                {JudgeType.LateGreat, 0 },
+                {JudgeType.LateGreat1, 0 },
+                {JudgeType.LateGreat2, 0 },
+                {JudgeType.LateGood, 0 },
+                {JudgeType.Miss, 0 },
+            };
 
-            bgInfoText.gameObject.SetActive(true);
+            SetBgInfoActive(true);
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
@@ -298,11 +308,13 @@ namespace MajdataPlay.Game
                     bgInfoText.text = "";
                     break;
                 case BGInfoType.None:
-                    bgInfoText.gameObject.SetActive(false);
+                    SetBgInfoActive(false);
                     break;
                 default:
                     return;
             }
+            if(_gpManager.IsAutoplay)
+                bgInfoHeader.text = "AUTOPLAY";
         }
 
         // Update is called once per frame
@@ -333,6 +345,26 @@ namespace MajdataPlay.Game
             };
             var judgeRecord = new JudgeDetail(record);
 
+            var unpackedinfo = JudgeDetail.UnpackJudgeRecord(judgeRecord.TotalJudgeInfo);
+            var breakunpackedinfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            var cState = ComboState.None;
+            if (unpackedinfo.IsAllPerfect && breakunpackedinfo.IsTheoretical)
+            {
+                cState = ComboState.APPlus;
+            }
+            else if (unpackedinfo.IsAllPerfect)
+            {
+                cState = ComboState.AP;
+            }
+            else if (unpackedinfo.IsFullComboPlus)
+            {
+                cState = ComboState.FCPlus;
+            }
+            else if (unpackedinfo.IsFullCombo)
+            {
+                cState = ComboState.FC;
+            }
+
             return new GameResult()
             {
                 Acc = new()
@@ -347,7 +379,7 @@ namespace MajdataPlay.Game
                 Late = late,
                 DXScore = totalDXScore + lostDXScore,
                 TotalDXScore = totalDXScore,
-                ComboState = ComboState.None
+                ComboState = cState
             };
         }
 
@@ -367,8 +399,9 @@ namespace MajdataPlay.Game
             long lostExtraScore = 0;
             long lostExtraScoreClassic = 0;
             int baseScore = 500;
+            Span<SimaiNoteType> types = stackalloc SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch, SimaiNoteType.TouchHold };
 
-            foreach (var type in new SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch, SimaiNoteType.TouchHold })
+            foreach (var type in types)
             {
                 switch (type)
                 {
@@ -420,6 +453,7 @@ namespace MajdataPlay.Game
                             score += (long)(baseScore * 0.5) * count;
                             lostScore += (long)(baseScore * 0.5) * count;
                             break;
+                        case JudgeType.TooFast:
                         case JudgeType.Miss:
                             lostScore += baseScore * count;
                             break;
@@ -488,6 +522,7 @@ namespace MajdataPlay.Game
                         lostExtraScore += 70 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
+                    case JudgeType.TooFast:
                     case JudgeType.Miss:
                         score += 0 * count;
                         extraScore += 0 * count;
@@ -596,17 +631,27 @@ namespace MajdataPlay.Game
             }
             totalJudgedCount[result]++;
 
-            if (noteType != SimaiNoteType.Slide && !judgeResult.IsMiss)
+            if (noteType != SimaiNoteType.Slide && !judgeResult.IsMissOrTooFast)
             {
                 diff = judgeResult.Diff;
                 diffTimer = 3;
             }
 
-            if (!judgeResult.IsMiss)
+            if (!judgeResult.IsMissOrTooFast)
+            {
                 combo++;
+                switch(noteType)
+                {
+                    case SimaiNoteType.Tap:
+                    case SimaiNoteType.Hold:
+                        _outline.Play();
+                        break;
+                }
+            }
 
             switch (result)
             {
+                case JudgeType.TooFast:
                 case JudgeType.Miss:
                     missCount++;
                     combo = 0;
@@ -669,7 +714,7 @@ namespace MajdataPlay.Game
             switch (gameSetting)
             {
                 case JudgeDisplayType.All:
-                    if (judgeResult.Diff == 0 || judgeResult.IsMiss)
+                    if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
                         break;
                     else if (judgeResult.IsFast)
                         fast++;
@@ -677,7 +722,7 @@ namespace MajdataPlay.Game
                         late++;
                     break;
                 case JudgeDisplayType.BelowCP:
-                    if (judgeResult.IsMiss || judgeResult.Result == JudgeType.Perfect)
+                    if (judgeResult.IsMissOrTooFast || judgeResult.Result == JudgeType.Perfect)
                         break;
                     else if (judgeResult.IsFast)
                         fast++;
@@ -688,7 +733,7 @@ namespace MajdataPlay.Game
                 case JudgeDisplayType.BelowP:
                 case JudgeDisplayType.BelowGR:
                 case JudgeDisplayType.Disable:
-                    if (judgeResult.IsMiss || absValue <= 2)
+                    if (judgeResult.IsMissOrTooFast || absValue <= 2)
                         break;
                     else if (judgeResult.IsFast)
                         fast++;
@@ -704,10 +749,12 @@ namespace MajdataPlay.Game
         void UpdateCombo(long combo)
         {
             if (combo == 0)
-                bgInfoText.gameObject.SetActive(false);
+            {
+                SetBgInfoActive(false);
+            }
             else
             {
-                bgInfoText.gameObject.SetActive(true);
+                SetBgInfoActive(true);
                 bgInfoText.text = $"{combo}";
             }
         }
@@ -811,7 +858,21 @@ namespace MajdataPlay.Game
             if (rate >= 0)
                 bgInfoText.text = $"{rate:F4}%";
             else
-                bgInfoText.gameObject.SetActive(false);
+                SetBgInfoActive(false);
+        }
+        void SetBgInfoActive(bool state)
+        {
+            switch(state)
+            {
+                case true:
+                    bgInfoText.gameObject.layer = 0;
+                    bgInfoHeader.gameObject.layer = 0;
+                    break;
+                case false:
+                    bgInfoText.gameObject.layer = 3;
+                    bgInfoHeader.gameObject.layer = 3;
+                    break;
+            }
         }
         void UpdateDXScoreRank()
         {
@@ -820,11 +881,13 @@ namespace MajdataPlay.Game
             var num = remainingDXScore - (dxRank.Lower + 1);
             if (dxRank.Rank == 0)
             {
-                bgInfoText.gameObject.SetActive(false);
+                SetBgInfoActive(false);
                 return;
             }
             else
-                bgInfoText.gameObject.SetActive(true);
+            {
+                SetBgInfoActive(true);
+            }
             bgInfoHeader.text = $"✧{dxRank.Rank}";
             bgInfoText.text = $"+{num}";
             switch (dxRank.Rank)
@@ -927,7 +990,7 @@ namespace MajdataPlay.Game
         SimaiNoteType GetNoteType(NoteDrop note) => note switch
         {
             TapDrop => SimaiNoteType.Tap,
-            StarDrop => SimaiNoteType.Tap,
+            //StarDrop => SimaiNoteType.Tap,
             HoldDrop => SimaiNoteType.Hold,
             SlideDrop => SimaiNoteType.Slide,
             WifiDrop => SimaiNoteType.Slide,

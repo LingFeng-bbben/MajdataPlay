@@ -15,6 +15,7 @@
 #/Assets/Plugin/
 /Assets/i18n
 /settings.json
+/ModSettings.json
 /MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
@@ -87,3 +88,4 @@ Assets/Font/SourceHanSans-Medium SDF.asset
 Assets/Font/GenJyuuGothicScore.asset
 /.idea/.idea.MajdataPlay/.idea
 /Cache/*
+/.vscode

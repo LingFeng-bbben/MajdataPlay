@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Interfaces
 {
-    public interface IStatefulNote
+    public interface IStatefulNote : IStateful<NoteStatus>
     {
-        public NoteStatus State { get; }
+
     }
 }

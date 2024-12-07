@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -35,8 +36,9 @@ namespace MajdataPlay.Game.Notes
         { 
             get
             {
-                int[] reamaining = new int[3];
-                foreach (var (i, queue) in _judgeQueues.WithIndex())
+                Span<int> reamaining = stackalloc int[3];
+                var judgeQueues = _judgeQueues.AsSpan();
+                foreach (var (i, queue) in judgeQueues.WithIndex())
                     reamaining[i] = queue.Length;
                 return reamaining.Max();
             }
@@ -80,32 +82,47 @@ namespace MajdataPlay.Game.Notes
             get => _slideType;
             set => _slideType = value;
         }
-
         protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
         { 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>(), 
             Array.Empty<JudgeArea>()
         }; // 判定队列
+        /// <summary>
+        /// Arrows
+        /// </summary>
         [ReadOnlyField]
         [SerializeField]
-        protected GameObject[] _slideBars = { }; // Arrows
-
-
-        
-
+        protected GameObject[] _slideBars = { };
         /// <summary>
-        /// 引导Star
+        /// Arrow Renderers
         /// </summary>
-        public GameObject[] _stars = new GameObject[3];
+        [ReadOnlyField]
+        [SerializeField]
+        protected SpriteRenderer[] _slideBarRenderers = { };
+
+        protected Transform[] _starTransforms = { };
+        protected Transform[] _slideBarTransforms = { };
+        /// <summary>
+        /// Slide star
+        /// </summary>
+        public GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
-        protected bool _isSoundPlayed = false;
+        protected Animator _slideOKAnim;
+        protected LoadJustSprite _slideOKController;
+
         protected float _lastWaitTime;
         protected bool _canCheck = false;
-        protected bool _isChecking = false;
-        
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+
+        // Flags
+        protected bool _isSoundPlayed = false;
+        protected bool _isChecking = false;
+        protected bool _isStarActive = false;
+        protected bool _isArrived = false;
+
+
         /// <summary>
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
@@ -118,38 +135,39 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
-            //var stayTime = time + LastFor - judgeTiming; // 停留时间
             var stayTime = _lastWaitTime; // 停留时间
 
             // By Minepig
             var diff = currentSec - JudgeTiming;
-            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
-
+            _judgeDiff = diff * 1000;
             // input latency simulation
             //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
             var ext = MathF.Min(stayTime / 4, 0.36666667f);
 
-            var perfect = 0.2333333f + ext;
+            const float JUDGE_GREAT_AREA = 0.4833333f;
+            const float JUDGE_SEG_GREAT1 = 0.35f;
+            const float JUDGE_SEG_GREAT2 = 0.4166667f;
 
+            var JUDGE_PERFECT_AREA = 0.2333333f + ext;
+            var JUDGE_SEG_PERFECT1 = JUDGE_PERFECT_AREA * 0.333333f;
+            var JUDGE_SEG_PERFECT2 = JUDGE_PERFECT_AREA * 0.666666f;
             diff = MathF.Abs(diff);
-            JudgeType? judge = null;
 
-            if (diff <= perfect)// 其实最小0.2833333f, 17帧
-                judge = JudgeType.Perfect;
-            else
+            var result = diff switch
             {
-                judge = diff switch
-                {
-                    <= 0.35f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                    <= 0.4166667f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                    <= 0.4833333f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
-                };
-            }
+                _ when diff <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            _judgeResult = judge ?? JudgeType.Miss;
+            ConvertJudgeResult(ref result);
+            _judgeResult = result;
             _isJudged = true;
 
             var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
@@ -164,31 +182,32 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
+            const float JUDGE_GREAT_AREA = 0.3916672f;
+            const float JUDGE_PERFECT_AREA = 0.15f;
+
+            const float JUDGE_SEG_PERFECT1 = 0.05f;
+            const float JUDGE_SEG_PERFECT2 = 0.1f;
+            const float JUDGE_SEG_GREAT1 = 0.2305557f;
+            const float JUDGE_SEG_GREAT2 = 0.3111114f;
 
             var diff = currentSec - JudgeTiming;
-            _judgeDiff = diff * 1000;
             var isFast = diff < 0;
-
-            var perfect = 0.15f;
-
+            _judgeDiff = diff * 1000;
             diff = MathF.Abs(diff);
-            JudgeType? judge = null;
 
-            if (diff <= perfect)
-                judge = JudgeType.Perfect;
-            else
+            var judge = diff switch
             {
-                judge = diff switch
-                {
-                    <= 0.2305557f => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                    <= 0.3111114f => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                    <= 0.3916672f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                    _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
-                };
-            }
+                <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
+                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+            };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            _judgeResult = judge ?? JudgeType.Miss;
+            _judgeResult = judge;
             _isJudged = true;
 
             var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
@@ -202,7 +221,10 @@ namespace MajdataPlay.Game.Notes
             endIndex = endIndex - 1;
             endIndex = Math.Min(endIndex, _slideBars.Length - 1);
             for (int i = 0; i <= endIndex; i++)
-                _slideBars[i].SetActive(false);
+            {
+                //_slideBarRenderers[i].forceRenderingOff = true;
+                _slideBars[i].layer = 3;
+            }
         }
         protected void PlaySlideOK(in JudgeResult result)
         {
@@ -223,11 +245,10 @@ namespace MajdataPlay.Game.Notes
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var gm in _slideBars)
+            foreach (var sr in _slideBarRenderers.AsSpan())
             {
                 if (IsDestroyed)
                     return;
-                var sr = gm.GetComponent<SpriteRenderer>();
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
@@ -238,12 +259,71 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
+        public override void SetActive(bool state)
+        {
+            base.SetActive(state);
+            if (state)
+            {
+                if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
+                {
+                    foreach (var sensor in _judgeAreas)
+                        _ioManager.BindSensor(Check, sensor);
+                    State = NoteStatus.Running;
+                }
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 0;
+            }
+            else
+            {
+                
+                foreach (var slideBar in _slideBars.AsSpan())
+                    slideBar.layer = 3;
+            }
+            SetStarActive(state);
+            Active = state;
+        }
+        protected void SetStarActive(bool state)
+        {
+            switch(state)
+            {
+                case true:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 0;
+                    }
+                    break;
+                case false:
+                    foreach (var star in _stars.AsSpan())
+                    {
+                        if (star is null)
+                            continue;
+                        star.layer = 3;
+                    }
+                    break;
+            }
+        }
+        protected override void PlaySFX()
+        {
+            if(!_isSoundPlayed)
+            {
+                _audioEffMana.PlaySlideSound(IsBreak);
+                _isSoundPlayed = true;
+            }
+        }
+        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        {
+            if(judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
+                _audioEffMana.PlayBreakSlideEndSound();
+        }
         protected virtual void TooLateJudge()
         {
             if (QueueRemaining == 1)
                 _judgeResult = JudgeType.LateGood;
             else
                 _judgeResult = JudgeType.Miss;
+            ConvertJudgeResult(ref _judgeResult);
             _isJudged = true;
         }
         /// <summary>
@@ -255,10 +335,10 @@ namespace MajdataPlay.Game.Notes
         {
             if (Parent is not null && !Parent.IsDestroyed)
                 Parent.End(true);
-            CanShine = false;
-            foreach (GameObject obj in _slideBars)
-                obj.SetActive(false);
-            DestroyStars();
+            //foreach (var obj in _slideBars.AsSpan())
+            //    obj.SetActive(false);
+            //DestroyStars();
+            SetActive(false);
         }
         /// <summary>
         /// Connection Slide
@@ -277,12 +357,10 @@ namespace MajdataPlay.Game.Notes
         {
             if (_stars.IsEmpty())
                 return;
-            foreach (var star in _stars)
-            {
-                if (star != null)
-                    Destroy(star);
-            }
-            _stars = Array.Empty<GameObject>();
+            SetStarActive(false);
+            foreach (ref var star in _stars.AsSpan())
+                star = null;
+            //GameObjectHelper.Destroy(ref _stars);
         }
         protected async UniTaskVoid FadeIn()
         {
@@ -291,6 +369,8 @@ namespace MajdataPlay.Game.Notes
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
+            while (!Active)
+                await UniTask.Yield();
             while (CurrentSec < fullFadeInTiming) 
             {
                 var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);
@@ -306,6 +386,18 @@ namespace MajdataPlay.Game.Notes
             while (CurrentSec < num)
                 await UniTask.Yield();
             SetSlideBarAlpha(1f);
+        }
+        protected void JudgeResultCorrection(ref JudgeType result)
+        {
+            switch(result)
+            {
+                case JudgeType.LatePerfect2:
+                case JudgeType.LatePerfect1:
+                case JudgeType.FastPerfect1:
+                case JudgeType.FastPerfect2:
+                    result = JudgeType.Perfect;
+                    break;
+            }
         }
         [ReadOnlyField]
         [SerializeField]

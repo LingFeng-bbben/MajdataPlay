@@ -13,9 +13,11 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
-using UnityEngine.Scripting;
+using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
 using MajdataPlay.Types.Attribute;
 using MajdataPlay.Net;
+using System.Collections.Concurrent;
+using MychIO;
 
 namespace MajdataPlay
 {
@@ -23,8 +25,8 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => _tokenSource.Token; }
-        
+        public CancellationToken AllTaskToken { get => _cts.Token; }
+        public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
         public static string SettingPath { get; } = Path.Combine(AssestsPath, "settings.json");
@@ -34,25 +36,7 @@ namespace MajdataPlay
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
-        public GameSetting Setting
-        {
-            get => MajInstances.Setting;
-            set => MajInstances.Setting = value;
-        }
-        /// <summary>
-        /// Current difficult
-        /// </summary>
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public bool UseUnityTimer 
-        { 
-            get => _useUnityTimer; 
-            set => _useUnityTimer = value; 
-        }
-
-        CancellationTokenSource _tokenSource = new();
-        Task? _logWritebackTask = null;
-        Queue<GameLog> _logQueue = new();
-        readonly JsonSerializerOptions _jsonReaderOption = new()
+        public static JsonSerializerOptions JsonReaderOption { get; } = new()
         {
 
             Converters =
@@ -62,6 +46,22 @@ namespace MajdataPlay
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+        public GameSetting Setting
+        {
+            get => MajInstances.Setting;
+            set => MajInstances.Setting = value;
+        }
+        /// <summary>
+        /// Current difficult
+        /// </summary>
+        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
+        public int LastSettingPage { get; set; } = 0;
+
+        [SerializeField]
+        TimerType _timer = MajTimeline.Timer;
+        Task? _logWritebackTask = null;
+        Queue<GameLog> _logQueue = new();
+        CancellationTokenSource _cts = new();
 
         void Awake()
         {
@@ -79,6 +79,7 @@ namespace MajdataPlay
             _logWritebackTask = LogWriteback();
             Debug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
+            _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
@@ -87,13 +88,17 @@ namespace MajdataPlay
                 var js = File.ReadAllText(SettingPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, _jsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, JsonReaderOption) || setting is null)
                 {
                     Setting = new();
                     Debug.LogError("Failed to read setting from file");
                 }
                 else
+                {
                     Setting = setting;
+                    //Reset Mod option after reboot
+                    Setting.Mod = new ModOptions();
+                }
             }
             else
             {
@@ -101,6 +106,10 @@ namespace MajdataPlay
                 Save();
             }
             MajInstances.Setting = Setting;
+            Setting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
+            Setting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.PollingRateMs);
+            Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
             Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
             Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
 
@@ -138,11 +147,22 @@ namespace MajdataPlay
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
         }
+        void Update()
+        {
+            if (!MajTimeline.IsInitialized)
+                MajTimeline.Initialize();
+
+            if(MajTimeline.Timer != _timer)
+            {
+                Debug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
+                MajTimeline.Timer = _timer;
+            }
+        }
         private void OnApplicationQuit()
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            _tokenSource.Cancel();
+            _cts.Cancel();
             foreach (var log in _logQueue)
                 File.AppendAllText(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
         }
@@ -154,7 +174,7 @@ namespace MajdataPlay
             SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
-            var json = Serializer.Json.Serialize(Setting, _jsonReaderOption);
+            var json = Serializer.Json.Serialize(Setting, JsonReaderOption);
             File.WriteAllText(SettingPath, json);
         }
         public void EnableGC()
@@ -196,7 +216,7 @@ namespace MajdataPlay
                     continue;
                 }
                 var log = _logQueue.Dequeue();
-                await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
+                await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss.ffff}][{log.Type}] {log.Condition}\n{log.StackTrace}");
             }
         }
         class GameLog
@@ -206,7 +226,5 @@ namespace MajdataPlay
             public string? StackTrace { get; set; }
             public LogType? Type { get; set; }
         }
-        [SerializeField]
-        bool _useUnityTimer = false;
     }
 }

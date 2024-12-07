@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Collections;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,6 +11,7 @@ namespace MajdataPlay.Types
         public override JudgeDetail Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var dict = JsonSerializer.Deserialize<Dictionary<ScoreNoteType, JudgeInfo>>(ref reader, options);
+
             return new JudgeDetail(dict);
         }
 
@@ -20,6 +22,11 @@ namespace MajdataPlay.Types
         public override JudgeInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var dict = JsonSerializer.Deserialize<Dictionary<JudgeType, int>>(ref reader, options);
+            foreach(JudgeType judgeResult in Enum.GetValues(typeof(JudgeType)))
+            {
+                if (!dict.TryGetValue(judgeResult, out int i))
+                    dict[judgeResult] = 0;
+            }
             return new JudgeInfo(dict);
         }
 

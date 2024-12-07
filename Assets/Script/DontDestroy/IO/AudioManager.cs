@@ -122,32 +122,17 @@ namespace MajdataPlay.IO
                 sample.Name = filePath;
 
                 //group the samples
-                if (rootPath == VoiceFilePath) {
-                    sample.SampleType = SFXSampleType.Voice;
-                }else if (filePath.StartsWith("bgm"))
+                sample.SampleType = filePath switch
                 {
-                    sample.SampleType = SFXSampleType.BGM;
-                }
-                else if (filePath.StartsWith("answer"))
-                {
-                    sample.SampleType = SFXSampleType.Answer;
-                }
-                else if (filePath.StartsWith("break"))
-                {
-                    sample.SampleType = SFXSampleType.Break;
-                }
-                else if (filePath.StartsWith("slide"))
-                {
-                    sample.SampleType = SFXSampleType.Slide;
-                }
-                else if (filePath.StartsWith("tap"))
-                {
-                    sample.SampleType = SFXSampleType.Tap;
-                }
-                else if (filePath.StartsWith("touch"))
-                {
-                    sample.SampleType = SFXSampleType.Touch;
-                }
+                    var _ when rootPath == VoiceFilePath => SFXSampleType.Voice,
+                    var p when p.StartsWith("bgm") => SFXSampleType.BGM,
+                    var p when p.StartsWith("answer") => SFXSampleType.Answer,
+                    var p when p.StartsWith("break") => SFXSampleType.Break,
+                    var p when p.StartsWith("slide") => SFXSampleType.Slide,
+                    var p when p.StartsWith("tap") => SFXSampleType.Tap,
+                    var p when p.StartsWith("touch") => SFXSampleType.Touch,
+                    _ => sample.SampleType
+                };
                 SFXSamples.Add((sample));
             }
         }
@@ -188,22 +173,18 @@ namespace MajdataPlay.IO
             {
                 if(sample is null) 
                     continue;
-                if(sample.SampleType == SFXSampleType.Answer)
-                    sample.SetVolume(volume.Answer);
-                if (sample.SampleType == SFXSampleType.Tap)
-                    sample.SetVolume(volume.Tap);
-                if (sample.SampleType == SFXSampleType.Break)
-                    sample.SetVolume(volume.Break);
-                if (sample.SampleType == SFXSampleType.Touch)
-                    sample.SetVolume(volume.Touch);
-                if (sample.SampleType == SFXSampleType.BGM)
-                    sample.SetVolume(volume.BGM);
-                if (sample.SampleType == SFXSampleType.Touch)
-                    sample.SetVolume(volume.Touch);
-                if (sample.SampleType == SFXSampleType.Slide)
-                    sample.SetVolume(volume.Slide);
-                if (sample.SampleType == SFXSampleType.Voice)
-                    sample.SetVolume(volume.Voice);
+                var vol = sample.SampleType switch
+                {
+                    SFXSampleType.Answer => volume.Answer,
+                    SFXSampleType.Tap => volume.Tap,
+                    SFXSampleType.Break => volume.Break,
+                    SFXSampleType.Touch => volume.Touch,
+                    SFXSampleType.BGM => volume.BGM,
+                    SFXSampleType.Slide => volume.Slide,
+                    SFXSampleType.Voice => volume.Voice,
+                    _ => 1f
+                };
+                sample.SetVolume(vol);
             }
         }
 

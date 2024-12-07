@@ -1,54 +1,33 @@
 using MajdataPlay.IO;
+using MajdataPlay.Net;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
+using MajdataPlay.Extensions;
+using MajdataPlay.Types.Attribute;
 using MajSimaiDecode;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
-using System.Runtime.InteropServices;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Threading;
-using UnityEngine.Scripting;
-using System.IO;
-using MajdataPlay.Utils;
-using PimDeWitte.UnityMainThreadDispatcher;
-using MajdataPlay.Types.Attribute;
-using MajdataPlay.Net;
-using System.Security.Policy;
-using System.Diagnostics;
 using Debug = UnityEngine.Debug;
-using System.Net;
-using UnityEngine.Networking;
-using MajdataPlay.Extensions;
+using MajdataPlay.Timer;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Game
 {
 #nullable enable
     public class GamePlayManager : MonoBehaviour
     {
-        public float NoteSpeed { get; private set; } = 9f;
-        public float TouchSpeed { get; private set; } = 7.5f;
+        public float NoteSpeed { get; private set; } = 7f;
+        public float TouchSpeed { get; private set; } = 7f;
+        public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
         // Timeline
-        /// <summary>
-        /// Time provider
-        /// </summary>
-        public float TimeSource
-        {
-            get
-            {
-                if (MajInstances.GameManager.UseUnityTimer)
-                    return Time.unscaledTime;
-
-                GetSystemTimePreciseAsFileTime(out var filetime);
-                filetime = filetime - _fileTimeAtStart;
-                //print(filetime);
-                return (float)(filetime / 10000000d);
-            }
-        }
         /// <summary>
         /// The timing of the current FixedUpdate<para>Unit: Second</para>
         /// </summary>
@@ -75,6 +54,9 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
+        public bool IsAutoplay { get; private set; } = false;
+        public float AutoplayParam { get; private set; } = 7;
+        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
         public float PlaybackSpeed 
         {
             get => _playbackSpeed;
@@ -83,26 +65,29 @@ namespace MajdataPlay.Game
         public ComponentState State { get; private set; } = ComponentState.Idle;
         // Data
         public MaiScore? HistoryScore { get; private set; }
-        public BreakShineParam BreakParam
-        {
-            get
-            {
-                return new BreakShineParam()
-                {
-                    Brightness = 0.95f + Math.Max(Mathf.Sin(GetFrame() * 0.20f) * 0.8f, 0),
-                    Contrast = 1f + Math.Min(Mathf.Sin(GetFrame() * 0.2f) * -0.15f, 0)
-                };
-            }
-        }
+        public Material BreakMaterial => _breakMaterial;
+        public Material DefaultMaterial => _defaultMaterial;
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
 
+
+        [SerializeField]
+        Sprite _maskSpriteA;
+        [SerializeField]
+        Sprite _maskSpriteB;
+        [SerializeField]
+        Animator _bgInfoHeaderAnim;
         [SerializeField]
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
-
+        [SerializeField]
+        Material _breakMaterial;
+        [SerializeField]
+        Material _defaultMaterial;
+        [SerializeField]
+        SpriteMask _noteMask;
         [ReadOnlyField]
         [SerializeField]
         float _thisFrameSec = 0f;
@@ -119,9 +104,14 @@ namespace MajdataPlay.Game
         [SerializeField]
         float _audioStartTime = -114514;
         float _playbackSpeed = 1f;
+        int _chartRotation = 0;
+        bool _isAllBreak = false;
+        bool _isAllEx = false;
+        bool _isAllTouch = false;
         long _fileTimeAtStart = 0;
 
         Text _errText;
+        MajTimer _timer = MajTimeline.CreateTimer();
 
         HttpTransporter _httpDownloader = new();
         SimaiProcess _chart;
@@ -131,6 +121,7 @@ namespace MajdataPlay.Game
 
         BGManager _bgManager;
         NoteLoader _noteLoader;
+        NoteManager _noteManager;
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
@@ -142,7 +133,7 @@ namespace MajdataPlay.Game
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = SongStorage.WorkingCollection.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
-            GetSystemTimePreciseAsFileTime(out _fileTimeAtStart);
+            _timer = MajTimeline.CreateTimer();
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
@@ -156,13 +147,41 @@ namespace MajdataPlay.Game
         {
             State = ComponentState.Loading;
 
+            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
+            _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
+            LoadGameMod();
             LoadChart().Forget();
+        }
+        void LoadGameMod()
+        {
+            var modsetting = MajInstances.GameManager.Setting.Mod;
+            PlaybackSpeed = modsetting.PlaybackSpeed;
+            _isAllBreak = modsetting.AllBreak;
+            _isAllEx = modsetting.AllEx;
+            _isAllTouch = modsetting.AllTouch;
+            IsAutoplay = modsetting.AutoPlay;
+            //AutoplayParam = mod5.Value ?? 7;
+            JudgeStyle = modsetting.JudgeStyle;
+            switch(modsetting.NoteMask)
+            {
+                case "Inner":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteB;
+                    break;
+                case "Outer":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteA;
+                    break;
+                case "Disable":
+                    _noteMask.gameObject.SetActive(false); 
+                    break;
+            }
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
@@ -368,6 +387,7 @@ namespace MajdataPlay.Game
                 BackToList().Forget();
                 throw new TaskCanceledException("Empty chart");
             }
+            ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
             if (_chart.notelist.Count == 0)
             {
@@ -376,6 +396,12 @@ namespace MajdataPlay.Game
             }
             if(PlaybackSpeed != 1)
                 _chart.Scale(PlaybackSpeed);
+            if(_isAllBreak)
+                _chart.ConvertToBreak();
+            if (_isAllEx)
+                _chart.ConvertToEx();
+            if(_isAllTouch)
+                _chart.ConvertToTouch();
             await Task.Run(() =>
             {
                 //Generate ClockSounds
@@ -451,7 +477,7 @@ namespace MajdataPlay.Game
 
             var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
             if (!string.IsNullOrEmpty(_songDetail.VideoPath))
-                BGManager.SetBackgroundMovie(_songDetail.VideoPath);
+                BGManager.SetBackgroundMovie(_songDetail.VideoPath,PlaybackSpeed);
             else
             {
                 var task = _songDetail.GetSpriteAsync();
@@ -481,6 +507,7 @@ namespace MajdataPlay.Game
             else
                 _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
+            _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPool(_chart);
@@ -492,7 +519,7 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
-                    Debug.LogError(e);
+                    Debug.LogException(e);
                     StopAllCoroutines();
                     throw e;
                 }
@@ -511,13 +538,15 @@ namespace MajdataPlay.Game
             await InitBackground();
             var noteLoaderTask = LoadNotes().AsTask();
 
-            while (!noteLoaderTask.IsCompleted)
+            while (true)
             {
                 if (noteLoaderTask.IsFaulted)
-                    throw noteLoaderTask.Exception;
+                    throw noteLoaderTask.Exception.InnerException;
+                else if (noteLoaderTask.IsCompleted)
+                    break;
                 await UniTask.Yield();
             }
-
+            _noteManager.InitializeUpdater();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             MajInstances.SceneSwitcher.FadeOut();
 
@@ -529,18 +558,19 @@ namespace MajdataPlay.Game
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
-            _audioStartTime = TimeSource + (float)_audioSample.CurrentSec + extraTime;
+            _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             StartToPlayAnswer();
 
             State = ComponentState.Running;
-
-            while (TimeSource - AudioStartTime < 0)
+            
+            while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
-            _audioStartTime = TimeSource;
+            _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            _bgInfoHeaderAnim.SetTrigger("fadeIn");
         }
 
         void OnDestroy()
@@ -569,10 +599,8 @@ namespace MajdataPlay.Game
                 var acc = _objectCounter.CalculateFinalResult();
                 print("GameResult: " + acc);
                 GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-                var judgerecord = ((GameResult)GameManager.LastGameResult).JudgeRecord;
-                var unpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord.TotalJudgeInfo);
-                var breakunpackedinfo = JudgeDetail.UnpackJudgeRecord(judgerecord[ScoreNoteType.Break]);
-                if (unpackedinfo.IsAllPerfect && breakunpackedinfo.IsTheoretical)
+                var result = (GameResult)GameManager.LastGameResult;
+                if (result.ComboState == ComboState.APPlus)
                 {
                     //AP+
                     AllPerfectAnimation.SetActive(true);
@@ -581,7 +609,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsAllPerfect)
+                else if (result.ComboState == ComboState.AP)
                 {
                     //AP
                     AllPerfectAnimation.SetActive(true);
@@ -590,7 +618,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsFullComboPlus)
+                else if (result.ComboState == ComboState.FCPlus)
                 {
                     //FC+
                     FullComboAnimation.SetActive(true);
@@ -599,7 +627,7 @@ namespace MajdataPlay.Game
                     EndGame(5000).Forget();
                     return;
                 }
-                else if (unpackedinfo.IsFullCombo)
+                else if (result.ComboState == ComboState.FC)
                 {
                     //FC
                     FullComboAnimation.SetActive(true);
@@ -636,12 +664,12 @@ namespace MajdataPlay.Game
             {
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
-                var chartOffset = (float)_songDetail.First + _setting.Judge.AudioOffset;
-                var timeOffset = TimeSource - AudioStartTime;
+                var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
                 _audioTimeNoOffset = timeOffset;
 
-                var realTimeDifference = (float)_audioSample.CurrentSec - (TimeSource - AudioStartTime);
+                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime);
                 if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
                 {
                     _errText.text = "修正音频哟\n" + realTimeDifference;
@@ -654,28 +682,50 @@ namespace MajdataPlay.Game
             int i = 0;
             await Task.Run(() =>
             {
+                var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
                 while (!_allTaskTokenSource.IsCancellationRequested)
                 {
-                    if (i >= _anwserSoundList.Count)
-                        return;
-
-                    var noteToPlay = _anwserSoundList[i].time;
-                    var delta = AudioTime - noteToPlay;
-
-                    if (delta > 0)
+                    
+                    try
                     {
-                        if (_anwserSoundList[i].isClock)
+                        if (i >= _anwserSoundList.Count)
+                            return;
+
+                        var noteToPlay = _anwserSoundList[i].time;
+                        var delta = AudioTime - noteToPlay;
+
+                        if (delta > 0)
                         {
-                            MajInstances.AudioManager.PlaySFX("answer_clock.wav");
-                            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                            if (_anwserSoundList[i].isClock)
                             {
-                                _xxlbController.Stepping();
-                            });
+#if UNITY_EDITOR
+                                if (isUnityFMOD)
+                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
+                                else
+                                    MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+#else
+                                MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+#endif
+                                GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
+                            }
+                            else
+                            {
+#if UNITY_EDITOR
+                                if (isUnityFMOD)
+                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
+                                else
+                                    MajInstances.AudioManager.PlaySFX("answer.wav");
+#else
+                                MajInstances.AudioManager.PlaySFX("answer.wav");
+#endif
+                            }
+                            _anwserSoundList[i].isPlayed = true;
+                            i++;
                         }
-                        else
-                            MajInstances.AudioManager.PlaySFX("answer.wav");
-                        _anwserSoundList[i].isPlayed = true;
-                        i++;
+                    }
+                    catch(Exception e)
+                    {
+                        Debug.LogException(e);
                     }
                     //await Task.Delay(1);
                 }
@@ -710,6 +760,7 @@ namespace MajdataPlay.Game
         public async UniTaskVoid EndGame(int delayMiliseconds = 100)
         {
             State = ComponentState.Finished;
+            MajInstances.InputManager.ClearAllSubscriber();
             _bgManager.CancelTimeRef();
 
             await UniTask.Delay(delayMiliseconds);
@@ -722,8 +773,13 @@ namespace MajdataPlay.Game
             await UniTask.DelayFrame(5);
             MajInstances.SceneSwitcher.SwitchScene("Result");
         }
-        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
-        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
+        void ChartMirror(ref string chartContent)
+        {
+            var mirrorType = _setting.Game.Mirror;
+            if (mirrorType is MirrorType.Off)
+                return;
+            chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
+        }
         class AnwserSoundPoint
         {
             public double time;

@@ -19,19 +19,20 @@ namespace MajdataPlay.Setting
         public object SubOptionObject { get; set; }
         public GameObject optionPrefab;
 
-        Option[] options = Array.Empty<Option>();
-        bool isBound = false;
+        float _lastWaitTime = 0;
+        bool _isBound = false;
+        Option[] _options = Array.Empty<Option>();
         SettingManager manager;
         void Start()
         {
             var type = SubOptionObject.GetType();
             var properties = type.GetProperties();
-            options = new Option[properties.Length];
+            _options = new Option[properties.Length];
             foreach(var (i,property) in properties.WithIndex())
             {
                 var optionObj = Instantiate(optionPrefab, transform);
                 var option = optionObj.GetComponent<Option>();
-                options[i] = option;
+                _options[i] = option;
                 option.PropertyInfo = property;
                 option.OptionObject = SubOptionObject;
                 option.Parent = this;
@@ -55,6 +56,34 @@ namespace MajdataPlay.Setting
         {
             UnbindArea();
         }
+        void Update()
+        {
+            if(manager.IsPressed)
+            {
+                if (manager.PressTime < 0.7f)
+                    return;
+                else if (_lastWaitTime < 0.2f)
+                {
+                    _lastWaitTime += Time.deltaTime;
+                    return;
+                }
+                switch(manager.Direction)
+                {
+                    case 1:
+                        NextOption();
+                        _lastWaitTime = 0;
+                        break;
+                    case -1:
+                        PreviousOption();
+                        _lastWaitTime = 0;
+                        break;
+                }
+            }
+            else
+            {
+                _lastWaitTime = 0;
+            }
+        }
         void OnLangChanged(object? sender, Language newLanguage)
         {
             var localizedText = Localization.GetLocalizedText(Name);
@@ -67,38 +96,45 @@ namespace MajdataPlay.Setting
             switch(e.Type)
             {
                 case SensorType.A6:
-                    _selectedIndex--;
-                    if (_selectedIndex < 0)
-                        manager.PreviousMenu();
-                    _selectedIndex = _selectedIndex.Clamp(0, options.Length - 1);
+                    PreviousOption();
                     break;
                 case SensorType.A3:
-                    _selectedIndex++;
-                    if (_selectedIndex > options.Length - 1)
-                        manager.NextMenu();
-
-                    _selectedIndex = _selectedIndex.Clamp(0, options.Length - 1);
+                    NextOption();
                     break;
                 default:
                     return;
             }
         }
-        public void ToLast() => _selectedIndex = options.Length - 1;
+        void PreviousOption()
+        {
+            _selectedIndex--;
+            if (_selectedIndex < 0)
+                manager.PreviousMenu();
+            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+        }
+        void NextOption()
+        {
+            _selectedIndex++;
+            if (_selectedIndex > _options.Length - 1)
+                manager.NextMenu();
+            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+        }
+        public void ToLast() => _selectedIndex = _options.Length - 1;
         public void ToFirst() => _selectedIndex = 0;
         void BindArea()
         {
-            if (isBound)
+            if (_isBound)
                 return;
-            isBound = true;
+            _isBound = true;
             Localization.OnLanguageChanged += OnLangChanged;
             MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A3);
             MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A6);
         }
         void UnbindArea()
         {
-            if (!isBound)
+            if (!_isBound)
                 return;
-            isBound = false;
+            _isBound = false;
             Localization.OnLanguageChanged -= OnLangChanged;
             MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A3);
             MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A6);

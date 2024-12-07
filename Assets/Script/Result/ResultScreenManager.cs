@@ -1,15 +1,11 @@
 ﻿using MajdataPlay.Types;
 using MajdataPlay.IO;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using System;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay.Result
 {
@@ -21,8 +17,9 @@ namespace MajdataPlay.Result
         public TextMeshProUGUI level;
 
         public TextMeshProUGUI accDX;
-        public TextMeshProUGUI accClassic;
+        public TextMeshProUGUI accHistory;
         public TextMeshProUGUI dxScore;
+        public TextMeshProUGUI rank;
 
         public TextMeshProUGUI perfectCount;
         public TextMeshProUGUI greatCount;
@@ -45,8 +42,10 @@ namespace MajdataPlay.Result
 
         void Start()
         {
+            rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = (GameResult)GameManager.LastGameResult;
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
             GameManager.LastGameResult = null;
 
             MajInstances.LightManager.SetAllLight(Color.white);
@@ -54,6 +53,7 @@ namespace MajdataPlay.Result
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongInfo;
+            var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
             GetComponent<OnlineInteractionSender>().Init(song);
 
@@ -73,8 +73,10 @@ namespace MajdataPlay.Result
             designer.text = song.Designers[(int)gameManager.SelectedDiff];
             level.text = gameManager.SelectedDiff.ToString() + " " + song.Levels[(int)gameManager.SelectedDiff];
 
-            accDX.text = $"{result.Acc.DX:F4}%";
-            accClassic.text = $"{result.Acc.Classic:F2}%";
+            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%": $"{result.Acc.DX:F4}%";
+            var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
+            var historyacc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
+            accHistory.text = $"{nowacc-historyacc:+0.0000;-0.0000;0}%";
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
                 dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
@@ -109,7 +111,8 @@ namespace MajdataPlay.Result
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX,song).Forget();
-            MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
+            if(!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
+                MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
         }
 
         async UniTask LoadCover(SongDetail song)
@@ -132,31 +135,37 @@ namespace MajdataPlay.Result
             if (dxacc >= 100.5f)
             {
                 MajInstances.AudioManager.PlaySFX("SSS+.wav");
+                rank.text = "SSS+";
             }else if (dxacc >= 100f)
             {
                 MajInstances.AudioManager.PlaySFX("SSS.wav");
+                rank.text = "SSS";
             }
             else if (dxacc >= 99.5f)
             {
                 MajInstances.AudioManager.PlaySFX("SS+.wav");
+                rank.text = "SS+";
             }
             else if (dxacc >= 99f)
             {
                 MajInstances.AudioManager.PlaySFX("SS.wav");
+                rank.text = "SS";
             }
             else if (dxacc >= 98f)
             {
                 MajInstances.AudioManager.PlaySFX("S+.wav");
+                rank.text = "S+";
             }
             else if (dxacc >= 97f)
             {
                 MajInstances.AudioManager.PlaySFX("S.wav");
+                rank.text = "S";
             }
             if (dxacc > 97)
             {
                 await UniTask.WaitForSeconds(2);
                 var list = new string[] { "good.wav", "good_2.wav", "good_3.wav", "good_4.wav", "good_5.wav", "good_6.wav" };
-                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 await UniTask.WaitForSeconds(3);
                 if (song.ApiEndpoint != null)
                 {
@@ -166,7 +175,7 @@ namespace MajdataPlay.Result
             else
             {
                 var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav"};
-                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0,list.Length)]);
+                MajInstances.AudioManager.PlaySFX(list[Random.Range(0,list.Length)]);
                 await UniTask.WaitForSeconds(2);
             }
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
@@ -175,19 +184,19 @@ namespace MajdataPlay.Result
 
         string BuildSubDisplayText(JudgeDetail judgeRecord)
         {
-            var tapJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-            var holdJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-            var slideJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-            var touchJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-            var breakJudge = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
+            var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
+            var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
+            var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
+            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
             string[] nmsl = new string[]
             {
-            "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
-            $"Tap  \t\t{tapJudge.CriticalPerfect}\t\t{tapJudge.Perfect}\t\t{tapJudge.Great}\t\t{tapJudge.Good}\t\t{tapJudge.Miss}",
-            $"Hold\t\t{holdJudge.CriticalPerfect}\t\t{holdJudge.Perfect}\t\t{holdJudge.Great}\t\t{holdJudge.Good}\t\t{holdJudge.Miss}",
-            $"Slide\t\t{slideJudge.CriticalPerfect}\t\t{slideJudge.Perfect}\t\t{slideJudge.Great}\t\t{slideJudge.Good}\t\t{slideJudge.Miss}",
-            $"Touch\t\t{touchJudge.CriticalPerfect}\t\t{touchJudge.Perfect}\t\t{touchJudge.Great}\t\t{touchJudge.Good}\t\t{touchJudge.Miss}",
-            $"Break\t\t{breakJudge.CriticalPerfect}\t\t{breakJudge.Perfect}\t\t{breakJudge.Great}\t\t{breakJudge.Good}\t\t{breakJudge.Miss}"
+                "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
+                $"Tap  \t\t{tapJudgeInfo.CriticalPerfect}\t\t{tapJudgeInfo.Perfect}\t\t{tapJudgeInfo.Great}\t\t{tapJudgeInfo.Good}\t\t{tapJudgeInfo.Miss}",
+                $"Hold\t\t{holdJudgeInfo.CriticalPerfect}\t\t{holdJudgeInfo.Perfect}\t\t{holdJudgeInfo.Great}\t\t{holdJudgeInfo.Good}\t\t{holdJudgeInfo.Miss}",
+                $"Slide\t\t{slideJudgeInfo.CriticalPerfect}\t\t{slideJudgeInfo.Perfect}\t\t{slideJudgeInfo.Great}\t\t{slideJudgeInfo.Good}\t\t{slideJudgeInfo.Miss}",
+                $"Touch\t\t{touchJudgeInfo.CriticalPerfect}\t\t{touchJudgeInfo.Perfect}\t\t{touchJudgeInfo.Great}\t\t{touchJudgeInfo.Good}\t\t{touchJudgeInfo.Miss}",
+                $"Break\t\t{breakJudgeInfo.CriticalPerfect}\t\t{breakJudgeInfo.Perfect}\t\t{breakJudgeInfo.Great}\t\t{breakJudgeInfo.Good}\t\t{breakJudgeInfo.Miss}"
             };
             return string.Join("\n", nmsl);
         }

@@ -11,9 +11,18 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
+    public static class JudgeTypeExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMissOrTooFast(this JudgeType source)
+        {
+            return source is (JudgeType.Miss or JudgeType.TooFast);
+        }
+    }
     public static class SimaiProcessExtensions
     {
         public static void Scale(this SimaiProcess source,float timeScale)
@@ -29,6 +38,98 @@ namespace MajdataPlay.Extensions
                     note.slideStartTime /= timeScale;
                     note.slideTime /= timeScale;
                 }
+            }
+        }
+        public static void ConvertToBreak(this SimaiProcess source)
+        {
+            var timingPoints = source.notelist;
+            foreach (var timingPoint in timingPoints)
+            {
+                foreach (var note in timingPoint.noteList)
+                {
+                    note.isBreak = true;
+                    note.isSlideBreak = true;
+                }
+            }
+        }
+        public static void ConvertToEx(this SimaiProcess source)
+        {
+            var timingPoints = source.notelist;
+            foreach (var timingPoint in timingPoints)
+            {
+                foreach (var note in timingPoint.noteList)
+                    note.isEx = true;
+            }
+        }
+        public static void ConvertToTouch(this SimaiProcess source)
+        {
+            var timingPoints = source.notelist;
+            foreach (var timingPoint in timingPoints)
+            {
+                var notes = timingPoint.noteList;
+                var touchNotes = notes.Where(x => x.noteType is SimaiNoteType.Touch or SimaiNoteType.TouchHold);
+                var newNoteList = new List<SimaiNote>();
+                var noteCount = notes.Count();
+                for (var i = 0; i < noteCount; i++)
+                {
+                    var note = notes[i];
+                    switch(note.noteType)
+                    {
+                        case SimaiNoteType.Touch:
+                        case SimaiNoteType.TouchHold:
+                            continue;
+                        case SimaiNoteType.Slide:
+                            {
+                                if (note.isSlideNoHead)
+                                {
+                                    newNoteList.Add(note);
+                                    continue;
+                                }
+                                note.isSlideNoHead = true;
+                                var startKey = note.startPosition;
+                                newNoteList.Add(note);
+                                newNoteList.Add(new SimaiNote()
+                                {
+                                    noteType = SimaiNoteType.Touch,
+                                    startPosition = startKey,
+                                    touchArea = 'A',
+                                    isBreak = note.isBreak,
+                                    isEx = note.isEx
+                                });
+                            }
+                            break;
+                        case SimaiNoteType.Tap:
+                            {
+                                var startKey = note.startPosition;
+                                newNoteList.Add(new SimaiNote()
+                                {
+                                    noteType = SimaiNoteType.Touch,
+                                    startPosition = startKey,
+                                    touchArea = 'A',
+                                    isBreak = note.isBreak,
+                                    isEx = note.isEx
+                                });
+                            }
+                            break;
+                        case SimaiNoteType.Hold:
+                            {
+                                var startKey = note.startPosition;
+                                newNoteList.Add(new SimaiNote()
+                                {
+                                    noteType = SimaiNoteType.TouchHold,
+                                    startPosition = startKey,
+                                    holdTime = note.holdTime,
+                                    touchArea = 'A',
+                                    isBreak = note.isBreak,
+                                    isEx = note.isEx
+                                });
+                            }
+                            break;
+                    }
+                }
+                foreach (var touch in touchNotes)
+                    newNoteList.Add(touch);
+                timingPoint.noteList = newNoteList;
             }
         }
     }
@@ -218,14 +319,14 @@ namespace MajdataPlay.Extensions
             foreach (var item in source)
                 yield return (index++, item);
         }
-        public static T? Find<T>(this IEnumerable<T> source,Predicate<T> matcher)
+        public static T? Find<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             foreach(var item in source)
                 if(matcher(item))
                     return item;
             return default;
         }
-        public static T[] FindAll<T>(this IEnumerable<T> source, Predicate<T> matcher)
+        public static T[] FindAll<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             List<T> items = new();
             foreach (var item in source)
@@ -233,12 +334,100 @@ namespace MajdataPlay.Extensions
                     items.Add(item);
             return items.ToArray();
         }
-        public static int FindIndex<T>(this IEnumerable<T> source, Predicate<T> matcher)
+        public static int FindIndex<T>(this IEnumerable<T> source,in Predicate<T> matcher)
         {
             foreach(var (index,item) in source.WithIndex())
                 if (matcher(item))
                     return index;
             return -1;
+        }
+    }
+    public static class SpanExtensions
+    {
+        public static bool IsEmpty<T>(this Span<T> source) => source.Length == 0;
+        public static T Max<T>(this Span<T> source) where T: IComparable<T>
+        {
+            if (source.Length == 0)
+                throw new InvalidOperationException();
+            else if(source.Length == 1)
+                return source[0];
+            var max = source[0];
+            for (int i = 1; i < source.Length; i++)
+            {
+                var value = source[i];
+                if (value.CompareTo(max) > 0)
+                    max = value;
+            }
+            return max;
+        }
+        public static T Min<T>(this Span<T> source) where T : IComparable<T>
+        {
+            if (source.Length == 0)
+                throw new InvalidOperationException();
+            else if (source.Length == 1)
+                return source[0];
+            var min = source[0];
+            for (int i = 1; i < source.Length; i++)
+            {
+                var value = source[i];
+                if (value.CompareTo(min) < 0)
+                    min = value;
+            }
+            return min;
+        }
+        public static WithIndexEnumerable<T> WithIndex<T>(this Span<T> source)
+        {
+            return new WithIndexEnumerable<T>(source);
+        }
+        public static T? Find<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            foreach (var item in source)
+                if (matcher(item))
+                    return item;
+            return default;
+        }
+        public static Span<T> FindAll<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            Span<T> results = new T[source.Length];
+            int index = 0;
+            foreach (var item in source)
+                if (matcher(item))
+                    results[index++] = item;
+            return results.Slice(0, index);
+        }
+        public static int FindIndex<T>(this Span<T> source,in Predicate<T> matcher)
+        {
+            foreach (var (index, item) in source.WithIndex())
+                if (matcher(item))
+                    return index;
+            return -1;
+        }
+        public ref struct WithIndexEnumerable<T>
+        {
+            Span<T> _source;
+            public WithIndexEnumerable(Span<T> source)
+            {
+                _source = source;
+            }
+            public Enumerator GetEnumerator() => new Enumerator(_source);
+            public ref struct Enumerator
+            {
+                int _index;
+                Span<T> _source;
+                Span<T>.Enumerator _enumerator;
+                public (int, T) Current => (_index, _enumerator.Current);
+                public Enumerator(Span<T> source)
+                {
+                    _source = source;
+                    _index = -1;
+                    _enumerator = source.GetEnumerator();
+                }
+                public bool MoveNext()
+                {
+                    _index++;
+                    return _enumerator.MoveNext();
+                }
+            }
         }
     }
     public static class TransformExtensions

@@ -68,11 +68,13 @@
         FastGreat,
         FastGreat1,
         FastGreat2,
-        FastGood
+        FastGood,
+        TooFast
     }
     public enum NoteStatus
     {
         Start,
+        PreInitialized,
         Initialized,
         Scaling,
         Running,
@@ -180,6 +182,12 @@
         Diff,
         None
 
+    }
+    public enum MirrorType
+    {
+        Off,
+        LRMirror,
+        UDMirror
     }
     public enum RendererStatus
     {
@@ -314,5 +322,44 @@
         Keyboard,
         HID,
         IO4
+    }
+    public enum ContainsType
+    {
+        /// <summary>
+        /// [a, b]
+        /// </summary>
+        Closed,
+        /// <summary>
+        /// (a, b]
+        /// </summary>
+        LeftOpen,
+        /// <summary>
+        /// [a, b)
+        /// </summary>
+        RightOpen,
+        /// <summary>
+        /// (a, b)
+        /// </summary>
+        Open
+    }
+    public enum JudgeStyleType
+    {
+        DEFAULT,
+        MAJI,
+        GACHI,
+        GORI
+    }
+    public enum TimerType
+    {
+        Unity,
+        Winapi,
+        Stopwatch
+    }
+    public enum TouchFeedbackLevel
+    {
+        All,
+        Outer_Only,
+        Inner_Only,
+        Disable
     }
 }

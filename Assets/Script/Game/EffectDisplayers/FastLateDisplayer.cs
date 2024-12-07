@@ -38,7 +38,7 @@ namespace MajdataPlay.Game
         }
         public void Play(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsMiss || judgeResult.Diff == 0)
+            if (judgeResult.IsMissOrTooFast || judgeResult.Diff == 0)
             {
                 Reset();
                 return;

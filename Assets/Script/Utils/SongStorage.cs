@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Types;
@@ -73,6 +74,7 @@ namespace MajdataPlay.Utils
             var dirs = new DirectoryInfo(rootPath).GetDirectories();
             List<Task<SongCollection>> tasks = new();
             List<SongCollection> collections = new();
+            //Local Charts
             foreach (var dir in dirs)
             {
                 var path = dir.FullName;
@@ -85,6 +87,7 @@ namespace MajdataPlay.Utils
 
                 tasks.Add(GetCollection(path));
             }
+            //Online Charts
             if (MajInstances.Setting.Online.Enable)
             {
                 foreach(var item in MajInstances.Setting.Online.ApiEndpoints)
@@ -96,6 +99,7 @@ namespace MajdataPlay.Utils
 
             var a = Task.WhenAll(tasks);
             await a;
+
             if (a.IsFaulted)
                 throw a.Exception.InnerException;
             foreach (var task in tasks)
@@ -103,6 +107,17 @@ namespace MajdataPlay.Utils
                 if (task.Result != null)
                     collections.Add(task.Result);
             }
+            //Add all songs to "All" folder
+            var allcharts = new List<SongDetail>();
+            foreach (var collection in collections)
+            {
+                foreach (var item in collection)
+                {
+                    allcharts.Add(item);
+                }
+            }
+            collections.Add(new SongCollection("All", allcharts.ToArray()));
+
             return collections.ToArray();
         }
         static async Task<SongCollection> GetCollection(string rootPath)
@@ -167,9 +182,6 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
-
-        
-
         public static void SortAndFind(string searchKey, SortType sortType)
         {
             OrderBy.Keyword = searchKey;

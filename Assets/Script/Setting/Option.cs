@@ -41,6 +41,7 @@ namespace MajdataPlay.Setting
         bool _isUp = false;
         float _pressTime = 0;
         float? _maxValue = null;
+        float? _minValue = null;
 
         int _lastIndex = 0;
         void Start()
@@ -101,27 +102,40 @@ namespace MajdataPlay.Setting
                     case "Voice":
                         _maxValue = 2;
                         _step = 0.05f;
+                        _minValue = 0;
                         break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
                     case "BackgroundDim":
                         _maxValue = 1;
                         _step = 0.05f;
+                        _minValue = 0;
                         break;
                     case "TouchSpeed":
                     case "TapSpeed":
                         _maxValue = null;
+                        _minValue = null;
                         _step = 0.25f;
+                        break;
+                    case "Rotation":
+                        _maxValue = 7;
+                        _minValue = -7;
+                        _step = 1;
+                        break;
+                    case "PlaybackSpeed":
+                        _minValue = 0;
+                        _step = 0.1f;
                         break;
                     default:
                         _maxValue = null;
+                        _minValue = null;
                         _step = 0.001f;
                         break;
                 }
             }
             else // string
             {
-                switch(PropertyInfo.Name)
+                switch (PropertyInfo.Name)
                 {
                     case "Resolution":
                         _isReadOnly = true;
@@ -137,7 +151,7 @@ namespace MajdataPlay.Setting
                         break;
                     case "Language":
                         var availableLangs = Localization.Available;
-                        if(availableLangs.IsEmpty())
+                        if (availableLangs.IsEmpty())
                         {
                             _current = 0;
                             _options = new object[] { "Unavailable" };
@@ -153,12 +167,23 @@ namespace MajdataPlay.Setting
                         _maxOptionIndex = _options.Length - 1;
                         _current = availableLangs.FindIndex(x => x == currentLang);
                         break;
+                    case "NoteMask":
+                        _options = new string[3]
+                        {
+                            "Disable",
+                            "Inner",
+                            "Outer"
+                        };
+                        var current = PropertyInfo.GetValue(OptionObject);
+                        _maxOptionIndex = _options.Length - 1;
+                        _current = _options.FindIndex(x => x == current);
+                        break;
                 }
             }
         }
         void Update()
         {
-            if (_pressTime >= 1.5f)
+            if (_pressTime >= 0.4f)
             {
                 if (_isUp)
                     Up();
@@ -194,51 +219,35 @@ namespace MajdataPlay.Setting
         }
         void Up()
         {
-            if(_isNum) // 数值类
-            {
-                var valueObj = PropertyInfo.GetValue(OptionObject);
-                var value = (float)valueObj;
-                value += _step;
-                value = MathF.Round(value, 3);
-                if (_maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)_maxValue);
-                PropertyInfo.SetValue(OptionObject, value);
-            }
-            else //非数值类
-            {
-                _current++;
-                _current = _current.Clamp(0, _maxOptionIndex);
-                PropertyInfo.SetValue(OptionObject, _options[_current]);
-                switch(PropertyInfo.Name)
-                {
-                    case "Skin":
-                        var skins = MajInstances.SkinManager.LoadedSkins;
-                        var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
-                        MajInstances.SkinManager.SelectedSkin = newSkin;
-                        break;
-                    case "Language":
-                        Localization.SetLang((string)_options[_current]);
-                        break;
-                }
-            }
+            Diff(1);
             UpdateOption();
         }
         void Down()
         {
+            Diff(-1);
+            UpdateOption();
+        }
+        void Diff(int num)
+        {
+            num = num.Clamp(-1, 1);
             if (_isNum) // 数值类
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
-                var value = (float)valueObj;
-                value -= _step;
+                var valueType = valueObj.GetType();
+                var value = Convert.ToSingle(valueObj);
+                value += _step * num;
                 value = MathF.Round(value, 3);
                 if (_maxValue is not null) //有上限
-                    value = value.Clamp(0, (float)_maxValue);
-                PropertyInfo.SetValue(OptionObject, value);
+                    value = Math.Min(value, (float)_maxValue);
+                if(_minValue is not null)
+                    value = Math.Max(value, (float)_minValue);
+                PropertyInfo.SetValue(OptionObject,Convert.ChangeType(value,valueType));
             }
             else //非数值类
             {
-                _current--;
-                _current = _current.Clamp(0, _maxOptionIndex);
+                _current += 1 * num;
+                if (_current < 0) _current = _maxOptionIndex;
+                if (_current>_maxOptionIndex) _current = 0;
                 PropertyInfo.SetValue(OptionObject, _options[_current]);
                 switch (PropertyInfo.Name)
                 {
@@ -252,7 +261,6 @@ namespace MajdataPlay.Setting
                         break;
                 }
             }
-            UpdateOption();
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {

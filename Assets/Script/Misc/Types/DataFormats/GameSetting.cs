@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 #nullable enable
 namespace MajdataPlay.Types
 {
@@ -8,10 +9,11 @@ namespace MajdataPlay.Types
         public JudgeOptions Judge { get; set; } = new();
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
+        [JsonIgnore]
+        public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public OnlineOptions Online { get; set; } = new();
         public MiscOptions Misc { get; set; } = new();
-        
     }
     public class GameOptions
     {
@@ -20,8 +22,10 @@ namespace MajdataPlay.Types
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
-        public string Language { get; set; } = "zh-CN - Majdata";
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
+        public MirrorType Mirror { get; set; } = MirrorType.Off;
+        public int Rotation { get; set; } = 0;
+        public string Language { get; set; } = "zh-CN - Majdata";
     }
     public class JudgeOptions
     {
@@ -49,6 +53,7 @@ namespace MajdataPlay.Types
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
+        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
         public string Resolution { get; set; } = "Auto";
     }
     public class SoundOptions
@@ -68,34 +73,54 @@ namespace MajdataPlay.Types
         public float Touch { get; set; } = 0.3f;
         public float Voice { get; set; } = 1f;
     }
+
+    public class ModOptions
+    {
+        public float PlaybackSpeed { get; set; } = 1f;
+        public bool AllBreak { get; set; } = false;
+        public bool AllEx { get; set; } = false;
+        public bool AllTouch { get; set; } = false;
+        //public bool SlideNoHead { get; set; } = false;
+        //public bool SlideNoTrack { get; set; } = false;
+        public string NoteMask { get; set; } = "Disable";
+        public bool AutoPlay { get; set; } = false;
+        public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
+
+        public bool IsAnyModActive()
+        {
+            return !(PlaybackSpeed == 1f &&
+                !AllBreak&&!AllEx&&!AllTouch&&!AutoPlay&& JudgeStyle == JudgeStyleType.DEFAULT);
+        }
+
+    }
     public class OnlineOptions
     {
         public bool Enable { get; set; } = false;
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint> 
+        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
         {
-            { 
+            {
                 new ApiEndpoint()
-                { 
+                {
                     Name = "Majnet",
                     Url = "https://majdata.net/api3/api" ,
                     Username = "YourUsername",
                     Password = "YourPassword"
-                } 
+                }
             },
-            { 
+            {
                 new ApiEndpoint()
-                { 
-                    Name = "Contest", 
+                {
+                    Name = "Contest",
                     Url = "https://majdata.net/api1/api"
-                } 
+                }
             }
         };
     }
 
     public class ApiEndpoint
     {
-        public string Name { get; set; }
-        public string Url { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
         public string? Username { get; set; }
         public string? Password { get; set; }
     }
@@ -111,10 +136,31 @@ namespace MajdataPlay.Types
     }
     public class MiscOptions
     {
+        public InputDeviceOptions InputDevice { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
-        public DeviceType InputDevice { get; set; } = DeviceType.Keyboard;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
+    }
+    public class InputDeviceOptions
+    {
+        public ButtonRingOptions ButtonRing { get; set; } = new();
+        public TouchPanelOptions TouchPanel { get; set; } = new();
+    }
+    public class ButtonRingOptions
+    {
+        public DeviceType Type { get; set; } = DeviceType.Keyboard;
+        public int ProductId { get; set; } = 0x0021;
+        public int VendorId { get; set; } = 0x0CA3;
+        public bool Debounce { get; set; } = true;
+        public int PollingRateMs { get; set; } = 0;
+        public int DebounceThresholdMs { get; set; } = 5;
+    }
+    public class TouchPanelOptions
+    {
+        public int COMPort { get; set; } = 3;
+        public bool Debounce { get; set; } = true;
+        public int PollingRateMs { get; set; } = 2;
+        public int DebounceThresholdMs { get; set; } = 2;
     }
 }

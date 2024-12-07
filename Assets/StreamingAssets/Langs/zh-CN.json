@@ -313,6 +313,16 @@
       "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback",
+      "Content": "触摸反馈"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback_MAJSETTING_DESC",
+      "Content": "设置触摸反馈的显示级别"
+    },
+    {
       "Type": "RESOLUTION",
       "Origin": "Resolution",
       "Content": "分辨率"
@@ -454,6 +464,16 @@
     },
     {
       "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer_Only",
+      "Content": "仅外部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner_Only",
+      "Content": "仅内部"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
       "Origin": "All",
       "Content": "全部"
     },
@@ -501,7 +521,8 @@
       "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "不可用"
-    },{
+    },
+    {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Audio Track",
       "Content": "下载音频中"
@@ -560,6 +581,126 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "默认"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner",
+      "Content": "内"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer",
+      "Content": "外"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror",
+      "Content": "镜像"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation",
+      "Content": "旋转"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation_MAJSETTING_DESC",
+      "Content": "正数为顺时针旋转\n负数为逆时针旋转"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed",
+      "Content": "游玩速度"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Content": "就是变速齿轮的意思啦"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask",
+      "Content": "Note遮罩"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask_MAJSETTING_DESC",
+      "Content": "更适合中出式音游的遮罩"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak",
+      "Content": "全Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Break"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx",
+      "Content": "全Ex"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllEx_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Ex"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch",
+      "Content": "全Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Content": "所有音符全部变成Touch"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoHead",
+      "Content": "无头星星"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoHead_MAJSETTING_DESC",
+      "Content": "去掉所有星星头"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoTrack",
+      "Content": "去掉Slide"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "SlideNoTrack_MAJSETTING_DESC",
+      "Content": "去掉所有星星的Slide"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay",
+      "Content": "自动游玩"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Content": "小小蓝白帮你打"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle",
+      "Content": "判定风格"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Content": "调整判定的松严"
     }
   ]
 }

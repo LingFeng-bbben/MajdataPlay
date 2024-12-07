@@ -1,0 +1,82 @@
+[
+    {
+        "Name": "Time Scaling",
+        "Description": "",
+        "Type": "TIME_SCALE",
+        "SortGroup": "Game",
+        "Value": 1,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "All Break",
+        "Description": "",
+        "Type": "ALL_BREAK",
+        "SortGroup": "Game",
+        "Value": null,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "All Ex",
+        "Description": "",
+        "Type": "ALL_EX",
+        "SortGroup": "Game",
+        "Value": null,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "All Touch",
+        "Description": "",
+        "Type": "ALL_TOUCH",
+        "SortGroup": "Game",
+        "Value": null,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "Slide NoHead",
+        "Description": "",
+        "Type": "SLIDE_NO_HEAD",
+        "SortGroup": "Display",
+        "Value": null,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "Slide NoTrack",
+        "Description": "",
+        "Type": "SLIDE_NO_Track",
+        "SortGroup": "Display",
+        "Value": null,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "Autoplay",
+        "Description": "",
+        "Type": "AUTOPLAY",
+        "SortGroup": "Game",
+        "Value": -1,
+        "Conflicts": [],
+        "Icon": null, 
+        "Active": false
+    },
+    {
+        "Name": "Judge Style",
+        "Description": "",
+        "Type": "JUDGE_STYLE",
+        "SortGroup": "Judge",
+        "Value": 0,
+        "Conflicts": [],
+        "Icon": null,
+        "Active": false
+    }
+]

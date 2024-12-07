@@ -1,3 +1,4 @@
+using MajdataPlay.Collections;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -175,9 +176,10 @@ namespace MajdataPlay.List
                     break;
             }
         }
-        private void Update()
+        private void FixedUpdate()
         {
-            listPosReal += (desiredListPos - listPosReal) * turnSpeed * Time.deltaTime;
+            var delta = (desiredListPos - listPosReal) * turnSpeed;
+            listPosReal += Mathf.Clamp(delta, -1f, 1f);
             if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) listPosReal = desiredListPos;
             for (int i = 0; i < covers.Count; i++)
             {

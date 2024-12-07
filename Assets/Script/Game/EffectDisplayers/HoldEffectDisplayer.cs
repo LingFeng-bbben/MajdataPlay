@@ -53,6 +53,7 @@ namespace MajdataPlay.Game
                 case JudgeType.FastGood:
                     material.SetColor("_Color", new Color(0.56f, 1f, 0.59f)); // Green
                     break;
+                case JudgeType.TooFast:
                 case JudgeType.Miss:
                     material.SetColor("_Color", new Color(1f, 1f, 1f)); // White
                     break;

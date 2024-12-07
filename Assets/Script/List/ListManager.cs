@@ -128,7 +128,7 @@ namespace MajdataPlay.List
                     case SensorType.A1:
                         CoverListDisplayer.SlideDifficulty(1);
                         break;
-                    case SensorType.A2:
+                    case SensorType.P1:
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.SceneSwitcher.SwitchScene("SortFind");
                         break;
@@ -157,6 +157,12 @@ namespace MajdataPlay.List
                         break;
                     case SensorType.A7:
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        MajInstances.GameManager.LastSettingPage = 0;
+                        MajInstances.SceneSwitcher.SwitchScene("Setting");
+                        break;
+                    case SensorType.A2:
+                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        MajInstances.GameManager.LastSettingPage = 4;
                         MajInstances.SceneSwitcher.SwitchScene("Setting");
                         break;
                 }

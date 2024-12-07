@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
@@ -8,7 +9,7 @@ namespace MajdataPlay.IO
     public partial class InputManager : MonoBehaviour
     {
         readonly Sensor[] _sensors = new Sensor[33];
-
+        readonly Dictionary<SensorType, DateTime> _sensorLastTriggerTimes = new();
         void UpdateSensorState()
         {
             foreach(var (index, on) in _COMReport.WithIndex())
@@ -32,6 +33,10 @@ namespace MajdataPlay.IO
                     nState = _COMReport[16] || _COMReport[17] ? SensorStatus.On : SensorStatus.Off;
                 if(oState != nState)
                 {
+                    var now = DateTime.Now;
+                    if (JitterDetect(sensor.Type, now))
+                        continue;
+                    _sensorLastTriggerTimes[sensor.Type] = now;
                     Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
                     sensor.Status = nState;
                     var msg = new InputEventArgs()

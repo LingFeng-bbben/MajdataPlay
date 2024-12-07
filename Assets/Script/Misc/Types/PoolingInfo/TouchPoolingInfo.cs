@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Types
 {
-    public class TouchPoolingInfo: NotePoolingInfo
+    public class TouchPoolingInfo: NotePoolingInfo, ITouchGroupInfoProvider
     {
         public char AreaPos { get; init; }
         public bool IsFirework { get; init; }
