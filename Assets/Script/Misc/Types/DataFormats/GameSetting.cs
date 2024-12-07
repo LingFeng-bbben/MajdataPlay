@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 #nullable enable
 namespace MajdataPlay.Types
 {
@@ -8,6 +9,7 @@ namespace MajdataPlay.Types
         public JudgeOptions Judge { get; set; } = new();
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
+        [JsonIgnore]
         public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
         public OnlineOptions Online { get; set; } = new();
