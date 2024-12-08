@@ -61,11 +61,13 @@ Shader "Custom/HoldShineShader"
 			{
 				//从_MainTex中根据uv坐标进行采样
 				fixed4 renderTex = tex2D(_MainTex, i.uv)*i.color;
-				float brightness = clamp( abs(sin(_Time * 220) * 0.33), 0, 1);
+				float frames = _Time / 0.0008;
+				float brightness = 0.95 + max(abs(sin(frames * 0.2)) * 0.5, 0);
+				//float brightness = 1;
 				float contrast = 1;
 				float saturation = 1;
 				//brigtness亮度直接乘以一个系数，也就是RGB整体缩放，调整亮度
-				fixed3 finalColor = renderTex + brightness;
+				fixed3 finalColor = renderTex * brightness;
 				//saturation饱和度：首先根据公式计算同等亮度情况下饱和度最低的值：
 				fixed gray = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
 				fixed3 grayColor = fixed3(gray, gray, gray);
