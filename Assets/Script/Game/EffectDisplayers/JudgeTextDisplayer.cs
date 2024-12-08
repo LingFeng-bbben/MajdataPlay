@@ -168,10 +168,10 @@ namespace MajdataPlay.Game
                     textRenderer.sprite = isClassC ? _skin.Break_2000.Fast : _skin.Break_2000.Normal;
                     break;
                 case JudgeType.LatePerfect2:
-                    textRenderer.sprite = isClassC ? _skin.Break_2500.Late : _skin.Break_1500.Normal;
+                    textRenderer.sprite = isClassC ? _skin.Break_2500.Late : _skin.Break_2500.Normal;
                     break;
                 case JudgeType.FastPerfect2:
-                    textRenderer.sprite = isClassC ? _skin.Break_2500.Fast : _skin.Break_1500.Normal;
+                    textRenderer.sprite = isClassC ? _skin.Break_2500.Fast : _skin.Break_2500.Normal;
                     break;
                 case JudgeType.LatePerfect1:
                     textRenderer.sprite = isClassC ? _skin.Break_2550.Late : _skin.Break_2550.Normal;
