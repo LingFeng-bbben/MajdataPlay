@@ -67,6 +67,7 @@ namespace MajdataPlay.Game
         public MaiScore? HistoryScore { get; private set; }
         public Material BreakMaterial => _breakMaterial;
         public Material DefaultMaterial => _defaultMaterial;
+        public Material HoldShineMaterial => _holdShineMaterial;
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
@@ -82,6 +83,8 @@ namespace MajdataPlay.Game
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
+        [SerializeField]
+        Material _holdShineMaterial;
         [SerializeField]
         Material _breakMaterial;
         [SerializeField]

@@ -78,6 +78,7 @@ namespace MajdataPlay.Game.Notes
 
         protected Material BreakMaterial => _breakMaterial;
         protected Material DefaultMaterial => _defaultMaterial;
+        protected Material HoldShineMaterial => _holdShineMaterial;
 
         [ReadOnlyField]
         [SerializeField]
@@ -102,6 +103,7 @@ namespace MajdataPlay.Game.Notes
 
         Material _breakMaterial;
         Material _defaultMaterial;
+        Material _holdShineMaterial;
 
         GameObject _gameObject;
         Transform _transform;
@@ -120,6 +122,7 @@ namespace MajdataPlay.Game.Notes
             _judgeTiming = Timing;
             _breakMaterial = _gpManager.BreakMaterial;
             _defaultMaterial = _gpManager.DefaultMaterial;
+            _holdShineMaterial = _gpManager.HoldShineMaterial;
         }
         void OnDestroy()
         {

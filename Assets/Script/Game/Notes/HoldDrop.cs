@@ -48,8 +48,6 @@ namespace MajdataPlay.Game.Notes
         Sprite _holdOnSprite;
         Sprite _holdOffSprite;
 
-        Animator _shineAnimator;
-
         SpriteRenderer _exRenderer;
         SpriteRenderer _endRenderer;
         SpriteRenderer _thisRenderer;
@@ -149,6 +147,8 @@ namespace MajdataPlay.Game.Notes
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(result);
+            _holdAnimStart = false;
+            _thisRenderer.sharedMaterial = DefaultMaterial;
             RendererState = RendererStatus.Off;
             _effectManager.ResetHoldEffect(StartPos);
             _effectManager.PlayEffect(StartPos, result);
@@ -170,7 +170,6 @@ namespace MajdataPlay.Game.Notes
             _exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
             _thisRenderer = GetComponent<SpriteRenderer>();
             _endRenderer = transform.GetChild(1).GetComponent<SpriteRenderer>();
-            _shineAnimator = gameObject.GetComponent<Animator>();
             _poolManager = FindObjectOfType<NotePoolManager>();
 
             LoadSkin();
@@ -494,9 +493,8 @@ namespace MajdataPlay.Game.Notes
             else if (!_holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
             {
                 _holdAnimStart = true;
-                _shineAnimator.enabled = true;
 
-                _thisRenderer.sharedMaterial = DefaultMaterial;
+                _thisRenderer.sharedMaterial = HoldShineMaterial;
                 _thisRenderer.sprite = _holdOnSprite;
             }
         }
@@ -504,9 +502,8 @@ namespace MajdataPlay.Game.Notes
         {
             _effectManager.ResetHoldEffect(StartPos);
             _holdAnimStart = false;
-            _shineAnimator.enabled = false;
-            var sprRenderer = GetComponent<SpriteRenderer>();
-            sprRenderer.sprite = _holdOffSprite;
+
+            _thisRenderer.sprite = _holdOffSprite;
             _thisRenderer.sharedMaterial = DefaultMaterial;
         }
 
