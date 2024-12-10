@@ -362,13 +362,18 @@ namespace MajdataPlay.Game.Notes
             };
 
             _objectCounter.ReportResult(this, result);
-            if (IsBreak && _judgeResult == JudgeType.Perfect)
+            PlaySlideOK(result);
+            if (IsClassic)
+            {
+                _slideOKAnim.SetTrigger("classic");
+            }
+            else if (IsBreak && _judgeResult == JudgeType.Perfect)
             {
                 _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
             }
             _slideOKController.SetResult(_judgeResult);
             PlayJudgeSFX(result);
-            PlaySlideOK(result);
+            //PlaySlideOK(result);
             //Destroy(gameObject);
         }
         protected override void LoadSkin()

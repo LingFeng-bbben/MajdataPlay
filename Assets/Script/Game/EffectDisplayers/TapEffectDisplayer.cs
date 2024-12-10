@@ -8,15 +8,16 @@ namespace MajdataPlay.Game
 {
     public sealed class TapEffectDisplayer : MonoBehaviour
     {
-        public Vector3 Position => perfectDisplayer.transform.position;
+        public Vector3 Position => effectParent.transform.position;
         public Vector3 LocalPosition
         {
-            get => perfectDisplayer.transform.localPosition;
+            get => effectParent.transform.localPosition;
             set
             {
-                perfectDisplayer.transform.localPosition = value;
-                greatDisplayer.transform.localPosition = value;
-                goodDisplayer.transform.localPosition = value;
+                effectParent.transform.localPosition = value;
+                //perfectDisplayer.transform.localPosition = value;
+                //greatDisplayer.transform.localPosition = value;
+                //goodDisplayer.transform.localPosition = value;
                 var effectPosition = value;
                 var textDistance = 1f * (2 - DistanceRatio);
                 var fastLateDistance = textDistance + 0.66f;
@@ -42,6 +43,9 @@ namespace MajdataPlay.Game
         /// 用于调整Text、Fast/Late的显示位置
         /// </summary>
         public float DistanceRatio { get; set; } = 1f;
+
+        [SerializeField]
+        GameObject effectParent;
         [SerializeField]
         GameObject perfectDisplayer;
         [SerializeField]
@@ -65,7 +69,7 @@ namespace MajdataPlay.Game
         void Start()
         {
             Reset();
-            var effectPosition = perfectDisplayer.transform.localPosition;
+            var effectPosition = effectParent.transform.localPosition;
             var textDistance = 1f * (2 - DistanceRatio);
             var fastLateDistance = textDistance + 0.66f;
 

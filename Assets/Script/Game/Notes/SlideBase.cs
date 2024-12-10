@@ -238,9 +238,13 @@ namespace MajdataPlay.Game.Notes
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
+            {
                 _slideOK.SetActive(true);
+            }
             else
+            {
                 Destroy(_slideOK);
+            }
         }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
