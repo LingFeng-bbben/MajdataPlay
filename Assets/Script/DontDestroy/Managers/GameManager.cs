@@ -72,7 +72,6 @@ namespace MajdataPlay
                 Application.Quit();
             }
 #endif
-            Process.GetProcessesByName
             Application.logMessageReceived += (c, trace, type) =>
             {
                 _logQueue.Enqueue(new GameLog()
