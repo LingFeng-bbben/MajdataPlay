@@ -66,6 +66,13 @@ namespace MajdataPlay
         void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
+#if !UNITY_EDITOR
+            if(Process.GetProcessesByName("MajdataPlay").Length > 1)
+            {
+                Application.Quit();
+            }
+#endif
+            Process.GetProcessesByName
             Application.logMessageReceived += (c, trace, type) =>
             {
                 _logQueue.Enqueue(new GameLog()
