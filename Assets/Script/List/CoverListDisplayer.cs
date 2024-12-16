@@ -18,7 +18,7 @@ namespace MajdataPlay.List
         public bool IsChartList => Mode == CoverListMode.Chart;
         public CoverListMode Mode { get; set; } = CoverListMode.Directory;
 
-        List<GameObject> covers = new List<GameObject>();
+        
         public string soundEffectName;
         public GameObject CoverSmallPrefab;
         public GameObject DirSmallPrefab;
@@ -33,10 +33,30 @@ namespace MajdataPlay.List
 
         public int selectedDifficulty = 0;
 
-        private SongCollection[] dirs = Array.Empty<SongCollection>();
-        private SongCollection songs = new SongCollection();
+        private int coveri = 0;
 
-        public void SetDirList(SongCollection[] _dirs)
+        SongCollection[] _dirs = Array.Empty<SongCollection>();
+        SongCollection _songs = new SongCollection();
+        CoverSmallDisplayer[] _dirCovers = new CoverSmallDisplayer[16];
+        CoverSmallDisplayer[] _chartCovers = new CoverSmallDisplayer[16];
+        List<GameObject> covers = new List<GameObject>();
+
+        void Awake()
+        {
+            for (var i = 0; i < 16; i++)
+            {
+                var dirCover = Instantiate(DirSmallPrefab, transform);
+                var chartCover = Instantiate(CoverSmallPrefab, transform);
+                var dirComponent = dirCover.GetComponent<CoverSmallDisplayer>();
+                var chartComponent = chartCover.GetComponent<CoverSmallDisplayer>();
+
+                _dirCovers[i] = dirComponent;
+                _chartCovers[i] = chartComponent;
+                dirComponent.SetActive(false);
+                chartComponent.SetActive(false);
+            }
+        }
+        public void SwitchToDirList(SongCollection[] _dirs)
         {
             foreach (var cover in covers)
             {
@@ -44,7 +64,7 @@ namespace MajdataPlay.List
             }
             covers.Clear();
             Mode = CoverListMode.Directory;
-            dirs = _dirs;
+            this._dirs = _dirs;
             desiredListPos = SongStorage.CollectionIndex;
             foreach (var dir in _dirs)
             {
@@ -55,14 +75,15 @@ namespace MajdataPlay.List
                 covers.Add(obj);
                 obj.SetActive(false);
             }
-            if (desiredListPos > covers.Count) desiredListPos = 0;
+            if (desiredListPos > covers.Count) 
+                desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideToList(desiredListPos);
         }
 
-        public void SetSongList()
+        public void SwitchToSongList()
         {
-            if (songs.Count == 0) return;
+            if (_songs.Count == 0) return;
             foreach (var cover in covers)
             {
                 Destroy(cover);
@@ -70,7 +91,7 @@ namespace MajdataPlay.List
             covers.Clear();
             Mode = CoverListMode.Chart;
             desiredListPos = SongStorage.WorkingCollection.Index;
-            foreach (var song in songs)
+            foreach (var song in _songs)
             {
                 var obj = Instantiate(CoverSmallPrefab, transform);
                 var coversmall = obj.GetComponent<CoverSmallDisplayer>();
@@ -80,7 +101,8 @@ namespace MajdataPlay.List
                 covers.Add(obj);
                 obj.SetActive(false);
             }
-            if (desiredListPos > covers.Count) desiredListPos = 0;
+            if (desiredListPos > covers.Count) 
+                desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideToList(desiredListPos);
         }
@@ -107,14 +129,14 @@ namespace MajdataPlay.List
             CoverBigDisplayer.SetDifficulty(selectedDifficulty);
             if (IsChartList)
             {
-                var songinfo = songs[desiredListPos];
+                var songinfo = _songs[desiredListPos];
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
 
                 for (int i = 0; i < covers.Count; i++)
                 {
-                    var text = songs[i].Levels[selectedDifficulty];
+                    var text = _songs[i].Levels[selectedDifficulty];
                     if (text == null || text == "") text = "-";
                     covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
                 }
@@ -159,13 +181,13 @@ namespace MajdataPlay.List
             switch(Mode)
             {
                 case CoverListMode.Directory:
-                    songs = dirs[desiredListPos];
-                    CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+                    _songs = _dirs[desiredListPos];
+                    CoverBigDisplayer.SetMeta(_songs.Name, "", "", "");
                     CoverBigDisplayer.SetScore(new MaiScore());
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = songs[desiredListPos];
+                    var songinfo = _songs[desiredListPos];
                     var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetCover(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
@@ -180,7 +202,8 @@ namespace MajdataPlay.List
         {
             var delta = (desiredListPos - listPosReal) * turnSpeed;
             listPosReal += Mathf.Clamp(delta, -1f, 1f);
-            if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) listPosReal = desiredListPos;
+            if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) 
+                listPosReal = desiredListPos;
             for (int i = 0; i < covers.Count; i++)
             {
                 var distance = i - listPosReal;
@@ -203,10 +226,10 @@ namespace MajdataPlay.List
             }
             if (IsDirList && Time.frameCount % 50 == 0)
             {
-                if (songs.Count > 0)
+                if (_songs.Count > 0)
                 {
-                    if (coveri >= songs.Count) coveri = 0;
-                    CoverBigDisplayer.SetCover(songs[coveri++]);
+                    if (coveri >= _songs.Count) coveri = 0;
+                    CoverBigDisplayer.SetCover(_songs[coveri++]);
                 }
                 else
                 {
@@ -214,7 +237,7 @@ namespace MajdataPlay.List
                 }
             }
         }
-        private int coveri = 0;
+        
 
         Vector3 GetCoverPosition(float radius, float position)
         {

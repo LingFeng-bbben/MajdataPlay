@@ -463,19 +463,19 @@ namespace MajdataPlay.Game.Notes
             else if (result.IsMissOrTooFast())
                 return;
 
-            var releaseTiming = _gpManager.AudioTime;
+            var releaseTiming = _gpManager.AudioTime - _gameSetting.Judge.JudgeOffset;
             var diff = (Timing + Length) - releaseTiming;
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
 
             JudgeType endResult = diff switch
             {
-                <= 0.044445f => JudgeType.Perfect,
-                <= 0.088889f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
-                <= 0.133336f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
-                <= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                <= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                <= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                <= 0.05f => JudgeType.Perfect,
+                <= 0.1f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
+                <= 0.15f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                //<= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
+                //<= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
+                //<= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
                 _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
             };
 
