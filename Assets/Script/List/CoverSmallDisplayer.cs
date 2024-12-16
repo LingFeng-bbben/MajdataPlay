@@ -21,7 +21,6 @@ namespace MajdataPlay.List
                 SetActive(value);
             }
         }
-
         public Image Cover => _cover;
         public Image LevelBackground => _levelBackground;
         public TextMeshProUGUI LevelText => _levelText;
