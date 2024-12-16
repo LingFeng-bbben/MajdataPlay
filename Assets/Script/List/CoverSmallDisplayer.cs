@@ -57,10 +57,10 @@ namespace MajdataPlay.List
             switch (state)
             {
                 case true:
-                    _gameObject.layer = HIDDEN_LAYER;
+                    
                     break;
                 case false:
-                    _gameObject.layer = UI_LAYER;
+                    SetOpacity(0f);
                     break;
             }
         }
