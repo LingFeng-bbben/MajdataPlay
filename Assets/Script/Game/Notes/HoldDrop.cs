@@ -146,7 +146,13 @@ namespace MajdataPlay.Game.Notes
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            PlayJudgeSFX(result);
+            PlayJudgeSFX(new JudgeResult()
+            {
+                Result = _judgeResult,
+                IsBreak = false,
+                IsEX = false,
+                Diff = _judgeDiff
+            });
             _holdAnimStart = false;
             _thisRenderer.sharedMaterial = DefaultMaterial;
             RendererState = RendererStatus.Off;

@@ -395,21 +395,24 @@ namespace MajdataPlay.Game.Notes
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 _objectCounter.ReportResult(this, result);
-                PlaySlideOK(result);
-                if (IsClassic)
+                if(PlaySlideOK(result))
                 {
-                    _slideOKAnim.SetTrigger("classic");
+                    if (IsClassic)
+                    {
+                        _slideOKAnim.SetTrigger("classic");
+                    }
+                    else if (IsBreak && _judgeResult == JudgeType.Perfect)
+                    {
+                        _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                    }
+                    _slideOKController.SetResult(_judgeResult);
                 }
-                else if (IsBreak && _judgeResult == JudgeType.Perfect)
-                {
-                    _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-                }
-                _slideOKController.SetResult(_judgeResult);
+                
                 PlayJudgeSFX(result);
                 //PlaySlideOK(result);
             }
-            else
-                Destroy(_slideOK);
+            //else
+            //    Destroy(_slideOK);
             // Destroy(gameObject);
             //SetActive(false);
         }

@@ -362,16 +362,18 @@ namespace MajdataPlay.Game.Notes
             };
 
             _objectCounter.ReportResult(this, result);
-            PlaySlideOK(result);
-            if (IsClassic)
+            if(PlaySlideOK(result))
             {
-                _slideOKAnim.SetTrigger("classic");
+                if (IsClassic)
+                {
+                    _slideOKAnim.SetTrigger("classic");
+                }
+                else if (IsBreak && _judgeResult == JudgeType.Perfect)
+                {
+                    _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                }
+                _slideOKController.SetResult(_judgeResult);
             }
-            else if (IsBreak && _judgeResult == JudgeType.Perfect)
-            {
-                _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-            }
-            _slideOKController.SetResult(_judgeResult);
             PlayJudgeSFX(result);
             //PlaySlideOK(result);
             //Destroy(gameObject);
