@@ -33,11 +33,13 @@ namespace MajdataPlay.Game
                 minute = Math.Abs(minute);
                 second = Math.Abs(second);
                 mili = Math.Abs(mili);
-                _timeText.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
+                
+                //_timeText.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
+                _timeText.text = $"-{minute}:{second:00}.{mili / 10:000}";
             }
             else
             {
-                _timeText.text = string.Format("{0}:{1:00}.{2:0000}", minute, second, mili);
+                _timeText.text = $"{minute}:{second:00}.{mili / 10:000}";
             }
         }
     }

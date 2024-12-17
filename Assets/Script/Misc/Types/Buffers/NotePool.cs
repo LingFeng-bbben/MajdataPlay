@@ -51,7 +51,7 @@ namespace MajdataPlay.Buffers
         {
             if (_idleNotes.IsEmpty())
                 return;
-            foreach (var (i, tp) in _timingPoints.WithIndex())
+            foreach (var (i, tp) in _timingPoints.AsSpan().WithIndex())
             {
                 if (tp is null)
                     continue;
@@ -66,7 +66,7 @@ namespace MajdataPlay.Buffers
         }
         bool Dequeue(TInfo?[] infos)
         {
-            foreach (var (i, info) in infos.WithIndex())
+            foreach (var (i, info) in infos.AsSpan().WithIndex())
             {
                 if (info is null)
                     continue;
