@@ -124,18 +124,6 @@ namespace MajdataPlay.Game.Notes
             _defaultMaterial = _gpManager.DefaultMaterial;
             _holdShineMaterial = _gpManager.HoldShineMaterial;
         }
-        protected virtual void Start()
-        {
-            //_effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
-            //_objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
-            //_noteManager = MajInstanceHelper<NoteManager>.Instance!;
-            //_audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
-            //_gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            //_judgeTiming = Timing;
-            //_breakMaterial = _gpManager.BreakMaterial;
-            //_defaultMaterial = _gpManager.DefaultMaterial;
-            //_holdShineMaterial = _gpManager.HoldShineMaterial;
-        }
         void OnDestroy()
         {
             Active = false;

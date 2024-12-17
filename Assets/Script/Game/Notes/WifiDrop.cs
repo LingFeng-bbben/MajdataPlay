@@ -26,7 +26,6 @@ namespace MajdataPlay.Game.Notes
         {
             if (State >= NoteStatus.PreInitialized)
                 return;
-            base.Start();
             State = NoteStatus.PreInitialized;
             ConnectInfo.StartTiming = Timing;
             _judgeQueues = SlideTables.GetWifiTable(StartPos);
@@ -97,7 +96,7 @@ namespace MajdataPlay.Game.Notes
                 star.SetActive(true);
             }
         }
-        protected override void Start()
+        void Start()
         {
             Initialize();
             var wifiConst = 0.162870f;

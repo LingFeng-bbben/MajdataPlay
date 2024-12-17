@@ -39,7 +39,6 @@ namespace MajdataPlay.Game.Notes
             if (State >= NoteStatus.PreInitialized)
                 return;
             State = NoteStatus.PreInitialized;
-            base.Start();
             var star = _stars[0];
             var slideTable = SlideTables.FindTableByName(_slideType);
 
@@ -146,7 +145,7 @@ namespace MajdataPlay.Game.Notes
             }
             return len;
         }
-        protected override void Start()
+        void Start()
         {
             Initialize();
             if (ConnectInfo.IsConnSlide)
