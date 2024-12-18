@@ -18,6 +18,7 @@ using MajdataPlay.Types.Attribute;
 using MajdataPlay.Net;
 using System.Collections.Concurrent;
 using MychIO;
+using UnityEngine.Rendering;
 
 namespace MajdataPlay
 {
@@ -83,6 +84,15 @@ namespace MajdataPlay
                 });
             };
             _logWritebackTask = LogWriteback();
+            var s = "\n";
+            s += $"################ MajdataPlay Startup Check ################\n";
+            s += $"     OS       : {SystemInfo.operatingSystem}\n";
+            s += $"     Model    : {SystemInfo.deviceModel} - {SystemInfo.deviceType}\n";
+            s += $"     Processor: {SystemInfo.processorType}\n";
+            s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
+            s += $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
+            s += $"################     Startup Check  End    ################";
+            Debug.Log(s);
             Debug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
             _timer = MajTimeline.Timer;
