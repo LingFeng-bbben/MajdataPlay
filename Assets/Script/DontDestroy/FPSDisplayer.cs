@@ -41,7 +41,7 @@ namespace MajdataPlay
                 //var newColor = new Color(1.0f - BgColor.r, 1.0f - BgColor.g, 1.0f - BgColor.b);
                 var fpsDelta = Sum() / count;
 
-                _textDisplayer.text = $"FPS\n{1 / fpsDelta:F2}";
+                _textDisplayer.text = $"FPS {1 / fpsDelta:F2}";
                 //_textDisplayer.color = newColor;
                 _frameTimer = 1;
             }

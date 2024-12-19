@@ -9,6 +9,7 @@ using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using MajdataPlay.Collections;
+using TMPro;
 
 namespace MajdataPlay.Game
 {
@@ -44,7 +45,7 @@ namespace MajdataPlay.Game
         public int slideSum;
         public int touchSum;
         public int breakSum;
-        private Text rate;
+        private TextMeshProUGUI rate;
 
         Text bgInfoHeader;
         Text bgInfoText;
@@ -105,7 +106,7 @@ namespace MajdataPlay.Game
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
-            rate = GameObject.Find("ObjectRate").GetComponent<Text>();
+            rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
             bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
             bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
@@ -932,10 +933,9 @@ TOH: {touchCount} / {touchSum}
 BRK: {breakCount} / {breakSum}
 ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
 
-            rate.text = $@"FiNALE  Rate:
-{accRate[0]:F2}   %
-DELUXE Rate:
-{accRate[4]:F4} %";
+
+            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            rate.text = isClassic ? $"{accRate[0]:F2} %" : $"{accRate[4]:F4} %";
         }
         /// <summary>
         /// 计算最终达成率
