@@ -45,6 +45,10 @@ namespace MajdataPlay.Game
         /// </summary>
         public float AudioTime => _audioTime;
         /// <summary>
+        /// Current audio Total length
+        /// </summary>
+        public float AudioLength { get; private set; } = 0f;
+        /// <summary>
         /// Current audio playback time without offset correction
         /// </summary>
         public float AudioTimeNoOffset => _audioTimeNoOffset;
@@ -571,6 +575,7 @@ namespace MajdataPlay.Game
 
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
+            AudioLength = (float)_audioSample.Length.TotalSeconds;
             _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
