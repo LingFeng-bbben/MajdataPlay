@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
+    "com.monitor1394.xcharts": "https://github.com/XCharts-Team/XCharts.git",
+    "com.monitor1394.xcharts.daemon": "https://github.com/XCharts-Team/XCharts-Daemon.git",
     "com.unity.collab-proxy": "2.5.1",
     "com.unity.feature.2d": "2.0.1",
     "com.unity.ide.rider": "3.0.34",
