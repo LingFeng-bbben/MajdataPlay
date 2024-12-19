@@ -362,4 +362,9 @@
         Inner_Only,
         Disable
     }
+    public enum ChartStorageType
+    {
+        Local,
+        Online
+    }
 }

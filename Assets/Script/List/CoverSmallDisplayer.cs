@@ -21,6 +21,7 @@ namespace MajdataPlay.List
                 SetActive(value);
             }
         }
+        public bool IsOnline { get; set; } = false;
         public Image Cover => _cover;
         public Image LevelBackground => _levelBackground;
         public TextMeshProUGUI LevelText => _levelText;
@@ -28,6 +29,7 @@ namespace MajdataPlay.List
         bool _isRefreshed = false;
         bool _active = false;
 
+        Image _icon;
         Image _cover;
         Image _levelBackground;
         SongDetail _boundSong;
@@ -44,9 +46,15 @@ namespace MajdataPlay.List
             _transform = transform;
             _rectTransform  = _transform.GetComponent<RectTransform>();
             _cover = _transform.GetComponent<Image>();
+            _icon = _transform.GetChild(1).GetComponent<Image>();
             _levelBackground = _transform.GetChild(0).GetComponent<Image>();
             _levelText = _transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
             _active = _gameObject.layer == UI_LAYER;
+        }
+        private void Start()
+        {
+            if(IsOnline)
+                _icon.gameObject.SetActive(true);
         }
         public void SetActive(bool state)
         {

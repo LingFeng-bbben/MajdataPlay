@@ -23,6 +23,8 @@ namespace MajdataPlay.Collections
                 _index = value.Clamp(0, origin.Length - 1);
             }
         }
+        public ChartStorageType Type { get; init; } = ChartStorageType.Local;
+        public bool IsOnline => Type == ChartStorageType.Online;
         public string Name { get; private set; }
         public bool IsSorted { get; private set; } = false;
         public int Count => sorted.Length;

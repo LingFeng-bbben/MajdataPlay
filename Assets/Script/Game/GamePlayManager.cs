@@ -194,7 +194,7 @@ namespace MajdataPlay.Game
         {
             try
             {
-                if (_songDetail.isOnline)
+                if (_songDetail.IsOnline)
                     await DumpOnlineChart();
                 await UniTask.WhenAll(LoadAudioTrack(), ParseChart());
             }

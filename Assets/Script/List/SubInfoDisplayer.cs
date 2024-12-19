@@ -17,7 +17,7 @@ public class SubInfoDisplayer : MonoBehaviour
     // Start is called before the first frame update
     public void RefreshContent(SongDetail song)
     {
-        if (song.isOnline)
+        if (song.IsOnline)
         {
             id_text.text = "ID: " + song.OnlineId;
             StopAllCoroutines();

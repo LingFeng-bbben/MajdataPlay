@@ -31,7 +31,7 @@ public class PreviewSoundPlayer : MonoBehaviour
         await UniTask.Delay(1000,cancellationToken: token, cancelImmediately:true);
         token.ThrowIfCancellationRequested();
         var trackPath = info.TrackPath ?? string.Empty;
-        if (!File.Exists(trackPath) && !info.isOnline)
+        if (!File.Exists(trackPath) && !info.IsOnline)
             throw new AudioTrackNotFoundException(trackPath);
         using (var previewSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath))
         {

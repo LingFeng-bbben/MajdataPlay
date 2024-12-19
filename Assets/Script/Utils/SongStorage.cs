@@ -174,7 +174,10 @@ namespace MajdataPlay.Utils
                     gameList.Add(songDetail);
                 }
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
-                return new SongCollection(name, gameList.ToArray());
+                return new SongCollection(name, gameList.ToArray())
+                {
+                    Type = ChartStorageType.Online
+                };
             }
             catch (Exception e)
             {

@@ -54,6 +54,7 @@ namespace MajdataPlay.List
                 coversmall.SetLevelText(dir.Name);
                 covers.Add(coversmall);
                 coversmall.SetActive(false);
+                coversmall.IsOnline = dir.IsOnline;
             }
             if (desiredListPos > covers.Count) desiredListPos = 0;
             listPosReal = desiredListPos;
