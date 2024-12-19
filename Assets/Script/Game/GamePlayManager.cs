@@ -200,7 +200,8 @@ namespace MajdataPlay.Game
             {
                 if (_songDetail.IsOnline)
                     await DumpOnlineChart();
-                await UniTask.WhenAll(LoadAudioTrack(), ParseChart());
+                await LoadAudioTrack();
+                await ParseChart();
             }
             catch(HttpTransmitException httpEx)
             {
@@ -378,6 +379,7 @@ namespace MajdataPlay.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
+            AudioLength = (float)_audioSample.Length.TotalSeconds;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
@@ -409,6 +411,8 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if(_isAllTouch)
                 _chart.ConvertToTouch();
+            //
+            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
             await Task.Run(() =>
             {
                 //Generate ClockSounds
@@ -575,7 +579,6 @@ namespace MajdataPlay.Game
 
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
-            AudioLength = (float)_audioSample.Length.TotalSeconds;
             _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
