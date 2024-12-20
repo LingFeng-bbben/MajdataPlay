@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
+using System;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Buffers
@@ -20,7 +21,7 @@ namespace MajdataPlay.Buffers
         {
             if (_idleNotes.IsEmpty())
                 return;
-            foreach (var (i, tp) in _timingPoints.WithIndex())
+            foreach (var (i, tp) in _timingPoints.AsSpan().WithIndex())
             {
                 if (tp is null)
                     continue;
@@ -35,7 +36,7 @@ namespace MajdataPlay.Buffers
         }
         bool Dequeue(EachLinePoolingInfo?[] infos)
         {
-            foreach (var (i, info) in infos.WithIndex())
+            foreach (var (i, info) in infos.AsSpan().WithIndex())
             {
                 if (info is null)
                     continue;

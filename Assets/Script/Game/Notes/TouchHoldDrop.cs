@@ -27,16 +27,16 @@ namespace MajdataPlay.Game.Notes
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        foreach (var renderer in fanRenderers)
+                        foreach (var renderer in _fanRenderers)
                             renderer.forceRenderingOff = true;
-                        borderRenderer.forceRenderingOff = true;
-                        mask.forceRenderingOff = true;
+                        _borderRenderer.forceRenderingOff = true;
+                        _borderMask.forceRenderingOff = true;
                         break;
                     case RendererStatus.On:
-                        foreach (var renderer in fanRenderers)
+                        foreach (var renderer in _fanRenderers)
                             renderer.forceRenderingOff = false;
-                        borderRenderer.forceRenderingOff = false;
-                        mask.forceRenderingOff = false;
+                        _borderRenderer.forceRenderingOff = false;
+                        _borderMask.forceRenderingOff = false;
                         break;
                     default:
                         return;
@@ -46,30 +46,70 @@ namespace MajdataPlay.Game.Notes
         }
         public char areaPosition;
         public bool isFirework;
-        public GameObject tapEffect;
-        public GameObject judgeEffect;
 
         Sprite board_On;
         Sprite board_Off;
 
-        GameObject[] fans = new GameObject[4];
-        readonly SpriteRenderer[] fanRenderers = new SpriteRenderer[4];
+        readonly GameObject[] _fans = new GameObject[4];
+        readonly Transform[] _fanTransforms = new Transform[4];
+        readonly SpriteRenderer[] _fanRenderers = new SpriteRenderer[4];
 
         float displayDuration;
         float moveDuration;
         float wholeDuration;
 
-        GameObject point;
-        GameObject border;
-        SpriteMask mask;
-        SpriteRenderer pointRenderer;
-        SpriteRenderer borderRenderer;
-        NotePoolManager notePoolManager;
+        GameObject _pointObject;
+        GameObject _borderObject;
+        SpriteMask _borderMask;
+        SpriteRenderer _pointRenderer;
+        SpriteRenderer _borderRenderer;
+        NotePoolManager _notePoolManager;
 
         const int _fanSpriteSortOrder = 2;
         const int _borderSortOrder = 6;
         const int _pointBorderSortOrder = 1;
 
+        protected override void Awake()
+        {
+            base.Awake();
+
+            _notePoolManager = FindObjectOfType<NotePoolManager>();
+
+            _fanTransforms[0] = Transform.GetChild(5);
+            _fanTransforms[1] = Transform.GetChild(4);
+            _fanTransforms[2] = Transform.GetChild(3);
+            _fanTransforms[3] = Transform.GetChild(2);
+
+            _fans[0] = _fanTransforms[0].gameObject;
+            _fans[1] = _fanTransforms[1].gameObject;
+            _fans[2] = _fanTransforms[2].gameObject;
+            _fans[3] = _fanTransforms[3].gameObject;
+
+            for (var i = 0; i < 4; i++)
+            {
+                _fanRenderers[i] = _fans[i].GetComponent<SpriteRenderer>();
+            }
+
+            _pointObject = transform.GetChild(6).gameObject;
+            _borderObject = transform.GetChild(1).gameObject;
+            _pointRenderer = _pointObject.GetComponent<SpriteRenderer>();
+            _borderRenderer = _borderObject.GetComponent<SpriteRenderer>();
+            _borderMask = Transform.GetChild(0).GetComponent<SpriteMask>();
+
+            _pointObject.SetActive(true);
+            _borderObject.SetActive(true);
+
+            Transform.position = new Vector3(0, 0, 0);
+            SetFansColor(new Color(1f, 1f, 1f, 0f));
+            SetFansPosition(0.4f);
+
+            base.SetActive(false);
+            SetFanActive(false);
+            SetBorderActive(false);
+            SetPointActive(false);
+            Active = false;
+            RendererState = RendererStatus.Off;
+        }
         protected override async void Autoplay()
         {
             while (!_isJudged)
@@ -124,34 +164,33 @@ namespace MajdataPlay.Game.Notes
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
             _playerIdleTime = 0;
-            if (State == NoteStatus.Start)
-                Start();
-            else
-            {
-                wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
-                moveDuration = 0.8f * wholeDuration;
-                displayDuration = 0.2f * wholeDuration;
 
-                LoadSkin();
+            wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
+            moveDuration = 0.8f * wholeDuration;
+            displayDuration = 0.2f * wholeDuration;
 
-                SetfanColor(new Color(1f, 1f, 1f, 0f));
-                mask.enabled = false;
-                mask.alphaCutoff = 0;
-                point.SetActive(false);
-                border.SetActive(false);
+            LoadSkin();
 
-                _sensorPos = TouchBase.GetSensor(areaPosition, StartPos);
-                var pos = TouchBase.GetAreaPos(_sensorPos);
-                transform.position = pos;
-                SetFansPosition(0.4f);
-                RendererState = RendererStatus.Off;
-            }
+            SetFansColor(new Color(1f, 1f, 1f, 0f));
+            _borderMask.enabled = false;
+            _borderMask.alphaCutoff = 0;
+            SetActive(true);
+            SetFanActive(false);
+            SetBorderActive(false);
+            SetPointActive(false);
+
+            _sensorPos = TouchBase.GetSensor(areaPosition, StartPos);
+            var pos = TouchBase.GetAreaPos(_sensorPos);
+            transform.position = pos;
+            SetFansPosition(0.4f);
+            RendererState = RendererStatus.Off;
+
             for (var i = 0; i < 4; i++)
-                fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
-            pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
-            borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
-            mask.frontSortingOrder = SortOrder - _borderSortOrder;
-            mask.backSortingOrder = SortOrder - _borderSortOrder - 1;
+                _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
+            _borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
+            _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
+            _borderMask.backSortingOrder = SortOrder - _borderSortOrder - 1;
 
             if (_gpManager.IsAutoplay)
                 Autoplay();
@@ -175,7 +214,8 @@ namespace MajdataPlay.Game.Notes
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            point.SetActive(false);
+            //_pointObject.SetActive(false);
+            SetActive(false);
             RendererState = RendererStatus.Off;
 
             _objectCounter.ReportResult(this, result);
@@ -188,44 +228,7 @@ namespace MajdataPlay.Game.Notes
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
-            notePoolManager.Collect(this);
-        }
-        protected override void Start()
-        {
-            if (IsInitialized)
-                return;
-            base.Start();
-            Active = true;
-            wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
-            moveDuration = 0.8f * wholeDuration;
-            displayDuration = 0.2f * wholeDuration;
-
-            fans[0] = transform.GetChild(5).gameObject;
-            fans[1] = transform.GetChild(4).gameObject;
-            fans[2] = transform.GetChild(3).gameObject;
-            fans[3] = transform.GetChild(2).gameObject;
-
-            point = transform.GetChild(6).gameObject;
-            border = transform.GetChild(1).gameObject;
-            pointRenderer = point.GetComponent<SpriteRenderer>();
-            borderRenderer = border.GetComponent<SpriteRenderer>();
-            mask = transform.GetChild(0).GetComponent<SpriteMask>();
-
-            notePoolManager = FindObjectOfType<NotePoolManager>();
-
-            LoadSkin();
-
-            SetfanColor(new Color(1f, 1f, 1f, 0f));
-            mask.enabled = false;
-            point.SetActive(false);
-            border.SetActive(false);
-
-            _sensorPos = TouchBase.GetSensor(areaPosition,StartPos);
-            var pos = TouchBase.GetAreaPos(_sensorPos);
-            transform.position = pos;
-            SetFansPosition(0.4f);
-            State = NoteStatus.Initialized;
-            RendererState = RendererStatus.Off;
+            _notePoolManager.Collect(this);
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
@@ -255,26 +258,23 @@ namespace MajdataPlay.Game.Notes
         protected override void LoadSkin()
         {
             var skin = MajInstances.SkinManager.GetTouchHoldSkin();
-            for (var i = 0; i < 4; i++)
-            {
-                fanRenderers[i] = fans[i].GetComponent<SpriteRenderer>();
-            }
+
             SetFansMaterial(DefaultMaterial);
             if(IsBreak)
             {
                 for (var i = 0; i < 4; i++)
-                    fanRenderers[i].sprite = skin.Fans_Break[i];
-                borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
-                pointRenderer.sprite = skin.Point_Break;
+                    _fanRenderers[i].sprite = skin.Fans_Break[i];
+                _borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
+                _pointRenderer.sprite = skin.Point_Break;
                 board_On = skin.Boader_Break;
                 SetFansMaterial(BreakMaterial);
             }
             else
             {
                 for (var i = 0; i < 4; i++)
-                    fanRenderers[i].sprite = skin.Fans[i];
-                borderRenderer.sprite = skin.Boader; // TouchHold Border
-                pointRenderer.sprite = skin.Point;
+                    _fanRenderers[i].sprite = skin.Fans[i];
+                _borderRenderer.sprite = skin.Boader; // TouchHold Border
+                _pointRenderer.sprite = skin.Point;
                 board_On = skin.Boader;
             }
             board_Off = skin.Off;
@@ -379,7 +379,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if ((-timing).InRange(moveDuration, wholeDuration))
                     {
-                        point.SetActive(true);
+                        SetPointActive(true);
+                        SetFanActive(true);
                         RendererState = RendererStatus.On;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
@@ -390,13 +391,13 @@ namespace MajdataPlay.Game.Notes
                         var newColor = Color.white;
                         if (-timing < moveDuration)
                         {
-                            SetfanColor(Color.white);
+                            SetFansColor(Color.white);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
                         var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
-                        SetfanColor(newColor);
+                        SetFansColor(newColor);
                     }
                     return;
                 case NoteStatus.Running:
@@ -410,8 +411,8 @@ namespace MajdataPlay.Game.Notes
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
                             SetFansPosition(_distance);
-                            border.SetActive(true);
-                            mask.enabled = true;
+                            SetBorderActive(true);
+                            _borderMask.enabled = true;
                             State = NoteStatus.End;
                             goto case NoteStatus.End;
                         }
@@ -423,17 +424,71 @@ namespace MajdataPlay.Game.Notes
                     {
                         var value = 0.91f * (1 - (Length - timing) / Length);
                         var alpha = value.Clamp(0, 1f);
-                        mask.alphaCutoff = alpha;
+                        _borderMask.alphaCutoff = alpha;
                     }
                     return;
             }   
         }
+
+        public override void SetActive(bool state)
+        {
+            if (Active == state)
+                return;
+            base.SetActive(state);
+            SetFanActive(state);
+            SetBorderActive(state);
+            SetPointActive(state);
+            Active = state;
+        }
+        void SetFanActive(bool state)
+        {
+            switch (state)
+            {
+                case true:
+                    foreach (var fanObj in _fans.AsSpan())
+                    {
+                        fanObj.layer = DEFAULT_LAYER;
+                    }
+                    break;
+                case false:
+                    foreach (var fanObj in _fans.AsSpan())
+                    {
+                        fanObj.layer = HIDDEN_LAYER;
+                    }
+                    break;
+            }
+        }
+        void SetPointActive(bool state)
+        {
+            switch (state)
+            {
+                case true:
+                    _pointObject.layer = DEFAULT_LAYER;
+                    break;
+                case false:
+                    _pointObject.layer = HIDDEN_LAYER;
+                    break;
+            }
+        }
+        void SetBorderActive(bool state)
+        {
+            switch (state)
+            {
+                case true:
+                    _borderObject.layer = DEFAULT_LAYER;
+                    break;
+                case false:
+                    _borderObject.layer = HIDDEN_LAYER;
+                    break;
+            }
+        }
+
         void SetFansPosition(in float distance)
         {
             for (var i = 0; i < 4; i++)
             {
                 var pos = (0.226f + distance) * GetAngle(i);
-                fans[i].transform.localPosition = pos;
+                _fanTransforms[i].localPosition = pos;
             }
         }
         void EndJudge(ref JudgeType result)
@@ -487,14 +542,14 @@ namespace MajdataPlay.Game.Notes
         {
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _audioEffMana.PlayTouchHoldSound();
-            borderRenderer.sprite = board_On;
+            _borderRenderer.sprite = board_On;
             SetFansMaterial(DefaultMaterial);
         }
         void StopHoldEffect()
         {
             _effectManager.ResetHoldEffect(_sensorPos);
             _audioEffMana.StopTouchHoldSound();
-            borderRenderer.sprite = board_Off;
+            _borderRenderer.sprite = board_Off;
             SetFansMaterial(DefaultMaterial);
         }
         Vector3 GetAngle(int index)
@@ -502,14 +557,15 @@ namespace MajdataPlay.Game.Notes
             var angle = Mathf.PI / 4 + index * (Mathf.PI / 2);
             return new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
         }
-        void SetfanColor(Color color)
+        void SetFansColor(Color color)
         {
-            foreach (var fan in fanRenderers) fan.color = color;
+            foreach (var fan in _fanRenderers.AsSpan()) 
+                fan.color = color;
         }
         void SetFansMaterial(Material material)
         {
             for (var i = 0; i < 4; i++)
-                fanRenderers[i].sharedMaterial = material;
+                _fanRenderers[i].sharedMaterial = material;
         }
         void SubscribeEvent()
         {

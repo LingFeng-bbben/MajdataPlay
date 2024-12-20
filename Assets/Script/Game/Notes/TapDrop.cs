@@ -55,7 +55,27 @@ namespace MajdataPlay.Game.Notes
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
 
+        protected override void Awake()
+        {
+            base.Awake();
 
+            _notePoolManager = FindObjectOfType<NotePoolManager>();
+            _thisRenderer = GetComponent<SpriteRenderer>();
+
+            _exObject = Transform.GetChild(0).gameObject;
+            _exRenderer = _exObject.GetComponent<SpriteRenderer>();
+
+            _tapLineObject = Instantiate(_tapLinePrefab, _noteManager.gameObject.transform.GetChild(7));
+            _tapLineObject.SetActive(true);
+            _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
+
+            Transform.localScale = new Vector3(0, 0);
+
+            base.SetActive(false);
+            _tapLineObject.layer = HIDDEN_LAYER;
+            _exObject.layer = HIDDEN_LAYER;
+            Active = false;
+        }
         public void Initialize(TapPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
@@ -74,10 +94,11 @@ namespace MajdataPlay.Game.Notes
             RotateSpeed = poolingInfo.RotateSpeed;
             _isJudged = false;
             Distance = -100;
-            if (State == NoteStatus.Start)
-                Start();
+            _sensorPos = (SensorType)(StartPos - 1);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            Transform.localScale = new Vector3(0, 0);
+
             _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             _thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
             _exRenderer.sortingOrder = SortOrder - _exSortOrder;
@@ -85,7 +106,7 @@ namespace MajdataPlay.Game.Notes
             LoadSkin();
             SetActive(true);
             SetTapLineActive(false);
-            _sensorPos = (SensorType)(StartPos - 1);
+            
             if (_gpManager.IsAutoplay)
                 Autoplay();
             else
@@ -113,24 +134,6 @@ namespace MajdataPlay.Game.Notes
             _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
-        }
-        protected override void Start()
-        {
-            if (IsInitialized)
-                return;
-            base.Start();
-            Active = true;
-            _notePoolManager = FindObjectOfType<NotePoolManager>();
-            _thisRenderer = GetComponent<SpriteRenderer>();
-
-            _exObject = transform.GetChild(0).gameObject;
-            _exRenderer = _exObject.GetComponent<SpriteRenderer>();
-
-            _tapLineObject = Instantiate(_tapLinePrefab, _noteManager.gameObject.transform.GetChild(7));
-            _tapLineObject.SetActive(true);
-            _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
-
-            transform.localScale = new Vector3(0, 0);
         }
         protected override void PlaySFX()
         {
@@ -161,7 +164,6 @@ namespace MajdataPlay.Game.Notes
             else if (_isJudged)
                 End();
         }
-        // Update is called once per frame
         public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
@@ -174,12 +176,17 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
+                        Transform.position = GetPositionFromDistance(1.225f);
+                        _tapLineObject.transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+
                         RendererState = RendererStatus.On;
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
-                    else
-                        transform.localScale = new Vector3(0, 0);
+                    //else
+                    //{
+                    //    Transform.localScale = new Vector3(0, 0);
+                    //}
                     return;
                 case NoteStatus.Scaling:
                     {
@@ -189,9 +196,9 @@ namespace MajdataPlay.Game.Notes
                         {
                             Distance = distance;
                             Transform.localScale = new Vector3(destScale, destScale);
-                            Transform.position = GetPositionFromDistance(1.225f);
-                            var lineScale = Mathf.Abs(1.225f / 4.8f);
-                            _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                            //Transform.position = GetPositionFromDistance(1.225f);
+                            //var lineScale = Mathf.Abs(1.225f / 4.8f);
+                            //_tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
                         else
                         {
@@ -258,10 +265,10 @@ namespace MajdataPlay.Game.Notes
             switch(state)
             {
                 case true:
-                    _exObject.layer = 0;
+                    _exObject.layer = DEFAULT_LAYER;
                     break;
                 case false:
-                    _exObject.layer = 0;
+                    _exObject.layer = HIDDEN_LAYER;
                     break;
             }
             SetTapLineActive(state);
@@ -272,10 +279,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _tapLineObject.layer = 0;
+                    _tapLineObject.layer = DEFAULT_LAYER;
                     break;
                 case false:
-                    _tapLineObject.layer = 3;
+                    _tapLineObject.layer = HIDDEN_LAYER;
                     break;
             }
         }
@@ -290,77 +297,77 @@ namespace MajdataPlay.Game.Notes
         void LoadTapSkin()
         {
             var skin = MajInstances.SkinManager.GetTapSkin();
-            var renderer = GetComponent<SpriteRenderer>();
-            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
+            //var _thisRenderer = GetComponent<SpriteRenderer>();
+            //var _exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            //var _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
 
-            renderer.sprite = skin.Normal;
-            renderer.sharedMaterial = DefaultMaterial;
-            exRenderer.sprite = skin.Ex;
-            exRenderer.color = skin.ExEffects[0];
-            tapLineRenderer.sprite = skin.NoteLines[0];
+            _thisRenderer.sprite = skin.Normal;
+            _thisRenderer.sharedMaterial = DefaultMaterial;
+            _exRenderer.sprite = skin.Ex;
+            _exRenderer.color = skin.ExEffects[0];
+            _tapLineRenderer.sprite = skin.NoteLines[0];
 
             if (IsEach)
             {
-                renderer.sprite = skin.Each;
-                tapLineRenderer.sprite = skin.NoteLines[1];
-                exRenderer.color = skin.ExEffects[1];
+                _thisRenderer.sprite = skin.Each;
+                _tapLineRenderer.sprite = skin.NoteLines[1];
+                _exRenderer.color = skin.ExEffects[1];
             }
 
             if (IsBreak)
             {
-                renderer.sprite = skin.Break;
-                renderer.sharedMaterial = BreakMaterial;
-                tapLineRenderer.sprite = skin.NoteLines[2];
-                exRenderer.color = skin.ExEffects[2];
+                _thisRenderer.sprite = skin.Break;
+                _thisRenderer.sharedMaterial = BreakMaterial;
+                _tapLineRenderer.sprite = skin.NoteLines[2];
+                _exRenderer.color = skin.ExEffects[2];
             }
         }
         void LoadStarSkin()
         {
-            var renderer = GetComponent<SpriteRenderer>();
-            var exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            var tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
+            //var _thisRenderer = GetComponent<SpriteRenderer>();
+            //var _exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            //var _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
             var skin = MajInstances.SkinManager.GetStarSkin();
-            renderer.sharedMaterial = DefaultMaterial;
-            exRenderer.color = skin.ExEffects[0];
-            tapLineRenderer.sprite = skin.NoteLines[0];
+            _thisRenderer.sharedMaterial = DefaultMaterial;
+            _exRenderer.color = skin.ExEffects[0];
+            _tapLineRenderer.sprite = skin.NoteLines[0];
 
             if (IsDouble)
             {
-                renderer.sprite = skin.Double;
-                exRenderer.sprite = skin.ExDouble;
+                _thisRenderer.sprite = skin.Double;
+                _exRenderer.sprite = skin.ExDouble;
 
                 if (IsEach)
                 {
-                    renderer.sprite = skin.EachDouble;
-                    tapLineRenderer.sprite = skin.NoteLines[1];
-                    exRenderer.color = skin.ExEffects[1];
+                    _thisRenderer.sprite = skin.EachDouble;
+                    _tapLineRenderer.sprite = skin.NoteLines[1];
+                    _exRenderer.color = skin.ExEffects[1];
                 }
                 if (IsBreak)
                 {
-                    renderer.sprite = skin.BreakDouble;
-                    renderer.sharedMaterial = BreakMaterial;
-                    tapLineRenderer.sprite = skin.NoteLines[2];
-                    exRenderer.color = skin.ExEffects[2];
+                    _thisRenderer.sprite = skin.BreakDouble;
+                    _thisRenderer.sharedMaterial = BreakMaterial;
+                    _tapLineRenderer.sprite = skin.NoteLines[2];
+                    _exRenderer.color = skin.ExEffects[2];
                 }
             }
             else
             {
-                renderer.sprite = skin.Normal;
-                exRenderer.sprite = skin.Ex;
+                _thisRenderer.sprite = skin.Normal;
+                _exRenderer.sprite = skin.Ex;
 
                 if (IsEach)
                 {
-                    renderer.sprite = skin.Each;
-                    tapLineRenderer.sprite = skin.NoteLines[1];
-                    exRenderer.color = skin.ExEffects[1];
+                    _thisRenderer.sprite = skin.Each;
+                    _tapLineRenderer.sprite = skin.NoteLines[1];
+                    _exRenderer.color = skin.ExEffects[1];
                 }
                 if (IsBreak)
                 {
-                    renderer.sprite = skin.Break;
-                    renderer.sharedMaterial = BreakMaterial;
-                    tapLineRenderer.sprite = skin.NoteLines[2];
-                    exRenderer.color = skin.ExEffects[2];
+                    _thisRenderer.sprite = skin.Break;
+                    _thisRenderer.sharedMaterial = BreakMaterial;
+                    _tapLineRenderer.sprite = skin.NoteLines[2];
+                    _exRenderer.color = skin.ExEffects[2];
                 }
             }
         }

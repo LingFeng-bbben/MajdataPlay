@@ -179,7 +179,6 @@ GameObject:
   - component: {fileID: 7566527781932749477}
   - component: {fileID: 7566527781932749498}
   - component: {fileID: 7566527781932749499}
-  - component: {fileID: 4963379289684533625}
   m_Layer: 0
   m_Name: Hold_01
   m_TagString: Untagged
@@ -268,6 +267,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a269f699525b313479335d4afd246e37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _state: 0
   _startPos: 0
   _timing: 0
   _speed: 7
@@ -277,25 +277,4 @@ MonoBehaviour:
   _isEX: 0
   _playerIdleTime: 0
   _length: 1
-  tapLine: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}
---- !u!95 &4963379289684533625
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7566527781932749496}
-  m_Enabled: 0
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 3fcb4587ef8c7f141969450782191592, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  _tapLinePrefab: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}

@@ -47,7 +47,7 @@ namespace MajdataPlay.Utils
         public static long TotalChartCount { get; private set; } = 0;
 
         static int _collectionIndex = 0;
-        public static async Task ScanMusicAsync()
+        public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
             if (!Directory.Exists(GameManager.ChartPath))
             {
@@ -56,7 +56,7 @@ namespace MajdataPlay.Utils
                 return;
             }
             var rootPath = GameManager.ChartPath;
-            var task = GetCollections(rootPath);
+            var task = GetCollections(rootPath,progressReporter);
             var songs = await task;
             if (task.IsFaulted)
             {
@@ -69,34 +69,26 @@ namespace MajdataPlay.Utils
             TotalChartCount =  await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
             Debug.Log($"Loaded chart count: {TotalChartCount}");
         }
-        static async ValueTask<SongCollection[]> GetCollections(string rootPath)
+        static async ValueTask<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress> progressReporter)
         {
             var dirs = new DirectoryInfo(rootPath).GetDirectories();
             List<Task<SongCollection>> tasks = new();
             List<SongCollection> collections = new();
+
             //Local Charts
             foreach (var dir in dirs)
             {
                 var path = dir.FullName;
                 var files = dir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
+                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
 
                 if (maidataFile is not null || trackFile is not null)
                     continue;
 
                 tasks.Add(GetCollection(path));
             }
-            //Online Charts
-            if (MajInstances.Setting.Online.Enable)
-            {
-                foreach(var item in MajInstances.Setting.Online.ApiEndpoints)
-                {
-                    tasks.Add(GetOnlineCollection(item));
-                }
-            }
-                
-
+            
             var a = Task.WhenAll(tasks);
             await a;
 
@@ -106,6 +98,21 @@ namespace MajdataPlay.Utils
             {
                 if (task.Result != null)
                     collections.Add(task.Result);
+            }
+            //Online Charts
+            if (MajInstances.Setting.Online.Enable)
+            {
+                foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
+                {
+                    progressReporter.Report(new ChartScanProgress()
+                    {
+                        StorageType = ChartStorageType.Online,
+                        Message = item.Name
+                    });
+                    var result = await GetOnlineCollection(item);
+                    if (!result.IsEmpty)
+                        collections.Add(result);
+                }
             }
             //Add all songs to "All" folder
             var allcharts = new List<SongDetail>();
@@ -122,32 +129,35 @@ namespace MajdataPlay.Utils
         }
         static async Task<SongCollection> GetCollection(string rootPath)
         {
-            var thisDir = new DirectoryInfo(rootPath);
-            var dirs = thisDir.GetDirectories()
-                              .OrderBy(o => o.CreationTime)
-                              .ToList();
-            var charts = new List<SongDetail>();
-            var tasks = new List<Task<SongDetail>>();
-            foreach (var songDir in dirs)
+            return await Task.Run(async () =>
             {
-                var files = songDir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                var thisDir = new DirectoryInfo(rootPath);
+                var dirs = thisDir.GetDirectories()
+                                  .OrderBy(o => o.CreationTime)
+                                  .ToList();
+                var charts = new List<SongDetail>();
+                var tasks = new List<Task<SongDetail>>();
+                foreach (var songDir in dirs)
+                {
+                    var files = songDir.GetFiles();
+                    var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+                    var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
 
-                if (maidataFile is null || trackFile is null)
-                    continue;
+                    if (maidataFile is null || trackFile is null)
+                        continue;
 
-                var parsingTask = SongDetail.ParseAsync(files);
+                    var parsingTask = SongDetail.ParseAsync(files);
 
-                tasks.Add(parsingTask);
-            }
-            var a = Task.WhenAll(tasks);
-            await a;
-            if (a.IsFaulted)
-                throw a.Exception.InnerException;
-            foreach (var task in tasks)
-                charts.Add(task.Result);
-            return new SongCollection(thisDir.Name, charts.ToArray());
+                    tasks.Add(parsingTask);
+                }
+                var a = Task.WhenAll(tasks);
+                await a;
+                if (a.IsFaulted)
+                    throw a.Exception.InnerException;
+                foreach (var task in tasks)
+                    charts.Add(task.Result);
+                return new SongCollection(thisDir.Name, charts.ToArray());
+            });
         }
         static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api)
         {
@@ -174,7 +184,10 @@ namespace MajdataPlay.Utils
                     gameList.Add(songDetail);
                 }
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
-                return new SongCollection(name, gameList.ToArray());
+                return new SongCollection(name, gameList.ToArray())
+                {
+                    Type = ChartStorageType.Online
+                };
             }
             catch (Exception e)
             {

@@ -416,8 +416,8 @@ PlayerSettings:
     m_APIs: 10000000
     m_Automatic: 1
   - m_BuildTarget: WindowsStandaloneSupport
-    m_APIs: 15000000
-    m_Automatic: 1
+    m_APIs: 150000001200000002000000110000000b000000
+    m_Automatic: 0
   - m_BuildTarget: MacStandaloneSupport
     m_APIs: 10000000
     m_Automatic: 1
@@ -700,7 +700,24 @@ PlayerSettings:
   webGLMemoryGeometricGrowthStep: 0.2
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: dUI_TextMeshPro
+    EmbeddedLinux: dUI_TextMeshPro
+    GameCoreScarlett: dUI_TextMeshPro
+    GameCoreXboxOne: dUI_TextMeshPro
+    LinuxHeadlessSimulation: dUI_TextMeshPro
+    Nintendo Switch: dUI_TextMeshPro
+    PS4: dUI_TextMeshPro
+    PS5: dUI_TextMeshPro
+    QNX: dUI_TextMeshPro
+    Stadia: dUI_TextMeshPro
+    Standalone: dUI_TextMeshPro
+    VisionOS: dUI_TextMeshPro
+    WebGL: dUI_TextMeshPro
+    Windows Store Apps: dUI_TextMeshPro
+    XboxOne: dUI_TextMeshPro
+    iPhone: dUI_TextMeshPro
+    tvOS: dUI_TextMeshPro
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

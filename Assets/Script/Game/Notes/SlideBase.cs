@@ -226,10 +226,10 @@ namespace MajdataPlay.Game.Notes
                 _slideBars[i].layer = 3;
             }
         }
-        protected void PlaySlideOK(in JudgeResult result)
+        protected bool PlaySlideOK(in JudgeResult result)
         {
             if (_slideOK == null)
-                return;
+                return false;
             
             bool canPlay;
             if(result.IsBreak)
@@ -238,9 +238,14 @@ namespace MajdataPlay.Game.Notes
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
+            {
                 _slideOK.SetActive(true);
-            else
-                Destroy(_slideOK);
+            }
+            //else
+            //{
+            //    //Destroy(_slideOK);
+            //}
+            return canPlay;
         }
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)

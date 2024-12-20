@@ -45,6 +45,10 @@ namespace MajdataPlay.Game
         /// </summary>
         public float AudioTime => _audioTime;
         /// <summary>
+        /// Current audio Total length
+        /// </summary>
+        public float AudioLength { get; private set; } = 0f;
+        /// <summary>
         /// Current audio playback time without offset correction
         /// </summary>
         public float AudioTimeNoOffset => _audioTimeNoOffset;
@@ -67,6 +71,7 @@ namespace MajdataPlay.Game
         public MaiScore? HistoryScore { get; private set; }
         public Material BreakMaterial => _breakMaterial;
         public Material DefaultMaterial => _defaultMaterial;
+        public Material HoldShineMaterial => _holdShineMaterial;
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
@@ -82,6 +87,8 @@ namespace MajdataPlay.Game
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
+        [SerializeField]
+        Material _holdShineMaterial;
         [SerializeField]
         Material _breakMaterial;
         [SerializeField]
@@ -191,9 +198,10 @@ namespace MajdataPlay.Game
         {
             try
             {
-                if (_songDetail.isOnline)
+                if (_songDetail.IsOnline)
                     await DumpOnlineChart();
-                await UniTask.WhenAll(LoadAudioTrack(), ParseChart());
+                await LoadAudioTrack();
+                await ParseChart();
             }
             catch(HttpTransmitException httpEx)
             {
@@ -371,6 +379,7 @@ namespace MajdataPlay.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
+            AudioLength = (float)_audioSample.Length.TotalSeconds;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
@@ -402,6 +411,8 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if(_isAllTouch)
                 _chart.ConvertToTouch();
+            //
+            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
             await Task.Run(() =>
             {
                 //Generate ClockSounds

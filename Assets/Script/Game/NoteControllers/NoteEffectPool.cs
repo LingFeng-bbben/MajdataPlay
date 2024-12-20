@@ -26,9 +26,11 @@ namespace MajdataPlay.Game
 
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
+        GamePlayManager _gpManager;
         void Awake()
         {
             MajInstanceHelper<NoteEffectPool>.Instance = this;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         void OnDestroy()
         {
@@ -47,6 +49,8 @@ namespace MajdataPlay.Game
                 var obj = Instantiate(tapEffectPrefab, tapParent);
                 obj.name = $"TapEffect_{i + 1}";
                 obj.transform.rotation = rotation;
+                if(_gpManager.IsClassicMode)
+                    obj.transform.GetChild(0).localScale = new Vector3(1.4f, 1.4f, 0);
                 var displayer = obj.GetComponent<TapEffectDisplayer>();
                 displayer.DistanceRatio = MajInstances.Setting.Display.OuterJudgeDistance;
                 displayer.ResetAll();

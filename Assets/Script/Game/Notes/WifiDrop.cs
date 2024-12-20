@@ -26,7 +26,6 @@ namespace MajdataPlay.Game.Notes
         {
             if (State >= NoteStatus.PreInitialized)
                 return;
-            base.Start();
             State = NoteStatus.PreInitialized;
             ConnectInfo.StartTiming = Timing;
             _judgeQueues = SlideTables.GetWifiTable(StartPos);
@@ -97,7 +96,7 @@ namespace MajdataPlay.Game.Notes
                 star.SetActive(true);
             }
         }
-        protected override void Start()
+        void Start()
         {
             Initialize();
             var wifiConst = 0.162870f;
@@ -362,13 +361,20 @@ namespace MajdataPlay.Game.Notes
             };
 
             _objectCounter.ReportResult(this, result);
-            if (IsBreak && _judgeResult == JudgeType.Perfect)
+            if(PlaySlideOK(result))
             {
-                _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                if (IsClassic)
+                {
+                    _slideOKAnim.SetTrigger("classic");
+                }
+                else if (IsBreak && _judgeResult == JudgeType.Perfect)
+                {
+                    _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                }
+                _slideOKController.SetResult(_judgeResult);
             }
-            _slideOKController.SetResult(_judgeResult);
             PlayJudgeSFX(result);
-            PlaySlideOK(result);
+            //PlaySlideOK(result);
             //Destroy(gameObject);
         }
         protected override void LoadSkin()

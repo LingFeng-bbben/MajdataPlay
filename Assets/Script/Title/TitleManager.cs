@@ -3,6 +3,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,19 @@ namespace MajdataPlay.Title
         }
         async Task StartScanningChart()
         {
-            await SongStorage.ScanMusicAsync();
+            var progress = new Progress<ChartScanProgress>();
+            progress.ProgressChanged += (o,e) =>
+            {
+                switch(e.StorageType)
+                {
+                    case ChartStorageType.Local:
+                        break;
+                    case ChartStorageType.Online:
+                        echoText.text = string.Format(Localization.GetLocalizedText("Scanning Charts From {0}"),e.Message);
+                        break;
+                }
+            };
+            await SongStorage.ScanMusicAsync(progress);
 
             if (!SongStorage.IsEmpty)
             {

@@ -78,6 +78,7 @@ namespace MajdataPlay.Game.Notes
 
         protected Material BreakMaterial => _breakMaterial;
         protected Material DefaultMaterial => _defaultMaterial;
+        protected Material HoldShineMaterial => _holdShineMaterial;
 
         [ReadOnlyField]
         [SerializeField]
@@ -100,26 +101,28 @@ namespace MajdataPlay.Game.Notes
         protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
+        protected const int DEFAULT_LAYER = 0;
+        protected const int HIDDEN_LAYER = 3;
+
         Material _breakMaterial;
         Material _defaultMaterial;
+        Material _holdShineMaterial;
 
         GameObject _gameObject;
         Transform _transform;
-        void Awake()
+        protected virtual void Awake()
         {
             _gameObject = gameObject;
             _transform = transform;
-        }
-        protected virtual void Start()
-        {
-            _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
-            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
-            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
-            _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            _judgeTiming = Timing;
+            _effectManager = FindObjectOfType<NoteEffectManager>();
+            _objectCounter = FindObjectOfType<ObjectCounter>();
+            _noteManager = FindObjectOfType<NoteManager>();
+            _audioEffMana = FindObjectOfType<NoteAudioManager>();
+            _gpManager = FindObjectOfType<GamePlayManager>();
+
             _breakMaterial = _gpManager.BreakMaterial;
             _defaultMaterial = _gpManager.DefaultMaterial;
+            _holdShineMaterial = _gpManager.HoldShineMaterial;
         }
         void OnDestroy()
         {
@@ -205,10 +208,15 @@ namespace MajdataPlay.Game.Notes
         /// <param name="state"></param>
         public virtual void SetActive(bool state)
         {
-            if (state)
-                GameObject.layer = 0;
-            else
-                GameObject.layer = 3;
+            switch(state)
+            {
+                case true:
+                    GameObject.layer = DEFAULT_LAYER;
+                    break;
+                case false:
+                    GameObject.layer = HIDDEN_LAYER;
+                    break;
+            }    
         }
         /// <summary>
         /// 获取当前时刻距离抵达判定线的长度

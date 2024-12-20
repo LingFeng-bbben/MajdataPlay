@@ -9,6 +9,7 @@ using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using MajdataPlay.Collections;
+using TMPro;
 
 namespace MajdataPlay.Game
 {
@@ -44,7 +45,7 @@ namespace MajdataPlay.Game
         public int slideSum;
         public int touchSum;
         public int breakSum;
-        private Text rate;
+        private TextMeshProUGUI rate;
 
         Text bgInfoHeader;
         Text bgInfoText;
@@ -105,7 +106,7 @@ namespace MajdataPlay.Game
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             table = GameObject.Find("ObjectCount").GetComponent<Text>();
-            rate = GameObject.Find("ObjectRate").GetComponent<Text>();
+            rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
             bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
             bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
@@ -925,23 +926,16 @@ namespace MajdataPlay.Game
         {
             var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
 
-            table.text = string.Format(
-                "TAP: {0} / {5}\n" +
-                "HOD: {1} / {6}\n" +
-                "SLD: {2} / {7}\n" +
-                "TOH: {3} / {8}\n" +
-                "BRK: {4} / {9}\n" +
-                "ALL: {10} / {11}\n",
-                tapCount, holdCount, slideCount, touchCount, breakCount,
-                tapSum, holdSum, slideSum, touchSum, breakSum,
-                comboN,
-                tapSum + holdSum + slideSum + touchSum + breakSum
-            );
+            table.text = $@"TAP: {tapCount} / {tapSum}
+HOD: {holdCount} / {holdSum}
+SLD: {slideCount} / {slideSum}
+TOH: {touchCount} / {touchSum}
+BRK: {breakCount} / {breakSum}
+ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
 
-            rate.text = "FiNALE  Rate:\n" +
-                        $"{accRate[0]:F2}   %\n" +
-                        "DELUXE Rate:\n" +
-                        $"{accRate[4]:F4} % ";
+
+            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            rate.text = isClassic ? $"{accRate[0]:F2} %" : $"{accRate[4]:F4} %";
         }
         /// <summary>
         /// 计算最终达成率

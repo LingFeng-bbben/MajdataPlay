@@ -33,7 +33,7 @@ namespace MajdataPlay.Types
         public string OnlineId { get; set; } = "";
         public ApiEndpoint? ApiEndpoint { get; set; }
         public DateTime AddTime { get; set; }
-        public bool isOnline { get; set; } = false;
+        public bool IsOnline { get; set; } = false;
 
         public static async Task<SongDetail> ParseAsync(FileInfo[] files)
         {
@@ -141,7 +141,7 @@ namespace MajdataPlay.Types
                 Title = song.Title,
                 Artist = song.Artist,
                 Levels = song.Levels.ToArray(),
-                isOnline = true,
+                IsOnline = true,
                 MaidataPath = apiroot + "/Maidata/" + song.Id,
                 TrackPath = apiroot + "/Track/" + song.Id,
                 BGPath = apiroot + "/ImageFull/" + song.Id,
@@ -222,7 +222,7 @@ namespace MajdataPlay.Types
                 SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
                 return SongCover;
             }
-            if (isOnline)
+            if (IsOnline)
             {
                 Debug.Log("Try load cover online" + CoverPath);
                 SongCover = await SpriteLoader.LoadOnlineAsync(CoverPath);
@@ -239,7 +239,7 @@ namespace MajdataPlay.Types
         //TODO: add callback for progress
         public async Task<SongDetail> DumpToLocal()
         {
-            if (!isOnline) return this;
+            if (!IsOnline) return this;
             var dir = GameManager.ChartPath + "/MajnetPlayed/" + Hash;
             Directory.CreateDirectory(dir);
             var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });

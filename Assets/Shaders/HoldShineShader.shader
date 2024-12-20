@@ -1,4 +1,4 @@
-Shader "Custom/BrightnessAdjustAnimate"
+Shader "Custom/HoldShineShader"
 {
 	Properties
 	{
@@ -62,8 +62,9 @@ Shader "Custom/BrightnessAdjustAnimate"
 				//从_MainTex中根据uv坐标进行采样
 				fixed4 renderTex = tex2D(_MainTex, i.uv)*i.color;
 				float frames = _Time / 0.0008;
-				float brightness = 0.95 + max(sin(frames * 0.2) * 0.65, 0);
-				float contrast = 1 + min(sin(frames * 0.2) * -0.55, 0);
+				float brightness = 0.95 + max(abs(sin(frames * 0.2)) * 0.5, 0);
+				//float brightness = 1;
+				float contrast = 1;
 				float saturation = 1;
 				//brigtness亮度直接乘以一个系数，也就是RGB整体缩放，调整亮度
 				fixed3 finalColor = renderTex * brightness;

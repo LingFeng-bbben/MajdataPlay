@@ -7,6 +7,15 @@
       "dependencies": {},
       "hash": "75f68222d0a4bd2b468dbf3e6a17a191d28041ab"
     },
+    "com.u2sb.skiasharp": {
+      "version": "3.0.0-preview.4.1.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.burst": "1.8.17"
+      },
+      "url": "https://package.openupm.com"
+    },
     "com.unity.2d.animation": {
       "version": "9.1.2",
       "depth": 1,
@@ -103,7 +112,7 @@
     },
     "com.unity.burst": {
       "version": "1.8.18",
-      "depth": 3,
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.mathematics": "1.2.1",

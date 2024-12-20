@@ -241,21 +241,22 @@ namespace MajdataPlay.Game
 
                 foreach (var timing in loadedData.notelist)
                 {
-                    var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch &&
-                                                                 o.noteType != SimaiNoteType.TouchHold);
+                    //var eachNotes = timing.noteList.FindAll(o => o.noteType != SimaiNoteType.Touch &&
+                    //                                             o.noteType != SimaiNoteType.TouchHold);
                     int? num = null;
                     touchTasks.Clear();
                     //IDistanceProvider? provider = null;
                     //IStatefulNote? noteA = null;
                     //IStatefulNote? noteB = null;
-                    NotePoolingInfo? noteA = null;
-                    NotePoolingInfo? noteB = null;
+                    List<NotePoolingInfo?> eachNotes = new();
+                    //NotePoolingInfo? noteA = null;
+                    //NotePoolingInfo? noteB = null;
                     List<ITouchGroupInfoProvider> members = new();
                     foreach (var (i, note) in timing.noteList.WithIndex())
                     {
                         _noteCount++;
                         Process = (double)_noteCount / sum;
-                        if (_noteCount % 30 == 0)
+                        if (_noteCount % 100 == 0)
                             await UniTask.Yield();
 
                         try
@@ -266,36 +267,38 @@ namespace MajdataPlay.Game
                                     {
                                         var obj = CreateTap(note, timing);
                                         _poolManager.AddTap(obj);
-                                        if (eachNotes.Count > 1 && i < 2)
-                                        {
-                                            if (num is null)
-                                                num = 0;
-                                            else if (num != 0)
-                                                break;
+                                        eachNotes.Add(obj);
+                                        //if (eachNotes.Count > 1 && i < 2)
+                                        //{
+                                        //    if (num is null)
+                                        //        num = 0;
+                                        //    else if (num != 0)
+                                        //        break;
 
-                                            if (noteA is null)
-                                                noteA = obj;
-                                            else
-                                                noteB = obj;
-                                        }
+                                        //    if (noteA is null)
+                                        //        noteA = obj;
+                                        //    else
+                                        //        noteB = obj;
+                                        //}
                                     }
                                     break;
                                 case SimaiNoteType.Hold:
                                     {
                                         var obj = CreateHold(note, timing);
                                         _poolManager.AddHold(obj);
-                                        if (eachNotes.Count > 1 && i < 2)
-                                        {
-                                            if (num is null)
-                                                num = 1;
-                                            else if (num != 1)
-                                                break;
+                                        eachNotes.Add(obj);
+                                        //if (eachNotes.Count > 1 && i < 2)
+                                        //{
+                                        //    if (num is null)
+                                        //        num = 1;
+                                        //    else if (num != 1)
+                                        //        break;
 
-                                            if (noteA is null)
-                                                noteA = obj;
-                                            else
-                                                noteB = obj;
-                                        }
+                                        //    if (noteA is null)
+                                        //        noteA = obj;
+                                        //    else
+                                        //        noteB = obj;
+                                        //}
                                     }
                                     break;
                                 case SimaiNoteType.TouchHold:
@@ -305,7 +308,7 @@ namespace MajdataPlay.Game
                                     _poolManager.AddTouch(CreateTouch(note, timing, members));
                                     break;
                                 case SimaiNoteType.Slide:
-                                    CreateSlideGroup(timing, note); // 星星组
+                                    CreateSlideGroup(timing, note,eachNotes); // 星星组
                                     break;
                             }
                         }
@@ -316,11 +319,14 @@ namespace MajdataPlay.Game
                     }
                     if (members.Count != 0)
                         touchTasks.Add(AllocTouchGroup(members));
-
-                    if (eachNotes.Count > 1) //有多个非touchnote
+                    var _eachNotes = eachNotes.FindAll(x => x is not null);
+                    if (_eachNotes.Count > 1) //有多个非touchnote
                     {
-                        var startPos = eachNotes[0].startPosition;
-                        var endPos = eachNotes[1].startPosition;
+                        var noteA = _eachNotes[0]!;
+                        var noteB = _eachNotes[1]!;
+
+                        var startPos = noteA.StartPos;
+                        var endPos = noteB.StartPos;
                         startPos = Rotation(startPos);
                         endPos = Rotation(endPos);
                         endPos = endPos - startPos;
@@ -338,8 +344,8 @@ namespace MajdataPlay.Game
 
                         if (endPos > 4)
                         {
-                            startPos = eachNotes[1].startPosition;
-                            endPos = eachNotes[0].startPosition;
+                            startPos = noteB.StartPos;
+                            endPos = noteA.StartPos;
                             startPos = Rotation(startPos);
                             endPos = Rotation(endPos);
                             endPos = endPos - startPos;
@@ -729,7 +735,7 @@ namespace MajdataPlay.Game
                 _objectCounter.totalDXScore = (_objectCounter.tapSum + _objectCounter.holdSum + _objectCounter.touchSum + _objectCounter.slideSum + _objectCounter.breakSum) * 3;
             });
         }
-        private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note)
+        private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note, in List<NotePoolingInfo?> eachNotes)
         {
             int charIntParse(char c)
             {
@@ -919,6 +925,7 @@ namespace MajdataPlay.Game
                         throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
                     var result = CreateWifi(timing, subSlide[i]);
                     sliObj = result.SlideInstance;
+                    eachNotes.Add(result.StarInfo);
                     AddSlideToQueue(timing, result.SlideInstance);
                     UpdateStarRotateSpeed(result, (float)subSlide[i].slideTime, 8.93760109f);
                 }
@@ -936,6 +943,7 @@ namespace MajdataPlay.Game
                     var result = CreateSlide(timing, subSlide[i], info);
                     parent = result.SlideInstance;
                     sliObj = result.SlideInstance;
+                    eachNotes.Add(result.StarInfo);
                     subSlides.Add(result.SlideInstance);
                     if(i == 0)
                         slideResult = result;
