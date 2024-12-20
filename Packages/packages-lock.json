@@ -7,19 +7,14 @@
       "dependencies": {},
       "hash": "75f68222d0a4bd2b468dbf3e6a17a191d28041ab"
     },
-    "com.monitor1394.xcharts": {
-      "version": "https://github.com/XCharts-Team/XCharts.git",
+    "com.u2sb.skiasharp": {
+      "version": "3.0.0-preview.4.1.1",
       "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "f5ec47c105d73c5d74dd03ad0a60bfc6ba97bb51"
-    },
-    "com.monitor1394.xcharts.daemon": {
-      "version": "https://github.com/XCharts-Team/XCharts-Daemon.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "e40f5250ef5e5a2417cc6ab41f85dd43a0aa36c0"
+      "source": "registry",
+      "dependencies": {
+        "com.unity.burst": "1.8.17"
+      },
+      "url": "https://package.openupm.com"
     },
     "com.unity.2d.animation": {
       "version": "9.1.2",
@@ -117,7 +112,7 @@
     },
     "com.unity.burst": {
       "version": "1.8.18",
-      "depth": 3,
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.mathematics": "1.2.1",

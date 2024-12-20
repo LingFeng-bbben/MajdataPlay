@@ -1,21 +1,33 @@
 using MajSimaiDecode;
+using SkiaSharp;
+using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
-using XCharts.Runtime;
+using UnityEngine.UI;
 
 public class ChartAnalyzer : MonoBehaviour
 {
-    LineChart lineChart;
+    RawImage _rawImage;
+    public UnityEngine.Color tapColor;
+    public UnityEngine.Color slideColor;
+    public UnityEngine.Color touchColor;
+
     void Start()
     {
-        lineChart = GetComponent<LineChart>();
+        _rawImage = GetComponent<RawImage>();
+        
     }
 
     public void AnalyzeMaidata(SimaiProcess data, float totalLength)
     {
-        lineChart.ClearData();
+        List<Vector2> tapPoints = new List<Vector2>();
+        List<Vector2> slidePoints = new List<Vector2>();
+        List<Vector2> touchPoints = new List<Vector2>();
+        float max = 0f;
         for (float time=0;time<totalLength;time += 0.5f)
         {
             var timingPoints = data.notelist.FindAll(o=> o.time>time-0.75f&&o.time<=time+0.75f).ToList();
@@ -30,7 +42,7 @@ public class ChartAnalyzer : MonoBehaviour
                     }
                     else if (note.noteType == SimaiNoteType.Slide)
                     {
-                        y1 += 3;
+                        y1 += 2;
                     }
                     else if (note.noteType == SimaiNoteType.Touch || note.noteType == SimaiNoteType.TouchHold)
                     {
@@ -39,11 +51,98 @@ public class ChartAnalyzer : MonoBehaviour
                 }
 
             }
+            if(y0+y1+y2 > max) max = y0+y1+y2;
 
             var x = time/totalLength;
-            lineChart.series[0].AddXYData(x, y0);
-            lineChart.series[1].AddXYData(x, y1);
-            lineChart.series[2].AddXYData(x, y2);
+            tapPoints.Add(new Vector2(x, y0));
+            slidePoints.Add(new Vector2(x, y1));
+            touchPoints.Add(new Vector2(x, y2));
         }
+
+        //normalize
+        for (int i = 0; i < tapPoints.Count; i++) {
+            tapPoints[i] = new Vector2(tapPoints[i].x, tapPoints[i].y / max);
+            slidePoints[i] = new Vector2(slidePoints[i].x, slidePoints[i].y / max);
+            touchPoints[i] = new Vector2(touchPoints[i].x, touchPoints[i].y / max);
+        }
+        DrawGraph(tapPoints, slidePoints, touchPoints);
+
+    }
+
+    public void DrawGraph(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
+    {
+        var width = 1018;
+        var height = 187;
+        SKImageInfo imageInfo = new SKImageInfo(width, height);
+        using (SKSurface surface = SKSurface.Create(imageInfo))
+        {
+            SKCanvas canvas = surface.Canvas;
+            canvas.Clear(SKColor.Empty);
+            using (SKPaint tapPaint = new SKPaint())
+            using (SKPaint slidePaint = new SKPaint())
+            using (SKPaint touchPaint = new SKPaint())
+            {
+                tapPaint.Color = ToSkColor(tapColor);
+                tapPaint.IsAntialias = true;
+                tapPaint.Style = SKPaintStyle.Fill;
+                slidePaint.Color = ToSkColor(slideColor);
+                slidePaint.IsAntialias = true;
+                slidePaint.Style = SKPaintStyle.Fill;
+                touchPaint.Color = ToSkColor(touchColor);
+                touchPaint.IsAntialias = true;
+                touchPaint.Style = SKPaintStyle.Fill;
+                using (var tapPath = new SKPath())
+                using (var slidePath = new SKPath())
+                using (var touchPath = new SKPath()) {
+                    tapPath.MoveTo(0, height);
+                    slidePath.MoveTo(0, height);
+                    touchPath.MoveTo(0, height);
+                    for (int i = 0; i < tapPoints.Count; i++) {
+                        var x = tapPoints[i].x * width;
+                        var y = tapPoints[i].y;
+                        tapPath.LineTo(x, (1 - y) * height);
+                        y += slidePoints[i].y;
+                        slidePath.LineTo(x, (1 - y) * height);
+                        y += touchPoints[i].y;
+                        touchPath.LineTo(x, (1 - y) * height);
+                    }
+                    tapPath.LineTo(width, height);
+                    slidePath.LineTo(width, height);
+                    touchPath.LineTo(width, height);
+                    tapPath.Close();
+                    slidePath.Close();
+                    touchPath.Close();
+
+                    canvas.DrawPath(touchPath, touchPaint);
+                    canvas.DrawPath(slidePath, slidePaint);
+                    canvas.DrawPath(tapPath, tapPaint);
+                }
+            }
+
+            //sort it into rawimage
+            using (var image = surface.Snapshot())
+            {
+                var bitmap = SKBitmap.FromImage(image);
+                var skcolors = bitmap.Pixels.AsSpan();
+                var writer = new ArrayBufferWriter<SKColor>(bitmap.Width * bitmap.Height);
+                for (var i = bitmap.Height - 1; i >= 0; i--) writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
+                var colors = writer.WrittenSpan.ToArray().AsParallel().AsOrdered().Select(s => ToUnityColor32(s)).ToArray();
+
+                var tex0 = new Texture2D(bitmap.Width, bitmap.Height);
+                tex0.SetPixels32(colors);
+                tex0.Apply();
+
+                _rawImage.texture = tex0;
+            }   
+        }
+    }
+    public static Color32 ToUnityColor32(SKColor skColor)
+    {
+        return new Color32(skColor.Red, skColor.Green, skColor.Blue, skColor.Alpha);
+    }
+
+    public static SKColor ToSkColor(Color32 color32)
+    {
+        return new SKColor(color32.r, color32.g, color32.b, color32.a);
     }
 }

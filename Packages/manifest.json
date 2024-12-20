@@ -1,8 +1,7 @@
 {
   "dependencies": {
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
-    "com.monitor1394.xcharts": "https://github.com/XCharts-Team/XCharts.git",
-    "com.monitor1394.xcharts.daemon": "https://github.com/XCharts-Team/XCharts-Daemon.git",
+    "com.u2sb.skiasharp": "3.0.0-preview.4.1.1",
     "com.unity.collab-proxy": "2.5.1",
     "com.unity.feature.2d": "2.0.1",
     "com.unity.ide.rider": "3.0.34",
@@ -46,5 +45,14 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.u2sb.skiasharp"
+      ]
+    }
+  ]
 }
