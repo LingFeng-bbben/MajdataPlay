@@ -18,6 +18,11 @@
       "Content": "Scanning charts"
     },
     {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Scanning Charts From {0}",
+      "Content": "Scanning charts from {0}"
+    },
+    {
       "Type": "SCAN_CHART_FAILED",
       "Origin": "Scan Chart Failed",
       "Content": "Chart scanning Failed"
