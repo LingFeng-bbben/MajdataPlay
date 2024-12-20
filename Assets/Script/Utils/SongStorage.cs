@@ -110,6 +110,8 @@ namespace MajdataPlay.Utils
                         Message = item.Name
                     });
                     var result = await GetOnlineCollection(item);
+                    if (!result.IsEmpty)
+                        collections.Add(result);
                 }
             }
             //Add all songs to "All" folder
