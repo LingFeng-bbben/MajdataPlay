@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -9,6 +10,7 @@ namespace MajdataPlay.Game
 {
     public class SkipButton : MonoBehaviour
     {
+        bool _isBound = false;
         bool a = false;
         void OnAreaDown(object? sender,InputEventArgs args)
         {
@@ -20,6 +22,14 @@ namespace MajdataPlay.Game
         }
         void OnEnable()
         {
+            DelayBind().Forget();
+        }
+        async UniTaskVoid DelayBind()
+        {
+            if (_isBound)
+                return;
+            _isBound = true;
+            await UniTask.Delay(1000);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B5);
             MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E5);
@@ -30,6 +40,7 @@ namespace MajdataPlay.Game
         }
         void OnDisable()
         {
+            _isBound = false;
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B4);
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B5);
             MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E5);

@@ -651,7 +651,7 @@ namespace MajdataPlay.Game
             if (State == ComponentState.Calculate)
             {
                 var remainingTime = AudioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-                if (remainingTime < -6)
+                if (remainingTime < -7)
                     _skipBtn.SetActive(true);
                 else if (remainingTime >= 0)
                 {
