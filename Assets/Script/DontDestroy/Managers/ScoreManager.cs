@@ -75,13 +75,13 @@ namespace MajdataPlay
 
                 record.Acc = result.Acc > record.Acc ? record.Acc.Update(result.Acc) : record.Acc;
 
-                record.DXScore = result.DXScore;
+                record.DXScore = result.DXScore > record.DXScore ? result.DXScore : record.DXScore;
                 record.TotalDXScore = result.TotalDXScore;
 
                 record.JudgeDeatil = result.JudgeRecord;
                 record.Fast = result.Fast;
                 record.Late = result.Late;
-                record.ComboState = result.ComboState;
+                record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;
                 record.Timestamp = DateTime.Now;
                 record.PlayCount++;
 
