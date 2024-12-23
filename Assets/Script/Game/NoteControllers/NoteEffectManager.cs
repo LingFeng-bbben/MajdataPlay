@@ -102,8 +102,11 @@ namespace MajdataPlay.Game
             var pos = (SensorType)(position - 1);
             MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Result), position - 1);
 
-            _lastTriggerTimes[pos] = MajTimeline.Time;
-            _effectPool.ResetFeedbackEffect(pos);
+            if(!judgeResult.IsMissOrTooFast)
+            {
+                _lastTriggerTimes[pos] = MajTimeline.Time;
+                _effectPool.ResetFeedbackEffect(pos);
+            }
             _effectPool.Play(judgeResult, position);
         }
         public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
@@ -126,8 +129,11 @@ namespace MajdataPlay.Game
         }
         public void PlayTouchEffect(SensorType sensorPos, in JudgeResult judgeResult)
         {
-            _lastTriggerTimes[sensorPos] = MajTimeline.Time;
-            _effectPool.ResetFeedbackEffect(sensorPos);
+            if(!judgeResult.IsMissOrTooFast)
+            {
+                _lastTriggerTimes[sensorPos] = MajTimeline.Time;
+                _effectPool.ResetFeedbackEffect(sensorPos);
+            }
             _effectPool.Play(judgeResult, sensorPos);
         }
         public void PlayTouchHoldEffect(SensorType sensorPos, in JudgeResult judgeResult)
