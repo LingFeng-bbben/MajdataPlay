@@ -12,11 +12,12 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        async void COMReceiveAsync(CancellationToken token)
+        async void COMReceiveAsync()
         {
             SerialPort? serial = null;
             try
             {
+                var token = GameManager.GlobalCT;
                 serial = new SerialPort("COM3", 9600);
                 _recvTask = Task.Run(() =>
                 {

@@ -342,7 +342,7 @@ namespace MajdataPlay.Extensions
             return -1;
         }
     }
-    public static class SpanExtensions
+    public static partial class SpanExtensions
     {
         public static bool IsEmpty<T>(this Span<T> source) => source.Length == 0;
         public static T Max<T>(this Span<T> source) where T: IComparable<T>
@@ -375,9 +375,9 @@ namespace MajdataPlay.Extensions
             }
             return min;
         }
-        public static WithIndexEnumerable<T> WithIndex<T>(this Span<T> source)
+        public static SpanWithIndexEnumerable<T> WithIndex<T>(this Span<T> source)
         {
-            return new WithIndexEnumerable<T>(source);
+            return new SpanWithIndexEnumerable<T>(source);
         }
         public static T? Find<T>(this Span<T> source,in Predicate<T> matcher)
         {
@@ -401,33 +401,6 @@ namespace MajdataPlay.Extensions
                 if (matcher(item))
                     return index;
             return -1;
-        }
-        public ref struct WithIndexEnumerable<T>
-        {
-            Span<T> _source;
-            public WithIndexEnumerable(Span<T> source)
-            {
-                _source = source;
-            }
-            public Enumerator GetEnumerator() => new Enumerator(_source);
-            public ref struct Enumerator
-            {
-                int _index;
-                Span<T> _source;
-                Span<T>.Enumerator _enumerator;
-                public (int, T) Current => (_index, _enumerator.Current);
-                public Enumerator(Span<T> source)
-                {
-                    _source = source;
-                    _index = -1;
-                    _enumerator = source.GetEnumerator();
-                }
-                public bool MoveNext()
-                {
-                    _index++;
-                    return _enumerator.MoveNext();
-                }
-            }
         }
     }
     public static class TransformExtensions

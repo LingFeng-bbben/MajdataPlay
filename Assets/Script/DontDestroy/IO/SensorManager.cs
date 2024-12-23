@@ -12,7 +12,7 @@ namespace MajdataPlay.IO
         readonly Dictionary<SensorType, DateTime> _sensorLastTriggerTimes = new();
         void UpdateSensorState()
         {
-            foreach(var (index, on) in _COMReport.WithIndex())
+            foreach(var (index, on) in _COMReport.AsSpan().WithIndex())
             {
                 if (index > _sensors.Length)
                     break;

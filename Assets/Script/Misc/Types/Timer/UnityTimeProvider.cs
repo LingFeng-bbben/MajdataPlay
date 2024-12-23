@@ -2,6 +2,7 @@
 using MajdataPlay.Types;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay.Timer
@@ -25,6 +26,8 @@ namespace MajdataPlay.Timer
         async UniTaskVoid Update()
         {
             var token = _cts.Token;
+            await Task.Delay(5000);
+            await UniTask.Yield();
             while (true)
             {
                 token.ThrowIfCancellationRequested();

@@ -35,15 +35,11 @@ namespace MajdataPlay.Utils
             }
         }
         public static double TimeScale { get; set; } = 1;
-        public static bool IsInitialized { get; private set; } = false;
         public static TimerType Timer { get; set; } = TimerType.Winapi;
 
         static Dictionary<TimerType, ITimeProvider> _timeProviders = new();
-        public static void Initialize()
+        static MajTimeline()
         {
-            if (IsInitialized)
-                return;
-            IsInitialized = true;
             _timeProviders = new()
             {
                 { TimerType.Unity , new UnityTimeProvider() },

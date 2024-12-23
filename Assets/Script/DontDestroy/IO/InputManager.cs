@@ -138,12 +138,13 @@ namespace MajdataPlay.IO
         {
             _btnDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
             _sensorDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            RawInput.Start();
-            RawInput.OnKeyDown += OnRawKeyDown;
-            RawInput.OnKeyUp += OnRawKeyUp;
+            //RawInput.Start();
+            //RawInput.OnKeyDown += OnRawKeyDown;
+            //RawInput.OnKeyUp += OnRawKeyUp;
             try
             {
-                COMReceiveAsync(_cancelSource.Token);
+                COMReceiveAsync();
+                RefreshKeyboardStateAsync();
             }
             catch
             {
@@ -161,10 +162,18 @@ namespace MajdataPlay.IO
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
-                buttonRingCallbacks[zone] = (zone, state) => executionQueue.Enqueue(() => OnKeyStateChanged(zone, state));
+            {
+                buttonRingCallbacks[zone] = (zone, state) =>
+                {
+                    var index = GetIndexByButtonRingZone(zone);
+                    _buttonStates[index] = state is InputState.On;
+                };
+            }
 
             foreach (TouchPanelZone zone in Enum.GetValues(typeof(TouchPanelZone)))
+            {
                 touchPanelCallbacks[zone] = (zone, state) => _COMReport[(int)zone] = state is InputState.On;
+            }
 
             
             _ioManager.Destroy();
@@ -251,6 +260,7 @@ namespace MajdataPlay.IO
                         while (executionQueue.TryDequeue(out var eventAction))
                             eventAction();
                         UpdateSensorState();
+                        UpdateButtonState();
                     }
                     catch (Exception e)
                     {
@@ -285,7 +295,6 @@ namespace MajdataPlay.IO
         void OnApplicationQuit()
         {
             _cancelSource.Cancel();
-            RawInput.Stop();
             if (_recvTask != null && !_recvTask.IsCompleted)
                 _recvTask.Wait();
         }
