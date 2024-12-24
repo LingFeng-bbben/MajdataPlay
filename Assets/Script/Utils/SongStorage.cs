@@ -167,13 +167,16 @@ namespace MajdataPlay.Utils
             if (string.IsNullOrEmpty(apiroot)) 
                 return collection;
 
-            var listurl = apiroot + "/SongList";
+            var listurl = apiroot + "/maichart/list";
             Debug.Log("Loading Online Charts from:" + listurl);
             try
             {
                 var client = HttpTransporter.ShareClient;
                 var liststr = await client.GetStringAsync(listurl);
-                var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr);
+                var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
                 if (list is null || list.IsEmpty())
                     return collection;
 

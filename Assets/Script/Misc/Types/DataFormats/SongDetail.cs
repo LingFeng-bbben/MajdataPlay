@@ -133,24 +133,22 @@ namespace MajdataPlay.Types
 
         public static SongDetail ParseOnline(ApiEndpoint api, MajnetSongDetail song)
         {
-            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(song.Timestamp).ToLocalTime();
-            var apiroot = api.Url;
+            var apiroot = api.Url + "/maichart/";
             var songDetail = new SongDetail()
             {
                 Title = song.Title,
                 Artist = song.Artist,
                 Levels = song.Levels.ToArray(),
                 IsOnline = true,
-                MaidataPath = apiroot + "/Maidata/" + song.Id,
-                TrackPath = apiroot + "/Track/" + song.Id,
-                BGPath = apiroot + "/ImageFull/" + song.Id,
-                VideoPath = apiroot + "/Video/" + song.Id,
-                CoverPath = apiroot + "/Image/" + song.Id,
-                Hash = song.Id.ToString() + "-" + song.Timestamp,
+                MaidataPath = apiroot + song.Id + "/chart",
+                TrackPath = apiroot + song.Id + "/track",
+                BGPath = apiroot + song.Id + "/image?fullimage=true",
+                VideoPath = apiroot + song.Id + "/video",
+                CoverPath = apiroot + song.Id + "/image",
+                Hash = song.Hash,
                 ApiEndpoint = api,
                 OnlineId = song.Id,
-                AddTime = dateTime
+                AddTime = song.Timestamp
             };
             for (int i = 0; i < songDetail.Designers.Count(); i++)
             {

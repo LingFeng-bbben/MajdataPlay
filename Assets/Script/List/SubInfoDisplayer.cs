@@ -38,7 +38,7 @@ public class SubInfoDisplayer : MonoBehaviour
     IEnumerator GetOnlineInteraction(SongDetail song)
     {
         var client = HttpTransporter.ShareClient;
-        var interactUrl = song.ApiEndpoint.Url + "/Interact/" + song.OnlineId;
+        var interactUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/interact";
         var task = client.GetStringAsync(interactUrl);
         while(!task.IsCompleted)
         {
@@ -46,12 +46,15 @@ public class SubInfoDisplayer : MonoBehaviour
         }
         var intjson = task.Result;
 
-        var list = JsonSerializer.Deserialize<MajNetSongInteract>(intjson);
-        good_text.text = "ÔÞ: " + list.LikeList.Length +" ÆÀ: " +list.CommentsList.Count;
-
-        foreach ( var comment in list.CommentsList )
+        var list = JsonSerializer.Deserialize<MajNetSongInteract>(intjson, new JsonSerializerOptions
         {
-            var text = comment.Key + "\n" + comment.Value + "\n";
+            PropertyNameCaseInsensitive = true
+        });
+        good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
+
+        foreach ( var comment in list.Comments )
+        {
+            var text = comment.Sender.Username + "\n" + comment.Content + "\n";
             var obj = Instantiate(commentPrefab,gameObject.transform);
             comments.Add(obj);
             obj.GetComponent<Text>().text = text;
