@@ -487,18 +487,21 @@ namespace MajdataPlay.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
-            if (!string.IsNullOrEmpty(_songDetail.VideoPath))
-                BGManager.SetBackgroundMovie(_songDetail.VideoPath,PlaybackSpeed);
-            else
+            var dim = _setting.Game.BackgroundDim;
+            if (dim < 1f)
             {
-                var task = _songDetail.GetSpriteAsync();
-                while (!task.IsCompleted)
+                if (!string.IsNullOrEmpty(_songDetail.VideoPath))
+                    BGManager.SetBackgroundMovie(_songDetail.VideoPath, PlaybackSpeed);
+                else
                 {
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                    var task = _songDetail.GetSpriteAsync();
+                    while (!task.IsCompleted)
+                    {
+                        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                    }
+                    BGManager.SetBackgroundPic(task.Result);
                 }
-                BGManager.SetBackgroundPic(task.Result);
             }
-
 
             BGManager.SetBackgroundDim(_setting.Game.BackgroundDim);
         }
