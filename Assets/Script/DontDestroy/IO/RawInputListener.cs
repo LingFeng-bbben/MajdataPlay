@@ -53,7 +53,8 @@ namespace MajdataPlay.IO
             await Task.Run(async () =>
             {
                 var token = GameManager.GlobalCT;
-                while (true)
+                var pollingRate = _btnPollingRateMs;
+                while (!token.IsCancellationRequested)
                 {
                     token.ThrowIfCancellationRequested();
 
@@ -63,7 +64,7 @@ namespace MajdataPlay.IO
                         var keyCode = button.BindingKey;
                         _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
                     }
-                    await Task.Delay(1);
+                    await Task.Delay(_btnPollingRateMs,token);
                 }
             });
         }
@@ -77,9 +78,12 @@ namespace MajdataPlay.IO
                 var newState = _buttonStates[i] ? SensorStatus.On : SensorStatus.Off;
                 if (oldState == newState)
                     continue;
-                else if (JitterDetect(button.Type, now, true))
-                    continue;
-                _btnLastTriggerTimes[button.Type] = now;
+                else if(_isDebounceEnabled)
+                {
+                    if (JitterDetect(button.Type, now, true))
+                        continue;
+                    _btnLastTriggerTimes[button.Type] = now;
+                }
                 button.Status = newState;
                 Debug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()

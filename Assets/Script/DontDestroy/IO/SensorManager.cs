@@ -2,6 +2,7 @@
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
@@ -12,7 +13,8 @@ namespace MajdataPlay.IO
         readonly Dictionary<SensorType, DateTime> _sensorLastTriggerTimes = new();
         void UpdateSensorState()
         {
-            foreach(var (index, on) in _COMReport.AsSpan().WithIndex())
+            var now = DateTime.Now;
+            foreach (var (index, on) in _COMReport.AsSpan().WithIndex())
             {
                 if (index > _sensors.Length)
                     break;
@@ -31,25 +33,26 @@ namespace MajdataPlay.IO
                 var nState = on ? SensorStatus.On : SensorStatus.Off;
                 if (sensor.Type == SensorType.C)
                     nState = _COMReport[16] || _COMReport[17] ? SensorStatus.On : SensorStatus.Off;
-                if(oState != nState)
+                if (oState == nState)
+                    continue;
+                else if (_isDebounceEnabled)
                 {
-                    var now = DateTime.Now;
                     if (JitterDetect(sensor.Type, now))
                         continue;
                     _sensorLastTriggerTimes[sensor.Type] = now;
-                    Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
-                    sensor.Status = nState;
-                    var msg = new InputEventArgs()
-                    {
-                        Type = sensor.Type,
-                        OldStatus = oState,
-                        Status = nState,
-                        IsButton = false
-                    };
-                    sensor.PushEvent(msg);
-                    PushEvent(msg);
-                    SetIdle(msg);
                 }
+                Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
+                sensor.Status = nState;
+                var msg = new InputEventArgs()
+                {
+                    Type = sensor.Type,
+                    OldStatus = oState,
+                    Status = nState,
+                    IsButton = false
+                };
+                sensor.PushEvent(msg);
+                PushEvent(msg);
+                SetIdle(msg);
             }
         }
         void SetSensorState(SensorType type,SensorStatus nState)
