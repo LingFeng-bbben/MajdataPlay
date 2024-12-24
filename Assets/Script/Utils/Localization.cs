@@ -33,7 +33,7 @@ namespace MajdataPlay.Utils
             WriteIndented = true
         };
         public static Language[] Available { get; private set; } = Array.Empty<Language>();
-        public static void Initialize()
+        static Localization()
         {
             var path = GameManager.LangPath;
             if (!Directory.Exists(path))

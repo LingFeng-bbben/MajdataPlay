@@ -7,7 +7,7 @@ using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer, IUpdatableComponent<NoteStatus>
+    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer, ILateUpdatableComponent<NoteStatus>
     {
         public bool Active { get; private set; }
         public RendererStatus RendererState
@@ -87,7 +87,7 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             Active = true;
         }
-        public void ComponentUpdate()
+        public void ComponentLateUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;

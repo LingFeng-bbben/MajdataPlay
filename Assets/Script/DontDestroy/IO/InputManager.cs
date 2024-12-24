@@ -16,6 +16,7 @@ using MychIO.Event;
 using MychIO.Connection;
 using static UnityEngine.GraphicsBuffer;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting.Antlr3.Runtime;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -30,13 +31,17 @@ namespace MajdataPlay.IO
 
         public event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
-        TimeSpan _btnDebounceTime = TimeSpan.Zero;
-        TimeSpan _sensorDebounceTime = TimeSpan.Zero;
+        TimeSpan _btnDebounceThresholdMs = TimeSpan.Zero;
+        TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
+        TimeSpan _btnPollingRateMs = TimeSpan.Zero;
+        TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
         bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
+
+        bool _isBtnDebounceEnabled = false;
+        bool _isSensorDebounceEnabled = false;
         Task? _recvTask = null;
         Mutex _buttonCheckerMutex = new();
         IOManager? _ioManager = null;
-        CancellationTokenSource _cancelSource = new();
 
         void Awake()
         {
@@ -79,12 +84,12 @@ namespace MajdataPlay.IO
             if(isBtn)
             {
                 _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
-                debounceTime = _btnDebounceTime;
+                debounceTime = _btnDebounceThresholdMs;
             }
             else
             {
                 _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
-                debounceTime = _sensorDebounceTime;
+                debounceTime = _sensorDebounceThresholdMs;
             }
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
@@ -136,20 +141,17 @@ namespace MajdataPlay.IO
         }
         void StartInternalIOManager()
         {
-            _btnDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            _sensorDebounceTime = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            RawInput.Start();
-            RawInput.OnKeyDown += OnRawKeyDown;
-            RawInput.OnKeyUp += OnRawKeyUp;
-            try
-            {
-                COMReceiveAsync(_cancelSource.Token);
-            }
-            catch
-            {
-                Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
-                useDummy = true;
-            }
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs);
+            //RawInput.Start();
+            //RawInput.OnKeyDown += OnRawKeyDown;
+            //RawInput.OnKeyUp += OnRawKeyUp;
+            _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+            COMReceiveAsync();
+            RefreshKeyboardStateAsync();
         }
         public void StartExternalIOManager()
         {
@@ -161,10 +163,18 @@ namespace MajdataPlay.IO
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
-                buttonRingCallbacks[zone] = (zone, state) => executionQueue.Enqueue(() => OnKeyStateChanged(zone, state));
+            {
+                buttonRingCallbacks[zone] = (zone, state) =>
+                {
+                    var index = GetIndexByButtonRingZone(zone);
+                    _buttonStates[index] = state is InputState.On;
+                };
+            }
 
             foreach (TouchPanelZone zone in Enum.GetValues(typeof(TouchPanelZone)))
+            {
                 touchPanelCallbacks[zone] = (zone, state) => _COMReport[(int)zone] = state is InputState.On;
+            }
 
             
             _ioManager.Destroy();
@@ -198,7 +208,7 @@ namespace MajdataPlay.IO
                 {
                     { "PollingRateMs", touchPanelPollingRate },
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
-                    { "ComPortNumber", comPortNum }
+                    { "ComPortNumber", $"COM{comPortNum}" }
                 };
 
                 _ioManager.AddButtonRing(deviceName,
@@ -218,8 +228,9 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
+                var token = GameManager.GlobalCT;
                 var executionQueue = GameManager.ExecutionQueue;
-                while (!_cancelSource.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
                     try
                     {
@@ -235,7 +246,7 @@ namespace MajdataPlay.IO
                     {
                         Debug.LogException(e);
                     }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
                 }
             });
         }
@@ -243,20 +254,22 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
+                var token = GameManager.GlobalCT;
                 var executionQueue = GameManager.ExecutionQueue;
-                while (!_cancelSource.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
                     try
                     {
                         while (executionQueue.TryDequeue(out var eventAction))
                             eventAction();
                         UpdateSensorState();
+                        UpdateButtonState();
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate);
+                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
                 }
             });
         }
@@ -281,13 +294,6 @@ namespace MajdataPlay.IO
                     executionQueue.Enqueue(() => Debug.LogWarning(logContent));
                     break;
             }
-        }
-        void OnApplicationQuit()
-        {
-            _cancelSource.Cancel();
-            RawInput.Stop();
-            if (_recvTask != null && !_recvTask.IsCompleted)
-                _recvTask.Wait();
         }
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)

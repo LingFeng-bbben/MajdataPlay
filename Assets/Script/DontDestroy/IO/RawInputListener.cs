@@ -1,12 +1,16 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using MychIO.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityRawInput;
+using static UnityEngine.Rendering.DebugUI.Table;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -28,7 +32,7 @@ namespace MajdataPlay.IO
             RawKey.Numpad3,
         };
         readonly Dictionary<SensorType, DateTime> _btnLastTriggerTimes = new();
-        Button[] _buttons = new Button[12]
+        readonly Button[] _buttons = new Button[12]
         {
             new Button(RawKey.W,SensorType.A1),
             new Button(RawKey.E,SensorType.A2),
@@ -43,27 +47,43 @@ namespace MajdataPlay.IO
             new Button(RawKey.Numpad7,SensorType.Service),
             new Button(RawKey.Numpad3,SensorType.P2),
         };
+        readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
+        async void RefreshKeyboardStateAsync()
+        {
+            await Task.Run(async () =>
+            {
+                var token = GameManager.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                while (!token.IsCancellationRequested)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    for (var i = 0; i < _buttons.Length; i++)
+                    {
+                        var button = _buttons[i];
+                        var keyCode = button.BindingKey;
+                        _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
+                    }
+                    await Task.Delay(_btnPollingRateMs,token);
+                }
+            });
+        }
         void UpdateButtonState()
         {
-            if (!_buttonCheckerMutex.WaitOne(4))
-                return;
-            var buttons = _buttons.AsSpan();
-            foreach (var keyId in _bindingKeys.AsSpan())
+            var now = DateTime.Now;
+            for (var i = 0; i < _buttons.Length; i++)
             {
-                var button = buttons.Find(x => x.BindingKey == keyId);
-                if (button == null)
-                {
-                    Debug.LogError($"Key not found:\n{keyId}");
-                    continue;
-                }
+                var button = _buttons[i];
                 var oldState = button.Status;
-                var newState = RawInput.IsKeyDown(keyId) ? SensorStatus.On : SensorStatus.Off;
-                var now = DateTime.Now;
+                var newState = _buttonStates[i] ? SensorStatus.On : SensorStatus.Off;
                 if (oldState == newState)
                     continue;
-                else if (JitterDetect(button.Type, now, true))
-                    continue;
-                _btnLastTriggerTimes[button.Type] = now;
+                else if(_isBtnDebounceEnabled)
+                {
+                    if (JitterDetect(button.Type, now, true))
+                        continue;
+                    _btnLastTriggerTimes[button.Type] = now;
+                }
                 button.Status = newState;
                 Debug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()
@@ -77,7 +97,36 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
                 SetIdle(msg);
             }
-            _buttonCheckerMutex.ReleaseMutex();
+            //var buttons = _buttons.AsSpan();
+            //foreach (var keyId in _bindingKeys.AsSpan())
+            //{
+            //    var button = buttons.Find(x => x.BindingKey == keyId);
+            //    if (button == null)
+            //    {
+            //        Debug.LogError($"Key not found:\n{keyId}");
+            //        continue;
+            //    }
+            //    var oldState = button.Status;
+            //    var newState = RawInput.IsKeyDown(keyId) ? SensorStatus.On : SensorStatus.Off;
+            //    var now = DateTime.Now;
+            //    if (oldState == newState)
+            //        continue;
+            //    else if (JitterDetect(button.Type, now, true))
+            //        continue;
+            //    _btnLastTriggerTimes[button.Type] = now;
+            //    button.Status = newState;
+            //    Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+            //    var msg = new InputEventArgs()
+            //    {
+            //        Type = button.Type,
+            //        OldStatus = oldState,
+            //        Status = newState,
+            //        IsButton = true
+            //    };
+            //    button.PushEvent(msg);
+            //    PushEvent(msg);
+            //    SetIdle(msg);
+            //}
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
         {
@@ -93,9 +142,9 @@ namespace MajdataPlay.IO
                 throw new Exception($"{sType} Button not found.");
             button.RemoveSubscriber(checker);
         }
-        void OnKeyStateChanged(ButtonRingZone btnZone, InputState state)
+        RawKey ButtonRingZone2RawKey(ButtonRingZone btnZone)
         {
-            var key = btnZone switch
+            return btnZone switch
             {
                 ButtonRingZone.BA1 => RawKey.W,
                 ButtonRingZone.BA2 => RawKey.E,
@@ -111,45 +160,85 @@ namespace MajdataPlay.IO
                 ButtonRingZone.InsertCoin => RawKey.Numpad7,
                 _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
             };
-            var keyState = state is InputState.Off ? SensorStatus.Off : SensorStatus.On;
-            OnKeyStateChanged(key, keyState);
         }
-        void OnKeyStateChanged(RawKey key,SensorStatus state)
+        int GetIndexByButtonRingZone(ButtonRingZone btnZone)
         {
-            if (!_buttonCheckerMutex.WaitOne(4))
-                return;
-            if (_bindingKeys.All(x => x != key))
-                return;
-            var buttons = _buttons.AsSpan();
-            var button = buttons.Find(x => x.BindingKey == key);
-            if (button == null)
+            return btnZone switch
             {
-                Debug.LogError($"Key not found:\n{key}");
-                return;
-            }
-            var oldState = button.Status;
-            var newState = state;
-            var now = DateTime.Now;
-            if (oldState == newState)
-                return;
-            else if (JitterDetect(button.Type, now, true))
-                return;
-            _btnLastTriggerTimes[button.Type] = now;
-            button.Status = newState;
-            Debug.Log($"Key \"{button.BindingKey}\": {newState}");
-            var msg = new InputEventArgs()
-            {
-                Type = button.Type,
-                OldStatus = oldState,
-                Status = newState,
-                IsButton = true
+                ButtonRingZone.BA1 => 0,
+                ButtonRingZone.BA2 => 1,
+                ButtonRingZone.BA3 => 2,
+                ButtonRingZone.BA4 => 3,
+                ButtonRingZone.BA5 => 4,
+                ButtonRingZone.BA6 => 5,
+                ButtonRingZone.BA7 => 6,
+                ButtonRingZone.BA8 => 7,
+                ButtonRingZone.ArrowUp => 9,
+                ButtonRingZone.ArrowDown => 11,
+                ButtonRingZone.Select => 8,
+                ButtonRingZone.InsertCoin => 10,
+                _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
             };
-            button.PushEvent(msg);
-            PushEvent(msg);
-            SetIdle(msg);
-            _buttonCheckerMutex.ReleaseMutex();
         }
-        void OnRawKeyUp(RawKey key) => OnKeyStateChanged(key, SensorStatus.Off);
-        void OnRawKeyDown(RawKey key) => OnKeyStateChanged(key, SensorStatus.On);
+        //void OnKeyStateChanged(ButtonRingZone btnZone, InputState state)
+        //{
+        //    var key = btnZone switch
+        //    {
+        //        ButtonRingZone.BA1 => RawKey.W,
+        //        ButtonRingZone.BA2 => RawKey.E,
+        //        ButtonRingZone.BA3 => RawKey.D,
+        //        ButtonRingZone.BA4 => RawKey.C,
+        //        ButtonRingZone.BA5 => RawKey.X,
+        //        ButtonRingZone.BA6 => RawKey.Z,
+        //        ButtonRingZone.BA7 => RawKey.A,
+        //        ButtonRingZone.BA8 => RawKey.Q,
+        //        ButtonRingZone.ArrowUp => RawKey.Multiply,
+        //        ButtonRingZone.ArrowDown => RawKey.Numpad3,
+        //        ButtonRingZone.Select => RawKey.Numpad9,
+        //        ButtonRingZone.InsertCoin => RawKey.Numpad7,
+        //        _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
+        //    };
+        //    var keyState = state is InputState.Off ? SensorStatus.Off : SensorStatus.On;
+        //    OnKeyStateChanged(key, keyState);
+        //}
+
+        //void OnKeyStateChanged(RawKey key,SensorStatus state)
+        //{
+        //    if (!_buttonCheckerMutex.WaitOne(4))
+        //        return;
+        //    if (_bindingKeys.All(x => x != key))
+        //        return;
+        //    var buttons = _buttons.AsSpan();
+        //    var button = buttons.Find(x => x.BindingKey == key);
+        //    if (button == null)
+        //    {
+        //        Debug.LogError($"Key not found:\n{key}");
+        //        return;
+        //    }
+        //    var oldState = button.Status;
+        //    var newState = state;
+        //    var now = DateTime.Now;
+        //    if (oldState == newState)
+        //        return;
+        //    else if (JitterDetect(button.Type, now, true))
+        //        return;
+        //    _btnLastTriggerTimes[button.Type] = now;
+        //    button.Status = newState;
+        //    Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+        //    var msg = new InputEventArgs()
+        //    {
+        //        Type = button.Type,
+        //        OldStatus = oldState,
+        //        Status = newState,
+        //        IsButton = true
+        //    };
+        //    button.PushEvent(msg);
+        //    PushEvent(msg);
+        //    SetIdle(msg);
+        //    _buttonCheckerMutex.ReleaseMutex();
+        //}
+
+        //void OnRawKeyUp(RawKey key) => OnKeyStateChanged(key, SensorStatus.Off);
+        //void OnRawKeyDown(RawKey key) => OnKeyStateChanged(key, SensorStatus.On);
     }
 }

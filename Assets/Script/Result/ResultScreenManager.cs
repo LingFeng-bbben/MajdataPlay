@@ -49,7 +49,6 @@ namespace MajdataPlay.Result
             GameManager.LastGameResult = null;
 
             MajInstances.LightManager.SetAllLight(Color.white);
-            MajInstances.LightManager.SetButtonLight(Color.green, 3);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongInfo;
@@ -179,6 +178,7 @@ namespace MajdataPlay.Result
                 await UniTask.WaitForSeconds(2);
             }
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            MajInstances.LightManager.SetButtonLight(Color.green, 3);
         }
 
 

@@ -379,7 +379,7 @@ namespace MajdataPlay.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
-            AudioLength = (float)_audioSample.Length.TotalSeconds;
+            AudioLength = (float)_audioSample.Length.TotalSeconds/MajInstances.Setting.Mod.PlaybackSpeed;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
@@ -487,18 +487,21 @@ namespace MajdataPlay.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
-            if (!string.IsNullOrEmpty(_songDetail.VideoPath))
-                BGManager.SetBackgroundMovie(_songDetail.VideoPath,PlaybackSpeed);
-            else
+            var dim = _setting.Game.BackgroundDim;
+            if (dim < 1f)
             {
-                var task = _songDetail.GetSpriteAsync();
-                while (!task.IsCompleted)
+                if (!string.IsNullOrEmpty(_songDetail.VideoPath))
+                    BGManager.SetBackgroundMovie(_songDetail.VideoPath, PlaybackSpeed);
+                else
                 {
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                    var task = _songDetail.GetSpriteAsync();
+                    while (!task.IsCompleted)
+                    {
+                        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                    }
+                    BGManager.SetBackgroundPic(task.Result);
                 }
-                BGManager.SetBackgroundPic(task.Result);
             }
-
 
             BGManager.SetBackgroundDim(_setting.Game.BackgroundDim);
         }
@@ -651,7 +654,7 @@ namespace MajdataPlay.Game
             if (State == ComponentState.Calculate)
             {
                 var remainingTime = AudioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-                if (remainingTime < -6)
+                if (remainingTime < -7)
                     _skipBtn.SetActive(true);
                 else if (remainingTime >= 0)
                 {

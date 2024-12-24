@@ -21,7 +21,9 @@ namespace MajdataPlay.Net
         public static HttpClient ShareClient { get; } = new HttpClient(new HttpClientHandler()
         {
             Proxy = WebRequest.GetSystemWebProxy(),
-            UseProxy = true
+            UseProxy = true,
+            UseCookies = true,
+            CookieContainer = new CookieContainer()
         });
 
         public async ValueTask<PostResult> PostAsync(PostRequest request)

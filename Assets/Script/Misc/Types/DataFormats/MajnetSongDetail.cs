@@ -1,39 +1,44 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using UnityEngine;
 
 namespace MajdataPlay.Types
 {
     public partial class MajnetSongDetail
     {
-        [JsonPropertyName("Id")]
         public string Id { get; set; }
-
-        [JsonPropertyName("Title")]
         public string Title { get; set; }
-
-        [JsonPropertyName("Artist")]
         public string Artist { get; set; }
-
-        [JsonPropertyName("Designer")]
         public string Designer { get; set; }
-
-        [JsonPropertyName("Description")]
-        public object Description { get; set; }
-
-        [JsonPropertyName("Levels")]
-        public List<string> Levels { get; set; }
-
-        [JsonPropertyName("Uploader")]
+        public string Description { get; set; }
+        public string[] Levels { get; set; }
         public string Uploader { get; set; }
-
-        [JsonPropertyName("Timestamp")]
-        public long Timestamp { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Hash { get; set; }
     }
 
-    public partial class MajNetSongInteract
+    public struct MajNetSongInteract
     {
-        public string[] LikeList { get; set; }
-        public Dictionary<string,string> CommentsList { get; set; }
+        public  bool IsLiked { get; init; }
+        public  int Plays { get; init; }
+        public  string[] Likes { get; init; }
+        public  ChartCommentSummary[] Comments { get; init; }
     }
+
+    public readonly struct ChartCommentSummary
+    {
+        public  UserSummary Sender { get; init; }
+        public  string Content { get; init; }
+        public  DateTime Timestamp { get; init; }
+        public  ChartCommentSummary[] Layers { get; init; }
+    }
+
+    public readonly struct UserSummary
+    {
+        public  string Username { get; init; }
+        public string? Email { get; init; }
+        public  DateTime JoinDate { get; init; }
+    }
+
 }

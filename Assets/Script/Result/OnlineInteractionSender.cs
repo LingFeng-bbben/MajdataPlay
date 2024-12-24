@@ -75,7 +75,7 @@ public class OnlineInteractionSender : MonoBehaviour
                 return;
             }
 
-            var interactUrl = song.ApiEndpoint.Url + "/Interact/" + song.OnlineId;
+            var interactUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/interact";
             var task = client.GetStringAsync(interactUrl);
             while (!task.IsCompleted)
             {
@@ -83,9 +83,12 @@ public class OnlineInteractionSender : MonoBehaviour
             }
             var intjson = task.Result;
 
-            var intlist = JsonSerializer.Deserialize<MajNetSongInteract>(intjson);
+            var intlist = JsonSerializer.Deserialize<MajNetSongInteract>(intjson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
-            if (intlist.LikeList.Any(o => o == song.ApiEndpoint.Username))
+            if (intlist.Likes.Any(o => o == song.ApiEndpoint.Username))
             {
                 infotext.text = "你已经点过赞了！@！";
                 //MajInstances.LightManager.SetButtonLight(Color.red, 4);
@@ -98,7 +101,7 @@ public class OnlineInteractionSender : MonoBehaviour
             { new StringContent(ComputeMD5(song.ApiEndpoint.Password)), "password" }
         };
 
-            var tokentask = client.PostAsync(song.ApiEndpoint.Url + "/User/Login", formData);
+            var tokentask = client.PostAsync(song.ApiEndpoint.Url + "/account/Login", formData);
             while (!tokentask.IsCompleted)
             {
                 await UniTask.Yield();
@@ -108,19 +111,12 @@ public class OnlineInteractionSender : MonoBehaviour
                 infotext.text = "登录失败";
                 return;
             }
-            var readtask = tokentask.Result.Content.ReadAsStringAsync();
-            while (!readtask.IsCompleted)
-            {
-                await UniTask.Yield();
-            }
-            var token = readtask.Result;
 
             formData = new MultipartFormDataContent
-        {
-            { new StringContent(token), "token" },
-            { new StringContent("like"), "type" },
-            { new StringContent("..."), "content" },
-        };
+            {
+                { new StringContent("like"), "type" },
+                { new StringContent("..."), "content" },
+            };
             var liketask = client.PostAsync(interactUrl, formData);
             while (!liketask.IsCompleted)
             {

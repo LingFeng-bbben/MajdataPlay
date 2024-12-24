@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
@@ -12,18 +13,20 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        async void COMReceiveAsync(CancellationToken token)
+        async void COMReceiveAsync()
         {
             SerialPort? serial = null;
+            var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
             try
             {
-                serial = new SerialPort("COM3", 9600);
-                _recvTask = Task.Run(() =>
+                var token = GameManager.GlobalCT;
+                serial = new SerialPort(comPort, 9600);
+                await Task.Run(async () =>
                 {
-                    while (true)
+                    var pollingRate = _sensorPollingRateMs;
+                    while (!token.IsCancellationRequested)
                     {
-                        if (token.IsCancellationRequested)
-                            token.ThrowIfCancellationRequested();
+                        token.ThrowIfCancellationRequested();
                         if (serial.IsOpen)
                         {
                             int count = serial.BytesToRead;
@@ -71,13 +74,13 @@ namespace MajdataPlay.IO
                             }*/
                             serial.Write("{STAT}");
                         }
+                        await Task.Delay(_sensorPollingRateMs,token);
                     }
                 });
-                await _recvTask;
             }
             catch(IOException)
             {
-                Debug.LogWarning("Cannot open COM3, using Mouse as fallback.");
+                Debug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                 useDummy = true;
             }
             finally

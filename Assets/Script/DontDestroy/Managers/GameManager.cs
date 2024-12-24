@@ -26,7 +26,7 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => _cts.Token; }
+        public CancellationToken AllTaskToken { get => _globalCTS.Token; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
@@ -37,6 +37,8 @@ namespace MajdataPlay
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        static CancellationTokenSource _globalCTS = new();
+        public static CancellationToken GlobalCT { get; } = _globalCTS.Token;
         public static JsonSerializerOptions JsonReaderOption { get; } = new()
         {
 
@@ -62,7 +64,8 @@ namespace MajdataPlay
         TimerType _timer = MajTimeline.Timer;
         Task? _logWritebackTask = null;
         Queue<GameLog> _logQueue = new();
-        CancellationTokenSource _cts = new();
+
+        
 
         void Awake()
         {
@@ -146,7 +149,6 @@ namespace MajdataPlay
             }
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
-            Localization.Initialize();
             var availableLangs = Localization.Available;
             if (availableLangs.IsEmpty())
                 return;
@@ -165,9 +167,6 @@ namespace MajdataPlay
         }
         void Update()
         {
-            if (!MajTimeline.IsInitialized)
-                MajTimeline.Initialize();
-
             if(MajTimeline.Timer != _timer)
             {
                 Debug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
@@ -178,7 +177,7 @@ namespace MajdataPlay
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            _cts.Cancel();
+            _globalCTS.Cancel();
             foreach (var log in _logQueue)
                 File.AppendAllText(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
         }
