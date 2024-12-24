@@ -379,7 +379,7 @@ namespace MajdataPlay.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
-            AudioLength = (float)_audioSample.Length.TotalSeconds;
+            AudioLength = (float)_audioSample.Length.TotalSeconds/MajInstances.Setting.Mod.PlaybackSpeed;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
