@@ -35,7 +35,7 @@ namespace MajdataPlay.IO
                     nState = _COMReport[16] || _COMReport[17] ? SensorStatus.On : SensorStatus.Off;
                 if (oState == nState)
                     continue;
-                else if (_isDebounceEnabled)
+                else if (_isSensorDebounceEnabled)
                 {
                     if (JitterDetect(sensor.Type, now))
                         continue;

@@ -37,7 +37,8 @@ namespace MajdataPlay.IO
         TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
         bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
 
-        bool _isDebounceEnabled = false;
+        bool _isBtnDebounceEnabled = false;
+        bool _isSensorDebounceEnabled = false;
         Task? _recvTask = null;
         Mutex _buttonCheckerMutex = new();
         IOManager? _ioManager = null;
@@ -147,7 +148,8 @@ namespace MajdataPlay.IO
             //RawInput.Start();
             //RawInput.OnKeyDown += OnRawKeyDown;
             //RawInput.OnKeyUp += OnRawKeyUp;
-            _isDebounceEnabled = true;
+            _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
             COMReceiveAsync();
             RefreshKeyboardStateAsync();
         }

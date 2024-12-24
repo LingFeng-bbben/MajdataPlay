@@ -78,7 +78,7 @@ namespace MajdataPlay.IO
                 var newState = _buttonStates[i] ? SensorStatus.On : SensorStatus.Off;
                 if (oldState == newState)
                     continue;
-                else if(_isDebounceEnabled)
+                else if(_isBtnDebounceEnabled)
                 {
                     if (JitterDetect(button.Type, now, true))
                         continue;
