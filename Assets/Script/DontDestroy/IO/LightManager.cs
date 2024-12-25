@@ -222,21 +222,28 @@ namespace MajdataPlay.IO
                 while (!token.IsCancellationRequested)
                 {
                     var startAt = MajTimeline.UnscaledTime;
-                    var serialStream = _serial.BaseStream;
-                    foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
+                    try
                     {
-                        var index = device!.Index;
-                        var color = device.Color;
-                        var packet = _templateSingle;
-                        packet[5] = (byte)index;
-                        packet[6] = (byte)(color.r * 255);
-                        packet[7] = (byte)(color.g * 255);
-                        packet[8] = (byte)(color.b * 255);
-                        packet[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+                        var serialStream = _serial.BaseStream;
+                        foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
+                        {
+                            var index = device!.Index;
+                            var color = device.Color;
+                            var packet = _templateSingle;
+                            packet[5] = (byte)index;
+                            packet[6] = (byte)(color.r * 255);
+                            packet[7] = (byte)(color.g * 255);
+                            packet[8] = (byte)(color.b * 255);
+                            packet[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
 
-                        await serialStream.WriteAsync(packet.AsMemory());
+                            await serialStream.WriteAsync(packet.AsMemory());
+                        }
+                        await serialStream.WriteAsync(_templateUpdate.AsMemory());
                     }
-                    await serialStream.WriteAsync(_templateUpdate.AsMemory());
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                    }
                     var endAt = MajTimeline.UnscaledTime;
                     var elapsedTime = endAt - startAt;
                     var waitTime = elapsedTime.TotalMilliseconds > 16.6667 ? 0 : 16.6667 - elapsedTime.TotalMilliseconds;
