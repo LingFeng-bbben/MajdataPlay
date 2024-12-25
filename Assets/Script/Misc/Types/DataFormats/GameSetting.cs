@@ -138,6 +138,7 @@ namespace MajdataPlay.Types
     public class MiscOptions
     {
         public InputDeviceOptions InputDevice { get; set; } = new();
+        public OutputDeviceOptions OutputDevice { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
@@ -147,6 +148,16 @@ namespace MajdataPlay.Types
     {
         public ButtonRingOptions ButtonRing { get; set; } = new();
         public TouchPanelOptions TouchPanel { get; set; } = new();
+    }
+    public class OutputDeviceOptions
+    {
+        public LedOptions Led { get; set; } = new();
+    }
+    public class LedOptions
+    {
+        public bool Enable { get; set; } = true;
+        public int COMPort { get; set; } = 3;
+        public int RefreshRateMs { get; set; } = 16;
     }
     public class ButtonRingOptions
     {

@@ -39,8 +39,14 @@ namespace MajdataPlay.IO
                     Index = i,
                 };
             }
+            var comPort = MajInstances.Setting.Misc.OutputDevice.Led.COMPort;
+            var comPortStr = $"COM{comPort}";
             try
             {
+                if(comPort != 21)
+                {
+                    _serial = new SerialPort(comPortStr, 115200);
+                }
                 _serial.WriteBufferSize = 16;
                 _serial.Open();
                 _useDummy = false;
@@ -51,7 +57,7 @@ namespace MajdataPlay.IO
             }
             catch
             {
-                Debug.LogWarning("Cannot open COM21, using dummy lights");
+                Debug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
                 _useDummy = true;
             }
             UpdateLedDeviceAsync();
@@ -214,11 +220,12 @@ namespace MajdataPlay.IO
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                 }
             });
-            if (_useDummy)
+            if (_useDummy || !MajInstances.Setting.Misc.OutputDevice.Led.Enable)
                 return;
             await Task.Run(async () =>
             {
                 var token = GameManager.GlobalCT;
+                var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
                 while (!token.IsCancellationRequested)
                 {
                     var startAt = MajTimeline.UnscaledTime;
@@ -246,7 +253,7 @@ namespace MajdataPlay.IO
                     }
                     var endAt = MajTimeline.UnscaledTime;
                     var elapsedTime = endAt - startAt;
-                    var waitTime = elapsedTime.TotalMilliseconds > 16.6667 ? 0 : 16.6667 - elapsedTime.TotalMilliseconds;
+                    var waitTime = elapsedTime.TotalMilliseconds > refreshRateMs ? 0 : refreshRateMs - elapsedTime.TotalMilliseconds;
                     await Task.Delay(TimeSpan.FromMilliseconds(waitTime));
                 }
             });
