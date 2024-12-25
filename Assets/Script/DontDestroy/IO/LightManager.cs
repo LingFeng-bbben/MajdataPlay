@@ -32,6 +32,9 @@ namespace MajdataPlay.IO
             MajInstances.LightManager = this;
             DontDestroyOnLoad(gameObject);
             _dummyLights = gameObject.GetComponentsInChildren<SpriteRenderer>();
+        }
+        private void Start()
+        {
             for (var i = 0; i < 8; i++)
             {
                 _ledDevices[i] = new()
@@ -43,7 +46,7 @@ namespace MajdataPlay.IO
             var comPortStr = $"COM{comPort}";
             try
             {
-                if(comPort != 21)
+                if (comPort != 21)
                 {
                     _serial = new SerialPort(comPortStr, 115200);
                 }

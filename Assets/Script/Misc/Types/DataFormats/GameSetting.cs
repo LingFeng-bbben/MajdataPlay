@@ -156,7 +156,7 @@ namespace MajdataPlay.Types
     public class LedOptions
     {
         public bool Enable { get; set; } = true;
-        public int COMPort { get; set; } = 3;
+        public int COMPort { get; set; } = 21;
         public int RefreshRateMs { get; set; } = 16;
     }
     public class ButtonRingOptions
