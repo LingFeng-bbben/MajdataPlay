@@ -77,11 +77,6 @@ namespace MajdataPlay.Collections
         public void Reset()
         {
             IsSorted = false;
-            if (Type == ChartStorageType.Dan)
-            {
-                _index = 0;
-                return;
-            }
             if (sorted.Length != 0)
             {
                 var newIndex = origin.FindIndex(x => x == Current);

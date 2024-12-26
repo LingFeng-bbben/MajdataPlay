@@ -22,6 +22,7 @@ namespace MajdataPlay.List
         public string soundEffectName;
         public GameObject CoverSmallPrefab;
         public GameObject DirSmallPrefab;
+        public GameObject DanSmallPrefab;
         public CoverBigDisplayer CoverBigDisplayer;
         public SubInfoDisplayer SubInfoDisplayer;
 
@@ -48,7 +49,12 @@ namespace MajdataPlay.List
             desiredListPos = SongStorage.CollectionIndex;
             foreach (var dir in _dirs)
             {
-                var obj = Instantiate(DirSmallPrefab, transform);
+                var prefab = DirSmallPrefab;
+                if (dir.Type == ChartStorageType.Dan)
+                {
+                    prefab = DanSmallPrefab;
+                }
+                var obj = Instantiate(prefab, transform);
                 var coversmall = obj.GetComponent<CoverSmallDisplayer>();
                 //coversmall.SetCover(song.SongCover);
                 coversmall.SetLevelText(dir.Name);
@@ -64,6 +70,7 @@ namespace MajdataPlay.List
         public void SwitchToSongList()
         {
             if (songs.Count == 0) return;
+            if (songs.Type == ChartStorageType.Dan) return;
             foreach (var cover in covers)
             {
                 Destroy(cover.GameObject);
@@ -161,7 +168,15 @@ namespace MajdataPlay.List
             {
                 case CoverListMode.Directory:
                     songs = dirs[desiredListPos];
-                    CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+                    if(songs.Type == ChartStorageType.List)
+                    {
+                        CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+                    }
+                    else
+                    {
+                        CoverBigDisplayer.SetMeta(songs.DanInfo.Name, songs.DanInfo.Description, "", "");
+                    }
+                    
                     CoverBigDisplayer.SetScore(new MaiScore());
                     SongStorage.CollectionIndex = desiredListPos;
                     break;

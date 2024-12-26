@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
+using System.Linq;
 
 namespace MajdataPlay.Result
 {
@@ -46,6 +47,13 @@ namespace MajdataPlay.Result
             var gameManager = MajInstances.GameManager;
             var result = (GameResult)GameManager.LastGameResult;
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
+
+            if (gameManager.isDanMode)
+            {
+                gameManager.DanResults.Add(result);
+            }
+
+
             GameManager.LastGameResult = null;
 
             MajInstances.LightManager.SetAllLight(Color.white);
@@ -205,9 +213,36 @@ namespace MajdataPlay.Result
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
+                if (MajInstances.GameManager.isDanMode)
+                {
+                    if (SongStorage.WorkingCollection.Index >= SongStorage.WorkingCollection.Count-1)
+                    {
+                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+
+                        //TODO: Show Total Result
+
+                        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+                        MajInstances.SceneSwitcher.SwitchScene("List");
+                        return;
+                        
+                    }
+                    else
+                    {
+                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+
+                        //TODO: Add Animation to show that
+                        SongStorage.WorkingCollection.Index++;
+                        MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
+
+                        MajInstances.SceneSwitcher.SwitchScene("Game",false);
+                        return;
+                    }
+                }
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                 MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                 MajInstances.SceneSwitcher.SwitchScene("List");
+                return;
             }
         }
     }
