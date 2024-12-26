@@ -218,11 +218,7 @@ namespace MajdataPlay.Result
                     if (SongStorage.WorkingCollection.Index >= SongStorage.WorkingCollection.Count-1)
                     {
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-
-                        //TODO: Show Total Result
-
-                        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-                        MajInstances.SceneSwitcher.SwitchScene("List");
+                        MajInstances.SceneSwitcher.SwitchScene("TotalResult");
                         return;
                         
                     }
