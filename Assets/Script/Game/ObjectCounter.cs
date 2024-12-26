@@ -856,6 +856,7 @@ namespace MajdataPlay.Game
             {
                 bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
                 bgInfoText.color = ComboColor;
+                SetBgInfoActive(true);
             }
         }
         void UpdateRankBoard(in BGInfoType bgInfo)
