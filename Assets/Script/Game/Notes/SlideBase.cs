@@ -127,7 +127,7 @@ namespace MajdataPlay.Game.Notes
         /// 存储Slide Queue中会经过的区域
         /// <para>用于绑定或解绑Event</para>
         /// </summary>
-        protected IEnumerable<SensorType> _judgeAreas;
+        protected SensorType[] _judgeAreas = Array.Empty<SensorType>();
         public abstract void Initialize();
         protected override void Judge(float currentSec)
         {
@@ -271,8 +271,8 @@ namespace MajdataPlay.Game.Notes
             {
                 if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
                 {
-                    foreach (var sensor in _judgeAreas)
-                        _ioManager.BindSensor(Check, sensor);
+                    foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+                        _ioManager.BindSensor(_noteChecker, sensor);
                     State = NoteStatus.Running;
                 }
                 foreach (var slideBar in _slideBars.AsSpan())

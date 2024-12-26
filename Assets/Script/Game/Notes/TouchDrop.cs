@@ -69,7 +69,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-
+            _noteChecker = new(Check);
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _multTouchHandler = FindObjectOfType<MultTouchHandler>();
 
@@ -452,11 +452,11 @@ namespace MajdataPlay.Game.Notes
         }
         void SubscribeEvent()
         {
-            _ioManager.BindSensor(Check, _sensorPos);
+            _ioManager.BindSensor(_noteChecker, _sensorPos);
         }
         void UnsubscribeEvent()
         {
-            _ioManager.UnbindSensor(Check, _sensorPos);
+            _ioManager.UnbindSensor(_noteChecker, _sensorPos);
         }
         protected override void PlaySFX()
         {
