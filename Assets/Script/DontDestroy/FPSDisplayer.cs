@@ -1,3 +1,4 @@
+using Cysharp.Text;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace MajdataPlay
                 //var newColor = new Color(1.0f - BgColor.r, 1.0f - BgColor.g, 1.0f - BgColor.b);
                 var fpsDelta = Sum() / count;
 
-                _textDisplayer.text = $"FPS {1 / fpsDelta:F2}";
+                _textDisplayer.text = ZString.Format("FPS {0:F2}", 1 / fpsDelta);
                 //_textDisplayer.color = newColor;
                 _frameTimer = 1;
             }

@@ -1,4 +1,7 @@
-﻿using MajdataPlay.Utils;
+﻿using Cysharp.Text;
+using MajdataPlay.Extensions;
+using MajdataPlay.Interfaces;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +16,8 @@ namespace MajdataPlay.Game
 
         GamePlayManager _gpManager;
 
-
+        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}.{2:000}";
+        const string TIME_STRING = "{0}:{1:00}.{2:000}";
         void Start()
         {
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
@@ -22,10 +26,14 @@ namespace MajdataPlay.Game
         void Update()
         {
             // Lock AudioTime variable for real
-            var ctime = _gpManager.AudioTime;
-            timeText.text = TimeToString(ctime);
-            rTimeText.text = TimeToString(ctime-_gpManager.AudioLength);
-            progress.value = ctime / _gpManager.AudioLength;
+            var audioLen = TimeSpan.FromSeconds(_gpManager.AudioLength);
+            var current = TimeSpan.FromSeconds(_gpManager.AudioTime);
+            var remaining = audioLen - current;
+            var timeStr = current.TotalSeconds < 0 ? NEGATIVE_TIME_STRING : TIME_STRING;
+
+            timeText.text = ZString.Format(timeStr,current.Minutes,current.Seconds,current.Milliseconds);
+            rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);
+            progress.value = ((float)(current.TotalMilliseconds / audioLen.TotalMilliseconds)).Clamp(0, 1);
         }
 
         string TimeToString(float time)
