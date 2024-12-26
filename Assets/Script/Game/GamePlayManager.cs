@@ -760,6 +760,12 @@ namespace MajdataPlay.Game
                 _audioSample = null;
             }
         }
+        public void GameOver()
+        {
+            //TODO: Play GameOver Animation
+            BackToList().Forget();
+        }
+
         async UniTaskVoid BackToList()
         {
             MajInstances.InputManager.UnbindAnyArea(OnPauseButton);

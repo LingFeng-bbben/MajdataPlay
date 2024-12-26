@@ -314,6 +314,13 @@ namespace MajdataPlay.Game
                 default:
                     return;
             }
+            if (MajInstances.GameManager.isDanMode)
+            {
+                bgInfoHeader.text = "LIFE";
+                bgInfoHeader.color = ComboColor;
+                bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                bgInfoText.color = ComboColor;
+            }
             if(_gpManager.IsAutoplay)
                 bgInfoHeader.text = "AUTOPLAY";
         }
@@ -694,7 +701,17 @@ namespace MajdataPlay.Game
                     break;
             }
 
-            _xxlbController.Dance(result);
+            if (MajInstances.GameManager.isDanMode)
+            {
+                MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.Damages[result];
+                if (MajInstances.GameManager.DanHP <= 0 && SongStorage.WorkingCollection.DanInfo.IsForceGameover)
+                {
+                    MajInstances.GameManager.DanHP = 0;
+                    _gpManager.GameOver();
+                }
+            }
+
+                _xxlbController.Dance(result);
             UpdateFastLate(judgeResult);
             CalAccRate();
         }
@@ -834,6 +851,11 @@ namespace MajdataPlay.Game
                     break;
                 default:
                     return;
+            }
+            if (MajInstances.GameManager.isDanMode)
+            {
+                bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                bgInfoText.color = ComboColor;
             }
         }
         void UpdateRankBoard(in BGInfoType bgInfo)

@@ -15,6 +15,7 @@ namespace MajdataPlay.Types
         public int StartHP { get; init; } = 50;
         public int RestoreHP { get; init; } = 10;
         public bool IsPlayList { get; init; } = false;
+        public bool IsForceGameover { get; init; } = false;
         public Dictionary<JudgeType, int> Damages { get; init; } = new Dictionary<JudgeType, int> {
             { JudgeType.Miss,-5 },
             { JudgeType.TooFast,-5 },
