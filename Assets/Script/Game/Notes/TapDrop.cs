@@ -58,7 +58,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-
+            _noteChecker = new(Check);
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
@@ -288,11 +288,11 @@ namespace MajdataPlay.Game.Notes
         }
         void SubscribeEvent()
         {
-            _ioManager.BindArea(Check, _sensorPos);
+            _ioManager.BindArea(_noteChecker, _sensorPos);
         }
         void UnsubscribeEvent()
         {
-            _ioManager.UnbindArea(Check, _sensorPos);
+            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         void LoadTapSkin()
         {

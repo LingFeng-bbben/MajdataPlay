@@ -26,7 +26,6 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => _globalCTS.Token; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
@@ -241,7 +240,7 @@ namespace MajdataPlay
             {
                 if (_logQueue.Count == 0)
                 {
-                    if (AllTaskToken.IsCancellationRequested)
+                    if (GlobalCT.IsCancellationRequested)
                         return;
                     await Task.Delay(50);
                     continue;
