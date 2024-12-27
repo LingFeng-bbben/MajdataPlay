@@ -322,21 +322,21 @@ namespace MajdataPlay.Game
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
-                    bgInfoHeader.color = CPComboColor;
-                    bgInfoText.color = CPComboColor;
-                    bgInfoHeader.text = "CPCombo";
+                    _bgInfoHeader.color = CPComboColor;
+                    _bgInfoText.color = CPComboColor;
+                    _bgInfoHeader.text = "CPCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.PCombo:
-                    bgInfoHeader.color = PComboColor;
-                    bgInfoText.color = PComboColor;
-                    bgInfoHeader.text = "PCombo";
+                    _bgInfoHeader.color = PComboColor;
+                    _bgInfoText.color = PComboColor;
+                   _bgInfoHeader.text = "PCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.Combo:
-                    bgInfoHeader.color = ComboColor;
-                    bgInfoText.color = ComboColor;
-                    bgInfoHeader.text = "Combo";
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "Combo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.Achievement_101:
@@ -344,49 +344,49 @@ namespace MajdataPlay.Game
                 case BGInfoType.Achievement:
                 case BGInfoType.AchievementClassical:
                 case BGInfoType.AchievementClassical_100:
-                    bgInfoHeader.text = "Achievement";
-                    bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoHeader.text = "Achievement";
+                    _bgInfoHeader.color = AchievementGoldColor;
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.DXScore:
                 case BGInfoType.DXScoreRank:
-                    bgInfoHeader.text = "でらっくす SCORE";
-                    bgInfoHeader.color = DXScoreColor;
-                    bgInfoText.color = DXScoreColor;
+                    _bgInfoHeader.text = "でらっくす SCORE";
+                    _bgInfoHeader.color = DXScoreColor;
+                    _bgInfoText.color = DXScoreColor;
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.S_Board:
-                    bgInfoHeader.text = "S  BORDER";
-                    bgInfoHeader.color = AchievementSilverColor;
-                    bgInfoText.color = AchievementSilverColor;
-                    bgInfoText.text = "4.0000%";
+                    _bgInfoHeader.text = "S  BORDER";
+                    _bgInfoHeader.color = AchievementSilverColor;
+                    _bgInfoText.color = AchievementSilverColor;
+                    _bgInfoText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SS_Board:
-                    bgInfoHeader.text = "SS  BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "2.0000%";
+                    _bgInfoHeader.text = "SS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SSS_Board:
-                    bgInfoHeader.text = "SSS  BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "1.0000%";
+                    _bgInfoHeader.text = "SSS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "1.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.MyBest:
-                    bgInfoHeader.text = "MyBestScore BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "101.0000%";
+                    _bgInfoHeader.text = "MyBestScore BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "101.0000%";
                     break;
                 case BGInfoType.Diff:
-                    bgInfoHeader.color = ComboColor;
-                    bgInfoText.color = ComboColor;
-                    bgInfoHeader.text = "";
-                    bgInfoText.text = "";
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "";
+                    _bgInfoText.text = "";
                     break;
                 case BGInfoType.None:
                     SetBgInfoActive(false);
@@ -396,10 +396,10 @@ namespace MajdataPlay.Game
             }
             if (MajInstances.GameManager.isDanMode)
             {
-                bgInfoHeader.text = "LIFE";
-                bgInfoHeader.color = ComboColor;
-                bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
-                bgInfoText.color = ComboColor;
+                _bgInfoHeader.text = "LIFE";
+                _bgInfoHeader.color = ComboColor;
+                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.color = ComboColor;
             }
             if(_gpManager.IsAutoplay)
                 _bgInfoHeader.text = "AUTOPLAY";
@@ -457,8 +457,8 @@ namespace MajdataPlay.Game
             {
                 Acc = new()
                 {
-                    DX = accRate[4],
-                    Classic = accRate[0]
+                    DX = _accRate[4],
+                    Classic = _accRate[0]
                 },
                 SongInfo = song,
                 ChartLevel = level,
@@ -928,8 +928,8 @@ namespace MajdataPlay.Game
             }
             if (MajInstances.GameManager.isDanMode)
             {
-                bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
-                bgInfoText.color = ComboColor;
+                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.color = ComboColor;
                 SetBgInfoActive(true);
             }
         }
