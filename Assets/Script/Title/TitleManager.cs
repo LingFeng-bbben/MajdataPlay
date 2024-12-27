@@ -36,9 +36,9 @@ namespace MajdataPlay.Title
             {
                 switch(e.StorageType)
                 {
-                    case ChartStorageType.Local:
+                    case ChartStorageLocation.Local:
                         break;
-                    case ChartStorageType.Online:
+                    case ChartStorageLocation.Online:
                         echoText.text = string.Format(Localization.GetLocalizedText("Scanning Charts From {0}"),e.Message);
                         break;
                 }

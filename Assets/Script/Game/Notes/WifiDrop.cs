@@ -22,6 +22,11 @@ namespace MajdataPlay.Game.Notes
 
         Vector3[] _slideStartPositions = new Vector3[3];
 
+        protected override void Awake()
+        {
+            base.Awake();
+            _noteChecker = new(Check);
+        }
         public override void Initialize()
         {
             if (State >= NoteStatus.PreInitialized)
@@ -104,8 +109,9 @@ namespace MajdataPlay.Game.Notes
             _lastWaitTime = Length * wifiConst;
 
             _judgeAreas = _judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
-                                    .GroupBy(x => x)
-                                    .Select(x => x.Key);
+                                      .GroupBy(x => x)
+                                      .Select(x => x.Key)
+                                      .ToArray();
             
             FadeIn().Forget();
         }
@@ -340,8 +346,8 @@ namespace MajdataPlay.Game.Notes
         {
             if (IsDestroyed)
                 return;
-            foreach (var sensor in _judgeAreas)
-                _ioManager.UnbindSensor(Check, sensor);
+            foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+                _ioManager.UnbindSensor(_noteChecker, sensor);
             State = NoteStatus.Destroyed;
             base.End();
             if (forceEnd)

@@ -30,7 +30,12 @@ namespace MajdataPlay.Game.Notes
 
         SpriteRenderer _starRenderer;
         SlideTable _table;
-        
+
+        protected override void Awake()
+        {
+            base.Awake();
+            _noteChecker = new(Check);
+        }
         /// <summary>
         /// Slide初始化
         /// </summary>
@@ -169,9 +174,9 @@ namespace MajdataPlay.Game.Notes
             }
 
             _judgeAreas = _table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
-                                         .GroupBy(x => x)
-                                         .Select(x => x.Key)
-                                         .ToArray();
+                                           .GroupBy(x => x)
+                                           .Select(x => x.Key)
+                                           .ToArray();
 
             FadeIn().Forget();
         }
@@ -370,8 +375,8 @@ namespace MajdataPlay.Game.Notes
             if (IsDestroyed)
                 return;
             State = NoteStatus.Destroyed;
-            foreach (var sensor in _judgeAreas)
-                _ioManager.UnbindSensor(Check, sensor);
+            foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+                _ioManager.UnbindSensor(_noteChecker, sensor);
             base.End();
             if (forceEnd)
             {

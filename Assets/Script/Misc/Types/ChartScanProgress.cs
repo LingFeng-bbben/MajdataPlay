@@ -8,7 +8,7 @@ namespace MajdataPlay.Types
 {
     public struct ChartScanProgress
     {
-        public ChartStorageType StorageType { get; init; }
+        public ChartStorageLocation StorageType { get; init; }
         public string Message { get; init; }
     }
 }

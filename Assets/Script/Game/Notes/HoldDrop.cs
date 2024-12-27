@@ -71,6 +71,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
+            _noteChecker = new(Check);
             _poolManager = FindObjectOfType<NotePoolManager>();
             var notes = _noteManager.gameObject.transform;
 
@@ -628,11 +629,11 @@ namespace MajdataPlay.Game.Notes
         }
         void SubscribeEvent()
         {
-            _ioManager.BindArea(Check, _sensorPos);
+            _ioManager.BindArea(_noteChecker, _sensorPos);
         }
         void UnsubscribeEvent()
         {
-            _ioManager.UnbindArea(Check, _sensorPos);
+            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }

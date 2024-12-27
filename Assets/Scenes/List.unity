@@ -3737,6 +3737,10 @@ PrefabInstance:
       value: 0.12
       objectReference: {fileID: 0}
     - target: {fileID: 3871508246094013892, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: DanSmallPrefab
+      value: 
+      objectReference: {fileID: 7013899708052084777, guid: 7c2b648d07b4789478238f8ea960771a, type: 3}
+    - target: {fileID: 3871508246094013892, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: DirSmallPrefab
       value: 
       objectReference: {fileID: 7013899708052084777, guid: c4fd618c421cd9a4c8b5dde154b57747, type: 3}
@@ -11931,7 +11935,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -143.6, y: -140.96}
+  m_AnchoredPosition: {x: -143.6, y: -140.96002}
   m_SizeDelta: {x: -394.66, y: -648.46}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1895739650

@@ -7,6 +7,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 using Random = System.Random;
 #nullable enable
@@ -99,6 +100,7 @@ namespace MajdataPlay.Game.Notes
         protected NoteEffectManager _effectManager;
         protected NoteAudioManager _audioEffMana;
         protected GameSetting _gameSetting = MajInstances.Setting;
+        protected EventHandler<InputEventArgs> _noteChecker;
         protected static readonly Random _randomizer = new();
 
         protected const int DEFAULT_LAYER = 0;

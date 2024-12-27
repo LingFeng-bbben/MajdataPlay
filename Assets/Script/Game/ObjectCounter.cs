@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using MajdataPlay.Collections;
 using TMPro;
+using Cysharp.Text;
 
 namespace MajdataPlay.Game
 {
@@ -45,15 +46,15 @@ namespace MajdataPlay.Game
         public int slideSum;
         public int touchSum;
         public int breakSum;
-        private TextMeshProUGUI rate;
+        private TextMeshProUGUI _rate;
 
-        Text bgInfoHeader;
-        Text bgInfoText;
+        Text _bgInfoHeader;
+        Text _bgInfoText;
 
-        private Text table;
-        private Text judgeResultCount;
+        private Text _table;
+        private Text _judgeResultCount;
 
-        public double[] accRate = new double[5]
+        public double[] _accRate = new double[5]
         {
             0.00,    // classic acc (+)
             100.00,  // classic acc (-)
@@ -62,38 +63,249 @@ namespace MajdataPlay.Game
             0.0000,  // acc (+)
         };
 
-        long cPerfectCount = 0;
-        long perfectCount = 0;
-        long greatCount = 0;
-        long goodCount = 0;
-        long missCount = 0;
+        long _cPerfectCount = 0;
+        long _perfectCount = 0;
+        long _greatCount = 0;
+        long _goodCount = 0;
+        long _missCount = 0;
 
-        long fast = 0;
-        long late = 0;
+        long _fast = 0;
+        long _late = 0;
 
-        float diff = 0; // Note judge diff
-        float diffTimer = 3;
+        float _diff = 0; // Note judge diff
+        float _diffTimer = 3;
 
-        public long totalDXScore = 0;
-        long lostDXScore = 0;
+        public long _totalDXScore = 0;
+        long _lostDXScore = 0;
 
-        long combo = 0; // Combo
-        long pCombo = 0; // Perfect Combo
-        long cPCombo = 0; // Critical Perfect
-        Dictionary<JudgeType, int> judgedTapCount;
-        Dictionary<JudgeType, int> judgedHoldCount;
-        Dictionary<JudgeType, int> judgedTouchCount;
-        Dictionary<JudgeType, int> judgedTouchHoldCount;
-        Dictionary<JudgeType, int> judgedSlideCount;
-        Dictionary<JudgeType, int> judgedBreakCount;
-        Dictionary<JudgeType, int> totalJudgedCount;
+        long _combo = 0; // Combo
+        long _pCombo = 0; // Perfect Combo
+        long _cPCombo = 0; // Critical Perfect
+        Dictionary<JudgeType, int> _judgedTapCount = new()
+        { 
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _judgedHoldCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _judgedTouchCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _judgedTouchHoldCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _judgedSlideCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _judgedBreakCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
+        Dictionary<JudgeType, int> _totalJudgedCount = new()
+        {
+            {JudgeType.TooFast, 0 },
+            {JudgeType.FastGood, 0 },
+            {JudgeType.FastGreat2, 0 },
+            {JudgeType.FastGreat1, 0 },
+            {JudgeType.FastGreat, 0 },
+            {JudgeType.FastPerfect2, 0 },
+            {JudgeType.FastPerfect1, 0 },
+            {JudgeType.Perfect, 0 },
+            {JudgeType.LatePerfect1, 0 },
+            {JudgeType.LatePerfect2, 0 },
+            {JudgeType.LateGreat, 0 },
+            {JudgeType.LateGreat1, 0 },
+            {JudgeType.LateGreat2, 0 },
+            {JudgeType.LateGood, 0 },
+            {JudgeType.Miss, 0 },
+        };
 
         OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
+
+        const string DX_ACC_RATE_STRING = "{0:F4}%";
+        const string CLASSIC_ACC_RATE_STRING = "{0:F2}%";
+        const string COMBO_OR_DXSCORE_STRING = "{0}";
+        const string DIFF_STRING = "{0:F2}";
+        const string DXSCORE_RANK_HEADER_STRING = "✧{0}";
+        const string DXSCORE_RANK_BODY_STRING = "+{0}";
+        const string LATE_STRING = "LATE";
+        const string FAST_STRING = "FAST";
+        const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
         void Awake()
         {
             MajInstanceHelper<ObjectCounter>.Instance = this;
+            _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
+            _table = GameObject.Find("ObjectCount").GetComponent<Text>();
+            _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
+
+            _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
+            _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
+
+            switch (MajInstances.Setting.Game.BGInfo)
+            {
+                case BGInfoType.CPCombo:
+                    _bgInfoHeader.color = CPComboColor;
+                    _bgInfoText.color = CPComboColor;
+                    _bgInfoHeader.text = "CPCombo";
+                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case BGInfoType.PCombo:
+                    _bgInfoHeader.color = PComboColor;
+                    _bgInfoText.color = PComboColor;
+                    _bgInfoHeader.text = "PCombo";
+                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case BGInfoType.Combo:
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "Combo";
+                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case BGInfoType.Achievement_101:
+                case BGInfoType.Achievement_100:
+                case BGInfoType.Achievement:
+                case BGInfoType.AchievementClassical:
+                case BGInfoType.AchievementClassical_100:
+                    _bgInfoHeader.text = "Achievement";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    //bgInfoText.alignment = TextAnchor.MiddleRight;
+                    break;
+                case BGInfoType.DXScore:
+                case BGInfoType.DXScoreRank:
+                    _bgInfoHeader.text = "でらっくす SCORE";
+                    _bgInfoHeader.color = DXScoreColor;
+                    _bgInfoText.color = DXScoreColor;
+                    //bgInfoText.alignment = TextAnchor.MiddleCenter;
+                    break;
+                case BGInfoType.S_Board:
+                    _bgInfoHeader.text = "S  BORDER";
+                    _bgInfoHeader.color = AchievementSilverColor;
+                    _bgInfoText.color = AchievementSilverColor;
+                    _bgInfoText.text = "4.0000%";
+                    //bgInfoText.alignment = TextAnchor.MiddleRight;
+                    break;
+                case BGInfoType.SS_Board:
+                    _bgInfoHeader.text = "SS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "2.0000%";
+                    //bgInfoText.alignment = TextAnchor.MiddleRight;
+                    break;
+                case BGInfoType.SSS_Board:
+                    _bgInfoHeader.text = "SSS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "1.0000%";
+                    //bgInfoText.alignment = TextAnchor.MiddleRight;
+                    break;
+                case BGInfoType.MyBest:
+                    _bgInfoHeader.text = "MyBestScore BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "101.0000%";
+                    break;
+                case BGInfoType.Diff:
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "";
+                    _bgInfoText.text = "";
+                    break;
+                case BGInfoType.None:
+                    SetBgInfoActive(false);
+                    break;
+                default:
+                    return;
+            }
         }
         void OnDestroy()
         {
@@ -104,159 +316,27 @@ namespace MajdataPlay.Game
             _outline = MajInstanceHelper<OutlineLoader>.Instance!;
             _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-            judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
-            table = GameObject.Find("ObjectCount").GetComponent<Text>();
-            rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
-
-            bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
-            bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
-
-            judgedTapCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            judgedHoldCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            judgedTouchCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            judgedTouchHoldCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            judgedSlideCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            judgedBreakCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
-            totalJudgedCount = new()
-            {
-                {JudgeType.TooFast, 0 },
-                {JudgeType.FastGood, 0 },
-                {JudgeType.FastGreat2, 0 },
-                {JudgeType.FastGreat1, 0 },
-                {JudgeType.FastGreat, 0 },
-                {JudgeType.FastPerfect2, 0 },
-                {JudgeType.FastPerfect1, 0 },
-                {JudgeType.Perfect, 0 },
-                {JudgeType.LatePerfect1, 0 },
-                {JudgeType.LatePerfect2, 0 },
-                {JudgeType.LateGreat, 0 },
-                {JudgeType.LateGreat1, 0 },
-                {JudgeType.LateGreat2, 0 },
-                {JudgeType.LateGood, 0 },
-                {JudgeType.Miss, 0 },
-            };
+            
 
             SetBgInfoActive(true);
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
-                    bgInfoHeader.color = CPComboColor;
-                    bgInfoText.color = CPComboColor;
-                    bgInfoHeader.text = "CPCombo";
+                    _bgInfoHeader.color = CPComboColor;
+                    _bgInfoText.color = CPComboColor;
+                    _bgInfoHeader.text = "CPCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.PCombo:
-                    bgInfoHeader.color = PComboColor;
-                    bgInfoText.color = PComboColor;
-                    bgInfoHeader.text = "PCombo";
+                    _bgInfoHeader.color = PComboColor;
+                    _bgInfoText.color = PComboColor;
+                   _bgInfoHeader.text = "PCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.Combo:
-                    bgInfoHeader.color = ComboColor;
-                    bgInfoText.color = ComboColor;
-                    bgInfoHeader.text = "Combo";
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "Combo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.Achievement_101:
@@ -264,49 +344,49 @@ namespace MajdataPlay.Game
                 case BGInfoType.Achievement:
                 case BGInfoType.AchievementClassical:
                 case BGInfoType.AchievementClassical_100:
-                    bgInfoHeader.text = "Achievement";
-                    bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoHeader.text = "Achievement";
+                    _bgInfoHeader.color = AchievementGoldColor;
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.DXScore:
                 case BGInfoType.DXScoreRank:
-                    bgInfoHeader.text = "でらっくす SCORE";
-                    bgInfoHeader.color = DXScoreColor;
-                    bgInfoText.color = DXScoreColor;
+                    _bgInfoHeader.text = "でらっくす SCORE";
+                    _bgInfoHeader.color = DXScoreColor;
+                    _bgInfoText.color = DXScoreColor;
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoType.S_Board:
-                    bgInfoHeader.text = "S  BORDER";
-                    bgInfoHeader.color = AchievementSilverColor;
-                    bgInfoText.color = AchievementSilverColor;
-                    bgInfoText.text = "4.0000%";
+                    _bgInfoHeader.text = "S  BORDER";
+                    _bgInfoHeader.color = AchievementSilverColor;
+                    _bgInfoText.color = AchievementSilverColor;
+                    _bgInfoText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SS_Board:
-                    bgInfoHeader.text = "SS  BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "2.0000%";
+                    _bgInfoHeader.text = "SS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.SSS_Board:
-                    bgInfoHeader.text = "SSS  BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "1.0000%";
+                    _bgInfoHeader.text = "SSS  BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "1.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoType.MyBest:
-                    bgInfoHeader.text = "MyBestScore BORDER";
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
-                    bgInfoText.text = "101.0000%";
+                    _bgInfoHeader.text = "MyBestScore BORDER";
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
+                    _bgInfoText.text = "101.0000%";
                     break;
                 case BGInfoType.Diff:
-                    bgInfoHeader.color = ComboColor;
-                    bgInfoText.color = ComboColor;
-                    bgInfoHeader.text = "";
-                    bgInfoText.text = "";
+                    _bgInfoHeader.color = ComboColor;
+                    _bgInfoText.color = ComboColor;
+                    _bgInfoHeader.text = "";
+                    _bgInfoText.text = "";
                     break;
                 case BGInfoType.None:
                     SetBgInfoActive(false);
@@ -314,8 +394,15 @@ namespace MajdataPlay.Game
                 default:
                     return;
             }
+            if (MajInstances.GameManager.isDanMode)
+            {
+                _bgInfoHeader.text = "LIFE";
+                _bgInfoHeader.color = ComboColor;
+                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.color = ComboColor;
+            }
             if(_gpManager.IsAutoplay)
-                bgInfoHeader.text = "AUTOPLAY";
+                _bgInfoHeader.text = "AUTOPLAY";
         }
 
         // Update is called once per frame
@@ -332,17 +419,17 @@ namespace MajdataPlay.Game
             //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
             //                           .Select(x => x.Value)
             //                           .Sum();
-            var holdRecord = judgedHoldCount.ToDictionary(
+            var holdRecord = _judgedHoldCount.ToDictionary(
                 kv => kv.Key,
-                kv => judgedHoldCount[kv.Key] + judgedTouchHoldCount[kv.Key]
+                kv => _judgedHoldCount[kv.Key] + _judgedTouchHoldCount[kv.Key]
             );
             var record = new Dictionary<ScoreNoteType, JudgeInfo>()
             {
-                { ScoreNoteType.Tap, new (judgedTapCount) },
+                { ScoreNoteType.Tap, new (_judgedTapCount) },
                 { ScoreNoteType.Hold, new (holdRecord)},
-                { ScoreNoteType.Slide,new (judgedSlideCount)},
-                { ScoreNoteType.Break, new (judgedBreakCount)},
-                { ScoreNoteType.Touch, new (judgedTouchCount) }
+                { ScoreNoteType.Slide,new (_judgedSlideCount)},
+                { ScoreNoteType.Break, new (_judgedBreakCount)},
+                { ScoreNoteType.Touch, new (_judgedTouchCount) }
             };
             var judgeRecord = new JudgeDetail(record);
 
@@ -370,16 +457,16 @@ namespace MajdataPlay.Game
             {
                 Acc = new()
                 {
-                    DX = accRate[3],
-                    Classic = accRate[1]
+                    DX = _accRate[4],
+                    Classic = _accRate[0]
                 },
                 SongInfo = song,
                 ChartLevel = level,
                 JudgeRecord = judgeRecord,
-                Fast = fast,
-                Late = late,
-                DXScore = totalDXScore + lostDXScore,
-                TotalDXScore = totalDXScore,
+                Fast = _fast,
+                Late = _late,
+                DXScore = _totalDXScore + _lostDXScore,
+                TotalDXScore = _totalDXScore,
                 ComboState = cState
             };
         }
@@ -407,23 +494,23 @@ namespace MajdataPlay.Game
                 switch (type)
                 {
                     case SimaiNoteType.Tap:
-                        collection = judgedTapCount;
+                        collection = _judgedTapCount;
                         baseScore = 500;
                         break;
                     case SimaiNoteType.Slide:
-                        collection = judgedSlideCount;
+                        collection = _judgedSlideCount;
                         baseScore = 1500;
                         break;
                     case SimaiNoteType.TouchHold:
-                        collection = judgedTouchHoldCount;
+                        collection = _judgedTouchHoldCount;
                         baseScore = 1000;
                         break;
                     case SimaiNoteType.Hold:
-                        collection = judgedHoldCount;
+                        collection = _judgedHoldCount;
                         baseScore = 1000;
                         break;
                     case SimaiNoteType.Touch:
-                        collection = judgedTouchCount;
+                        collection = _judgedTouchCount;
                         baseScore = 500;
                         break;
                 }
@@ -461,7 +548,7 @@ namespace MajdataPlay.Game
                     }
                 }
             }
-            foreach (var judgeResult in judgedBreakCount)
+            foreach (var judgeResult in _judgedBreakCount)
             {
                 var count = judgeResult.Value;
                 switch (judgeResult.Key)
@@ -546,105 +633,103 @@ namespace MajdataPlay.Game
         }
         void CalAccRate()
         {
-            long totalScore = 0;
-            long totalExtraScore = 0;
-
             var currentNoteScore = GetNoteScoreSum();
+            var totalScore = (tapSum + touchSum) * 500 + holdSum * 1000 + slideSum * 1500 + breakSum * 2500;
+            var totalExtraScore = Math.Max(breakSum * 100, 1);
 
-            totalScore = (tapSum + touchSum) * 500 + holdSum * 1000 + slideSum * 1500 + breakSum * 2500;
-            totalExtraScore = Math.Max(breakSum * 100, 1);
-
-            accRate[0] = (currentNoteScore.TotalScore + currentNoteScore.TotalExtraScoreClassic) / (double)totalScore * 100;
-            accRate[1] = (totalScore + currentNoteScore.TotalExtraScoreClassic - currentNoteScore.LostScore) / (double)totalScore * 100;
-            accRate[2] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + (totalExtraScore - currentNoteScore.LostExtraScore) / (double)totalExtraScore;
-            accRate[3] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
-            accRate[4] = currentNoteScore.TotalScore / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
+            _accRate[0] = (currentNoteScore.TotalScore + currentNoteScore.TotalExtraScoreClassic) / (double)totalScore * 100;
+            _accRate[1] = (totalScore + currentNoteScore.TotalExtraScoreClassic - currentNoteScore.LostScore) / (double)totalScore * 100;
+            _accRate[2] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + (totalExtraScore - currentNoteScore.LostExtraScore) / (double)totalExtraScore;
+            _accRate[3] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
+            _accRate[4] = currentNoteScore.TotalScore / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
         }
-        internal void ReportResult(NoteDrop note, in JudgeResult judgeResult)
+        internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
         {
             var noteType = GetNoteType(note);
             var result = judgeResult.Result;
             var isBreak = judgeResult.IsBreak;
+            var isSlide = false;
 
-
-            switch (noteType)
+            switch (note)
             {
-                case SimaiNoteType.Tap:
+                case TapDrop:
                     if (isBreak)
                     {
-                        judgedBreakCount[result]++;
+                        _judgedBreakCount[result]++;
                         breakCount++;
                     }
                     else
                     {
-                        judgedTapCount[result]++;
+                        _judgedTapCount[result]++;
                         tapCount++;
                     }
                     break;
-                case SimaiNoteType.Slide:
+                case WifiDrop:
+                case SlideDrop:
                     if (isBreak)
                     {
-                        judgedBreakCount[result]++;
+                        _judgedBreakCount[result]++;
                         breakCount++;
                     }
                     else
                     {
-                        judgedSlideCount[result]++;
+                        _judgedSlideCount[result]++;
                         slideCount++;
                     }
+                    isSlide = true;
                     break;
-                case SimaiNoteType.Hold:
+                case HoldDrop:
                     if (isBreak)
                     {
-                        judgedBreakCount[result]++;
+                        _judgedBreakCount[result]++;
                         breakCount++;
                     }
                     else
                     {
-                        judgedHoldCount[result]++;
+                        _judgedHoldCount[result]++;
                         holdCount++;
                     }
                     break;
-                case SimaiNoteType.Touch:
+                case TouchDrop:
                     if (isBreak)
                     {
-                        judgedBreakCount[result]++;
+                        _judgedBreakCount[result]++;
                         breakCount++;
                     }
                     else
                     {
-                        judgedTouchCount[result]++;
+                        _judgedTouchCount[result]++;
                         touchCount++;
                     }
                     break;
-                case SimaiNoteType.TouchHold:
+                case TouchHoldDrop:
                     if (isBreak)
                     {
-                        judgedBreakCount[result]++;
+                        _judgedBreakCount[result]++;
                         breakCount++;
                     }
                     else
                     {
-                        judgedTouchHoldCount[result]++;
+                        _judgedTouchHoldCount[result]++;
                         holdCount++;
                     }
                     break;
             }
-            totalJudgedCount[result]++;
+            _totalJudgedCount[result]++;
 
-            if (noteType != SimaiNoteType.Slide && !judgeResult.IsMissOrTooFast)
+            if (!isSlide && !judgeResult.IsMissOrTooFast)
             {
-                diff = judgeResult.Diff;
-                diffTimer = 3;
+                _diff = judgeResult.Diff;
+                _diffTimer = 3;
             }
 
             if (!judgeResult.IsMissOrTooFast)
             {
-                combo++;
-                switch(noteType)
+                _combo++;
+                switch(note)
                 {
-                    case SimaiNoteType.Tap:
-                    case SimaiNoteType.Hold:
+                    case TapDrop:
+                    case HoldDrop:
                         _outline.Play();
                         break;
                 }
@@ -654,25 +739,25 @@ namespace MajdataPlay.Game
             {
                 case JudgeType.TooFast:
                 case JudgeType.Miss:
-                    missCount++;
-                    combo = 0;
-                    cPCombo = 0;
-                    pCombo = 0;
-                    lostDXScore -= 3;
+                    _missCount++;
+                    _combo = 0;
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _lostDXScore -= 3;
                     break;
                 case JudgeType.Perfect:
-                    cPerfectCount++;
-                    cPCombo++;
-                    pCombo++;
+                    _cPerfectCount++;
+                    _cPCombo++;
+                    _pCombo++;
                     break;
                 case JudgeType.LatePerfect2:
                 case JudgeType.LatePerfect1:
                 case JudgeType.FastPerfect1:
                 case JudgeType.FastPerfect2:
-                    cPCombo = 0;
-                    pCombo++;
-                    perfectCount++;
-                    lostDXScore -= 1;
+                    _cPCombo = 0;
+                    _pCombo++;
+                    _perfectCount++;
+                    _lostDXScore -= 1;
                     break;
                 case JudgeType.LateGreat2:
                 case JudgeType.LateGreat1:
@@ -680,21 +765,31 @@ namespace MajdataPlay.Game
                 case JudgeType.FastGreat:
                 case JudgeType.FastGreat1:
                 case JudgeType.FastGreat2:
-                    cPCombo = 0;
-                    pCombo = 0;
-                    greatCount++;
-                    lostDXScore -= 2;
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _greatCount++;
+                    _lostDXScore -= 2;
                     break;
                 case JudgeType.LateGood:
                 case JudgeType.FastGood:
-                    cPCombo = 0;
-                    pCombo = 0;
-                    goodCount++;
-                    lostDXScore -= 3;
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _goodCount++;
+                    _lostDXScore -= 3;
                     break;
             }
 
-            _xxlbController.Dance(result);
+            if (MajInstances.GameManager.isDanMode)
+            {
+                MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.Damages[result];
+                if (MajInstances.GameManager.DanHP <= 0 && SongStorage.WorkingCollection.DanInfo.IsForceGameover)
+                {
+                    MajInstances.GameManager.DanHP = 0;
+                    _gpManager.GameOver();
+                }
+            }
+
+                _xxlbController.Dance(result);
             UpdateFastLate(judgeResult);
             CalAccRate();
         }
@@ -704,11 +799,7 @@ namespace MajdataPlay.Game
         /// <param name="judgeResult"></param>
         void UpdateFastLate(in JudgeResult judgeResult)
         {
-            JudgeDisplayType gameSetting;
-            if (judgeResult.IsBreak)
-                gameSetting = MajInstances.Setting.Display.BreakFastLateType;
-            else
-                gameSetting = MajInstances.Setting.Display.FastLateType;
+            var gameSetting = judgeResult.IsBreak ? MajInstances.Setting.Display.BreakFastLateType : MajInstances.Setting.Display.FastLateType;
             var resultValue = (int)judgeResult.Result;
             var absValue = Math.Abs(7 - resultValue);
 
@@ -718,17 +809,17 @@ namespace MajdataPlay.Game
                     if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
                         break;
                     else if (judgeResult.IsFast)
-                        fast++;
+                        _fast++;
                     else
-                        late++;
+                        _late++;
                     break;
                 case JudgeDisplayType.BelowCP:
                     if (judgeResult.IsMissOrTooFast || judgeResult.Result == JudgeType.Perfect)
                         break;
                     else if (judgeResult.IsFast)
-                        fast++;
+                        _fast++;
                     else
-                        late++;
+                        _late++;
                     break;
                 //默认只统计Great、Good的Fast/Late
                 case JudgeDisplayType.BelowP:
@@ -737,9 +828,9 @@ namespace MajdataPlay.Game
                     if (judgeResult.IsMissOrTooFast || absValue <= 2)
                         break;
                     else if (judgeResult.IsFast)
-                        fast++;
+                        _fast++;
                     else
-                        late++;
+                        _late++;
                     break;
             }
         }
@@ -756,7 +847,7 @@ namespace MajdataPlay.Game
             else
             {
                 SetBgInfoActive(true);
-                bgInfoText.text = $"{combo}";
+                _bgInfoText.text = ZString.Format(COMBO_OR_DXSCORE_STRING, combo);
             }
         }
         /// <summary>
@@ -768,36 +859,36 @@ namespace MajdataPlay.Game
             switch (bgInfo)
             {
                 case BGInfoType.CPCombo:
-                    UpdateCombo(cPCombo);
+                    UpdateCombo(_cPCombo);
                     break;
                 case BGInfoType.PCombo:
-                    UpdateCombo(pCombo);
+                    UpdateCombo(_pCombo);
                     break;
                 case BGInfoType.Combo:
-                    UpdateCombo(combo);
+                    UpdateCombo(_combo);
                     break;
                 case BGInfoType.Achievement_101:
-                    bgInfoText.text = $"{accRate[2]:F4}%";
-                    UpdateAchievementColor(accRate[2], bgInfoText);
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[2]);
+                    UpdateAchievementColor(_accRate[2], _bgInfoText);
                     break;
                 case BGInfoType.Achievement_100:
-                    bgInfoText.text = $"{accRate[3]:F4}%";
-                    UpdateAchievementColor(accRate[3], bgInfoText);
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[3]);
+                    UpdateAchievementColor(_accRate[3], _bgInfoText);
                     break;
                 case BGInfoType.Achievement:
-                    bgInfoText.text = $"{accRate[4]:F4}%";
-                    UpdateAchievementColor(accRate[4], bgInfoText);
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[4]);
+                    UpdateAchievementColor(_accRate[4], _bgInfoText);
                     break;
                 case BGInfoType.AchievementClassical:
-                    bgInfoText.text = $"{accRate[0]:F2}%";
-                    UpdateAchievementColor(accRate[0], bgInfoText);
+                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, _accRate[0]);
+                    UpdateAchievementColor(_accRate[0], _bgInfoText);
                     break;
                 case BGInfoType.AchievementClassical_100:
-                    bgInfoText.text = $"{accRate[1]:F2}%";
-                    UpdateAchievementColor(accRate[1], bgInfoText);
+                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, _accRate[1]);
+                    UpdateAchievementColor(_accRate[1], _bgInfoText);
                     break;
                 case BGInfoType.DXScore:
-                    bgInfoText.text = $"{lostDXScore}";
+                    _bgInfoText.text = ZString.Format(COMBO_OR_DXSCORE_STRING, _lostDXScore);
                     break;
                 case BGInfoType.DXScoreRank:
                     UpdateDXScoreRank();
@@ -809,31 +900,37 @@ namespace MajdataPlay.Game
                     UpdateRankBoard(bgInfo);
                     break;
                 case BGInfoType.Diff:
-                    bgInfoText.text = $"{diff:F2}";
-                    var oldColor = bgInfoText.color;
-                    if (diff < 0)
+                    _bgInfoText.text = ZString.Format(DIFF_STRING, _diff);
+                    var oldColor = _bgInfoText.color;
+                    if (_diff < 0)
                     {
                         oldColor = EarlyDiffColor;
-                        bgInfoHeader.text = "FAST";
+                        _bgInfoHeader.text = FAST_STRING;
                     }
                     else
                     {
                         oldColor = LateDiffColor;
-                        bgInfoHeader.text = "LATE";
+                        _bgInfoHeader.text = LATE_STRING;
                     }
                     var newColor = new Color()
                     {
                         r = oldColor.r,
                         g = oldColor.g,
                         b = oldColor.b,
-                        a = diffTimer.Clamp(0, 1)
+                        a = _diffTimer.Clamp(0, 1)
                     };
-                    bgInfoHeader.color = newColor;
-                    bgInfoText.color = newColor;
-                    diffTimer -= Time.deltaTime * 3;
+                    _bgInfoHeader.color = newColor;
+                    _bgInfoText.color = newColor;
+                    _diffTimer -= Time.deltaTime * 3;
                     break;
                 default:
                     return;
+            }
+            if (MajInstances.GameManager.isDanMode)
+            {
+                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.color = ComboColor;
+                SetBgInfoActive(true);
             }
         }
         void UpdateRankBoard(in BGInfoType bgInfo)
@@ -842,22 +939,22 @@ namespace MajdataPlay.Game
             switch (bgInfo)
             {
                 case BGInfoType.S_Board:
-                    rate = accRate[2] - 97;
+                    rate = _accRate[2] - 97;
                     break;
                 case BGInfoType.SS_Board:
-                    rate = accRate[2] - 99;
+                    rate = _accRate[2] - 99;
                     break;
                 case BGInfoType.SSS_Board:
-                    rate = accRate[2] - 100;
+                    rate = _accRate[2] - 100;
                     break;
                 case BGInfoType.MyBest:
-                    rate = accRate[2] - _gpManager.HistoryScore.Acc.DX;
+                    rate = _accRate[2] - _gpManager.HistoryScore.Acc.DX;
                     break;
                 default:
                     return;
             }
             if (rate >= 0)
-                bgInfoText.text = $"{rate:F4}%";
+                _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, rate);
             else
                 SetBgInfoActive(false);
         }
@@ -866,19 +963,19 @@ namespace MajdataPlay.Game
             switch(state)
             {
                 case true:
-                    bgInfoText.gameObject.layer = 0;
-                    bgInfoHeader.gameObject.layer = 0;
+                    _bgInfoText.gameObject.layer = 0;
+                    _bgInfoHeader.gameObject.layer = 0;
                     break;
                 case false:
-                    bgInfoText.gameObject.layer = 3;
-                    bgInfoHeader.gameObject.layer = 3;
+                    _bgInfoText.gameObject.layer = 3;
+                    _bgInfoHeader.gameObject.layer = 3;
                     break;
             }
         }
         void UpdateDXScoreRank()
         {
-            var remainingDXScore = totalDXScore + lostDXScore;
-            var dxRank = new DXScoreRank(remainingDXScore, totalDXScore);
+            var remainingDXScore = _totalDXScore + _lostDXScore;
+            var dxRank = new DXScoreRank(remainingDXScore, _totalDXScore);
             var num = remainingDXScore - (dxRank.Lower + 1);
             if (dxRank.Rank == 0)
             {
@@ -889,20 +986,20 @@ namespace MajdataPlay.Game
             {
                 SetBgInfoActive(true);
             }
-            bgInfoHeader.text = $"✧{dxRank.Rank}";
-            bgInfoText.text = $"+{num}";
+            _bgInfoHeader.text = ZString.Format(DXSCORE_RANK_HEADER_STRING, dxRank.Rank);
+            _bgInfoText.text = ZString.Format(DXSCORE_RANK_BODY_STRING, num);
             switch (dxRank.Rank)
             {
                 case 5:
                 case 4:
                 case 3:
-                    bgInfoHeader.color = AchievementGoldColor;
-                    bgInfoText.color = AchievementGoldColor;
+                    _bgInfoHeader.color = AchievementGoldColor;
+                    _bgInfoText.color = AchievementGoldColor;
                     break;
                 case 2:
                 case 1:
-                    bgInfoHeader.color = DXScoreColor;
-                    bgInfoText.color = DXScoreColor;
+                    _bgInfoHeader.color = DXScoreColor;
+                    _bgInfoText.color = DXScoreColor;
                     break;
             }
         }
@@ -917,25 +1014,35 @@ namespace MajdataPlay.Game
             //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
             //                           .Select(x => x.Value)
             //                           .Sum();
-            judgeResultCount.text = $"{cPerfectCount}\n{perfectCount}\n{greatCount}\n{goodCount}\n{missCount}\n\n{fast}\n{late}";
+            //_judgeResultCount.text = $"{_cPerfectCount}\n{_perfectCount}\n{_greatCount}\n{_goodCount}\n{_missCount}\n\n{_fast}\n{_late}";
+            _judgeResultCount.text = ZString.Format(JUDGE_RESULT_STRING, 
+                                                    _cPerfectCount, 
+                                                    _perfectCount, 
+                                                    _greatCount, 
+                                                    _goodCount, 
+                                                    _missCount, 
+                                                    _fast, 
+                                                    _late);
         }
         /// <summary>
         /// 更新SubDisplay左侧的Note详情
         /// </summary>
         void UpdateSideOutput()
         {
-            var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
+//            var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
 
-            table.text = $@"TAP: {tapCount} / {tapSum}
-HOD: {holdCount} / {holdSum}
-SLD: {slideCount} / {slideSum}
-TOH: {touchCount} / {touchSum}
-BRK: {breakCount} / {breakSum}
-ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
+//            table.text = $@"TAP: {tapCount} / {tapSum}
+//HOD: {holdCount} / {holdSum}
+//SLD: {slideCount} / {slideSum}
+//TOH: {touchCount} / {touchSum}
+//BRK: {breakCount} / {breakSum}
+//ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
 
 
             var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
-            rate.text = isClassic ? $"{accRate[0]:F2} %" : $"{accRate[4]:F4} %";
+            var formatStr = isClassic ? CLASSIC_ACC_RATE_STRING : DX_ACC_RATE_STRING;
+            var value = isClassic ? _accRate[0] : _accRate[4];
+            _rate.SetTextFormat(formatStr, value);
         }
         /// <summary>
         /// 计算最终达成率
@@ -943,7 +1050,7 @@ ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
         public float CalculateFinalResult()
         {
             CalAccRate();
-            return (float)accRate[2];
+            return (float)_accRate[2];
         }
         void UpdateState()
         {

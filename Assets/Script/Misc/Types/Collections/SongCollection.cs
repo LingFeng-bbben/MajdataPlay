@@ -23,12 +23,14 @@ namespace MajdataPlay.Collections
                 _index = value.Clamp(0, origin.Length - 1);
             }
         }
-        public ChartStorageType Type { get; init; } = ChartStorageType.Local;
-        public bool IsOnline => Type == ChartStorageType.Online;
+        public ChartStorageLocation Location { get; init; } = ChartStorageLocation.Local;
+        public ChartStorageType Type { get; init; } = ChartStorageType.List;
+        public bool IsOnline => Location == ChartStorageLocation.Online;
         public string Name { get; private set; }
         public bool IsSorted { get; private set; } = false;
         public int Count => sorted.Length;
         public bool IsEmpty => sorted.Length == 0;
+        public DanInfo? DanInfo { get; init; }
 
         SongDetail[] sorted;
         SongDetail[] origin;
@@ -55,6 +57,10 @@ namespace MajdataPlay.Collections
         public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
         public void SortAndFilter(SongOrder orderBy)
         {
+            if(Type == ChartStorageType.Dan)
+            {
+                return;
+            }
             IsSorted = true;
             var filtered = Filter(origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);

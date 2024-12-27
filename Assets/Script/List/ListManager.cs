@@ -143,8 +143,23 @@ namespace MajdataPlay.List
                     case SensorType.A4:
                         if (CoverListDisplayer.IsDirList)
                         {
-                            CoverListDisplayer.SwitchToSongList();
-                            MajInstances.LightManager.SetButtonLight(Color.red, 4);
+                            if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
+                            {
+                                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                                MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+                                var list = new string[] { "track_start.wav", "track_start_2.wav" };
+                                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                                MajInstances.GameManager.isDanMode = true;
+                                MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
+                                MajInstances.GameManager.DanResults.Clear();
+                                SongStorage.WorkingCollection.Index = 0;
+                                MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                            }
+                            else
+                            {
+                                CoverListDisplayer.SwitchToSongList();
+                                MajInstances.LightManager.SetButtonLight(Color.red, 4);
+                            }
                         }
                         else
                         {
