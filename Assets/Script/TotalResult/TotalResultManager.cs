@@ -9,6 +9,7 @@ using MajdataPlay.Types;
 using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
+using MajdataPlay;
 
 public class TotalResultManager : MonoBehaviour
 {
@@ -27,10 +28,18 @@ public class TotalResultManager : MonoBehaviour
         var life = MajInstances.GameManager.DanHP;
         Life.text = "LIFE\n" + life.ToString();
         Title.text = name;
-        for (int i = 0; i < results.Count; i++)
+        for (int i = 0; i < songInfos.Length; i++)
         {
             GameObject songInfo = Instantiate(resultPrefab, resultPrefabParent);
-            songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], results[i], (ChartLevel)levels[i]);
+            var result = new GameResult();
+            if (i < results.Count)
+            {
+                result = results[i];
+            }
+            else if (i == results.Count) {
+                result = (GameResult)GameManager.LastGameResult;
+            }
+            songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
         }
         DelayBind().Forget();
     }

@@ -377,8 +377,8 @@ namespace MajdataPlay.Game
             {
                 Acc = new()
                 {
-                    DX = accRate[3],
-                    Classic = accRate[1]
+                    DX = accRate[4],
+                    Classic = accRate[0]
                 },
                 SongInfo = song,
                 ChartLevel = level,
