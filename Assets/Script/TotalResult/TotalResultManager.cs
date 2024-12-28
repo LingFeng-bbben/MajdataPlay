@@ -41,6 +41,8 @@ public class TotalResultManager : MonoBehaviour
             }
             songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
         }
+        SongStorage.WorkingCollection.Reset();
+        MajInstances.GameManager.isDanMode = false;
         DelayBind().Forget();
     }
 
