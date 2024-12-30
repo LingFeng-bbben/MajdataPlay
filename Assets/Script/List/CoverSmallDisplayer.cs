@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Types;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,6 +38,8 @@ namespace MajdataPlay.List
         GameObject _gameObject;
         Transform _transform;
         RectTransform _rectTransform;
+
+        readonly CancellationTokenSource _cts = new();
 
         static int HIDDEN_LAYER = 3;
         static int UI_LAYER = 5;
@@ -101,12 +104,17 @@ namespace MajdataPlay.List
                 }
             }
         }
+        void OnDestroy()
+        {
+            _cts.Cancel();
+        }
         async UniTaskVoid SetCoverAsync(SongDetail detail)
         {
-            var spriteTask = detail.GetSpriteAsync();
+            var spriteTask = detail.GetSpriteAsync(_cts.Token);
             //TODO:set the cover to be now loading?
             while (!spriteTask.IsCompleted)
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, _cts.Token);
+            _cts.Token.ThrowIfCancellationRequested();
             Cover.sprite = spriteTask.Result;
         }
     }

@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -208,7 +209,7 @@ namespace MajdataPlay.Types
             return string.Empty;
         }
 
-        public async Task<Sprite> GetSpriteAsync()
+        public async Task<Sprite> GetSpriteAsync(CancellationToken ct = default)
         {
             if (SongCover != null)
             {
@@ -223,12 +224,12 @@ namespace MajdataPlay.Types
             if (IsOnline)
             {
                 Debug.Log("Try load cover online" + CoverPath);
-                SongCover = await SpriteLoader.LoadOnlineAsync(CoverPath);
+                SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
                 return SongCover;
             }
             else
             {
-                SongCover = await SpriteLoader.LoadAsync(CoverPath);
+                SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
                 return SongCover;
             }
 

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -5,10 +6,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.List
 {
     public class CoverBigDisplayer : MonoBehaviour
@@ -24,6 +26,8 @@ namespace MajdataPlay.List
         public TMP_Text ClearMark;
 
         public Color[] diffColors = new Color[6];
+
+        CancellationTokenSource? _cts = null;
 
         private void Start()
         {
@@ -56,22 +60,26 @@ namespace MajdataPlay.List
         }
         public void SetCover(SongDetail detail)
         {
-            StopAllCoroutines();
-            StartCoroutine(SetCoverAsync(detail));
+            if(_cts is not null)
+                _cts.Cancel();
+            _cts = new();
+            SetCoverAsync(detail, _cts.Token).Forget();
         }
         public void SetNoCover()
         {
             Cover.sprite = null;
         }
-
-        IEnumerator SetCoverAsync(SongDetail detail)
+        void OnDestroy()
         {
-            var spriteTask = detail.GetSpriteAsync();
+            _cts?.Cancel();    
+        }
+        async UniTaskVoid SetCoverAsync(SongDetail detail, CancellationToken ct = default)
+        {
+            var spriteTask = detail.GetSpriteAsync(ct);
             //TODO:set the cover to be now loading?
             while (!spriteTask.IsCompleted)
-            {
-                yield return new WaitForEndOfFrame();
-            }
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct);
+            ct.ThrowIfCancellationRequested();
             Cover.sprite = spriteTask.Result;
         }
 
