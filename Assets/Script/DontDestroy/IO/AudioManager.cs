@@ -51,17 +51,26 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Asio:
                     {
                         Debug.Log("Bass Init " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+                        var asiocount = BassAsio.DeviceCount;
+                        for(int i=0; i < asiocount; i++)
+                        {
+                            BassAsio.GetDeviceInfo(i, out var info);
+                            Debug.Log("ASIO Device "+i+": "+info.Name);
+                        }
+
                         asioProcedure = (input, channel, buffer, length, _) =>
                         {
                             if (BassGlobalMixer == -114514)
                                 return 0;
-                            //Debug.Log("wasapi get");
+                            if (Bass.LastError != Errors.OK)
+                                Debug.LogError(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
                         Debug.Log("Asio Init " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
                         BassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        BassAsio.ChannelEnable(false, 0, asioProcedure);
+                        BassAsio.ChannelEnableBass(false,0,BassGlobalMixer,true);
+
                         BassAsio.Start();
                     }
                     break;
@@ -74,12 +83,18 @@ namespace MajdataPlay.IO
                         {
                             if (BassGlobalMixer == -114514)
                                 return 0;
-                            //Debug.Log(Bass.ChannelGetLevel(BassGlobalMixer));
-                            //Debug.Log(Bass.LastError);
+                            if(Bass.LastError != Errors.OK)
+                                Debug.LogError(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
 
-                        Debug.Log("Wasapi Init " + BassWasapi.Init(-1, Procedure: wasapiProcedure, Buffer: 0f, Period: 0f));
+                        Debug.Log("Wasapi Init " + BassWasapi.Init(
+                            -1, 0,0,
+                            WasapiInitFlags.Exclusive|WasapiInitFlags.EventDriven|WasapiInitFlags.Async|WasapiInitFlags.Raw,
+                            0.02f, //buffer
+                            0.005f, //peried
+                            wasapiProcedure));
+                        Debug.Log(Bass.LastError);
                         BassWasapi.GetInfo(out var wasapiInfo);
                         BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);

@@ -683,11 +683,11 @@ namespace MajdataPlay.Game
                 _audioTime = timeOffset - chartOffset;
                 _audioTimeNoOffset = timeOffset;
 
-                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime);
-                if (Math.Abs(realTimeDifference) > 0.02f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
+                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime)*PlaybackSpeed;
+                _errText.text = String.Format("Diff{0:F4}",Math.Abs(realTimeDifference));
+                if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
                 {
-                    _errText.text = "修正音频哟\n" + realTimeDifference;
-                    _audioStartTime -= realTimeDifference * 0.8f;
+                    _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 }
             }
         }

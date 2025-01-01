@@ -6,12 +6,13 @@ using ManagedBass.Mix;
 using Live2D.Cubism.Framework.Json;
 using ManagedBass.Fx;
 using System.Threading;
+using System.Drawing.Text;
+using MajdataPlay.Net;
 #nullable enable
 namespace MajdataPlay.IO
 {
     public class BassAudioSample : AudioSampleWrap
     {
-        private int _stream = -1;
         private int _decode = -1;
         private double _length = 0;
         private int _resampler = -1;
@@ -21,25 +22,25 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return Bass.ChannelHasFlag(_stream, BassFlags.Loop);
+                return Bass.ChannelHasFlag(_decode, BassFlags.Loop);
             }
             set
             {
                 if (value)
                 {
-                    if (!Bass.ChannelHasFlag(_stream, BassFlags.Loop))
-                        Bass.ChannelAddFlag(_stream, BassFlags.Loop);
+                    if (!Bass.ChannelHasFlag(_decode, BassFlags.Loop))
+                        Bass.ChannelAddFlag(_decode, BassFlags.Loop);
                 }else
                 {
-                    if (Bass.ChannelHasFlag(_stream, BassFlags.Loop))
-                        Bass.ChannelRemoveFlag(_stream, BassFlags.Loop);
+                    if (Bass.ChannelHasFlag(_decode, BassFlags.Loop))
+                        Bass.ChannelRemoveFlag(_decode, BassFlags.Loop);
                 }
             }
         }
         public override double CurrentSec
         {
-            get => Bass.ChannelBytes2Seconds(_stream, Bass.ChannelGetPosition(_stream));
-            set => Bass.ChannelSetPosition(_stream,Bass.ChannelSeconds2Bytes(_stream,value));
+            get => Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
+            set => Bass.ChannelSetPosition(_decode,Bass.ChannelSeconds2Bytes(_decode, value));
         }
         public override float Volume
         {
@@ -52,45 +53,53 @@ namespace MajdataPlay.IO
             get
             {
                 if (_isSpeedChangeSupported)
-                    return (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Tempo) / 100f + 1f;
+                    return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Tempo) / 100f + 1f;
                 else
                     return 1f;
             }
             set
             {
                 if (_isSpeedChangeSupported)
-                    Bass.ChannelSetAttribute(_stream, ChannelAttribute.Tempo, (value - 1) * 100f);
+                    Bass.ChannelSetAttribute(_decode, ChannelAttribute.Tempo, (value - 1) * 100f);
                 else
                     return;
             }
         }
 
         public override TimeSpan Length => TimeSpan.FromSeconds(_length);
-        public override bool IsPlaying => Bass.ChannelIsActive(_stream) == PlaybackState.Playing;
+        public override bool IsPlaying => _isPlaying;
+        private bool _isPlaying = false;
         public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
             if (path.StartsWith("http"))
             {
                 Debug.Log("Load Online Stream "+ path);
-                _stream = Bass.CreateStream(path, 0, 0, null);
-                var bytelength = Bass.ChannelGetLength(_stream);
-                _length = Bass.ChannelBytes2Seconds(_stream, bytelength);
+                var client = HttpTransporter.ShareClient;
+                var task = client.GetByteArrayAsync(path);
+                task.Wait();
+                var buf = task.Result;
+                _decode = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+                Debug.Log(_decode);
+                Debug.Log(Bass.LastError);
+                var bytelength = Bass.ChannelGetLength(_decode);
+                _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
                 Volume = 1;
             }
             else
             {
-                _decode = Bass.CreateStream(path, 0, 0, BassFlags.Decode|BassFlags.Prescan);
+                var buf = System.IO.File.ReadAllBytes(path);
+                var decode_orig = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 if (speedChange)
                 {
                     //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
-                    _stream = BassFx.TempoCreate(_decode,BassFlags.Default);
+                    _decode = BassFx.TempoCreate(decode_orig, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 }
                 else
                 {
-                    _stream = Bass.CreateStream(path, 0, 0, BassFlags.Prescan);
+                    _decode = decode_orig;
                 }
                 _isSpeedChangeSupported = speedChange;
-                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Buffer, 0);
+               Bass.ChannelSetAttribute(_decode, ChannelAttribute.Buffer, 0);
 
                 //scan the peak here
                 var bytelength = Bass.ChannelGetLength(_decode);
@@ -106,11 +115,12 @@ namespace MajdataPlay.IO
                     _gain = 1 / channelmax;
                     Volume = 1;
                 }
-                Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
+                
             }
+            Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
-            //Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
+            Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
             BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default | BassFlags.MixerChanPause);
             Debug.Log(Bass.LastError);
             Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
@@ -126,30 +136,27 @@ namespace MajdataPlay.IO
         public override void Play()
         {
             BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
+            _isPlaying = true;
         }
         public override void Pause()
         {
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            _isPlaying = false;
         }
         public override void Stop()
         {
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             Bass.ChannelSetPosition(_decode, 0);
+            _isPlaying = false;
         }
         public override void Dispose()
         {
-            if(_resampler != -1)
+            _isPlaying = false;
+            if (_resampler != -1)
             {
                 BassMix.MixerRemoveChannel(_resampler);
                 Bass.ChannelStop(_resampler);
                 Bass.StreamFree(_resampler);
-            }
-            
-            if(_stream != -1)
-            {
-                BassMix.MixerRemoveChannel(_stream);
-                Bass.ChannelStop(_stream);
-                Bass.StreamFree(_stream);
             }
 
             if (_decode != -1)
