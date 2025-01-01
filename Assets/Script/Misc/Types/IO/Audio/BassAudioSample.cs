@@ -43,8 +43,8 @@ namespace MajdataPlay.IO
         }
         public override float Volume
         {
-            get => (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Volume);
-            set => Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, value.Clamp(0, 2)*_gain) ;
+            get => (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
+            set => Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, value.Clamp(0, 2)*_gain) ;
         }
         public override float Speed 
         {
@@ -109,30 +109,32 @@ namespace MajdataPlay.IO
                 Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
             }
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
-            _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
-            Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
-            BassMix.MixerAddChannel(_stream, _resampler, BassFlags.Default);
+            _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
+            //Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
+            BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default | BassFlags.MixerChanPause);
+            Debug.Log(Bass.LastError);
             Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
         }
         ~BassAudioSample() => Dispose();
 
         public override void PlayOneShot()
         {
-            Bass.ChannelPlay(_stream,true);
+            BassMix.ChannelSetPosition(_decode, 0);
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
         }
         public override void SetVolume(float volume) => Volume = volume;
         public override void Play()
         {
-            Bass.ChannelPlay(_stream);
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
         }
         public override void Pause()
         {
-            Bass.ChannelPause(_stream);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
         }
         public override void Stop()
         {
-            Bass.ChannelStop(_stream);
-            Bass.ChannelSetPosition(_stream, 0);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            Bass.ChannelSetPosition(_decode, 0);
         }
         public override void Dispose()
         {

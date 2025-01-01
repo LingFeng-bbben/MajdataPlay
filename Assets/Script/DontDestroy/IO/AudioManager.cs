@@ -50,7 +50,7 @@ namespace MajdataPlay.IO
             {
                 case SoundBackendType.Asio:
                     {
-                        Debug.Log("Bass Init " + Bass.Init(-1, sampleRate, Bass.NoSoundDevice));
+                        Debug.Log("Bass Init " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
                         asioProcedure = (input, channel, buffer, length, _) =>
                         {
                             if (BassGlobalMixer == -114514)
@@ -68,13 +68,14 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
-                        Debug.Log("Bass Init " + Bass.Init(-1, sampleRate,Bass.NoSoundDevice));
+                        Debug.Log("Bass Init " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
                         wasapiProcedure = (buffer, length, _) =>
                         {
                             if (BassGlobalMixer == -114514)
                                 return 0;
-                            //Debug.Log("wasapi get");
+                            //Debug.Log(Bass.ChannelGetLevel(BassGlobalMixer));
+                            //Debug.Log(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
 
