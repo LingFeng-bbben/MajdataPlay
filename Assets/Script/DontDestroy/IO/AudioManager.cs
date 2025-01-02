@@ -50,12 +50,12 @@ namespace MajdataPlay.IO
             {
                 case SoundBackendType.Asio:
                     {
-                        Debug.Log("Bass Init " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
-                        var asiocount = BassAsio.DeviceCount;
-                        for(int i=0; i < asiocount; i++)
+                        Debug.Log("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+                        var asioCount = BassAsio.DeviceCount;
+                        for (int i = 0; i < asioCount; i++) 
                         {
                             BassAsio.GetDeviceInfo(i, out var info);
-                            Debug.Log("ASIO Device "+i+": "+info.Name);
+                            Debug.Log("ASIO Device " + i + ": " + info.Name);
                         }
 
                         asioProcedure = (input, channel, buffer, length, _) =>
@@ -66,10 +66,12 @@ namespace MajdataPlay.IO
                                 Debug.LogError(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
-                        Debug.Log("Asio Init " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
-                        BassGlobalMixer = BassMix.CreateMixerStream(44100, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                        
+                        Debug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        BassAsio.Rate = sampleRate;
+                        BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        BassAsio.ChannelEnableBass(false,0,BassGlobalMixer,true);
+                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
 
                         BassAsio.Start();
                     }
@@ -77,7 +79,7 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
-                        Debug.Log("Bass Init " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
+                        Debug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
                         wasapiProcedure = (buffer, length, _) =>
                         {
@@ -88,9 +90,9 @@ namespace MajdataPlay.IO
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
 
-                        Debug.Log("Wasapi Init " + BassWasapi.Init(
-                            -1, 0,0,
-                            WasapiInitFlags.Exclusive|WasapiInitFlags.EventDriven|WasapiInitFlags.Async|WasapiInitFlags.Raw,
+                        Debug.Log("Wasapi Init: " + BassWasapi.Init(
+                            -1, 0, 0,
+                            WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
                             0.02f, //buffer
                             0.005f, //peried
                             wasapiProcedure));
