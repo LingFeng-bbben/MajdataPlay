@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using ManagedBass;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -33,13 +34,14 @@ public class PreviewSoundPlayer : MonoBehaviour
         var trackPath = info.TrackPath ?? string.Empty;
         if (!File.Exists(trackPath) && !info.IsOnline)
             throw new AudioTrackNotFoundException(trackPath);
-        using (var previewSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath))
+        using (var previewSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath,speedChange:true))
         {
             if (previewSample is null)
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
             //set sample.CurrentSec Not implmented
             previewSample.IsLoop = true;
+            previewSample.CurrentSec = 0;
             previewSample.Play();
             token.ThrowIfCancellationRequested();
             await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);
