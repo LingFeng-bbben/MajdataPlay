@@ -69,16 +69,17 @@ namespace MajdataPlay.IO
 
         public override TimeSpan Length => TimeSpan.FromSeconds(_length);
         public override bool IsPlaying => !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
+
         public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
             if (path.StartsWith("http"))
             {
                 Debug.Log("Load Online Stream "+ path);
-                var client = HttpTransporter.ShareClient;
-                var task = client.GetByteArrayAsync(path);
-                task.Wait();
-                var buf = task.Result;
-                _decode = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+                //var client = HttpTransporter.ShareClient;
+                //var task = client.GetByteArrayAsync(path);
+                //task.Wait();
+                //var buf = task.Result;
+                _decode = Bass.CreateStream(path, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
                 Debug.Log(_decode);
                 Debug.Log(Bass.LastError);
                 var bytelength = Bass.ChannelGetLength(_decode);
