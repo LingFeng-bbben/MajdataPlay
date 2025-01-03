@@ -73,7 +73,7 @@ namespace MajdataPlay.IO
             _audioClip.UnloadAudioData();
             UnityEngine.Object.Destroy(_audioSource);
         }
-        public static UnityAudioSample ReadFromFile(string filePath, GameObject gameObject)
+        public static UnityAudioSample Create(string filePath, GameObject gameObject)
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
             {
@@ -83,7 +83,7 @@ namespace MajdataPlay.IO
                 return new UnityAudioSample(myClip, gameObject);
             }
         }
-        public static async UniTask<UnityAudioSample> ReadFromFileAsync(string filePath, GameObject gameObject)
+        public static async UniTask<UnityAudioSample> CreateAsync(string filePath, GameObject gameObject)
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
             {

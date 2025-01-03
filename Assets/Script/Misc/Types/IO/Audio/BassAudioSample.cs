@@ -9,6 +9,9 @@ using System.Threading;
 using System.Drawing.Text;
 using MajdataPlay.Net;
 using Cysharp.Threading.Tasks;
+using System.IO;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -69,65 +72,85 @@ namespace MajdataPlay.IO
 
         public override TimeSpan Length => TimeSpan.FromSeconds(_length);
         public override bool IsPlaying => !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
-
-        public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
+        public BassAudioSample(int decode, int globalMixer,double gain, bool speedChange = false)
         {
-            if (path.StartsWith("http"))
-            {
-                Debug.Log("Load Online Stream "+ path);
-                //var client = HttpTransporter.ShareClient;
-                //var task = client.GetByteArrayAsync(path);
-                //task.Wait();
-                //var buf = task.Result;
-                _decode = Bass.CreateStream(path, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
-                Debug.Log(_decode);
-                Debug.Log(Bass.LastError);
-                var bytelength = Bass.ChannelGetLength(_decode);
-                _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
-                Volume = 1;
-            }
-            else
-            {
-                var buf = System.IO.File.ReadAllBytes(path);
-                var decode_orig = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-                if (speedChange)
-                {
-                    //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
-                    _decode = BassFx.TempoCreate(decode_orig, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-                }
-                else
-                {
-                    _decode = decode_orig;
-                }
-                _isSpeedChangeSupported = speedChange;
-               Bass.ChannelSetAttribute(_decode, ChannelAttribute.Buffer, 0);
+            if(decode is 0 || globalMixer is 0)
+                throw new ArgumentException(nameof(decode));
+            
 
-                //scan the peak here
-                var bytelength = Bass.ChannelGetLength(_decode);
-                _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
-                if (normalize)
-                {
-                    double channelmax = 0;
-                    while (Bass.ChannelGetPosition(_decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
-                    {
-                        var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(_decode)) / 32768;
-                        if (level > channelmax) channelmax = level;
-                    }
-                    _gain = 1 / channelmax;
-                    Volume = 1;
-                }
-                
-            }
+            _decode = decode;
+            _gain = gain;
+            _isSpeedChangeSupported = speedChange;
+            _length = Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetLength(_decode));
+
             Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
             var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
             _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
             Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
-            BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default);
+            BassMix.MixerAddChannel(_resampler, _decode, BassFlags.Default);
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             //Bass.ChannelStop(_decode);
             Debug.Log(Bass.LastError);
-            Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
+            Debug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }
+        //public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
+        //{
+        //    if (path.StartsWith("http"))
+        //    {
+        //        Debug.Log("Load Online Stream "+ path);
+        //        //var client = HttpTransporter.ShareClient;
+        //        //var task = client.GetByteArrayAsync(path);
+        //        //task.Wait();
+        //        //var buf = task.Result;
+        //        _decode = Bass.CreateStream(path, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
+        //        Debug.Log(_decode);
+        //        Debug.Log(Bass.LastError);
+        //        var bytelength = Bass.ChannelGetLength(_decode);
+        //        _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
+        //        Volume = 1;
+        //    }
+        //    else
+        //    {
+        //        var buf = System.IO.File.ReadAllBytes(path);
+        //        var decode_orig = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+        //        if (speedChange)
+        //        {
+        //            //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
+        //            _decode = BassFx.TempoCreate(decode_orig, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+        //        }
+        //        else
+        //        {
+        //            _decode = decode_orig;
+        //        }
+        //        _isSpeedChangeSupported = speedChange;
+        //       Bass.ChannelSetAttribute(_decode, ChannelAttribute.Buffer, 0);
+
+        //        //scan the peak here
+        //        var bytelength = Bass.ChannelGetLength(_decode);
+        //        _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
+        //        if (normalize)
+        //        {
+        //            double channelmax = 0;
+        //            while (Bass.ChannelGetPosition(_decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+        //            {
+        //                var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(_decode)) / 32768;
+        //                if (level > channelmax) channelmax = level;
+        //            }
+        //            _gain = 1 / channelmax;
+        //            Volume = 1;
+        //        }
+                
+        //    }
+        //    Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
+        //    var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
+        //    _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
+        //    Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
+        //    BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default);
+        //    BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+        //    //Bass.ChannelStop(_decode);
+        //    Debug.Log(Bass.LastError);
+        //    Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
+        //}
         ~BassAudioSample() => Dispose();
 
         public override void PlayOneShot()
@@ -167,6 +190,61 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
+        }
+        static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
+        {
+            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            if (speedChange)
+            {
+                //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
+                decode = BassFx.TempoCreate(decode, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            }
+            Bass.ChannelSetAttribute(decode, ChannelAttribute.Buffer, 0);
+
+            //scan the peak here
+            var bytelength = Bass.ChannelGetLength(decode);
+            var gain = 1d;
+            if (normalize)
+            {
+                double channelmax = 0;
+                while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                {
+                    var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
+                    if (level > channelmax) channelmax = level;
+                }
+                gain = 1 / channelmax;
+            }
+
+            var sample = new BassAudioSample(decode, globalMixer, gain, speedChange);
+            sample.Volume = 1;
+
+            return sample;
+        }
+        public static BassAudioSample Create(string path, int globalMixer, bool normalize = true, bool speedChange = false)
+        {
+            Debug.Log($"Create Channel From: {path}");
+            var buf = File.ReadAllBytes(path);
+
+            return Create(buf, globalMixer, normalize, speedChange);
+        }
+        public static async ValueTask<BassAudioSample> CreateAsync(string path, int globalMixer, bool normalize = true, bool speedChange = false)
+        {
+            Debug.Log($"Create Channel From: {path}");
+            var buf = await File.ReadAllBytesAsync(path);
+
+            return Create(buf, globalMixer, normalize, speedChange);
+        }
+        public static BassAudioSample CreateFromUri(Uri uri, int globalMixer)
+        {
+            Debug.Log($"Create Channel From: {uri}");
+            var decode = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
+            Debug.Log(decode);
+            Debug.Log(Bass.LastError);
+
+            var sample = new BassAudioSample(decode, globalMixer, 1, false);
+            sample.Volume = 1;
+
+            return sample;
         }
     }
 }
