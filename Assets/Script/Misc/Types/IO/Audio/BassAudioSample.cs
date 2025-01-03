@@ -68,8 +68,7 @@ namespace MajdataPlay.IO
         }
 
         public override TimeSpan Length => TimeSpan.FromSeconds(_length);
-        public override bool IsPlaying => Bass.ChannelIsActive(_decode) == PlaybackState.Playing;
-        private bool _isPlaying = false;
+        public override bool IsPlaying => !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
         public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
             if (path.StartsWith("http"))
@@ -123,7 +122,8 @@ namespace MajdataPlay.IO
             _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
             Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
             BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default);
-            Bass.ChannelStop(_decode);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelStop(_decode);
             Debug.Log(Bass.LastError);
             Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
         }
@@ -132,29 +132,29 @@ namespace MajdataPlay.IO
         public override void PlayOneShot()
         {
             BassMix.ChannelSetPosition(_decode, 0);
-            Bass.ChannelPlay(_decode);
-            //BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelPlay(_decode);
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
         }
         public override void SetVolume(float volume) => Volume = volume;
         public override void Play()
         {
-            //BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
-            Bass.ChannelPlay(_decode);
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelPlay(_decode);
         }
         public override void Pause()
         {
-            //BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-            Bass.ChannelPause(_decode);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelPause(_decode);
         }
         public override void Stop()
         {
-            //BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             Bass.ChannelSetPosition(_decode, 0);
-            Bass.ChannelStop(_decode);
+            //Bass.ChannelStop(_decode);
         }
         public override void Dispose()
         {
-            //BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             if (_resampler != -1)
             {
                 BassMix.MixerRemoveChannel(_resampler);
