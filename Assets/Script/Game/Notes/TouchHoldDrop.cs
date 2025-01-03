@@ -212,7 +212,7 @@ namespace MajdataPlay.Game.Notes
                 Result = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
-                Diff = _judgeDiff
+                Diff = _judgeDiff,
             };
             //_pointObject.SetActive(false);
             SetActive(false);
@@ -540,6 +540,8 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
+            //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
+            //Debug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _audioEffMana.PlayTouchHoldSound();
             _borderRenderer.sprite = board_On;
