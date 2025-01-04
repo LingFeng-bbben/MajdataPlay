@@ -15,6 +15,7 @@ public class TotalResultManager : MonoBehaviour
 {
     public GameObject resultPrefab;
     public Transform resultPrefabParent;
+    public TextMeshProUGUI initLife;
     public TextMeshProUGUI Life;
     public TextMeshProUGUI Title;
     // Start is called before the first frame update
@@ -26,6 +27,7 @@ public class TotalResultManager : MonoBehaviour
         var songInfos = SongStorage.WorkingCollection.ToArray();
         var name = SongStorage.WorkingCollection.DanInfo.Name;
         var life = MajInstances.GameManager.DanHP;
+        initLife.text = "Start LIFE "+SongStorage.WorkingCollection.DanInfo.StartHP + " Restore LIFE " + SongStorage.WorkingCollection.DanInfo.RestoreHP;
         Life.text = "LIFE\n" + life.ToString();
         Title.text = name;
         for (int i = 0; i < songInfos.Length; i++)
