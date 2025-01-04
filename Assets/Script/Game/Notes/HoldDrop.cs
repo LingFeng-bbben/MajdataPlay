@@ -179,9 +179,9 @@ namespace MajdataPlay.Game.Notes
             }
             
             if (IsClassic)
-                EndJudge_Classic(ref _judgeResult);
+                _judgeResult = EndJudge_Classic(_judgeResult);
             else
-                EndJudge(ref _judgeResult);
+                _judgeResult = EndJudge(_judgeResult);
             ConvertJudgeResult(ref _judgeResult);
 
             var result = new JudgeResult()
@@ -447,60 +447,61 @@ namespace MajdataPlay.Game.Notes
             //if (IsEX)
             //    _exRenderer.size = _thisRenderer.size;
         }
-        void EndJudge(ref JudgeType result)
+        JudgeType EndJudge(in JudgeType result)
         {
             if (!_isJudged)
-                return;
+                return result;
 
             var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
-            var realityHT = Length - 0.3f - offset / 1000f;
-            var percent = MathF.Min(1, (realityHT - _playerIdleTime) / realityHT);
-            result = _judgeResult;
+            var realityHT = (Length - 0.3f - offset / 1000f).Clamp(0, Length - 0.3f);
+            var percent = ((realityHT - _playerIdleTime) / realityHT).Clamp(0, 1);
+
             if (realityHT > 0)
             {
                 if (percent >= 1f)
                 {
-                    if (_judgeResult.IsMissOrTooFast())
-                        result = JudgeType.LateGood;
-                    else if (MathF.Abs((int)_judgeResult - 7) == 6)
-                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                    if (result.IsMissOrTooFast())
+                        return JudgeType.LateGood;
+                    else if (MathF.Abs((int)result - 7) == 6)
+                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
                     else
-                        result = _judgeResult;
+                        return result;
                 }
                 else if (percent >= 0.67f)
                 {
-                    if (_judgeResult.IsMissOrTooFast())
-                        result = JudgeType.LateGood;
-                    else if (MathF.Abs((int)_judgeResult - 7) == 6)
-                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
-                    else if (_judgeResult == JudgeType.Perfect)
-                        result = (int)_judgeResult < 7 ? JudgeType.LatePerfect1 : JudgeType.FastPerfect1;
+                    if (result.IsMissOrTooFast())
+                        return JudgeType.LateGood;
+                    else if (MathF.Abs((int)result - 7) == 6)
+                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                    else if (result == JudgeType.Perfect)
+                        return (int)result < 7 ? JudgeType.LatePerfect1 : JudgeType.FastPerfect1;
                 }
                 else if (percent >= 0.33f)
                 {
-                    if (MathF.Abs((int)_judgeResult - 7) >= 6)
-                        result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                    if (MathF.Abs((int)result - 7) >= 6)
+                        return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                     else
-                        result = (int)_judgeResult < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
                 }
                 else if (percent >= 0.05f)
-                    result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                    return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 else if (percent >= 0)
                 {
-                    if (_judgeResult.IsMissOrTooFast())
-                        result = JudgeType.Miss;
+                    if (result.IsMissOrTooFast())
+                        return JudgeType.Miss;
                     else
-                        result = (int)_judgeResult < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                        return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
                 }
             }
             print($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
+            return result;
         }
-        void EndJudge_Classic(ref JudgeType result)
+        JudgeType EndJudge_Classic(in JudgeType result)
         {
             if (!_isJudged)
-                return;
+                return result;
             else if (result.IsMissOrTooFast())
-                return;
+                return result;
 
             var releaseTiming = _gpManager.AudioTime - _gameSetting.Judge.JudgeOffset;
             var diff = (Timing + Length) - releaseTiming;
@@ -521,7 +522,9 @@ namespace MajdataPlay.Game.Notes
             var num = Math.Abs(7 - (int)result);
             var endNum = Math.Abs(7 - (int)endResult);
             if (endNum > num) // 取最差判定
-                result = endResult;
+                return endResult;
+            else
+                return result;
         }
         void PlayHoldEffect()
         {
