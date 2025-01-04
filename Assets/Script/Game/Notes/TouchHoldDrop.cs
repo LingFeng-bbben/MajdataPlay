@@ -224,12 +224,19 @@ namespace MajdataPlay.Game.Notes
             if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
-            PlayJudgeSFX(result);
+            PlayJudgeSFX(new JudgeResult()
+            {
+                Result = _judgeResult,
+                IsBreak = false,
+                IsEX = false,
+                Diff = _judgeDiff
+            });
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
             _notePoolManager.Collect(this);
         }
+
         protected override void Check(object sender, InputEventArgs arg)
         {
             if (_isJudged || !_noteManager.CanJudge(QueueInfo))
@@ -586,10 +593,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (judgeResult.IsMissOrTooFast)
                 return;
-            if (judgeResult.IsBreak)
-                _audioEffMana.PlayTapSound(judgeResult);
-            else
-                _audioEffMana.PlayTouchSound();
+            _audioEffMana.PlayTapSound(judgeResult);
             if (isFirework)
                 _audioEffMana.PlayHanabiSound();
         }
