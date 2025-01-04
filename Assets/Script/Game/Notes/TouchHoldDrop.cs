@@ -384,7 +384,7 @@ namespace MajdataPlay.Game.Notes
             switch(State)
             {
                 case NoteStatus.Initialized:
-                    if ((-timing).InRange(moveDuration, wholeDuration))
+                    if (-timing < wholeDuration)
                     {
                         SetPointActive(true);
                         SetFanActive(true);
