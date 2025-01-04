@@ -585,8 +585,31 @@ namespace MajdataPlay.Game
             _audioStartTime = _timer.ElapsedSecondsAsFloat;
             Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
+            await UniTask.Delay(3000);
+            switch (MajInstances.Setting.Game.BGInfo)
+            {
+                case BGInfoType.CPCombo:
+                case BGInfoType.PCombo:
+                case BGInfoType.Combo:
+                case BGInfoType.Achievement_101:
+                case BGInfoType.Achievement_100:
+                case BGInfoType.Achievement:
+                case BGInfoType.AchievementClassical:
+                case BGInfoType.AchievementClassical_100:
+                case BGInfoType.S_Board:
+                case BGInfoType.SS_Board:
+                case BGInfoType.SSS_Board:
+                case BGInfoType.MyBest:
+                case BGInfoType.DXScore:
+                    _bgInfoHeaderAnim.SetTrigger("fadeOut");
+                    break;
+                case BGInfoType.DXScoreRank:
+                case BGInfoType.Diff:
+                    break;
+                default:
+                    return;
+            }
         }
-
         void OnDestroy()
         {
             print("GPManagerDestroy");
