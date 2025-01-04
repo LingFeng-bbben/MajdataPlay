@@ -11,38 +11,38 @@ namespace MajdataPlay.Game
         public int indexOffset;
         public int judgeOffset = 0;
 
-        public void SetResult(JudgeType result)
+        public void SetResult(JudgeGrade result)
         {
             var displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
             switch (result)
             {
-                case JudgeType.LatePerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.Perfect:
-                case JudgeType.FastPerfect1:
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.Perfect:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.FastPerfect2:
                     if (displayCP)
                         SetJustCP();
                     else
                         SetJustP();
                     break;
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
                     SetFastGr();
                     break;
-                case JudgeType.FastGood:
+                case JudgeGrade.FastGood:
                     SetFastGd();
                     break;
-                case JudgeType.LateGood:
+                case JudgeGrade.LateGood:
                     SetLateGd();
                     break;
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat:
                     SetLateGr();
                     break;
-                case JudgeType.TooFast:
+                case JudgeGrade.TooFast:
                     SetTooFast();
                     break;
                 default:

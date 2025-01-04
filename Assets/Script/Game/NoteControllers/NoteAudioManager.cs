@@ -34,50 +34,50 @@ namespace MajdataPlay.Game
                 return;
             }
 
-            switch (judgeResult.Result)
+            switch (judgeResult.Grade)
             {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
                     audioManager.PlaySFX("tap_good.wav");
                     break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
                     audioManager.PlaySFX("tap_great.wav");
                     break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
                     audioManager.PlaySFX("tap_perfect.wav");
                     break;
-                case JudgeType.Perfect:
+                case JudgeGrade.Perfect:
                     audioManager.PlaySFX("tap_perfect.wav");
                     break;
             }
         }
         void PlayBreakTapSound(in JudgeResult judgeResult)
         {
-            switch (judgeResult.Result)
+            switch (judgeResult.Grade)
             {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
                     audioManager.PlaySFX("break_tap.wav");
                     break;
-                case JudgeType.Perfect:
+                case JudgeGrade.Perfect:
                     audioManager.PlaySFX("break.wav");
                     audioManager.PlaySFX("break_tap.wav");
                     break;

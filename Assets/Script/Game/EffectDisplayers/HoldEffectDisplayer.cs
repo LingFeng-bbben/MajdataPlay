@@ -26,7 +26,7 @@ namespace MajdataPlay.Game
             effectObject.SetActive(false);
             isPlaying = false;
         }
-        public void Play(in JudgeType judgeType)
+        public void Play(in JudgeGrade judgeType)
         {
             if (isPlaying)
                 return;
@@ -34,27 +34,27 @@ namespace MajdataPlay.Game
             var material = psRenderer.material;
             switch (judgeType)
             {
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.Perfect:
                     material.SetColor("_Color", new Color(1f, 0.93f, 0.61f)); // Yellow
                     break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
                     material.SetColor("_Color", new Color(1f, 0.70f, 0.94f)); // Pink
                     break;
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
                     material.SetColor("_Color", new Color(0.56f, 1f, 0.59f)); // Green
                     break;
-                case JudgeType.TooFast:
-                case JudgeType.Miss:
+                case JudgeGrade.TooFast:
+                case JudgeGrade.Miss:
                     material.SetColor("_Color", new Color(1f, 1f, 1f)); // White
                     break;
                 default:

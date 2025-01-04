@@ -45,36 +45,36 @@ namespace MajdataPlay.Collections
             {
                 if (!kv.Key.IsMissOrTooFast())
                 {
-                    if (kv.Key > JudgeType.Perfect)
+                    if (kv.Key > JudgeGrade.Perfect)
                         fast += kv.Value;
-                    else if (kv.Key is not JudgeType.Perfect)
+                    else if (kv.Key is not JudgeGrade.Perfect)
                         late += kv.Value;
                 }
                 switch (kv.Key)
                 {
-                    case JudgeType.TooFast:
-                    case JudgeType.Miss:
+                    case JudgeGrade.TooFast:
+                    case JudgeGrade.Miss:
                         miss += kv.Value;
                         break;
-                    case JudgeType.FastGood:
-                    case JudgeType.LateGood:
+                    case JudgeGrade.FastGood:
+                    case JudgeGrade.LateGood:
                         good += kv.Value;
                         break;
-                    case JudgeType.LateGreat2:
-                    case JudgeType.LateGreat1:
-                    case JudgeType.LateGreat:
-                    case JudgeType.FastGreat:
-                    case JudgeType.FastGreat1:
-                    case JudgeType.FastGreat2:
+                    case JudgeGrade.LateGreat2:
+                    case JudgeGrade.LateGreat1:
+                    case JudgeGrade.LateGreat:
+                    case JudgeGrade.FastGreat:
+                    case JudgeGrade.FastGreat1:
+                    case JudgeGrade.FastGreat2:
                         great += kv.Value;
                         break;
-                    case JudgeType.LatePerfect2:
-                    case JudgeType.LatePerfect1:
-                    case JudgeType.FastPerfect1:
-                    case JudgeType.FastPerfect2:
+                    case JudgeGrade.LatePerfect2:
+                    case JudgeGrade.LatePerfect1:
+                    case JudgeGrade.FastPerfect1:
+                    case JudgeGrade.FastPerfect2:
                         perfect += kv.Value;
                         break;
-                    case JudgeType.Perfect:
+                    case JudgeGrade.Perfect:
                         cPerfect += kv.Value;
                         break;
                 }

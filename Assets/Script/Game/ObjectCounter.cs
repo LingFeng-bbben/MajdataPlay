@@ -81,131 +81,131 @@ namespace MajdataPlay.Game
         long _combo = 0; // Combo
         long _pCombo = 0; // Perfect Combo
         long _cPCombo = 0; // Critical Perfect
-        Dictionary<JudgeType, int> _judgedTapCount = new()
+        Dictionary<JudgeGrade, int> _judgedTapCount = new()
         { 
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _judgedHoldCount = new()
+        Dictionary<JudgeGrade, int> _judgedHoldCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _judgedTouchCount = new()
+        Dictionary<JudgeGrade, int> _judgedTouchCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _judgedTouchHoldCount = new()
+        Dictionary<JudgeGrade, int> _judgedTouchHoldCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _judgedSlideCount = new()
+        Dictionary<JudgeGrade, int> _judgedSlideCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _judgedBreakCount = new()
+        Dictionary<JudgeGrade, int> _judgedBreakCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
-        Dictionary<JudgeType, int> _totalJudgedCount = new()
+        Dictionary<JudgeGrade, int> _totalJudgedCount = new()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         };
 
         OutlineLoader _outline;
@@ -479,7 +479,7 @@ namespace MajdataPlay.Game
         }
         NoteScore GetNoteScoreSum()
         {
-            Dictionary<JudgeType, int> collection = null;
+            Dictionary<JudgeGrade, int> collection = null;
             long score = 0;
             long lostScore = 0;
             long extraScore = 0;
@@ -520,29 +520,29 @@ namespace MajdataPlay.Game
                     var count = judgeResult.Value;
                     switch (judgeResult.Key)
                     {
-                        case JudgeType.LatePerfect2:
-                        case JudgeType.LatePerfect1:
-                        case JudgeType.Perfect:
-                        case JudgeType.FastPerfect1:
-                        case JudgeType.FastPerfect2:
+                        case JudgeGrade.LatePerfect2:
+                        case JudgeGrade.LatePerfect1:
+                        case JudgeGrade.Perfect:
+                        case JudgeGrade.FastPerfect1:
+                        case JudgeGrade.FastPerfect2:
                             score += baseScore * 1 * count;
                             break;
-                        case JudgeType.LateGreat2:
-                        case JudgeType.LateGreat1:
-                        case JudgeType.LateGreat:
-                        case JudgeType.FastGreat:
-                        case JudgeType.FastGreat1:
-                        case JudgeType.FastGreat2:
+                        case JudgeGrade.LateGreat2:
+                        case JudgeGrade.LateGreat1:
+                        case JudgeGrade.LateGreat:
+                        case JudgeGrade.FastGreat:
+                        case JudgeGrade.FastGreat1:
+                        case JudgeGrade.FastGreat2:
                             score += (long)(baseScore * 0.8) * count;
                             lostScore += (long)(baseScore * 0.2) * count;
                             break;
-                        case JudgeType.LateGood:
-                        case JudgeType.FastGood:
+                        case JudgeGrade.LateGood:
+                        case JudgeGrade.FastGood:
                             score += (long)(baseScore * 0.5) * count;
                             lostScore += (long)(baseScore * 0.5) * count;
                             break;
-                        case JudgeType.TooFast:
-                        case JudgeType.Miss:
+                        case JudgeGrade.TooFast:
+                        case JudgeGrade.Miss:
                             lostScore += baseScore * count;
                             break;
                     }
@@ -553,29 +553,29 @@ namespace MajdataPlay.Game
                 var count = judgeResult.Value;
                 switch (judgeResult.Key)
                 {
-                    case JudgeType.Perfect:
+                    case JudgeGrade.Perfect:
                         score += 2500 * count;
                         extraScore += 100 * count;
                         extraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.LatePerfect1:
-                    case JudgeType.FastPerfect1:
+                    case JudgeGrade.LatePerfect1:
+                    case JudgeGrade.FastPerfect1:
                         score += 2500 * count;
                         extraScore += 75 * count;
                         extraScoreClassic += 50 * count;
                         lostExtraScore += 25 * count;
                         lostExtraScoreClassic += 50 * count;
                         break;
-                    case JudgeType.LatePerfect2:
-                    case JudgeType.FastPerfect2:
+                    case JudgeGrade.LatePerfect2:
+                    case JudgeGrade.FastPerfect2:
                         score += 2500 * count;
                         extraScore += 50 * count;
                         extraScoreClassic += 0 * count;
                         lostExtraScore += 50 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.LateGreat:
-                    case JudgeType.FastGreat:
+                    case JudgeGrade.LateGreat:
+                    case JudgeGrade.FastGreat:
                         score += 2000 * count;
                         extraScore += 40 * count;
                         extraScoreClassic += 0 * count;
@@ -583,8 +583,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 60 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.LateGreat1:
-                    case JudgeType.FastGreat1:
+                    case JudgeGrade.LateGreat1:
+                    case JudgeGrade.FastGreat1:
                         score += 1500 * count;
                         extraScore += 40 * count;
                         extraScoreClassic += 0 * count;
@@ -592,8 +592,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 60 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.LateGreat2:
-                    case JudgeType.FastGreat2:
+                    case JudgeGrade.LateGreat2:
+                    case JudgeGrade.FastGreat2:
                         score += 1250 * count;
                         extraScore += 40 * count;
                         extraScoreClassic += 0 * count;
@@ -601,8 +601,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 60 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.LateGood:
-                    case JudgeType.FastGood:
+                    case JudgeGrade.LateGood:
+                    case JudgeGrade.FastGood:
                         score += 1000 * count;
                         extraScore += 30 * count;
                         extraScoreClassic += 0 * count;
@@ -610,8 +610,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 70 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeType.TooFast:
-                    case JudgeType.Miss:
+                    case JudgeGrade.TooFast:
+                    case JudgeGrade.Miss:
                         score += 0 * count;
                         extraScore += 0 * count;
                         extraScoreClassic += 0 * count;
@@ -646,7 +646,7 @@ namespace MajdataPlay.Game
         internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
         {
             var noteType = GetNoteType(note);
-            var result = judgeResult.Result;
+            var result = judgeResult.Grade;
             var isBreak = judgeResult.IsBreak;
             var isSlide = false;
 
@@ -737,41 +737,41 @@ namespace MajdataPlay.Game
 
             switch (result)
             {
-                case JudgeType.TooFast:
-                case JudgeType.Miss:
+                case JudgeGrade.TooFast:
+                case JudgeGrade.Miss:
                     _missCount++;
                     _combo = 0;
                     _cPCombo = 0;
                     _pCombo = 0;
                     _lostDXScore -= 3;
                     break;
-                case JudgeType.Perfect:
+                case JudgeGrade.Perfect:
                     _cPerfectCount++;
                     _cPCombo++;
                     _pCombo++;
                     break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.FastPerfect2:
                     _cPCombo = 0;
                     _pCombo++;
                     _perfectCount++;
                     _lostDXScore -= 1;
                     break;
-                case JudgeType.LateGreat2:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat:
-                case JudgeType.FastGreat:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat2:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.FastGreat:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat2:
                     _cPCombo = 0;
                     _pCombo = 0;
                     _greatCount++;
                     _lostDXScore -= 2;
                     break;
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
                     _cPCombo = 0;
                     _pCombo = 0;
                     _goodCount++;
@@ -800,7 +800,7 @@ namespace MajdataPlay.Game
         void UpdateFastLate(in JudgeResult judgeResult)
         {
             var gameSetting = judgeResult.IsBreak ? MajInstances.Setting.Display.BreakFastLateType : MajInstances.Setting.Display.FastLateType;
-            var resultValue = (int)judgeResult.Result;
+            var resultValue = (int)judgeResult.Grade;
             var absValue = Math.Abs(7 - resultValue);
 
             switch (gameSetting)
@@ -814,7 +814,7 @@ namespace MajdataPlay.Game
                         _late++;
                     break;
                 case JudgeDisplayType.BelowCP:
-                    if (judgeResult.IsMissOrTooFast || judgeResult.Result == JudgeType.Perfect)
+                    if (judgeResult.IsMissOrTooFast || judgeResult.Grade == JudgeGrade.Perfect)
                         break;
                     else if (judgeResult.IsFast)
                         _fast++;

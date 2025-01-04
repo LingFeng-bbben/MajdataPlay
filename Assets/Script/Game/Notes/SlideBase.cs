@@ -156,13 +156,13 @@ namespace MajdataPlay.Game.Notes
 
             var result = diff switch
             {
-                _ when diff <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
-                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
-                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
-                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+                _ when diff <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
+                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat1 : JudgeGrade.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat2 : JudgeGrade.LateGreat2,
+                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
@@ -197,13 +197,13 @@ namespace MajdataPlay.Game.Notes
 
             var judge = diff switch
             {
-                <= JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
-                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
-                <= JUDGE_PERFECT_AREA => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
-                <= JUDGE_SEG_GREAT1 => isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat1 : JudgeGrade.LateGreat1,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat2 : JudgeGrade.LateGreat2,
+                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
@@ -325,9 +325,9 @@ namespace MajdataPlay.Game.Notes
         protected virtual void TooLateJudge()
         {
             if (QueueRemaining == 1)
-                _judgeResult = JudgeType.LateGood;
+                _judgeResult = JudgeGrade.LateGood;
             else
-                _judgeResult = JudgeType.Miss;
+                _judgeResult = JudgeGrade.Miss;
             ConvertJudgeResult(ref _judgeResult);
             _isJudged = true;
         }
@@ -392,15 +392,15 @@ namespace MajdataPlay.Game.Notes
                 await UniTask.Yield();
             SetSlideBarAlpha(1f);
         }
-        protected void JudgeResultCorrection(ref JudgeType result)
+        protected void JudgeResultCorrection(ref JudgeGrade result)
         {
             switch(result)
             {
-                case JudgeType.LatePerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.FastPerfect2:
-                    result = JudgeType.Perfect;
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.FastPerfect2:
+                    result = JudgeGrade.Perfect;
                     break;
             }
         }

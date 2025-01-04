@@ -16,7 +16,7 @@ namespace MajdataPlay.Types
                 return results.Count / (float)Members.Length;
             }
         }
-        public JudgeType? JudgeResult
+        public JudgeGrade? JudgeResult
         {
             get => _judgeResult;
             set
@@ -29,15 +29,15 @@ namespace MajdataPlay.Types
         }
         public float JudgeDiff { get; set; } = 0;
         public object[] Members { get; set; } = Array.Empty<IStatefulNote>();
-        List<JudgeType> results = new();
+        List<JudgeGrade> results = new();
 
-        public void RegisterResult(in JudgeType result)
+        public void RegisterResult(in JudgeGrade result)
         {
             if (result.IsMissOrTooFast())
                 return;
             results.Add(result);
         }
 
-        JudgeType? _judgeResult = null;
+        JudgeGrade? _judgeResult = null;
     }
 }

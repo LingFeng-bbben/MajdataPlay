@@ -124,7 +124,7 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             var result = new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
@@ -139,7 +139,7 @@ namespace MajdataPlay.Game.Notes
         {
             PlayJudgeSFX(new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
@@ -157,7 +157,7 @@ namespace MajdataPlay.Game.Notes
             var isTooLate = timing > 0.15f;
             if (!_isJudged && isTooLate)
             {
-                _judgeResult = JudgeType.Miss;
+                _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 End();
             }

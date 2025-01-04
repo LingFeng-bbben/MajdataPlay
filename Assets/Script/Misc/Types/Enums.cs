@@ -53,7 +53,7 @@
         D,
         E
     }
-    public enum JudgeType
+    public enum JudgeGrade
     {
         Miss,
         LateGood,

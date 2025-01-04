@@ -18,9 +18,9 @@ namespace MajdataPlay.Extensions
     public static class JudgeTypeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMissOrTooFast(this JudgeType source)
+        public static bool IsMissOrTooFast(this JudgeGrade source)
         {
-            return source is (JudgeType.Miss or JudgeType.TooFast);
+            return source is (JudgeGrade.Miss or JudgeGrade.TooFast);
         }
     }
     public static class SimaiProcessExtensions

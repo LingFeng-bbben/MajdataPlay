@@ -108,15 +108,15 @@ namespace MajdataPlay.Game.Notes
                 {
                     var autoplayParam = _gpManager.AutoplayParam;
                     if (autoplayParam.InRange(0, 14))
-                        _judgeResult = (JudgeType)autoplayParam;
+                        _judgeResult = (JudgeGrade)autoplayParam;
                     else
-                        _judgeResult = (JudgeType)_randomizer.Next(0, 15);
+                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                     ConvertJudgeResult(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = _judgeResult switch
                     {
-                        < JudgeType.Perfect => 1,
-                        > JudgeType.Perfect => -1,
+                        < JudgeGrade.Perfect => 1,
+                        > JudgeGrade.Perfect => -1,
                         _ => 0
                     };
                     PlaySFX();
@@ -186,14 +186,14 @@ namespace MajdataPlay.Game.Notes
 
             var result = new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = false,
                 IsEX = false,
                 Diff = _judgeDiff
@@ -243,7 +243,7 @@ namespace MajdataPlay.Game.Notes
         {
             PlayJudgeSFX(new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
@@ -323,7 +323,7 @@ namespace MajdataPlay.Game.Notes
             else if (isTooLate) // 头部Miss
             {
                 _judgeDiff = 150;
-                _judgeResult = JudgeType.Miss;
+                _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _noteManager.NextNote(QueueInfo);
                 if (IsClassic)
@@ -447,7 +447,7 @@ namespace MajdataPlay.Game.Notes
             //if (IsEX)
             //    _exRenderer.size = _thisRenderer.size;
         }
-        JudgeType EndJudge(in JudgeType result)
+        JudgeGrade EndJudge(in JudgeGrade result)
         {
             if (!_isJudged)
                 return result;
@@ -461,42 +461,42 @@ namespace MajdataPlay.Game.Notes
                 if (percent >= 1f)
                 {
                     if (result.IsMissOrTooFast())
-                        return JudgeType.LateGood;
+                        return JudgeGrade.LateGood;
                     else if (MathF.Abs((int)result - 7) == 6)
-                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
                     else
                         return result;
                 }
                 else if (percent >= 0.67f)
                 {
                     if (result.IsMissOrTooFast())
-                        return JudgeType.LateGood;
+                        return JudgeGrade.LateGood;
                     else if (MathF.Abs((int)result - 7) == 6)
-                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
-                    else if (result == JudgeType.Perfect)
-                        return (int)result < 7 ? JudgeType.LatePerfect1 : JudgeType.FastPerfect1;
+                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
+                    else if (result == JudgeGrade.Perfect)
+                        return (int)result < 7 ? JudgeGrade.LatePerfect1 : JudgeGrade.FastPerfect1;
                 }
                 else if (percent >= 0.33f)
                 {
                     if (MathF.Abs((int)result - 7) >= 6)
-                        return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                        return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                     else
-                        return (int)result < 7 ? JudgeType.LateGreat : JudgeType.FastGreat;
+                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
                 }
                 else if (percent >= 0.05f)
-                    return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                    return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                 else if (percent >= 0)
                 {
                     if (result.IsMissOrTooFast())
-                        return JudgeType.Miss;
+                        return JudgeGrade.Miss;
                     else
-                        return (int)result < 7 ? JudgeType.LateGood : JudgeType.FastGood;
+                        return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                 }
             }
             print($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
             return result;
         }
-        JudgeType EndJudge_Classic(in JudgeType result)
+        JudgeGrade EndJudge_Classic(in JudgeGrade result)
         {
             if (!_isJudged)
                 return result;
@@ -508,15 +508,15 @@ namespace MajdataPlay.Game.Notes
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
 
-            JudgeType endResult = diff switch
+            JudgeGrade endResult = diff switch
             {
-                <= 0.05f => JudgeType.Perfect,
-                <= 0.1f => isFast ? JudgeType.FastPerfect1 : JudgeType.LatePerfect1,
-                <= 0.15f => isFast ? JudgeType.FastPerfect2 : JudgeType.LatePerfect2,
+                <= 0.05f => JudgeGrade.Perfect,
+                <= 0.1f => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
+                <= 0.15f => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
                 //<= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
                 //<= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
                 //<= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
-                _ => isFast ? JudgeType.FastGood : JudgeType.LateGood
+                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
             var num = Math.Abs(7 - (int)result);

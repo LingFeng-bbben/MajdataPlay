@@ -16,22 +16,22 @@ namespace MajdataPlay.Types
         public int RestoreHP { get; init; } = 10;
         public bool IsPlayList { get; init; } = false;
         public bool IsForceGameover { get; init; } = false;
-        public Dictionary<JudgeType, int> Damages { get; init; } = new Dictionary<JudgeType, int> {
-            { JudgeType.Miss,-5 },
-            { JudgeType.TooFast,-5 },
-            { JudgeType.LateGood,-3 },
-            { JudgeType.FastGood,-3 },
-            { JudgeType.LateGreat,-2 },
-            { JudgeType.FastGreat,-2 },
-            { JudgeType.LateGreat1,-2 },
-            { JudgeType.FastGreat1,-2 },
-            { JudgeType.LateGreat2,-2 },
-            { JudgeType.FastGreat2,-2 },
-            { JudgeType.FastPerfect1,0 },
-            { JudgeType.LatePerfect1,0 },
-            { JudgeType.FastPerfect2,0 },
-            { JudgeType.LatePerfect2,0 },
-            { JudgeType.Perfect,0 },
+        public Dictionary<JudgeGrade, int> Damages { get; init; } = new Dictionary<JudgeGrade, int> {
+            { JudgeGrade.Miss,-5 },
+            { JudgeGrade.TooFast,-5 },
+            { JudgeGrade.LateGood,-3 },
+            { JudgeGrade.FastGood,-3 },
+            { JudgeGrade.LateGreat,-2 },
+            { JudgeGrade.FastGreat,-2 },
+            { JudgeGrade.LateGreat1,-2 },
+            { JudgeGrade.FastGreat1,-2 },
+            { JudgeGrade.LateGreat2,-2 },
+            { JudgeGrade.FastGreat2,-2 },
+            { JudgeGrade.FastPerfect1,0 },
+            { JudgeGrade.LatePerfect1,0 },
+            { JudgeGrade.FastPerfect2,0 },
+            { JudgeGrade.LatePerfect2,0 },
+            { JudgeGrade.Perfect,0 },
         };
     }
 }

@@ -170,7 +170,7 @@ namespace MajdataPlay.Game.Notes
             _multTouchHandler.Unregister(_sensorPos);
             var result = new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 Diff = _judgeDiff,
                 IsEX = IsEX,
                 IsBreak = IsBreak
@@ -254,7 +254,7 @@ namespace MajdataPlay.Game.Notes
                     if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
                     {
                         _isJudged = true;
-                        _judgeResult = (JudgeType)GroupInfo.JudgeResult;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
                         End();
                     }
@@ -262,7 +262,7 @@ namespace MajdataPlay.Game.Notes
             }
             else if (!_isJudged)
             {
-                _judgeResult = JudgeType.Miss;
+                _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 End();
             }
@@ -353,16 +353,16 @@ namespace MajdataPlay.Game.Notes
             if (diff > JUDGE_SEG_PERFECT1 && isFast)
                 return;
 
-            JudgeType result = diff switch
+            JudgeGrade result = diff switch
             {
-                < JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
-                < JUDGE_SEG_PERFECT2 => JudgeType.LatePerfect1,
-                < JUDGE_PERFECT_AREA => JudgeType.LatePerfect2,
-                < JUDGE_SEG_GREAT1 => JudgeType.LateGreat,
-                < JUDGE_SEG_GREAT2 => JudgeType.LateGreat1,
-                < JUDGE_GREAT_AREA => JudgeType.LateGreat2,
-                < JUDGE_GOOD_AREA => JudgeType.LateGood,
-                _ => JudgeType.Miss
+                < JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                < JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
+                < JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
+                < JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
+                < JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
+                < JUDGE_GREAT_AREA => JudgeGrade.LateGreat2,
+                < JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                _ => JudgeGrade.Miss
             };
 
             ConvertJudgeResult(ref result);
@@ -462,7 +462,7 @@ namespace MajdataPlay.Game.Notes
         {
             PlayJudgeSFX(new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff

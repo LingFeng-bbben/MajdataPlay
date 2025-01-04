@@ -119,15 +119,15 @@ namespace MajdataPlay.Game
         void PlayEffect(in JudgeResult judgeResult)
         {
             var isBreak = judgeResult.IsBreak;
-            var result = judgeResult.Result;
+            var result = judgeResult.Grade;
             if (!judgeResult.IsMissOrTooFast)
                 Reset();
             else
                 return;
             switch (result)
             {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
                     if (isBreak)
                     {
                         perfectDisplayer.SetActive(true);
@@ -137,12 +137,12 @@ namespace MajdataPlay.Game
                     else
                         goodDisplayer.SetActive(true);
                     break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
                     if (isBreak)
                     {
                         perfectDisplayer.SetActive(true);
@@ -155,11 +155,11 @@ namespace MajdataPlay.Game
                         greatAnim.SetTrigger("great");
                     }
                     break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.Perfect:
                     perfectDisplayer.SetActive(true);
                     if (isBreak)
                     {
@@ -226,66 +226,66 @@ namespace MajdataPlay.Game
             {
                 if(displayBreakScore)
                 {
-                    switch (judgeResult.Result)
+                    switch (judgeResult.Grade)
                     {
-                        case JudgeType.LateGood:
+                        case JudgeGrade.LateGood:
                             return canPlay && skin.Break_1000.Late is not null;
-                        case JudgeType.FastGood:
+                        case JudgeGrade.FastGood:
                             return canPlay && skin.Break_1000.Fast is not null;
 
-                        case JudgeType.LateGreat2:
+                        case JudgeGrade.LateGreat2:
                             return canPlay && skin.Break_1250.Late is not null;
-                        case JudgeType.FastGreat2:
+                        case JudgeGrade.FastGreat2:
                             return canPlay && skin.Break_1250.Fast is not null;
 
-                        case JudgeType.LateGreat1:
+                        case JudgeGrade.LateGreat1:
                             return canPlay && skin.Break_1500.Late is not null;
-                        case JudgeType.FastGreat1:
+                        case JudgeGrade.FastGreat1:
                             return canPlay && skin.Break_1500.Fast is not null;
 
-                        case JudgeType.LateGreat:
+                        case JudgeGrade.LateGreat:
                             return canPlay && skin.Break_2000.Late is not null;
-                        case JudgeType.FastGreat:
+                        case JudgeGrade.FastGreat:
                             return canPlay && skin.Break_2000.Fast is not null;
 
-                        case JudgeType.LatePerfect2:
+                        case JudgeGrade.LatePerfect2:
                             return canPlay && skin.Break_2500.Late is not null;
-                        case JudgeType.FastPerfect2:
+                        case JudgeGrade.FastPerfect2:
                             return canPlay && skin.Break_2500.Fast is not null;
 
-                        case JudgeType.LatePerfect1:
+                        case JudgeGrade.LatePerfect1:
                             return canPlay && skin.Break_2550.Late is not null;
-                        case JudgeType.FastPerfect1:
+                        case JudgeGrade.FastPerfect1:
                             return canPlay && skin.Break_2550.Fast is not null;
 
-                        case JudgeType.Perfect:
+                        case JudgeGrade.Perfect:
                             return canPlay && skin.Break_2600.Late is not null;
                     }
                 }
                 else
                 {
-                    switch (judgeResult.Result)
+                    switch (judgeResult.Grade)
                     {
-                        case JudgeType.LateGood:
+                        case JudgeGrade.LateGood:
                             return canPlay && skin.Good.Late is not null;
-                        case JudgeType.FastGood:
+                        case JudgeGrade.FastGood:
                             return canPlay && skin.Good.Fast is not null;
 
-                        case JudgeType.LateGreat:
-                        case JudgeType.LateGreat1:
-                        case JudgeType.LateGreat2:
+                        case JudgeGrade.LateGreat:
+                        case JudgeGrade.LateGreat1:
+                        case JudgeGrade.LateGreat2:
                             return canPlay && skin.Great.Late is not null;
-                        case JudgeType.FastGreat:
-                        case JudgeType.FastGreat1:
-                        case JudgeType.FastGreat2:
+                        case JudgeGrade.FastGreat:
+                        case JudgeGrade.FastGreat1:
+                        case JudgeGrade.FastGreat2:
                             return canPlay && skin.Great.Fast is not null;
-                        case JudgeType.LatePerfect1:
-                        case JudgeType.LatePerfect2:
+                        case JudgeGrade.LatePerfect1:
+                        case JudgeGrade.LatePerfect2:
                             return canPlay && skin.Perfect.Late is not null;
-                        case JudgeType.FastPerfect1:
-                        case JudgeType.FastPerfect2:
+                        case JudgeGrade.FastPerfect1:
+                        case JudgeGrade.FastPerfect2:
                             return canPlay && skin.Perfect.Fast is not null;
-                        case JudgeType.Perfect:
+                        case JudgeGrade.Perfect:
                             {
                                 var isJust = judgeResult.Diff == 0;
                                 var isFast = judgeResult.IsFast;
@@ -311,28 +311,28 @@ namespace MajdataPlay.Game
             }
             else
             {
-                switch (judgeResult.Result)
+                switch (judgeResult.Grade)
                 {
-                    case JudgeType.LateGood:
+                    case JudgeGrade.LateGood:
                         return canPlay && skin.Good.Late is not null;
-                    case JudgeType.FastGood:
+                    case JudgeGrade.FastGood:
                         return canPlay && skin.Good.Fast is not null;
 
-                    case JudgeType.LateGreat2:
-                    case JudgeType.LateGreat1:
-                    case JudgeType.LateGreat:
+                    case JudgeGrade.LateGreat2:
+                    case JudgeGrade.LateGreat1:
+                    case JudgeGrade.LateGreat:
                         return canPlay && skin.Great.Late is not null;
-                    case JudgeType.FastGreat2:
-                    case JudgeType.FastGreat1:
-                    case JudgeType.FastGreat:
+                    case JudgeGrade.FastGreat2:
+                    case JudgeGrade.FastGreat1:
+                    case JudgeGrade.FastGreat:
                         return canPlay && skin.Great.Fast is not null;
-                    case JudgeType.LatePerfect1:
-                    case JudgeType.LatePerfect2:
+                    case JudgeGrade.LatePerfect1:
+                    case JudgeGrade.LatePerfect2:
                         return canPlay && skin.Perfect.Late is not null;
-                    case JudgeType.FastPerfect1:
-                    case JudgeType.FastPerfect2:
+                    case JudgeGrade.FastPerfect1:
+                    case JudgeGrade.FastPerfect2:
                         return canPlay && skin.Perfect.Fast is not null;
-                    case JudgeType.Perfect:
+                    case JudgeGrade.Perfect:
                         {
                             if (judgeResult.Diff == 0)
                                 return false;

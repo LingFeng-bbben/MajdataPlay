@@ -310,15 +310,15 @@ namespace MajdataPlay.Game.Notes
                     HideAllBar();
                     var autoplayParam = _gpManager.AutoplayParam;
                     if (autoplayParam.InRange(0, 14))
-                        _judgeResult = (JudgeType)autoplayParam;
+                        _judgeResult = (JudgeGrade)autoplayParam;
                     else
-                        _judgeResult = (JudgeType)_randomizer.Next(0, 15);
+                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                     _isJudged = true;
                     _lastWaitTime = 0;
                     _judgeDiff = _judgeResult switch
                     {
-                        < JudgeType.Perfect => 1,
-                        > JudgeType.Perfect => -1,
+                        < JudgeGrade.Perfect => 1,
+                        > JudgeGrade.Perfect => -1,
                         _ => 0
                     };
                     return;
@@ -360,7 +360,7 @@ namespace MajdataPlay.Game.Notes
             JudgeResultCorrection(ref _judgeResult);
             var result = new JudgeResult()
             {
-                Result = _judgeResult,
+                Grade = _judgeResult,
                 Diff = _judgeDiff,
                 IsEX = IsEX,
                 IsBreak = IsBreak
@@ -373,7 +373,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     _slideOKAnim.SetTrigger("classic");
                 }
-                else if (IsBreak && _judgeResult == JudgeType.Perfect)
+                else if (IsBreak && _judgeResult == JudgeGrade.Perfect)
                 {
                     _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                 }

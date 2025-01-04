@@ -8,25 +8,25 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Collections
 {
-    public class JudgeInfo : IReadOnlyDictionary<JudgeType, int>
+    public class JudgeInfo : IReadOnlyDictionary<JudgeGrade, int>
     {
-        IReadOnlyDictionary<JudgeType, int> db;
-        public JudgeInfo(IReadOnlyDictionary<JudgeType, int> source)
+        IReadOnlyDictionary<JudgeGrade, int> db;
+        public JudgeInfo(IReadOnlyDictionary<JudgeGrade, int> source)
         {
             db = source;
         }
 
-        public int this[JudgeType key] => db[key];
+        public int this[JudgeGrade key] => db[key];
 
-        public IEnumerable<JudgeType> Keys => db.Keys;
+        public IEnumerable<JudgeGrade> Keys => db.Keys;
 
         public IEnumerable<int> Values => db.Values;
 
         public int Count => db.Count;
 
-        public bool ContainsKey(JudgeType key) => db.ContainsKey(key);
-        public IEnumerator<KeyValuePair<JudgeType, int>> GetEnumerator() => db.GetEnumerator();
-        public bool TryGetValue(JudgeType key, out int value) => db.TryGetValue(key, out value);
+        public bool ContainsKey(JudgeGrade key) => db.ContainsKey(key);
+        public IEnumerator<KeyValuePair<JudgeGrade, int>> GetEnumerator() => db.GetEnumerator();
+        public bool TryGetValue(JudgeGrade key, out int value) => db.TryGetValue(key, out value);
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)db).GetEnumerator();
 
         public static JudgeInfo operator +(JudgeInfo left, JudgeInfo right)
@@ -38,23 +38,23 @@ namespace MajdataPlay.Collections
 
             return new JudgeInfo(newRecord);
         }
-        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeType, int>()
+        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeGrade, int>()
         {
-            {JudgeType.TooFast, 0 },
-            {JudgeType.FastGood, 0 },
-            {JudgeType.FastGreat2, 0 },
-            {JudgeType.FastGreat1, 0 },
-            {JudgeType.FastGreat, 0 },
-            {JudgeType.FastPerfect2, 0 },
-            {JudgeType.FastPerfect1, 0 },
-            {JudgeType.Perfect, 0 },
-            {JudgeType.LatePerfect1, 0 },
-            {JudgeType.LatePerfect2, 0 },
-            {JudgeType.LateGreat, 0 },
-            {JudgeType.LateGreat1, 0 },
-            {JudgeType.LateGreat2, 0 },
-            {JudgeType.LateGood, 0 },
-            {JudgeType.Miss, 0 },
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
         });
     }
 }

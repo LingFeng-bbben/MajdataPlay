@@ -100,7 +100,7 @@ namespace MajdataPlay.Game
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
             var pos = (SensorType)(position - 1);
-            MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Result), position - 1);
+            MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if(!judgeResult.IsMissOrTooFast)
             {
@@ -109,12 +109,12 @@ namespace MajdataPlay.Game
             }
             _effectPool.Play(judgeResult, position);
         }
-        public void PlayHoldEffect( int keyIndex, in JudgeType judgeType)
+        public void PlayHoldEffect( int keyIndex, in JudgeGrade judgeType)
         {
             MajInstances.LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
-        public void PlayHoldEffect( SensorType sensorPos, in JudgeType judgeType)
+        public void PlayHoldEffect( SensorType sensorPos, in JudgeGrade judgeType)
         {
             _effectPool.PlayHoldEffect(judgeType, sensorPos);
         }
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game
         }
         public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
         {
-            var result = judgeResult.Result;
+            var result = judgeResult.Grade;
             var resultValue = (int)result;
             var absValue = Math.Abs(7 - resultValue);
 
@@ -160,25 +160,25 @@ namespace MajdataPlay.Game
         {
             _effectPool.Reset(position);
         }
-        public Color GetColor(JudgeType judgeType)
+        public Color GetColor(JudgeGrade judgeType)
         {
             switch (judgeType)
             {
-                case JudgeType.LateGood:
-                case JudgeType.FastGood:
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
                     return buttonGoodColor;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat2:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat:
                     return buttonGreatColor;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.Perfect:
                     return buttonPerfectColor;
                 default:
                     return Color.white;

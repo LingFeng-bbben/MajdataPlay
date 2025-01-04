@@ -154,12 +154,12 @@ namespace MajdataPlay.Game
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
         }
-        public void PlayHoldEffect(in JudgeType judgeType,int keyIndex)
+        public void PlayHoldEffect(in JudgeGrade judgeType,int keyIndex)
         {
             var displayer = _holdEffects[keyIndex - 1];
             displayer.Play(judgeType);
         }
-        public void PlayHoldEffect(in JudgeType judgeType, SensorType sensorPos)
+        public void PlayHoldEffect(in JudgeGrade judgeType, SensorType sensorPos)
         {
             var displayer = _touchHoldEffects[(int)sensorPos];
             displayer.Play(judgeType);

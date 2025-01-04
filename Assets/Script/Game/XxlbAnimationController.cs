@@ -31,15 +31,15 @@ public class XxlbAnimationController : MonoBehaviour
         image.sprite = sprites[1];
     }
 
-    public void Dance(JudgeType result)
+    public void Dance(JudgeGrade result)
     {
         switch (result)
         {
-            case JudgeType.Perfect:
-            case JudgeType.FastPerfect1:
-            case JudgeType.FastPerfect2:
-            case JudgeType.LatePerfect1:
-            case JudgeType.LatePerfect2:
+            case JudgeGrade.Perfect:
+            case JudgeGrade.FastPerfect1:
+            case JudgeGrade.FastPerfect2:
+            case JudgeGrade.LatePerfect1:
+            case JudgeGrade.LatePerfect2:
                 animator.SetTrigger("dance");
                 if (dir == 0)//left
                 {

@@ -62,47 +62,47 @@ namespace MajdataPlay.Game
         {
             effectObject.SetActive(true);
             var isBreak = judgeResult.IsBreak;
-            var result = judgeResult.Result;
+            var result = judgeResult.Grade;
 
             if (isBreak && _displayBreakScore)
                 LoadBreakSkin(judgeResult,isClassC);
             else
                 LoadTapSkin(judgeResult,isClassC);
             
-            if (isBreak && result == JudgeType.Perfect)
+            if (isBreak && result == JudgeGrade.Perfect)
                 animator.SetTrigger("break");
             else
                 animator.SetTrigger("perfect");
         }
         void LoadTapSkin(in JudgeResult judgeResult,bool isClassC = false)
         {
-            switch (judgeResult.Result)
+            switch (judgeResult.Grade)
             {
-                case JudgeType.LateGood:
+                case JudgeGrade.LateGood:
                     textRenderer.sprite = isClassC ? _skin.Good.Late : _skin.Good.Normal;
                     break;
-                case JudgeType.FastGood:
+                case JudgeGrade.FastGood:
                     textRenderer.sprite = isClassC ? _skin.Good.Fast : _skin.Good.Normal;
                     break;
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
                     textRenderer.sprite = isClassC ? _skin.Great.Late : _skin.Great.Normal;
                     break;
-                case JudgeType.FastGreat:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat2:
+                case JudgeGrade.FastGreat:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat2:
                     textRenderer.sprite = isClassC ? _skin.Great.Fast : _skin.Great.Normal;
                     break;
-                case JudgeType.LatePerfect1:
-                case JudgeType.LatePerfect2:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.LatePerfect2:
                     textRenderer.sprite = isClassC ? _skin.Perfect.Late : _skin.Perfect.Normal;
                     break;
-                case JudgeType.FastPerfect1:
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.FastPerfect2:
                     textRenderer.sprite = isClassC ? _skin.Perfect.Fast : _skin.Perfect.Normal;
                     break;
-                case JudgeType.Perfect:
+                case JudgeGrade.Perfect:
                     if (isClassC)
                     {
                         var isJust = judgeResult.Diff == 0;
@@ -141,45 +141,45 @@ namespace MajdataPlay.Game
         }
         void LoadBreakSkin(in JudgeResult judgeResult, bool isClassC = false)
         {
-            switch (judgeResult.Result)
+            switch (judgeResult.Grade)
             {
-                case JudgeType.LateGood:
+                case JudgeGrade.LateGood:
                     textRenderer.sprite = isClassC ? _skin.Break_1000.Late : _skin.Break_1000.Normal;
                     break;
-                case JudgeType.FastGood:
+                case JudgeGrade.FastGood:
                     textRenderer.sprite = isClassC ? _skin.Break_1000.Fast : _skin.Break_1000.Normal;
                     break;
-                case JudgeType.LateGreat2:
+                case JudgeGrade.LateGreat2:
                     textRenderer.sprite = isClassC ? _skin.Break_1250.Late : _skin.Break_1250.Normal;
                     break;
-                case JudgeType.FastGreat2:
+                case JudgeGrade.FastGreat2:
                     textRenderer.sprite = isClassC ? _skin.Break_1250.Fast : _skin.Break_1250.Normal;
                     break;
-                case JudgeType.LateGreat1:
+                case JudgeGrade.LateGreat1:
                     textRenderer.sprite = isClassC ? _skin.Break_1500.Late : _skin.Break_1500.Normal;
                     break;
-                case JudgeType.FastGreat1:
+                case JudgeGrade.FastGreat1:
                     textRenderer.sprite = isClassC ? _skin.Break_1500.Fast : _skin.Break_1500.Normal;
                     break;
-                case JudgeType.LateGreat:
+                case JudgeGrade.LateGreat:
                     textRenderer.sprite = isClassC ? _skin.Break_2000.Late : _skin.Break_2000.Normal;
                     break;
-                case JudgeType.FastGreat:
+                case JudgeGrade.FastGreat:
                     textRenderer.sprite = isClassC ? _skin.Break_2000.Fast : _skin.Break_2000.Normal;
                     break;
-                case JudgeType.LatePerfect2:
+                case JudgeGrade.LatePerfect2:
                     textRenderer.sprite = isClassC ? _skin.Break_2500.Late : _skin.Break_2500.Normal;
                     break;
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.FastPerfect2:
                     textRenderer.sprite = isClassC ? _skin.Break_2500.Fast : _skin.Break_2500.Normal;
                     break;
-                case JudgeType.LatePerfect1:
+                case JudgeGrade.LatePerfect1:
                     textRenderer.sprite = isClassC ? _skin.Break_2550.Late : _skin.Break_2550.Normal;
                     break;
-                case JudgeType.FastPerfect1:
+                case JudgeGrade.FastPerfect1:
                     textRenderer.sprite = isClassC ? _skin.Break_2550.Fast : _skin.Break_2550.Normal;
                     break;
-                case JudgeType.Perfect:
+                case JudgeGrade.Perfect:
                     {
                         if(isClassC)
                         {

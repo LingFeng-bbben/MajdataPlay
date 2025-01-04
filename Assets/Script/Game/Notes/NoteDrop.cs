@@ -92,7 +92,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         protected float _judgeTiming;
         protected float _judgeDiff = -1;
-        protected JudgeType _judgeResult = JudgeType.Miss;
+        protected JudgeGrade _judgeResult = JudgeGrade.Miss;
 
         protected SensorType _sensorPos;
         protected ObjectCounter _objectCounter;
@@ -160,20 +160,20 @@ namespace MajdataPlay.Game.Notes
                 return;
             var result = diff switch
             {
-                < JUDGE_SEG_PERFECT1 => JudgeType.Perfect,
-                < JUDGE_SEG_PERFECT2 => JudgeType.LatePerfect1,
-                < JUDGE_PERFECT_AREA => JudgeType.LatePerfect2,
-                < JUDGE_SEG_GREAT1 => JudgeType.LateGreat,
-                < JUDGE_SEG_GREAT2 => JudgeType.LateGreat1,
-                < JUDGE_GREAT_AREA => JudgeType.LateGreat,
-                < JUDGE_GOOD_AREA => JudgeType.LateGood,
-                _ => JudgeType.Miss
+                < JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                < JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
+                < JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
+                < JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
+                < JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
+                < JUDGE_GREAT_AREA => JudgeGrade.LateGreat,
+                < JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                _ => JudgeGrade.Miss
             };
 
-            if (result != JudgeType.Miss && isFast)
+            if (result != JudgeGrade.Miss && isFast)
                 result = 14 - result;
-            if (result != JudgeType.Miss && IsEX)
-                result = JudgeType.Perfect;
+            if (result != JudgeGrade.Miss && IsEX)
+                result = JudgeGrade.Perfect;
 
             ConvertJudgeResult(ref result);
             _judgeResult = result;
@@ -189,15 +189,15 @@ namespace MajdataPlay.Game.Notes
                 {
                     var autoplayParam = _gpManager.AutoplayParam;
                     if (autoplayParam.InRange(0, 14))
-                        _judgeResult = (JudgeType)autoplayParam;
+                        _judgeResult = (JudgeGrade)autoplayParam;
                     else
-                        _judgeResult = (JudgeType)_randomizer.Next(0, 15);
+                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                     ConvertJudgeResult(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = _judgeResult switch
                     {
-                        < JudgeType.Perfect => 1,
-                        > JudgeType.Perfect => -1,
+                        < JudgeGrade.Perfect => 1,
+                        > JudgeGrade.Perfect => -1,
                         _ => 0
                     };
                 }
@@ -251,7 +251,7 @@ namespace MajdataPlay.Game.Notes
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void ConvertJudgeResult(ref JudgeType judgeType)
+        protected void ConvertJudgeResult(ref JudgeGrade judgeType)
         {
             var judgeStyle = _gpManager.JudgeStyle;
             switch(judgeStyle)
@@ -271,87 +271,87 @@ namespace MajdataPlay.Game.Notes
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ConvertToMAJI(ref JudgeType judgeType)
+        void ConvertToMAJI(ref JudgeGrade judgeType)
         {
             var isFast = (int)judgeType > 7;
             switch(judgeType)
             {
-                case JudgeType.LateGreat:
-                case JudgeType.LateGreat1:
-                case JudgeType.LateGreat2:
-                case JudgeType.FastGreat:
-                case JudgeType.FastGreat1:
-                case JudgeType.FastGreat2:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2:
+                case JudgeGrade.FastGreat:
+                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat2:
                     if (isFast)
-                        judgeType = JudgeType.FastGood;
+                        judgeType = JudgeGrade.FastGood;
                     else
-                        judgeType = JudgeType.LateGood;
+                        judgeType = JudgeGrade.LateGood;
                     break;
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
                     if (isFast)
-                        judgeType = JudgeType.FastGreat;
+                        judgeType = JudgeGrade.FastGreat;
                     else
-                        judgeType = JudgeType.LateGreat;
+                        judgeType = JudgeGrade.LateGreat;
                     break;
                 default:
-                    if (judgeType > JudgeType.Perfect)
-                        judgeType = JudgeType.TooFast;
-                    else if (judgeType < JudgeType.Perfect)
-                        judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.TooFast;
+                    else if (judgeType < JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.Miss;
                     break;
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
-                case JudgeType.Perfect:
-                case JudgeType.Miss:
-                case JudgeType.TooFast:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.Perfect:
+                case JudgeGrade.Miss:
+                case JudgeGrade.TooFast:
                     return;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ConvertToGACHI(ref JudgeType judgeType)
+        void ConvertToGACHI(ref JudgeGrade judgeType)
         {
             var isFast = (int)judgeType > 7;
             switch (judgeType)
             {                    
-                case JudgeType.LatePerfect2:
-                case JudgeType.FastPerfect2:
+                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2:
                     if (isFast)
-                        judgeType = JudgeType.FastGood;
+                        judgeType = JudgeGrade.FastGood;
                     else
-                        judgeType = JudgeType.LateGood;
+                        judgeType = JudgeGrade.LateGood;
                     break;
-                case JudgeType.LatePerfect1:
-                case JudgeType.FastPerfect1:
+                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.FastPerfect1:
                     if (isFast)
-                        judgeType = JudgeType.FastGreat;
+                        judgeType = JudgeGrade.FastGreat;
                     else
-                        judgeType = JudgeType.LateGreat;
+                        judgeType = JudgeGrade.LateGreat;
                     break;
                 default:
-                    if (judgeType > JudgeType.Perfect)
-                        judgeType = JudgeType.TooFast;
-                    else if (judgeType < JudgeType.Perfect)
-                        judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.TooFast;
+                    else if (judgeType < JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.Miss;
                     break;
-                case JudgeType.Perfect:
-                case JudgeType.Miss:
+                case JudgeGrade.Perfect:
+                case JudgeGrade.Miss:
                     return;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ConvertToGORI(ref JudgeType judgeType)
+        void ConvertToGORI(ref JudgeGrade judgeType)
         {
             switch (judgeType)
             { 
-                case JudgeType.Perfect:
-                case JudgeType.Miss:
+                case JudgeGrade.Perfect:
+                case JudgeGrade.Miss:
                     return;
                 default:
-                    if (judgeType > JudgeType.Perfect)
-                        judgeType = JudgeType.TooFast;
-                    else if (judgeType < JudgeType.Perfect)
-                        judgeType = JudgeType.Miss;
+                    if (judgeType > JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.TooFast;
+                    else if (judgeType < JudgeGrade.Perfect)
+                        judgeType = JudgeGrade.Miss;
                     break;
             }
         }

@@ -21,8 +21,8 @@ namespace MajdataPlay.Types
     {
         public override JudgeInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var dict = JsonSerializer.Deserialize<Dictionary<JudgeType, int>>(ref reader, options);
-            foreach(JudgeType judgeResult in Enum.GetValues(typeof(JudgeType)))
+            var dict = JsonSerializer.Deserialize<Dictionary<JudgeGrade, int>>(ref reader, options);
+            foreach(JudgeGrade judgeResult in Enum.GetValues(typeof(JudgeGrade)))
             {
                 if (!dict.TryGetValue(judgeResult, out int i))
                     dict[judgeResult] = 0;
