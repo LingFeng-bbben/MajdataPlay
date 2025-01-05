@@ -11,56 +11,60 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
 using MajdataPlay;
 
-public class TotalResultManager : MonoBehaviour
+namespace MajdataPlay.TotalResult
 {
-    public GameObject resultPrefab;
-    public Transform resultPrefabParent;
-    public TextMeshProUGUI initLife;
-    public TextMeshProUGUI Life;
-    public TextMeshProUGUI Title;
-    // Start is called before the first frame update
-    void Start()
+    public class TotalResultManager : MonoBehaviour
     {
-        MajInstances.LightManager.SetAllLight(Color.white);
-        var results = MajInstances.GameManager.DanResults;
-        var levels = SongStorage.WorkingCollection.DanInfo.SongLevels;
-        var songInfos = SongStorage.WorkingCollection.ToArray();
-        var name = SongStorage.WorkingCollection.DanInfo.Name;
-        var life = MajInstances.GameManager.DanHP;
-        initLife.text = "Start LIFE "+SongStorage.WorkingCollection.DanInfo.StartHP + " Restore LIFE " + SongStorage.WorkingCollection.DanInfo.RestoreHP;
-        Life.text = "LIFE\n" + life.ToString();
-        Title.text = name;
-        for (int i = 0; i < songInfos.Length; i++)
+        public GameObject resultPrefab;
+        public Transform resultPrefabParent;
+        public TextMeshProUGUI initLife;
+        public TextMeshProUGUI Life;
+        public TextMeshProUGUI Title;
+        // Start is called before the first frame update
+        void Start()
         {
-            GameObject songInfo = Instantiate(resultPrefab, resultPrefabParent);
-            var result = new GameResult();
-            if (i < results.Count)
+            MajInstances.LightManager.SetAllLight(Color.white);
+            var results = MajInstances.GameManager.DanResults;
+            var levels = SongStorage.WorkingCollection.DanInfo.SongLevels;
+            var songInfos = SongStorage.WorkingCollection.ToArray();
+            var name = SongStorage.WorkingCollection.DanInfo.Name;
+            var life = MajInstances.GameManager.DanHP;
+            initLife.text = "Start LIFE " + SongStorage.WorkingCollection.DanInfo.StartHP + " Restore LIFE " + SongStorage.WorkingCollection.DanInfo.RestoreHP;
+            Life.text = "LIFE\n" + life.ToString();
+            Title.text = name;
+            for (var i = 0; i < songInfos.Length; i++)
             {
-                result = results[i];
+                var songInfo = Instantiate(resultPrefab, resultPrefabParent);
+                var result = new GameResult();
+                if (i < results.Count)
+                {
+                    result = results[i];
+                }
+                else if (i == results.Count)
+                {
+                    result = (GameResult)GameManager.LastGameResult;
+                }
+                songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
             }
-            else if (i == results.Count) {
-                result = (GameResult)GameManager.LastGameResult;
-            }
-            songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
+            SongStorage.WorkingCollection.Reset();
+            MajInstances.GameManager.isDanMode = false;
+            DelayBind().Forget();
         }
-        SongStorage.WorkingCollection.Reset();
-        MajInstances.GameManager.isDanMode = false;
-        DelayBind().Forget();
-    }
 
-    async UniTaskVoid DelayBind()
-    {
-        await UniTask.Delay(1000);
-        MajInstances.InputManager.BindAnyArea(OnAreaDown);
-        MajInstances.LightManager.SetButtonLight(Color.green, 3);
-    }
+        async UniTaskVoid DelayBind()
+        {
+            await UniTask.Delay(1000);
+            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            MajInstances.LightManager.SetButtonLight(Color.green, 3);
+        }
 
-    private void OnAreaDown(object sender, InputEventArgs e)
-    {
+        private void OnAreaDown(object sender, InputEventArgs e)
+        {
 
-        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-        MajInstances.SceneSwitcher.SwitchScene("List");
-        return;
+            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+            MajInstances.SceneSwitcher.SwitchScene("List");
+            return;
+        }
     }
 }

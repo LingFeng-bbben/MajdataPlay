@@ -1,3 +1,4 @@
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -43,23 +44,23 @@ namespace MajdataPlay.Game
             var outlineColor = Color.white;
             switch(_gameManager.SelectedDiff)
             {
-                case Types.ChartLevel.Easy:
+                case ChartLevel.Easy:
                     outlineColor = CreateColor(32, 63, 255);
                     break;
-                case Types.ChartLevel.Basic:
+                case ChartLevel.Basic:
                     outlineColor = CreateColor(75, 250, 65);
                     break;
-                case Types.ChartLevel.Advance:
+                case ChartLevel.Advance:
                     outlineColor = CreateColor(249, 230, 65);
                     break;
-                case Types.ChartLevel.Expert:
+                case ChartLevel.Expert:
                     outlineColor = CreateColor(255, 0, 0);
                     break;
-                case Types.ChartLevel.Master:
-                case Types.ChartLevel.ReMaster:
+                case ChartLevel.Master:
+                case ChartLevel.ReMaster:
                     outlineColor = CreateColor(119, 0, 255);
                     break;
-                case Types.ChartLevel.UTAGE:
+                case ChartLevel.UTAGE:
                     outlineColor = CreateColor(255, 169, 218);
                     break;
             }

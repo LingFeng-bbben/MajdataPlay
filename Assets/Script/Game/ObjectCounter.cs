@@ -230,7 +230,8 @@ namespace MajdataPlay.Game
 
             _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
             _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
-
+            
+            SetBgInfoActive(true);
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
@@ -318,91 +319,18 @@ namespace MajdataPlay.Game
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             
 
-            SetBgInfoActive(true);
-            switch (MajInstances.Setting.Game.BGInfo)
-            {
-                case BGInfoType.CPCombo:
-                    _bgInfoHeader.color = CPComboColor;
-                    _bgInfoText.color = CPComboColor;
-                    _bgInfoHeader.text = "CPCombo";
-                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
-                    break;
-                case BGInfoType.PCombo:
-                    _bgInfoHeader.color = PComboColor;
-                    _bgInfoText.color = PComboColor;
-                   _bgInfoHeader.text = "PCombo";
-                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
-                    break;
-                case BGInfoType.Combo:
-                    _bgInfoHeader.color = ComboColor;
-                    _bgInfoText.color = ComboColor;
-                    _bgInfoHeader.text = "Combo";
-                    //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
-                    break;
-                case BGInfoType.Achievement_101:
-                case BGInfoType.Achievement_100:
-                case BGInfoType.Achievement:
-                case BGInfoType.AchievementClassical:
-                case BGInfoType.AchievementClassical_100:
-                    _bgInfoHeader.text = "Achievement";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    //bgInfoText.alignment = TextAnchor.MiddleRight;
-                    break;
-                case BGInfoType.DXScore:
-                case BGInfoType.DXScoreRank:
-                    _bgInfoHeader.text = "でらっくす SCORE";
-                    _bgInfoHeader.color = DXScoreColor;
-                    _bgInfoText.color = DXScoreColor;
-                    //bgInfoText.alignment = TextAnchor.MiddleCenter;
-                    break;
-                case BGInfoType.S_Board:
-                    _bgInfoHeader.text = "S  BORDER";
-                    _bgInfoHeader.color = AchievementSilverColor;
-                    _bgInfoText.color = AchievementSilverColor;
-                    _bgInfoText.text = "4.0000%";
-                    //bgInfoText.alignment = TextAnchor.MiddleRight;
-                    break;
-                case BGInfoType.SS_Board:
-                    _bgInfoHeader.text = "SS  BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "2.0000%";
-                    //bgInfoText.alignment = TextAnchor.MiddleRight;
-                    break;
-                case BGInfoType.SSS_Board:
-                    _bgInfoHeader.text = "SSS  BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "1.0000%";
-                    //bgInfoText.alignment = TextAnchor.MiddleRight;
-                    break;
-                case BGInfoType.MyBest:
-                    _bgInfoHeader.text = "MyBestScore BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "101.0000%";
-                    break;
-                case BGInfoType.Diff:
-                    _bgInfoHeader.color = ComboColor;
-                    _bgInfoText.color = ComboColor;
-                    _bgInfoHeader.text = "";
-                    _bgInfoText.text = "";
-                    break;
-                case BGInfoType.None:
-                    SetBgInfoActive(false);
-                    break;
-                default:
-                    return;
-            }
             if (MajInstances.GameManager.isDanMode)
             {
+                SetBgInfoActive(true);
                 _bgInfoHeader.text = "LIFE";
                 _bgInfoHeader.color = ComboColor;
                 _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
                 _bgInfoText.color = ComboColor;
             }
-            if(_gpManager.IsAutoplay)
+            else if(_gpManager.IsAutoplay)
+            {
                 _bgInfoHeader.text = "AUTOPLAY";
+            }
         }
 
         // Update is called once per frame

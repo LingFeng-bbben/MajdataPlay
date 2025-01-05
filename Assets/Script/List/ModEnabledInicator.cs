@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ModEnabledInicator : MonoBehaviour
+namespace MajdataPlay.List
 {
-    // Start is called before the first frame update
-    void Start()
+    public class ModEnabledInicator : MonoBehaviour
     {
-        gameObject.SetActive(MajInstances.GameManager.Setting.Mod.IsAnyModActive());
+        // Start is called before the first frame update
+        void Start()
+        {
+            gameObject.SetActive(MajInstances.GameManager.Setting.Mod.IsAnyModActive());
+        }
     }
 }

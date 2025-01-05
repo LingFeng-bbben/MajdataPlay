@@ -9,140 +9,146 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChartAnalyzer : MonoBehaviour
+namespace MajdataPlay.Game
 {
-    RawImage _rawImage;
-    public UnityEngine.Color tapColor;
-    public UnityEngine.Color slideColor;
-    public UnityEngine.Color touchColor;
-
-    void Start()
+    public class ChartAnalyzer : MonoBehaviour
     {
-        _rawImage = GetComponent<RawImage>();
-        
-    }
+        RawImage _rawImage;
+        public UnityEngine.Color tapColor;
+        public UnityEngine.Color slideColor;
+        public UnityEngine.Color touchColor;
 
-    public void AnalyzeMaidata(SimaiProcess data, float totalLength)
-    {
-        List<Vector2> tapPoints = new List<Vector2>();
-        List<Vector2> slidePoints = new List<Vector2>();
-        List<Vector2> touchPoints = new List<Vector2>();
-        float max = 0f;
-        for (float time=0;time<totalLength;time += 0.5f)
+        void Start()
         {
-            var timingPoints = data.notelist.FindAll(o=> o.time>time-0.75f&&o.time<=time+0.75f).ToList();
-            float y0 = 0,y1 =0,y2=0;
-            foreach (var timingPoint in timingPoints)
+            _rawImage = GetComponent<RawImage>();
+
+        }
+
+        public void AnalyzeMaidata(SimaiProcess data, float totalLength)
+        {
+            var tapPoints = new List<Vector2>();
+            var slidePoints = new List<Vector2>();
+            var touchPoints = new List<Vector2>();
+            var max = 0f;
+            for (float time = 0; time < totalLength; time += 0.5f)
             {
-                foreach (var note in timingPoint.noteList)
+                var timingPoints = data.notelist.FindAll(o => o.time > time - 0.75f && o.time <= time + 0.75f).ToList();
+                float y0 = 0, y1 = 0, y2 = 0;
+                foreach (var timingPoint in timingPoints)
                 {
-                    if (note.noteType == SimaiNoteType.Tap || note.noteType == SimaiNoteType.Hold)
+                    foreach (var note in timingPoint.noteList)
                     {
-                        y0++;
+                        if (note.noteType == SimaiNoteType.Tap || note.noteType == SimaiNoteType.Hold)
+                        {
+                            y0++;
+                        }
+                        else if (note.noteType == SimaiNoteType.Slide)
+                        {
+                            y1 += 2;
+                        }
+                        else if (note.noteType == SimaiNoteType.Touch || note.noteType == SimaiNoteType.TouchHold)
+                        {
+                            y2++;
+                        }
                     }
-                    else if (note.noteType == SimaiNoteType.Slide)
-                    {
-                        y1 += 2;
-                    }
-                    else if (note.noteType == SimaiNoteType.Touch || note.noteType == SimaiNoteType.TouchHold)
-                    {
-                        y2++;
-                    }
+
                 }
+                if (y0 + y1 + y2 > max) max = y0 + y1 + y2;
 
+                var x = time / totalLength;
+                tapPoints.Add(new Vector2(x, y0));
+                slidePoints.Add(new Vector2(x, y1));
+                touchPoints.Add(new Vector2(x, y2));
             }
-            if(y0+y1+y2 > max) max = y0+y1+y2;
 
-            var x = time/totalLength;
-            tapPoints.Add(new Vector2(x, y0));
-            slidePoints.Add(new Vector2(x, y1));
-            touchPoints.Add(new Vector2(x, y2));
+            //normalize
+            for (var i = 0; i < tapPoints.Count; i++)
+            {
+                tapPoints[i] = new Vector2(tapPoints[i].x, tapPoints[i].y / max);
+                slidePoints[i] = new Vector2(slidePoints[i].x, slidePoints[i].y / max);
+                touchPoints[i] = new Vector2(touchPoints[i].x, touchPoints[i].y / max);
+            }
+            DrawGraph(tapPoints, slidePoints, touchPoints);
+
         }
 
-        //normalize
-        for (int i = 0; i < tapPoints.Count; i++) {
-            tapPoints[i] = new Vector2(tapPoints[i].x, tapPoints[i].y / max);
-            slidePoints[i] = new Vector2(slidePoints[i].x, slidePoints[i].y / max);
-            touchPoints[i] = new Vector2(touchPoints[i].x, touchPoints[i].y / max);
-        }
-        DrawGraph(tapPoints, slidePoints, touchPoints);
-
-    }
-
-    public void DrawGraph(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
-    {
-        var width = 1018;
-        var height = 187;
-        SKImageInfo imageInfo = new SKImageInfo(width, height);
-        using (SKSurface surface = SKSurface.Create(imageInfo))
+        public void DrawGraph(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
         {
-            SKCanvas canvas = surface.Canvas;
-            canvas.Clear(SKColor.Empty);
-            using (SKPaint tapPaint = new SKPaint())
-            using (SKPaint slidePaint = new SKPaint())
-            using (SKPaint touchPaint = new SKPaint())
+            var width = 1018;
+            var height = 187;
+            var imageInfo = new SKImageInfo(width, height);
+            using (var surface = SKSurface.Create(imageInfo))
             {
-                tapPaint.Color = ToSkColor(tapColor);
-                tapPaint.IsAntialias = true;
-                tapPaint.Style = SKPaintStyle.Fill;
-                slidePaint.Color = ToSkColor(slideColor);
-                slidePaint.IsAntialias = true;
-                slidePaint.Style = SKPaintStyle.Fill;
-                touchPaint.Color = ToSkColor(touchColor);
-                touchPaint.IsAntialias = true;
-                touchPaint.Style = SKPaintStyle.Fill;
-                using (var tapPath = new SKPath())
-                using (var slidePath = new SKPath())
-                using (var touchPath = new SKPath()) {
-                    tapPath.MoveTo(0, height);
-                    slidePath.MoveTo(0, height);
-                    touchPath.MoveTo(0, height);
-                    for (int i = 0; i < tapPoints.Count; i++) {
-                        var x = tapPoints[i].x * width;
-                        var y = tapPoints[i].y;
-                        tapPath.LineTo(x, (1 - y) * height);
-                        y += slidePoints[i].y;
-                        slidePath.LineTo(x, (1 - y) * height);
-                        y += touchPoints[i].y;
-                        touchPath.LineTo(x, (1 - y) * height);
-                    }
-                    tapPath.LineTo(width, height);
-                    slidePath.LineTo(width, height);
-                    touchPath.LineTo(width, height);
-                    tapPath.Close();
-                    slidePath.Close();
-                    touchPath.Close();
+                var canvas = surface.Canvas;
+                canvas.Clear(SKColor.Empty);
+                using (var tapPaint = new SKPaint())
+                using (var slidePaint = new SKPaint())
+                using (var touchPaint = new SKPaint())
+                {
+                    tapPaint.Color = ToSkColor(tapColor);
+                    tapPaint.IsAntialias = true;
+                    tapPaint.Style = SKPaintStyle.Fill;
+                    slidePaint.Color = ToSkColor(slideColor);
+                    slidePaint.IsAntialias = true;
+                    slidePaint.Style = SKPaintStyle.Fill;
+                    touchPaint.Color = ToSkColor(touchColor);
+                    touchPaint.IsAntialias = true;
+                    touchPaint.Style = SKPaintStyle.Fill;
+                    using (var tapPath = new SKPath())
+                    using (var slidePath = new SKPath())
+                    using (var touchPath = new SKPath())
+                    {
+                        tapPath.MoveTo(0, height);
+                        slidePath.MoveTo(0, height);
+                        touchPath.MoveTo(0, height);
+                        for (var i = 0; i < tapPoints.Count; i++)
+                        {
+                            var x = tapPoints[i].x * width;
+                            var y = tapPoints[i].y;
+                            tapPath.LineTo(x, (1 - y) * height);
+                            y += slidePoints[i].y;
+                            slidePath.LineTo(x, (1 - y) * height);
+                            y += touchPoints[i].y;
+                            touchPath.LineTo(x, (1 - y) * height);
+                        }
+                        tapPath.LineTo(width, height);
+                        slidePath.LineTo(width, height);
+                        touchPath.LineTo(width, height);
+                        tapPath.Close();
+                        slidePath.Close();
+                        touchPath.Close();
 
-                    canvas.DrawPath(touchPath, touchPaint);
-                    canvas.DrawPath(slidePath, slidePaint);
-                    canvas.DrawPath(tapPath, tapPaint);
+                        canvas.DrawPath(touchPath, touchPaint);
+                        canvas.DrawPath(slidePath, slidePaint);
+                        canvas.DrawPath(tapPath, tapPaint);
+                    }
+                }
+
+                //sort it into rawimage
+                using (var image = surface.Snapshot())
+                {
+                    var bitmap = SKBitmap.FromImage(image);
+                    var skcolors = bitmap.Pixels.AsSpan();
+                    var writer = new ArrayBufferWriter<SKColor>(bitmap.Width * bitmap.Height);
+                    for (var i = bitmap.Height - 1; i >= 0; i--) writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
+                    var colors = writer.WrittenSpan.ToArray().AsParallel().AsOrdered().Select(s => ToUnityColor32(s)).ToArray();
+
+                    var tex0 = new Texture2D(bitmap.Width, bitmap.Height);
+                    tex0.SetPixels32(colors);
+                    tex0.Apply();
+
+                    _rawImage.texture = tex0;
                 }
             }
-
-            //sort it into rawimage
-            using (var image = surface.Snapshot())
-            {
-                var bitmap = SKBitmap.FromImage(image);
-                var skcolors = bitmap.Pixels.AsSpan();
-                var writer = new ArrayBufferWriter<SKColor>(bitmap.Width * bitmap.Height);
-                for (var i = bitmap.Height - 1; i >= 0; i--) writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
-                var colors = writer.WrittenSpan.ToArray().AsParallel().AsOrdered().Select(s => ToUnityColor32(s)).ToArray();
-
-                var tex0 = new Texture2D(bitmap.Width, bitmap.Height);
-                tex0.SetPixels32(colors);
-                tex0.Apply();
-
-                _rawImage.texture = tex0;
-            }   
         }
-    }
-    public static Color32 ToUnityColor32(SKColor skColor)
-    {
-        return new Color32(skColor.Red, skColor.Green, skColor.Blue, skColor.Alpha);
-    }
+        public static Color32 ToUnityColor32(SKColor skColor)
+        {
+            return new Color32(skColor.Red, skColor.Green, skColor.Blue, skColor.Alpha);
+        }
 
-    public static SKColor ToSkColor(Color32 color32)
-    {
-        return new SKColor(color32.r, color32.g, color32.b, color32.a);
+        public static SKColor ToSkColor(Color32 color32)
+        {
+            return new SKColor(color32.r, color32.g, color32.b, color32.a);
+        }
     }
 }

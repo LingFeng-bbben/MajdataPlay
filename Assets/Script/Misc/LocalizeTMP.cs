@@ -5,26 +5,29 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LocalizeTMP : MonoBehaviour
+namespace MajdataPlay.Misc
 {
-    public string local_key;
-    TMP_Text text;
-    Text text_legacy;
-    // Start is called before the first frame update
-    void Start()
+    public class LocalizeTMP : MonoBehaviour
     {
-        try
+        public string local_key;
+        TMP_Text text;
+        Text text_legacy;
+        // Start is called before the first frame update
+        void Start()
         {
-            text = GetComponent<TMP_Text>();
-            text.text = Localization.GetLocalizedText(local_key);
+            try
+            {
+                text = GetComponent<TMP_Text>();
+                text.text = Localization.GetLocalizedText(local_key);
+            }
+            catch { }
+            try
+            {
+                text_legacy = GetComponent<Text>();
+                text_legacy.text = Localization.GetLocalizedText(local_key);
+            }
+            catch { }
         }
-        catch { }
-        try
-        {
-            text_legacy = GetComponent<Text>();
-            text_legacy.text = Localization.GetLocalizedText(local_key);
-        }
-        catch { }
-    }
 
+    }
 }
