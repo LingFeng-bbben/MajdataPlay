@@ -89,6 +89,7 @@ namespace MajdataPlay.Collections
             }
             sorted = origin;
         }
+        public SongDetail[] ToArray() => origin;
         static SongDetail[] Sort(SongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Game.Types;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -145,13 +146,32 @@ namespace MajdataPlay.List
                         {
                             if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
                             {
+                                var danInfo = SongStorage.WorkingCollection.DanInfo;
+                                var collection = SongStorage.WorkingCollection;
+                                if (danInfo is null)
+                                    return;
+                                else if (danInfo.SongLevels.Length != collection.Count)
+                                    return;
                                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                                 MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                                 var list = new string[] { "track_start.wav", "track_start_2.wav" };
                                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
-                                MajInstances.GameManager.isDanMode = true;
-                                MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
-                                MajInstances.GameManager.DanResults.Clear();
+                                var levels = new ChartLevel[danInfo.SongLevels.Length];
+                                for (int i = 0; i < levels.Length; i++)
+                                {
+                                    levels[i] = (ChartLevel)danInfo.SongLevels[i];
+                                }
+                                var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
+                                {
+                                    MaxHP = SongStorage.WorkingCollection.DanInfo.StartHP,
+                                    CurrentHP = SongStorage.WorkingCollection.DanInfo.StartHP,
+                                    HPRecover = SongStorage.WorkingCollection.DanInfo.RestoreHP,
+                                    DanInfo = danInfo
+                                };
+                                MajInstanceHelper<GameInfo>.Instance = info;
+                                //MajInstances.GameManager.isDanMode = true;
+                                //MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
+                                //MajInstances.GameManager.DanResults.Clear();
                                 SongStorage.WorkingCollection.Index = 0;
                                 MajInstances.SceneSwitcher.SwitchScene("Game", false);
                             }
@@ -167,6 +187,16 @@ namespace MajdataPlay.List
                             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                             var list = new string[] { "track_start.wav", "track_start_2.wav" };
                             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                            var levels = new ChartLevel[]
+                            {
+                                MajInstances.GameManager.SelectedDiff
+                            };
+                            var charts = new SongDetail[]
+                            {
+                                SongStorage.WorkingCollection.Current
+                            };
+                            var info = new GameInfo(GameMode.Normal, charts, levels);
+                            MajInstanceHelper<GameInfo>.Instance = info;
                             MajInstances.SceneSwitcher.SwitchScene("Game",false);
                         }
                         break;

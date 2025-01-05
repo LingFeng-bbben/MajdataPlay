@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Game.Types
 {
-    internal class GameMode
+    internal enum GameMode
     {
+        Normal,
+        Dan,
+        Practice
     }
 }

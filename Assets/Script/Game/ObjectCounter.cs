@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
+using MajdataPlay.Game.Types;
 
 namespace MajdataPlay.Game
 {
@@ -208,6 +209,7 @@ namespace MajdataPlay.Game
             {JudgeGrade.Miss, 0 },
         };
 
+        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
@@ -319,12 +321,12 @@ namespace MajdataPlay.Game
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             
 
-            if (MajInstances.GameManager.isDanMode)
+            if (_gameInfo.IsDanMode)
             {
                 SetBgInfoActive(true);
                 _bgInfoHeader.text = "LIFE";
                 _bgInfoHeader.color = ComboColor;
-                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
                 _bgInfoText.color = ComboColor;
             }
             else if(_gpManager.IsAutoplay)
@@ -707,17 +709,16 @@ namespace MajdataPlay.Game
                     break;
             }
 
-            if (MajInstances.GameManager.isDanMode)
+            if (_gameInfo.IsDanMode)
             {
-                MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.Damages[result];
-                if (MajInstances.GameManager.DanHP <= 0 && SongStorage.WorkingCollection.DanInfo.IsForceGameover)
+                _gameInfo.OnNoteJudged(judgeResult.Grade);
+                if (_gameInfo.CurrentHP == 0 && _gameInfo.IsForceGameover)
                 {
-                    MajInstances.GameManager.DanHP = 0;
                     _gpManager.GameOver();
                 }
             }
 
-                _xxlbController.Dance(result);
+            _xxlbController.Dance(result);
             UpdateFastLate(judgeResult);
             CalAccRate();
         }
@@ -854,9 +855,9 @@ namespace MajdataPlay.Game
                 default:
                     return;
             }
-            if (MajInstances.GameManager.isDanMode)
+            if (_gameInfo.IsDanMode)
             {
-                _bgInfoText.text = MajInstances.GameManager.DanHP.ToString();
+                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
                 _bgInfoText.color = ComboColor;
                 SetBgInfoActive(true);
             }

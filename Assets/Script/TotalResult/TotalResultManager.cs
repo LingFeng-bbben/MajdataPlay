@@ -10,6 +10,7 @@ using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
 using MajdataPlay;
+using MajdataPlay.Game.Types;
 
 namespace MajdataPlay.TotalResult
 {
@@ -20,34 +21,36 @@ namespace MajdataPlay.TotalResult
         public TextMeshProUGUI initLife;
         public TextMeshProUGUI Life;
         public TextMeshProUGUI Title;
+
+        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         // Start is called before the first frame update
         void Start()
         {
             MajInstances.LightManager.SetAllLight(Color.white);
-            var results = MajInstances.GameManager.DanResults;
-            var levels = SongStorage.WorkingCollection.DanInfo.SongLevels;
-            var songInfos = SongStorage.WorkingCollection.ToArray();
-            var name = SongStorage.WorkingCollection.DanInfo.Name;
-            var life = MajInstances.GameManager.DanHP;
-            initLife.text = "Start LIFE " + SongStorage.WorkingCollection.DanInfo.StartHP + " Restore LIFE " + SongStorage.WorkingCollection.DanInfo.RestoreHP;
+            var results = _gameInfo.Results;
+            var levels = _gameInfo.Levels;
+            var songInfos = _gameInfo.Charts;
+            var name = _gameInfo.DanInfo.Name;
+            var life = _gameInfo.CurrentHP;
+            initLife.text = "Start LIFE " + _gameInfo.DanInfo.StartHP + " Restore LIFE " + _gameInfo.DanInfo.RestoreHP;
             Life.text = "LIFE\n" + life.ToString();
             Title.text = name;
             for (var i = 0; i < songInfos.Length; i++)
             {
                 var songInfo = Instantiate(resultPrefab, resultPrefabParent);
-                var result = new GameResult();
-                if (i < results.Count)
-                {
-                    result = results[i];
-                }
-                else if (i == results.Count)
-                {
-                    result = (GameResult)GameManager.LastGameResult;
-                }
+                var result = results[i];
+                //if (i < results.Length)
+                //{
+                //    result = results[i];
+                //}
+                //else if (i == results.Length)
+                //{
+                //    result = (GameResult)GameManager.LastGameResult;
+                //}
                 songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
             }
-            SongStorage.WorkingCollection.Reset();
-            MajInstances.GameManager.isDanMode = false;
+            //SongStorage.WorkingCollection.Reset();
+            //MajInstances.GameManager.isDanMode = false;
             DelayBind().Forget();
         }
 

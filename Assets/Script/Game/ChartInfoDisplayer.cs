@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -22,14 +23,16 @@ namespace MajdataPlay.Game
 
         public Image coverImg;
 
+        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         private void Start()
         {
-            var song = SongStorage.WorkingCollection.Current;
-            var gameManager = MajInstances.GameManager;
+            if (_gameInfo is null)
+                return;
+            var song = _gameInfo.Current;
             title.text = song.Title;
             artist.text = song.Artist;
-            designer.text = song.Designers[(int)gameManager.SelectedDiff];
-            level.text = gameManager.SelectedDiff.ToString() + " " + song.Levels[(int)gameManager.SelectedDiff];
+            designer.text = song.Designers[(int)_gameInfo.CurrentLevel];
+            level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
             LoadCover(song).Forget();
         }
 

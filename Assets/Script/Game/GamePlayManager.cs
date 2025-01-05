@@ -18,6 +18,7 @@ using Cysharp.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
+using MajdataPlay.Game.Types;
 
 namespace MajdataPlay.Game
 {
@@ -120,6 +121,7 @@ namespace MajdataPlay.Game
         Text _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
 
+        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         HttpTransporter _httpDownloader = new();
         SimaiProcess _chart;
         SongDetail _songDetail;
@@ -136,9 +138,11 @@ namespace MajdataPlay.Game
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
         void Awake()
         {
+            if (_gameInfo is null || _gameInfo.Current is null)
+                throw new ArgumentNullException(nameof(_gameInfo));
             MajInstanceHelper<GamePlayManager>.Instance = this;
             //print(MajInstances.GameManager.SelectedIndex);
-            _songDetail = SongStorage.WorkingCollection.Current;
+            _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
         }
@@ -389,7 +393,7 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
-            var maidata = _songDetail.LoadInnerMaidata((int)MajInstances.GameManager.SelectedDiff);
+            var maidata = _songDetail.LoadInnerMaidata((int)_gameInfo.CurrentLevel);
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
@@ -652,8 +656,9 @@ namespace MajdataPlay.Game
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            GameManager.LastGameResult = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-            var result = (GameResult)GameManager.LastGameResult;
+            var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+            GameManager.LastGameResult = result;
+            _gameInfo.RecordResult(result);
             if (!playEffect) return;
             if (result.ComboState == ComboState.APPlus)
             {

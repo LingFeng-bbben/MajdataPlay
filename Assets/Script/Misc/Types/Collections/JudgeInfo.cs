@@ -10,6 +10,24 @@ namespace MajdataPlay.Collections
 {
     public class JudgeInfo : IReadOnlyDictionary<JudgeGrade, int>
     {
+        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeGrade, int>()
+        {
+            {JudgeGrade.TooFast, 0 },
+            {JudgeGrade.FastGood, 0 },
+            {JudgeGrade.FastGreat2, 0 },
+            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat, 0 },
+            {JudgeGrade.FastPerfect2, 0 },
+            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.Perfect, 0 },
+            {JudgeGrade.LatePerfect1, 0 },
+            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LateGreat, 0 },
+            {JudgeGrade.LateGreat1, 0 },
+            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGood, 0 },
+            {JudgeGrade.Miss, 0 },
+        });
         IReadOnlyDictionary<JudgeGrade, int> db;
         public JudgeInfo(IReadOnlyDictionary<JudgeGrade, int> source)
         {
@@ -38,23 +56,6 @@ namespace MajdataPlay.Collections
 
             return new JudgeInfo(newRecord);
         }
-        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeGrade, int>()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        });
+        
     }
 }

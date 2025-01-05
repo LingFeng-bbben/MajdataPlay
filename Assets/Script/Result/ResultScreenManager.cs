@@ -7,7 +7,8 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
-
+using MajdataPlay.Game.Types;
+#nullable enable
 namespace MajdataPlay.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
@@ -40,19 +41,38 @@ namespace MajdataPlay.Result
 
         public Image coverImg;
 
+        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
 
         void Start()
         {
             rank.text = "";
             var gameManager = MajInstances.GameManager;
-            var result = (GameResult)GameManager.LastGameResult;
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
-
-            if (gameManager.isDanMode)
+            GameResult result;
+            var lastResult = _gameInfo.GetLastResult();
+            if (lastResult is null)
             {
-                gameManager.DanResults.Add(result);
+                result = new GameResult()
+                {
+                    Acc = new()
+                    {
+                        Classic = 0,
+                        DX = 0,
+                    },
+                    SongInfo = _gameInfo.Current,
+                    ChartLevel = _gameInfo.CurrentLevel,
+                    Fast = 0,
+                    Late = 0,
+                    DXScore = 0,
+                    TotalDXScore = 1,
+                    JudgeRecord = JudgeDetail.Empty,
+                    ComboState = ComboState.None,
+                };
             }
-
+            else
+            {
+                result = (GameResult)lastResult;
+            }
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
             GameManager.LastGameResult = null;
 
@@ -77,8 +97,8 @@ namespace MajdataPlay.Result
 
             title.text = song.Title;
             artist.text = song.Artist;
-            designer.text = song.Designers[(int)gameManager.SelectedDiff];
-            level.text = gameManager.SelectedDiff.ToString() + " " + song.Levels[(int)gameManager.SelectedDiff];
+            designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
+            level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
 
             accDX.text = isClassic ? $"{result.Acc.Classic:F2}%": $"{result.Acc.DX:F4}%";
             var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
@@ -213,9 +233,10 @@ namespace MajdataPlay.Result
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
-                if (MajInstances.GameManager.isDanMode)
+                var canNextRound = _gameInfo.NextRound();
+                if (_gameInfo.IsDanMode)
                 {
-                    if (SongStorage.WorkingCollection.Index >= SongStorage.WorkingCollection.Count-1)
+                    if (!canNextRound)
                     {
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.SceneSwitcher.SwitchScene("TotalResult");
@@ -228,8 +249,8 @@ namespace MajdataPlay.Result
                         MajInstances.AudioManager.StopSFX("bgm_result.mp3");
 
                         //TODO: Add Animation to show that
-                        SongStorage.WorkingCollection.Index++;
-                        MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
+                        //SongStorage.WorkingCollection.Index++;
+                        //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
 
                         MajInstances.SceneSwitcher.SwitchScene("Game",false);
                         return;

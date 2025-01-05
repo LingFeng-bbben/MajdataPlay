@@ -7,6 +7,14 @@ namespace MajdataPlay.Collections
 {
     public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType, JudgeInfo>
     {
+        public static JudgeDetail Empty => new JudgeDetail(new Dictionary<ScoreNoteType, JudgeInfo>()
+        {
+            {ScoreNoteType.Tap,JudgeInfo.Empty },
+            {ScoreNoteType.Hold,JudgeInfo.Empty },
+            {ScoreNoteType.Slide,JudgeInfo.Empty },
+            {ScoreNoteType.Touch,JudgeInfo.Empty },
+            {ScoreNoteType.Break,JudgeInfo.Empty },
+        });
         public JudgeInfo TotalJudgeInfo => total;
         IReadOnlyDictionary<ScoreNoteType, JudgeInfo> db;
         JudgeInfo total = JudgeInfo.Empty;

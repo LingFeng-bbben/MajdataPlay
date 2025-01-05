@@ -60,20 +60,19 @@ namespace MajdataPlay
         {
             get
             {
-                if (isDanMode)
-                {
-                    return (ChartLevel)SongStorage.WorkingCollection.DanInfo.SongLevels[SongStorage.WorkingCollection.Index];
-                }
-                else { return _selectedDiff; }
+                return _selectedDiff;
             }
-            set { _selectedDiff = value; }
+            set 
+            {
+                _selectedDiff = value;
+            }
         }
         private ChartLevel _selectedDiff = ChartLevel.Easy;
         public int LastSettingPage { get; set; } = 0;
 
-        public bool isDanMode = false;
-        public int DanHP = 500;
-        public List<GameResult> DanResults = new();
+        //public bool isDanMode = false;
+        //public int DanHP = 500;
+        //public List<GameResult> DanResults = new();
 
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
