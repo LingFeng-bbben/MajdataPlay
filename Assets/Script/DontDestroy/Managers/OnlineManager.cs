@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class OnlineManager : MonoBehaviour
@@ -20,11 +19,6 @@ public class OnlineManager : MonoBehaviour
         DontDestroyOnLoad(this);
         MajInstances.OnlineManager = this;
 
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
     }
 
     public async UniTask<bool> CheckLogin(ApiEndpoint apiEndpoint)
