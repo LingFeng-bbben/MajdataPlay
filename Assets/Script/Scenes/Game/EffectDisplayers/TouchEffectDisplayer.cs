@@ -24,6 +24,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         FastLateDisplayer _fastLateDisplayerB;
 
+        bool _isEnabled = true;
         void Start()
         {
             var distance = TouchBase.GetDistance(SensorPos.GetGroup());
@@ -44,6 +45,8 @@ namespace MajdataPlay.Game
             var fastLatePos = _fastLateDisplayerA.LocalPosition;
             fastLatePos.y = fastLateDistance;
             _fastLateDisplayerA.LocalPosition = fastLatePos;
+
+            _isEnabled = MajInstances.Setting.Display.InnerJudgeDistance != 0;
         }
         public void Reset()
         {
@@ -62,6 +65,8 @@ namespace MajdataPlay.Game
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
+            if (!_isEnabled)
+                return;
             if (IsClassCAvailable(judgeResult))
             {
                 _judgeTextDisplayer.Play(judgeResult,true);

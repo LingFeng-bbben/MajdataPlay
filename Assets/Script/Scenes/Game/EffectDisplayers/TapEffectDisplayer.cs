@@ -67,6 +67,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         FastLateDisplayer _fastLateDisplayerB;
 
+        bool _isEnabled = false;
 
         void Start()
         {
@@ -90,6 +91,7 @@ namespace MajdataPlay.Game
             _judgeTextDisplayer.LocalPosition = textPosition;
             _fastLateDisplayerA.LocalPosition = fastLatePosition;
             _fastLateDisplayerB.LocalPosition = textPosition;
+            _isEnabled = MajInstances.Setting.Display.OuterJudgeDistance != 0 && DistanceRatio != 0;
         }
         public void Reset()
         {
@@ -113,7 +115,9 @@ namespace MajdataPlay.Game
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
-            if(IsClassCAvailable(judgeResult))
+            if (!_isEnabled)
+                return;
+            if (IsClassCAvailable(judgeResult))
             {
                 _judgeTextDisplayer.Play(judgeResult,true);
             }

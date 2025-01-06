@@ -215,7 +215,20 @@ namespace MajdataPlay.Setting
         void UpdateOption()
         {
             var origin = PropertyInfo.GetValue(OptionObject).ToString();
-            var localizedText = Localization.GetLocalizedText(origin);
+            var localizedText = string.Empty;
+            switch (PropertyInfo.Name)
+            {
+                case "OuterJudgeDistance":
+                case "InnerJudgeDistance":
+                    if((float)PropertyInfo.GetValue(OptionObject) == 0)
+                        localizedText = Localization.GetLocalizedText("OFF");
+                    else
+                        localizedText = Localization.GetLocalizedText(origin);
+                    break;
+                default:
+                    localizedText = Localization.GetLocalizedText(origin);
+                    break;
+            }
             valueText.text = localizedText;
         }
         void Up()
