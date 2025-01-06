@@ -63,19 +63,6 @@ namespace MajdataPlay.Result
             var client = HttpTransporter.ShareClient;
             try
             {
-                if (song.ApiEndpoint == null)
-                {
-                    infotext.text = "";
-                    //MajInstances.LightManager.SetButtonLight(Color.red, 4);
-                    return;
-                }
-
-                if (song.ApiEndpoint.Username == null || song.ApiEndpoint.Password == null)
-                {
-                    infotext.text = "µÇÂ¼Ê§°Ü";
-                    //MajInstances.LightManager.SetButtonLight(Color.red, 4);
-                    return;
-                }
 
                 var interactUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/interact";
                 var task = client.GetStringAsync(interactUrl);
@@ -97,24 +84,9 @@ namespace MajdataPlay.Result
                     return;
                 }
 
+                
+
                 var formData = new MultipartFormDataContent
-        {
-            { new StringContent(song.ApiEndpoint.Username), "username" },
-            { new StringContent(ComputeMD5(song.ApiEndpoint.Password)), "password" }
-        };
-
-                var tokentask = client.PostAsync(song.ApiEndpoint.Url + "/account/Login", formData);
-                while (!tokentask.IsCompleted)
-                {
-                    await UniTask.Yield();
-                }
-                if (tokentask.Result.StatusCode != System.Net.HttpStatusCode.OK)
-                {
-                    infotext.text = "µÇÂ¼Ê§°Ü";
-                    return;
-                }
-
-                formData = new MultipartFormDataContent
             {
                 { new StringContent("like"), "type" },
                 { new StringContent("..."), "content" },
@@ -139,15 +111,7 @@ namespace MajdataPlay.Result
                 return;
             }
         }
-        public static string ComputeMD5(string input)
-        {
-            using (var md5 = MD5.Create())
-            {
-                var inputBytes = Encoding.UTF8.GetBytes(input);
-                var hashBytes = md5.ComputeHash(inputBytes);
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-            }
-        }
+       
 
     }
 }

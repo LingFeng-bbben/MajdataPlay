@@ -78,42 +78,10 @@ namespace MajdataPlay.Title
         {
             if (songStorageTask is null)
                 return;
-            bool isEmpty = false;
-            float animTimer = 0;
-            while (animTimer < 2f)
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-                animTimer += Time.deltaTime;
-                if (songStorageTask.IsCompleted)
-                {
-                    if (SongStorage.IsEmpty)
-                    {
-                        isEmpty = true;
-                        echoText.text = Localization.GetLocalizedText("No Charts");
-                        return;
-                    }
-                    else
-                    {
-                        echoText.text = Localization.GetLocalizedText("Press Any Key");
-                        MajInstances.InputManager.BindAnyArea(OnAreaDown);
-                        return;
-                    }
-                }
-            }
-
-            fadeInAnim.enabled = false;
-            int a = -1;
-            float timer = 2f;
+            var isEmpty = false;
             while (true)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update);
-                if (timer >= 2f)
-                    a = -1;
-                else if (timer == 0)
-                    a = 1;
-                timer += Time.deltaTime * a;
-                timer = timer.Clamp(0, 2f);
-                var newColor = Color.white;
 
                 if (songStorageTask.IsCompleted)
                 {
@@ -125,23 +93,16 @@ namespace MajdataPlay.Title
                         echoText.text = Localization.GetLocalizedText("No Charts");
                     }
                     else
-                        echoText.text = Localization.GetLocalizedText("Press Any Key");
-
-                    if (timer >= 1.8f)
                     {
-                        echoText.color = newColor;
-                        break;
+                        echoText.text = Localization.GetLocalizedText("Press Any Key");
+                        MajInstances.InputManager.BindAnyArea(OnAreaDown);
                     }
+                    break;
                 }
-
-                newColor.a = timer / 2f;
-                echoText.color = newColor;
             }
-
+            fadeInAnim.SetBool("IsDone", true);
             if (isEmpty)
                 return;
-            else if (songStorageTask.Status is TaskStatus.RanToCompletion)
-                MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
 
         async UniTaskVoid DelayPlayVoice()
