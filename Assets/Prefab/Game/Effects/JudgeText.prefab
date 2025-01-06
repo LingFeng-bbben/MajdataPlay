@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1192576573309369434}
   - component: {fileID: 5001827038414356516}
+  - component: {fileID: 536227414164202934}
   m_Layer: 0
   m_Name: JudgeText
   m_TagString: Untagged
@@ -54,6 +55,22 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &536227414164202934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2214473122963414705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 503a598966525364c82e0ee5e9fc4ae5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectObject: {fileID: 2214473122963414705}
+  animator: {fileID: 5001827038414356516}
+  textRenderer: {fileID: 5633416346708387541}
+  breakRenderer: {fileID: 3446787945564226199}
 --- !u!1 &5311390038410455478
 GameObject:
   m_ObjectHideFlags: 0
@@ -158,7 +175,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1222518565
-  m_SortingLayer: 8
+  m_SortingLayer: 9
   m_SortingOrder: 33
   m_Sprite: {fileID: 21300000, guid: 25d0ff7497bd679459d11c5f342c99d6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -242,7 +259,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1222518565
-  m_SortingLayer: 8
+  m_SortingLayer: 9
   m_SortingOrder: 32
   m_Sprite: {fileID: 21300000, guid: 6ee24318956cb154187385e5ac248fc2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
