@@ -13,18 +13,17 @@ namespace MajdataPlay.Game
 
         [SerializeField]
         GameObject effectObject;
-        [SerializeField]
-        GameObject textObject;
-        [SerializeField]
-        GameObject fastLateObject;
 
         [SerializeField]
         Animator effectAnim;
 
         [SerializeField]
-        JudgeTextDisplayer judgeTextDisplayer;
+        JudgeTextDisplayer _judgeTextDisplayer;
         [SerializeField]
-        FastLateDisplayer fastLateDisplayer;
+        FastLateDisplayer _fastLateDisplayerA;
+        [SerializeField]
+        FastLateDisplayer _fastLateDisplayerB;
+
         void Start()
         {
             var distance = TouchBase.GetDistance(SensorPos.GetGroup());
@@ -37,13 +36,14 @@ namespace MajdataPlay.Game
             effectPos.y += distance;
             effectObject.transform.localPosition = effectPos;
 
-            var textPos = textObject.transform.localPosition;
+            var textPos = _judgeTextDisplayer.LocalPosition;
             textPos.y = textDistance;
-            textObject.transform.localPosition = textPos;
+            _judgeTextDisplayer.LocalPosition = textPos;
+            _fastLateDisplayerB.LocalPosition = textPos;
 
-            var fastLatePos = fastLateObject.transform.localPosition;
+            var fastLatePos = _fastLateDisplayerA.LocalPosition;
             fastLatePos.y = fastLateDistance;
-            fastLateObject.transform.localPosition = fastLatePos;
+            _fastLateDisplayerA.LocalPosition = fastLatePos;
         }
         public void Reset()
         {
@@ -52,20 +52,30 @@ namespace MajdataPlay.Game
         public void ResetAll()
         {
             Reset();
-            judgeTextDisplayer.Reset();
-            fastLateDisplayer.Reset();
+            _judgeTextDisplayer.Reset();
+            _fastLateDisplayerA.Reset();
+            _fastLateDisplayerB.Reset();
         }
         public void Play(in JudgeResult judgeResult)
         {
+            _judgeTextDisplayer.Reset();
+            _fastLateDisplayerA.Reset();
+            _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
             if (IsClassCAvailable(judgeResult))
             {
-                judgeTextDisplayer.Play(judgeResult,true);
+                _judgeTextDisplayer.Play(judgeResult,true);
             }
             else
             {
-                PlayResult(judgeResult);
-                PlayFastLate(judgeResult);
+                if(PlayResult(judgeResult))
+                {
+                    PlayFastLate(judgeResult, _fastLateDisplayerA);
+                }
+                else
+                {
+                    PlayFastLate(judgeResult, _fastLateDisplayerB);
+                }
             }
         }
         void PlayEffect(in JudgeResult judgeResult)
@@ -101,7 +111,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void PlayResult(in JudgeResult judgeResult)
+        bool PlayResult(in JudgeResult judgeResult)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -110,12 +120,12 @@ namespace MajdataPlay.Game
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
             if (!canPlay)
             {
-                judgeTextDisplayer.Reset();
-                return;
+                return false;
             }
-            judgeTextDisplayer.Play(judgeResult);
+            _judgeTextDisplayer.Play(judgeResult);
+            return true;
         }
-        void PlayFastLate(in JudgeResult judgeResult)
+        bool PlayFastLate(in JudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -124,10 +134,10 @@ namespace MajdataPlay.Game
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
             if (!canPlay)
             {
-                fastLateDisplayer.Reset();
-                return;
+                return false;
             }
-            fastLateDisplayer.Play(judgeResult);
+            displayer.Play(judgeResult);
+            return true;
         }
         static bool IsClassCAvailable(in JudgeResult judgeResult)
         {

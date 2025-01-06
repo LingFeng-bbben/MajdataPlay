@@ -8,18 +8,17 @@ namespace MajdataPlay.Game
     {
         public Vector3 Position
         {
-            get => effectObject.transform.position;
-            set => effectObject.transform.position = value;
+            get => _gameObject.transform.position;
+            set => _gameObject.transform.position = value;
         }
         public Vector3 LocalPosition
         {
-            get => effectObject.transform.localPosition;
-            set => effectObject.transform.localPosition = value;
+            get => _gameObject.transform.localPosition;
+            set => _gameObject.transform.localPosition = value;
         }
-        [SerializeField]
-        GameObject effectObject;
-        [SerializeField]
-        Animator animator;
+
+        GameObject _gameObject;
+        Animator _animator;
 
         [SerializeField]
         SpriteRenderer textRenderer;
@@ -31,6 +30,11 @@ namespace MajdataPlay.Game
 
         bool _displayBreakScore = false;
         bool _displayCriticalPerfect = false;
+        void Awake()
+        {
+            _gameObject = gameObject;
+            _animator = GetComponent<Animator>();
+        }
         void Start() 
         {
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
@@ -56,11 +60,11 @@ namespace MajdataPlay.Game
         }
         public void Reset()
         {
-            effectObject.SetActive(false);
+            _gameObject.SetActive(false);
         }
         public void Play(in JudgeResult judgeResult, bool isClassC = false)
         {
-            effectObject.SetActive(true);
+            _gameObject.SetActive(true);
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Grade;
 
@@ -70,9 +74,9 @@ namespace MajdataPlay.Game
                 LoadTapSkin(judgeResult,isClassC);
             
             if (isBreak && result == JudgeGrade.Perfect)
-                animator.SetTrigger("break");
+                _animator.SetTrigger("break");
             else
-                animator.SetTrigger("perfect");
+                _animator.SetTrigger("perfect");
         }
         void LoadTapSkin(in JudgeResult judgeResult,bool isClassC = false)
         {

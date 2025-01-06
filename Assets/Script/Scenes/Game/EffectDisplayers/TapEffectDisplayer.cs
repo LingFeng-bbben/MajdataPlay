@@ -35,8 +35,8 @@ namespace MajdataPlay.Game
                     fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
                 }
 
-                judgeTextDisplayer.LocalPosition = textPosition;
-                fastLateDisplayer.LocalPosition = fastLatePosition;
+                _judgeTextDisplayer.LocalPosition = textPosition;
+                _fastLateDisplayerA.LocalPosition = fastLatePosition;
             }
         }
         /// <summary>
@@ -61,9 +61,11 @@ namespace MajdataPlay.Game
         Animator goodAnim;
 
         [SerializeField]
-        JudgeTextDisplayer judgeTextDisplayer;
+        JudgeTextDisplayer _judgeTextDisplayer;
         [SerializeField]
-        FastLateDisplayer fastLateDisplayer;
+        FastLateDisplayer _fastLateDisplayerA;
+        [SerializeField]
+        FastLateDisplayer _fastLateDisplayerB;
 
 
         void Start()
@@ -85,8 +87,9 @@ namespace MajdataPlay.Game
                 textPosition = effectPosition.GetPoint(-textDistance);
                 fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
             }
-            judgeTextDisplayer.LocalPosition = textPosition;
-            fastLateDisplayer.LocalPosition = fastLatePosition;
+            _judgeTextDisplayer.LocalPosition = textPosition;
+            _fastLateDisplayerA.LocalPosition = fastLatePosition;
+            _fastLateDisplayerB.LocalPosition = textPosition;
         }
         public void Reset()
         {
@@ -100,20 +103,30 @@ namespace MajdataPlay.Game
         public void ResetAll()
         {
             Reset();
-            judgeTextDisplayer.Reset();
-            fastLateDisplayer.Reset();
+            _judgeTextDisplayer.Reset();
+            _fastLateDisplayerA.Reset();
+            _fastLateDisplayerB.Reset();
         }
         public void Play(in JudgeResult judgeResult)
         {
+            _judgeTextDisplayer.Reset();
+            _fastLateDisplayerA.Reset();
+            _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
             if(IsClassCAvailable(judgeResult))
             {
-                judgeTextDisplayer.Play(judgeResult,true);
+                _judgeTextDisplayer.Play(judgeResult,true);
             }
             else
             {
-                PlayResult(judgeResult);
-                PlayFastLate(judgeResult);
+                if(PlayResult(judgeResult))
+                {
+                    PlayFastLate(judgeResult, _fastLateDisplayerA);
+                }
+                else
+                {
+                    PlayFastLate(judgeResult, _fastLateDisplayerB);
+                }
             }
         }
         void PlayEffect(in JudgeResult judgeResult)
@@ -171,7 +184,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void PlayResult(in JudgeResult judgeResult)
+        bool PlayResult(in JudgeResult judgeResult)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -181,12 +194,12 @@ namespace MajdataPlay.Game
 
             if (!canPlay)
             {
-                judgeTextDisplayer.Reset();
-                return;
+                return false;
             }
-            judgeTextDisplayer.Play(judgeResult);
+            _judgeTextDisplayer.Play(judgeResult);
+            return true;
         }
-        void PlayFastLate(in JudgeResult judgeResult)
+        bool PlayFastLate(in JudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -195,10 +208,10 @@ namespace MajdataPlay.Game
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
             if (!canPlay)
             {
-                fastLateDisplayer.Reset();
-                return;
+                return false;
             }
-            fastLateDisplayer.Play(judgeResult);
+            displayer.Play(judgeResult);
+            return true;
         }
         static bool IsClassCAvailable(in JudgeResult judgeResult)
         {

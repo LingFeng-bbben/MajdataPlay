@@ -8,24 +8,27 @@ namespace MajdataPlay.Game
     {
         public Vector3 Position
         {
-            get => effectObject.transform.position;
-            set => effectObject.transform.position = value;
+            get => _gameObject.transform.position;
+            set => _gameObject.transform.position = value;
         }
         public Vector3 LocalPosition
         {
-            get => effectObject.transform.localPosition;
-            set => effectObject.transform.localPosition = value;
+            get => _gameObject.transform.localPosition;
+            set => _gameObject.transform.localPosition = value;
         }
-        [SerializeField]
-        GameObject effectObject;
-        [SerializeField]
-        Animator animator;
+        GameObject _gameObject;
+        Animator _animator;
 
         [SerializeField]
         SpriteRenderer textRenderer;
 
         Sprite fastSprite;
         Sprite lateSprite;
+        void Awake()
+        {
+            _gameObject = gameObject;
+            _animator = gameObject.GetComponent<Animator>();
+        }
         void Start()
         {
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
@@ -34,7 +37,7 @@ namespace MajdataPlay.Game
         }
         public void Reset()
         {
-            effectObject.SetActive(false);
+            _gameObject.SetActive(false);
         }
         public void Play(in JudgeResult judgeResult)
         {
@@ -43,15 +46,15 @@ namespace MajdataPlay.Game
                 Reset();
                 return;
             }
-            effectObject.SetActive(true);
+            _gameObject.SetActive(true);
             if (judgeResult.IsFast)
                 textRenderer.sprite = fastSprite;
             else
                 textRenderer.sprite = lateSprite;
             if (judgeResult.IsBreak)
-                animator.SetTrigger("break");
+                _animator.SetTrigger("break");
             else
-                animator.SetTrigger("perfect");
+                _animator.SetTrigger("perfect");
         }
     }
 }
