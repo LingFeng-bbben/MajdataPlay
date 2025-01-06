@@ -55,29 +55,6 @@ namespace MajdataPlay.Game.Types
                 CurrentLevel = levels[0];
             }
         }
-        bool MoveNext()
-        {
-            if (_index >= _chartQueue.Length)
-                return false;
-
-            _index++;
-            for (; _index < _chartQueue.Length; _index++)
-            {
-                
-                if (_chartQueue[_index] is null)
-                {
-                    continue;
-                }
-                else
-                {
-                    Current = _chartQueue[_index];
-                    CurrentLevel = _levels[_index];
-                    return true;
-                }
-            }
-
-            return false;
-        }
         public void OnNoteJudged(in JudgeGrade grade)
         {
             if (!IsDanMode || DanInfo is null)
@@ -117,6 +94,29 @@ namespace MajdataPlay.Game.Types
                     break;
             }
             return true;
+        }
+        bool MoveNext()
+        {
+            if (_index >= _chartQueue.Length)
+                return false;
+
+            _index++;
+            for (; _index < _chartQueue.Length; _index++)
+            {
+
+                if (_chartQueue[_index] is null)
+                {
+                    continue;
+                }
+                else
+                {
+                    Current = _chartQueue[_index];
+                    CurrentLevel = _levels[_index];
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace MajdataPlay.Result
                         DX = 0,
                     },
                     SongInfo = _gameInfo.Current,
-                    ChartLevel = _gameInfo.CurrentLevel,
+                    Level = _gameInfo.CurrentLevel,
                     Fast = 0,
                     Late = 0,
                     DXScore = 0,
@@ -139,7 +139,7 @@ namespace MajdataPlay.Result
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX,song).Forget();
             if(!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
-                MajInstances.ScoreManager.SaveScore(result, result.ChartLevel);
+                MajInstances.ScoreManager.SaveScore(result, result.Level);
         }
 
         async UniTask LoadCover(SongDetail song)

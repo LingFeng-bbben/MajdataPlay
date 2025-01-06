@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Types;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace MajdataPlay.Timer
 {

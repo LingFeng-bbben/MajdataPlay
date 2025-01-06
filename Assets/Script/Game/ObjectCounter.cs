@@ -391,7 +391,7 @@ namespace MajdataPlay.Game
                     Classic = _accRate[0]
                 },
                 SongInfo = song,
-                ChartLevel = level,
+                Level = level,
                 JudgeRecord = judgeRecord,
                 Fast = _fast,
                 Late = _late,
