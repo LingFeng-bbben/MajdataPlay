@@ -19,6 +19,7 @@ namespace MajdataPlay.Result
     public class OnlineInteractionSender : MonoBehaviour
     {
         public Text infotext;
+        public Text uploadtext;
         public Image thumb;
 
         SongDetail SongDetail;
@@ -73,7 +74,21 @@ namespace MajdataPlay.Result
                 return;
             }
         }
-       
 
+        public async UniTask SendScore(MaiScore score)
+        {
+            uploadtext.text = "正在上传成绩";
+            try
+            {
+                await MajInstances.OnlineManager.SendScore(SongDetail, score);
+                uploadtext.text = "上传成绩成功";
+            }
+            catch (Exception ex)
+            {
+                uploadtext.text = ex.Message;
+                Debug.LogError(ex);
+                return;
+            }
+        }
     }
 }

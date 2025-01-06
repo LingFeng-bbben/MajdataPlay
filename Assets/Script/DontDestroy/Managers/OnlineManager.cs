@@ -114,6 +114,26 @@ public class OnlineManager : MonoBehaviour
         }
     }
 
+    public async UniTask SendScore(SongDetail song, MaiScore score)
+    {
+        await Login(song.ApiEndpoint);
+        var scoreUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/score";
+        var json = JsonSerializer.Serialize(score);
+        var task = _client.PostAsync(scoreUrl, new StringContent(json,Encoding.UTF8, "application/json"));
+        while (!task.IsCompleted)
+        {
+            await UniTask.Yield();
+        }
+        var task2 = task.Result.Content.ReadAsStringAsync();
+        while (!task2.IsCompleted)
+        {
+            await UniTask.Yield();
+        }
+        if (task.Result.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+            throw new Exception(task2.Result);
+        }
+    }
     static string ComputeMD5(string input)
     {
         using (var md5 = MD5.Create())

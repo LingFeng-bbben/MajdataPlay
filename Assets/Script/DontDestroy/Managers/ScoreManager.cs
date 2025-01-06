@@ -35,8 +35,8 @@ namespace MajdataPlay
             }
             var content = File.ReadAllText(path);
             List<MaiScore>? result = Serializer.Json.Deserialize<List<MaiScore>>(content, option);
-
-            if(result!=null)
+            //shoud do some warning here, or all score will be lost and overwirtten
+            if (result!=null)
             {
                 scores = result;
             }
@@ -55,7 +55,7 @@ namespace MajdataPlay
             }
             return record;
         }
-        public bool SaveScore(in GameResult result, ChartLevel level)
+        public MaiScore SaveScore(in GameResult result, ChartLevel level)
         {
             try
             {
@@ -94,11 +94,12 @@ namespace MajdataPlay
                         backendTask = SavingBackend();
                     });
 
-                return true;
+                return record;
             }
-            catch
+            catch(Exception ex)
             {
-                return false;
+                Debug.LogError(ex);
+                return null;
             }
         }
         async Task SavingBackend()

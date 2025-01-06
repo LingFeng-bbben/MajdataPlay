@@ -43,6 +43,8 @@ namespace MajdataPlay.Result
 
         GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
 
+        UniTask OnlineSaveTask = UniTask.Delay(0);
+
         void Start()
         {
             rank.text = "";
@@ -82,7 +84,8 @@ namespace MajdataPlay.Result
             var song = result.SongInfo;
             var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
-            GetComponent<OnlineInteractionSender>().Init(song);
+            var intractSender = GetComponent<OnlineInteractionSender>();
+            intractSender.Init(song);
 
             if (result.Acc.DX < 70)
             {
@@ -100,10 +103,10 @@ namespace MajdataPlay.Result
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
             level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
 
-            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%": $"{result.Acc.DX:F4}%";
+            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%" : $"{result.Acc.DX:F4}%";
             var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
             var historyacc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
-            accHistory.text = $"{nowacc-historyacc:+0.0000;-0.0000;0}%";
+            accHistory.text = $"{nowacc - historyacc:+0.0000;-0.0000;0}%";
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
                 dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
@@ -137,20 +140,26 @@ namespace MajdataPlay.Result
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
-            PlayVoice(result.Acc.DX,song).Forget();
-            if(!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
-                MajInstances.ScoreManager.SaveScore(result, result.Level);
+            PlayVoice(result.Acc.DX, song).Forget();
+            if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
+            {
+                var score = MajInstances.ScoreManager.SaveScore(result, result.Level);
+                if (score is not null && song.ApiEndpoint != null)
+                {
+                    OnlineSaveTask = intractSender.SendScore(score);
+                }
+            }
         }
 
         async UniTask LoadCover(SongDetail song)
-        {
-            var task = song.GetSpriteAsync();
-            while (!task.IsCompleted)
             {
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                var task = song.GetSpriteAsync();
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                }
+                coverImg.sprite = task.Result;
             }
-            coverImg.sprite = task.Result;
-        }
 
         async UniTask PlayVoice(double dxacc, SongDetail song)
         {
@@ -163,7 +172,8 @@ namespace MajdataPlay.Result
             {
                 MajInstances.AudioManager.PlaySFX("SSS+.wav");
                 rank.text = "SSS+";
-            }else if (dxacc >= 100f)
+            }
+            else if (dxacc >= 100f)
             {
                 MajInstances.AudioManager.PlaySFX("SSS.wav");
                 rank.text = "SSS";
@@ -201,34 +211,36 @@ namespace MajdataPlay.Result
             }
             else
             {
-                var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav"};
-                MajInstances.AudioManager.PlaySFX(list[Random.Range(0,list.Length)]);
+                var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav" };
+                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 await UniTask.WaitForSeconds(2);
             }
+            await OnlineSaveTask;
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
         }
 
 
         string BuildSubDisplayText(JudgeDetail judgeRecord)
-        {
-            var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-            var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-            var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-            var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
-            string[] nmsl = new string[]
             {
+                var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
+                var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
+                var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
+                var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
+                var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+                string[] nmsl = new string[]
+                {
                 "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
                 $"Tap  \t\t{tapJudgeInfo.CriticalPerfect}\t\t{tapJudgeInfo.Perfect}\t\t{tapJudgeInfo.Great}\t\t{tapJudgeInfo.Good}\t\t{tapJudgeInfo.Miss}",
                 $"Hold\t\t{holdJudgeInfo.CriticalPerfect}\t\t{holdJudgeInfo.Perfect}\t\t{holdJudgeInfo.Great}\t\t{holdJudgeInfo.Good}\t\t{holdJudgeInfo.Miss}",
                 $"Slide\t\t{slideJudgeInfo.CriticalPerfect}\t\t{slideJudgeInfo.Perfect}\t\t{slideJudgeInfo.Great}\t\t{slideJudgeInfo.Good}\t\t{slideJudgeInfo.Miss}",
                 $"Touch\t\t{touchJudgeInfo.CriticalPerfect}\t\t{touchJudgeInfo.Perfect}\t\t{touchJudgeInfo.Great}\t\t{touchJudgeInfo.Good}\t\t{touchJudgeInfo.Miss}",
                 $"Break\t\t{breakJudgeInfo.CriticalPerfect}\t\t{breakJudgeInfo.Perfect}\t\t{breakJudgeInfo.Great}\t\t{breakJudgeInfo.Good}\t\t{breakJudgeInfo.Miss}"
-            };
-            return string.Join("\n", nmsl);
-        }
-        
+                };
+                return string.Join("\n", nmsl);
+            }
+
+
         private void OnAreaDown(object sender, InputEventArgs e)
         {
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
@@ -241,7 +253,7 @@ namespace MajdataPlay.Result
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.SceneSwitcher.SwitchScene("TotalResult");
                         return;
-                        
+
                     }
                     else
                     {
@@ -252,7 +264,7 @@ namespace MajdataPlay.Result
                         //SongStorage.WorkingCollection.Index++;
                         //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
 
-                        MajInstances.SceneSwitcher.SwitchScene("Game",false);
+                        MajInstances.SceneSwitcher.SwitchScene("Game", false);
                         return;
                     }
                 }
