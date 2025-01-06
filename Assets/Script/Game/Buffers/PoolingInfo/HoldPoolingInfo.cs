@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.Game.Buffers
 {
-    public class HoldPoolingInfo: NotePoolingInfo
+    public class HoldPoolingInfo : NotePoolingInfo
     {
         public float LastFor { get; init; }
         public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;

@@ -1,5 +1,4 @@
-﻿
-namespace MajdataPlay.Types
+﻿namespace MajdataPlay.Game.Buffers
 {
     public abstract class NoteQueueInfo
     {

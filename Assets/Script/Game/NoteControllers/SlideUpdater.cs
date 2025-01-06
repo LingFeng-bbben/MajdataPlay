@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Buffers;
 using MajdataPlay.Utils;
 using System;
 #nullable enable

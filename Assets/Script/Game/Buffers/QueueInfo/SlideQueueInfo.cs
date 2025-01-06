@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay.Game.Buffers
 {
     public class SlideQueueInfo : NoteQueueInfo
     {

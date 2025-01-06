@@ -1,7 +1,6 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay.Game.Buffers
 {
     public abstract class NotePoolingInfo
     {

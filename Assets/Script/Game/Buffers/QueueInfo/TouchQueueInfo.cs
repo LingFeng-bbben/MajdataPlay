@@ -1,7 +1,8 @@
-﻿
-namespace MajdataPlay.Types
+﻿using MajdataPlay.Types;
+
+namespace MajdataPlay.Game.Buffers
 {
-    public sealed class TouchQueueInfo: NoteQueueInfo
+    public sealed class TouchQueueInfo : NoteQueueInfo
     {
         public static TouchQueueInfo Default => new TouchQueueInfo()
         {

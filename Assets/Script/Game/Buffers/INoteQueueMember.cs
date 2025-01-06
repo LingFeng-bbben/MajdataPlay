@@ -1,6 +1,4 @@
-﻿using MajdataPlay.Types;
-
-namespace MajdataPlay.Game.Buffers
+﻿namespace MajdataPlay.Game.Buffers
 {
     public interface INoteQueueMember<TMember> where TMember : NoteQueueInfo
     {

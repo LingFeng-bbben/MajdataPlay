@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Buffers;
-using MajdataPlay.Types;
 
 namespace MajdataPlay.Game.Buffers
 {

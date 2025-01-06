@@ -1,9 +1,8 @@
-﻿
-namespace MajdataPlay.Types
+﻿namespace MajdataPlay.Game.Buffers
 {
-    public sealed class TapQueueInfo: NoteQueueInfo
+    public sealed class TapQueueInfo : NoteQueueInfo
     {
-        public static TapQueueInfo Default => new TapQueueInfo() 
+        public static TapQueueInfo Default => new TapQueueInfo()
         {
             Index = 0,
             KeyIndex = 1
