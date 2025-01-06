@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Interfaces;
+﻿using MajdataPlay.Game.Types;
+using MajdataPlay.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
