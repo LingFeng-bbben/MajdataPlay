@@ -2,7 +2,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
-using MajdataPlay.Types.Attribute;
+using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -88,7 +88,7 @@ namespace MajdataPlay.Game.Notes
         protected InputManager _ioManager = MajInstances.InputManager;
         protected bool _isJudged = false;
         /// <summary>
-        /// Õý½âÖ¡
+        /// ï¿½ï¿½ï¿½ï¿½Ö¡
         /// </summary>
         protected float _judgeTiming;
         protected float _judgeDiff = -1;
@@ -221,19 +221,19 @@ namespace MajdataPlay.Game.Notes
             }    
         }
         /// <summary>
-        /// »ñÈ¡µ±Ç°Ê±¿Ì¾àÀëµÖ´ïÅÐ¶¨ÏßµÄ³¤¶È
+        /// ï¿½ï¿½È¡ï¿½ï¿½Ç°Ê±ï¿½Ì¾ï¿½ï¿½ï¿½Ö´ï¿½ï¿½Ð¶ï¿½ï¿½ßµÄ³ï¿½ï¿½ï¿½
         /// </summary>
         /// <returns>
-        /// µ±Ç°Ê±¿ÌÔÚÅÐ¶¨Ïßºó·½£¬½á¹ûÎªÕýÊý
-        /// <para>µ±Ç°Ê±¿ÌÔÚÅÐ¶¨ÏßÇ°·½£¬½á¹ûÎª¸ºÊý</para>
+        /// ï¿½ï¿½Ç°Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ßºó·½£ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½
+        /// <para>ï¿½ï¿½Ç°Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½</para>
         /// </returns>
         protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - Timing;
         /// <summary>
-        /// »ñÈ¡µ±Ç°Ê±¿Ì¾àÀëÕý½âÖ¡µÄ³¤¶È
+        /// ï¿½ï¿½È¡ï¿½ï¿½Ç°Ê±ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½Ä³ï¿½ï¿½ï¿½
         /// </summary>
         /// <returns>
-        /// µ±Ç°Ê±¿ÌÔÚÕý½âÖ¡ºó·½£¬½á¹ûÎªÕýÊý
-        /// <para>µ±Ç°Ê±¿ÌÔÚÕý½âÖ¡Ç°·½£¬½á¹ûÎª¸ºÊý</para>
+        /// ï¿½ï¿½Ç°Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ó·½£ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½
+        /// <para>ï¿½ï¿½Ç°Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½</para>
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
@@ -393,10 +393,10 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected float _length = 1f;
         /// <summary>
-        /// ·µ»ØHoldµÄÊ£Óà³¤¶È
+        /// ï¿½ï¿½ï¿½ï¿½Holdï¿½ï¿½Ê£ï¿½à³¤ï¿½ï¿½
         /// </summary>
         /// <returns>
-        /// HoldÊ£Óà³¤¶È
+        /// HoldÊ£ï¿½à³¤ï¿½ï¿½
         /// </returns>
         protected float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
         protected float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);

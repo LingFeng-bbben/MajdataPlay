@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Game.Types;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
-using MajdataPlay.Types.Attribute;
+using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;

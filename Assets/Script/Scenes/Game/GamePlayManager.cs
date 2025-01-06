@@ -3,7 +3,7 @@ using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
-using MajdataPlay.Types.Attribute;
+using MajdataPlay.Attributes;
 using MajSimaiDecode;
 using System;
 using System.IO;

@@ -6,11 +6,11 @@ using MajdataPlay.Game.Types;
 using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
-using MajdataPlay.Types.Attribute;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MajdataPlay.Attributes;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes

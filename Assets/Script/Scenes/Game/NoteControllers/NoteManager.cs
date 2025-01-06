@@ -1,6 +1,6 @@
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Types;
-using MajdataPlay.Types.Attribute;
+using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,7 +60,7 @@ namespace MajdataPlay.Game
         {
             _noteCurrentIndex.Clear();
             _touchCurrentIndex.Clear();
-            //°ËÌõ¹ìµÀ ÅÐ¶¨µ½´Ë¹ìµÀÉÏµÄµÚ¼¸¸önoteÁË
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½ÏµÄµÚ¼ï¿½ï¿½ï¿½noteï¿½ï¿½
             for (int i = 1; i < 9; i++)
                 _noteCurrentIndex.Add(i, 0);
             for (int i = 0; i < 33; i++)

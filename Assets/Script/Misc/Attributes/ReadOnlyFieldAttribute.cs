@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Types.Attribute
+namespace MajdataPlay.Attributes
 {
     public class ReadOnlyFieldAttribute : PropertyAttribute
     {
