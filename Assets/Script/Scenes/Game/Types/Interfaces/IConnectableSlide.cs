@@ -1,14 +1,13 @@
-﻿using MajdataPlay.Game.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Interfaces
+namespace MajdataPlay.Game.Types
 {
-    public interface IConnectableSlide: IStatefulNote, IEndableNote
+    public interface IConnectableSlide : IStatefulNote, IEndableNote
     {
         ConnSlideInfo ConnectInfo { get; }
         GameObject GameObject { get; }

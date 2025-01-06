@@ -1,5 +1,4 @@
 using MajdataPlay.Extensions;
-using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Attributes;
@@ -10,6 +9,8 @@ using System.Threading.Tasks;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
 using Random = System.Random;
+using MajdataPlay.Game.Types;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {

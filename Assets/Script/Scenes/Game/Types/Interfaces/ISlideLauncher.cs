@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Interfaces
+namespace MajdataPlay.Game.Types
 {
     public interface ISlideLauncher
     {

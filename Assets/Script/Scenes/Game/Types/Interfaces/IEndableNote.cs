@@ -1,5 +1,7 @@
 ﻿#nullable enable
-namespace MajdataPlay.Interfaces
+using MajdataPlay;
+
+namespace MajdataPlay.Game.Types
 {
     public interface IEndableNote
     {

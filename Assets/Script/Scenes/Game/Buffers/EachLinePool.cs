@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
-using MajdataPlay.Interfaces;
+using MajdataPlay.Game.Types;
 using System;
 using UnityEngine;
 #nullable enable

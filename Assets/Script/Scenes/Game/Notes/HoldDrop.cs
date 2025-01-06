@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Game.Controllers;
-using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using MajdataPlay.Types;
@@ -8,6 +7,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
+using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
