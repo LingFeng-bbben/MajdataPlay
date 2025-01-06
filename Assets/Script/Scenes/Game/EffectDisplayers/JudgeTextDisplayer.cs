@@ -34,9 +34,6 @@ namespace MajdataPlay.Game
         {
             _gameObject = gameObject;
             _animator = GetComponent<Animator>();
-        }
-        void Start() 
-        {
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
             _displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
             _displayCriticalPerfect = MajInstances.Setting.Display.DisplayCriticalPerfect;

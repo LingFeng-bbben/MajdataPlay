@@ -28,9 +28,6 @@ namespace MajdataPlay.Game
         {
             _gameObject = gameObject;
             _animator = gameObject.GetComponent<Animator>();
-        }
-        void Start()
-        {
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
             fastSprite = skin.Fast;
             lateSprite = skin.Late;
