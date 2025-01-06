@@ -60,52 +60,14 @@ namespace MajdataPlay.Result
         {
             infotext.text = "稍等...";
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
-            var client = HttpTransporter.ShareClient;
             try
             {
-
-                var interactUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/interact";
-                var task = client.GetStringAsync(interactUrl);
-                while (!task.IsCompleted)
-                {
-                    await UniTask.Yield();
-                }
-                var intjson = task.Result;
-
-                var intlist = JsonSerializer.Deserialize<MajNetSongInteract>(intjson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (intlist.Likes.Any(o => o == song.ApiEndpoint.Username))
-                {
-                    infotext.text = "你已经点过赞了！@！";
-                    //MajInstances.LightManager.SetButtonLight(Color.red, 4);
-                    return;
-                }
-
-                
-
-                var formData = new MultipartFormDataContent
-            {
-                { new StringContent("like"), "type" },
-                { new StringContent("..."), "content" },
-            };
-                var liketask = client.PostAsync(interactUrl, formData);
-                while (!liketask.IsCompleted)
-                {
-                    await UniTask.Yield();
-                }
-
-                if (liketask.Result.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    infotext.text = "点赞成功";
-                    //MajInstances.LightManager.SetButtonLight(Color.green, 4);
-                }
+                await MajInstances.OnlineManager.SendLike(song);
+                infotext.text = "点赞成功";
             }
             catch (Exception ex)
             {
-                infotext.text = "点赞失败";
+                infotext.text = ex.Message;
                 Debug.LogError(ex);
                 //MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
