@@ -20,11 +20,6 @@ public class OnlineManager : MonoBehaviour
         MajInstances.OnlineManager = this;
 
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     public async UniTask<bool> CheckLogin(ApiEndpoint apiEndpoint)
     {
