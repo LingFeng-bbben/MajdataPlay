@@ -17,6 +17,7 @@ using MychIO.Connection;
 using static UnityEngine.GraphicsBuffer;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting.Antlr3.Runtime;
+using MajdataPlay.Collections;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -404,8 +405,16 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Button? GetButton(SensorType type)
         {
-            var buttons = _buttons.AsSpan();
-            return buttons.Find(x => x.Type == type);
+            return type switch
+            {
+                _ when type < SensorType.A1 => throw new ArgumentOutOfRangeException(),
+                _ when type < SensorType.B1 => _buttons[(int)type],
+                SensorType.Test => _buttons[8],
+                SensorType.P1 => _buttons[9],
+                SensorType.Service => _buttons[10],
+                SensorType.P2 => _buttons[11],
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor GetSensor(SensorType target) => _sensors[(int)target];

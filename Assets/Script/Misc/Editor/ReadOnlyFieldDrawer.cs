@@ -1,8 +1,9 @@
-﻿using MajdataPlay.Types.Attribute;
+﻿
+using MajdataPlay.Attributes;
 using UnityEditor;
 using UnityEngine;
 
-namespace MajdataPlay.Misc.Editor
+namespace MajdataPlay.Editor
 {
     [CustomPropertyDrawer(typeof(ReadOnlyFieldAttribute))]
     public class ReadOnlyFieldDrawer : PropertyDrawer

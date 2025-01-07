@@ -14,11 +14,13 @@ using Debug = UnityEngine.Debug;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
-using MajdataPlay.Types.Attribute;
+using MajdataPlay.Attributes;
 using MajdataPlay.Net;
 using System.Collections.Concurrent;
 using MychIO;
 using UnityEngine.Rendering;
+using MajdataPlay.Timer;
+using MajdataPlay.Collections;
 
 namespace MajdataPlay
 {
@@ -26,7 +28,6 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static GameResult? LastGameResult { get; set; } = null;
-        public CancellationToken AllTaskToken { get => _globalCTS.Token; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
@@ -57,8 +58,23 @@ namespace MajdataPlay
         /// <summary>
         /// Current difficult
         /// </summary>
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
+        public ChartLevel SelectedDiff
+        {
+            get
+            {
+                return _selectedDiff;
+            }
+            set 
+            {
+                _selectedDiff = value;
+            }
+        }
+        private ChartLevel _selectedDiff = ChartLevel.Easy;
         public int LastSettingPage { get; set; } = 0;
+
+        //public bool isDanMode = false;
+        //public int DanHP = 500;
+        //public List<GameResult> DanResults = new();
 
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
@@ -225,7 +241,7 @@ namespace MajdataPlay
             {
                 if (_logQueue.Count == 0)
                 {
-                    if (AllTaskToken.IsCancellationRequested)
+                    if (GlobalCT.IsCancellationRequested)
                         return;
                     await Task.Delay(50);
                     continue;

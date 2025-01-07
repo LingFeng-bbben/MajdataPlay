@@ -134,11 +134,11 @@ namespace MajdataPlay.Types
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = true;
-        public GraphicsDeviceType GraphicesAPI { get; set; } = GraphicsDeviceType.Vulkan;
     }
     public class MiscOptions
     {
         public InputDeviceOptions InputDevice { get; set; } = new();
+        public OutputDeviceOptions OutputDevice { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
@@ -148,6 +148,16 @@ namespace MajdataPlay.Types
     {
         public ButtonRingOptions ButtonRing { get; set; } = new();
         public TouchPanelOptions TouchPanel { get; set; } = new();
+    }
+    public class OutputDeviceOptions
+    {
+        public LedOptions Led { get; set; } = new();
+    }
+    public class LedOptions
+    {
+        public bool Enable { get; set; } = true;
+        public int COMPort { get; set; } = 21;
+        public int RefreshRateMs { get; set; } = 16;
     }
     public class ButtonRingOptions
     {

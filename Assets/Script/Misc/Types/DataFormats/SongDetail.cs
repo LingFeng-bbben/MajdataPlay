@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System;
@@ -8,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -208,27 +210,34 @@ namespace MajdataPlay.Types
             return string.Empty;
         }
 
-        public async Task<Sprite> GetSpriteAsync()
+        private bool _spriteLoadLock = false;
+        public async Task<Sprite> GetSpriteAsync(CancellationToken ct = default)
         {
+            while (_spriteLoadLock) await Task.Delay(200);
+            _spriteLoadLock = true;
             if (SongCover != null)
             {
                 Debug.Log("Memory Cache Hit");
+                _spriteLoadLock = false;
                 return SongCover;
             }
             if (string.IsNullOrEmpty(CoverPath))
             {
                 SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
+                _spriteLoadLock = false;
                 return SongCover;
             }
             if (IsOnline)
             {
                 Debug.Log("Try load cover online" + CoverPath);
-                SongCover = await SpriteLoader.LoadOnlineAsync(CoverPath);
+                SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
+                _spriteLoadLock = false;
                 return SongCover;
             }
             else
             {
-                SongCover = await SpriteLoader.LoadAsync(CoverPath);
+                SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
+                _spriteLoadLock = false;
                 return SongCover;
             }
 

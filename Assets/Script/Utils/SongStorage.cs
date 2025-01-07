@@ -106,7 +106,7 @@ namespace MajdataPlay.Utils
                 {
                     progressReporter.Report(new ChartScanProgress()
                     {
-                        StorageType = ChartStorageType.Online,
+                        StorageType = ChartStorageLocation.Online,
                         Message = item.Name
                     });
                     var result = await GetOnlineCollection(item);
@@ -124,7 +124,49 @@ namespace MajdataPlay.Utils
                 }
             }
             collections.Add(new SongCollection("All", allcharts.ToArray()));
-
+            Debug.Log("Load Dans");
+            var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
+            foreach (var file in danFiles)
+            {
+                var json = File.ReadAllText(file.FullName);
+                var dan = Serializer.Json.Deserialize<DanInfo>(json, new JsonSerializerOptions()
+                {
+                    PropertyNameCaseInsensitive = false
+                });
+                if(dan is null)
+                {
+                    Debug.LogError("Failed to load dan file:" + file.FullName);
+                    continue;
+                }
+                List<SongDetail> danSongs = new();
+                foreach (var hash in dan.SongHashs)
+                {
+                    var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
+                    if (songDetail is not null)
+                        danSongs.Add(songDetail);
+                    else
+                    {
+                        Debug.LogError("Cannot find the song with hash:" + hash);
+                        if (dan.IsPlayList)
+                        {
+                            continue;
+                        }
+                        danSongs.Clear();
+                        break;
+                    }
+                }
+                if(danSongs.Count == 0)
+                {
+                    Debug.LogError("Failed to load dan, songs are empty or unable to find:" + dan.Name);
+                    continue;
+                }
+                collections.Add(new SongCollection(dan.Name, danSongs.ToArray())
+                {
+                    Type = dan.IsPlayList ? ChartStorageType.List : ChartStorageType.Dan,
+                    DanInfo = dan.IsPlayList ? null : dan
+                });
+                Debug.Log("Loaded Dan:" + dan.Name);
+            }
             return collections.ToArray();
         }
         static async Task<SongCollection> GetCollection(string rootPath)
@@ -189,7 +231,7 @@ namespace MajdataPlay.Utils
                 Debug.Log("Loaded Online Charts List:" + gameList.Count);
                 return new SongCollection(name, gameList.ToArray())
                 {
-                    Type = ChartStorageType.Online
+                    Location = ChartStorageLocation.Online
                 };
             }
             catch (Exception e)

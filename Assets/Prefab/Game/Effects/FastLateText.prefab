@@ -71,7 +71,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1222518565
-  m_SortingLayer: 8
+  m_SortingLayer: 9
   m_SortingOrder: 32
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -126,6 +126,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2669669628599310805}
   - component: {fileID: 8374905674659227887}
+  - component: {fileID: 3180566950950504753}
   m_Layer: 0
   m_Name: FastLateText
   m_TagString: Untagged
@@ -170,3 +171,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3180566950950504753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5672363247845975299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 462f5d884a2e1204da0d9420c86a975e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectObject: {fileID: 5672363247845975299}
+  animator: {fileID: 8374905674659227887}
+  textRenderer: {fileID: 6012977481137812962}
