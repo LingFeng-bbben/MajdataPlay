@@ -50,7 +50,7 @@ namespace MajdataPlay.Result
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             GameResult result;
-            var lastResult = _gameInfo.GetLastResult();
+            var lastResult = GameManager.LastGameResult;
             if (lastResult is null)
             {
                 result = new GameResult()
@@ -75,8 +75,6 @@ namespace MajdataPlay.Result
                 result = (GameResult)lastResult;
             }
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
-
-            GameManager.LastGameResult = null;
 
             MajInstances.LightManager.SetAllLight(Color.white);
 
@@ -246,6 +244,7 @@ namespace MajdataPlay.Result
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
                 var canNextRound = _gameInfo.NextRound();
+                GameManager.LastGameResult = null;
                 if (_gameInfo.IsDanMode)
                 {
                     if (!canNextRound)

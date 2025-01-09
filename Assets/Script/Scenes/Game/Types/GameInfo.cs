@@ -28,7 +28,6 @@ namespace MajdataPlay.Game.Types
         public GameResult[] Results { get; init; }
 
         int _index = 0;
-        int _playedCount = 0;
         SongDetail[] _chartQueue;
         ChartLevel[] _levels;
         public GameInfo(GameMode mode, SongDetail[] chartQueue,ChartLevel[] levels)
@@ -65,11 +64,9 @@ namespace MajdataPlay.Game.Types
         }
         public void RecordResult(in GameResult result)
         {
-            if (_playedCount == Results.Length)
-                return;
-            Results[_playedCount++] = result;
+            Results[_index] = result;
         }
-        public GameResult? GetLastResult()
+/*        public GameResult? GetLastResult()
         {
             if (_playedCount == 0)
                 return null;
@@ -80,7 +77,7 @@ namespace MajdataPlay.Game.Types
                 return Results[Results.Length - 1];
             }
             return Results[_playedCount - 1];
-        }
+        }*/
         public bool NextRound()
         {
             var canMoveNext = MoveNext();
