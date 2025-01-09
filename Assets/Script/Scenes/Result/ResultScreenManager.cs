@@ -141,7 +141,8 @@ namespace MajdataPlay.Result
             PlayVoice(result.Acc.DX, song).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
-                var score = MajInstances.ScoreManager.SaveScore(result, result.Level);
+                MajInstances.ScoreManager.SaveScore(result, result.Level);
+                var score = MajInstances.ScoreManager.ResultToScore(result,result.Level);
                 if (score is not null && song.ApiEndpoint != null)
                 {
                     OnlineSaveTask = intractSender.SendScore(score);

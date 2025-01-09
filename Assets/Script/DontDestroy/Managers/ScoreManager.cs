@@ -55,7 +55,29 @@ namespace MajdataPlay
             }
             return record;
         }
-        public MaiScore SaveScore(in GameResult result, ChartLevel level)
+
+        public MaiScore ResultToScore(in GameResult result, ChartLevel level)
+        {
+            var songInfo = result.SongInfo;
+            var record = new MaiScore()
+            {
+                ChartLevel = level,
+                Hash = songInfo.Hash,
+                PlayCount = 0
+            };
+            record.Acc = result.Acc;
+
+            record.DXScore = result.DXScore;
+            record.TotalDXScore = result.TotalDXScore;
+
+            record.JudgeDeatil = result.JudgeRecord;
+            record.Fast = result.Fast;
+            record.Late = result.Late;
+            record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;
+            record.Timestamp = DateTime.Now;
+            return record;
+        }
+        public bool SaveScore(in GameResult result, ChartLevel level)
         {
             try
             {
@@ -94,12 +116,12 @@ namespace MajdataPlay
                         backendTask = SavingBackend();
                     });
 
-                return record;
+                return true ;
             }
             catch(Exception ex)
             {
                 Debug.LogError(ex);
-                return null;
+                return false;
             }
         }
         async Task SavingBackend()
