@@ -206,7 +206,8 @@ namespace MajdataPlay.IO
                 var ioManager = MajInstanceHelper<IOManager>.Instance!;
                 var token = GameManager.GlobalCT;
                 var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
-                var commands = new LedCommand[8];
+                var commands = new LedCommand[9];
+                commands[8] = LedCommand.Update;
                 while (!token.IsCancellationRequested)
                 {
                     var startAt = MajTimeline.UnscaledTime;
