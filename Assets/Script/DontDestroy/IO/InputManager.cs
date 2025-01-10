@@ -158,6 +158,7 @@ namespace MajdataPlay.IO
         {
             if(_ioManager is null)
                 _ioManager = new();
+            MajInstanceHelper<IOManager>.Instance = _ioManager;
             var useHID = MajInstances.Setting.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
             var executionQueue = GameManager.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();

@@ -2,13 +2,12 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -109,7 +108,18 @@ namespace MajdataPlay.IO
             //}
             _ledDevices[button].SetColor(lightColor);
         }
+        Memory<byte> BuildSetColorPacket(Memory<byte> memory,int index, Color newColor)
+        {
+            _templateSingle.CopyTo(memory);
+            var packet = memory.Span;
+            packet[5] = (byte)index;
+            packet[6] = (byte)(newColor.r * 255);
+            packet[7] = (byte)(newColor.g * 255);
+            packet[8] = (byte)(newColor.b * 255);
+            packet[9] = CalculateCheckSum(packet.Slice(0, 9));
 
+            return memory;
+        }
         public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 300)
         {
             _ledDevices[button].SetColor(lightColor, durationMs);
@@ -146,16 +156,19 @@ namespace MajdataPlay.IO
                         var serialStream = _serial.BaseStream;
                         foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                         {
-                            var index = device!.Index;
-                            var color = device.Color;
-                            var packet = _templateSingle;
-                            packet[5] = (byte)index;
-                            packet[6] = (byte)(color.r * 255);
-                            packet[7] = (byte)(color.g * 255);
-                            packet[8] = (byte)(color.b * 255);
-                            packet[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+                            using(var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                            {
+                                var index = device!.Index;
+                                var color = device.Color;
+                                var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
+                                //rentedMemory.Span[5] = (byte)index;
+                                //rentedMemory.Span[6] = (byte)(color.r * 255);
+                                //rentedMemory.Span[7] = (byte)(color.g * 255);
+                                //rentedMemory.Span[8] = (byte)(color.b * 255);
+                                //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
 
-                            await serialStream.WriteAsync(packet.AsMemory());
+                                await serialStream.WriteAsync(packet.Slice(0, 10));
+                            }
                         }
                         await serialStream.WriteAsync(_templateUpdate.AsMemory());
                     }
