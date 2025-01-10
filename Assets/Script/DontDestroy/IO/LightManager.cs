@@ -1,11 +1,14 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
+using MychIO;
+using MychIO.Device;
 using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -22,10 +25,10 @@ namespace MajdataPlay.IO
         //List<byte> _templateSingle = new List<byte>() { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
         readonly byte[] _templateSingle = new byte[] { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00 };
         readonly byte[] _templateUpdate = new byte[]
-        { 
-            0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F 
+        {
+            0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F
         };
-        
+
         private void Awake()
         {
             MajInstances.LightManager = this;
@@ -90,25 +93,16 @@ namespace MajdataPlay.IO
         }
         public void SetAllLight(Color lightColor)
         {
-            foreach(var device in ArrayHelper.ToEnumerable(_ledDevices))
+            foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
             {
                 device!.SetColor(lightColor);
             }
         }
-
         public void SetButtonLight(Color lightColor, int button)
         {
-            //if (_useDummy)
-            //{
-            //    _dummyLights[button].color = lightColor;
-            //}
-            //else
-            //{
-            //    SetButtonLightSerial(lightColor, button);
-            //}
             _ledDevices[button].SetColor(lightColor);
         }
-        Memory<byte> BuildSetColorPacket(Memory<byte> memory,int index, Color newColor)
+        Memory<byte> BuildSetColorPacket(Memory<byte> memory, int index, Color newColor)
         {
             _templateSingle.CopyTo(memory);
             var packet = memory.Span;
@@ -120,20 +114,30 @@ namespace MajdataPlay.IO
 
             return memory;
         }
+        LedCommand BuildSetColorCommand(int index, Color newColor)
+        {
+            Span<byte> data = stackalloc byte[4];
+            data[0] = (byte)(LedCommand.SetColor0 + index);
+            data[1] = (byte)(newColor.r * 255);
+            data[2] = (byte)(newColor.g * 255);
+            data[3] = (byte)(newColor.b * 255);
+
+            return MemoryMarshal.Read<LedCommand>(data);
+        }
         public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 300)
         {
             _ledDevices[button].SetColor(lightColor, durationMs);
         }
-        public void SetButtonLightWithTimeout(Color lightColor, int button,TimeSpan duration)
+        public void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
-            _ledDevices[button].SetColor(lightColor,duration);
+            _ledDevices[button].SetColor(lightColor, duration);
         }
         async void UpdateLedDeviceAsync()
         {
             UniTask.Void(async () =>
             {
                 var token = GameManager.GlobalCT;
-                while(!token.IsCancellationRequested)
+                while (!token.IsCancellationRequested)
                 {
                     foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                     {
@@ -144,6 +148,18 @@ namespace MajdataPlay.IO
             });
             if (_useDummy || !MajInstances.Setting.Misc.OutputDevice.Led.Enable)
                 return;
+
+            if (MajInstanceHelper<IOManager>.Instance is null)
+            {
+                await UpdateInternalLedManagerAsync();
+            }
+            else
+            {
+                await UpdateExternalLedManagerAsync();
+            }
+        }
+        async Task UpdateInternalLedManagerAsync()
+        {
             await Task.Run(async () =>
             {
                 var token = GameManager.GlobalCT;
@@ -156,7 +172,7 @@ namespace MajdataPlay.IO
                         var serialStream = _serial.BaseStream;
                         foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                         {
-                            using(var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
                             {
                                 var index = device!.Index;
                                 var color = device.Color;
@@ -171,6 +187,41 @@ namespace MajdataPlay.IO
                             }
                         }
                         await serialStream.WriteAsync(_templateUpdate.AsMemory());
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogException(ex);
+                    }
+                    var endAt = MajTimeline.UnscaledTime;
+                    var elapsedTime = endAt - startAt;
+                    var waitTime = elapsedTime.TotalMilliseconds > refreshRateMs ? 0 : refreshRateMs - elapsedTime.TotalMilliseconds;
+                    await Task.Delay(TimeSpan.FromMilliseconds(waitTime));
+                }
+            });
+        }
+        async Task UpdateExternalLedManagerAsync()
+        {
+            await Task.Run(async () =>
+            {
+                var ioManager = MajInstanceHelper<IOManager>.Instance!;
+                var token = GameManager.GlobalCT;
+                var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
+                var commands = new LedCommand[8];
+                while (!token.IsCancellationRequested)
+                {
+                    var startAt = MajTimeline.UnscaledTime;
+                    try
+                    {
+                        for (var i = 0; i < 8; i++) 
+                        {
+                            var device = _ledDevices[i];
+                            var index = device.Index;
+                            var color = device.Color;
+                            var command = BuildSetColorCommand(index, color);
+
+                            commands[i] = command;
+                        }
+                        await ioManager.WriteToDevice(DeviceClassification.LedDevice, commands);
                     }
                     catch (Exception ex)
                     {
