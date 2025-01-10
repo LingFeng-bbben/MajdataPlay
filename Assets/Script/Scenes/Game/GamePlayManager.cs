@@ -796,7 +796,6 @@ namespace MajdataPlay.Game
         }
         public void GameOver()
         {
-            //TODO: Play GameOver Animation
             DisposeAudioTrack();
             CalculateScore(playEffect:false);
 

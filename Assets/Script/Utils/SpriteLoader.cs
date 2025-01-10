@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Net;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -42,7 +43,7 @@ namespace MajdataPlay.Utils
             byte[] bytes;
             if (!File.Exists(cachefile))
             {
-                var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
+                var client = HttpTransporter.ShareClient;
                 bytes = await client.GetByteArrayAsync(uri);
                 await File.WriteAllBytesAsync(cachefile, bytes, ct);
             }
