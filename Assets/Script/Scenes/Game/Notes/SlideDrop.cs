@@ -113,15 +113,19 @@ namespace MajdataPlay.Game.Notes
             _starTransforms[0].position = _slidePositions[0];
             _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
             _judgeQueues[0] = _table.JudgeQueue;
-
+            var judgeQueue = _judgeQueues[0].Span;
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
-                _judgeQueues[0].LastOrDefault().SetIsLast();
+            {
+                judgeQueue[judgeQueue.Length - 1].SetIsLast();
+            }
             else if (ConnectInfo.IsConnSlide)
-                _judgeQueues[0].LastOrDefault().SetNonLast();
+            {
+                judgeQueue[judgeQueue.Length - 1].SetNonLast();
+            }
         }
         void UpdateJudgeQueue()
         {
-            var judgeQueue = _judgeQueues[0];
+            var judgeQueue = _judgeQueues[0].Span;
             if (ConnectInfo.TotalJudgeQueueLen < 4)
             {
                 if (ConnectInfo.IsGroupPartHead)
@@ -296,7 +300,8 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_gpManager.IsAutoplay)
                 return;
-            var queue = _judgeQueues[0];
+            ref var queueMemory = ref _judgeQueues[0];
+            var queue = queueMemory.Span;
             _isChecking = true;
 
 
@@ -329,7 +334,7 @@ namespace MajdataPlay.Game.Notes
                 if (second.IsFinished)
                 {
                     HideBar(first.SlideIndex);
-                    _judgeQueues[0] = queue.Skip(2).ToArray();
+                    queueMemory = queueMemory.Slice(2);
                     _isChecking = false;
                     SetParentFinish();
                     return;
@@ -337,7 +342,7 @@ namespace MajdataPlay.Game.Notes
                 else if (second.On)
                 {
                     HideBar(first.SlideIndex);
-                    _judgeQueues[0] = queue.Skip(1).ToArray();
+                    queueMemory = queueMemory.Slice(1);
                     _isChecking = false;
                     SetParentFinish();
                     return;
@@ -347,7 +352,7 @@ namespace MajdataPlay.Game.Notes
             if (first.IsFinished)
             {
                 HideBar(first.SlideIndex);
-                _judgeQueues[0] = queue.Skip(1).ToArray();
+                queueMemory = queueMemory.Slice(1);
                 _isChecking = false;
                 SetParentFinish();
                 return;
@@ -468,9 +473,10 @@ namespace MajdataPlay.Game.Notes
 
             if(_gpManager.IsAutoplay)
             {
-                var queue = _judgeQueues?[0];
+                var queueMemory = _judgeQueues[0];
+                var queue = queueMemory.Span;
                 var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-                if (queue is null || queue.IsEmpty())
+                if (queueMemory.IsEmpty)
                     return;
                 else if(process >= 1)
                 {
@@ -492,7 +498,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 else if(process > 0 && canPlaySFX)
                     PlaySFX();
-                var areaIndex = (int)(process * queue.Length) - 1;
+                var areaIndex = (int)(process * queueMemory.Length) - 1;
                 if (areaIndex < 0)
                     return;
                 var barIndex = queue[areaIndex].SlideIndex;

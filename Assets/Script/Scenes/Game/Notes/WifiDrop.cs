@@ -36,7 +36,10 @@ namespace MajdataPlay.Game.Notes
                 return;
             State = NoteStatus.PreInitialized;
             ConnectInfo.StartTiming = Timing;
-            _judgeQueues = SlideTables.GetWifiTable(StartPos);
+            var wifiTable = SlideTables.GetWifiTable(StartPos);
+            _judgeQueues[0] = wifiTable[0];
+            _judgeQueues[1] = wifiTable[1];
+            _judgeQueues[2] = wifiTable[2];
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
@@ -111,7 +114,7 @@ namespace MajdataPlay.Game.Notes
             _judgeTiming = Timing + (Length * (1 - wifiConst));
             _lastWaitTime = Length * wifiConst;
 
-            _judgeAreas = _judgeQueues.SelectMany(x => x.SelectMany(y => y.GetSensorTypes()))
+            _judgeAreas = _judgeQueues.SelectMany(x => x.ToArray().SelectMany(y => y.GetSensorTypes()))
                                       .GroupBy(x => x)
                                       .Select(x => x.Key)
                                       .ToArray();
@@ -165,19 +168,22 @@ namespace MajdataPlay.Game.Notes
                 return;
             _isChecking = true;
             for (int i = 0; i < 3; i++)
+            {
                 Check(ref _judgeQueues[i]);
+            }
             _isChecking = false;
         }
-        void Check(ref JudgeArea[] judgeQueue)
+        void Check(ref Memory<JudgeArea> queueMemory)
         {
-            if (judgeQueue.IsEmpty())
+            if (queueMemory.IsEmpty)
                 return;
 
-            var first = judgeQueue.First();
+            var queue = queueMemory.Span;
+            var first = queue[0];
             JudgeArea? second = null;
 
-            if (judgeQueue.Length >= 2)
-                second = judgeQueue[1];
+            if (queueMemory.Length >= 2)
+                second = queue[1];
             var fType = first.GetSensorTypes();
             foreach (var t in fType)
             {
@@ -199,13 +205,13 @@ namespace MajdataPlay.Game.Notes
 
                 if (second.IsFinished)
                 {
-                    judgeQueue = judgeQueue.Skip(2).ToArray();
+                    queueMemory = queueMemory.Slice(2);
                     HideBar(GetIndex());
                     return;
                 }
                 else if (second.On)
                 {
-                    judgeQueue = judgeQueue.Skip(1).ToArray();
+                    queueMemory = queueMemory.Slice(1);
                     HideBar(GetIndex());
                     return;
                 }
@@ -213,7 +219,7 @@ namespace MajdataPlay.Game.Notes
 
             if (first.IsFinished)
             {
-                judgeQueue = judgeQueue.Skip(1).ToArray();
+                queueMemory = queueMemory.Slice(1);
                 HideBar(GetIndex());
                 return;
             }
@@ -229,7 +235,7 @@ namespace MajdataPlay.Game.Notes
                 if (isRemainingOne)
                     return 8;
             }
-            else if (_judgeQueues[1].IsEmpty())
+            else if (_judgeQueues[1].IsEmpty)
             {
                 if (_judgeQueues[0].Length <= 1 && _judgeQueues[2].Length <= 1)
                     return 9;
@@ -240,7 +246,7 @@ namespace MajdataPlay.Game.Notes
             var max = nums.Max();
             var index = nums.FindIndex(x => x == max);
 
-            return _judgeQueues[index].First().SlideIndex;
+            return _judgeQueues[index].Span[0].SlideIndex;
         }
         public override void ComponentUpdate()
         {
@@ -305,8 +311,9 @@ namespace MajdataPlay.Game.Notes
             
             if (_gpManager.IsAutoplay)
             {
-                var queue = _judgeQueues?[0];
-                if (queue is null || queue.IsEmpty())
+                var queueMemory = _judgeQueues[0];
+                var queue = queueMemory.Span;
+                if (queueMemory.IsEmpty)
                     return;
                 else if (process >= 1)
                 {
@@ -328,7 +335,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 else if (process > 0)
                     PlaySFX();
-                var areaIndex = (int)(process * queue.Length) - 1;
+                var areaIndex = (int)(process * queueMemory.Length) - 1;
                 if (areaIndex < 0)
                     return;
                 var barIndex = queue[areaIndex].SlideIndex;

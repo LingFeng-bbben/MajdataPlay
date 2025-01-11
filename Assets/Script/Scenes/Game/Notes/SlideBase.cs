@@ -83,11 +83,11 @@ namespace MajdataPlay.Game.Notes
             get => _slideType;
             set => _slideType = value;
         }
-        protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
+        protected readonly Memory<JudgeArea>[] _judgeQueues = new Memory<JudgeArea>[3]
         { 
-            Array.Empty<JudgeArea>(), 
-            Array.Empty<JudgeArea>(), 
-            Array.Empty<JudgeArea>()
+            Memory<JudgeArea>.Empty,
+            Memory<JudgeArea>.Empty,
+            Memory<JudgeArea>.Empty
         }; // 判定队列
         /// <summary>
         /// Arrows
