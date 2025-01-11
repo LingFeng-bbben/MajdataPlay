@@ -136,7 +136,7 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 while (!token.IsCancellationRequested)
                 {
                     foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
@@ -162,7 +162,7 @@ namespace MajdataPlay.IO
         {
             await Task.Run(async () =>
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
                 while (!token.IsCancellationRequested)
                 {
@@ -204,7 +204,7 @@ namespace MajdataPlay.IO
             await Task.Run(async () =>
             {
                 var ioManager = MajInstanceHelper<IOManager>.Instance!;
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
                 var commands = new LedCommand[9];
                 commands[8] = LedCommand.Update;

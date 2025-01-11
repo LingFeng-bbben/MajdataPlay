@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Net;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -37,13 +36,13 @@ namespace MajdataPlay.Utils
 
         public static async Task<Sprite> LoadAsync(Uri uri, CancellationToken ct = default)
         {
-            Directory.CreateDirectory(GameManager.CachePath);
+            Directory.CreateDirectory(MajEnv.CachePath);
             var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.OriginalString));
-            var cachefile = Path.Combine(GameManager.CachePath, b64);
+            var cachefile = Path.Combine(MajEnv.CachePath, b64);
             byte[] bytes;
             if (!File.Exists(cachefile))
             {
-                var client = HttpTransporter.ShareClient;
+                var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
                 bytes = await client.GetByteArrayAsync(uri);
                 await File.WriteAllBytesAsync(cachefile, bytes, ct);
             }

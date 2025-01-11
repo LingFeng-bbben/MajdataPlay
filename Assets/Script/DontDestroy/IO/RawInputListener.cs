@@ -52,7 +52,7 @@ namespace MajdataPlay.IO
         {
             await Task.Run(async () =>
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 while (!token.IsCancellationRequested)
                 {

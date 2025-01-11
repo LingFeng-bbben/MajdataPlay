@@ -142,7 +142,7 @@ namespace MajdataPlay.Result
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
                 MajInstances.ScoreManager.SaveScore(result, result.Level);
-                var score = MajInstances.ScoreManager.ResultToScore(result,result.Level);
+                var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song.ApiEndpoint != null)
                 {
                     OnlineSaveTask = intractSender.SendScore(score);
@@ -245,7 +245,6 @@ namespace MajdataPlay.Result
             if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
             {
                 var canNextRound = _gameInfo.NextRound();
-                GameManager.LastGameResult = null;
                 if (_gameInfo.IsDanMode)
                 {
                     if (!canNextRound)

@@ -49,13 +49,13 @@ namespace MajdataPlay.Utils
         static int _collectionIndex = 0;
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
-            if (!Directory.Exists(GameManager.ChartPath))
+            if (!Directory.Exists(MajEnv.ChartPath))
             {
-                Directory.CreateDirectory(GameManager.ChartPath);
-                Directory.CreateDirectory(Path.Combine(GameManager.ChartPath, "default"));
+                Directory.CreateDirectory(MajEnv.ChartPath);
+                Directory.CreateDirectory(Path.Combine(MajEnv.ChartPath, "default"));
                 return;
             }
-            var rootPath = GameManager.ChartPath;
+            var rootPath = MajEnv.ChartPath;
             var task = GetCollections(rootPath,progressReporter);
             var songs = await task;
             if (task.IsFaulted)

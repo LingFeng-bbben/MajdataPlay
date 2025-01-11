@@ -22,7 +22,7 @@ namespace MajdataPlay
         void Start()
         {
             DontDestroyOnLoad(this);
-            var path = GameManager.ScoreDBPath;
+            var path = MajEnv.ScoreDBPath;
             var option = new JsonSerializerOptions();
             option.Converters.Add(new JudgeDetailConverter());
             option.Converters.Add(new JudgeInfoConverter());
@@ -53,28 +53,6 @@ namespace MajdataPlay
                 };
                 return newRecord;
             }
-            return record;
-        }
-
-        public MaiScore ResultToScore(in GameResult result, ChartLevel level)
-        {
-            var songInfo = result.SongInfo;
-            var record = new MaiScore()
-            {
-                ChartLevel = level,
-                Hash = songInfo.Hash,
-                PlayCount = 0
-            };
-            record.Acc = result.Acc;
-
-            record.DXScore = result.DXScore;
-            record.TotalDXScore = result.TotalDXScore;
-
-            record.JudgeDeatil = result.JudgeRecord;
-            record.Fast = result.Fast;
-            record.Late = result.Late;
-            record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;
-            record.Timestamp = DateTime.Now;
             return record;
         }
         public bool SaveScore(in GameResult result, ChartLevel level)
@@ -116,7 +94,7 @@ namespace MajdataPlay
                         backendTask = SavingBackend();
                     });
 
-                return true ;
+                return true;
             }
             catch(Exception ex)
             {
@@ -126,7 +104,7 @@ namespace MajdataPlay
         }
         async Task SavingBackend()
         {
-            using var stream = File.Create(GameManager.ScoreDBPath);
+            using var stream = File.Create(MajEnv.ScoreDBPath);
             await Serializer.Json.SerializeAsync(stream, scores);
         }
     }

@@ -215,45 +215,39 @@ namespace MajdataPlay.Types
         {
             while (_spriteLoadLock) await Task.Delay(200);
             _spriteLoadLock = true;
-            try
+            if (SongCover != null)
             {
-                if (SongCover != null)
-                {
-                    Debug.Log("Memory Cache Hit");
-                    _spriteLoadLock = false;
-                    return SongCover;
-                }
-                if (string.IsNullOrEmpty(CoverPath))
-                {
-                    SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
-                    _spriteLoadLock = false;
-                    return SongCover;
-                }
-                if (IsOnline)
-                {
-                    Debug.Log("Try load cover online" + CoverPath);
-                    SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
-                    _spriteLoadLock = false;
-                    return SongCover;
-                }
-                else
-                {
-                    SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
-                    _spriteLoadLock = false;
-                    return SongCover;
-                }
-            }
-            finally
-            {
+                Debug.Log("Memory Cache Hit");
                 _spriteLoadLock = false;
+                return SongCover;
             }
+            if (string.IsNullOrEmpty(CoverPath))
+            {
+                SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
+                _spriteLoadLock = false;
+                return SongCover;
+            }
+            if (IsOnline)
+            {
+                Debug.Log("Try load cover online" + CoverPath);
+                SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
+                _spriteLoadLock = false;
+                return SongCover;
+            }
+            else
+            {
+                SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
+                _spriteLoadLock = false;
+                return SongCover;
+            }
+
         }
 
         //TODO: add callback for progress
         public async Task<SongDetail> DumpToLocal()
         {
             if (!IsOnline) return this;
-            var dir = GameManager.ChartPath + "/MajnetPlayed/" + Hash;
+            var dir = MajEnv.ChartPath + "/MajnetPlayed/" + Hash;
             Directory.CreateDirectory(dir);
             var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
 

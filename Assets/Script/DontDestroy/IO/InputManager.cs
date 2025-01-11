@@ -160,7 +160,7 @@ namespace MajdataPlay.IO
                 _ioManager = new();
             MajInstanceHelper<IOManager>.Instance = _ioManager;
             var useHID = MajInstances.Setting.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
-            var executionQueue = GameManager.ExecutionQueue;
+            var executionQueue = MajEnv.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
@@ -230,8 +230,8 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
-                var token = GameManager.GlobalCT;
-                var executionQueue = GameManager.ExecutionQueue;
+                var token = MajEnv.GlobalCT;
+                var executionQueue = MajEnv.ExecutionQueue;
                 while (!token.IsCancellationRequested)
                 {
                     try
@@ -256,8 +256,8 @@ namespace MajdataPlay.IO
         {
             UniTask.Void(async () =>
             {
-                var token = GameManager.GlobalCT;
-                var executionQueue = GameManager.ExecutionQueue;
+                var token = MajEnv.GlobalCT;
+                var executionQueue = MajEnv.ExecutionQueue;
                 while (!token.IsCancellationRequested)
                 {
                     try

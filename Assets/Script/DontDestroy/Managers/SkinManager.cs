@@ -32,7 +32,7 @@ namespace MajdataPlay
         // Start is called before the first frame update
         private void Start()
         {
-            var path = GameManager.SkinPath;
+            var path = MajEnv.SkinPath;
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 

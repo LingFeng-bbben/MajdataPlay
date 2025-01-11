@@ -242,7 +242,7 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTask DumpOnlineChart()
         {
-            var chartFolder = Path.Combine(GameManager.ChartPath, $"MajnetPlayed/{_songDetail.Hash}");
+            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash}");
             Directory.CreateDirectory(chartFolder);
             var dirInfo = new DirectoryInfo(chartFolder);
             var trackPath = Path.Combine(chartFolder, "track.mp3");
@@ -657,7 +657,6 @@ namespace MajdataPlay.Game
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
             var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-            GameManager.LastGameResult = result;
             _gameInfo.RecordResult(result);
             if (!playEffect) return;
             if (result.ComboState == ComboState.APPlus)
@@ -748,19 +747,19 @@ namespace MajdataPlay.Game
                             {
 #if UNITY_EDITOR
                                 if (isUnityFMOD)
-                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
+                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
                                 else
                                     MajInstances.AudioManager.PlaySFX("answer_clock.wav");
 #else
                                 MajInstances.AudioManager.PlaySFX("answer_clock.wav");
 #endif
-                                GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
+                                MajEnv.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
                             }
                             else
                             {
 #if UNITY_EDITOR
                                 if (isUnityFMOD)
-                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
+                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
                                 else
                                     MajInstances.AudioManager.PlaySFX("answer.wav");
 #else
@@ -796,6 +795,7 @@ namespace MajdataPlay.Game
         }
         public void GameOver()
         {
+            //TODO: Play GameOver Animation
             DisposeAudioTrack();
             CalculateScore(playEffect:false);
 
