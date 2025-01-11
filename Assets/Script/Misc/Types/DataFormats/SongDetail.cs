@@ -104,8 +104,8 @@ namespace MajdataPlay.Types
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError("Failed to Load " + maidataPath + "at line " + i);
-                        Debug.LogError(ex.Message);
+                        MajDebug.LogError("Failed to Load " + maidataPath + "at line " + i);
+                        MajDebug.LogError(ex.Message);
                         throw ex;
                     }
                 }
@@ -217,7 +217,7 @@ namespace MajdataPlay.Types
             _spriteLoadLock = true;
             if (SongCover != null)
             {
-                Debug.Log("Memory Cache Hit");
+                MajDebug.Log("Memory Cache Hit");
                 _spriteLoadLock = false;
                 return SongCover;
             }
@@ -229,7 +229,7 @@ namespace MajdataPlay.Types
             }
             if (IsOnline)
             {
-                Debug.Log("Try load cover online" + CoverPath);
+                MajDebug.Log("Try load cover online" + CoverPath);
                 SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
                 _spriteLoadLock = false;
                 return SongCover;

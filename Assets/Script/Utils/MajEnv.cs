@@ -1,4 +1,5 @@
-﻿using MychIO;
+﻿using MajdataPlay.Types;
+using MychIO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace MajdataPlay.Utils
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static GameSetting UserSetting => MajInstances.Setting;
         public static CancellationToken GlobalCT => GameManager.GlobalCT;
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
         {

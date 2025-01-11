@@ -98,7 +98,7 @@ namespace MajdataPlay
             }
             catch(Exception ex)
             {
-                Debug.LogError(ex);
+                MajDebug.LogError(ex);
                 return false;
             }
         }

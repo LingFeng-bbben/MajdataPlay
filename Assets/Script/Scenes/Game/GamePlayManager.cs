@@ -211,26 +211,26 @@ namespace MajdataPlay.Game
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
-                Debug.LogError(httpEx);
+                MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
-                Debug.LogError(audioEx);
+                MajDebug.LogError(audioEx);
                 return;
             }
             catch(OperationCanceledException canceledEx)
             {
-                Debug.LogWarning(canceledEx);
+                MajDebug.LogWarning(canceledEx);
                 return;
             }
             catch(Exception e)
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
-                Debug.LogError(e);
+                MajDebug.LogError(e);
                 return;
             }
 
@@ -301,7 +301,7 @@ namespace MajdataPlay.Game
                 }
                 catch
                 {
-                    Debug.Log("No video for this song");
+                    MajDebug.Log("No video for this song");
                     File.Delete(videoPath);
                     videoPath = "";
                 }
@@ -350,7 +350,7 @@ namespace MajdataPlay.Game
             }
             if (trackreq.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error downloading file: " + trackreq.error);
+                MajDebug.LogError("Error downloading file: " + trackreq.error);
                 throw new Exception("Download file failed");
             }
         }*/
@@ -537,7 +537,7 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                     StopAllCoroutines();
                     throw e;
                 }
@@ -587,7 +587,7 @@ namespace MajdataPlay.Game
             _audioSample.Play();
             _audioSample.CurrentSec = 0;
             _audioStartTime = _timer.ElapsedSecondsAsFloat;
-            Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
             await UniTask.Delay(3000);
             switch (MajInstances.Setting.Game.BGInfo)
@@ -772,7 +772,7 @@ namespace MajdataPlay.Game
                     }
                     catch(Exception e)
                     {
-                        Debug.LogException(e);
+                        MajDebug.LogException(e);
                     }
                     //await Task.Delay(1);
                 }

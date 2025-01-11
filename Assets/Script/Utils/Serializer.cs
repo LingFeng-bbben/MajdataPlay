@@ -57,7 +57,7 @@ namespace MajdataPlay.Utils
                 }
                 catch(Exception e)
                 {
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                     result = default;
                     return false;
                 }

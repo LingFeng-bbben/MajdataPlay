@@ -95,7 +95,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                Debug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
@@ -119,7 +119,7 @@ namespace MajdataPlay.IO
             //        Application.Quit();
             //    }
             //    else
-            //        Debug.LogWarning("Missing environment: MSVC runtime library not found.");
+            //        MajDebug.LogWarning("Missing environment: MSVC runtime library not found.");
             //}
         }
         void Start()
@@ -223,7 +223,7 @@ namespace MajdataPlay.IO
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
             }
         }
         void StartInternalIOListener()
@@ -246,7 +246,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        Debug.LogException(e);
+                        MajDebug.LogException(e);
                     }
                     await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
                 }
@@ -269,7 +269,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        Debug.LogException(e);
+                        MajDebug.LogException(e);
                     }
                     await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
                 }
@@ -283,17 +283,17 @@ namespace MajdataPlay.IO
             {
                 case IOEventType.Attach:
                 case IOEventType.Debug:
-                    executionQueue.Enqueue(() => Debug.Log(logContent));
+                    executionQueue.Enqueue(() => MajDebug.Log(logContent));
                     break;
                 case IOEventType.ConnectionError:
                 case IOEventType.SerialDeviceReadError:
                 case IOEventType.HidDeviceReadError:
                 case IOEventType.ReconnectionError:
                 case IOEventType.InvalidDevicePropertyError:
-                    executionQueue.Enqueue(() => Debug.LogError(logContent));
+                    executionQueue.Enqueue(() => MajDebug.LogError(logContent));
                     break;
                 case IOEventType.Detach:
-                    executionQueue.Enqueue(() => Debug.LogWarning(logContent));
+                    executionQueue.Enqueue(() => MajDebug.LogWarning(logContent));
                     break;
             }
         }

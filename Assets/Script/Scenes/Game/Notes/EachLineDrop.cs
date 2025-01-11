@@ -64,7 +64,7 @@ namespace MajdataPlay.Game.Notes
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
             if (DistanceProvider is null)
-                Debug.LogWarning("DistanceProvider not found");
+                MajDebug.LogWarning("DistanceProvider not found");
         }
         public void End(bool forceEnd = false)
         {

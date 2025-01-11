@@ -49,7 +49,7 @@ namespace MajdataPlay
             SelectedSkin = targetSkin;
 
             print(path);
-            Debug.Log(test);
+            MajDebug.Log(test);
         }
         public JudgeTextSkin GetJudgeTextSkin()
         {

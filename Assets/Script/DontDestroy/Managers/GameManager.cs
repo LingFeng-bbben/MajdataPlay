@@ -3,22 +3,11 @@ using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Text.Json.Serialization;
 using System.Diagnostics;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
-using UnityEngine.UI;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
-using MajdataPlay.Attributes;
-using MajdataPlay.Net;
-using System.Collections.Concurrent;
-using MychIO;
-using UnityEngine.Rendering;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 
@@ -27,7 +16,6 @@ namespace MajdataPlay
 #nullable enable
     public class GameManager : MonoBehaviour
     {
-        public static GameResult? LastGameResult { get; set; } = null;
         public static CancellationToken GlobalCT { get; }
 
         readonly static CancellationTokenSource _globalCTS;
@@ -64,9 +52,6 @@ namespace MajdataPlay
 
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
-        Task? _logWritebackTask = null;
-        Queue<GameLog> _logQueue = new();
-
         
 
         void Awake()
@@ -78,17 +63,6 @@ namespace MajdataPlay
                 Application.Quit();
             }
 #endif
-            Application.logMessageReceived += (c, trace, type) =>
-            {
-                _logQueue.Enqueue(new GameLog()
-                {
-                    Date = DateTime.Now,
-                    Condition = c,
-                    StackTrace = trace,
-                    Type = type
-                });
-            };
-            _logWritebackTask = LogWriteback();
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
             s += $"     OS       : {SystemInfo.operatingSystem}\n";
@@ -97,8 +71,8 @@ namespace MajdataPlay
             s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
             s += $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
             s += $"################     Startup Check  End    ################";
-            Debug.Log(s);
-            Debug.Log($"Version: {MajInstances.GameVersion}");
+            MajDebug.Log(s);
+            MajDebug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
             _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -112,7 +86,7 @@ namespace MajdataPlay
                 if (!Serializer.Json.TryDeserialize(js, out setting, MajEnv.UserJsonReaderOption) || setting is null)
                 {
                     Setting = new();
-                    Debug.LogError("Failed to read setting from file");
+                    MajDebug.LogError("Failed to read setting from file");
                 }
                 else
                 {
@@ -171,17 +145,16 @@ namespace MajdataPlay
         {
             if(MajTimeline.Timer != _timer)
             {
-                Debug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
+                MajDebug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
                 MajTimeline.Timer = _timer;
             }
         }
-        private void OnApplicationQuit()
+        void OnApplicationQuit()
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             _globalCTS.Cancel();
-            foreach (var log in _logQueue)
-                File.AppendAllText(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
+            MajDebug.OnApplicationQuit();
         }
         public void Save()
         {
@@ -200,7 +173,7 @@ namespace MajdataPlay
                 return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-            Debug.LogWarning("GC has been enabled");
+            MajDebug.LogWarning("GC has been enabled");
 #endif
             GC.Collect();
         }
@@ -211,37 +184,8 @@ namespace MajdataPlay
             GC.Collect();
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
-            Debug.LogWarning("GC has been disabled");
+            MajDebug.LogWarning("GC has been disabled");
 #endif
-        }
-        async Task LogWriteback()
-        {
-            var oldLogPath = Path.Combine(MajEnv.AssestPath, "MajPlayRuntime.log");
-            if (!Directory.Exists(MajEnv.LogsPath))
-                Directory.CreateDirectory(MajEnv.LogsPath);
-            if (File.Exists(oldLogPath))
-                File.Delete(oldLogPath);
-            if (File.Exists(MajEnv.LogPath))
-                File.Delete(MajEnv.LogPath);
-            while (true)
-            {
-                if (_logQueue.Count == 0)
-                {
-                    if (MajEnv.GlobalCT.IsCancellationRequested)
-                        return;
-                    await Task.Delay(50);
-                    continue;
-                }
-                var log = _logQueue.Dequeue();
-                await File.AppendAllTextAsync(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss.ffff}][{log.Type}] {log.Condition}\n{log.StackTrace}");
-            }
-        }
-        class GameLog
-        {
-            public DateTime Date { get; set; }
-            public string? Condition { get; set; }
-            public string? StackTrace { get; set; }
-            public LogType? Type { get; set; }
         }
     }
 }

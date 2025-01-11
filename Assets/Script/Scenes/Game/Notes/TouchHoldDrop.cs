@@ -543,13 +543,13 @@ namespace MajdataPlay.Game.Notes
                         return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                 }
             }
-            print($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
+            MajDebug.Log($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
             return result;
         }
         void PlayHoldEffect()
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
-            //Debug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
+            //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _audioEffMana.PlayTouchHoldSound();
             _borderRenderer.sprite = board_On;

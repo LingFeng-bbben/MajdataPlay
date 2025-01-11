@@ -80,7 +80,7 @@ namespace MajdataPlay.IO
             }
             catch(IOException)
             {
-                Debug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                 useDummy = true;
             }
             finally

@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -27,7 +28,7 @@ namespace MajdataPlay.IO
                 };
                 if (sensor == null)
                 {
-                    Debug.LogError($"{index}# Sensor instance is null");
+                    MajDebug.LogError($"{index}# Sensor instance is null");
                     continue;
                 }
                 var oState = sensor.Status;
@@ -42,7 +43,7 @@ namespace MajdataPlay.IO
                         continue;
                     _sensorLastTriggerTimes[sensor.Type] = now;
                 }
-                Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
+                MajDebug.Log($"Sensor \"{sensor.Type}\": {nState}");
                 sensor.Status = nState;
                 var msg = new InputEventArgs()
                 {
@@ -66,7 +67,7 @@ namespace MajdataPlay.IO
 
             if (oState != nState)
             {
-                Debug.Log($"Sensor \"{sensor.Type}\": {nState}");
+                MajDebug.Log($"Sensor \"{sensor.Type}\": {nState}");
                 sensor.Status = nState;
                 var msg = new InputEventArgs()
                 {

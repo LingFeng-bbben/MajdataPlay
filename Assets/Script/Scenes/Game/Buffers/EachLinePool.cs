@@ -2,6 +2,7 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Game.Types;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
@@ -52,7 +53,7 @@ namespace MajdataPlay.Game.Buffers
             var noteB = info.MemberB?.Instance;
             if (_idleNotes.IsEmpty())
             {
-                Debug.LogWarning($"No more EachLine can use");
+                MajDebug.LogWarning($"No more EachLine can use");
                 return false;
             }
             else if (noteA is null && noteB is null)

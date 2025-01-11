@@ -76,7 +76,7 @@ namespace MajdataPlay.Game
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                 }
             }
             var end = MajTimeline.UnscaledTime;
@@ -97,7 +97,7 @@ namespace MajdataPlay.Game
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                 }
             }
             var end = MajTimeline.UnscaledTime;
@@ -118,7 +118,7 @@ namespace MajdataPlay.Game
                 }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                 }
             }
             var end = MajTimeline.UnscaledTime;

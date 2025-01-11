@@ -48,7 +48,7 @@ namespace MajdataPlay.Utils
             }
             else
             {
-                Debug.Log("Local Cache Hit");
+                MajDebug.Log("Local Cache Hit");
                 bytes = await File.ReadAllBytesAsync(cachefile, ct);
             }
             ct.ThrowIfCancellationRequested();

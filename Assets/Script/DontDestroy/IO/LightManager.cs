@@ -62,7 +62,7 @@ namespace MajdataPlay.IO
             }
             catch
             {
-                Debug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
+                MajDebug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
                 _useDummy = true;
             }
             UpdateLedDeviceAsync();
@@ -190,7 +190,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogException(ex);
+                        MajDebug.LogException(ex);
                     }
                     var endAt = MajTimeline.UnscaledTime;
                     var elapsedTime = endAt - startAt;
@@ -226,7 +226,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogException(ex);
+                        MajDebug.LogException(ex);
                     }
                     var endAt = MajTimeline.UnscaledTime;
                     var elapsedTime = endAt - startAt;

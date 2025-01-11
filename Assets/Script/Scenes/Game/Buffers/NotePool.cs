@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +84,7 @@ namespace MajdataPlay.Game.Buffers
 
             if (_idleNotes.IsEmpty())
             {
-                Debug.LogWarning($"No more Note can use");
+                MajDebug.LogWarning($"No more Note can use");
                 return null;
             }
             var idleNote = _idleNotes[0];
@@ -115,7 +116,7 @@ namespace MajdataPlay.Game.Buffers
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"Cannot destroy note:\n{e}");
+                    MajDebug.LogWarning($"Cannot destroy note:\n{e}");
                 }
             }
             foreach (var note in _inUseNotes)
@@ -127,7 +128,7 @@ namespace MajdataPlay.Game.Buffers
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"Cannot destroy note:\n{e}");
+                    MajDebug.LogWarning($"Cannot destroy note:\n{e}");
                 }
             }
         }
