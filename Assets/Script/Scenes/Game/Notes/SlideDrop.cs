@@ -395,7 +395,7 @@ namespace MajdataPlay.Game.Notes
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
-                ConvertJudgeResult(ref _judgeResult);
+                ConvertJudgeGrade(ref _judgeResult);
                 JudgeResultCorrection(ref _judgeResult);
                 var result = new JudgeResult()
                 {

@@ -167,7 +167,7 @@ namespace MajdataPlay.Game.Notes
             };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            ConvertJudgeResult(ref result);
+            ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
 
@@ -329,7 +329,7 @@ namespace MajdataPlay.Game.Notes
                 _judgeResult = JudgeGrade.LateGood;
             else
                 _judgeResult = JudgeGrade.Miss;
-            ConvertJudgeResult(ref _judgeResult);
+            ConvertJudgeGrade(ref _judgeResult);
             _isJudged = true;
         }
         /// <summary>

@@ -123,7 +123,7 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeGrade)autoplayParam;
                     else
                         _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeResult(ref _judgeResult);
+                    ConvertJudgeGrade(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = _judgeResult switch
                     {
@@ -164,6 +164,7 @@ namespace MajdataPlay.Game.Notes
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
             _playerIdleTime = 0;
+            _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
 
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
@@ -206,7 +207,7 @@ namespace MajdataPlay.Game.Notes
             if (forceEnd)
                 return;
             _judgeResult = EndJudge(_judgeResult);
-            ConvertJudgeResult(ref _judgeResult);
+            ConvertJudgeGrade(ref _judgeResult);
             var result = new JudgeResult()
             {
                 Grade = _judgeResult,
@@ -239,27 +240,34 @@ namespace MajdataPlay.Game.Notes
 
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (_isJudged || !_noteManager.CanJudge(QueueInfo))
+            var thisFrameSec = _gpManager.ThisFrameSec;
+            if (_isJudged)
                 return;
-            else if (arg.IsClick)
+            else if (!arg.IsClick)
+                return;
+            else if (!_judgableRange.InRange(thisFrameSec))
+                return;
+            else if (arg.Type != _sensorPos)
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
+
+            if (!_ioManager.IsIdle(arg))
+                return;
+            else
+                _ioManager.SetBusy(arg);
+            Judge(_gpManager.ThisFrameSec);
+
+            if (_isJudged)
             {
-                if (!_ioManager.IsIdle(arg))
-                    return;
-                else
-                    _ioManager.SetBusy(arg);
-                Judge(_gpManager.ThisFrameSec);
-                //ioManager.SetIdle(arg);
-                if (_isJudged)
+                if (GroupInfo is not null)
                 {
-                    if(GroupInfo is not null)
-                    {
-                        GroupInfo.RegisterResult(_judgeResult);
-                        GroupInfo.JudgeDiff = _judgeDiff;
-                        GroupInfo.JudgeResult = _judgeResult;
-                    }
-                    _ioManager.UnbindSensor(Check, _sensorPos);
-                    _noteManager.NextTouch(QueueInfo);
+                    GroupInfo.RegisterResult(_judgeResult);
+                    GroupInfo.JudgeDiff = _judgeDiff;
+                    GroupInfo.JudgeResult = _judgeResult;
                 }
+                _ioManager.UnbindSensor(Check, _sensorPos);
+                _noteManager.NextTouch(QueueInfo);
             }
         }
         protected override void LoadSkin()
@@ -320,7 +328,7 @@ namespace MajdataPlay.Game.Notes
                 _ => JudgeGrade.Miss
             };
 
-            ConvertJudgeResult(ref result);
+            ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
             PlayHoldEffect();
@@ -454,13 +462,13 @@ namespace MajdataPlay.Game.Notes
                 case true:
                     foreach (var fanObj in _fans.AsSpan())
                     {
-                        fanObj.layer = DEFAULT_LAYER;
+                        fanObj.layer = MajEnv.DEFAULT_LAYER;
                     }
                     break;
                 case false:
                     foreach (var fanObj in _fans.AsSpan())
                     {
-                        fanObj.layer = HIDDEN_LAYER;
+                        fanObj.layer = MajEnv.HIDDEN_LAYER;
                     }
                     break;
             }
@@ -470,10 +478,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _pointObject.layer = DEFAULT_LAYER;
+                    _pointObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _pointObject.layer = HIDDEN_LAYER;
+                    _pointObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }
@@ -482,10 +490,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _borderObject.layer = DEFAULT_LAYER;
+                    _borderObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _borderObject.layer = HIDDEN_LAYER;
+                    _borderObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }

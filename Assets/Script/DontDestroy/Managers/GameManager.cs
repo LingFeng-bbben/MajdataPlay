@@ -17,13 +17,6 @@ namespace MajdataPlay
     public class GameManager : MonoBehaviour
     {
         public static CancellationToken GlobalCT { get; }
-
-        readonly static CancellationTokenSource _globalCTS;
-        static GameManager()
-        {
-            _globalCTS = new();
-            GlobalCT = _globalCTS.Token;
-        }
         public GameSetting Setting
         {
             get => MajInstances.Setting;
@@ -50,10 +43,15 @@ namespace MajdataPlay
         //public int DanHP = 500;
         //public List<GameResult> DanResults = new();
 
+        readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
-        
 
+        static GameManager()
+        {
+            _globalCTS = new();
+            GlobalCT = _globalCTS.Token;
+        }
         void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);

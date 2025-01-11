@@ -72,8 +72,8 @@ namespace MajdataPlay.Game.Notes
             Transform.localScale = new Vector3(0, 0);
 
             base.SetActive(false);
-            _tapLineObject.layer = HIDDEN_LAYER;
-            _exObject.layer = HIDDEN_LAYER;
+            _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
+            _exObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
         }
         public void Initialize(TapPoolingInfo poolingInfo)
@@ -95,6 +95,7 @@ namespace MajdataPlay.Game.Notes
             _isJudged = false;
             Distance = -100;
             _sensorPos = (SensorType)(StartPos - 1);
+            _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             Transform.localScale = new Vector3(0, 0);
@@ -227,25 +228,24 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
-            if (State < NoteStatus.Running)
+            var thisFrameSec = _gpManager.ThisFrameSec;
+            if (_isJudged)
+                return;
+            else if (!arg.IsClick)
+                return;
+            else if (!_judgableRange.InRange(thisFrameSec))
                 return;
             else if (arg.Type != _sensorPos)
                 return;
-            else if (_isJudged || !_noteManager.CanJudge(QueueInfo))
+            else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            if (arg.IsClick)
-            {
-                if (!_ioManager.IsIdle(arg))
-                    return;
-                else
-                    _ioManager.SetBusy(arg);
+            if (!_ioManager.IsIdle(arg))
+                return;
+            else
+                _ioManager.SetBusy(arg);
 
-                Judge(_gpManager.ThisFrameSec);
-                //ioManager.SetIdle(arg);
-                if (_isJudged)
-                    End();
-            }
+            Judge(thisFrameSec);
         }
         protected override void LoadSkin()
         {
@@ -265,10 +265,10 @@ namespace MajdataPlay.Game.Notes
             switch(state)
             {
                 case true:
-                    _exObject.layer = DEFAULT_LAYER;
+                    _exObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _exObject.layer = HIDDEN_LAYER;
+                    _exObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
             SetTapLineActive(state);
@@ -279,10 +279,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _tapLineObject.layer = DEFAULT_LAYER;
+                    _tapLineObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _tapLineObject.layer = HIDDEN_LAYER;
+                    _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }

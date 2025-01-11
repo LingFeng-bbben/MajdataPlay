@@ -89,10 +89,11 @@ namespace MajdataPlay.Game.Notes
         protected InputManager _ioManager = MajInstances.InputManager;
         protected bool _isJudged = false;
         /// <summary>
-        /// ����֡
+        /// The answer frame
         /// </summary>
         protected float _judgeTiming;
         protected float _judgeDiff = -1;
+        protected Range<float> _judgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
         protected JudgeGrade _judgeResult = JudgeGrade.Miss;
 
         protected SensorType _sensorPos;
@@ -103,9 +104,6 @@ namespace MajdataPlay.Game.Notes
         protected GameSetting _gameSetting = MajInstances.Setting;
         protected EventHandler<InputEventArgs> _noteChecker;
         protected static readonly Random _randomizer = new();
-
-        protected const int DEFAULT_LAYER = 0;
-        protected const int HIDDEN_LAYER = 3;
 
         Material _breakMaterial;
         Material _defaultMaterial;
@@ -176,7 +174,7 @@ namespace MajdataPlay.Game.Notes
             if (result != JudgeGrade.Miss && IsEX)
                 result = JudgeGrade.Perfect;
 
-            ConvertJudgeResult(ref result);
+            ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
         }
@@ -193,7 +191,7 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeGrade)autoplayParam;
                     else
                         _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeResult(ref _judgeResult);
+                    ConvertJudgeGrade(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = _judgeResult switch
                     {
@@ -214,27 +212,27 @@ namespace MajdataPlay.Game.Notes
             switch(state)
             {
                 case true:
-                    GameObject.layer = DEFAULT_LAYER;
+                    GameObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    GameObject.layer = HIDDEN_LAYER;
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }    
         }
         /// <summary>
-        /// ��ȡ��ǰʱ�̾���ִ��ж��ߵĳ���
+        /// Gets the time offset from the current moment to the judgment line.
         /// </summary>
         /// <returns>
-        /// ��ǰʱ�����ж��ߺ󷽣����Ϊ����
-        /// <para>��ǰʱ�����ж���ǰ�������Ϊ����</para>
+        /// If the current moment is behind the judgment line, the result is a positive number.
+        /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
         protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - Timing;
         /// <summary>
-        /// ��ȡ��ǰʱ�̾�������֡�ĳ���
+        /// Gets the time offset from the current moment to the answer frame.
         /// </summary>
         /// <returns>
-        /// ��ǰʱ��������֡�󷽣����Ϊ����
-        /// <para>��ǰʱ��������֡ǰ�������Ϊ����</para>
+        /// If the current moment is behind the answer frame, the result is a positive number.
+        /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
         protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
@@ -252,19 +250,19 @@ namespace MajdataPlay.Game.Notes
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void ConvertJudgeResult(ref JudgeGrade judgeType)
+        protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
             var judgeStyle = _gpManager.JudgeStyle;
             switch(judgeStyle)
             {
                 case JudgeStyleType.MAJI:
-                    ConvertToMAJI(ref judgeType); 
+                    ConvertToMAJI(ref grade); 
                     break;
                 case JudgeStyleType.GACHI:
-                    ConvertToGACHI(ref judgeType);
+                    ConvertToGACHI(ref grade);
                     break;
                 case JudgeStyleType.GORI:
-                    ConvertToGORI(ref judgeType);
+                    ConvertToGORI(ref grade);
                     break;
                 case JudgeStyleType.DEFAULT:
                 default:
@@ -377,29 +375,5 @@ namespace MajdataPlay.Game.Notes
         [ReadOnlyField]
         [SerializeField]
         protected bool _isEX = false;
-    }
-
-    public abstract class NoteLongDrop : NoteDrop
-    {
-        public float Length
-        {
-            get => _length;
-            set => _length = value;
-        }
-
-        [ReadOnlyField]
-        [SerializeField]
-        protected float _playerIdleTime = 0;
-        [ReadOnlyField]
-        [SerializeField]
-        protected float _length = 1f;
-        /// <summary>
-        /// ����Hold��ʣ�೤��
-        /// </summary>
-        /// <returns>
-        /// Holdʣ�೤��
-        /// </returns>
-        protected float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
-        protected float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);
     }
 }
