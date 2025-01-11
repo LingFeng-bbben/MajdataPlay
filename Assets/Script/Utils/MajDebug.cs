@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Cysharp.Text;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -20,6 +20,7 @@ namespace MajdataPlay.Utils
             _unityLogger = Debug.unityLogger;
             LogWriteback();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Log<T>(T obj,LogType logLevel = LogType.Log)
         {
             var message = obj?.ToString() ?? string.Empty;
@@ -30,7 +31,7 @@ namespace MajdataPlay.Utils
                 StackTrace = string.Empty,
                 Level = logLevel
             };
-            
+
 #if UNITY_EDITOR || DEBUG
             _unityLogger.Log(logLevel, message);
             if(obj is not Exception)
@@ -38,9 +39,12 @@ namespace MajdataPlay.Utils
 #endif
             _logQueue.Enqueue(log);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LogError<T>(T obj) => Log(obj, LogType.Error);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LogException<T>(T obj) where T: Exception => Log(obj, LogType.Exception);
-        public static void LogWarning<T>(T obj) => Log<T>(obj, LogType.Warning);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogWarning<T>(T obj) => Log(obj, LogType.Warning);
         public static void OnApplicationQuit()
         {
             foreach (var log in _logQueue)
@@ -71,7 +75,8 @@ namespace MajdataPlay.Utils
                     continue;
                 }
                 var log = _logQueue.Dequeue();
-                await File.AppendAllTextAsync(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss.ffff}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
+                var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
+                await File.AppendAllTextAsync(MajEnv.LogPath, msg);
             }
         }
         struct GameLog
