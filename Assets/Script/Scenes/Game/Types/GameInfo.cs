@@ -27,6 +27,7 @@ namespace MajdataPlay.Game.Types
         // TO-DO: Practice Mode
         public GameResult[] Results { get; init; }
 
+        int _playedCount = 0;
         int _index = 0;
         SongDetail[] _chartQueue;
         ChartLevel[] _levels;
@@ -66,7 +67,7 @@ namespace MajdataPlay.Game.Types
         {
             Results[_index] = result;
         }
-/*        public GameResult? GetLastResult()
+        public GameResult? GetLastResult()
         {
             if (_playedCount == 0)
                 return null;
@@ -77,7 +78,7 @@ namespace MajdataPlay.Game.Types
                 return Results[Results.Length - 1];
             }
             return Results[_playedCount - 1];
-        }*/
+        }
         public bool NextRound()
         {
             var canMoveNext = MoveNext();
@@ -109,6 +110,7 @@ namespace MajdataPlay.Game.Types
                 {
                     Current = _chartQueue[_index];
                     CurrentLevel = _levels[_index];
+                    _playedCount++;
                     return true;
                 }
             }

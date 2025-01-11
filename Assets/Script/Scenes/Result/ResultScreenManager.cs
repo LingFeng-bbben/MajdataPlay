@@ -50,7 +50,7 @@ namespace MajdataPlay.Result
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             GameResult result;
-            var lastResult = GameManager.LastGameResult;
+            var lastResult = _gameInfo.GetLastResult();
             if (lastResult is null)
             {
                 result = new GameResult()
