@@ -5,6 +5,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -110,14 +111,14 @@ namespace MajdataPlay.Game.Notes
             
             if (_gpManager.IsAutoplay)
                 Autoplay();
-            else
-                SubscribeEvent();
+            //else
+            //    SubscribeEvent();
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.Destroyed;
-            UnsubscribeEvent();
+            //UnsubscribeEvent();
             if (!_isJudged || forceEnd) 
                 return;
 
@@ -131,8 +132,8 @@ namespace MajdataPlay.Game.Notes
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(result);
-            _effectManager.PlayEffect(StartPos, result);
             _noteManager.NextNote(QueueInfo);
+            _effectManager.PlayEffect(StartPos, result);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
@@ -152,18 +153,18 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            if (State < NoteStatus.Running|| IsDestroyed)
-                return;
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-            if (!_isJudged && isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                End();
-            }
-            else if (_isJudged)
-                End();
+            //if (State < NoteStatus.Running|| IsDestroyed)
+            //    return;
+            //var timing = GetTimeSpanToJudgeTiming();
+            //var isTooLate = timing > 0.15f;
+            //if (!_isJudged && isTooLate)
+            //{
+            //    _judgeResult = JudgeGrade.Miss;
+            //    _isJudged = true;
+            //    End();
+            //}
+            //else if (_isJudged)
+            //    End();
         }
         public override void ComponentUpdate()
         {
@@ -171,6 +172,8 @@ namespace MajdataPlay.Game.Notes
             var distance = timing * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+
+            Check();
 
             switch (State)
             {
@@ -225,6 +228,49 @@ namespace MajdataPlay.Game.Notes
                 if (_gpManager.IsStart && _gameSetting.Game.StarRotation)
                     Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
             }
+        }
+        void Check()
+        {
+            if (_isJudged)
+                return;
+            else if (!_judgableRange.InRange(_gpManager.ThisFrameSec))
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+            var btnState = _noteManager.GetButtonStateInThisFrame(_sensorPos);
+            var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
+
+            if(isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+            }
+            else
+            {
+                Check(btnState, ref _noteManager.IsButtonUsedInThisFrame(_sensorPos));
+                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
+            }
+            if(_isJudged)
+            {
+                End();
+            }
+        }
+        void Check(in InputEventArgs args, ref bool isUsedInThisFrame)
+        {
+            if (_isJudged)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (isUsedInThisFrame)
+                return;
+
+            var thisFrameSec = _gpManager.ThisFrameSec;
+            isUsedInThisFrame = true;
+
+            Judge(thisFrameSec);
         }
         protected override void Check(object sender, InputEventArgs arg)
         {
@@ -285,14 +331,6 @@ namespace MajdataPlay.Game.Notes
                     _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
-        }
-        void SubscribeEvent()
-        {
-            _ioManager.BindArea(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         void LoadTapSkin()
         {

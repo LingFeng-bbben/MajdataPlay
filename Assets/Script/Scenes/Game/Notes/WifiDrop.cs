@@ -123,37 +123,7 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            /// time      是Slide启动的时间点
-            /// timeStart 是Slide完全显示但未启动
-            /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - _timing;
-            var startTiming = _gpManager.AudioTime - _startTiming;
-            var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
-
-            if (startTiming >= -0.05f)
-                _canCheck = true;
-
-            if(!_isJudged)
-            {
-                if (IsFinished)
-                {
-                    HideAllBar();
-                    if (IsClassic)
-                        Judge_Classic(_gpManager.ThisFrameSec);
-                    else
-                        Judge(_gpManager.ThisFrameSec);
-                }
-                else if (isTooLate)
-                    TooLateJudge();
-            }
-            else
-            {
-                if (_lastWaitTime < 0)
-                    End();
-                else
-                    _lastWaitTime -= Time.fixedDeltaTime;
-            }
+            
         }
         protected override void Check(object sender, InputEventArgs arg) => CheckAll();
         void CheckAll()
@@ -187,8 +157,8 @@ namespace MajdataPlay.Game.Notes
             var fType = first.GetSensorTypes();
             foreach (var t in fType)
             {
-                var sensor = _ioManager.GetSensor(t);
-                first.Judge(t, sensor.Status);
+                var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                first.Judge(t, sensorState);
             }
 
             if (first.On)
@@ -199,8 +169,8 @@ namespace MajdataPlay.Game.Notes
                 var sType = second.GetSensorTypes();
                 foreach (var t in sType)
                 {
-                    var sensor = _ioManager.GetSensor(t);
-                    second.Judge(t, sensor.Status);
+                    var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                    second.Judge(t, sensorState);
                 }
 
                 if (second.IsFinished)
@@ -224,6 +194,40 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
+        }
+        void BodyCheck()
+        {
+            /// time      是Slide启动的时间点
+            /// timeStart 是Slide完全显示但未启动
+            /// LastFor   是Slide的时值
+            var timing = _gpManager.AudioTime - _timing;
+            var startTiming = _gpManager.AudioTime - _startTiming;
+            var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
+
+            if (startTiming >= -0.05f)
+                _canCheck = true;
+
+            if (!_isJudged)
+            {
+                if (IsFinished)
+                {
+                    HideAllBar();
+                    if (IsClassic)
+                        Judge_Classic(_gpManager.ThisFrameSec);
+                    else
+                        Judge(_gpManager.ThisFrameSec);
+                }
+                else if (isTooLate)
+                    TooLateJudge();
+            }
+            else
+            {
+                if (_lastWaitTime < 0)
+                    End();
+                else
+                    _lastWaitTime -= Time.fixedDeltaTime;
+            }
         }
         int GetIndex()
         {
@@ -250,7 +254,8 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentUpdate()
         {
-            if(_isArrived)
+            BodyCheck();
+            if (_isArrived)
             {
                 CheckAll();
                 return;
@@ -356,8 +361,8 @@ namespace MajdataPlay.Game.Notes
         {
             if (IsDestroyed)
                 return;
-            foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-                _ioManager.UnbindSensor(_noteChecker, sensor);
+            //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+            //    _ioManager.UnbindSensor(_noteChecker, sensor);
             State = NoteStatus.Destroyed;
             base.End();
             if (forceEnd)

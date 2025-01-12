@@ -272,6 +272,8 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
 
+            Check();
+
             switch (State)
             {
                 case NoteStatus.Initialized:
@@ -368,7 +370,59 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
         }
+        void Check()
+        {
+            if (_isJudged)
+                return;
+            else if (!_judgableRange.InRange(_gpManager.ThisFrameSec))
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
 
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
+            var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+            }
+            else
+            {
+                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
+                if(!_isJudged)
+                {
+                    if (GroupInfo is not null)
+                    {
+                        if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                        {
+                            _isJudged = true;
+                            _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                            _judgeDiff = GroupInfo.JudgeDiff;
+                        }
+                    }
+                }
+            }
+            if (_isJudged)
+            {
+                End();
+            }
+        }
+        void Check(in InputEventArgs args, ref bool isUsedInThisFrame)
+        {
+            if (_isJudged)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (isUsedInThisFrame)
+                return;
+
+            var thisFrameSec = _gpManager.ThisFrameSec;
+            isUsedInThisFrame = true;
+
+            Judge(thisFrameSec);
+        }
         public override void SetActive(bool state)
         {
             if (Active == state)
@@ -451,11 +505,11 @@ namespace MajdataPlay.Game.Notes
         }
         void SubscribeEvent()
         {
-            _ioManager.BindSensor(_noteChecker, _sensorPos);
+            //_ioManager.BindSensor(_noteChecker, _sensorPos);
         }
         void UnsubscribeEvent()
         {
-            _ioManager.UnbindSensor(_noteChecker, _sensorPos);
+            //_ioManager.UnbindSensor(_noteChecker, _sensorPos);
         }
         protected override void PlaySFX()
         {

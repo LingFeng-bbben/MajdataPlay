@@ -188,56 +188,11 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            /// time      是Slide启动的时间点
-            /// timeStart 是Slide完全显示但未启动
-            /// LastFor   是Slide的时值
-            //var timing = _gpManager.AudioTime - _timing;
-            var startTiming = _gpManager.AudioTime - _startTiming;
-            var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset , 0);
-            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
-
-            if (!_canCheck)
-            {
-                if (ConnectInfo.IsGroupPart)
-                {
-                    if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
-                        _canCheck = true;
-                    else if (!ConnectInfo.IsGroupPartHead)
-                        _canCheck = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
-                }
-                else if (startTiming >= -0.05f)
-                    _canCheck = true;
-            }
-
-            var canJudge = ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide;
-
-            if(canJudge)
-            {
-                if(!_isJudged)
-                {
-                    if (IsFinished)
-                    {
-                        HideAllBar();
-                        if(IsClassic)
-                            Judge_Classic(_gpManager.ThisFrameSec);
-                        else
-                            Judge(_gpManager.ThisFrameSec);
-                        return;
-                    }
-                    else if(isTooLate)
-                        TooLateJudge();
-                }
-                else
-                {
-                    if (_lastWaitTime < 0)
-                        End();
-                    else
-                        _lastWaitTime -= Time.fixedDeltaTime;
-                }
-            }
+            
         }
         public override void ComponentUpdate()
         {
+            BodyCheck();
             // ConnSlide
             var star = _stars[0];
             var starTransform = _starTransforms[0];
@@ -315,8 +270,8 @@ namespace MajdataPlay.Game.Notes
             
             foreach (var t in fType)
             {
-                var sensor = _ioManager.GetSensor(t);
-                first.Judge(t, sensor.Status);
+                var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                first.Judge(t, sensorState);
             }
 
             if(canPlaySFX && first.On)
@@ -327,8 +282,8 @@ namespace MajdataPlay.Game.Notes
                 var sType = second.GetSensorTypes();
                 foreach (var t in sType)
                 {
-                    var sensor = _ioManager.GetSensor(t);
-                    second.Judge(t, sensor.Status);
+                    var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                    second.Judge(t, sensorState);
                 }
 
                 if (second.IsFinished)
@@ -359,6 +314,56 @@ namespace MajdataPlay.Game.Notes
             }
             _isChecking = false;
         }
+        void BodyCheck()
+        {
+            /// time      是Slide启动的时间点
+            /// timeStart 是Slide完全显示但未启动
+            /// LastFor   是Slide的时值
+            //var timing = _gpManager.AudioTime - _timing;
+            var startTiming = _gpManager.AudioTime - _startTiming;
+            var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
+
+            if (!_canCheck)
+            {
+                if (ConnectInfo.IsGroupPart)
+                {
+                    if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
+                        _canCheck = true;
+                    else if (!ConnectInfo.IsGroupPartHead)
+                        _canCheck = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
+                }
+                else if (startTiming >= -0.05f)
+                    _canCheck = true;
+            }
+
+            var canJudge = ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide;
+
+            if (canJudge)
+            {
+                if (!_isJudged)
+                {
+                    if (IsFinished)
+                    {
+                        HideAllBar();
+                        if (IsClassic)
+                            Judge_Classic(_gpManager.ThisFrameSec);
+                        else
+                            Judge(_gpManager.ThisFrameSec);
+                        return;
+                    }
+                    else if (isTooLate)
+                        TooLateJudge();
+                }
+                else
+                {
+                    if (_lastWaitTime < 0)
+                        End();
+                    else
+                        _lastWaitTime -= Time.fixedDeltaTime;
+                }
+            }
+        }
         void SetParentFinish()
         {
             if (Parent is not null)
@@ -382,8 +387,8 @@ namespace MajdataPlay.Game.Notes
             if (IsDestroyed)
                 return;
             State = NoteStatus.Destroyed;
-            foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-                _ioManager.UnbindSensor(_noteChecker, sensor);
+            //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+            //    _ioManager.UnbindSensor(_noteChecker, sensor);
             base.End();
             if (forceEnd)
             {

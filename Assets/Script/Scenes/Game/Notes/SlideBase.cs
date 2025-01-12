@@ -272,8 +272,8 @@ namespace MajdataPlay.Game.Notes
             {
                 if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
                 {
-                    foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-                        _ioManager.BindSensor(_noteChecker, sensor);
+                    //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
+                    //    _ioManager.BindSensor(_noteChecker, sensor);
                     State = NoteStatus.Running;
                 }
                 foreach (var slideBar in _slideBars.AsSpan())

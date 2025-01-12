@@ -626,6 +626,7 @@ namespace MajdataPlay.Game
         }
         void Update()
         {
+            _thisFrameSec = _audioTime;
             UpdateAudioTime();
             if (_audioSample is null)
                 return;
@@ -697,10 +698,6 @@ namespace MajdataPlay.Game
             }
         }
 
-        void FixedUpdate()
-        {
-            _thisFrameSec = _audioTime;
-        }
         void UpdateAudioTime()
         {
             if (_audioSample is null)
