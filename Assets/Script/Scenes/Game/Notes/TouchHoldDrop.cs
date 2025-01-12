@@ -255,6 +255,7 @@ namespace MajdataPlay.Game.Notes
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
+                _judgeDiff = 150;
             }
             else
             {
@@ -319,7 +320,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                _playerIdleTime += Time.fixedDeltaTime;
+                _playerIdleTime += Time.deltaTime;
                 StopHoldEffect();
             }
         }
