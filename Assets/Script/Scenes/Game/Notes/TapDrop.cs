@@ -108,7 +108,7 @@ namespace MajdataPlay.Game.Notes
             SetActive(true);
             SetTapLineActive(false);
             
-            if (_gpManager.IsAutoplay)
+            if (IsAutoplay)
                 Autoplay();
             //else
             //    SubscribeEvent();
@@ -231,7 +231,10 @@ namespace MajdataPlay.Game.Notes
         void Check()
         {
             if (_isJudged)
+            {
+                End();
                 return;
+            }
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 

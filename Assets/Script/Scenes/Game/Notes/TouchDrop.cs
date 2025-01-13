@@ -352,7 +352,10 @@ namespace MajdataPlay.Game.Notes
         void Check()
         {
             if (_isJudged)
+            {
+                End();
                 return;
+            }
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 

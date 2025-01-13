@@ -257,10 +257,10 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = _gpManager.AudioTime - _timing;
-            var startTiming = _gpManager.AudioTime - _startTiming;
+            var timing = ThisFrameSec - _timing;
+            var startTiming = ThisFrameSec - _startTiming;
             var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
+            var isTooLate = ThisFrameSec - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
                 _isCheckable = true;
@@ -280,7 +280,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                if (_lastWaitTime < 0)
+                if (_lastWaitTime <= 0)
                     End();
                 else
                     _lastWaitTime -= Time.deltaTime;
@@ -381,6 +381,7 @@ namespace MajdataPlay.Game.Notes
                     Autoplay();
                     break;
                 case NoteStatus.Arrived:
+                    Autoplay();
                     break;
             }
         }
@@ -388,7 +389,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (!IsAutoplay)
                 return;
-            var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
+            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
             var queueMemory = _judgeQueues[0];
             var queue = queueMemory.Span;
             if (queueMemory.IsEmpty)

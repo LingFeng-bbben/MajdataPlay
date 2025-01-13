@@ -302,7 +302,7 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
                     }
-                    var process = (Length - GetRemainingTimeWithoutOffset() / Length).Clamp(0, 1);
+                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
                     var indexProcess = (_slidePositions.Count - 1) * process;
                     var index = (int)indexProcess;
                     var pos = indexProcess - index;
@@ -326,6 +326,7 @@ namespace MajdataPlay.Game.Notes
                     Autoplay();
                     break;
                 case NoteStatus.Arrived:
+                    Autoplay();
                     break;
             }
         }        
@@ -409,9 +410,9 @@ namespace MajdataPlay.Game.Notes
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
             //var timing = _gpManager.AudioTime - _timing;
-            var startTiming = _gpManager.AudioTime - _startTiming;
+            var startTiming = ThisFrameSec - _startTiming;
             var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = _gpManager.AudioTime - tooLateTiming >= 0;
+            var isTooLate = ThisFrameSec - tooLateTiming >= 0;
 
             if (!_isCheckable)
             {
@@ -446,7 +447,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 else
                 {
-                    if (_lastWaitTime < 0)
+                    if (_lastWaitTime <= 0)
                         End();
                     else
                         _lastWaitTime -= Time.deltaTime;
@@ -525,7 +526,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (!IsAutoplay)
                 return;
-            var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
+            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
             var queueMemory = _judgeQueues[0];
             var queue = queueMemory.Span;
             var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
