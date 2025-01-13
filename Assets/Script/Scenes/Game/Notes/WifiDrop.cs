@@ -74,7 +74,6 @@ namespace MajdataPlay.Game.Notes
             _slideOKAnim = _slideOK.GetComponent<Animator>();
             _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
             _slideOK.SetActive(false);
-            _slideOK.transform.SetParent(transform.parent);
 
             //Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             _slideBars = new GameObject[Transform.childCount - 1];
@@ -157,7 +156,7 @@ namespace MajdataPlay.Game.Notes
             Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
 
             LoadSkin();
-
+            _slideOK.transform.SetParent(transform.parent);
             for (var i = 0; i < _stars.Length; i++)
             {
                 var star = _stars[i];
@@ -367,14 +366,17 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
                     }
-                    var process = 1f - ((Length - GetRemainingTimeWithoutOffset()) / Length);
+                    var process = (Length - GetRemainingTimeWithoutOffset()) / Length;
 
                     for (var i = 0; i < _stars.Length; i++)
                     {
                         var starTransform = _starTransforms[i];
+                        var a = _slideEndPositions[i];
+                        var b = _slideStartPositions[i];
+                        var ba = a - b;
+                        var newPos = ba * process + b;
 
-                        starTransform.position =
-                                (_slideEndPositions[i] - _slideStartPositions[i]) * process + _slideStartPositions[i]; //TODO add some runhua
+                        starTransform.position = newPos; //TODO add some runhua
                     }
                     Autoplay();
                     break;
@@ -544,7 +546,6 @@ namespace MajdataPlay.Game.Notes
                     starRenderer.sharedMaterial = breakMaterial;
                 }
                 star!.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (StartPos - 1)));
-                star!.SetActive(false);
             }
             
 

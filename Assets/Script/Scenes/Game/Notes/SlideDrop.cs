@@ -101,8 +101,7 @@ namespace MajdataPlay.Game.Notes
             _slideOKAnim = _slideOK.GetComponent<Animator>();
             _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
             _slideOK.SetActive(false);
-            _slideOK.transform.SetParent(transform.parent);
-
+            
             _slideBars = new GameObject[transform.childCount - 1];
             _slideBarTransforms = new Transform[transform.childCount - 1];
             _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
@@ -155,6 +154,7 @@ namespace MajdataPlay.Game.Notes
 
             LoadSlidePath();
             LoadSkin();
+            _slideOK.transform.SetParent(transform.parent);
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             _fadeInTiming = -3.926913f / Speed;
