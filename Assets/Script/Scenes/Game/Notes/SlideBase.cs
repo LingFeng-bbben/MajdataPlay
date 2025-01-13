@@ -95,7 +95,7 @@ namespace MajdataPlay.Game.Notes
         /// <para>Readonly</para>
         /// </summary>
         [SerializeField]
-        protected GameObject _slideStar;
+        protected GameObject _slideStarPrefab;
         /// <summary>
         /// Arrows
         /// </summary>
@@ -114,7 +114,7 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// Slide star
         /// </summary>
-        public GameObject?[] _stars = new GameObject[3];
+        protected GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
         protected Animator _slideOKAnim;
@@ -421,7 +421,6 @@ namespace MajdataPlay.Game.Notes
         [ReadOnlyField]
         [SerializeField]
         protected int _endPos = 1;
-        [ReadOnlyField]
         [SerializeField]
         protected string _slideType = string.Empty;
     }

@@ -1015,12 +1015,12 @@ namespace MajdataPlay.Game
             }
             var slideIndex = SLIDE_PREFAB_MAP[slideShape];
             var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
-            var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var SliCompo = slide.AddComponent<SlideDrop>();
+            //var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            var SliCompo = slide.GetComponent<SlideDrop>();
             var isJustR = detectJustType(note.noteContent, out int endPos);
             var startPos = note.startPosition;
 
-            slide_star.SetActive(true);
+            //slide_star.SetActive(true);
             slide.SetActive(true);
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
@@ -1072,7 +1072,7 @@ namespace MajdataPlay.Game
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = startPos;
-            SliCompo._stars = new GameObject[] { slide_star };
+            //SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)note.slideStartTime;
             SliCompo.Length = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
@@ -1146,15 +1146,15 @@ namespace MajdataPlay.Game
             WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)note.slideStartTime;
             WifiCompo.Length = (float)note.slideTime;
-            var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            WifiCompo._stars = new GameObject[3]
-            {
-                rightStar,
-                centerStar,
-                leftStar
-            };
+            //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //WifiCompo._stars = new GameObject[3]
+            //{
+            //    rightStar,
+            //    centerStar,
+            //    leftStar
+            //};
             if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();

@@ -1002,19 +1002,15 @@ MonoBehaviour:
   _isEX: 0
   _playerIdleTime: 0
   _length: 1
-  _slideStar: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
+  _slideStarPrefab: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
   _slideBars: []
   _slideBarRenderers: []
-  _stars:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   _startTiming: 0
   _isJustR: 0
   _fadeInTiming: 0
   _fullFadeInTiming: 0.2
   _endPos: 1
-  _slideType: 
+  _slideType: circle8
   _isMirror: 0
   _isSpecialFlip: 0
 --- !u!1 &1266724528122456748

@@ -36,7 +36,8 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _stars[0] = Instantiate(_slideStar)
+            var starObj = Instantiate(_slideStarPrefab, _noteManager.transform.GetChild(3));
+            _stars[0] = starObj;
 
         }
         /// <summary>
