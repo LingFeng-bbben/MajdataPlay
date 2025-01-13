@@ -2161,6 +2161,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6528371387398208999}
+  - component: {fileID: 1083006261895798109}
   m_Layer: 0
   m_Name: Star_pq_2
   m_TagString: Untagged
@@ -2214,6 +2215,43 @@ Transform:
   - {fileID: 4198466887280069933}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1083006261895798109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7220423140814551699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 459af02eacf371a4abc06af3fc80b24c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _state: 0
+  _startPos: 0
+  _timing: 0
+  _speed: 7
+  _sortOrder: 0
+  _isEach: 0
+  _isBreak: 0
+  _isEX: 0
+  _playerIdleTime: 0
+  _length: 1
+  _slideStar: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
+  _slideBars: []
+  _slideBarRenderers: []
+  _stars:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  _startTiming: 0
+  _isJustR: 0
+  _fadeInTiming: 0
+  _fullFadeInTiming: 0.2
+  _endPos: 1
+  _slideType: 
+  _isMirror: 0
+  _isSpecialFlip: 0
 --- !u!1 &8340445480101220833
 GameObject:
   m_ObjectHideFlags: 0

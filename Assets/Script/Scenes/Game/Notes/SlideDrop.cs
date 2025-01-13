@@ -36,6 +36,8 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
+            _stars[0] = Instantiate(_slideStar)
+
         }
         /// <summary>
         /// Slide初始化
@@ -187,7 +189,7 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentUpdate()
         {
-            BodyCheck();
+            SlideCheck();
             // ConnSlide
             var star = _stars[0];
             var starTransform = _starTransforms[0];
@@ -309,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             }
             _isChecking = false;
         }
-        void BodyCheck()
+        void SlideCheck()
         {
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
@@ -381,7 +383,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (IsDestroyed)
                 return;
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
             //    _ioManager.UnbindSensor(_noteChecker, sensor);
             base.End();
@@ -440,7 +442,7 @@ namespace MajdataPlay.Game.Notes
 
             var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
             var indexProcess = (_slidePositions.Count - 1) * process;
-            var index = ((int)indexProcess).Clamp(0, _slidePositions.Count - 2);
+            var index = (int)indexProcess;
             var pos = indexProcess - index;
 
             if (process == 1)

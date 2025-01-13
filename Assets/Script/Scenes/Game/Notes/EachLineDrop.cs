@@ -34,7 +34,7 @@ namespace MajdataPlay.Game.Notes
         public IStatefulNote? NoteA { get; set; }
         public IStatefulNote? NoteB { get; set; }
         public NoteStatus State { get; set; } = NoteStatus.Start;
-        public bool IsDestroyed => State == NoteStatus.Destroyed;
+        public bool IsDestroyed => State == NoteStatus.End;
         public NoteQueueInfo QueueInfo => TapQueueInfo.Default;
         public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
@@ -50,7 +50,7 @@ namespace MajdataPlay.Game.Notes
         NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             startPosition = poolingInfo.StartPos;
             timing = poolingInfo.Timing;
@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             RendererState = RendererStatus.Off;
             if (forceEnd)
                 return;
@@ -125,7 +125,7 @@ namespace MajdataPlay.Game.Notes
                     transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     if (NoteA is not null && NoteB is not null)
                     {
-                        if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
+                        if (NoteA.State == NoteStatus.End || NoteB.State == NoteStatus.End)
                         {
                             End();
                             return;

@@ -7,7 +7,7 @@
         Initialized,
         Scaling,
         Running,
-        End,
-        Destroyed
+        Arrived,
+        End
     }
 }

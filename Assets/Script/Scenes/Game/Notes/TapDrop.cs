@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void Initialize(TapPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
@@ -116,7 +116,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             //UnsubscribeEvent();
             if (!_isJudged || forceEnd) 
                 return;

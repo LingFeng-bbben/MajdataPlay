@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         public Transform Transform => _transform;
         public bool IsInitialized => State >= NoteStatus.Initialized;
-        public bool IsDestroyed => State == NoteStatus.Destroyed;
+        public bool IsDestroyed => State == NoteStatus.End;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
         public NoteStatus State 
         { 

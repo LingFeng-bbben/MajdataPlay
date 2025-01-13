@@ -1032,6 +1032,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dce01e6efa89ca542a1491788bab73ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _state: 0
   _startPos: 0
   _timing: 0
   _speed: 7
@@ -1041,7 +1042,9 @@ MonoBehaviour:
   _isEX: 0
   _playerIdleTime: 0
   _length: 1
+  _slideStar: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
   _slideBars: []
+  _slideBarRenderers: []
   _stars:
   - {fileID: 0}
   - {fileID: 0}

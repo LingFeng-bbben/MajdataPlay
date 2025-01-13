@@ -126,7 +126,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
@@ -168,7 +168,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             UnsubscribeEvent();
             if (forceEnd)
                 return;
@@ -392,8 +392,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     if(remaining == 0)
                     {
-                        State = NoteStatus.End;
-                        goto case NoteStatus.End;
+                        State = NoteStatus.Arrived;
+                        goto case NoteStatus.Arrived;
                     }
                     if (holdDistance < 1.225f && distance >= 4.8f) // 头到达 尾未出现
                     {
@@ -430,7 +430,7 @@ namespace MajdataPlay.Game.Notes
                     _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
                     Transform.localScale = new Vector3(1f, 1f);
                     break;
-                case NoteStatus.End:
+                case NoteStatus.Arrived:
                     var endTiming = timing - Length;
                     var endDistance = endTiming * Speed + 4.8f;
                     _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);

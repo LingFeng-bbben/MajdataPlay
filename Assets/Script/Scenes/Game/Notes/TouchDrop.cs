@@ -108,7 +108,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void Initialize(TouchPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
 
             StartPos = poolingInfo.StartPos;
@@ -161,7 +161,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             UnsubscribeEvent();
             if (!_isJudged || forceEnd)
                 return;
@@ -298,7 +298,7 @@ namespace MajdataPlay.Game.Notes
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
                             SetFansPosition(_distance);
-                            State = NoteStatus.End;
+                            State = NoteStatus.Arrived;
                         }
                         else
                         {
@@ -306,7 +306,7 @@ namespace MajdataPlay.Game.Notes
                         }
                     }
                     return;
-                case NoteStatus.End:
+                case NoteStatus.Arrived:
                     return;
             }
         }

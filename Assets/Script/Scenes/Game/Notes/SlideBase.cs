@@ -89,6 +89,13 @@ namespace MajdataPlay.Game.Notes
             Memory<SlideArea>.Empty,
             Memory<SlideArea>.Empty
         }; // 判定队列
+
+        /// <summary>
+        /// Slide star prefab
+        /// <para>Readonly</para>
+        /// </summary>
+        [SerializeField]
+        protected GameObject _slideStar;
         /// <summary>
         /// Arrows
         /// </summary>

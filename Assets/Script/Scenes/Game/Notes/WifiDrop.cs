@@ -357,7 +357,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
             //    _ioManager.UnbindSensor(_noteChecker, sensor);
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             base.End();
             if (forceEnd)
             {
