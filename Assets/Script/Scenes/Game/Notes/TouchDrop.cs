@@ -222,7 +222,7 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            if (State < NoteStatus.Running || IsDestroyed)
+            if (State < NoteStatus.Running || IsEnded)
                 return;
             var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
             if (!_isJudged && !isTooLate)

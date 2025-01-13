@@ -81,7 +81,10 @@ namespace MajdataPlay.Game.Notes
         public string SlideType
         {
             get => _slideType;
-            set => _slideType = value;
+        }
+        public float SlideLength
+        {
+            get => _slideLength;
         }
         protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
         { 
@@ -109,7 +112,7 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected SpriteRenderer[] _slideBarRenderers = { };
 
-        protected Transform[] _starTransforms = { };
+        protected readonly Transform[] _starTransforms = new Transform[3];
         protected Transform[] _slideBarTransforms = { };
         /// <summary>
         /// Slide star
@@ -121,10 +124,11 @@ namespace MajdataPlay.Game.Notes
         protected LoadJustSprite _slideOKController;
 
         protected float _lastWaitTime;
-        protected bool _canCheck = false;
+        
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
 
         // Flags
+        protected bool _isCheckable = false;
         protected bool _isSoundPlayed = false;
         protected bool _isChecking = false;
         protected bool _isStarActive = false;
@@ -254,13 +258,14 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var sr in _slideBarRenderers.AsSpan())
             {
-                if (IsDestroyed)
+                if (IsEnded)
                     return;
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
                 }
-                else {
+                else 
+                {
                     sr.forceRenderingOff = false;
                     sr.color = new Color(1f, 1f, 1f, alpha);
                 }
@@ -271,20 +276,14 @@ namespace MajdataPlay.Game.Notes
             base.SetActive(state);
             if (state)
             {
-                if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
-                {
-                    //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-                    //    _ioManager.BindSensor(_noteChecker, sensor);
-                    State = NoteStatus.Running;
-                }
                 foreach (var slideBar in _slideBars.AsSpan())
-                    slideBar.layer = 0;
+                    slideBar.layer = MajEnv.DEFAULT_LAYER;
             }
             else
             {
                 
                 foreach (var slideBar in _slideBars.AsSpan())
-                    slideBar.layer = 3;
+                    slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
             SetStarActive(state);
             Active = state;
@@ -298,7 +297,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         if (star is null)
                             continue;
-                        star.layer = 0;
+                        star.layer = MajEnv.DEFAULT_LAYER;
                     }
                     break;
                 case false:
@@ -306,7 +305,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         if (star is null)
                             continue;
-                        star.layer = 3;
+                        star.layer = MajEnv.HIDDEN_LAYER;
                     }
                     break;
             }
@@ -340,7 +339,7 @@ namespace MajdataPlay.Game.Notes
         /// <param name="onlyStar"></param>
         public virtual void End(bool forceEnd = false)
         {
-            if (Parent is not null && !Parent.IsDestroyed)
+            if (Parent is not null && !Parent.IsEnded)
                 Parent.End(true);
             //foreach (var obj in _slideBars.AsSpan())
             //    obj.SetActive(false);
@@ -356,7 +355,7 @@ namespace MajdataPlay.Game.Notes
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
             HideAllBar();
-            var emptyQueue = Array.Empty<SlideArea>();
+            var emptyQueue = Memory<SlideArea>.Empty;
             for (int i = 0; i < 2; i++)
                 _judgeQueues[i] = emptyQueue;
         }
@@ -423,5 +422,8 @@ namespace MajdataPlay.Game.Notes
         protected int _endPos = 1;
         [SerializeField]
         protected string _slideType = string.Empty;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _slideLength = 0f;
     }
 }

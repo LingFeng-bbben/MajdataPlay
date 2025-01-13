@@ -931,6 +931,7 @@ namespace MajdataPlay.Game
                     eachNotes.Add(result.StarInfo);
                     AddSlideToQueue(timing, result.SlideInstance);
                     UpdateStarRotateSpeed(result, (float)subSlide[i].slideTime, 8.93760109f);
+                    sliObj.Initialize();
                 }
                 else
                 {
@@ -961,8 +962,7 @@ namespace MajdataPlay.Game
                 var isEnd = i == slideCount - 1;
                 var table = SlideTables.FindTableByName(s.SlideType);
                 
-                s.Initialize();
-                totalSlideLen += s.GetSlideLength();
+                totalSlideLen += s.SlideLength;
                 if (isEnd)
                     judgeQueueLen += table!.JudgeQueue.Length;
                 else
@@ -973,7 +973,8 @@ namespace MajdataPlay.Game
                 s.ConnectInfo.TotalSlideLen = totalSlideLen;
                 s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
             });
-            if(slideResult is not null)
+            subSlides.ForEach(s => s.Initialize());
+            if (slideResult is not null)
             {
                 UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
             }
@@ -1033,7 +1034,7 @@ namespace MajdataPlay.Game
                 starInfo = _info;
             }
 
-            SliCompo.SlideType = slideShape;
+            //SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
             {
