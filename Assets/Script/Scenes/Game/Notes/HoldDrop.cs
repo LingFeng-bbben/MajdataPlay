@@ -71,7 +71,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
             _poolManager = FindObjectOfType<NotePoolManager>();
             var notes = _noteManager.gameObject.transform;
 
@@ -307,32 +306,6 @@ namespace MajdataPlay.Game.Notes
                 {
                     End();
                 }
-            }
-        }
-        protected override void Check(object sender, InputEventArgs arg)
-        {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
-                return;
-            else if (!arg.IsClick)
-                return;
-            else if (!_judgableRange.InRange(thisFrameSec))
-                return;
-            else if (arg.Type != _sensorPos)
-                return;
-            else if (!_noteManager.CanJudge(QueueInfo))
-                return;
-
-            if (!_ioManager.IsIdle(arg))
-                return;
-            else
-                _ioManager.SetBusy(arg);
-            Judge(thisFrameSec);
-
-            if (_isJudged)
-            {
-                _ioManager.UnbindArea(Check, _sensorPos);
-                _noteManager.NextNote(QueueInfo);
             }
         }
         protected override void Judge(float currentSec)

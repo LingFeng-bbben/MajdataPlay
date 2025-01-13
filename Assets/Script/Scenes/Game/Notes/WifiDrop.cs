@@ -28,7 +28,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
         }
         public override void Initialize()
         {
@@ -125,7 +124,6 @@ namespace MajdataPlay.Game.Notes
         {
             
         }
-        protected override void Check(object sender, InputEventArgs arg) => CheckAll();
         void CheckAll()
         {
             if (IsDestroyed || !IsInitialized)

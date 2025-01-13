@@ -30,7 +30,7 @@ namespace MajdataPlay.Game
         public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
         // Timeline
         /// <summary>
-        /// The timing of the current FixedUpdate<para>Unit: Second</para>
+        /// The timing of the current Update<para>Unit: Second</para>
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
         /// <summary>

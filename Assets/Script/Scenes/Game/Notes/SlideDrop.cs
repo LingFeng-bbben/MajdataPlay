@@ -36,7 +36,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
         }
         /// <summary>
         /// Slide初始化
@@ -639,7 +638,6 @@ namespace MajdataPlay.Game.Notes
             _slideOK.SetActive(false);
             _slideOK.transform.SetParent(transform.parent);
         }
-        protected override void Check(object sender, InputEventArgs arg) => Check();
 
         [ReadOnlyField]
         [SerializeField]

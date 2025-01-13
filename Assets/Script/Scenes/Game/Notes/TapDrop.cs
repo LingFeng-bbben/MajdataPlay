@@ -59,7 +59,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
@@ -269,27 +268,6 @@ namespace MajdataPlay.Game.Notes
 
             var thisFrameSec = _gpManager.ThisFrameSec;
             isUsedInThisFrame = true;
-
-            Judge(thisFrameSec);
-        }
-        protected override void Check(object sender, InputEventArgs arg)
-        {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
-                return;
-            else if (!arg.IsClick)
-                return;
-            else if (!_judgableRange.InRange(thisFrameSec))
-                return;
-            else if (arg.Type != _sensorPos)
-                return;
-            else if (!_noteManager.CanJudge(QueueInfo))
-                return;
-
-            if (!_ioManager.IsIdle(arg))
-                return;
-            else
-                _ioManager.SetBusy(arg);
 
             Judge(thisFrameSec);
         }

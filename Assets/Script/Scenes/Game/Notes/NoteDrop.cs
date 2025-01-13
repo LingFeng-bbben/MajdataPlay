@@ -130,7 +130,6 @@ namespace MajdataPlay.Game.Notes
             Active = false;
         }
         protected abstract void LoadSkin();
-        protected abstract void Check(object sender, InputEventArgs arg);
         public abstract void ComponentUpdate();
         public abstract void ComponentFixedUpdate();
         protected abstract void PlaySFX();
@@ -226,7 +225,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the judgment line, the result is a positive number.
         /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - Timing;
+        protected float GetTimeSpanToArriveTiming() => _gpManager.ThisFrameSec - Timing;
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
         /// </summary>
@@ -234,7 +233,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the answer frame, the result is a positive number.
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => _gpManager.ThisFrameSec - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
         public static Vector3 GetPositionFromDistance(float distance, int position)
