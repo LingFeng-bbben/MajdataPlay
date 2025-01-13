@@ -294,7 +294,14 @@ namespace MajdataPlay.Game.Notes
             var on = _noteManager.CheckAreaStateInThisFrame(_sensorPos, SensorStatus.On);
             if (on || _gpManager.IsAutoplay)
             {
-                PlayHoldEffect();
+                if(remainingTime == 0)
+                {
+                    StopHoldEffect();
+                }
+                else
+                {
+                    PlayHoldEffect();
+                }
             }
             else
             {
