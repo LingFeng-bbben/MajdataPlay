@@ -440,7 +440,7 @@ namespace MajdataPlay.Game.Notes
 
             var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
             var indexProcess = (_slidePositions.Count - 1) * process;
-            var index = (int)indexProcess;
+            var index = ((int)indexProcess).Clamp(0, _slidePositions.Count - 2);
             var pos = indexProcess - index;
 
             if (process == 1)

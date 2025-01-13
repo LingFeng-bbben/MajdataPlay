@@ -76,31 +76,41 @@ namespace MajdataPlay.Game.Types
         }
         public void Mirror(SensorType baseLine)
         {
-            Memory<Area> newAreas = new Area[_areas.Length];
-            var newAreasSpan = newAreas.Span;
+            Area[] newAreas = new Area[_areas.Length];
+            SensorType[] includedAreas = new SensorType[_includedAreas.Length];
             foreach (var (i, area) in _areas.Span.WithIndex())
             {
-                newAreasSpan[i] = new Area()
+                newAreas[i] = new Area()
                 {
                     TargetArea = area.TargetArea.Mirror(baseLine),
                     IsLast = area.IsLast
                 };
             }
+            foreach(var (i,area) in _includedAreas.Span.WithIndex())
+            {
+                includedAreas[i] = area.Mirror(baseLine);
+            }
             _areas = newAreas;
+            _includedAreas = includedAreas;
         }
         public void Diff(int diff)
         {
-            Memory<Area> newAreas = new Area[_areas.Length];
-            var newAreasSpan = newAreas.Span;
+            Area[] newAreas = new Area[_areas.Length];
+            SensorType[] includedAreas = new SensorType[_includedAreas.Length];
             foreach (var (i, area) in _areas.Span.WithIndex())
             {
-                newAreasSpan[i] = new Area()
+                newAreas[i] = new Area()
                 {
                     TargetArea = area.TargetArea.Diff(diff),
                     IsLast = area.IsLast
                 };
             }
+            foreach (var (i, area) in _includedAreas.Span.WithIndex())
+            {
+                includedAreas[i] = area.Diff(diff);
+            }
             _areas = newAreas;
+            _includedAreas = includedAreas;
         }
         public void SetIsLast()
         {

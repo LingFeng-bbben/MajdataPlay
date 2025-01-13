@@ -212,27 +212,27 @@ namespace MajdataPlay.Game.Notes
         {
             if (_isJudged)
                 return;
-            else if (!_judgableRange.InRange(_gpManager.ThisFrameSec))
-                return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
-            var btnState = _noteManager.GetButtonStateInThisFrame(_sensorPos);
-            var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
+            
+            if (_judgableRange.InRange(_gpManager.ThisFrameSec))
+            {
+                var btnState = _noteManager.GetButtonStateInThisFrame(_sensorPos);
+                var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
 
-            if (isTooLate)
+                Check(btnState, ref _noteManager.IsButtonUsedInThisFrame(_sensorPos));
+                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
+            }
+            else if (isTooLate)
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = 150;
             }
-            else
-            {
-                Check(btnState, ref _noteManager.IsButtonUsedInThisFrame(_sensorPos));
-                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
-            }
+
             if (_isJudged)
             {
                 _noteManager.NextNote(QueueInfo);

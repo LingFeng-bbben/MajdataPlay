@@ -353,36 +353,36 @@ namespace MajdataPlay.Game.Notes
         {
             if (_isJudged)
                 return;
-            else if (!_judgableRange.InRange(_gpManager.ThisFrameSec))
-                return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.316667f;
-            var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
+            
 
-            if (isTooLate)
+            if (_judgableRange.InRange(_gpManager.ThisFrameSec))
             {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-            }
-            else
-            {
+                var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
+
                 Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
-                if(!_isJudged)
+
+                if (!_isJudged && GroupInfo is not null)
                 {
-                    if (GroupInfo is not null)
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
                     {
-                        if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
-                        {
-                            _isJudged = true;
-                            _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                            _judgeDiff = GroupInfo.JudgeDiff;
-                        }
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
                     }
                 }
             }
+            else if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 316.667f;
+            }
+
             if (_isJudged)
             {
                 End();
