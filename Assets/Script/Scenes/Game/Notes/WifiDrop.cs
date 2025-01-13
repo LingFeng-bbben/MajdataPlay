@@ -113,10 +113,6 @@ namespace MajdataPlay.Game.Notes
             _judgeTiming = Timing + (Length * (1 - wifiConst));
             _lastWaitTime = Length * wifiConst;
 
-            _judgeAreas = _judgeQueues.SelectMany(x => x.ToArray().SelectMany(y => y.GetSensorTypes()))
-                                      .GroupBy(x => x)
-                                      .Select(x => x.Key)
-                                      .ToArray();
             
             FadeIn().Forget();
         }
@@ -141,34 +137,34 @@ namespace MajdataPlay.Game.Notes
             }
             _isChecking = false;
         }
-        void Check(ref Memory<JudgeArea> queueMemory)
+        void Check(ref Memory<SlideArea> queueMemory)
         {
             if (queueMemory.IsEmpty)
                 return;
 
             var queue = queueMemory.Span;
             var first = queue[0];
-            JudgeArea? second = null;
+            SlideArea? second = null;
 
             if (queueMemory.Length >= 2)
                 second = queue[1];
-            var fType = first.GetSensorTypes();
-            foreach (var t in fType)
+            var fAreas = first.IncludedAreas;
+            foreach (var t in fAreas)
             {
                 var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
-                first.Judge(t, sensorState);
+                first.Check(t, sensorState);
             }
 
             if (first.On)
                 PlaySFX();
 
-            if (second is not null && (first.CanSkip || first.On))
+            if (second is not null && (first.IsSkippable || first.On))
             {
-                var sType = second.GetSensorTypes();
-                foreach (var t in sType)
+                var sAreas = second.IncludedAreas;
+                foreach (var t in sAreas)
                 {
                     var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
-                    second.Judge(t, sensorState);
+                    second.Check(t, sensorState);
                 }
 
                 if (second.IsFinished)

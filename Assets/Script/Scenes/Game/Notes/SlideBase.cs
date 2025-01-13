@@ -83,11 +83,11 @@ namespace MajdataPlay.Game.Notes
             get => _slideType;
             set => _slideType = value;
         }
-        protected readonly Memory<JudgeArea>[] _judgeQueues = new Memory<JudgeArea>[3]
+        protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
         { 
-            Memory<JudgeArea>.Empty,
-            Memory<JudgeArea>.Empty,
-            Memory<JudgeArea>.Empty
+            Memory<SlideArea>.Empty,
+            Memory<SlideArea>.Empty,
+            Memory<SlideArea>.Empty
         }; // 判定队列
         /// <summary>
         /// Arrows
@@ -123,12 +123,6 @@ namespace MajdataPlay.Game.Notes
         protected bool _isStarActive = false;
         protected bool _isArrived = false;
 
-
-        /// <summary>
-        /// 存储Slide Queue中会经过的区域
-        /// <para>用于绑定或解绑Event</para>
-        /// </summary>
-        protected SensorType[] _judgeAreas = Array.Empty<SensorType>();
         public abstract void Initialize();
         protected override void Judge(float currentSec)
         {
@@ -355,7 +349,7 @@ namespace MajdataPlay.Game.Notes
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
             HideAllBar();
-            var emptyQueue = Array.Empty<JudgeArea>();
+            var emptyQueue = Array.Empty<SlideArea>();
             for (int i = 0; i < 2; i++)
                 _judgeQueues[i] = emptyQueue;
         }

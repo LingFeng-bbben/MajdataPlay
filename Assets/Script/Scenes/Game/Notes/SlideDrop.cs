@@ -129,19 +129,19 @@ namespace MajdataPlay.Game.Notes
             {
                 if (ConnectInfo.IsGroupPartHead)
                 {
-                    judgeQueue[0].CanSkip = true;
-                    judgeQueue[1].CanSkip = false;
+                    judgeQueue[0].IsSkippable = true;
+                    judgeQueue[1].IsSkippable = false;
                 }
                 else if (ConnectInfo.IsGroupPartEnd)
                 {
-                    judgeQueue[0].CanSkip = false;
-                    judgeQueue[1].CanSkip = true;
+                    judgeQueue[0].IsSkippable = false;
+                    judgeQueue[1].IsSkippable = true;
                 }
             }
             else
             {
                 foreach (var judgeArea in judgeQueue)
-                    judgeArea.CanSkip = true;
+                    judgeArea.IsSkippable = true;
             }
         }
         public float GetSlideLength()
@@ -178,10 +178,6 @@ namespace MajdataPlay.Game.Notes
                 _lastWaitTime = Length *  percent;
             }
 
-            _judgeAreas = _table.JudgeQueue.SelectMany(x => x.GetSensorTypes())
-                                           .GroupBy(x => x)
-                                           .Select(x => x.Key)
-                                           .ToArray();
 
             FadeIn().Forget();
         }
@@ -202,12 +198,12 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                Check();
+                CheckSensor();
                 return;
             }
             else if(_isArrived)
             {
-                Check();
+                CheckSensor();
                 return;
             }
 
@@ -239,12 +235,12 @@ namespace MajdataPlay.Game.Notes
             {
                 StarUpdate();
             }
-            Check();
+            CheckSensor();
         }        
         /// <summary>
         /// 判定队列检查
         /// </summary>
-        void Check()
+        void CheckSensor()
         {
             if (IsDestroyed || !IsInitialized)
                 return;
@@ -260,29 +256,29 @@ namespace MajdataPlay.Game.Notes
 
 
             var first = queue[0];
-            var fType = first.GetSensorTypes();
+            var fAreas = first.IncludedAreas;
             var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-            JudgeArea? second = null;
+            SlideArea? second = null;
 
             if (queue.Length >= 2)
                 second = queue[1];
             
-            foreach (var t in fType)
+            foreach (var area in fAreas)
             {
-                var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
-                first.Judge(t, sensorState);
+                var sensorState = _noteManager.CheckSensorStateInThisFrame(area, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                first.Check(area, sensorState);
             }
 
             if(canPlaySFX && first.On)
                 PlaySFX();
 
-            if (second is not null && (first.CanSkip || first.On))
+            if (second is not null && (first.IsSkippable || first.On))
             {
-                var sType = second.GetSensorTypes();
-                foreach (var t in sType)
+                var sAreas = second.IncludedAreas;
+                foreach (var area in sAreas)
                 {
-                    var sensorState = _noteManager.CheckSensorStateInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
-                    second.Judge(t, sensorState);
+                    var sensorState = _noteManager.CheckSensorStateInThisFrame(area, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                    second.Check(area, sensorState);
                 }
 
                 if (second.IsFinished)

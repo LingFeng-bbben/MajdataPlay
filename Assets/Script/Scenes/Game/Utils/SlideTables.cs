@@ -15,7 +15,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle2",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3,false),
                     BuildJudgeArea(SensorType.A2,7,true,true)
@@ -25,7 +25,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11,false),
@@ -36,7 +36,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -48,7 +48,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle5",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -61,7 +61,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle6",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -75,7 +75,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle7",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -90,7 +90,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle8",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -106,7 +106,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "circle1",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.A2,11),
@@ -123,7 +123,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "line3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[]{SensorType.A2,SensorType.B2 },8,false),
@@ -134,7 +134,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "line4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B2,8),
@@ -146,7 +146,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "line5",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -159,7 +159,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "line6",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -171,7 +171,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "line7",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[]{SensorType.A8,SensorType.B8 },8,false),
@@ -182,7 +182,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v1",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -195,7 +195,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v2",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -208,7 +208,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -221,7 +221,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -234,7 +234,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v6",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -247,7 +247,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v7",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -260,7 +260,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "v8",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -273,7 +273,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq1",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -289,7 +289,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq2",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -303,7 +303,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,6),
@@ -316,7 +316,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -334,7 +334,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq5",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -352,7 +352,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq6",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -370,7 +370,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq7",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -387,7 +387,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "ppqq8",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B1,7),
@@ -403,7 +403,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "L2",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },7,false),
@@ -417,7 +417,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "L3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
@@ -432,7 +432,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "L4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
@@ -446,7 +446,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "L5",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,2),
                     BuildJudgeArea(new SensorType[] { SensorType.B8,SensorType.A8 },8,false),
@@ -459,7 +459,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "s",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -474,7 +474,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq1",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -491,7 +491,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq2",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -507,7 +507,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq3",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,9),
@@ -522,7 +522,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq4",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,9),
@@ -536,7 +536,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq5",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,9),
@@ -549,7 +549,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq6",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -569,7 +569,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq7",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -588,7 +588,7 @@ namespace MajdataPlay.Game.Utils
             new SlideTable()
             {
                 Name = "pq8",
-                JudgeQueue = new JudgeArea[]
+                JudgeQueue = new SlideArea[]
                 {
                     BuildJudgeArea(SensorType.A1,3),
                     BuildJudgeArea(SensorType.B8,8),
@@ -604,23 +604,23 @@ namespace MajdataPlay.Game.Utils
                 Const = 0.08398f
             },
         };
-        public static JudgeArea[][] WIFISLIDE_JUDGE_QUEUE => new JudgeArea[][]
+        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE => new SlideArea[][]
         {
-            new JudgeArea[] // L
+            new SlideArea[] // L
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B8,2),
                 BuildJudgeArea(SensorType.B7,4),
                 BuildJudgeArea(new SensorType[]{ SensorType.A6 , SensorType.D6 },7,true,true)
             },
-            new JudgeArea[] // Center
+            new SlideArea[] // Center
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B1,2),
                 BuildJudgeArea(SensorType.C,4),
                 BuildJudgeArea(new SensorType[]{ SensorType.A5 , SensorType.B5 },7,true,true)
             },
-            new JudgeArea[] // R
+            new SlideArea[] // R
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B2,2),
@@ -628,22 +628,22 @@ namespace MajdataPlay.Game.Utils
                 BuildJudgeArea(new SensorType[]{ SensorType.A4 , SensorType.D5 },7,true,true)
             }
         };
-        public static JudgeArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new JudgeArea[][]
+        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new SlideArea[][]
         {
-            new JudgeArea[] // L
+            new SlideArea[] // L
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B8,2),
                 BuildJudgeArea(SensorType.B7,4),
                 BuildJudgeArea(new SensorType[]{ SensorType.A6 , SensorType.D6 },7,true,true)
             },
-            new JudgeArea[] // Center
+            new SlideArea[] // Center
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B1,2),
                 BuildJudgeArea(SensorType.C,7,true,false),
             },
-            new JudgeArea[] // R
+            new SlideArea[] // R
             {
                 BuildJudgeArea(SensorType.A1,0),
                 BuildJudgeArea(SensorType.B2,2),
@@ -657,13 +657,13 @@ namespace MajdataPlay.Game.Utils
             var clone = result.Clone();
             return clone;
         }
-        public static JudgeArea[][] GetWifiTable(int startPos)
+        public static SlideArea[][] GetWifiTable(int startPos)
         {
-            List<JudgeArea[]> queue = new();
+            List<SlideArea[]> queue = new();
             var raw = MajInstances.Setting.Judge.Mode == JudgeMode.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
             foreach (var line in raw)
             {
-                List<JudgeArea> rows = new();
+                List<SlideArea> rows = new();
                 foreach (var row in line)
                     rows.Add(row.Clone()!);
                 queue.Add(rows.ToArray());
@@ -680,23 +680,23 @@ namespace MajdataPlay.Game.Utils
 
             return _queue;
         }
-        static JudgeArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
+        static SlideArea BuildJudgeArea(SensorType type, int barIndex, bool canSkip = true, bool isLast = false)
         {
-            var obj = new JudgeArea(new Dictionary<SensorType, bool>
+            var obj = new SlideArea(new Dictionary<SensorType, bool>
                       {
                           { type, isLast}
                       }, barIndex);
-            obj.CanSkip = canSkip;
+            obj.IsSkippable = canSkip;
             return obj;
         }
-        static JudgeArea BuildJudgeArea(SensorType[] type, int barIndex, bool canSkip = true, bool isLast = false)
+        static SlideArea BuildJudgeArea(SensorType[] type, int barIndex, bool canSkip = true, bool isLast = false)
         {
             var table = new Dictionary<SensorType, bool>();
             foreach (var sensorType in type)
                 table.Add(sensorType, isLast);
 
-            var obj = new JudgeArea(table, barIndex);
-            obj.CanSkip = canSkip;
+            var obj = new SlideArea(table, barIndex);
+            obj.IsSkippable = canSkip;
             return obj;
         }
     }
