@@ -247,7 +247,7 @@ namespace MajdataPlay.Game.Notes
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.316667f;
             
-            if (_judgableRange.InRange(_gpManager.ThisFrameSec))
+            if (_judgableRange.InRange(ThisFrameSec))
             {
                 var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
 
@@ -289,10 +289,9 @@ namespace MajdataPlay.Game.Notes
             else if (isUsedInThisFrame)
                 return;
 
-            var thisFrameSec = _gpManager.ThisFrameSec;
             isUsedInThisFrame = true;
 
-            Judge(thisFrameSec);
+            Judge(ThisFrameSec);
         }
         void BodyCheck()
         {

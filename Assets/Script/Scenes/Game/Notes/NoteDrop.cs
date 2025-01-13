@@ -77,6 +77,7 @@ namespace MajdataPlay.Game.Notes
         }
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
+        public float ThisFrameSec => _gpManager.ThisFrameSec;
 
         protected bool IsAutoplay => _isAutoplay;
         protected Material BreakMaterial => _breakMaterial;

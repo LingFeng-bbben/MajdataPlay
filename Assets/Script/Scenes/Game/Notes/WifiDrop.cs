@@ -271,9 +271,9 @@ namespace MajdataPlay.Game.Notes
                 {
                     HideAllBar();
                     if (IsClassic)
-                        Judge_Classic(_gpManager.ThisFrameSec);
+                        Judge_Classic(ThisFrameSec);
                     else
-                        Judge(_gpManager.ThisFrameSec);
+                        Judge(ThisFrameSec);
                 }
                 else if (isTooLate)
                     TooLateJudge();
@@ -318,7 +318,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (CurrentSec - StartTiming > 0)
+                    if (ThisFrameSec - StartTiming > 0)
                     {
                         SetStarActive(true);
                         for (var i = 0; i < _stars.Length; i++)
@@ -332,7 +332,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = CurrentSec - Timing;
+                    var timing = ThisFrameSec - Timing;
                     if (timing > 0f)
                     {
                         for (var i = 0; i < _stars.Length; i++)
@@ -366,7 +366,7 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
                     }
-                    var process = (Length - GetRemainingTimeWithoutOffset()) / Length;
+                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
 
                     for (var i = 0; i < _stars.Length; i++)
                     {

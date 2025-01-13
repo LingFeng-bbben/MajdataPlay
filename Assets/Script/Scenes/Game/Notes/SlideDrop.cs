@@ -253,7 +253,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (CurrentSec - StartTiming > 0)
+                    if (ThisFrameSec - StartTiming > 0)
                     {
                         if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
                         {
@@ -269,7 +269,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = CurrentSec - Timing;
+                    var timing = ThisFrameSec - Timing;
                     if (timing > 0f)
                     {
                         _starRenderer.color = new Color(1, 1, 1, 1);
@@ -302,7 +302,7 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
                     }
-                    var process = MathF.Min((Length - GetRemainingTimeWithoutOffset()) / Length, 1);
+                    var process = (Length - GetRemainingTimeWithoutOffset() / Length).Clamp(0, 1);
                     var indexProcess = (_slidePositions.Count - 1) * process;
                     var index = (int)indexProcess;
                     var pos = indexProcess - index;
@@ -436,9 +436,9 @@ namespace MajdataPlay.Game.Notes
                     {
                         HideAllBar();
                         if (IsClassic)
-                            Judge_Classic(_gpManager.ThisFrameSec);
+                            Judge_Classic(ThisFrameSec);
                         else
-                            Judge(_gpManager.ThisFrameSec);
+                            Judge(ThisFrameSec);
                         return;
                     }
                     else if (isTooLate)
