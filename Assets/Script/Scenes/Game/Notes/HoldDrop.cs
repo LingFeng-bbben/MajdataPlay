@@ -230,7 +230,6 @@ namespace MajdataPlay.Game.Notes
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _judgeDiff = 150;
             }
 
             if (_isJudged)
@@ -305,13 +304,11 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                _playerIdleTime += Time.deltaTime;
+                _playerIdleTime += Time.fixedDeltaTime;
                 StopHoldEffect();
 
                 if (IsClassic)
-                {
                     End();
-                }
             }
         }
         protected override void Judge(float currentSec)

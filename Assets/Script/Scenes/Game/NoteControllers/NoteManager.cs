@@ -37,7 +37,7 @@ namespace MajdataPlay.Game
         bool[] _btnStatusInThisFrame = new bool[8];
         bool[] _btnStatusInLastFrame = new bool[8];
 
-        bool[] _isSensorUsedInThisFrame = new bool[33];
+        bool[] _isSensorUsedInThisFrame = new bool[8];
         bool[] _sensorStatusInThisFrame = new bool[33];
         bool[] _sensorStatusInLastFrame = new bool[33];
         void Awake()

@@ -283,7 +283,7 @@ namespace MajdataPlay.Game.Notes
                 if (_lastWaitTime <= 0)
                     End();
                 else
-                    _lastWaitTime -= Time.deltaTime;
+                    _lastWaitTime -= Time.fixedDeltaTime;
             }
         }
         int GetIndex()
