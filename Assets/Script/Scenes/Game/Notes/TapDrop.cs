@@ -5,7 +5,6 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
-using Unity.Burst.Intrinsics;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -75,6 +74,8 @@ namespace MajdataPlay.Game.Notes
             _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
             _exObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
+
+            _noteChecker = new(Check);
         }
         public void Initialize(TapPoolingInfo poolingInfo)
         {
@@ -110,8 +111,8 @@ namespace MajdataPlay.Game.Notes
             
             if (IsAutoplay)
                 Autoplay();
-            //else
-            //    SubscribeEvent();
+            else
+                SubscribeEvent();
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
@@ -131,8 +132,8 @@ namespace MajdataPlay.Game.Notes
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(result);
-            _noteManager.NextNote(QueueInfo);
             _effectManager.PlayEffect(StartPos, result);
+            _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
@@ -171,8 +172,6 @@ namespace MajdataPlay.Game.Notes
             var distance = timing * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
-
-            Check();
 
             switch (State)
             {
@@ -228,51 +227,26 @@ namespace MajdataPlay.Game.Notes
                     Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
             }
         }
-        void Check()
+        void Check(object sender, InputEventArgs arg)
         {
+            var thisFrameSec = _gpManager.ThisFrameSec;
             if (_isJudged)
-            {
-                End();
                 return;
-            }
+            else if (!arg.IsClick)
+                return;
+            else if (!_judgableRange.InRange(thisFrameSec))
+                return;
+            else if (arg.Type != _sensorPos)
+                return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-            
-            if (_judgableRange.InRange(ThisFrameSec))
-            {
-                var btnState = _noteManager.GetButtonStateInThisFrame(_sensorPos);
-                var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
-
-                Check(btnState, ref _noteManager.IsButtonUsedInThisFrame(_sensorPos));
-                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
-            }
-            else if (isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = 150;
-            }
-
-            if(_isJudged)
-            {
-                End();
-            }
-        }
-        void Check(in InputEventArgs args, ref bool isUsedInThisFrame)
-        {
-            if (_isJudged)
+            if (!_ioManager.IsIdle(arg))
                 return;
-            else if (!args.IsClick)
-                return;
-            else if (isUsedInThisFrame)
-                return;
+            else
+                _ioManager.SetBusy(arg);
 
-            isUsedInThisFrame = true;
-
-            Judge(ThisFrameSec);
+            Judge(thisFrameSec);
         }
         protected override void LoadSkin()
         {
@@ -312,6 +286,14 @@ namespace MajdataPlay.Game.Notes
                     _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
+        }
+        void SubscribeEvent()
+        {
+            _ioManager.BindArea(_noteChecker, _sensorPos);
+        }
+        void UnsubscribeEvent()
+        {
+            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         void LoadTapSkin()
         {
