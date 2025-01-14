@@ -580,7 +580,7 @@ namespace MajdataPlay.Game
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
 
             StartToPlayAnswer();
-            UpdateThisFrameSec().Forget();
+            //UpdateThisFrameSec().Forget();
 
             State = ComponentState.Running;
             
@@ -668,7 +668,12 @@ namespace MajdataPlay.Game
             }
 
         }
-
+        void LateUpdate()
+        {
+            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+            _thisFrameSec = timeOffset - chartOffset;
+        }
         private void CalculateScore(bool playEffect = true)
         {
             var acc = _objectCounter.CalculateFinalResult();
