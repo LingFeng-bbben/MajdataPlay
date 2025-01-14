@@ -634,7 +634,9 @@ namespace MajdataPlay.Game
                 var token = _cts.Token;
                 while(!token.IsCancellationRequested)
                 {
-                    _thisFrameSec = _audioTime;
+                    var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    _thisFrameSec = timeOffset - chartOffset;
                     await UniTask.Yield(PlayerLoopTiming.PreUpdate, token);
                 }
             });
