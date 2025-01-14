@@ -142,7 +142,7 @@ namespace MajdataPlay.Utils
                 foreach (var hash in dan.SongHashs)
                 {
                     // search online first (so can upload score)
-                    var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash || x.IsOnline == true);
+                    var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash && x.IsOnline == true);
                     if (songDetail ==  null)
                         songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
                     if (songDetail is not null)
