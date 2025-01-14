@@ -3722,6 +3722,7 @@ MonoBehaviour:
   _fullFadeInTiming: 0.2
   _endPos: 1
   _slideType: ppqq7
+  _slideLength: 0
   _isMirror: 0
   _isSpecialFlip: 0
 --- !u!1 &8772722309363375930
@@ -3987,7 +3988,6 @@ GameObject:
   - component: {fileID: 1199531215474873966}
   - component: {fileID: 7720560122247702519}
   - component: {fileID: 2142934262348833444}
-  - component: {fileID: 5817684696771556823}
   - component: {fileID: 8239583625264658571}
   m_Layer: 0
   m_Name: Just_str
@@ -4084,19 +4084,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5817684696771556823
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9096667417146528383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff4d7167d6265845aade36b6f37d48c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ifDestroy: 0
 --- !u!114 &8239583625264658571
 MonoBehaviour:
   m_ObjectHideFlags: 0

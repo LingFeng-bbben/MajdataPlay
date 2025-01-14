@@ -131,8 +131,6 @@ namespace MajdataPlay.Game.Notes
         protected bool _isCheckable = false;
         protected bool _isSoundPlayed = false;
         protected bool _isChecking = false;
-        protected bool _isStarActive = false;
-        protected bool _isArrived = false;
 
         public abstract void Initialize();
         protected override void Judge(float currentSec)

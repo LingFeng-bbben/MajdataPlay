@@ -2447,6 +2447,7 @@ MonoBehaviour:
   _fullFadeInTiming: 0.2
   _endPos: 1
   _slideType: circle5
+  _slideLength: 0
   _isMirror: 0
   _isSpecialFlip: 0
 --- !u!1 &8485280449831498836
@@ -2712,7 +2713,6 @@ GameObject:
   - component: {fileID: 1836430134254452113}
   - component: {fileID: 7714401113597827625}
   - component: {fileID: 6133013256352664471}
-  - component: {fileID: 1171636963059387567}
   - component: {fileID: 1137361713200525102}
   m_Layer: 0
   m_Name: Just_curv
@@ -2809,19 +2809,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1171636963059387567
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9211939807871122267}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff4d7167d6265845aade36b6f37d48c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ifDestroy: 0
 --- !u!114 &1137361713200525102
 MonoBehaviour:
   m_ObjectHideFlags: 0
