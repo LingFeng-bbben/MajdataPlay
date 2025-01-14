@@ -9,6 +9,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Game.Types;
 using MajdataPlay.References;
 using System;
+using System.Threading;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -29,6 +30,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         double _lateUpdateElapsedMs = 0;
 
+        readonly CancellationTokenSource _cts = new();
         InputManager _inputManager = MajInstances.InputManager;
 
         bool[] _isBtnUsedInThisFrame = new bool[8];
@@ -53,34 +55,54 @@ namespace MajdataPlay.Game
                 _sensorStatusInThisFrame[i] = _inputManager.CheckSensorStatus(area, SensorStatus.On);
                 _sensorStatusInLastFrame[i] = _sensorStatusInThisFrame[i];
             }
+            UpdateGameIOStatus().Forget();
         }
         void OnDestroy()
         {
             MajInstanceHelper<NoteManager>.Free();
+            _cts.Cancel();
         }
+        async UniTaskVoid UpdateGameIOStatus()
+        {
+            await UniTask.Create(async () =>
+            {
+                var token = _cts.Token;
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        for (var i = 0; i < 8; i++)
+                        {
+                            var area = (SensorType)i;
+                            _btnStatusInLastFrame[i] = _btnStatusInThisFrame[i];
+                            _btnStatusInThisFrame[i] = _inputManager.CheckButtonStatus(area, SensorStatus.On);
+                            _isBtnUsedInThisFrame[i] = false;
+                        }
+                        for (var i = 0; i < 33; i++)
+                        {
+                            var area = (SensorType)i;
+                            _sensorStatusInLastFrame[i] = _sensorStatusInThisFrame[i];
+                            _sensorStatusInThisFrame[i] = _inputManager.CheckSensorStatus(area, SensorStatus.On);
+                            _isSensorUsedInThisFrame[i] = false;
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
+                    await UniTask.Yield(PlayerLoopTiming.PreUpdate, token);
+                }
+            });
+            
+        }
+
+#if UNITY_EDITOR || DEBUG
         private void Update()
         {
-            for (var i = 0; i < 8; i++)
-            {
-                var area = (SensorType)i;
-                _btnStatusInLastFrame[i] = _btnStatusInThisFrame[i];
-                _btnStatusInThisFrame[i] = _inputManager.CheckButtonStatus(area, SensorStatus.On);
-                _isBtnUsedInThisFrame[i] = false;
-            }
-            for (var i = 0; i < 33; i++)
-            {
-                var area = (SensorType)i;
-                _sensorStatusInLastFrame[i] = _sensorStatusInThisFrame[i];
-                _sensorStatusInThisFrame[i] = _inputManager.CheckSensorStatus(area, SensorStatus.On);
-                _isSensorUsedInThisFrame[i] = false;
-            }
-#if UNITY_EDITOR || DEBUG
             _updateElapsedMs = 0;
             foreach (var updater in _noteUpdaters)
                 _updateElapsedMs += updater.UpdateElapsedMs;
-#endif
         }
-#if UNITY_EDITOR || DEBUG
         private void FixedUpdate()
         {
             _fixedUpdateElapsedMs = 0;

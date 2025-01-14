@@ -136,6 +136,7 @@ namespace MajdataPlay.Game
 
         CancellationTokenSource _allTaskTokenSource = new();
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
+        readonly CancellationTokenSource _cts = new();
         void Awake()
         {
             if (_gameInfo is null || _gameInfo.Current is null)
@@ -577,7 +578,9 @@ namespace MajdataPlay.Game
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
+
             StartToPlayAnswer();
+            UpdateThisFrameSec().Forget();
 
             State = ComponentState.Running;
             
@@ -624,9 +627,20 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
         }
+        async UniTaskVoid UpdateThisFrameSec()
+        {
+            await UniTask.Create(async () =>
+            {
+                var token = _cts.Token;
+                while(!token.IsCancellationRequested)
+                {
+                    _thisFrameSec = _audioTime;
+                    await UniTask.Yield(PlayerLoopTiming.PreUpdate, token);
+                }
+            });
+        }
         void Update()
         {
-            _thisFrameSec = _audioTime;
             UpdateAudioTime();
             if (_audioSample is null)
                 return;
@@ -814,6 +828,7 @@ namespace MajdataPlay.Game
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
             State = ComponentState.Finished;
+            _cts.Cancel();
             MajInstances.InputManager.ClearAllSubscriber();
             _bgManager.CancelTimeRef();
 
