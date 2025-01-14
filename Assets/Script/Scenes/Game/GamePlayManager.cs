@@ -243,7 +243,7 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTask DumpOnlineChart()
         {
-            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash}");
+            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash.Replace('/','_')}");
             Directory.CreateDirectory(chartFolder);
             var dirInfo = new DirectoryInfo(chartFolder);
             var trackPath = Path.Combine(chartFolder, "track.mp3");
