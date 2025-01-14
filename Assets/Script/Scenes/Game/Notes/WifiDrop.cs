@@ -420,37 +420,6 @@ namespace MajdataPlay.Game.Notes
             var barIndex = queue[areaIndex].SlideIndex;
             HideBar(barIndex);
         }
-        void StarUpdate()
-        {
-            var timing = _gpManager.AudioTime - _timing;
-            var process = (Length - timing) / Length;
-            process = 1f - process;
-
-            for (var i = 0; i < _stars.Length; i++)
-            {
-                var starTransform = _starTransforms[i];
-                if (process >= 1)
-                {
-                    _starRenderers[i].color = Color.white;
-                    starTransform.position = _slideEndPositions[i];
-                    starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-                    _isArrived = true;
-                }
-                else
-                {
-                    _starRenderers[i].color = Color.white;
-                    starTransform.position =
-                        (_slideEndPositions[i] - _slideStartPositions[i]) * process + _slideStartPositions[i]; //TODO add some runhua
-                    starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-                }
-            }
-
-            
-            if (_gpManager.IsAutoplay)
-            {
-                
-            }
-        }
         protected override void TooLateJudge()
         {
             if (_isJudged)

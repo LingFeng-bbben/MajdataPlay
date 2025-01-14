@@ -296,7 +296,7 @@ namespace MajdataPlay.Game.Notes
             {
                 if(remainingTime == 0)
                 {
-                    StopHoldEffect();
+                    _effectManager.ResetHoldEffect(StartPos);
                 }
                 else
                 {
