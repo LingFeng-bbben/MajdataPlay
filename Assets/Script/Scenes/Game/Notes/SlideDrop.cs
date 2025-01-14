@@ -377,14 +377,14 @@ namespace MajdataPlay.Game.Notes
 
                     if (second.IsFinished)
                     {
-                        HideBar(first.SlideIndex);
+                        HideBar(second.ArrowProgressWhenFinished);
                         queueMemory = queueMemory.Slice(2);
                         SetParentFinish();
                         return;
                     }
                     else if (second.On)
                     {
-                        HideBar(first.SlideIndex);
+                        HideBar(first.ArrowProgressWhenOn);
                         queueMemory = queueMemory.Slice(1);
                         SetParentFinish();
                         return;
@@ -393,9 +393,14 @@ namespace MajdataPlay.Game.Notes
 
                 if (first.IsFinished)
                 {
-                    HideBar(first.SlideIndex);
+                    HideBar(first.ArrowProgressWhenFinished);
                     queueMemory = queueMemory.Slice(1);
                     SetParentFinish();
+                    return;
+                }
+                else if(first.On)
+                {
+                    HideBar(first.ArrowProgressWhenOn);
                     return;
                 }
             }
@@ -557,7 +562,7 @@ namespace MajdataPlay.Game.Notes
             var areaIndex = (int)(process * queueMemory.Length) - 1;
             if (areaIndex < 0)
                 return;
-            var barIndex = queue[areaIndex].SlideIndex;
+            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
             HideBar(barIndex);
         }
         void ApplyStarRotation(Quaternion newRotation)

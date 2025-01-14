@@ -23,17 +23,24 @@ namespace MajdataPlay.Game.Types
         }
         public ReadOnlySpan<SensorType> IncludedAreas => _includedAreas.Span;
         public AreaPolicy Policy { get; init; } = AreaPolicy.OR;
-        public int SlideIndex { get; set; }
-
+        public int ArrowProgressWhenFinished
+        {
+            get => _arrowProgressWhenFinished;
+        }
+        public int ArrowProgressWhenOn
+        {
+            get => _arrowProgressWhenOn;
+        }
         bool _isFinished = false;
         bool _isOn = false;
+        int _arrowProgressWhenFinished = 0;
+        int _arrowProgressWhenOn = 0;
 
         Memory<Area> _areas = Memory<Area>.Empty;
         ReadOnlyMemory<SensorType> _includedAreas = Memory<SensorType>.Empty;
-        
-        public SlideArea(Dictionary<SensorType, bool> types, int slideIndex)
+
+        public SlideArea(Dictionary<SensorType, bool> types,int progressWhenOn ,int progressWhenFinished)
         {
-            SlideIndex = slideIndex;
             if (types is null || types.Count == 0)
                 return;
             Span<SensorType?> registeredAreas = stackalloc SensorType?[types.Count];
@@ -68,7 +75,12 @@ namespace MajdataPlay.Game.Types
             }
             this._areas = _areas.ToArray();
             _includedAreas = _registeredAreas.ToArray();
-            SlideIndex = slideIndex;
+            _arrowProgressWhenFinished = progressWhenFinished;
+            _arrowProgressWhenOn = progressWhenOn;
+        }
+        public SlideArea(Dictionary<SensorType, bool> types, int arrowProgress) : this(types, arrowProgress, arrowProgress)
+        {
+            
         }
         public SlideArea()
         {

@@ -307,7 +307,7 @@ namespace MajdataPlay.Game.Notes
             var max = nums.Max();
             var index = nums.FindIndex(x => x == max);
 
-            return _judgeQueues[index].Span[0].SlideIndex;
+            return _judgeQueues[index].Span[0].ArrowProgressWhenFinished;
         }
         public override void ComponentUpdate()
         {
@@ -417,7 +417,7 @@ namespace MajdataPlay.Game.Notes
             var areaIndex = (int)(process * queueMemory.Length) - 1;
             if (areaIndex < 0)
                 return;
-            var barIndex = queue[areaIndex].SlideIndex;
+            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
             HideBar(barIndex);
         }
         protected override void TooLateJudge()
