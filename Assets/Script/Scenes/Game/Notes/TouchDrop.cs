@@ -381,13 +381,13 @@ namespace MajdataPlay.Game.Notes
 
             JudgeGrade result = diff switch
             {
-                < JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                < JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
-                < JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
-                < JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
-                < JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
-                < JUDGE_GREAT_AREA => JudgeGrade.LateGreat2,
-                < JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                <= JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
+                <= JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
+                <= JUDGE_GREAT_AREA => JudgeGrade.LateGreat2,
+                <= JUDGE_GOOD_AREA => JudgeGrade.LateGood,
                 _ => JudgeGrade.Miss
             };
 
