@@ -4,6 +4,10 @@ using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
+using MajdataPlay.References;
+using MajdataPlay.IO;
+using System.Runtime.CompilerServices;
+using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -23,13 +27,41 @@ namespace MajdataPlay.Game
         [ReadOnlyField]
         [SerializeField]
         double _lateUpdateElapsedMs = 0;
+
+        internal delegate void IOListener(GameInputEventArgs args);
+
+        internal event IOListener? OnGameIOUpdate;
+
+        bool[] _isBtnUsedInThisFixedUpdate = new bool[8];
+        bool[] _isSensorUsedInThisFixedUpdate = new bool[33];
+
+        Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
+        Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[8];
+
+        InputManager _inputManager;
         void Awake()
         {
             MajInstanceHelper<NoteManager>.Instance = this;
+            _inputManager = MajInstances.InputManager;
+            for (var i = 0; i < 8; i++)
+            {
+                _isBtnUsedInThisFixedUpdate[i] = false;
+                ref var state = ref _isBtnUsedInThisFixedUpdate[i];
+                _btnUsageStatusRefs[i] = new Ref<bool>(ref state);
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _isSensorUsedInThisFixedUpdate[i] = false;
+                ref var state = ref _isSensorUsedInThisFixedUpdate[i];
+                _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
+            }
+            _inputManager.BindAnyArea(OnAnyAreaTrigger);
+            
         }
         void OnDestroy()
         {
             MajInstanceHelper<NoteManager>.Free();
+            _inputManager.UnbindAnyArea(OnAnyAreaTrigger);
         }
 #if UNITY_EDITOR || DEBUG
         private void Update()
@@ -51,6 +83,17 @@ namespace MajdataPlay.Game
                 _lateUpdateElapsedMs += updater.LateUpdateElapsedMs;
         }
 #endif
+        internal void OnFixedUpdate()
+        {
+            for (var i = 0; i < 8; i++)
+            {
+                _isBtnUsedInThisFixedUpdate[i] = false;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _isSensorUsedInThisFixedUpdate[i] = false;
+            }
+        }
         public void InitializeUpdater()
         {
             foreach(var updater in _noteUpdaters)
@@ -86,5 +129,33 @@ namespace MajdataPlay.Game
         }
         public void NextNote(in TapQueueInfo queueInfo) => _noteCurrentIndex[queueInfo.KeyIndex]++;
         public void NextTouch(in TouchQueueInfo queueInfo) => _touchCurrentIndex[queueInfo.SensorPos]++;
+        void OnAnyAreaTrigger(object sender, InputEventArgs args)
+        {
+            var area = args.Type;
+            if (area > SensorType.E8 || area < SensorType.A1)
+                return;
+            else if (OnGameIOUpdate is null)
+                return;
+
+            ref var reference = ref Unsafe.NullRef<Ref<bool>>();
+            if(args.IsButton)
+            {
+                reference = ref _btnUsageStatusRefs[(int)area];
+            }
+            else
+            {
+                reference = ref _sensorUsageStatusRefs[(int)area];
+            }
+            var packet = new GameInputEventArgs()
+            {
+                Area = area,
+                OldState = args.OldStatus,
+                State = args.Status,
+                IsButton = args.IsButton,
+                IsUsed = reference
+            };
+
+            OnGameIOUpdate(packet);
+        }
     }
 }

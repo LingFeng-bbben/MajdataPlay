@@ -719,9 +719,11 @@ namespace MajdataPlay.Game
             }
         }
 
-        void FixedUpdate()
+        internal void OnFixedUpdate()
         {
-            _thisFrameSec = _audioTime;
+            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+            _thisFrameSec = timeOffset - chartOffset;
         }
         void UpdateAudioTime()
         {
