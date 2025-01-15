@@ -28,6 +28,7 @@ namespace MajdataPlay.Utils
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(AssestPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static Thread MainThread { get; } = Thread.CurrentThread;
         public static GameSetting UserSetting => MajInstances.Setting;
         public static CancellationToken GlobalCT => GameManager.GlobalCT;
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
