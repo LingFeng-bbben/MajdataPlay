@@ -6,7 +6,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace MajdataPlay.Game
 {

@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         public Transform Transform => _transform;
         public bool IsInitialized => State >= NoteStatus.Initialized;
-        public bool IsDestroyed => State == NoteStatus.Destroyed;
+        public bool IsEnded => State == NoteStatus.End;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
         public NoteStatus State 
         { 
@@ -77,7 +77,9 @@ namespace MajdataPlay.Game.Notes
         }
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
         public float CurrentSec => _gpManager.AudioTime;
+        public float ThisFrameSec => _gpManager.ThisFrameSec;
 
+        protected bool IsAutoplay => _isAutoplay;
         protected Material BreakMaterial => _breakMaterial;
         protected Material DefaultMaterial => _defaultMaterial;
         protected Material HoldShineMaterial => _holdShineMaterial;
@@ -111,6 +113,7 @@ namespace MajdataPlay.Game.Notes
 
         GameObject _gameObject;
         Transform _transform;
+        bool _isAutoplay = false;
         protected virtual void Awake()
         {
             _gameObject = gameObject;
@@ -124,6 +127,7 @@ namespace MajdataPlay.Game.Notes
             _breakMaterial = _gpManager.BreakMaterial;
             _defaultMaterial = _gpManager.DefaultMaterial;
             _holdShineMaterial = _gpManager.HoldShineMaterial;
+            _isAutoplay = _gpManager.IsAutoplay;
         }
         void OnDestroy()
         {
@@ -355,7 +359,7 @@ namespace MajdataPlay.Game.Notes
         }
         [ReadOnlyField]
         [SerializeField]
-        protected int _startPos;
+        protected int _startPos = 1;
         [ReadOnlyField]
         [SerializeField]
         protected float _timing;

@@ -248,7 +248,7 @@ namespace MajdataPlay.IO
                     {
                         MajDebug.LogException(e);
                     }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
+                    await UniTask.Yield(PlayerLoopTiming.EarlyUpdate, token);
                 }
             });
         }
@@ -271,7 +271,7 @@ namespace MajdataPlay.IO
                     {
                         MajDebug.LogException(e);
                     }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
+                    await UniTask.Yield(PlayerLoopTiming.EarlyUpdate, token);
                 }
             });
         }

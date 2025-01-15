@@ -18,7 +18,7 @@ namespace MajdataPlay.Game.Types
         public bool IsValid => _update is not null ||
                                _fixedUpdate is not null ||
                                _lateUpdate is not null;
-        public NoteStatus State => Object?.State ?? NoteStatus.Destroyed;
+        public NoteStatus State => Object?.State ?? NoteStatus.End;
 
 
         delegate void ComponentMethod();
@@ -75,7 +75,7 @@ namespace MajdataPlay.Game.Types
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanExecute()
         {
-            return State is not (NoteStatus.Start or NoteStatus.Destroyed) &&
+            return State is not (NoteStatus.Start or NoteStatus.End) &&
                    ((_updatableComponent?.Active ?? _fixedUpdatableComponent?.Active ?? _lateUpdatableComponent?.Active) ?? false);
         }
     }

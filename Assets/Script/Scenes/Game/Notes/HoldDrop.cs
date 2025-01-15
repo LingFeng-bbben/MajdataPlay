@@ -96,6 +96,8 @@ namespace MajdataPlay.Game.Notes
             _exObject.layer = MajEnv.HIDDEN_LAYER;
             _endObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
+
+            _noteChecker = new(Check);
         }
         protected override async void Autoplay()
         {
@@ -126,7 +128,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
@@ -168,7 +170,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             UnsubscribeEvent();
             if (forceEnd)
                 return;
@@ -207,105 +209,31 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             _poolManager.Collect(this);
         }
-
-        void Check()
+        
+        void Check(object sender, InputEventArgs arg)
         {
+            var thisFrameSec = _gpManager.ThisFrameSec;
             if (_isJudged)
+                return;
+            else if (!arg.IsClick)
+                return;
+            else if (!_judgableRange.InRange(thisFrameSec))
+                return;
+            else if (arg.Type != _sensorPos)
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-            
-            if (_judgableRange.InRange(_gpManager.ThisFrameSec))
-            {
-                var btnState = _noteManager.GetButtonStateInThisFrame(_sensorPos);
-                var sensorState = _noteManager.GetSensorStateInThisFrame(_sensorPos);
-
-                Check(btnState, ref _noteManager.IsButtonUsedInThisFrame(_sensorPos));
-                Check(sensorState, ref _noteManager.IsSensorUsedInThisFrame(_sensorPos));
-            }
-            else if (isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = 150;
-            }
-
-            if (_isJudged)
-            {
-                _noteManager.NextNote(QueueInfo);
-            }
-        }
-        void Check(in InputEventArgs args, ref bool isUsedInThisFrame)
-        {
-            if (_isJudged)
+            if (!_ioManager.IsIdle(arg))
                 return;
-            else if (!args.IsClick)
-                return;
-            else if (isUsedInThisFrame)
-                return;
-
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            isUsedInThisFrame = true;
-
-            Judge(thisFrameSec);
-        }
-        void BodyCheck()
-        {
-            if (!_isJudged)
-                return;
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var endTiming = timing - Length;
-            var remainingTime = GetRemainingTime();
-
-            if (IsClassic)
-            {
-                if (_gpManager.IsAutoplay && remainingTime == 0)
-                {
-                    End();
-                    return;
-                }
-                if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
-                {
-                    End();
-                    return;
-                }
-            }
-            else if (remainingTime == 0)
-            {
-                End();
-                return;
-            }
-
-
-            if (!IsClassic)
-            {
-                if (timing <= 0.1f) // 忽略头部6帧
-                    return;
-                else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                    return;
-            }
-
-            if (!_gpManager.IsStart) // 忽略暂停
-                return;
-
-            var on = _noteManager.CheckAreaStateInThisFrame(_sensorPos, SensorStatus.On);
-            if (on || _gpManager.IsAutoplay)
-            {
-                PlayHoldEffect();
-            }
             else
-            {
-                _playerIdleTime += Time.deltaTime;
-                StopHoldEffect();
+                _ioManager.SetBusy(arg);
+            Judge(thisFrameSec);
 
-                if (IsClassic)
-                {
-                    End();
-                }
+            if (_isJudged)
+            {
+                _ioManager.UnbindArea(Check, _sensorPos);
+                _noteManager.NextNote(QueueInfo);
             }
         }
         protected override void Judge(float currentSec)
@@ -332,7 +260,7 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            
+            BodyCheck();
         }
         public override void ComponentUpdate()
         {
@@ -344,9 +272,6 @@ namespace MajdataPlay.Game.Notes
             var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
-
-            Check();
-            BodyCheck();
 
             switch (State)
             {
@@ -392,8 +317,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     if(remaining == 0)
                     {
-                        State = NoteStatus.End;
-                        goto case NoteStatus.End;
+                        State = NoteStatus.Arrived;
+                        goto case NoteStatus.Arrived;
                     }
                     if (holdDistance < 1.225f && distance >= 4.8f) // 头到达 尾未出现
                     {
@@ -430,7 +355,7 @@ namespace MajdataPlay.Game.Notes
                     _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
                     Transform.localScale = new Vector3(1f, 1f);
                     break;
-                case NoteStatus.End:
+                case NoteStatus.Arrived:
                     var endTiming = timing - Length;
                     var endDistance = endTiming * Speed + 4.8f;
                     _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -453,6 +378,69 @@ namespace MajdataPlay.Game.Notes
 
             //if (IsEX)
             //    _exRenderer.size = _thisRenderer.size;
+        }
+        void BodyCheck()
+        {
+            if (!_isJudged)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - Length;
+            var remainingTime = GetRemainingTime();
+
+            if (IsClassic)
+            {
+                if (_gpManager.IsAutoplay && remainingTime == 0)
+                {
+                    End();
+                    return;
+                }
+                if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
+                {
+                    End();
+                    return;
+                }
+            }
+            else if (remainingTime == 0)
+            {
+                End();
+                return;
+            }
+
+
+            if (!IsClassic)
+            {
+                if (timing <= 0.1f) // 忽略头部6帧
+                    return;
+                else if (remainingTime <= 0.2f) // 忽略尾部12帧
+                    return;
+            }
+
+            if (!_gpManager.IsStart) // 忽略暂停
+                return;
+
+            var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
+            if (on || _gpManager.IsAutoplay)
+            {
+                if (remainingTime == 0)
+                {
+                    _effectManager.ResetHoldEffect(StartPos);
+                }
+                else
+                {
+                    PlayHoldEffect();
+                }
+            }
+            else
+            {
+                _playerIdleTime += Time.deltaTime;
+                StopHoldEffect();
+
+                if (IsClassic)
+                {
+                    End();
+                }
+            }
         }
         JudgeGrade EndJudge(in JudgeGrade result)
         {
@@ -639,11 +627,11 @@ namespace MajdataPlay.Game.Notes
         }
         void SubscribeEvent()
         {
-            //_ioManager.BindArea(_noteChecker, _sensorPos);
+            _ioManager.BindArea(_noteChecker, _sensorPos);
         }
         void UnsubscribeEvent()
         {
-           // _ioManager.UnbindArea(_noteChecker, _sensorPos);
+            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }
