@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Types;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -105,7 +106,10 @@ namespace MajdataPlay.Game.Notes
             SetJustBorderActive(false);
             SetPointActive(false);
             Active = false;
-            _noteChecker = new(Check);
+            //_noteChecker = new(Check);
+            
+            if(!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
             RendererState = RendererStatus.Off;
         }
         public void Initialize(TouchPoolingInfo poolingInfo)
@@ -156,15 +160,12 @@ namespace MajdataPlay.Game.Notes
 
             if (_gpManager.IsAutoplay)
                 Autoplay();
-            else
-                SubscribeEvent();
 
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.End;
-            UnsubscribeEvent();
             if (!_isJudged || forceEnd)
                 return;
 
@@ -182,20 +183,13 @@ namespace MajdataPlay.Game.Notes
             //_pointObject.SetActive(false);
             //_justBorderObject.SetActive(false);
 
-            if (GroupInfo is not null && !result.IsMissOrTooFast)
-            {
-                GroupInfo.JudgeResult = _judgeResult;
-                GroupInfo.JudgeDiff = _judgeDiff;
-                GroupInfo.RegisterResult(_judgeResult);
-            }
-
+            
             if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
             _effectManager.PlayTouchEffect(_sensorPos, result);
             _objectCounter.ReportResult(this, result);
-            _noteManager.NextTouch(QueueInfo);
             _notePoolManager.Collect(this);
         }
         protected override void LoadSkin()
@@ -222,33 +216,19 @@ namespace MajdataPlay.Game.Notes
 
             _justBorderRenderer.sprite = skin.JustBorder;
         }
-        void Check(object sender, InputEventArgs arg)
+        void Check()
         {
-            var type = GetSensor();
-            if (State < NoteStatus.Running)
+            if (IsEnded)
                 return;
-            else if (arg.Type != type)
-                return;
-            else if (_isJudged || !_noteManager.CanJudge(QueueInfo))
-                return;
-            else if (arg.IsClick)
+            else if(_isJudged)
             {
-                if (!_ioManager.IsIdle(arg))
-                    return;
-                else
-                    _ioManager.SetBusy(arg);
-                Judge(_gpManager.ThisFrameSec);
-                //ioManager.SetIdle(arg);
-                if (_isJudged)
-                    End();
-            }
-        }
-        public override void ComponentFixedUpdate()
-        {
-            if (State < NoteStatus.Running || IsEnded)
+                End();
                 return;
+            }    
+
             var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
-            if (!_isJudged && !isTooLate)
+
+            if (!isTooLate)
             {
                 if (GroupInfo is not null)
                 {
@@ -257,22 +237,67 @@ namespace MajdataPlay.Game.Notes
                         _isJudged = true;
                         _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
-                        End();
                     }
                 }
             }
-            else if (!_isJudged)
+            else
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
+            }
+
+            if (_isJudged)
+            {
+                _noteManager.NextTouch(QueueInfo);
                 End();
             }
-            else if (_isJudged)
-                End();
+        }
+        void GameIOListener(GameInputEventArgs args)
+        {
+            if (_isJudged || IsEnded)
+                return;
+            else if (args.IsButton)
+                return;
+            else if (args.Area != _sensorPos)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (!_judgableRange.InRange(ThisFrameSec))
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
+
+            ref var isUsed = ref args.IsUsed.Target;
+
+            if (isUsed)
+                return;
+            Judge(ThisFrameSec);
+
+            if (_isJudged)
+            {
+                isUsed = true;
+                _noteManager.NextTouch(QueueInfo);
+                RegisterGrade();
+            }
+        }
+        void RegisterGrade()
+        {
+            if (GroupInfo is not null && !_judgeResult.IsMissOrTooFast())
+            {
+                GroupInfo.JudgeResult = _judgeResult;
+                GroupInfo.JudgeDiff = _judgeDiff;
+                GroupInfo.RegisterResult(_judgeResult);
+            }
+        }
+        public override void ComponentFixedUpdate()
+        {
+
         }
         public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
+
+            Check();
 
             switch (State)
             {
@@ -451,14 +476,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
                 _fanRenderers[i].sharedMaterial = material;
         }
-        void SubscribeEvent()
-        {
-            _ioManager.BindSensor(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindSensor(_noteChecker, _sensorPos);
-        }
+
         protected override void PlaySFX()
         {
             PlayJudgeSFX(new JudgeResult()

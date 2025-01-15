@@ -97,7 +97,9 @@ namespace MajdataPlay.Game.Notes
             _endObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
 
-            _noteChecker = new(Check);
+            if (!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
+            //_noteChecker = new(Check);
         }
         protected override async void Autoplay()
         {
@@ -174,11 +176,11 @@ namespace MajdataPlay.Game.Notes
             UnsubscribeEvent();
             if (forceEnd)
                 return;
-            else if (!_isJudged)
-            {
-                _noteManager.NextNote(QueueInfo);
-                return;
-            }
+            //else if (!_isJudged)
+            //{
+            //    _noteManager.NextNote(QueueInfo);
+            //    return;
+            //}
             
             if (IsClassic)
                 _judgeResult = EndJudge_Classic(_judgeResult);
@@ -210,29 +212,44 @@ namespace MajdataPlay.Game.Notes
             _poolManager.Collect(this);
         }
         
-        void Check(object sender, InputEventArgs arg)
+        void Check()
         {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
+            if (IsEnded || _isJudged)
                 return;
-            else if (!arg.IsClick)
+            
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 150;
+                _noteManager.NextNote(QueueInfo);
+            }
+        }
+        void GameIOListener(GameInputEventArgs args)
+        {
+            if (_isJudged || IsEnded)
                 return;
-            else if (!_judgableRange.InRange(thisFrameSec))
+            else if (args.Area != _sensorPos)
                 return;
-            else if (arg.Type != _sensorPos)
+            else if (!args.IsClick)
+                return;
+            else if (!_judgableRange.InRange(ThisFrameSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            if (!_ioManager.IsIdle(arg))
+            ref var isUsed = ref args.IsUsed.Target;
+
+            if (isUsed)
                 return;
-            else
-                _ioManager.SetBusy(arg);
-            Judge(thisFrameSec);
+            Judge(ThisFrameSec);
 
             if (_isJudged)
             {
-                _ioManager.UnbindArea(Check, _sensorPos);
+                isUsed = true;
                 _noteManager.NextNote(QueueInfo);
             }
         }
@@ -260,7 +277,7 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            BodyCheck();
+            
         }
         public override void ComponentUpdate()
         {
@@ -272,6 +289,9 @@ namespace MajdataPlay.Game.Notes
             var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
+
+            Check();
+            BodyCheck();
 
             switch (State)
             {
@@ -381,7 +401,7 @@ namespace MajdataPlay.Game.Notes
         }
         void BodyCheck()
         {
-            if (!_isJudged)
+            if (!_isJudged || IsEnded)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();

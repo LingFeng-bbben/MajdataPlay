@@ -107,7 +107,10 @@ namespace MajdataPlay.Game.Notes
             SetBorderActive(false);
             SetPointActive(false);
             Active = false;
-            _noteChecker = new(Check);
+
+            if (!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
+
             RendererState = RendererStatus.Off;
         }
         protected override async void Autoplay()
@@ -195,15 +198,12 @@ namespace MajdataPlay.Game.Notes
 
             if (_gpManager.IsAutoplay)
                 Autoplay();
-            else
-                SubscribeEvent();
 
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.End;
-            UnsubscribeEvent();
             if (forceEnd)
                 return;
             _judgeResult = EndJudge(_judgeResult);
@@ -238,38 +238,6 @@ namespace MajdataPlay.Game.Notes
             _notePoolManager.Collect(this);
         }
 
-        void Check(object sender, InputEventArgs arg)
-        {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
-                return;
-            else if (!arg.IsClick)
-                return;
-            else if (!_judgableRange.InRange(thisFrameSec))
-                return;
-            else if (arg.Type != _sensorPos)
-                return;
-            else if (!_noteManager.CanJudge(QueueInfo))
-                return;
-
-            if (!_ioManager.IsIdle(arg))
-                return;
-            else
-                _ioManager.SetBusy(arg);
-            Judge(_gpManager.ThisFrameSec);
-
-            if (_isJudged)
-            {
-                if (GroupInfo is not null)
-                {
-                    GroupInfo.RegisterResult(_judgeResult);
-                    GroupInfo.JudgeDiff = _judgeDiff;
-                    GroupInfo.JudgeResult = _judgeResult;
-                }
-                _ioManager.UnbindSensor(Check, _sensorPos);
-                _noteManager.NextTouch(QueueInfo);
-            }
-        }
         protected override void LoadSkin()
         {
             var skin = MajInstances.SkinManager.GetTouchHoldSkin();
@@ -341,6 +309,9 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
 
+            Check();
+            BodyCheck();
+
             switch(State)
             {
                 case NoteStatus.Initialized:
@@ -396,9 +367,78 @@ namespace MajdataPlay.Game.Notes
                     return;
             }   
         }
+        void Check()
+        {
+            if (IsEnded || _isJudged)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
+
+            if (!isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                    }
+                }
+            }
+            else
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 316.667f;
+            }
+
+            if (_isJudged)
+            {
+                _noteManager.NextTouch(QueueInfo);
+            }
+        }
+        void GameIOListener(GameInputEventArgs args)
+        {
+            if (_isJudged || IsEnded)
+                return;
+            else if (args.IsButton)
+                return;
+            else if (args.Area != _sensorPos)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (!_judgableRange.InRange(ThisFrameSec))
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
+
+            ref var isUsed = ref args.IsUsed.Target;
+
+            if (isUsed)
+                return;
+            Judge(ThisFrameSec);
+
+            if (_isJudged)
+            {
+                isUsed = true;
+                _noteManager.NextTouch(QueueInfo);
+                RegisterGrade();
+            }
+        }
+        void RegisterGrade()
+        {
+            if (GroupInfo is not null && !_judgeResult.IsMissOrTooFast())
+            {
+                GroupInfo.JudgeResult = _judgeResult;
+                GroupInfo.JudgeDiff = _judgeDiff;
+                GroupInfo.RegisterResult(_judgeResult);
+            }
+        }
         void BodyCheck()
         {
-            if (!_isJudged)
+            if (!_isJudged || IsEnded)
                 return;
 
             var remainingTime = GetRemainingTime();
@@ -567,14 +607,6 @@ namespace MajdataPlay.Game.Notes
         {
             for (var i = 0; i < 4; i++)
                 _fanRenderers[i].sharedMaterial = material;
-        }
-        void SubscribeEvent()
-        {
-            _ioManager.BindSensor(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindSensor(_noteChecker, _sensorPos);
         }
         protected override void PlaySFX()
         {

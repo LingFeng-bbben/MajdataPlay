@@ -36,7 +36,7 @@ namespace MajdataPlay.Game
         bool[] _isSensorUsedInThisFixedUpdate = new bool[33];
 
         Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
-        Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[8];
+        Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
         InputManager _inputManager;
         void Awake()
