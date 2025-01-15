@@ -111,24 +111,45 @@ namespace MajdataPlay.Game
         }
         public bool CanJudge(in TapQueueInfo queueInfo)
         {
-            if (!_noteCurrentIndex.ContainsKey(queueInfo.KeyIndex))
-                return false;
-            var index = queueInfo.Index;
-            var currentIndex = _noteCurrentIndex[queueInfo.KeyIndex];
+            if(_noteCurrentIndex.TryGetValue(queueInfo.KeyIndex,out var currentIndex))
+            {
+                var index = queueInfo.Index;
 
-            return index <= currentIndex;
+                return index <= currentIndex;
+            }
+            else
+            {
+                return false;
+            }
         }
         public bool CanJudge(in TouchQueueInfo queueInfo)
         {
-            if (!_touchCurrentIndex.ContainsKey(queueInfo.SensorPos))
-                return false;
-            var index = queueInfo.Index;
-            var currentIndex = _touchCurrentIndex[queueInfo.SensorPos];
+            if (_touchCurrentIndex.TryGetValue(queueInfo.SensorPos, out var currentIndex))
+            {
+                var index = queueInfo.Index;
 
-            return index <= currentIndex;
+                return index <= currentIndex;
+            }
+            else
+            {
+                return false;
+            }
         }
-        public void NextNote(in TapQueueInfo queueInfo) => _noteCurrentIndex[queueInfo.KeyIndex]++;
-        public void NextTouch(in TouchQueueInfo queueInfo) => _touchCurrentIndex[queueInfo.SensorPos]++;
+        public void NextNote(in TapQueueInfo queueInfo) 
+        {
+            var currentIndex = _noteCurrentIndex[queueInfo.KeyIndex];
+            if (currentIndex > queueInfo.Index)
+                return;
+            _noteCurrentIndex[queueInfo.KeyIndex]++;
+        }
+        public void NextTouch(in TouchQueueInfo queueInfo)
+        {
+            var currentIndex = _touchCurrentIndex[queueInfo.SensorPos];
+            if (currentIndex > queueInfo.Index)
+                return;
+
+            _touchCurrentIndex[queueInfo.SensorPos]++;
+        }
         void OnAnyAreaTrigger(object sender, InputEventArgs args)
         {
             var area = args.Type;
