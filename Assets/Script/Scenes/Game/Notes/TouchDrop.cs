@@ -225,32 +225,6 @@ namespace MajdataPlay.Game.Notes
                 End();
                 return;
             }    
-
-            var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
-
-            if (!isTooLate)
-            {
-                if (GroupInfo is not null)
-                {
-                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
-                    {
-                        _isJudged = true;
-                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                        _judgeDiff = GroupInfo.JudgeDiff;
-                    }
-                }
-            }
-            else
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-            }
-
-            if (_isJudged)
-            {
-                _noteManager.NextTouch(QueueInfo);
-                End();
-            }
         }
         void GameIOListener(GameInputEventArgs args)
         {
@@ -291,7 +265,31 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
+            // Too late check
+            if (IsEnded || _isJudged)
+                return;
 
+            var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
+
+            if (!isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                        _noteManager.NextTouch(QueueInfo);
+                    }
+                }
+            }
+            else
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _noteManager.NextTouch(QueueInfo);
+            }
         }
         public override void ComponentUpdate()
         {

@@ -82,7 +82,7 @@ namespace MajdataPlay.Game
             var timeSpan = end - start;
             _updateElapsedMs = timeSpan.TotalMilliseconds;
         }
-        protected virtual void FixedUpdate()
+        internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
             foreach (var component in _fixedUpdatableComponents)

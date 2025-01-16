@@ -23,7 +23,7 @@ namespace MajdataPlay.Game
                 throw new ArgumentNullException();
             _queueInfos = infos;
         }
-        protected override void FixedUpdate() => base.FixedUpdate();
+        internal override void OnFixedUpdate() => base.OnFixedUpdate();
         protected override void LateUpdate() => base.LateUpdate();
         protected override void Update()
         {

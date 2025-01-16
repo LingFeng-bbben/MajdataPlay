@@ -152,18 +152,19 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            //if (State < NoteStatus.Running|| IsDestroyed)
-            //    return;
-            //var timing = GetTimeSpanToJudgeTiming();
-            //var isTooLate = timing > 0.15f;
-            //if (!_isJudged && isTooLate)
-            //{
-            //    _judgeResult = JudgeGrade.Miss;
-            //    _isJudged = true;
-            //    End();
-            //}
-            //else if (_isJudged)
-            //    End();
+            // Too late check
+            if (_isJudged || IsEnded)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _noteManager.NextNote(QueueInfo);
+            }
         }
         public override void ComponentUpdate()
         {
@@ -236,17 +237,6 @@ namespace MajdataPlay.Game.Notes
             {
                 End();
                 return;
-            }
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-
-            if (isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _noteManager.NextNote(QueueInfo);
-                End();
             }
         }
         void GameIOListener(GameInputEventArgs args)

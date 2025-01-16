@@ -212,22 +212,6 @@ namespace MajdataPlay.Game.Notes
             _poolManager.Collect(this);
         }
         
-        void Check()
-        {
-            if (IsEnded || _isJudged)
-                return;
-            
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-
-            if (isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = 150;
-                _noteManager.NextNote(QueueInfo);
-            }
-        }
         void GameIOListener(GameInputEventArgs args)
         {
             if (_isJudged || IsEnded)
@@ -277,7 +261,20 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            
+            // Too late check
+            if (IsEnded || _isJudged)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 150;
+                _noteManager.NextNote(QueueInfo);
+            }
         }
         public override void ComponentUpdate()
         {
@@ -290,7 +287,6 @@ namespace MajdataPlay.Game.Notes
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
 
-            Check();
             BodyCheck();
 
             switch (State)

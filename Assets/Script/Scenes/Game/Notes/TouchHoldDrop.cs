@@ -303,13 +303,38 @@ namespace MajdataPlay.Game.Notes
         }
         public override void ComponentFixedUpdate()
         {
-            BodyCheck();
+            // Too late check
+            if (IsEnded || _isJudged)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
+
+            if (!isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                        _noteManager.NextTouch(QueueInfo);
+                    }
+                }
+            }
+            else
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 316.667f;
+                _noteManager.NextTouch(QueueInfo);
+            }
         }
         public override void ComponentUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 
-            Check();
             BodyCheck();
 
             switch(State)
@@ -366,38 +391,6 @@ namespace MajdataPlay.Game.Notes
                     }
                     return;
             }   
-        }
-        void Check()
-        {
-            if (IsEnded || _isJudged)
-                return;
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.316667f;
-
-            if (!isTooLate)
-            {
-                if (GroupInfo is not null)
-                {
-                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
-                    {
-                        _isJudged = true;
-                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                        _judgeDiff = GroupInfo.JudgeDiff;
-                    }
-                }
-            }
-            else
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = 316.667f;
-            }
-
-            if (_isJudged)
-            {
-                _noteManager.NextTouch(QueueInfo);
-            }
         }
         void GameIOListener(GameInputEventArgs args)
         {

@@ -39,6 +39,7 @@ namespace MajdataPlay.Game
         Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
         InputManager _inputManager;
+        bool _isUpdaterInitialized = false;
         void Awake()
         {
             MajInstanceHelper<NoteManager>.Instance = this;
@@ -93,11 +94,20 @@ namespace MajdataPlay.Game
             {
                 _isSensorUsedInThisFixedUpdate[i] = false;
             }
+            if(_isUpdaterInitialized)
+            {
+                for (var i = 0; i < _noteUpdaters.Length; i++)
+                {
+                    var updater = _noteUpdaters[i];
+                    updater.OnFixedUpdate();
+                }
+            }
         }
         public void InitializeUpdater()
         {
             foreach(var updater in _noteUpdaters)
                 updater.Initialize();
+            _isUpdaterInitialized = true;
         }
         public void ResetCounter()
         {
