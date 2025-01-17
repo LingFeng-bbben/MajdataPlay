@@ -61,6 +61,7 @@ namespace MajdataPlay.Types
     {
         public int Samplerate { get; set; } = 44100;
         public int AsioDeviceIndex { get; set; } = 0;
+        public bool Exclusive { get; set; } = true;
         public SFXVolume Volume { get; set; } = new();
         public SoundBackendType Backend { get; set; } = SoundBackendType.Wasapi;
     }

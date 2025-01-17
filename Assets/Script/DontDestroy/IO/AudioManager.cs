@@ -44,6 +44,7 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
+            var isExclusiveRequest = MajInstances.Setting.Audio.Exclusive;
             var backend = MajInstances.Setting.Audio.Backend;
             var sampleRate = MajInstances.Setting.Audio.Samplerate;
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
@@ -77,7 +78,6 @@ namespace MajdataPlay.IO
                         BassAsio.Start();
                     }
                     break;
-                case SoundBackendType.WasapiShared:
                 case SoundBackendType.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
@@ -91,17 +91,20 @@ namespace MajdataPlay.IO
                                 MajDebug.LogError(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
-
-                        if (backend == SoundBackendType.WasapiShared)
+                        bool isExclusiveSuccess = false;
+                        if (isExclusiveRequest)
                         {
-                            MajDebug.Log("Wasapi Init: " + BassWasapi.Init(
+                            isExclusiveSuccess = BassWasapi.Init(
                                 -1, 0, 0,
                                 WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
                                 0.02f, //buffer
                                 0.005f, //peried
-                                wasapiProcedure));
+                                wasapiProcedure);
+                            MajDebug.Log($"Wasapi Init: {isExclusiveSuccess}");
                         }
-                        else {
+
+                        if(!isExclusiveRequest || !isExclusiveSuccess)
+                        {
                             MajDebug.Log("Wasapi Init: " + BassWasapi.Init(
                                 -1, 0, 0,
                                 WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
@@ -145,7 +148,6 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
-                    case SoundBackendType.WasapiShared:
                         sample = BassAudioSample.Create(path, BassGlobalMixer, false, false);
                         break;
                     default:
@@ -181,8 +183,7 @@ namespace MajdataPlay.IO
         private void OnDestroy()
         {
             if(MajInstances.Setting.Audio.Backend == SoundBackendType.Wasapi
-                || MajInstances.Setting.Audio.Backend == SoundBackendType.Asio||
-                MajInstances.Setting.Audio.Backend == SoundBackendType.WasapiShared)
+                || MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -232,7 +233,6 @@ namespace MajdataPlay.IO
                         return UnityAudioSample.Create($"file://{path}", gameObject);
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
-                    case SoundBackendType.WasapiShared:
                         return BassAudioSample.Create(path, BassGlobalMixer, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
@@ -253,7 +253,6 @@ namespace MajdataPlay.IO
                     return UnityAudioSample.Create(uri.OriginalString, gameObject);
                 case SoundBackendType.Asio:
                 case SoundBackendType.Wasapi:
-                case SoundBackendType.WasapiShared:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
                 default:
                     throw new NotImplementedException("Backend not supported");
@@ -272,7 +271,6 @@ namespace MajdataPlay.IO
                         return await UnityAudioSample.CreateAsync($"file://{path}", gameObject);
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
-                    case SoundBackendType.WasapiShared:
                         return await BassAudioSample.CreateAsync(path, BassGlobalMixer, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
@@ -295,7 +293,6 @@ namespace MajdataPlay.IO
                     return await UnityAudioSample.CreateAsync(uri.OriginalString, gameObject);
                 case SoundBackendType.Asio:
                 case SoundBackendType.Wasapi:
-                case SoundBackendType.WasapiShared:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
                 default:
                     throw new NotImplementedException("Backend not supported");
