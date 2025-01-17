@@ -64,7 +64,7 @@ namespace MajdataPlay.Game
         protected virtual void Update()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _updatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_updatableComponents))
             {
                 try
                 {
@@ -85,7 +85,7 @@ namespace MajdataPlay.Game
         internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _fixedUpdatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_fixedUpdatableComponents))
             {
                 try
                 {
@@ -106,7 +106,7 @@ namespace MajdataPlay.Game
         protected virtual void LateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _lateUpdatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_lateUpdatableComponents))
             {
                 try
                 {
