@@ -1,6 +1,8 @@
 ﻿using Cysharp.Text;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Types;
 using MajdataPlay.Interfaces;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -14,10 +16,30 @@ namespace MajdataPlay.Game
         public Text rTimeText;
         public Slider progress;
 
+        TimeSpan _audioTimeOffset = TimeSpan.Zero;
+        GameInfo _gameInfo;
         GamePlayManager _gpManager;
 
         const string NEGATIVE_TIME_STRING = "-{0}:{1:00}.{2:000}";
         const string TIME_STRING = "{0}:{1:00}.{2:000}";
+
+        
+
+        void Awake()
+        {
+            _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+
+            //if(_gameInfo.Mode == GameMode.Practice)
+            //{
+            //    if (_gameInfo.TimeRange is Range<double> timeRange)
+            //    {
+            //        var startAt = timeRange.Start;
+            //        startAt = Math.Max(startAt, 0);
+
+            //        _audioTimeOffset = TimeSpan.FromSeconds(startAt);
+            //    }
+            //}
+        }
         void Start()
         {
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
@@ -27,7 +49,7 @@ namespace MajdataPlay.Game
         {
             // Lock AudioTime variable for real
             var audioLen = TimeSpan.FromSeconds(_gpManager.AudioLength);
-            var current = TimeSpan.FromSeconds(_gpManager.AudioTime);
+            var current = TimeSpan.FromSeconds(_gpManager.AudioTime) - _audioTimeOffset;
             var remaining = audioLen - current;
             var timeStr = current.TotalSeconds < 0 ? NEGATIVE_TIME_STRING : TIME_STRING;
 
