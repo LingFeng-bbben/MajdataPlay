@@ -18,6 +18,8 @@ namespace MajdataPlay
         public TMP_Text loadingText;
 
         InputManager _inputManager;
+
+        const int SWITCH_ELAPSED = 400;
         private void Awake()
         {
             MajInstances.SceneSwitcher = this;
@@ -62,10 +64,13 @@ namespace MajdataPlay
             loadingText.text = "";
             loadingText.gameObject.SetActive(true);
             animator.SetBool("In", true);
-            await UniTask.Delay(250);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             if(autoFadeOut)
+            { 
                 animator.SetBool("In", false);
+                loadingText.gameObject.SetActive(false);
+            }
         }
     }
     public partial class SceneSwitcher : MonoBehaviour
@@ -81,7 +86,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             if (taskToRun.IsFaulted)
                 MajDebug.LogException(taskToRun.Exception);
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
         }
@@ -100,7 +105,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             if(taskToRun.IsFaulted)
                 MajDebug.LogException(taskToRun.AsTask().Exception);
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
         }
@@ -119,7 +124,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             if (taskToRun.Status is UniTaskStatus.Faulted)
                 MajDebug.LogException(taskToRun.AsTask().Exception);
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
         }
@@ -140,7 +145,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             if (taskToRun.IsFaulted)
                 throw taskToRun.Exception;
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             return taskToRun.Result;
         }
@@ -159,7 +164,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             if (taskToRun.IsFaulted)
                 throw taskToRun.AsTask().Exception;
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
             return taskToRun.Result;
@@ -177,7 +182,7 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
-            await UniTask.Delay(300);
+            await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
             animator.SetBool("In", false);
             switch(taskToRun.Status)
