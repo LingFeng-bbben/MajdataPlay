@@ -416,7 +416,7 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if(_isAllTouch)
                 _chart.ConvertToTouch();
-            //
+
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
             await Task.Run(() =>
             {
