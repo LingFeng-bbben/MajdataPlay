@@ -237,11 +237,11 @@ namespace MajdataPlay.Game.Notes
         {
             FadeIn().Forget();
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
             
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             SlideCheck();
             CheckSensor();

@@ -259,7 +259,7 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
             // Too late check
             if (IsEnded || _isJudged)
@@ -276,7 +276,7 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.NextNote(QueueInfo);
             }
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;

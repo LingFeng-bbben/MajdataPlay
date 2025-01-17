@@ -263,7 +263,7 @@ namespace MajdataPlay.Game.Notes
                 GroupInfo.RegisterResult(_judgeResult);
             }
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
             // Too late check
             if (IsEnded || _isJudged)
@@ -291,7 +291,7 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.NextTouch(QueueInfo);
             }
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 

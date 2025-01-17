@@ -68,8 +68,8 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.Update();
+                    if (component.IsExecutable())
+                        component.OnUpdate();
                     else
                         continue;
                 }
@@ -89,8 +89,8 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.FixedUpdate();
+                    if (component.IsExecutable())
+                        component.OnFixedUpdate();
                     else
                         continue;
                 }
@@ -110,8 +110,8 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.LateUpdate();
+                    if (component.IsExecutable())
+                        component.OnLateUpdate();
                     else
                         continue;
                 }

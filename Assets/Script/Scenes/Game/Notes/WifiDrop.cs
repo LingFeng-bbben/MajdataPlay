@@ -173,7 +173,7 @@ namespace MajdataPlay.Game.Notes
         {
             FadeIn().Forget();
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
             
         }
@@ -309,7 +309,7 @@ namespace MajdataPlay.Game.Notes
 
             return _judgeQueues[index].Span[0].ArrowProgressWhenFinished;
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             SlideCheck();
             CheckSensor();

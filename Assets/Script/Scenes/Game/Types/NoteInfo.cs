@@ -10,73 +10,42 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game.Types
 {
-    public unsafe class NoteInfo : ComponentInfo<IStateful<NoteStatus>>
+    public sealed class NoteInfo : ComponentInfo
     {
-        public override bool IsFixedUpdatable => _fixedUpdate is not null;
-        public override bool IsUpdatable => _update is not null;
-        public override bool IsLateUpdatable => _lateUpdate is not null;
-        public bool IsValid => _update is not null ||
-                               _fixedUpdate is not null ||
-                               _lateUpdate is not null;
-        public NoteStatus State => Object?.State ?? NoteStatus.End;
+        public bool IsValid => _onUpdate is not null ||
+                               _onFixedUpdate is not null ||
+                               _onLateUpdate is not null;
+        public NoteStatus State => _noteObj?.State ?? NoteStatus.End;
 
+        IStateful<NoteStatus> _noteObj;
+        IMajComponent? _component;
 
-        delegate void ComponentMethod();
-        ComponentMethod? _update = null;
-        ComponentMethod? _fixedUpdate = null;
-        ComponentMethod? _lateUpdate = null;
-
-        IUpdatableComponent<NoteStatus>? _updatableComponent = null;
-        IFixedUpdatableComponent<NoteStatus>? _fixedUpdatableComponent = null;
-        ILateUpdatableComponent<NoteStatus>? _lateUpdatableComponent = null;
-        public NoteInfo(IStateful<NoteStatus> noteObj)
+        public NoteInfo(IStateful<NoteStatus> noteObj) : base(noteObj)
         {
-            if (noteObj is IUpdatableComponent<NoteStatus> component)
-            {
-                _updatableComponent = component;
-                _update = new ComponentMethod(component.ComponentUpdate);
-            }
-            if (noteObj is IFixedUpdatableComponent<NoteStatus> _component)
-            {
-                _fixedUpdatableComponent = _component;
-                _fixedUpdate = new ComponentMethod(_component.ComponentFixedUpdate);
-            }
-            if (noteObj is ILateUpdatableComponent<NoteStatus> __component)
-            {
-                _lateUpdatableComponent = __component;
-                _lateUpdate = new ComponentMethod(__component.ComponentLateUpdate);
-            }
-            Object = noteObj;
+            _noteObj = noteObj;
+            if(noteObj is IMajComponent component)
+                _component = component;
         }
-        public override void Update()
+        public override void OnUpdate()
         {
-            if (_update is not null)
-            {
-                if (CanExecute())
-                    _update();
-            }
+            if (IsExecutable())
+                base.OnUpdate();
         }
-        public override void LateUpdate()
+        public override void OnLateUpdate()
         {
-            if (_lateUpdate is not null)
-            {
-                if (CanExecute())
-                    _lateUpdate();
-            }
+            if (IsExecutable())
+                base.OnLateUpdate();
         }
-        public override void FixedUpdate()
+        public override void OnFixedUpdate()
         {
-            if (_fixedUpdate is not null)
-            {
-                if (CanExecute())
-                    _fixedUpdate();
-            }
+            if (IsExecutable())
+                base.OnFixedUpdate();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CanExecute()
+        public bool IsExecutable()
         {
             return State is not (NoteStatus.Start or NoteStatus.End) &&
-                   ((_updatableComponent?.Active ?? _fixedUpdatableComponent?.Active ?? _lateUpdatableComponent?.Active) ?? false);
+                   (_component?.Active ?? false);
         }
     }
 }

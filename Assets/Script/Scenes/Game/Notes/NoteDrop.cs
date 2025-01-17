@@ -10,11 +10,10 @@ using Unity.Burst.Intrinsics;
 using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.Game.Types;
-using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
+    public abstract class NoteDrop : MonoBehaviour, IStatefulNote, IMajComponent
     {
         public bool Active { get; protected set; } = false;
         public int StartPos 
@@ -134,8 +133,6 @@ namespace MajdataPlay.Game.Notes
             Active = false;
         }
         protected abstract void LoadSkin();
-        public abstract void ComponentUpdate();
-        public abstract void ComponentFixedUpdate();
         protected abstract void PlaySFX();
         protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
