@@ -396,7 +396,7 @@ namespace MajdataPlay.Game
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             if (appearTiming < -5f)
@@ -437,7 +437,7 @@ namespace MajdataPlay.Game
             var speed = Math.Abs(NoteSpeed * timing.HSpeed);
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             if (appearTiming < -5f)
@@ -477,7 +477,7 @@ namespace MajdataPlay.Game
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             bool isDouble = false;
@@ -554,7 +554,7 @@ namespace MajdataPlay.Game
             var isFirework = note.isHanabi;
             var noteSortOrder = _touchSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = noteTiming - moveDuration;
+            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -604,7 +604,7 @@ namespace MajdataPlay.Game
             var isBreak = note.isBreak;
             var isEach = timing.noteList.Count > 1;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = noteTiming - moveDuration;
+            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
             var noteSortOrder = _touchSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
