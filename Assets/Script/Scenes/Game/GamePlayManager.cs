@@ -19,6 +19,7 @@ using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Types;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace MajdataPlay.Game
 {
@@ -211,12 +212,24 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTaskVoid LoadChart()
         {
+            var inputManager = MajInstances.InputManager;
             try
             {
                 if (_songDetail.IsOnline)
                     await DumpOnlineChart();
                 await LoadAudioTrack();
                 await ParseChart();
+                await PrepareToPlay();
+            }
+            catch(EmptyChartException)
+            {
+                inputManager.ClearAllSubscriber();
+                var s = Localization.GetLocalizedText("Empty Chart");
+                var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "5");
+                MajInstances.SceneSwitcher.SetLoadingText($"{s}, {ss}", Color.red);
+                await UniTask.Delay(5000);
+                
+                BackToList().Forget();
             }
             catch(HttpTransmitException httpEx)
             {
@@ -232,6 +245,11 @@ namespace MajdataPlay.Game
                 MajDebug.LogError(audioEx);
                 return;
             }
+            catch(TaskCanceledException e)
+            {
+                MajDebug.LogWarning(e);
+                return;
+            }
             catch(OperationCanceledException canceledEx)
             {
                 MajDebug.LogWarning(canceledEx);
@@ -244,8 +262,6 @@ namespace MajdataPlay.Game
                 MajDebug.LogError(e);
                 return;
             }
-
-            PrepareToPlay().Forget();
         }
         /// <summary>
         /// Dump online chart to local
@@ -264,6 +280,7 @@ namespace MajdataPlay.Game
             var chartUri = _songDetail.MaidataPath;
             var bgUri = _songDetail.BGPath;
             var videoUri = _songDetail.VideoPath;
+            var token = _cts.Token;
 
             if (trackUri is null or "")
                 throw new AudioTrackNotFoundException(trackPath);
@@ -279,6 +296,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(chartPath))
             {
                 await DownloadFile(chartUri, chartPath, r =>
@@ -286,6 +304,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             SongDetail song;
             if (bgUri is null or "")
             {
@@ -294,6 +313,7 @@ namespace MajdataPlay.Game
                 _songDetail = song;
                 return; 
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(bgPath))
             {
                 await DownloadFile(bgUri, bgPath, r =>
@@ -301,6 +321,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(videoPath) && videoUri is not null)
             {
                 try
@@ -317,6 +338,7 @@ namespace MajdataPlay.Game
                     videoPath = "";
                 }
             }
+            token.ThrowIfCancellationRequested();
             song = await SongDetail.ParseAsync(dirInfo.GetFiles());
             song.Hash = _songDetail.Hash;
             song.OnlineId = _songDetail.OnlineId;
@@ -368,9 +390,11 @@ namespace MajdataPlay.Game
         async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
         {
             var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
+            var token = _cts.Token;
             float fakeprogress = 0f;
             while (!task.IsCompleted)
             {
+                token.ThrowIfCancellationRequested();
                 progressCallback.Invoke(fakeprogress);
                 fakeprogress += 0.001f;
                 if(fakeprogress >0.99f) fakeprogress = 0.99f;
@@ -425,8 +449,7 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
-                BackToList().Forget();
-                throw new TaskCanceledException("Empty chart");
+                throw new EmptyChartException();
             }
             ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
@@ -459,8 +482,7 @@ namespace MajdataPlay.Game
             }
             if (_chart.notelist.Count == 0)
             {
-                BackToList().Forget();
-                throw new TaskCanceledException("Empty chart");
+                throw new EmptyChartException();
             }
 
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
@@ -604,7 +626,7 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
 
         }
-        async UniTaskVoid PrepareToPlay()
+        async UniTask PrepareToPlay()
         {
             if (_audioSample is null)
                 return;
@@ -708,6 +730,7 @@ namespace MajdataPlay.Game
             _audioSample = null;
             State = ComponentState.Finished;
             _allTaskTokenSource.Cancel();
+            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
         }
