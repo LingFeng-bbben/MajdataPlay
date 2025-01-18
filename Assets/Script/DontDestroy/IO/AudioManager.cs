@@ -30,8 +30,6 @@ namespace MajdataPlay.IO
         private List<AudioSampleWrap?> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
-        private AsioProcedure? asioProcedure;
-        private WasapiNotifyProcedure? wasapiNotifyProcedure;
         private int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
@@ -44,7 +42,7 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
-            var isExclusiveRequest = MajInstances.Setting.Audio.Exclusive;
+            var isExclusiveRequest = MajInstances.Setting.Audio.WasapiExclusive;
             var backend = MajInstances.Setting.Audio.Backend;
             var sampleRate = MajInstances.Setting.Audio.Samplerate;
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
@@ -59,15 +57,6 @@ namespace MajdataPlay.IO
                             BassAsio.GetDeviceInfo(i, out var info);
                             MajDebug.Log("ASIO Device " + i + ": " + info.Name);
                         }
-
-                        asioProcedure = (input, channel, buffer, length, _) =>
-                        {
-                            if (BassGlobalMixer == -114514)
-                                return 0;
-                            if (Bass.LastError != Errors.OK)
-                                MajDebug.LogError(Bass.LastError);
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
-                        };
                         
                         MajDebug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
                         BassAsio.Rate = sampleRate;
@@ -100,12 +89,12 @@ namespace MajdataPlay.IO
                                 0.02f, //buffer
                                 0.005f, //peried
                                 wasapiProcedure);
-                            MajDebug.Log($"Wasapi Init: {isExclusiveSuccess}");
+                            MajDebug.Log($"Wasapi Exclusive Init: {isExclusiveSuccess}");
                         }
 
                         if(!isExclusiveRequest || !isExclusiveSuccess)
                         {
-                            MajDebug.Log("Wasapi Init: " + BassWasapi.Init(
+                            MajDebug.Log("Wasapi Shared Init: " + BassWasapi.Init(
                                 -1, 0, 0,
                                 WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
                                 0, //buffer
