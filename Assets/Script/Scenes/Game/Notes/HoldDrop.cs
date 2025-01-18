@@ -11,7 +11,7 @@ using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo,TapQueueInfo>, IRendererContainer
+    internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo,TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState
         {
@@ -220,7 +220,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!args.IsClick)
                 return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
@@ -229,7 +229,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isUsed)
                 return;
-            Judge(ThisFrameSec);
+            Judge(ThisFixedUpdateSec);
 
             if (_isJudged)
             {
@@ -265,7 +265,7 @@ namespace MajdataPlay.Game.Notes
             if (IsEnded || _isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
+            var timing = GetTimeSpanToJudgeTiming(ThisFixedUpdateSec);
             var isTooLate = timing > 0.15f;
 
             if (isTooLate)

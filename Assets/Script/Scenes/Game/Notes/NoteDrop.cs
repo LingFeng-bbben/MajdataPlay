@@ -6,16 +6,14 @@ using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Unity.Burst.Intrinsics;
 using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IStatefulNote, IMajComponent
+    internal abstract class NoteDrop : MajComponent, IStatefulNote
     {
-        public bool Active { get; protected set; } = false;
         public int StartPos 
         { 
             get => _startPos; 
@@ -58,14 +56,7 @@ namespace MajdataPlay.Game.Notes
             set => _isEX = value; 
         }
 
-        /// <summary>
-        /// Provides a cached GameObject instance
-        /// </summary>
-        public GameObject GameObject => _gameObject;
-        /// <summary>
-        /// Provides a cached Transform instance
-        /// </summary>
-        public Transform Transform => _transform;
+
         public bool IsInitialized => State >= NoteStatus.Initialized;
         public bool IsEnded => State == NoteStatus.End;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
@@ -75,8 +66,8 @@ namespace MajdataPlay.Game.Notes
             protected set => _state = value; 
         }
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
-        public float CurrentSec => _gpManager.AudioTime;
         public float ThisFrameSec => _gpManager.ThisFrameSec;
+        public float ThisFixedUpdateSec => _gpManager.ThisFixedUpdateSec;
 
         protected bool IsAutoplay => _isAutoplay;
         protected Material BreakMaterial => _breakMaterial;
@@ -110,13 +101,11 @@ namespace MajdataPlay.Game.Notes
         Material _defaultMaterial;
         Material _holdShineMaterial;
 
-        GameObject _gameObject;
-        Transform _transform;
+
         bool _isAutoplay = false;
-        protected virtual void Awake()
+        protected override void Awake()
         {
-            _gameObject = gameObject;
-            _transform = transform;
+            base.Awake();
             _effectManager = FindObjectOfType<NoteEffectManager>();
             _objectCounter = FindObjectOfType<ObjectCounter>();
             _noteManager = FindObjectOfType<NoteManager>();
@@ -202,22 +191,6 @@ namespace MajdataPlay.Game.Notes
                 }
                 await Task.Delay(1);
             }
-        }
-        /// <summary>
-        /// Sets whether the camera renders this GameObject
-        /// </summary>
-        /// <param name="state"></param>
-        public virtual void SetActive(bool state)
-        {
-            switch(state)
-            {
-                case true:
-                    GameObject.layer = MajEnv.DEFAULT_LAYER;
-                    break;
-                case false:
-                    GameObject.layer = MajEnv.HIDDEN_LAYER;
-                    break;
-            }    
         }
         /// <summary>
         /// Gets the time offset from the current moment to the judgment line.

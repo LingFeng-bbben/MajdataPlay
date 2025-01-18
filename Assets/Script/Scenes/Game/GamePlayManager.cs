@@ -34,6 +34,10 @@ namespace MajdataPlay.Game
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
         /// <summary>
+        /// The timing of the current FixedUpdate<para>Unit: Second</para>
+        /// </summary>
+        public float ThisFixedUpdateSec => _thisFixedUpdateSec;
+        /// <summary>
         ///  The first Note appear timing
         /// </summary>
         public float FirstNoteAppearTiming
@@ -101,6 +105,9 @@ namespace MajdataPlay.Game
         [ReadOnlyField]
         [SerializeField]
         float _thisFrameSec = 0f;
+        [ReadOnlyField]
+        [SerializeField]
+        float _thisFixedUpdateSec = 0f;
         [ReadOnlyField]
         [SerializeField]
         float _firstNoteAppearTiming = 0f;
@@ -701,20 +708,6 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
         }
-        async UniTaskVoid UpdateThisFrameSec()
-        {
-            await UniTask.Create(async () =>
-            {
-                var token = _cts.Token;
-                while(!token.IsCancellationRequested)
-                {
-                    var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    _thisFrameSec = timeOffset - chartOffset;
-                    await UniTask.Yield(PlayerLoopTiming.PreUpdate, token);
-                }
-            });
-        }
         void Update()
         {
             UpdateAudioTime();
@@ -834,7 +827,7 @@ namespace MajdataPlay.Game
         {
             var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
             var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-            _thisFrameSec = timeOffset - chartOffset;
+            _thisFixedUpdateSec = timeOffset - chartOffset;
         }
         void UpdateAudioTime()
         {
@@ -849,6 +842,7 @@ namespace MajdataPlay.Game
                 var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
                 var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
+                _thisFrameSec = _audioTime;
                 _audioTimeNoOffset = timeOffset;
 
                 var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime)*PlaybackSpeed;

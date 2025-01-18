@@ -18,7 +18,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class WifiDrop : SlideBase
+    internal sealed class WifiDrop : SlideBase, IMajComponent
     {
 
         readonly Vector3[] _slideEndPositions = new Vector3[3];
@@ -169,14 +169,6 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        void Start()
-        {
-            FadeIn().Forget();
-        }
-        void OnFixedUpdate()
-        {
-            
-        }
         void CheckSensor()
         {
             if (IsAutoplay || !_isCheckable)
@@ -257,10 +249,10 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = ThisFrameSec - _timing;
-            var startTiming = ThisFrameSec - _startTiming;
+            var timing = ThisFixedUpdateSec - _timing;
+            var startTiming = ThisFixedUpdateSec - _startTiming;
             var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = ThisFrameSec - tooLateTiming >= 0;
+            var isTooLate = ThisFixedUpdateSec - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
                 _isCheckable = true;
@@ -271,9 +263,9 @@ namespace MajdataPlay.Game.Notes
                 {
                     HideAllBar();
                     if (IsClassic)
-                        Judge_Classic(ThisFrameSec);
+                        Judge_Classic(ThisFixedUpdateSec);
                     else
-                        Judge(ThisFrameSec);
+                        Judge(ThisFixedUpdateSec);
                 }
                 else if (isTooLate)
                     TooLateJudge();
@@ -311,6 +303,7 @@ namespace MajdataPlay.Game.Notes
         }
         void OnUpdate()
         {
+            SlideBarFadeIn();
             SlideCheck();
             CheckSensor();
 
@@ -318,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFrameSec - StartTiming > 0)
+                    if (ThisFixedUpdateSec - StartTiming > 0)
                     {
                         SetStarActive(true);
                         for (var i = 0; i < _stars.Length; i++)
@@ -332,7 +325,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - Timing;
+                    var timing = ThisFixedUpdateSec - Timing;
                     if (timing > 0f)
                     {
                         for (var i = 0; i < _stars.Length; i++)

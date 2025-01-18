@@ -11,7 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>
+    internal sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState 
         {
@@ -236,7 +236,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!args.IsClick)
                 return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
@@ -245,7 +245,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isUsed)
                 return;
-            Judge(ThisFrameSec);
+            Judge(ThisFixedUpdateSec);
 
             if (_isJudged)
             {

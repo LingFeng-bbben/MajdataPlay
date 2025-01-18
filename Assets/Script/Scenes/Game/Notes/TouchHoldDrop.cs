@@ -12,7 +12,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer,IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>
+    internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer,IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; } = null;
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
@@ -402,7 +402,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!args.IsClick)
                 return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
@@ -411,7 +411,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isUsed)
                 return;
-            Judge(ThisFrameSec);
+            Judge(ThisFixedUpdateSec);
 
             if (_isJudged)
             {

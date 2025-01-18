@@ -11,10 +11,11 @@ using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Attributes;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class SlideBase : NoteLongDrop
+    internal abstract class SlideBase : NoteLongDrop
     {
         public IConnectableSlide? Parent => ConnectInfo.Parent;
         public ConnSlideInfo ConnectInfo { get; set; } = new()
@@ -366,30 +367,31 @@ namespace MajdataPlay.Game.Notes
                 star = null;
             //GameObjectHelper.Destroy(ref _stars);
         }
-        protected async UniTaskVoid FadeIn()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SlideBarFadeIn()
         {
-            _fadeInTiming = Math.Max(_fadeInTiming,CurrentSec);
+            if (IsEnded)
+                return;
+
             var num = _startTiming - 0.05f;
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
-            while (!Active)
-                await UniTask.Yield();
-            while (CurrentSec < fullFadeInTiming) 
+            if(ThisFrameSec > num)
             {
-                var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);
+                SetSlideBarAlpha(1f);
+                return;
+            }
+            else if(ThisFrameSec < fullFadeInTiming)
+            {
+                var diff = (fullFadeInTiming - ThisFrameSec).Clamp(0, interval);
                 float alpha = 0;
 
-                if(interval != 0)
+                if (interval != 0)
                     alpha = 1 - (diff / interval);
                 alpha *= _maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
-                await UniTask.Yield();
             }
-            SetSlideBarAlpha(_maxFadeInAlpha);
-            while (CurrentSec < num)
-                await UniTask.Yield();
-            SetSlideBarAlpha(1f);
         }
         protected void JudgeResultCorrection(ref JudgeGrade result)
         {

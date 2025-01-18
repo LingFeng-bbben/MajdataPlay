@@ -4,7 +4,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteLongDrop : NoteDrop
+    internal abstract class NoteLongDrop : NoteDrop
     {
         public float Length
         {

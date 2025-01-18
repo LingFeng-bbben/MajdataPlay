@@ -16,7 +16,7 @@ using System.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class SlideDrop : SlideBase,IConnectableSlide, IEndableNote
+    internal sealed class SlideDrop : SlideBase,IConnectableSlide, IEndableNote, IMajComponent
     {
         public bool IsMirror 
         { 
@@ -233,16 +233,9 @@ namespace MajdataPlay.Game.Notes
                     judgeArea.IsSkippable = true;
             }
         }
-        void Start()
-        {
-            FadeIn().Forget();
-        }
-        void OnFixedUpdate()
-        {
-            
-        }
         void OnUpdate()
         {
+            SlideBarFadeIn();
             SlideCheck();
             CheckSensor();
             // ConnSlide
@@ -253,7 +246,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFrameSec - StartTiming > 0)
+                    if (ThisFixedUpdateSec - StartTiming > 0)
                     {
                         if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
                         {
@@ -269,7 +262,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - Timing;
+                    var timing = ThisFixedUpdateSec - Timing;
                     if (timing > 0f)
                     {
                         _starRenderer.color = new Color(1, 1, 1, 1);
@@ -415,9 +408,9 @@ namespace MajdataPlay.Game.Notes
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
             //var timing = _gpManager.AudioTime - _timing;
-            var startTiming = ThisFrameSec - _startTiming;
+            var startTiming = ThisFixedUpdateSec - _startTiming;
             var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = ThisFrameSec - tooLateTiming >= 0;
+            var isTooLate = ThisFixedUpdateSec - tooLateTiming >= 0;
 
             if (!_isCheckable)
             {
@@ -442,9 +435,9 @@ namespace MajdataPlay.Game.Notes
                     {
                         HideAllBar();
                         if (IsClassic)
-                            Judge_Classic(ThisFrameSec);
+                            Judge_Classic(ThisFixedUpdateSec);
                         else
-                            Judge(ThisFrameSec);
+                            Judge(ThisFixedUpdateSec);
                         return;
                     }
                     else if (isTooLate)

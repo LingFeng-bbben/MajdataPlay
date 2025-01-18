@@ -4,7 +4,9 @@ namespace MajdataPlay.Types
 {
     public interface IMajComponent : IGameObjectProvider , ITransformProvider
     {
-        public bool Active { get; }
+        string Tag { get; }
+        bool Active { get; }
+
         void SetActive(bool state);
     }
 }

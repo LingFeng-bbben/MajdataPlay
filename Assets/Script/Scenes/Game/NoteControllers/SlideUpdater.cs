@@ -17,7 +17,7 @@ namespace MajdataPlay.Game
         {
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
-        public void AddSlideQueueInfos(SlideQueueInfo[] infos)
+        internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
             if (infos is null)
                 throw new ArgumentNullException();
