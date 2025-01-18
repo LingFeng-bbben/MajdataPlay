@@ -430,11 +430,6 @@ namespace MajdataPlay.Game
             }
             ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
-            if (_chart.notelist.Count == 0)
-            {
-                BackToList().Forget();
-                throw new TaskCanceledException("Empty chart");
-            }
             if(PlaybackSpeed != 1)
                 _chart.Scale(PlaybackSpeed);
             if(_isAllBreak)
@@ -443,6 +438,7 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if(_isAllTouch)
                 _chart.ConvertToTouch();
+
             if(IsPracticeMode)
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
@@ -452,13 +448,20 @@ namespace MajdataPlay.Game
                 else if(_gameInfo.ComboRange is Range<long> comboRange)
                 {
                     _chart.Clamp(comboRange);
-                }
-                else
-                {
-                    //throw a exception
+                    if(_chart.notelist.Count != 0)
+                    {
+                        var startAt = _chart.notelist[0].time;
+                        startAt = Math.Max(startAt - 5, 0);
+
+                        _audioTrackStartAt = (float)startAt;
+                    }
                 }
             }
-
+            if (_chart.notelist.Count == 0)
+            {
+                BackToList().Forget();
+                throw new TaskCanceledException("Empty chart");
+            }
 
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
             await Task.Run(() =>
