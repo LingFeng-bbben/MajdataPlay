@@ -281,7 +281,7 @@ namespace MajdataPlay.Game
                 {
                     var startAt = timeRange.Start;
                     var endAt = timeRange.End;
-                    startAt = Math.Max(startAt - 5, 0);
+                    startAt = Math.Max(startAt - 3, 0);
                     endAt = Math.Min(endAt, _audioSample.Length.TotalSeconds);
 
                     if(startAt >= endAt)
@@ -331,7 +331,7 @@ namespace MajdataPlay.Game
                     if(_chart.notelist.Count != 0)
                     {
                         var startAt = _chart.notelist[0].time;
-                        startAt = Math.Max(startAt - 5, 0);
+                        startAt = Math.Max(startAt - 3, 0);
 
                         _audioTrackStartAt = (float)startAt;
                     }
@@ -349,6 +349,7 @@ namespace MajdataPlay.Game
                 var countnum = _songDetail.ClockCount == null ? 4 : (int)_songDetail.ClockCount;
                 var firstBpm = _chart.notelist.FirstOrDefault().currentBpm;
                 var interval = 60 / firstBpm;
+                if(!IsPracticeMode)
                 if (_chart.notelist.Any(o => o.time < countnum * interval))
                 {
                     //if there is something in first measure, we add clock before the bgm
@@ -375,16 +376,9 @@ namespace MajdataPlay.Game
                         });
                     }
                 }
-                if(IsPracticeMode)
+                
                 {
-                    var theLastTiming = _anwserSoundList[countnum - 1].time;
-                    if(theLastTiming > 0)
-                    {
-                        for (var i = 0; i < countnum; i++) 
-                        {
-                            _anwserSoundList[i].time -= theLastTiming;
-                        }
-                    }
+
                 }
 
                 //Generate AnwserSounds
@@ -500,7 +494,7 @@ namespace MajdataPlay.Game
                     break;
                 await UniTask.Yield();
             }
-            
+
             Time.timeScale = 1f;
             var firstClockTiming = _anwserSoundList[0].time;
             float extraTime = 5f;
@@ -520,10 +514,12 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.DisableGC();
 
             State = ComponentState.Running;
-            
-            while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
+            if (!IsPracticeMode)
+            {
+                while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            }
             _audioSample.Play();
             _audioSample.CurrentSec = _audioTrackStartAt;
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
@@ -533,16 +529,11 @@ namespace MajdataPlay.Game
             {
                 var elapsedSeconds = 0f;
                 var originVol = _setting.Audio.Volume.BGM;
-                var isFadeOut = false;
                 _audioSample.Volume = 0;
-                while (elapsedSeconds < 5)
+                BgHeaderFadeOut();
+                while (elapsedSeconds < 3)
                 {
-                    _audioSample.Volume = (elapsedSeconds / 5f) * originVol;
-                    if(elapsedSeconds >= 3 && !isFadeOut)
-                    {
-                        BgHeaderFadeOut();
-                        isFadeOut = true;
-                    }
+                    _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
                     await UniTask.Yield();
                     elapsedSeconds += Time.deltaTime;
                 }
@@ -673,12 +664,12 @@ namespace MajdataPlay.Game
         {
             State = ComponentState.Finished;
 
-            var remainingSeconds = 3f;
+            var remainingSeconds = 1f;
             var originVol = _setting.Audio.Volume.BGM;
             _audioSample!.Volume = 0;
             while (remainingSeconds > 0)
             {
-                _audioSample.Volume = (remainingSeconds / 3f) * originVol;
+                _audioSample.Volume = (remainingSeconds / 1f) * originVol;
 
                 await UniTask.Yield();
                 remainingSeconds -= Time.deltaTime;
@@ -695,7 +686,7 @@ namespace MajdataPlay.Game
             await UniTask.Delay(200);
             if(_gameInfo.NextRound())
             {
-                MajInstances.SceneSwitcher.SwitchScene("Game");
+                MajInstances.SceneSwitcher.SwitchScene("Game",false);
             }
             else
             {
