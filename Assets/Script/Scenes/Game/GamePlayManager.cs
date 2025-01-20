@@ -302,7 +302,7 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
-            var maidata = await _songDetail.LoadInnerMaidata((int)_gameInfo.CurrentLevel);
+            var maidata = await _songDetail.GetInnerMaidata((int)_gameInfo.CurrentLevel);
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {

@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -25,6 +27,7 @@ namespace MajdataPlay.List
         public GameObject DanSmallPrefab;
         public CoverBigDisplayer CoverBigDisplayer;
         public SubInfoDisplayer SubInfoDisplayer;
+        public ChartAnalyzer chartAnalyzer;
 
         public int desiredListPos = 0;
         public float listPosReal;
@@ -119,6 +122,7 @@ namespace MajdataPlay.List
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
+                chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
 
                 for (int i = 0; i < covers.Count; i++)
                 {
@@ -188,6 +192,7 @@ namespace MajdataPlay.List
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
+                    chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     break;
             }

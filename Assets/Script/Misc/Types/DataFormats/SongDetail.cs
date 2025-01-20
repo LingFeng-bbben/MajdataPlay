@@ -184,24 +184,34 @@ namespace MajdataPlay.Types
             });
         }
 
-        public async UniTask<string> LoadInnerMaidata(int selectedDifficulty)
+        byte[] _maidatabytecache = new byte[0];
+        public async UniTask<string> GetInnerMaidata(int selectedDifficulty)
         {
             //TODO: should check hash change here
             var maidatabyte = new byte[0];
             if (IsOnline)
             {
-                maidatabyte = await HttpTransporter.ShareClient.GetByteArrayAsync(MaidataPath);
+                if (_maidatabytecache.Length == 0)
+                {
+                    maidatabyte = await HttpTransporter.ShareClient.GetByteArrayAsync(MaidataPath);
+                    _maidatabytecache = maidatabyte;
+                }
+                else
+                {
+                    maidatabyte = _maidatabytecache;
+                }
             }
             else
             {
                 maidatabyte = await File.ReadAllBytesAsync(MaidataPath);
+                var hash = await GetHashAsync(maidatabyte);
+                if (hash != Hash)
+                {
+                    MajDebug.LogError("Chart Hash Mismatch");
+                    Application.Quit();
+                }
             }
-            var hash = await GetHashAsync(maidatabyte);
-            if(hash != Hash)
-            {
-                MajDebug.LogError("Chart Hash Mismatch");
-                Application.Quit();
-            }
+            
             var maidata = Encoding.UTF8.GetString(maidatabyte).Split('\n');
             for (int i = 0; i < maidata.Length; i++)
             {

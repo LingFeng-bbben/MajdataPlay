@@ -1,3 +1,6 @@
+using Cysharp.Text;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Types;
 using MajSimaiDecode;
 using SkiaSharp;
 using System;
@@ -6,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,10 +22,32 @@ namespace MajdataPlay.Game
         public UnityEngine.Color slideColor;
         public UnityEngine.Color touchColor;
 
+        public Text anaText;
         void Start()
         {
             _rawImage = GetComponent<RawImage>();
-
+        }
+        bool lockFlag = false;
+        public async UniTask AnalyzeSongDetail(SongDetail songDetail, ChartLevel level)
+        {
+            if (lockFlag) return;
+            lockFlag = true;
+            try
+            {
+                var maidata = await songDetail.GetInnerMaidata((int)level);
+                var chart = new SimaiProcess(maidata);
+                var lastnoteTiming = chart.notelist.Last().time;
+                AnalyzeMaidata(chart, (float)lastnoteTiming);
+            }
+            catch
+            {
+                _rawImage.texture = new Texture2D(0, 0);
+                if (anaText is not null)
+                {
+                    anaText.text = "";
+                }
+            }
+            finally { lockFlag = false; }
         }
 
         public void AnalyzeMaidata(SimaiProcess data, float totalLength)
@@ -60,7 +86,15 @@ namespace MajdataPlay.Game
                 slidePoints.Add(new Vector2(x, y1));
                 touchPoints.Add(new Vector2(x, y2));
             }
-
+            if (anaText is not null)
+            {
+                var time = TimeSpan.FromSeconds(totalLength);
+                anaText.text = "Peak Density = " + max +"\n";
+                var avg = tapPoints.Average(o => o.y) + 3f * slidePoints.Average(o => o.y) + 0.5f * touchPoints.Average(o => o.y);
+                var esti = 7.5f * Mathf.Log10(3.8f*(avg + 0.3f * max));
+                anaText.text += "Esti = Lv." + (esti) + "\n";
+                anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
+            }
             //normalize
             for (var i = 0; i < tapPoints.Count; i++)
             {
