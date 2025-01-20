@@ -216,7 +216,7 @@ namespace MajdataPlay.Game
             try
             {
                 if (_songDetail.IsOnline)
-                    await DumpOnlineChart();
+                    _songDetail = await ChartDownloader.DumpOnlineChart(_songDetail,_cts);
                 await LoadAudioTrack();
                 await ParseChart();
                 await PrepareToPlay();
@@ -263,150 +263,7 @@ namespace MajdataPlay.Game
                 return;
             }
         }
-        /// <summary>
-        /// Dump online chart to local
-        /// </summary>
-        /// <returns></returns>
-        async UniTask DumpOnlineChart()
-        {
-            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash.Replace('/','_')}");
-            Directory.CreateDirectory(chartFolder);
-            var dirInfo = new DirectoryInfo(chartFolder);
-            var trackPath = Path.Combine(chartFolder, "track.mp3");
-            var chartPath = Path.Combine(chartFolder, "maidata.txt");
-            var bgPath = Path.Combine(chartFolder, "bg.png");
-            var videoPath = Path.Combine(chartFolder, "bg.mp4");
-            var trackUri = _songDetail.TrackPath;
-            var chartUri = _songDetail.MaidataPath;
-            var bgUri = _songDetail.BGPath;
-            var videoUri = _songDetail.VideoPath;
-            var token = _cts.Token;
-
-            if (trackUri is null or "")
-                throw new AudioTrackNotFoundException(trackPath);
-            if (chartUri is null or "")
-                throw new ChartNotFoundException(_songDetail);
-            
-            MajInstances.LightManager.SetAllLight(Color.blue);
-            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
-            if (!File.Exists(trackPath))
-            {
-                await DownloadFile(trackUri, trackPath, r =>
-                {
-                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
-                });
-            }
-            token.ThrowIfCancellationRequested();
-            if (!File.Exists(chartPath))
-            {
-                await DownloadFile(chartUri, chartPath, r =>
-                {
-                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
-                });
-            }
-            token.ThrowIfCancellationRequested();
-            SongDetail song;
-            if (bgUri is null or "")
-            {
-                song = await SongDetail.ParseAsync(dirInfo.GetFiles());
-                song.Hash = _songDetail.Hash;
-                _songDetail = song;
-                return; 
-            }
-            token.ThrowIfCancellationRequested();
-            if (!File.Exists(bgPath))
-            {
-                await DownloadFile(bgUri, bgPath, r =>
-                {
-                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                });
-            }
-            token.ThrowIfCancellationRequested();
-            if (!File.Exists(videoPath) && videoUri is not null)
-            {
-                try
-                {
-                    await DownloadFile(videoUri, videoPath, r =>
-                    {
-                        MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
-                    });
-                }
-                catch
-                {
-                    MajDebug.Log("No video for this song");
-                    File.Delete(videoPath);
-                    videoPath = "";
-                }
-            }
-            token.ThrowIfCancellationRequested();
-            song = await SongDetail.ParseAsync(dirInfo.GetFiles());
-            song.Hash = _songDetail.Hash;
-            song.OnlineId = _songDetail.OnlineId;
-            song.ApiEndpoint = _songDetail.ApiEndpoint;
-            _songDetail = song;
-        }
-        /*async UniTask<GetResult> DownloadFile(string uri,string savePath,Action<IHttpProgressReporter> onProgressChanged,int buffersize = 128*1024)
-        {
-            var dlInfo = GetRequest.Create(uri, savePath);
-            var reporter = dlInfo.ProgressReporter;
-            var task = _httpDownloader.GetAsync(dlInfo,buffersize);
-
-            while(!task.IsCompleted)
-            {
-                onProgressChanged(reporter!);
-                await UniTask.Yield();
-            }
-            onProgressChanged(reporter!);
-            await UniTask.Yield();
-            return task.Result;
-        }*/
-        /*async UniTask DownloadString(string uri, string savePath)
-        {
-            var task = HttpTransporter.ShareClient.GetStringAsync(uri);
-
-            while (!task.IsCompleted)
-            {
-                await UniTask.Yield();
-            }
-            File.WriteAllText(savePath, task.Result);
-            return;
-        }*/
-        /*async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
-        {
-            UnityWebRequest trackreq = UnityWebRequest.Get(uri);
-            trackreq.downloadHandler = new DownloadHandlerFile(savePath);
-            var result = trackreq.SendWebRequest();
-            while (!result.isDone)
-            {
-                progressCallback.Invoke(trackreq.downloadProgress);
-                await UniTask.Yield();
-            }
-            if (trackreq.result != UnityWebRequest.Result.Success)
-            {
-                MajDebug.LogError("Error downloading file: " + trackreq.error);
-                throw new Exception("Download file failed");
-            }
-        }*/
-        async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
-        {
-            var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
-            var token = _cts.Token;
-            float fakeprogress = 0f;
-            while (!task.IsCompleted)
-            {
-                token.ThrowIfCancellationRequested();
-                progressCallback.Invoke(fakeprogress);
-                fakeprogress += 0.001f;
-                if(fakeprogress >0.99f) fakeprogress = 0.99f;
-                await UniTask.Yield();
-            }
-            if (task.IsCanceled)
-            {
-                throw new Exception("Download failed");
-            }
-            File.WriteAllBytes(savePath, task.Result);
-            return;
-        }
+        
         async UniTask LoadAudioTrack()
         {
             var trackPath = _songDetail.TrackPath ?? string.Empty;
@@ -485,7 +342,7 @@ namespace MajdataPlay.Game
                 throw new EmptyChartException();
             }
 
-            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
+            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart, AudioLength);
             await Task.Run(() =>
             {
                 //Generate ClockSounds
