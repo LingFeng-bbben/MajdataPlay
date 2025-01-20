@@ -1,4 +1,7 @@
-﻿using System;
+﻿using SkiaSharp;
+using SkiaSharp.Unity;
+using System;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -29,8 +32,7 @@ namespace MajdataPlay.Utils
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             var bytes = await File.ReadAllBytesAsync(path, ct);
             ct.ThrowIfCancellationRequested();
-            var texture = new Texture2D(0, 0);
-            texture.LoadImage(bytes);
+            var texture = await ImageDecodeAsync(bytes);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
 
@@ -39,7 +41,7 @@ namespace MajdataPlay.Utils
             Directory.CreateDirectory(MajEnv.CachePath);
             var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.OriginalString));
             var cachefile = Path.Combine(MajEnv.CachePath, b64);
-            byte[] bytes;
+            byte[] bytes = Array.Empty<byte>();
             if (!File.Exists(cachefile))
             {
                 var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
@@ -52,8 +54,7 @@ namespace MajdataPlay.Utils
                 bytes = await File.ReadAllBytesAsync(cachefile, ct);
             }
             ct.ThrowIfCancellationRequested();
-            var texture = new Texture2D(0, 0);
-            texture.LoadImage(bytes);
+            var texture = await ImageDecodeAsync(bytes);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
 
@@ -66,6 +67,14 @@ namespace MajdataPlay.Utils
             texture.LoadImage(bytes);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                 SpriteMeshType.FullRect, border);
+        }
+        async static Task<Texture2D> ImageDecodeAsync(byte[] data)
+        {
+            using var bitmap = await Task.Run(() =>
+            {
+                return SKBitmap.Decode(data);
+            });
+            return bitmap.ToTexture2D();
         }
     }
 }
