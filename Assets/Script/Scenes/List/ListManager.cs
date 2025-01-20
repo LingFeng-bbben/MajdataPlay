@@ -40,19 +40,7 @@ namespace MajdataPlay.List
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsDown)
-            {
-                switch(e.Type)
-                {
-                    case SensorType.A6:
-                    case SensorType.A3:
-                        _isPressed = false;
-                        _delta = 0;
-                        _pressTime = 0;
-                        break;
-                }
-                return;
-            }
+            
             if (!e.IsButton)
             {
                 switch (e.Type)
@@ -105,6 +93,56 @@ namespace MajdataPlay.List
             }
             else
             {
+                if (e.IsDown && e.Type == SensorType.A4)
+                {
+                    _isPressed = true;
+                    PracticeTimer().Forget();
+                }
+                if (e.IsUp)
+                {
+                    switch (e.Type)
+                    {
+                        case SensorType.A6:
+                        case SensorType.A3:
+                            _isPressed = false;
+                            _delta = 0;
+                            _pressTime = 0;
+                            break;
+                        case SensorType.A4:
+                            
+                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+                            var list = new string[] { "track_start.wav", "track_start_2.wav" };
+                            MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                            var levels = new ChartLevel[]
+                            {
+                                MajInstances.GameManager.SelectedDiff
+                            };
+                            var charts = new SongDetail[]
+                            {
+                                SongStorage.WorkingCollection.Current
+                            };
+                            if (_pressTime > 1f)
+                            {
+                                var info = new GameInfo(GameMode.Practice, charts, levels,114514);
+                                MajInstanceHelper<GameInfo>.Instance = info;
+                                _pressTime = 0;
+                                _isPressed = false;
+                                MajInstances.SceneSwitcher.SwitchScene("Practice", false);
+                            }
+                            else
+                            {
+                                var info = new GameInfo(GameMode.Normal, charts, levels);
+                                MajInstanceHelper<GameInfo>.Instance = info;
+                                _pressTime = 0;
+                                _isPressed = false;
+                                MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                            }
+                            break;
+                    }
+                    return;
+                }
+                
                 switch (e.Type)
                 {
                     case SensorType.A3:
@@ -181,24 +219,6 @@ namespace MajdataPlay.List
                                 MajInstances.LightManager.SetButtonLight(Color.red, 4);
                             }
                         }
-                        else
-                        {
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-                            var list = new string[] { "track_start.wav", "track_start_2.wav" };
-                            MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
-                            var levels = new ChartLevel[]
-                            {
-                                MajInstances.GameManager.SelectedDiff
-                            };
-                            var charts = new SongDetail[]
-                            {
-                                SongStorage.WorkingCollection.Current
-                            };
-                            var info = new GameInfo(GameMode.Normal, charts, levels);
-                            MajInstanceHelper<GameInfo>.Instance = info;
-                            MajInstances.SceneSwitcher.SwitchScene("Game",false);
-                        }
                         break;
                     case SensorType.A7:
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
@@ -225,6 +245,20 @@ namespace MajdataPlay.List
                 }
                 CoverListDisplayer.SlideList(_delta);
                 await UniTask.Delay(100);
+            }
+        }
+
+        async UniTaskVoid PracticeTimer()
+        {
+            while (_isPressed)
+            {
+                _pressTime += Time.deltaTime;
+                await UniTask.Yield();
+                if(_pressTime > 1f)
+                {
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    break;
+                }
             }
         }
     }

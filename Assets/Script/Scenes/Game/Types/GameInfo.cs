@@ -26,9 +26,9 @@ namespace MajdataPlay.Game.Types
         public bool IsForceGameover => DanInfo?.IsForceGameover ?? false; 
         public DanInfo? DanInfo { get; init; } = null;
         // TO-DO: Practice Mode
-        public int PracticeCount { get; init; } = 1;
-        public Range<long>? ComboRange { get; init; }
-        public Range<double>? TimeRange { get; init; }
+        public int PracticeCount { get; set; } = 1;
+        public Range<long>? ComboRange { get; set; }
+        public Range<double>? TimeRange { get; set; }
         public GameResult[] Results { get; init; }
 
         int _playedCount = 0;
