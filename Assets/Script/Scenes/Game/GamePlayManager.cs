@@ -19,6 +19,7 @@ using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Types;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace MajdataPlay.Game
 {
@@ -30,9 +31,13 @@ namespace MajdataPlay.Game
         public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
         // Timeline
         /// <summary>
-        /// The timing of the current FixedUpdate<para>Unit: Second</para>
+        /// The timing of the current Update<para>Unit: Second</para>
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
+        /// <summary>
+        /// The timing of the current FixedUpdate<para>Unit: Second</para>
+        /// </summary>
+        public float ThisFixedUpdateSec => _thisFixedUpdateSec;
         /// <summary>
         ///  The first Note appear timing
         /// </summary>
@@ -69,6 +74,8 @@ namespace MajdataPlay.Game
         }
         public ComponentState State { get; private set; } = ComponentState.Idle;
         // Data
+        public bool IsPracticeMode => _gameInfo.IsPracticeMode;
+        internal GameMode Mode => _gameInfo.Mode;
         public MaiScore? HistoryScore { get; private set; }
         public Material BreakMaterial => _breakMaterial;
         public Material DefaultMaterial => _defaultMaterial;
@@ -101,6 +108,9 @@ namespace MajdataPlay.Game
         float _thisFrameSec = 0f;
         [ReadOnlyField]
         [SerializeField]
+        float _thisFixedUpdateSec = 0f;
+        [ReadOnlyField]
+        [SerializeField]
         float _firstNoteAppearTiming = 0f;
         [ReadOnlyField]
         [SerializeField]
@@ -120,6 +130,7 @@ namespace MajdataPlay.Game
 
         Text _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
+        float _audioTrackStartAt = 0f;
 
         GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         HttpTransporter _httpDownloader = new();
@@ -136,6 +147,7 @@ namespace MajdataPlay.Game
 
         CancellationTokenSource _allTaskTokenSource = new();
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
+        readonly CancellationTokenSource _cts = new();
         void Awake()
         {
             if (_gameInfo is null || _gameInfo.Current is null)
@@ -200,41 +212,56 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTaskVoid LoadChart()
         {
+            var inputManager = MajInstances.InputManager;
             try
             {
                 if (_songDetail.IsOnline)
                     await DumpOnlineChart();
                 await LoadAudioTrack();
                 await ParseChart();
+                await PrepareToPlay();
+            }
+            catch(EmptyChartException)
+            {
+                inputManager.ClearAllSubscriber();
+                var s = Localization.GetLocalizedText("Empty Chart");
+                var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "5");
+                MajInstances.SceneSwitcher.SetLoadingText($"{s}, {ss}", Color.red);
+                await UniTask.Delay(5000);
+                
+                BackToList().Forget();
             }
             catch(HttpTransmitException httpEx)
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
-                Debug.LogError(httpEx);
+                MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
-                Debug.LogError(audioEx);
+                MajDebug.LogError(audioEx);
+                return;
+            }
+            catch(TaskCanceledException e)
+            {
+                MajDebug.LogWarning(e);
                 return;
             }
             catch(OperationCanceledException canceledEx)
             {
-                Debug.LogWarning(canceledEx);
+                MajDebug.LogWarning(canceledEx);
                 return;
             }
             catch(Exception e)
             {
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
-                Debug.LogError(e);
+                MajDebug.LogError(e);
                 return;
             }
-
-            PrepareToPlay().Forget();
         }
         /// <summary>
         /// Dump online chart to local
@@ -242,7 +269,7 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTask DumpOnlineChart()
         {
-            var chartFolder = Path.Combine(GameManager.ChartPath, $"MajnetPlayed/{_songDetail.Hash}");
+            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash.Replace('/','_')}");
             Directory.CreateDirectory(chartFolder);
             var dirInfo = new DirectoryInfo(chartFolder);
             var trackPath = Path.Combine(chartFolder, "track.mp3");
@@ -253,6 +280,7 @@ namespace MajdataPlay.Game
             var chartUri = _songDetail.MaidataPath;
             var bgUri = _songDetail.BGPath;
             var videoUri = _songDetail.VideoPath;
+            var token = _cts.Token;
 
             if (trackUri is null or "")
                 throw new AudioTrackNotFoundException(trackPath);
@@ -268,6 +296,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(chartPath))
             {
                 await DownloadFile(chartUri, chartPath, r =>
@@ -275,6 +304,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             SongDetail song;
             if (bgUri is null or "")
             {
@@ -283,6 +313,7 @@ namespace MajdataPlay.Game
                 _songDetail = song;
                 return; 
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(bgPath))
             {
                 await DownloadFile(bgUri, bgPath, r =>
@@ -290,6 +321,7 @@ namespace MajdataPlay.Game
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                 });
             }
+            token.ThrowIfCancellationRequested();
             if (!File.Exists(videoPath) && videoUri is not null)
             {
                 try
@@ -301,11 +333,12 @@ namespace MajdataPlay.Game
                 }
                 catch
                 {
-                    Debug.Log("No video for this song");
+                    MajDebug.Log("No video for this song");
                     File.Delete(videoPath);
                     videoPath = "";
                 }
             }
+            token.ThrowIfCancellationRequested();
             song = await SongDetail.ParseAsync(dirInfo.GetFiles());
             song.Hash = _songDetail.Hash;
             song.OnlineId = _songDetail.OnlineId;
@@ -350,16 +383,18 @@ namespace MajdataPlay.Game
             }
             if (trackreq.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error downloading file: " + trackreq.error);
+                MajDebug.LogError("Error downloading file: " + trackreq.error);
                 throw new Exception("Download file failed");
             }
         }*/
         async UniTask DownloadFile(string uri, string savePath, Action<float> progressCallback)
         {
             var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
+            var token = _cts.Token;
             float fakeprogress = 0f;
             while (!task.IsCompleted)
             {
+                token.ThrowIfCancellationRequested();
                 progressCallback.Invoke(fakeprogress);
                 fakeprogress += 0.001f;
                 if(fakeprogress >0.99f) fakeprogress = 0.99f;
@@ -383,7 +418,24 @@ namespace MajdataPlay.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
-            AudioLength = (float)_audioSample.Length.TotalSeconds/MajInstances.Setting.Mod.PlaybackSpeed;
+            if(IsPracticeMode)
+            {
+                if(_gameInfo.TimeRange is Range<double> timeRange)
+                {
+                    var startAt = timeRange.Start;
+                    var endAt = timeRange.End;
+                    startAt = Math.Max(startAt - 5, 0);
+                    endAt = Math.Min(endAt, _audioSample.Length.TotalSeconds);
+
+                    if(startAt >= endAt)
+                    {
+                        //throw a exception
+                    }
+
+                    _audioTrackStartAt = (float)startAt;
+                }
+            }
+            AudioLength = (float)_audioSample.Length.TotalSeconds / MajInstances.Setting.Mod.PlaybackSpeed;
             MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
@@ -397,16 +449,10 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
-                BackToList().Forget();
-                throw new TaskCanceledException("Empty chart");
+                throw new EmptyChartException();
             }
             ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
-            if (_chart.notelist.Count == 0)
-            {
-                BackToList().Forget();
-                throw new TaskCanceledException("Empty chart");
-            }
             if(PlaybackSpeed != 1)
                 _chart.Scale(PlaybackSpeed);
             if(_isAllBreak)
@@ -415,12 +461,35 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if(_isAllTouch)
                 _chart.ConvertToTouch();
-            //
+
+            if(IsPracticeMode)
+            {
+                if(_gameInfo.TimeRange is Range<double> timeRange)
+                {
+                    _chart.Clamp(timeRange);
+                }
+                else if(_gameInfo.ComboRange is Range<long> comboRange)
+                {
+                    _chart.Clamp(comboRange);
+                    if(_chart.notelist.Count != 0)
+                    {
+                        var startAt = _chart.notelist[0].time;
+                        startAt = Math.Max(startAt - 5, 0);
+
+                        _audioTrackStartAt = (float)startAt;
+                    }
+                }
+            }
+            if (_chart.notelist.Count == 0)
+            {
+                throw new EmptyChartException();
+            }
+
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart,AudioLength);
             await Task.Run(() =>
             {
                 //Generate ClockSounds
-                var countnum = _songDetail.ClockCount == null ? 4 : _songDetail.ClockCount;
+                var countnum = _songDetail.ClockCount == null ? 4 : (int)_songDetail.ClockCount;
                 var firstBpm = _chart.notelist.FirstOrDefault().currentBpm;
                 var interval = 60 / firstBpm;
                 if (_chart.notelist.Any(o => o.time < countnum * interval))
@@ -449,7 +518,17 @@ namespace MajdataPlay.Game
                         });
                     }
                 }
-
+                if(IsPracticeMode)
+                {
+                    var theLastTiming = _anwserSoundList[countnum - 1].time;
+                    if(theLastTiming > 0)
+                    {
+                        for (var i = 0; i < countnum; i++) 
+                        {
+                            _anwserSoundList[i].time -= theLastTiming;
+                        }
+                    }
+                }
 
                 //Generate AnwserSounds
                 foreach (var timingPoint in _chart.notelist)
@@ -537,7 +616,7 @@ namespace MajdataPlay.Game
                 {
                     var e = loaderTask.AsTask().Exception;
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                     StopAllCoroutines();
                     throw e;
                 }
@@ -547,7 +626,7 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
 
         }
-        async UniTaskVoid PrepareToPlay()
+        async UniTask PrepareToPlay()
         {
             if (_audioSample is null)
                 return;
@@ -577,7 +656,9 @@ namespace MajdataPlay.Game
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
+
             StartToPlayAnswer();
+            //UpdateThisFrameSec().Forget();
 
             State = ComponentState.Running;
             
@@ -585,11 +666,39 @@ namespace MajdataPlay.Game
                 await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             _audioSample.Play();
-            _audioSample.CurrentSec = 0;
-            _audioStartTime = _timer.ElapsedSecondsAsFloat;
-            Debug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            _audioSample.CurrentSec = _audioTrackStartAt;
+            _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
+            MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
-            await UniTask.Delay(3000);
+            if(IsPracticeMode)
+            {
+                var elapsedSeconds = 0f;
+                var originVol = _setting.Audio.Volume.BGM;
+                var isFadeOut = false;
+                _audioSample.Volume = 0;
+                while (elapsedSeconds < 5)
+                {
+                    _audioSample.Volume = (elapsedSeconds / 5f) * originVol;
+                    if(elapsedSeconds >= 3 && !isFadeOut)
+                    {
+                        BgHeaderFadeOut();
+                        isFadeOut = true;
+                    }
+                    await UniTask.Yield();
+                    elapsedSeconds += Time.deltaTime;
+                }
+                _audioSample.Volume = originVol;
+            }
+            else
+            {
+                await UniTask.Delay(3000);
+                BgHeaderFadeOut();
+            }
+        }
+        void BgHeaderFadeOut()
+        {
+            if (_gameInfo.IsDanMode)
+                return;
             switch (MajInstances.Setting.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
@@ -621,6 +730,7 @@ namespace MajdataPlay.Game
             _audioSample = null;
             State = ComponentState.Finished;
             _allTaskTokenSource.Cancel();
+            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
         }
@@ -638,8 +748,13 @@ namespace MajdataPlay.Game
                 State = ComponentState.Calculate;
                 CalculateScore();
             }
-            if (State == ComponentState.Calculate)
+            else if (State == ComponentState.Calculate)
             {
+                if(IsPracticeMode)
+                {
+                    NextRound4Practice().Forget();
+                    return;
+                }
                 var remainingTime = AudioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
                 if (remainingTime < -7)
                     _skipBtn.SetActive(true);
@@ -651,13 +766,17 @@ namespace MajdataPlay.Game
             }
 
         }
-
+        void LateUpdate()
+        {
+            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+            _thisFrameSec = timeOffset - chartOffset;
+        }
         private void CalculateScore(bool playEffect = true)
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
             var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
-            GameManager.LastGameResult = result;
             _gameInfo.RecordResult(result);
             if (!playEffect) return;
             if (result.ComboState == ComboState.APPlus)
@@ -697,10 +816,44 @@ namespace MajdataPlay.Game
                 return;
             }
         }
-
-        void FixedUpdate()
+        async UniTaskVoid NextRound4Practice()
         {
-            _thisFrameSec = _audioTime;
+            State = ComponentState.Finished;
+
+            var remainingSeconds = 3f;
+            var originVol = _setting.Audio.Volume.BGM;
+            _audioSample!.Volume = 0;
+            while (remainingSeconds > 0)
+            {
+                _audioSample.Volume = (remainingSeconds / 3f) * originVol;
+
+                await UniTask.Yield();
+                remainingSeconds -= Time.deltaTime;
+            }
+            _audioSample.Volume = 0;
+            _audioSample.Pause();
+
+            _cts.Cancel();
+            MajInstances.InputManager.ClearAllSubscriber();
+            _bgManager.CancelTimeRef();
+            DisposeAudioTrack();
+            MajInstances.GameManager.EnableGC();
+
+            await UniTask.Delay(200);
+            if(_gameInfo.NextRound())
+            {
+                MajInstances.SceneSwitcher.SwitchScene("Game");
+            }
+            else
+            {
+                MajInstances.SceneSwitcher.SwitchScene("Result");
+            }
+        }
+        internal void OnFixedUpdate()
+        {
+            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+            _thisFixedUpdateSec = timeOffset - chartOffset;
         }
         void UpdateAudioTime()
         {
@@ -715,6 +868,7 @@ namespace MajdataPlay.Game
                 var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
                 var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
+                _thisFrameSec = _audioTime;
                 _audioTimeNoOffset = timeOffset;
 
                 var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime)*PlaybackSpeed;
@@ -748,19 +902,19 @@ namespace MajdataPlay.Game
                             {
 #if UNITY_EDITOR
                                 if (isUnityFMOD)
-                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
+                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
                                 else
                                     MajInstances.AudioManager.PlaySFX("answer_clock.wav");
 #else
                                 MajInstances.AudioManager.PlaySFX("answer_clock.wav");
 #endif
-                                GameManager.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
+                                MajEnv.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
                             }
                             else
                             {
 #if UNITY_EDITOR
                                 if (isUnityFMOD)
-                                    GameManager.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
+                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
                                 else
                                     MajInstances.AudioManager.PlaySFX("answer.wav");
 #else
@@ -773,7 +927,7 @@ namespace MajdataPlay.Game
                     }
                     catch(Exception e)
                     {
-                        Debug.LogException(e);
+                        MajDebug.LogException(e);
                     }
                     //await Task.Delay(1);
                 }
@@ -796,6 +950,7 @@ namespace MajdataPlay.Game
         }
         public void GameOver()
         {
+            //TODO: Play GameOver Animation
             DisposeAudioTrack();
             CalculateScore(playEffect:false);
 
@@ -817,6 +972,14 @@ namespace MajdataPlay.Game
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
             State = ComponentState.Finished;
+            if (IsPracticeMode)
+            {
+                delayMiliseconds = delayMiliseconds.Clamp(0, delayMiliseconds - 3000);
+                await UniTask.Delay(delayMiliseconds);
+                NextRound4Practice().Forget();
+                return;
+            }
+            _cts.Cancel();
             MajInstances.InputManager.ClearAllSubscriber();
             _bgManager.CancelTimeRef();
 

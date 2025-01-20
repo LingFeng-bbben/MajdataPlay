@@ -19,7 +19,7 @@ namespace MajdataPlay.IO
             var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
             try
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 serial = new SerialPort(comPort, 9600);
                 await Task.Run(async () =>
                 {
@@ -80,7 +80,7 @@ namespace MajdataPlay.IO
             }
             catch(IOException)
             {
-                Debug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                 useDummy = true;
             }
             finally

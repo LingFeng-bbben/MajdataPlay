@@ -12,6 +12,7 @@ using Cysharp.Threading.Tasks;
 using System.IO;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using MajdataPlay.Utils;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -90,21 +91,21 @@ namespace MajdataPlay.IO
             BassMix.MixerAddChannel(_resampler, _decode, BassFlags.Default);
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             //Bass.ChannelStop(_decode);
-            Debug.Log(Bass.LastError);
-            Debug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
+            MajDebug.Log(Bass.LastError);
+            MajDebug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }
         //public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         //{
         //    if (path.StartsWith("http"))
         //    {
-        //        Debug.Log("Load Online Stream "+ path);
+        //        MajDebug.Log("Load Online Stream "+ path);
         //        //var client = HttpTransporter.ShareClient;
         //        //var task = client.GetByteArrayAsync(path);
         //        //task.Wait();
         //        //var buf = task.Result;
         //        _decode = Bass.CreateStream(path, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
-        //        Debug.Log(_decode);
-        //        Debug.Log(Bass.LastError);
+        //        MajDebug.Log(_decode);
+        //        MajDebug.Log(Bass.LastError);
         //        var bytelength = Bass.ChannelGetLength(_decode);
         //        _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
         //        Volume = 1;
@@ -148,8 +149,8 @@ namespace MajdataPlay.IO
         //    BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default);
         //    BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
         //    //Bass.ChannelStop(_decode);
-        //    Debug.Log(Bass.LastError);
-        //    Debug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
+        //    MajDebug.Log(Bass.LastError);
+        //    MajDebug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
         //}
         ~BassAudioSample() => Dispose();
 
@@ -222,24 +223,24 @@ namespace MajdataPlay.IO
         }
         public static BassAudioSample Create(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            Debug.Log($"Create Channel From: {path}");
+            MajDebug.Log($"Create Channel From: {path}");
             var buf = File.ReadAllBytes(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static async ValueTask<BassAudioSample> CreateAsync(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            Debug.Log($"Create Channel From: {path}");
+            MajDebug.Log($"Create Channel From: {path}");
             var buf = await File.ReadAllBytesAsync(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static BassAudioSample CreateFromUri(Uri uri, int globalMixer)
         {
-            Debug.Log($"Create Channel From: {uri}");
+            MajDebug.Log($"Create Channel From: {uri}");
             var decode = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
-            Debug.Log(decode);
-            Debug.Log(Bass.LastError);
+            MajDebug.Log(decode);
+            MajDebug.Log(Bass.LastError);
 
             var sample = new BassAudioSample(decode, globalMixer, 1, false);
             sample.Volume = 1;

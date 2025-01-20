@@ -3,22 +3,11 @@ using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
-using System.Text.Json.Serialization;
 using System.Diagnostics;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
-using UnityEngine.UI;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
-using MajdataPlay.Attributes;
-using MajdataPlay.Net;
-using System.Collections.Concurrent;
-using MychIO;
-using UnityEngine.Rendering;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 
@@ -27,29 +16,7 @@ namespace MajdataPlay
 #nullable enable
     public class GameManager : MonoBehaviour
     {
-        public static GameResult? LastGameResult { get; set; } = null;
-        public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
-        public static string AssestsPath { get; } = Path.Combine(Application.dataPath, "../");
-        public static string ChartPath { get; } = Path.Combine(AssestsPath, "MaiCharts");
-        public static string SettingPath { get; } = Path.Combine(AssestsPath, "settings.json");
-        public static string SkinPath { get; } = Path.Combine(AssestsPath, "Skins");
-        public static string CachePath { get; } = Path.Combine(AssestsPath, "Cache");
-        public static string LogsPath { get; } = Path.Combine(AssestsPath, $"Logs");
-        public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
-        public static string ScoreDBPath { get; } = Path.Combine(AssestsPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
-        public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
-        static CancellationTokenSource _globalCTS = new();
-        public static CancellationToken GlobalCT { get; } = _globalCTS.Token;
-        public static JsonSerializerOptions JsonReaderOption { get; } = new()
-        {
-
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
-        };
+        public static CancellationToken GlobalCT { get; }
         public GameSetting Setting
         {
             get => MajInstances.Setting;
@@ -76,33 +43,18 @@ namespace MajdataPlay
         //public int DanHP = 500;
         //public List<GameResult> DanResults = new();
 
+        readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
-        Task? _logWritebackTask = null;
-        Queue<GameLog> _logQueue = new();
 
-        
-
+        static GameManager()
+        {
+            _globalCTS = new();
+            GlobalCT = _globalCTS.Token;
+        }
         void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
-#if !UNITY_EDITOR
-            if(Process.GetProcessesByName("MajdataPlay").Length > 1)
-            {
-                Application.Quit();
-            }
-#endif
-            Application.logMessageReceived += (c, trace, type) =>
-            {
-                _logQueue.Enqueue(new GameLog()
-                {
-                    Date = DateTime.Now,
-                    Condition = c,
-                    StackTrace = trace,
-                    Type = type
-                });
-            };
-            _logWritebackTask = LogWriteback();
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
             s += $"     OS       : {SystemInfo.operatingSystem}\n";
@@ -111,22 +63,22 @@ namespace MajdataPlay
             s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
             s += $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
             s += $"################     Startup Check  End    ################";
-            Debug.Log(s);
-            Debug.Log($"Version: {MajInstances.GameVersion}");
+            MajDebug.Log(s);
+            MajDebug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
             _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
-            if (File.Exists(SettingPath))
+            if (File.Exists(MajEnv.SettingPath))
             {
-                var js = File.ReadAllText(SettingPath);
+                var js = File.ReadAllText(MajEnv.SettingPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, JsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, MajEnv.UserJsonReaderOption) || setting is null)
                 {
                     Setting = new();
-                    Debug.LogError("Failed to read setting from file");
+                    MajDebug.LogError("Failed to read setting from file");
                 }
                 else
                 {
@@ -163,6 +115,8 @@ namespace MajdataPlay
                     return;
                 Screen.SetResolution(width, height, fullScreen);
             }
+            Application.targetFrameRate = Setting.Display.TargetFPS;
+
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
             var availableLangs = Localization.Available;
@@ -185,17 +139,16 @@ namespace MajdataPlay
         {
             if(MajTimeline.Timer != _timer)
             {
-                Debug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
+                MajDebug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
                 MajTimeline.Timer = _timer;
             }
         }
-        private void OnApplicationQuit()
+        void OnApplicationQuit()
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             _globalCTS.Cancel();
-            foreach (var log in _logQueue)
-                File.AppendAllText(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Type}] {log.Condition}\n{log.StackTrace}");
+            MajDebug.OnApplicationQuit();
         }
         public void Save()
         {
@@ -205,8 +158,8 @@ namespace MajdataPlay
             SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
-            var json = Serializer.Json.Serialize(Setting, JsonReaderOption);
-            File.WriteAllText(SettingPath, json);
+            var json = Serializer.Json.Serialize(Setting, MajEnv.UserJsonReaderOption);
+            File.WriteAllText(MajEnv.SettingPath, json);
         }
         public void EnableGC()
         {
@@ -214,7 +167,7 @@ namespace MajdataPlay
                 return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-            Debug.LogWarning("GC has been enabled");
+            MajDebug.LogWarning("GC has been enabled");
 #endif
             GC.Collect();
         }
@@ -225,37 +178,8 @@ namespace MajdataPlay
             GC.Collect();
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
-            Debug.LogWarning("GC has been disabled");
+            MajDebug.LogWarning("GC has been disabled");
 #endif
-        }
-        async Task LogWriteback()
-        {
-            var oldLogPath = Path.Combine(AssestsPath, "MajPlayRuntime.log");
-            if (!Directory.Exists(LogsPath))
-                Directory.CreateDirectory(LogsPath);
-            if (File.Exists(oldLogPath))
-                File.Delete(oldLogPath);
-            if (File.Exists(LogPath))
-                File.Delete(LogPath);
-            while (true)
-            {
-                if (_logQueue.Count == 0)
-                {
-                    if (GlobalCT.IsCancellationRequested)
-                        return;
-                    await Task.Delay(50);
-                    continue;
-                }
-                var log = _logQueue.Dequeue();
-                await File.AppendAllTextAsync(LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss.ffff}][{log.Type}] {log.Condition}\n{log.StackTrace}");
-            }
-        }
-        class GameLog
-        {
-            public DateTime Date { get; set; }
-            public string? Condition { get; set; }
-            public string? StackTrace { get; set; }
-            public LogType? Type { get; set; }
         }
     }
 }

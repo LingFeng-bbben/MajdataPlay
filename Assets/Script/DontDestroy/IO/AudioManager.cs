@@ -30,8 +30,6 @@ namespace MajdataPlay.IO
         private List<AudioSampleWrap?> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
-        private AsioProcedure? asioProcedure;
-        private WasapiNotifyProcedure? wasapiNotifyProcedure;
         private int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
@@ -44,6 +42,7 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
+            var isExclusiveRequest = MajInstances.Setting.Audio.WasapiExclusive;
             var backend = MajInstances.Setting.Audio.Backend;
             var sampleRate = MajInstances.Setting.Audio.Samplerate;
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
@@ -51,24 +50,15 @@ namespace MajdataPlay.IO
             {
                 case SoundBackendType.Asio:
                     {
-                        Debug.Log("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+                        MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
                         var asioCount = BassAsio.DeviceCount;
                         for (int i = 0; i < asioCount; i++) 
                         {
                             BassAsio.GetDeviceInfo(i, out var info);
-                            Debug.Log("ASIO Device " + i + ": " + info.Name);
+                            MajDebug.Log("ASIO Device " + i + ": " + info.Name);
                         }
-
-                        asioProcedure = (input, channel, buffer, length, _) =>
-                        {
-                            if (BassGlobalMixer == -114514)
-                                return 0;
-                            if (Bass.LastError != Errors.OK)
-                                Debug.LogError(Bass.LastError);
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
-                        };
                         
-                        Debug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        MajDebug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
@@ -80,24 +70,38 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
-                        Debug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
+                        MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
                         wasapiProcedure = (buffer, length, _) =>
                         {
                             if (BassGlobalMixer == -114514)
                                 return 0;
                             if(Bass.LastError != Errors.OK)
-                                Debug.LogError(Bass.LastError);
+                                MajDebug.LogError(Bass.LastError);
                             return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                         };
+                        bool isExclusiveSuccess = false;
+                        if (isExclusiveRequest)
+                        {
+                            isExclusiveSuccess = BassWasapi.Init(
+                                -1, 0, 0,
+                                WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
+                                0.02f, //buffer
+                                0.005f, //peried
+                                wasapiProcedure);
+                            MajDebug.Log($"Wasapi Exclusive Init: {isExclusiveSuccess}");
+                        }
 
-                        Debug.Log("Wasapi Init: " + BassWasapi.Init(
-                            -1, 0, 0,
-                            WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
-                            0.02f, //buffer
-                            0.005f, //peried
-                            wasapiProcedure));
-                        Debug.Log(Bass.LastError);
+                        if(!isExclusiveRequest || !isExclusiveSuccess)
+                        {
+                            MajDebug.Log("Wasapi Shared Init: " + BassWasapi.Init(
+                                -1, 0, 0,
+                                WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
+                                0, //buffer
+                                0, //peried
+                                wasapiProcedure));
+                        }
+                        MajDebug.Log(Bass.LastError);
                         BassWasapi.GetInfo(out var wasapiInfo);
                         BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
@@ -108,7 +112,7 @@ namespace MajdataPlay.IO
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 
-            Debug.Log(Bass.LastError);
+            MajDebug.Log(Bass.LastError);
 
             if (PlayDebug)
                 MajInstances.InputManager.BindAnyArea(OnAnyAreaDown);
@@ -122,7 +126,7 @@ namespace MajdataPlay.IO
                 if (!File.Exists(path))
                 {
                     SFXSamples.Add(null);
-                    Debug.LogWarning(path + " dos not exists");
+                    MajDebug.LogWarning(path + " dos not exists");
                     continue;
                 }
                 AudioSampleWrap sample;
@@ -225,7 +229,7 @@ namespace MajdataPlay.IO
             }
             else
             {
-                Debug.LogWarning(path + " dos not exists");
+                MajDebug.LogWarning(path + " dos not exists");
                 return null;
             }
         }
@@ -263,7 +267,7 @@ namespace MajdataPlay.IO
             }
             else
             {
-                Debug.LogWarning(path + " dos not exists");
+                MajDebug.LogWarning(path + " dos not exists");
                 return null;
             }
         }
@@ -300,7 +304,7 @@ namespace MajdataPlay.IO
                 psp.IsLoop = isLoop;
             }   
             else
-                Debug.LogError("No such SFX");
+                MajDebug.LogError("No such SFX");
         }
 
         public AudioSampleWrap GetSFX(string name)
@@ -323,7 +327,7 @@ namespace MajdataPlay.IO
             if (psp is not null)
                 psp.Stop();
             else
-                Debug.LogError("No such SFX");
+                MajDebug.LogError("No such SFX");
         }
         public void OpenAsioPannel()
         {

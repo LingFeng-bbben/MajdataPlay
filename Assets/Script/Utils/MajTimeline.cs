@@ -28,7 +28,7 @@ namespace MajdataPlay.Utils
                 }
                 else
                 {
-                    Debug.LogError($"Time provider not found: {Timer}");
+                    MajDebug.LogError($"Time provider not found: {Timer}");
                     return TimeSpan.Zero;
                 }
             }

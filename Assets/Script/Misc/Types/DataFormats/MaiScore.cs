@@ -19,5 +19,26 @@ namespace MajdataPlay.Types
         public JudgeDetail? JudgeDeatil { get; set; } = null;
         public DateTime Timestamp { get; set; } = DateTime.MinValue;
         public ComboState ComboState { get; set; } = ComboState.None;
+        public static MaiScore CreateFromResult(in GameResult result, ChartLevel level)
+        {
+            var songInfo = result.SongInfo;
+            var record = new MaiScore()
+            {
+                ChartLevel = level,
+                Hash = songInfo.Hash,
+                PlayCount = 0
+            };
+            record.Acc = result.Acc;
+
+            record.DXScore = result.DXScore;
+            record.TotalDXScore = result.TotalDXScore;
+
+            record.JudgeDeatil = result.JudgeRecord;
+            record.Fast = result.Fast;
+            record.Late = result.Late;
+            record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;
+            record.Timestamp = DateTime.Now;
+            return record;
+        }
     }
 }

@@ -69,7 +69,7 @@ namespace MajdataPlay.Result
             catch (Exception ex)
             {
                 infotext.text = ex.Message;
-                Debug.LogError(ex);
+                MajDebug.LogError(ex);
                 //MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
@@ -86,7 +86,7 @@ namespace MajdataPlay.Result
             catch (Exception ex)
             {
                 uploadtext.text = ex.Message;
-                Debug.LogError(ex);
+                MajDebug.LogError(ex);
                 return;
             }
         }

@@ -11,7 +11,7 @@ using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo,TapQueueInfo>, IRendererContainer
+    internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo,TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState
         {
@@ -71,7 +71,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
             _poolManager = FindObjectOfType<NotePoolManager>();
             var notes = _noteManager.gameObject.transform;
 
@@ -93,10 +92,14 @@ namespace MajdataPlay.Game.Notes
             Transform.localScale = new Vector3(0, 0);
 
             base.SetActive(false);
-            _tapLineObject.layer = HIDDEN_LAYER;
-            _exObject.layer = HIDDEN_LAYER;
-            _endObject.layer = HIDDEN_LAYER;
+            _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
+            _exObject.layer = MajEnv.HIDDEN_LAYER;
+            _endObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
+
+            if (!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
+            //_noteChecker = new(Check);
         }
         protected override async void Autoplay()
         {
@@ -111,7 +114,7 @@ namespace MajdataPlay.Game.Notes
                         _judgeResult = (JudgeGrade)autoplayParam;
                     else
                         _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeResult(ref _judgeResult);
+                    ConvertJudgeGrade(ref _judgeResult);
                     _isJudged = true;
                     _judgeDiff = _judgeResult switch
                     {
@@ -127,7 +130,7 @@ namespace MajdataPlay.Game.Notes
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
@@ -144,6 +147,7 @@ namespace MajdataPlay.Game.Notes
             _sensorPos = (SensorType)(StartPos - 1);
             _holdAnimStart = false;
             _playerIdleTime = 0;
+            _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             Transform.localScale = new Vector3(0, 0);
@@ -168,21 +172,21 @@ namespace MajdataPlay.Game.Notes
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             UnsubscribeEvent();
             if (forceEnd)
                 return;
-            else if (!_isJudged)
-            {
-                _noteManager.NextNote(QueueInfo);
-                return;
-            }
+            //else if (!_isJudged)
+            //{
+            //    _noteManager.NextNote(QueueInfo);
+            //    return;
+            //}
             
             if (IsClassic)
                 _judgeResult = EndJudge_Classic(_judgeResult);
             else
                 _judgeResult = EndJudge(_judgeResult);
-            ConvertJudgeResult(ref _judgeResult);
+            ConvertJudgeGrade(ref _judgeResult);
 
             var result = new JudgeResult()
             {
@@ -208,27 +212,29 @@ namespace MajdataPlay.Game.Notes
             _poolManager.Collect(this);
         }
         
-        protected override void Check(object sender, InputEventArgs arg)
+        void GameIOListener(GameInputEventArgs args)
         {
-            if (State < NoteStatus.Running)
+            if (_isJudged || IsEnded)
                 return;
-            else if (arg.Type != _sensorPos)
+            else if (args.Area != _sensorPos)
                 return;
-            else if (_isJudged || !_noteManager.CanJudge(QueueInfo))
+            else if (!args.IsClick)
                 return;
-            if (arg.IsClick)
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
+                return;
+            else if (!_noteManager.CanJudge(QueueInfo))
+                return;
+
+            ref var isUsed = ref args.IsUsed.Target;
+
+            if (isUsed)
+                return;
+            Judge(ThisFixedUpdateSec);
+
+            if (_isJudged)
             {
-                if (!_ioManager.IsIdle(arg))
-                    return;
-                else
-                    _ioManager.SetBusy(arg);
-                Judge(_gpManager.ThisFrameSec);
-                //ioManager.SetIdle(arg);
-                if (_isJudged)
-                {
-                    _ioManager.UnbindArea(Check, _sensorPos);
-                    _noteManager.NextNote(QueueInfo);
-                }
+                isUsed = true;
+                _noteManager.NextNote(QueueInfo);
             }
         }
         protected override void Judge(float currentSec)
@@ -253,84 +259,24 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
-            if (State < NoteStatus.Running || IsDestroyed)
+            // Too late check
+            if (IsEnded || _isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
-            var endTiming = timing - Length;
-            var remainingTime = GetRemainingTime();
+            var timing = GetTimeSpanToJudgeTiming(ThisFixedUpdateSec);
             var isTooLate = timing > 0.15f;
 
-            if (_isJudged) // Hold完成后Destroy
+            if (isTooLate)
             {
-                if (IsClassic)
-                {
-                    if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
-                    {
-                        End();
-                        return;
-                    }
-                }
-                else if (remainingTime == 0)
-                {
-                    End();
-                    return;
-                }
-
-            }
-
-
-            if (_isJudged) // 头部判定完成后开始累计按压时长
-            {
-                if (!IsClassic)
-                {
-                    if (timing <= 0.1f) // 忽略头部6帧
-                        return;
-                    else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                        return;
-                }
-
-                if (!_gpManager.IsStart) // 忽略暂停
-                    return;
-
-                var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
-                if (on || _gpManager.IsAutoplay)
-                {
-                    if (remainingTime == 0)
-                    {
-                        _effectManager.ResetHoldEffect(StartPos);
-                        if (_gpManager.IsAutoplay)
-                        {
-                            End();
-                            return;
-                        }
-                    }
-                    else
-                        PlayHoldEffect();
-
-                }
-                else
-                {
-                    _playerIdleTime += Time.fixedDeltaTime;
-                    StopHoldEffect();
-
-                    if (IsClassic)
-                        End();
-                }
-            }
-            else if (isTooLate) // 头部Miss
-            {
-                _judgeDiff = 150;
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
+                _judgeDiff = 150;
                 _noteManager.NextNote(QueueInfo);
-                if (IsClassic)
-                    End();
             }
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
@@ -340,6 +286,8 @@ namespace MajdataPlay.Game.Notes
             var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
+
+            BodyCheck();
 
             switch (State)
             {
@@ -385,8 +333,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     if(remaining == 0)
                     {
-                        State = NoteStatus.End;
-                        goto case NoteStatus.End;
+                        State = NoteStatus.Arrived;
+                        goto case NoteStatus.Arrived;
                     }
                     if (holdDistance < 1.225f && distance >= 4.8f) // 头到达 尾未出现
                     {
@@ -423,7 +371,7 @@ namespace MajdataPlay.Game.Notes
                     _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
                     Transform.localScale = new Vector3(1f, 1f);
                     break;
-                case NoteStatus.End:
+                case NoteStatus.Arrived:
                     var endTiming = timing - Length;
                     var endDistance = endTiming * Speed + 4.8f;
                     _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -446,6 +394,69 @@ namespace MajdataPlay.Game.Notes
 
             //if (IsEX)
             //    _exRenderer.size = _thisRenderer.size;
+        }
+        void BodyCheck()
+        {
+            if (!_isJudged || IsEnded)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - Length;
+            var remainingTime = GetRemainingTime();
+
+            if (IsClassic)
+            {
+                if (_gpManager.IsAutoplay && remainingTime == 0)
+                {
+                    End();
+                    return;
+                }
+                if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
+                {
+                    End();
+                    return;
+                }
+            }
+            else if (remainingTime == 0)
+            {
+                End();
+                return;
+            }
+
+
+            if (!IsClassic)
+            {
+                if (timing <= 0.1f) // 忽略头部6帧
+                    return;
+                else if (remainingTime <= 0.2f) // 忽略尾部12帧
+                    return;
+            }
+
+            if (!_gpManager.IsStart) // 忽略暂停
+                return;
+
+            var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
+            if (on || _gpManager.IsAutoplay)
+            {
+                if (remainingTime == 0)
+                {
+                    _effectManager.ResetHoldEffect(StartPos);
+                }
+                else
+                {
+                    PlayHoldEffect();
+                }
+            }
+            else
+            {
+                _playerIdleTime += Time.deltaTime;
+                StopHoldEffect();
+
+                if (IsClassic)
+                {
+                    End();
+                }
+            }
         }
         JudgeGrade EndJudge(in JudgeGrade result)
         {
@@ -493,7 +504,7 @@ namespace MajdataPlay.Game.Notes
                         return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                 }
             }
-            print($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
+            MajDebug.Log($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
             return result;
         }
         JudgeGrade EndJudge_Classic(in JudgeGrade result)
@@ -556,10 +567,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _exObject.layer = DEFAULT_LAYER;
+                    _exObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _exObject.layer = HIDDEN_LAYER;
+                    _exObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
             SetTapLineActive(state);
@@ -571,10 +582,10 @@ namespace MajdataPlay.Game.Notes
             switch (state)
             {
                 case true:
-                    _tapLineObject.layer = DEFAULT_LAYER;
+                    _tapLineObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _tapLineObject.layer = HIDDEN_LAYER;
+                    _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }
@@ -583,10 +594,10 @@ namespace MajdataPlay.Game.Notes
             switch(state)
             {
                 case true:
-                    _endObject.layer = DEFAULT_LAYER;
+                    _endObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _endObject.layer = HIDDEN_LAYER;
+                    _endObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }

@@ -36,7 +36,7 @@ namespace MajdataPlay.Utils
         public static Language[] Available { get; private set; } = Array.Empty<Language>();
         static Localization()
         {
-            var path = GameManager.LangPath;
+            var path = MajEnv.LangPath;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);

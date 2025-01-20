@@ -1,14 +1,16 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
+using MychIO;
+using MychIO.Device;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -21,12 +23,12 @@ namespace MajdataPlay.IO
         //Coroutine[] timers = new Coroutine[8];
         //List<byte> _templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
         //List<byte> _templateSingle = new List<byte>() { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
-        byte[] _templateSingle = new byte[] { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00 };
-        byte[] _templateUpdate = new byte[]
-        { 
-            0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F 
+        readonly byte[] _templateSingle = new byte[] { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00 };
+        readonly byte[] _templateUpdate = new byte[]
+        {
+            0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F
         };
-        
+
         private void Awake()
         {
             MajInstances.LightManager = this;
@@ -60,7 +62,7 @@ namespace MajdataPlay.IO
             }
             catch
             {
-                Debug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
+                MajDebug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
                 _useDummy = true;
             }
             UpdateLedDeviceAsync();
@@ -89,132 +91,53 @@ namespace MajdataPlay.IO
             }
             return sum;
         }
-        //void SetAllLightSerial(Color color)
-        //{
-        //    //var bytes = _templateAll.Clone();
-        //    //bytes[8] = (byte)(color.r * 255);
-        //    //bytes[9] = (byte)(color.g * 255);
-        //    //bytes[10] = (byte)(color.b * 255);
-        //    //bytes.Add(CalculateCheckSum(bytes));
-        //    //Task.Run(() => { _serial.Write(bytes.ToArray(), 0, bytes.Count); });
-        //    //UpdateLightSerial();
-        //}
-        //void SetButtonLightSerial(Color color, int button)
-        //{
-        //    //var bytes = _templateSingle.Clone();
-        //    //bytes[5] = (byte)button;
-        //    //bytes[6] = (byte)(color.r * 255);
-        //    //bytes[7] = (byte)(color.g * 255);
-        //    //bytes[8] = (byte)(color.b * 255);
-        //    //bytes.Add(CalculateCheckSum(bytes));
-        //    //Task.Run(() => { _serial.Write(bytes.ToArray(), 0, bytes.Count); });
-        //    //UpdateLightSerial();
-        //}
-
-        //void UpdateLightSerial()
-        //{
-        //    Task.Run(() => { _serial.Write(_templateUpdate, 0, _templateUpdate.Length); });
-        //}
-
         public void SetAllLight(Color lightColor)
         {
-            //if (_useDummy)
-            //{
-            //    foreach (var light in _dummyLights)
-            //    {
-            //        light.color = lightColor;
-            //    }
-            //}
-            //else
-            //{
-            //    SetAllLightSerial(lightColor);
-            //}
-            foreach(var device in ArrayHelper.ToEnumerable(_ledDevices))
+            foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
             {
                 device!.SetColor(lightColor);
             }
         }
-
         public void SetButtonLight(Color lightColor, int button)
         {
-            //if (_useDummy)
-            //{
-            //    _dummyLights[button].color = lightColor;
-            //}
-            //else
-            //{
-            //    SetButtonLightSerial(lightColor, button);
-            //}
             _ledDevices[button].SetColor(lightColor);
         }
+        Memory<byte> BuildSetColorPacket(Memory<byte> memory, int index, Color newColor)
+        {
+            _templateSingle.CopyTo(memory);
+            var packet = memory.Span;
+            packet[5] = (byte)index;
+            packet[6] = (byte)(newColor.r * 255);
+            packet[7] = (byte)(newColor.g * 255);
+            packet[8] = (byte)(newColor.b * 255);
+            packet[9] = CalculateCheckSum(packet.Slice(0, 9));
 
+            return memory;
+        }
+        LedCommand BuildSetColorCommand(int index, Color newColor)
+        {
+            Span<byte> data = stackalloc byte[4];
+            data[0] = (byte)(LedCommand.SetColor0 + index);
+            data[1] = (byte)(newColor.r * 255);
+            data[2] = (byte)(newColor.g * 255);
+            data[3] = (byte)(newColor.b * 255);
+
+            return MemoryMarshal.Read<LedCommand>(data);
+        }
         public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 300)
         {
             _ledDevices[button].SetColor(lightColor, durationMs);
         }
-        public void SetButtonLightWithTimeout(Color lightColor, int button,TimeSpan duration)
+        public void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
-            _ledDevices[button].SetColor(lightColor,duration);
-            //SetButtonLight(lightColor, button);
-            //if (timers[button] != null)
-            //    StopCoroutine(timers[button]);
-            //timers[button] = StartCoroutine(TurnWhiteAfter(button));
+            _ledDevices[button].SetColor(lightColor, duration);
         }
-        //IEnumerator TurnWhiteAfter(int button)
-        //{
-        //    yield return new WaitForSeconds(0.3f);
-        //    SetButtonLight(Color.white, button);
-        //}
-
-        //IEnumerator DebugLights()
-        //{
-        //    while (true)
-        //    {
-        //        SetButtonLight(Color.red, 1);
-        //        yield return new WaitForSeconds(0.3f);
-        //        SetButtonLight(Color.green, 1);
-        //        yield return new WaitForSeconds(0.3f);
-        //        //SetAllLight(Color.blue);
-        //        //yield return new WaitForSeconds(1);
-        //        //for (int i = 1; i < 9; i++)
-        //        //{
-        //        //    SetButtonLight(Color.red, i);
-        //        //    yield return new WaitForSeconds(0.3f);
-        //        //}
-        //        //for (int i = 1; i < 9; i++)
-        //        //{
-        //        //    SetButtonLight(Color.green, i);
-        //        //    yield return new WaitForSeconds(0.3f);
-        //        //}
-        //        //for (int i = 1; i < 9; i++)
-        //        //{
-        //        //    SetButtonLight(Color.blue, i);
-        //        //    yield return new WaitForSeconds(0.3f);
-        //        //}
-        //        //for (float i = 0; i < 1; i += 0.01f)
-        //        //{
-        //        //    SetAllLight(new Color(1f - i, 1f - i, 1f - i));
-        //        //    yield return new WaitForSeconds(0.01f);
-        //        //}
-        //        //for (float i = 0; i < 1; i+=0.01f) {
-        //        //    SetAllLight(new Color(i,i,i));
-        //        //    yield return new WaitForSeconds(0.01f); 
-        //        //}
-        //        //for (float i = 0; i < 1; i += 0.01f)
-        //        //{
-        //        //    SetAllLight(Color.HSVToRGB(i,1,1));
-        //        //    yield return new WaitForSeconds(0.1f);
-        //        //}
-        //    }
-        //}
-
-        
         async void UpdateLedDeviceAsync()
         {
             UniTask.Void(async () =>
             {
-                var token = GameManager.GlobalCT;
-                while(!token.IsCancellationRequested)
+                var token = MajEnv.GlobalCT;
+                while (!token.IsCancellationRequested)
                 {
                     foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                     {
@@ -225,9 +148,21 @@ namespace MajdataPlay.IO
             });
             if (_useDummy || !MajInstances.Setting.Misc.OutputDevice.Led.Enable)
                 return;
+
+            if (MajInstanceHelper<IOManager>.Instance is null)
+            {
+                await UpdateInternalLedManagerAsync();
+            }
+            else
+            {
+                await UpdateExternalLedManagerAsync();
+            }
+        }
+        async Task UpdateInternalLedManagerAsync()
+        {
             await Task.Run(async () =>
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
                 while (!token.IsCancellationRequested)
                 {
@@ -237,22 +172,61 @@ namespace MajdataPlay.IO
                         var serialStream = _serial.BaseStream;
                         foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                         {
-                            var index = device!.Index;
-                            var color = device.Color;
-                            var packet = _templateSingle;
-                            packet[5] = (byte)index;
-                            packet[6] = (byte)(color.r * 255);
-                            packet[7] = (byte)(color.g * 255);
-                            packet[8] = (byte)(color.b * 255);
-                            packet[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+                            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                            {
+                                var index = device!.Index;
+                                var color = device.Color;
+                                var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
+                                //rentedMemory.Span[5] = (byte)index;
+                                //rentedMemory.Span[6] = (byte)(color.r * 255);
+                                //rentedMemory.Span[7] = (byte)(color.g * 255);
+                                //rentedMemory.Span[8] = (byte)(color.b * 255);
+                                //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
 
-                            await serialStream.WriteAsync(packet.AsMemory());
+                                await serialStream.WriteAsync(packet.Slice(0, 10));
+                            }
                         }
                         await serialStream.WriteAsync(_templateUpdate.AsMemory());
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogException(ex);
+                        MajDebug.LogException(ex);
+                    }
+                    var endAt = MajTimeline.UnscaledTime;
+                    var elapsedTime = endAt - startAt;
+                    var waitTime = elapsedTime.TotalMilliseconds > refreshRateMs ? 0 : refreshRateMs - elapsedTime.TotalMilliseconds;
+                    await Task.Delay(TimeSpan.FromMilliseconds(waitTime));
+                }
+            });
+        }
+        async Task UpdateExternalLedManagerAsync()
+        {
+            await Task.Run(async () =>
+            {
+                var ioManager = MajInstanceHelper<IOManager>.Instance!;
+                var token = MajEnv.GlobalCT;
+                var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
+                var commands = new LedCommand[9];
+                commands[8] = LedCommand.Update;
+                while (!token.IsCancellationRequested)
+                {
+                    var startAt = MajTimeline.UnscaledTime;
+                    try
+                    {
+                        for (var i = 0; i < 8; i++) 
+                        {
+                            var device = _ledDevices[i];
+                            var index = device.Index;
+                            var color = device.Color;
+                            var command = BuildSetColorCommand(index, color);
+
+                            commands[i] = command;
+                        }
+                        await ioManager.WriteToDevice(DeviceClassification.LedDevice, commands);
+                    }
+                    catch (Exception ex)
+                    {
+                        MajDebug.LogException(ex);
                     }
                     var endAt = MajTimeline.UnscaledTime;
                     var elapsedTime = endAt - startAt;

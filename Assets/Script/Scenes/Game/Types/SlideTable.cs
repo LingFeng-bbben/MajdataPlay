@@ -5,7 +5,7 @@ namespace MajdataPlay.Game.Types
     public class SlideTable
     {
         public string Name { get; init; }
-        public JudgeArea[] JudgeQueue { get; init; }
+        public SlideArea[] JudgeQueue { get; init; }
         public float Const { get; init; }
         public void Mirror()
         {

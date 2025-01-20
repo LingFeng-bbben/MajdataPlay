@@ -80,5 +80,12 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => MajInstanceHelper<OnlineManager>.Instance = value;
         }
+        internal static GameUpdater GameUpdater
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => MajInstanceHelper<GameUpdater>.Instance!;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => MajInstanceHelper<GameUpdater>.Instance = value;
+        }
     }
 }

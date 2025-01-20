@@ -11,7 +11,7 @@ namespace MajdataPlay.Game.Types
     {
         ConnSlideInfo ConnectInfo { get; }
         GameObject GameObject { get; }
-        bool IsDestroyed { get; }
+        bool IsEnded { get; }
         /// <summary>
         /// 如果判定队列已经完成，返回True，反之False
         /// </summary>

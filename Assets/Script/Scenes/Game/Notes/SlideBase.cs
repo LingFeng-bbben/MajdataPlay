@@ -11,10 +11,11 @@ using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Attributes;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class SlideBase : NoteLongDrop
+    internal abstract class SlideBase : NoteLongDrop
     {
         public IConnectableSlide? Parent => ConnectInfo.Parent;
         public ConnSlideInfo ConnectInfo { get; set; } = new()
@@ -81,14 +82,24 @@ namespace MajdataPlay.Game.Notes
         public string SlideType
         {
             get => _slideType;
-            set => _slideType = value;
         }
-        protected JudgeArea[][] _judgeQueues = new JudgeArea[3][]
+        public float SlideLength
+        {
+            get => _slideLength;
+        }
+        protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
         { 
-            Array.Empty<JudgeArea>(), 
-            Array.Empty<JudgeArea>(), 
-            Array.Empty<JudgeArea>()
+            Memory<SlideArea>.Empty,
+            Memory<SlideArea>.Empty,
+            Memory<SlideArea>.Empty
         }; // 判定队列
+
+        /// <summary>
+        /// Slide star prefab
+        /// <para>Readonly</para>
+        /// </summary>
+        [SerializeField]
+        protected GameObject _slideStarPrefab;
         /// <summary>
         /// Arrows
         /// </summary>
@@ -102,33 +113,26 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected SpriteRenderer[] _slideBarRenderers = { };
 
-        protected Transform[] _starTransforms = { };
+        protected readonly Transform[] _starTransforms = new Transform[3];
         protected Transform[] _slideBarTransforms = { };
         /// <summary>
         /// Slide star
         /// </summary>
-        public GameObject?[] _stars = new GameObject[3];
+        protected GameObject?[] _stars = new GameObject[3];
 
         protected GameObject _slideOK;
         protected Animator _slideOKAnim;
         protected LoadJustSprite _slideOKController;
 
         protected float _lastWaitTime;
-        protected bool _canCheck = false;
+        
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
 
         // Flags
+        protected bool _isCheckable = false;
         protected bool _isSoundPlayed = false;
         protected bool _isChecking = false;
-        protected bool _isStarActive = false;
-        protected bool _isArrived = false;
 
-
-        /// <summary>
-        /// 存储Slide Queue中会经过的区域
-        /// <para>用于绑定或解绑Event</para>
-        /// </summary>
-        protected SensorType[] _judgeAreas = Array.Empty<SensorType>();
         public abstract void Initialize();
         protected override void Judge(float currentSec)
         {
@@ -167,7 +171,7 @@ namespace MajdataPlay.Game.Notes
             };
 
             print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
-            ConvertJudgeResult(ref result);
+            ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
 
@@ -253,13 +257,14 @@ namespace MajdataPlay.Game.Notes
         {
             foreach (var sr in _slideBarRenderers.AsSpan())
             {
-                if (IsDestroyed)
+                if (IsEnded)
                     return;
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
                 }
-                else {
+                else 
+                {
                     sr.forceRenderingOff = false;
                     sr.color = new Color(1f, 1f, 1f, alpha);
                 }
@@ -270,20 +275,14 @@ namespace MajdataPlay.Game.Notes
             base.SetActive(state);
             if (state)
             {
-                if (State >= NoteStatus.PreInitialized && State <= NoteStatus.Initialized)
-                {
-                    foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-                        _ioManager.BindSensor(_noteChecker, sensor);
-                    State = NoteStatus.Running;
-                }
                 foreach (var slideBar in _slideBars.AsSpan())
-                    slideBar.layer = 0;
+                    slideBar.layer = MajEnv.DEFAULT_LAYER;
             }
             else
             {
                 
                 foreach (var slideBar in _slideBars.AsSpan())
-                    slideBar.layer = 3;
+                    slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
             SetStarActive(state);
             Active = state;
@@ -297,7 +296,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         if (star is null)
                             continue;
-                        star.layer = 0;
+                        star.layer = MajEnv.DEFAULT_LAYER;
                     }
                     break;
                 case false:
@@ -305,7 +304,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         if (star is null)
                             continue;
-                        star.layer = 3;
+                        star.layer = MajEnv.HIDDEN_LAYER;
                     }
                     break;
             }
@@ -329,7 +328,7 @@ namespace MajdataPlay.Game.Notes
                 _judgeResult = JudgeGrade.LateGood;
             else
                 _judgeResult = JudgeGrade.Miss;
-            ConvertJudgeResult(ref _judgeResult);
+            ConvertJudgeGrade(ref _judgeResult);
             _isJudged = true;
         }
         /// <summary>
@@ -339,7 +338,7 @@ namespace MajdataPlay.Game.Notes
         /// <param name="onlyStar"></param>
         public virtual void End(bool forceEnd = false)
         {
-            if (Parent is not null && !Parent.IsDestroyed)
+            if (Parent is not null && !Parent.IsEnded)
                 Parent.End(true);
             //foreach (var obj in _slideBars.AsSpan())
             //    obj.SetActive(false);
@@ -355,7 +354,7 @@ namespace MajdataPlay.Game.Notes
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
                 return;
             HideAllBar();
-            var emptyQueue = Array.Empty<JudgeArea>();
+            var emptyQueue = Memory<SlideArea>.Empty;
             for (int i = 0; i < 2; i++)
                 _judgeQueues[i] = emptyQueue;
         }
@@ -368,30 +367,31 @@ namespace MajdataPlay.Game.Notes
                 star = null;
             //GameObjectHelper.Destroy(ref _stars);
         }
-        protected async UniTaskVoid FadeIn()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SlideBarFadeIn()
         {
-            _fadeInTiming = Math.Max(_fadeInTiming,CurrentSec);
+            if (IsEnded)
+                return;
+
             var num = _startTiming - 0.05f;
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
-            while (!Active)
-                await UniTask.Yield();
-            while (CurrentSec < fullFadeInTiming) 
+            if(ThisFrameSec > num)
             {
-                var diff = (fullFadeInTiming - CurrentSec).Clamp(0, interval);
+                SetSlideBarAlpha(1f);
+                return;
+            }
+            else if(ThisFrameSec < fullFadeInTiming)
+            {
+                var diff = (fullFadeInTiming - ThisFrameSec).Clamp(0, interval);
                 float alpha = 0;
 
-                if(interval != 0)
+                if (interval != 0)
                     alpha = 1 - (diff / interval);
                 alpha *= _maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
-                await UniTask.Yield();
             }
-            SetSlideBarAlpha(_maxFadeInAlpha);
-            while (CurrentSec < num)
-                await UniTask.Yield();
-            SetSlideBarAlpha(1f);
         }
         protected void JudgeResultCorrection(ref JudgeGrade result)
         {
@@ -420,8 +420,10 @@ namespace MajdataPlay.Game.Notes
         [ReadOnlyField]
         [SerializeField]
         protected int _endPos = 1;
-        [ReadOnlyField]
         [SerializeField]
         protected string _slideType = string.Empty;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float _slideLength = 0f;
     }
 }

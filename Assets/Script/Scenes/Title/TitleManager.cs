@@ -107,7 +107,7 @@ namespace MajdataPlay.Title
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError(ex);
+                                    MajDebug.LogError(ex);
                                     echoText.text = "Login failed for " + endpoint.Name;
                                     await UniTask.Delay(1000);
                                 }
