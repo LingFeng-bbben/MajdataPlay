@@ -933,6 +933,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6787134500062537572}
+  - component: {fileID: 2740914391010461112}
   m_Layer: 0
   m_Name: Star_L_3
   m_TagString: Untagged
@@ -990,6 +991,40 @@ Transform:
   - {fileID: 189913620692579584}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2740914391010461112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3347333010027816482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 459af02eacf371a4abc06af3fc80b24c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _state: 0
+  _startPos: 0
+  _timing: 0
+  _speed: 7
+  _sortOrder: 0
+  _isEach: 0
+  _isBreak: 0
+  _isEX: 0
+  _playerIdleTime: 0
+  _length: 1
+  _slideStarPrefab: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
+  _slideBars: []
+  _slideBarRenderers: []
+  _startTiming: 0
+  _isJustR: 0
+  _fadeInTiming: 0
+  _fullFadeInTiming: 0.2
+  _endPos: 1
+  _slideType: L3
+  _slideLength: 0
+  _isMirror: 0
+  _isSpecialFlip: 0
 --- !u!1 &3544393113263502257
 GameObject:
   m_ObjectHideFlags: 0
@@ -2765,7 +2800,6 @@ GameObject:
   - component: {fileID: 189913620692579584}
   - component: {fileID: 3646517271426061774}
   - component: {fileID: 8157027934980207907}
-  - component: {fileID: 999293329073050797}
   - component: {fileID: 7791965344498038904}
   m_Layer: 0
   m_Name: Just_str
@@ -2862,19 +2896,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &999293329073050797
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8802423058899538199}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff4d7167d6265845aade36b6f37d48c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ifDestroy: 0
 --- !u!114 &7791965344498038904
 MonoBehaviour:
   m_ObjectHideFlags: 0

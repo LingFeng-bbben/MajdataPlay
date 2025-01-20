@@ -6,17 +6,14 @@ using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Unity.Burst.Intrinsics;
 using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.Game.Types;
-using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class NoteDrop : MonoBehaviour, IStatefulNote, IGameObjectProvider, IUpdatableComponent<NoteStatus>, IFixedUpdatableComponent<NoteStatus>
+    internal abstract class NoteDrop : MajComponent, IStatefulNote
     {
-        public bool Active { get; protected set; } = false;
         public int StartPos 
         { 
             get => _startPos; 
@@ -59,16 +56,9 @@ namespace MajdataPlay.Game.Notes
             set => _isEX = value; 
         }
 
-        /// <summary>
-        /// Provides a cached GameObject instance
-        /// </summary>
-        public GameObject GameObject => _gameObject;
-        /// <summary>
-        /// Provides a cached Transform instance
-        /// </summary>
-        public Transform Transform => _transform;
+
         public bool IsInitialized => State >= NoteStatus.Initialized;
-        public bool IsDestroyed => State == NoteStatus.Destroyed;
+        public bool IsEnded => State == NoteStatus.End;
         public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
         public NoteStatus State 
         { 
@@ -76,8 +66,10 @@ namespace MajdataPlay.Game.Notes
             protected set => _state = value; 
         }
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
-        public float CurrentSec => _gpManager.AudioTime;
+        public float ThisFrameSec => _gpManager.ThisFrameSec;
+        public float ThisFixedUpdateSec => _gpManager.ThisFixedUpdateSec;
 
+        protected bool IsAutoplay => _isAutoplay;
         protected Material BreakMaterial => _breakMaterial;
         protected Material DefaultMaterial => _defaultMaterial;
         protected Material HoldShineMaterial => _holdShineMaterial;
@@ -109,12 +101,11 @@ namespace MajdataPlay.Game.Notes
         Material _defaultMaterial;
         Material _holdShineMaterial;
 
-        GameObject _gameObject;
-        Transform _transform;
-        protected virtual void Awake()
+
+        bool _isAutoplay = false;
+        protected override void Awake()
         {
-            _gameObject = gameObject;
-            _transform = transform;
+            base.Awake();
             _effectManager = FindObjectOfType<NoteEffectManager>();
             _objectCounter = FindObjectOfType<ObjectCounter>();
             _noteManager = FindObjectOfType<NoteManager>();
@@ -124,15 +115,13 @@ namespace MajdataPlay.Game.Notes
             _breakMaterial = _gpManager.BreakMaterial;
             _defaultMaterial = _gpManager.DefaultMaterial;
             _holdShineMaterial = _gpManager.HoldShineMaterial;
+            _isAutoplay = _gpManager.IsAutoplay;
         }
         void OnDestroy()
         {
             Active = false;
         }
         protected abstract void LoadSkin();
-        protected abstract void Check(object sender, InputEventArgs arg);
-        public abstract void ComponentUpdate();
-        public abstract void ComponentFixedUpdate();
         protected abstract void PlaySFX();
         protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
@@ -159,13 +148,13 @@ namespace MajdataPlay.Game.Notes
                 return;
             var result = diff switch
             {
-                < JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                < JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
-                < JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
-                < JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
-                < JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
-                < JUDGE_GREAT_AREA => JudgeGrade.LateGreat,
-                < JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                <= JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
+                <= JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
+                <= JUDGE_GREAT_AREA => JudgeGrade.LateGreat,
+                <= JUDGE_GOOD_AREA => JudgeGrade.LateGood,
                 _ => JudgeGrade.Miss
             };
 
@@ -204,29 +193,13 @@ namespace MajdataPlay.Game.Notes
             }
         }
         /// <summary>
-        /// Sets whether the camera renders this GameObject
-        /// </summary>
-        /// <param name="state"></param>
-        public virtual void SetActive(bool state)
-        {
-            switch(state)
-            {
-                case true:
-                    GameObject.layer = MajEnv.DEFAULT_LAYER;
-                    break;
-                case false:
-                    GameObject.layer = MajEnv.HIDDEN_LAYER;
-                    break;
-            }    
-        }
-        /// <summary>
         /// Gets the time offset from the current moment to the judgment line.
         /// </summary>
         /// <returns>
         /// If the current moment is behind the judgment line, the result is a positive number.
         /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => _gpManager.AudioTime - Timing;
+        protected float GetTimeSpanToArriveTiming() => _gpManager.ThisFrameSec - Timing;
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
         /// </summary>
@@ -234,7 +207,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the answer frame, the result is a positive number.
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToJudgeTiming() => _gpManager.AudioTime - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => _gpManager.ThisFrameSec - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
         public static Vector3 GetPositionFromDistance(float distance, int position)
@@ -356,7 +329,7 @@ namespace MajdataPlay.Game.Notes
         }
         [ReadOnlyField]
         [SerializeField]
-        protected int _startPos;
+        protected int _startPos = 1;
         [ReadOnlyField]
         [SerializeField]
         protected float _timing;

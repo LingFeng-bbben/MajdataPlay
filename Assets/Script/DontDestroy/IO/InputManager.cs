@@ -44,6 +44,8 @@ namespace MajdataPlay.IO
         Mutex _buttonCheckerMutex = new();
         IOManager? _ioManager = null;
 
+        Action _updateIOListener = () => { };
+
         void Awake()
         {
             MajInstances.InputManager = this;
@@ -129,16 +131,20 @@ namespace MajdataPlay.IO
                 case DeviceType.Keyboard:
                     CheckEnvironment(false);
                     StartInternalIOManager();
-                    StartInternalIOListener();
+                    _updateIOListener = UpdateInternalIOListener;
                     break;
                 case DeviceType.IO4:
                 case DeviceType.HID:
                     CheckEnvironment();
                     StartExternalIOManager();
-                    StartExternalIOListener();
+                    _updateIOListener = UpdateExternalIOListener;
                     break;
             }
 
+        }
+        internal void OnFixedUpdate()
+        {
+            _updateIOListener();
         }
         void StartInternalIOManager()
         {
@@ -226,54 +232,38 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
-        void StartInternalIOListener()
+        void UpdateInternalIOListener()
         {
-            UniTask.Void(async () =>
+            try
             {
-                var token = MajEnv.GlobalCT;
                 var executionQueue = MajEnv.ExecutionQueue;
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (useDummy)
-                            UpdateMousePosition();
-                        else
-                            UpdateSensorState();
-                        UpdateButtonState();
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogException(e);
-                    }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
-                }
-            });
+                if (useDummy)
+                    UpdateMousePosition();
+                else
+                    UpdateSensorState();
+                UpdateButtonState();
+                while (executionQueue.TryDequeue(out var eventAction))
+                    eventAction();
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
-        void StartExternalIOListener()
+        void UpdateExternalIOListener()
         {
-            UniTask.Void(async () =>
+            var executionQueue = MajEnv.ExecutionQueue;
+            try
             {
-                var token = MajEnv.GlobalCT;
-                var executionQueue = MajEnv.ExecutionQueue;
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                        UpdateSensorState();
-                        UpdateButtonState();
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogException(e);
-                    }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
-                }
-            });
+                while (executionQueue.TryDequeue(out var eventAction))
+                    eventAction();
+                UpdateSensorState();
+                UpdateButtonState();
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
         void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
         {

@@ -55,12 +55,6 @@ namespace MajdataPlay
         void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
-#if !UNITY_EDITOR
-            if(Process.GetProcessesByName("MajdataPlay").Length > 1)
-            {
-                Application.Quit();
-            }
-#endif
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
             s += $"     OS       : {SystemInfo.operatingSystem}\n";
@@ -121,6 +115,8 @@ namespace MajdataPlay
                     return;
                 Screen.SetResolution(width, height, fullScreen);
             }
+            Application.targetFrameRate = Setting.Display.TargetFPS;
+
             var thiss = Process.GetCurrentProcess();
             thiss.PriorityClass = ProcessPriorityClass.RealTime;
             var availableLangs = Localization.Available;

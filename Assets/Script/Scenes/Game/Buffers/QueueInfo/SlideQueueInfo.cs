@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public class SlideQueueInfo : NoteQueueInfo
+    internal class SlideQueueInfo : NoteQueueInfo
     {
         public float AppearTiming { get; init; }
         public SlideBase SlideObject { get; init; }

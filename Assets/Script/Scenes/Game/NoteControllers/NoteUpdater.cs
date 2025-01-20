@@ -6,7 +6,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace MajdataPlay.Game
 {
@@ -65,12 +64,12 @@ namespace MajdataPlay.Game
         protected virtual void Update()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _updatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_updatableComponents))
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.Update();
+                    if (component.IsExecutable())
+                        component.OnUpdate();
                     else
                         continue;
                 }
@@ -83,15 +82,15 @@ namespace MajdataPlay.Game
             var timeSpan = end - start;
             _updateElapsedMs = timeSpan.TotalMilliseconds;
         }
-        protected virtual void FixedUpdate()
+        internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _fixedUpdatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_fixedUpdatableComponents))
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.FixedUpdate();
+                    if (component.IsExecutable())
+                        component.OnFixedUpdate();
                     else
                         continue;
                 }
@@ -107,12 +106,12 @@ namespace MajdataPlay.Game
         protected virtual void LateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in _lateUpdatableComponents)
+            foreach (var component in ArrayHelper.ToEnumerable(_lateUpdatableComponents))
             {
                 try
                 {
-                    if (component.CanExecute())
-                        component.LateUpdate();
+                    if (component.IsExecutable())
+                        component.OnLateUpdate();
                     else
                         continue;
                 }

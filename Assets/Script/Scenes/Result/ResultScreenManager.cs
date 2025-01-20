@@ -49,31 +49,7 @@ namespace MajdataPlay.Result
         {
             rank.text = "";
             var gameManager = MajInstances.GameManager;
-            GameResult result;
-            var lastResult = _gameInfo.GetLastResult();
-            if (lastResult is null)
-            {
-                result = new GameResult()
-                {
-                    Acc = new()
-                    {
-                        Classic = 0,
-                        DX = 0,
-                    },
-                    SongInfo = _gameInfo.Current,
-                    Level = _gameInfo.CurrentLevel,
-                    Fast = 0,
-                    Late = 0,
-                    DXScore = 0,
-                    TotalDXScore = 1,
-                    JudgeRecord = JudgeDetail.Empty,
-                    ComboState = ComboState.None,
-                };
-            }
-            else
-            {
-                result = (GameResult)lastResult;
-            }
+            var result = _gameInfo.GetLastResult();
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
             MajInstances.LightManager.SetAllLight(Color.white);

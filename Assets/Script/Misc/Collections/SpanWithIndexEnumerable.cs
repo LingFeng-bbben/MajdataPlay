@@ -4,8 +4,8 @@ namespace MajdataPlay.Collections
 {
     public ref struct SpanWithIndexEnumerable<T>
     {
-        Span<T> _source;
-        public SpanWithIndexEnumerable(Span<T> source)
+        ReadOnlySpan<T> _source;
+        public SpanWithIndexEnumerable(ReadOnlySpan<T> source)
         {
             _source = source;
         }

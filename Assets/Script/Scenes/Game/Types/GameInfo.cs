@@ -14,6 +14,7 @@ namespace MajdataPlay.Game.Types
         public SongDetail? Current { get; private set; } = null;
         public ChartLevel CurrentLevel { get; private set; } = ChartLevel.Easy;
         public bool IsDanMode => Mode == GameMode.Dan;
+        public bool IsPracticeMode => Mode == GameMode.Practice;
 
         public SongDetail[] Charts => _chartQueue;
         public ChartLevel[] Levels => _levels;
@@ -25,13 +26,16 @@ namespace MajdataPlay.Game.Types
         public bool IsForceGameover => DanInfo?.IsForceGameover ?? false; 
         public DanInfo? DanInfo { get; init; } = null;
         // TO-DO: Practice Mode
+        public int PracticeCount { get; init; } = 1;
+        public Range<long>? ComboRange { get; init; }
+        public Range<double>? TimeRange { get; init; }
         public GameResult[] Results { get; init; }
 
         int _playedCount = 0;
         int _index = 0;
         SongDetail[] _chartQueue;
         ChartLevel[] _levels;
-        public GameInfo(GameMode mode, SongDetail[] chartQueue,ChartLevel[] levels)
+        public GameInfo(GameMode mode, SongDetail[] chartQueue,ChartLevel[] levels, int practiceCount)
         {
             Mode = mode;
             if(chartQueue is null)
@@ -48,12 +52,35 @@ namespace MajdataPlay.Game.Types
                     if (chartQueue[i] is not null)
                         count++;
                 }
-                _levels = levels;
-                Results = new GameResult[count];
-                _chartQueue = chartQueue;
-                Current = chartQueue[0];
-                CurrentLevel = levels[0];
+                switch(mode)
+                {
+                    case GameMode.Practice:
+                        _levels = new ChartLevel[1]
+                        {
+                            levels[0]
+                        };
+                        _chartQueue = new SongDetail[1]
+                        {
+                            chartQueue[0]
+                        };
+                        Results = new GameResult[practiceCount];
+                        PracticeCount = practiceCount;
+                        Current = chartQueue[0];
+                        CurrentLevel = levels[0];
+                        break;
+                    default:
+                        _levels = levels;
+                        Results = new GameResult[count];
+                        _chartQueue = chartQueue;
+                        Current = chartQueue[0];
+                        CurrentLevel = levels[0];
+                        break;
+                }
             }
+        }
+        public GameInfo(GameMode mode, SongDetail[] chartQueue, ChartLevel[] levels) : this(mode, chartQueue, levels, 1)
+        {
+
         }
         public void OnNoteJudged(in JudgeGrade grade)
         {
@@ -67,17 +94,12 @@ namespace MajdataPlay.Game.Types
         {
             Results[_index] = result;
         }
-        public GameResult? GetLastResult()
+        public GameResult GetLastResult()
         {
-            if (_playedCount == 0)
-                return null;
-            else if (Results.Length == 0)
-                return null;
-            else if (_playedCount >= Results.Length)
-            {
-                return Results[Results.Length - 1];
-            }
-            return Results[_playedCount - 1];
+            if (Results.Length == 0)
+                return default;
+            var index = (_index - 1).Clamp(0, Results.Length - 1);
+            return Results[index];
         }
         public bool NextRound()
         {
@@ -95,24 +117,34 @@ namespace MajdataPlay.Game.Types
         }
         bool MoveNext()
         {
-            if (_index >= _chartQueue.Length)
-                return false;
-
-            _index++;
-            for (; _index < _chartQueue.Length; _index++)
+            switch(Mode)
             {
-
-                if (_chartQueue[_index] is null)
-                {
-                    continue;
-                }
-                else
-                {
-                    Current = _chartQueue[_index];
-                    CurrentLevel = _levels[_index];
-                    _playedCount++;
+                case GameMode.Practice:
+                    if (_index >= PracticeCount - 1)
+                        return false;
+                    _index++;
                     return true;
-                }
+                default:
+                    if (_index >= _chartQueue.Length)
+                        return false;
+
+                    _index++;
+                    for (; _index < _chartQueue.Length; _index++)
+                    {
+
+                        if (_chartQueue[_index] is null)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Current = _chartQueue[_index];
+                            CurrentLevel = _levels[_index];
+                            _playedCount++;
+                            return true;
+                        }
+                    }
+                    break;
             }
 
             return false;

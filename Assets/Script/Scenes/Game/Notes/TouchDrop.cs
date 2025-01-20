@@ -1,15 +1,17 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Types;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>
+    internal sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState 
         {
@@ -68,7 +70,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _multTouchHandler = FindObjectOfType<MultTouchHandler>();
 
@@ -105,11 +106,15 @@ namespace MajdataPlay.Game.Notes
             SetJustBorderActive(false);
             SetPointActive(false);
             Active = false;
+            //_noteChecker = new(Check);
+            
+            if(!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
             RendererState = RendererStatus.Off;
         }
         public void Initialize(TouchPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
 
             StartPos = poolingInfo.StartPos;
@@ -155,15 +160,12 @@ namespace MajdataPlay.Game.Notes
 
             if (_gpManager.IsAutoplay)
                 Autoplay();
-            else
-                SubscribeEvent();
 
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
-            UnsubscribeEvent();
+            State = NoteStatus.End;
             if (!_isJudged || forceEnd)
                 return;
 
@@ -181,20 +183,13 @@ namespace MajdataPlay.Game.Notes
             //_pointObject.SetActive(false);
             //_justBorderObject.SetActive(false);
 
-            if (GroupInfo is not null && !result.IsMissOrTooFast)
-            {
-                GroupInfo.JudgeResult = _judgeResult;
-                GroupInfo.JudgeDiff = _judgeDiff;
-                GroupInfo.RegisterResult(_judgeResult);
-            }
-
+            
             if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
             _effectManager.PlayTouchEffect(_sensorPos, result);
             _objectCounter.ReportResult(this, result);
-            _noteManager.NextTouch(QueueInfo);
             _notePoolManager.Collect(this);
         }
         protected override void LoadSkin()
@@ -221,32 +216,62 @@ namespace MajdataPlay.Game.Notes
 
             _justBorderRenderer.sprite = skin.JustBorder;
         }
-        protected override void Check(object sender, InputEventArgs arg)
+        void Check()
         {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
+            if (IsEnded)
                 return;
-            else if (!arg.IsClick)
+            else if(_isJudged)
+            {
+                End();
                 return;
-            else if (!_judgableRange.InRange(thisFrameSec))
+            }    
+        }
+        void GameIOListener(GameInputEventArgs args)
+        {
+            if (_isJudged || IsEnded)
                 return;
-            else if (arg.Type != _sensorPos)
+            else if (args.IsButton)
+                return;
+            else if (args.Area != _sensorPos)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            if (!_ioManager.IsIdle(arg))
+            ref var isUsed = ref args.IsUsed.Target;
+
+            if (isUsed)
                 return;
-            else
-                _ioManager.SetBusy(arg);
-            Judge(_gpManager.ThisFrameSec);
+            Judge(ThisFixedUpdateSec);
+
+            if (_isJudged)
+            {
+                isUsed = true;
+                _noteManager.NextTouch(QueueInfo);
+                RegisterGrade();
+            }
         }
-        public override void ComponentFixedUpdate()
+        void RegisterGrade()
         {
-            if (State < NoteStatus.Running || IsDestroyed)
+            if (GroupInfo is not null && !_judgeResult.IsMissOrTooFast())
+            {
+                GroupInfo.JudgeResult = _judgeResult;
+                GroupInfo.JudgeDiff = _judgeDiff;
+                GroupInfo.RegisterResult(_judgeResult);
+            }
+        }
+        void OnFixedUpdate()
+        {
+            // Too late check
+            if (IsEnded || _isJudged)
                 return;
+
             var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
-            if (!_isJudged && !isTooLate)
+
+            if (!isTooLate)
             {
                 if (GroupInfo is not null)
                 {
@@ -255,22 +280,22 @@ namespace MajdataPlay.Game.Notes
                         _isJudged = true;
                         _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
-                        End();
+                        _noteManager.NextTouch(QueueInfo);
                     }
                 }
             }
-            else if (!_isJudged)
+            else
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                End();
+                _noteManager.NextTouch(QueueInfo);
             }
-            else if (_isJudged)
-                End();
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
+
+            Check();
 
             switch (State)
             {
@@ -317,7 +342,7 @@ namespace MajdataPlay.Game.Notes
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
                             SetFansPosition(_distance);
-                            State = NoteStatus.End;
+                            State = NoteStatus.Arrived;
                         }
                         else
                         {
@@ -325,7 +350,7 @@ namespace MajdataPlay.Game.Notes
                         }
                     }
                     return;
-                case NoteStatus.End:
+                case NoteStatus.Arrived:
                     return;
             }
         }
@@ -354,13 +379,13 @@ namespace MajdataPlay.Game.Notes
 
             JudgeGrade result = diff switch
             {
-                < JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                < JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
-                < JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
-                < JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
-                < JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
-                < JUDGE_GREAT_AREA => JudgeGrade.LateGreat2,
-                < JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
+                <= JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
+                <= JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
+                <= JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
+                <= JUDGE_GREAT_AREA => JudgeGrade.LateGreat2,
+                <= JUDGE_GOOD_AREA => JudgeGrade.LateGood,
                 _ => JudgeGrade.Miss
             };
 
@@ -449,14 +474,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
                 _fanRenderers[i].sharedMaterial = material;
         }
-        void SubscribeEvent()
-        {
-            _ioManager.BindSensor(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindSensor(_noteChecker, _sensorPos);
-        }
+
         protected override void PlaySFX()
         {
             PlayJudgeSFX(new JudgeResult()

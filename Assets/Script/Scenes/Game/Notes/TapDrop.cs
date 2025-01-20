@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>
+    internal sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState
         {
@@ -58,7 +58,6 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _noteChecker = new(Check);
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
@@ -75,10 +74,13 @@ namespace MajdataPlay.Game.Notes
             _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
             _exObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
+
+            if (!IsAutoplay)
+                _noteManager.OnGameIOUpdate += GameIOListener;
         }
         public void Initialize(TapPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
@@ -108,16 +110,15 @@ namespace MajdataPlay.Game.Notes
             SetActive(true);
             SetTapLineActive(false);
             
-            if (_gpManager.IsAutoplay)
+            if (IsAutoplay)
                 Autoplay();
-            else
-                SubscribeEvent();
+
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
-            UnsubscribeEvent();
+            State = NoteStatus.End;
+            //UnsubscribeEvent();
             if (!_isJudged || forceEnd) 
                 return;
 
@@ -132,7 +133,6 @@ namespace MajdataPlay.Game.Notes
             };
             PlayJudgeSFX(result);
             _effectManager.PlayEffect(StartPos, result);
-            _noteManager.NextNote(QueueInfo);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
@@ -150,27 +150,30 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        public override void ComponentFixedUpdate()
+        void OnFixedUpdate()
         {
-            if (State < NoteStatus.Running|| IsDestroyed)
+            // Too late check
+            if (_isJudged || IsEnded)
                 return;
+
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
-            if (!_isJudged && isTooLate)
+
+            if (isTooLate)
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                End();
+                _noteManager.NextNote(QueueInfo);
             }
-            else if (_isJudged)
-                End();
         }
-        public override void ComponentUpdate()
+        void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+
+            Check();
 
             switch (State)
             {
@@ -226,26 +229,40 @@ namespace MajdataPlay.Game.Notes
                     Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
             }
         }
-        protected override void Check(object sender, InputEventArgs arg)
+        void Check()
         {
-            var thisFrameSec = _gpManager.ThisFrameSec;
-            if (_isJudged)
+            if (IsEnded)
                 return;
-            else if (!arg.IsClick)
+            else if(_isJudged)
+            {
+                End();
                 return;
-            else if (!_judgableRange.InRange(thisFrameSec))
+            }
+        }
+        void GameIOListener(GameInputEventArgs args)
+        {
+            if (_isJudged || IsEnded)
                 return;
-            else if (arg.Type != _sensorPos)
+            else if (args.Area != _sensorPos)
+                return;
+            else if (!args.IsClick)
+                return;
+            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
 
-            if (!_ioManager.IsIdle(arg))
-                return;
-            else
-                _ioManager.SetBusy(arg);
+            ref var isUsed = ref args.IsUsed.Target;
 
-            Judge(thisFrameSec);
+            if (isUsed)
+                return;
+            Judge(ThisFixedUpdateSec);
+
+            if (_isJudged)
+            {
+                isUsed = true;
+                _noteManager.NextNote(QueueInfo);
+            }
         }
         protected override void LoadSkin()
         {
@@ -285,14 +302,6 @@ namespace MajdataPlay.Game.Notes
                     _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
-        }
-        void SubscribeEvent()
-        {
-            _ioManager.BindArea(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindArea(_noteChecker, _sensorPos);
         }
         void LoadTapSkin()
         {
