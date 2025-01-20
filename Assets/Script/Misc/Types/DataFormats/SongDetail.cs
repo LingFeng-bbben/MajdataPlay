@@ -31,7 +31,7 @@ namespace MajdataPlay.Types
         public string? MaidataPath { get; init; }
         public string? CoverPath { get; init; }
         public string? BGPath { get; init; }
-        private Sprite? SongCover;
+        private Sprite? SongCover = null;
         public double First { get; set; }
         public string Hash { get; set; } = string.Empty;
         public string OnlineId { get; set; } = "";
@@ -240,34 +240,37 @@ namespace MajdataPlay.Types
         private bool _spriteLoadLock = false;
         public async Task<Sprite> GetSpriteAsync(CancellationToken ct = default)
         {
-            while (_spriteLoadLock) await Task.Delay(200);
+            while (_spriteLoadLock) 
+                await Task.Delay(200);
             _spriteLoadLock = true;
-            if (SongCover != null)
+            try
             {
-                MajDebug.Log("Memory Cache Hit");
-                _spriteLoadLock = false;
-                return SongCover;
+                if (SongCover is not null)
+                {
+                    MajDebug.Log("Memory Cache Hit");
+                    return SongCover;
+                }
+                if (string.IsNullOrEmpty(CoverPath))
+                {
+                    SongCover = await SpriteLoader.LoadAsync(Path.Combine(Application.streamingAssetsPath, "dummy.jpg"));
+                    return SongCover;
+                }
+                if (IsOnline)
+                {
+                    MajDebug.Log("Try load cover online" + CoverPath);
+                    SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
+                    return SongCover;
+                }
+                else
+                {
+                    SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
+                    return SongCover;
+                }
             }
-            if (string.IsNullOrEmpty(CoverPath))
+            finally
             {
-                SongCover = await SpriteLoader.LoadAsync(Application.streamingAssetsPath + "/dummy.jpg");
                 _spriteLoadLock = false;
-                return SongCover;
             }
-            if (IsOnline)
-            {
-                MajDebug.Log("Try load cover online" + CoverPath);
-                SongCover = await SpriteLoader.LoadAsync(new Uri(CoverPath), ct);
-                _spriteLoadLock = false;
-                return SongCover;
-            }
-            else
-            {
-                SongCover = await SpriteLoader.LoadAsync(CoverPath, ct);
-                _spriteLoadLock = false;
-                return SongCover;
-            }
-
         }
 
         //Dump an online chart to local, return a new SongDetail points to local song
