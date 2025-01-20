@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using System;
 using System.IO;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -182,10 +184,25 @@ namespace MajdataPlay.Types
             });
         }
 
-        public string LoadInnerMaidata(int selectedDifficulty)
+        public async UniTask<string> LoadInnerMaidata(int selectedDifficulty)
         {
             //TODO: should check hash change here
-            var maidata = File.ReadAllLines(MaidataPath);
+            var maidatabyte = new byte[0];
+            if (IsOnline)
+            {
+                maidatabyte = await HttpTransporter.ShareClient.GetByteArrayAsync(MaidataPath);
+            }
+            else
+            {
+                maidatabyte = await File.ReadAllBytesAsync(MaidataPath);
+            }
+            var hash = await GetHashAsync(maidatabyte);
+            if(hash != Hash)
+            {
+                MajDebug.LogError("Chart Hash Mismatch");
+                Application.Quit();
+            }
+            var maidata = Encoding.UTF8.GetString(maidatabyte).Split('\n');
             for (int i = 0; i < maidata.Length; i++)
             {
                 if (maidata[i].StartsWith("&inote_" + (selectedDifficulty + 1) + "="))
@@ -243,40 +260,107 @@ namespace MajdataPlay.Types
 
         }
 
-        //TODO: add callback for progress
-        public async Task<SongDetail> DumpToLocal()
+        //Dump an online chart to local, return a new SongDetail points to local song
+        public async UniTask<SongDetail> DumpToLocal(CancellationTokenSource _cts)
         {
-            if (!IsOnline) return this;
-            var dir = MajEnv.ChartPath + "/MajnetPlayed/" + Hash;
-            Directory.CreateDirectory(dir);
-            var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
+            if(!this.IsOnline) throw new Exception("Not an online song");
+            var _songDetail = this;
+            var chartFolder = Path.Combine(MajEnv.ChartPath, $"MajnetPlayed/{_songDetail.Hash.Replace('/', '_')}");
+            Directory.CreateDirectory(chartFolder);
+            var dirInfo = new DirectoryInfo(chartFolder);
+            var trackPath = Path.Combine(chartFolder, "track.mp3");
+            var chartPath = Path.Combine(chartFolder, "maidata.txt");
+            var bgPath = Path.Combine(chartFolder, "bg.png");
+            var videoPath = Path.Combine(chartFolder, "bg.mp4");
+            var trackUri = _songDetail.TrackPath;
+            var chartUri = _songDetail.MaidataPath;
+            var bgUri = _songDetail.BGPath;
+            var videoUri = _songDetail.VideoPath;
+            var token = _cts.Token;
 
-            var trackp = dir + "/track.mp3";
-            if (!File.Exists(trackp))
+            if (trackUri is null or "")
+                throw new AudioTrackNotFoundException(trackPath);
+            if (chartUri is null or "")
+                throw new ChartNotFoundException(_songDetail);
+
+            MajInstances.LightManager.SetAllLight(Color.blue);
+            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
+            await UniTask.Yield();
+            if (!File.Exists(trackPath))
             {
-                var track = await client.GetByteArrayAsync(TrackPath);
-                File.WriteAllBytes(trackp, track);
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
+                await UniTask.Yield();
+                await DownloadFile(trackUri, trackPath, _cts);
             }
-
-            var maidatap = dir + "/maidata.txt";
-            if (!File.Exists(maidatap))
+            token.ThrowIfCancellationRequested();
+            if (!File.Exists(chartPath))
             {
-                var maidata = await client.GetByteArrayAsync(MaidataPath);
-                File.WriteAllBytes(maidatap, maidata);
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
+                await UniTask.Yield();
+                await DownloadFile(chartUri, chartPath, _cts);
             }
-
-            var bgp = dir + "/bg.png";
-            if (!File.Exists(bgp))
+            token.ThrowIfCancellationRequested();
+            SongDetail song;
+            token.ThrowIfCancellationRequested();
+            if (!File.Exists(bgPath))
             {
-                var bg = await client.GetByteArrayAsync(BGPath);
-                File.WriteAllBytes(bgp, bg);
+                try
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
+                    await UniTask.Yield();
+                    await DownloadFile(bgUri, bgPath, _cts);
+                }
+                catch
+                {
+                    MajDebug.Log("No video for this song");
+                    File.Delete(videoPath);
+                    videoPath = "";
+                    MajInstances.SceneSwitcher.SetLoadingText("");
+                }
             }
-
-            var info = new DirectoryInfo(dir);
-            var song = await ParseAsync(info.GetFiles());
-            song.Hash = Hash;
+            token.ThrowIfCancellationRequested();
+            if (!File.Exists(videoPath) && videoUri is not null)
+            {
+                try
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
+                    await UniTask.Yield();
+                    await DownloadFile(videoUri, videoPath, _cts);
+                }
+                catch
+                {
+                    MajDebug.Log("No video for this song");
+                    File.Delete(videoPath);
+                    videoPath = "";
+                    MajInstances.SceneSwitcher.SetLoadingText("");
+                }
+            }
+            token.ThrowIfCancellationRequested();
+            song = await ParseAsync(dirInfo.GetFiles());
+            song.Hash = _songDetail.Hash;
+            song.OnlineId = _songDetail.OnlineId;
+            song.ApiEndpoint = _songDetail.ApiEndpoint;
+            MajInstances.SceneSwitcher.SetLoadingText("");
+            await UniTask.Yield();
             return song;
         }
 
+
+        static async UniTask DownloadFile(string uri, string savePath, CancellationTokenSource _cts)
+        {
+            var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
+            var token = _cts.Token;
+            while (!task.IsCompleted)
+            {
+                token.ThrowIfCancellationRequested();
+                await UniTask.Yield();
+            }
+            if (task.IsCanceled)
+            {
+                throw new Exception("Download failed");
+            }
+            File.WriteAllBytes(savePath, task.Result);
+            return;
+        }
     }
 }

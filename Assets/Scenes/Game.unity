@@ -741,6 +741,7 @@ MonoBehaviour:
   _defaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   _noteMask: {fileID: 1383793877}
   _thisFrameSec: 0
+  _thisFixedUpdateSec: 0
   _firstNoteAppearTiming: 0
   _audioTime: -114514
   _audioTimeNoOffset: -114514
@@ -3334,13 +3335,13 @@ MonoBehaviour:
   slideSum: 0
   touchSum: 0
   breakSum: 0
-  accRate:
+  _accRate:
   - 0
   - 100
   - 101
   - 100
   - 0
-  totalDXScore: 0
+  _totalDXScore: 0
 --- !u!4 &620892875
 Transform:
   m_ObjectHideFlags: 0

@@ -216,7 +216,7 @@ namespace MajdataPlay.Game
             try
             {
                 if (_songDetail.IsOnline)
-                    _songDetail = await ChartDownloader.DumpOnlineChart(_songDetail,_cts);
+                    _songDetail = await _songDetail.DumpToLocal(_cts);
                 await LoadAudioTrack();
                 await ParseChart();
                 await PrepareToPlay();
@@ -302,7 +302,7 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
-            var maidata = _songDetail.LoadInnerMaidata((int)_gameInfo.CurrentLevel);
+            var maidata = await _songDetail.LoadInnerMaidata((int)_gameInfo.CurrentLevel);
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
