@@ -159,7 +159,13 @@ namespace MajdataPlay.List
                                 };
                                 if (_pressTime > 1f)
                                 {
+                                    var oldinfo = MajInstanceHelper<GameInfo>.Instance;
                                     var info = new GameInfo(GameMode.Practice, charts, levels, 114514);
+                                    if (oldinfo is not null && oldinfo.TimeRange is not null)
+                                    {
+                                        info.TimeRange = oldinfo.TimeRange;
+                                    }
+                                    
                                     MajInstanceHelper<GameInfo>.Instance = info;
                                     _pressTime = 0;
                                     _isPressed = false;

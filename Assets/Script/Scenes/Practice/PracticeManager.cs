@@ -55,8 +55,15 @@ public class PracticeManager : MonoBehaviour
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
         await chartAnalyzer.AnalyzeSongDetail(songinfo, level);
-        endTime = totalTime;
+        if (gameinfo.TimeRange is not null)
+        {
+            startTime = (float)gameinfo.TimeRange.Value.Start;
+            endTime = (float)gameinfo.TimeRange.Value.End;
+            
+        }
+        else { endTime = totalTime; }
         audioTrack.Play();
+        audioTrack.CurrentSec = startTime;
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
         MajInstances.SceneSwitcher.FadeOut();
     }
@@ -144,6 +151,7 @@ public class PracticeManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(audioTrack is null) { return; }
         var start = TimeSpan.FromSeconds(startTime);
         startTimeText.text = ZString.Format(TIME_STRING, start.Minutes, start.Seconds, start.Milliseconds);
         var end = TimeSpan.FromSeconds(endTime);
