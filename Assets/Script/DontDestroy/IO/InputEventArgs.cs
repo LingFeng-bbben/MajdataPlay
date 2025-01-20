@@ -9,6 +9,7 @@ namespace MajdataPlay.IO
         public SensorStatus OldStatus { get; init; }
         public SensorStatus Status { get; init; }
         public bool IsButton { get; init; }
-        public bool IsClick => OldStatus == SensorStatus.Off && Status == SensorStatus.On;
+        public bool IsDown => OldStatus == SensorStatus.Off && Status == SensorStatus.On;
+        public bool IsUp=> OldStatus == SensorStatus.On && Status == SensorStatus.Off;
     }
 }

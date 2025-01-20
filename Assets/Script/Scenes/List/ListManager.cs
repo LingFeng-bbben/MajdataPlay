@@ -40,7 +40,7 @@ namespace MajdataPlay.List
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsClick)
+            if (!e.IsDown)
             {
                 switch(e.Type)
                 {

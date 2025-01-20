@@ -160,7 +160,7 @@ namespace MajdataPlay.Game
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
-            if (e.IsButton && e.IsClick && e.Type == SensorType.P1)
+            if (e.IsButton && e.IsDown && e.Type == SensorType.P1)
             {
                 print("Pause!!");
                 BackToList().Forget();

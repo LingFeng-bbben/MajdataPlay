@@ -92,7 +92,7 @@ namespace MajdataPlay.Setting
         }
         void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsClick)
+            if (!e.IsDown)
                 return;
             switch(e.Type)
             {

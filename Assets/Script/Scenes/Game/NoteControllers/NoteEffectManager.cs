@@ -62,7 +62,7 @@ namespace MajdataPlay.Game
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
             var pos = args.Type;
-            if (!args.IsClick)
+            if (!args.IsDown)
                 return;
             else if (pos > SensorType.E8)
                 return;

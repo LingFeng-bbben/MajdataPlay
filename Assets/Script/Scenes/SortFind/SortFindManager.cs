@@ -30,7 +30,7 @@ namespace MajdataPlay.SortFind
         }
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsClick)
+            if (!e.IsDown)
                 return;
             if (!e.IsButton)
             {

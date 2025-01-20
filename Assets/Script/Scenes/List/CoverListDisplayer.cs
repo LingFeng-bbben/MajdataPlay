@@ -174,7 +174,7 @@ namespace MajdataPlay.List
                     songs = dirs[desiredListPos];
                     if(songs.Type == ChartStorageType.List)
                     {
-                        CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+                        CoverBigDisplayer.SetMeta(songs.Name, "Count:"+songs.Count, "", "");
                     }
                     else
                     {

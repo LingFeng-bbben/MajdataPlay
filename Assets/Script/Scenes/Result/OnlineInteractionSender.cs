@@ -40,7 +40,7 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsClick && (e.Type == SensorType.E3 || e.Type == SensorType.B3))
+            if (e.IsDown && (e.Type == SensorType.E3 || e.Type == SensorType.B3))
             {
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(SongDetail);
