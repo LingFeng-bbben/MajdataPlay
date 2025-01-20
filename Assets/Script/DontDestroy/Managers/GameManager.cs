@@ -20,7 +20,6 @@ namespace MajdataPlay
         public GameSetting Setting
         {
             get => MajInstances.Setting;
-            set => MajInstances.Setting = value;
         }
         /// <summary>
         /// Current difficult
@@ -39,9 +38,6 @@ namespace MajdataPlay
         private ChartLevel _selectedDiff = ChartLevel.Easy;
         public int LastSettingPage { get; set; } = 0;
 
-        //public bool isDanMode = false;
-        //public int DanHP = 500;
-        //public List<GameResult> DanResults = new();
 
         readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
@@ -69,37 +65,23 @@ namespace MajdataPlay
             _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
+            ApplyScreenConfig();
 
-            if (File.Exists(MajEnv.SettingPath))
+            var thiss = Process.GetCurrentProcess();
+            thiss.PriorityClass = ProcessPriorityClass.RealTime;
+            var availableLangs = Localization.Available;
+            if (availableLangs.IsEmpty())
+                return;
+            var lang = availableLangs.Find(x => x.ToString() == Setting.Game.Language);
+            if (lang is null)
             {
-                var js = File.ReadAllText(MajEnv.SettingPath);
-                GameSetting? setting;
-
-                if (!Serializer.Json.TryDeserialize(js, out setting, MajEnv.UserJsonReaderOption) || setting is null)
-                {
-                    Setting = new();
-                    MajDebug.LogError("Failed to read setting from file");
-                }
-                else
-                {
-                    Setting = setting;
-                    //Reset Mod option after reboot
-                    Setting.Mod = new ModOptions();
-                }
+                lang = availableLangs.First();
+                Setting.Game.Language = lang.ToString();
             }
-            else
-            {
-                Setting = new GameSetting();
-                Save();
-            }
-            MajInstances.Setting = Setting;
-            Setting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
-            Setting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.PollingRateMs);
-            Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            Setting.Display.InnerJudgeDistance = Setting.Display.InnerJudgeDistance.Clamp(0, 1);
-            Setting.Display.OuterJudgeDistance = Setting.Display.OuterJudgeDistance.Clamp(0, 1);
-
+            Localization.Current = lang;
+        }
+        void ApplyScreenConfig()
+        {
             var fullScreen = Setting.Debug.FullScreen;
             Screen.fullScreen = fullScreen;
 
@@ -116,19 +98,6 @@ namespace MajdataPlay
                 Screen.SetResolution(width, height, fullScreen);
             }
             Application.targetFrameRate = Setting.Display.TargetFPS;
-
-            var thiss = Process.GetCurrentProcess();
-            thiss.PriorityClass = ProcessPriorityClass.RealTime;
-            var availableLangs = Localization.Available;
-            if (availableLangs.IsEmpty())
-                return;
-            var lang = availableLangs.Find(x => x.ToString() == Setting.Game.Language);
-            if (lang is null)
-            {
-                lang = availableLangs.First();
-                Setting.Game.Language = lang.ToString();
-            }
-            Localization.Current = lang;
         }
         void Start()
         {

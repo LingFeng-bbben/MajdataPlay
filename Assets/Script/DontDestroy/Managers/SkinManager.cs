@@ -27,15 +27,8 @@ namespace MajdataPlay
         {
             DontDestroyOnLoad(this);
             MajInstances.SkinManager = this;
-        }
 
-        // Start is called before the first frame update
-        private void Start()
-        {
             var path = MajEnv.SkinPath;
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
             var selectedSkinName = MajInstances.Setting.Display.Skin;
             var dicts = Directory.GetDirectories(path);
 
@@ -47,10 +40,8 @@ namespace MajdataPlay
                 targetSkin = new CustomSkin(Path.Combine(path, selectedSkinName));
 
             SelectedSkin = targetSkin;
-
-            print(path);
-            MajDebug.Log(test);
         }
+
         public JudgeTextSkin GetJudgeTextSkin()
         {
             return new()

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using MychIO;
 using System;
 using System.Collections.Concurrent;
@@ -11,7 +12,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Utils
 {
     public static class MajEnv
@@ -40,5 +41,56 @@ namespace MajdataPlay.Utils
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+
+        static MajEnv()
+        {
+            CheckAndLoadUserSetting();
+            CheckNoteSkinFolder();
+
+            if(!Directory.Exists(CachePath))
+                Directory.CreateDirectory(CachePath);
+
+            if (!Directory.Exists(ChartPath))
+                Directory.CreateDirectory(ChartPath);
+        }
+        static void CheckAndLoadUserSetting()
+        {
+            if (File.Exists(SettingPath))
+            {
+                var js = File.ReadAllText(SettingPath);
+                GameSetting? setting;
+
+                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                {
+                    MajInstances.Setting = new();
+                    MajDebug.LogError("Failed to read setting from file");
+                }
+                else
+                {
+                    MajInstances.Setting = setting;
+                    //Reset Mod option after reboot
+                    MajInstances.Setting.Mod = new ModOptions();
+                }
+            }
+            else
+            {
+                MajInstances.Setting = new GameSetting();
+
+                var json = Serializer.Json.Serialize(UserSetting, UserJsonReaderOption);
+                File.WriteAllText(SettingPath, json);
+            }
+
+            UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs);
+            UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs);
+            UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            UserSetting.Display.InnerJudgeDistance = UserSetting.Display.InnerJudgeDistance.Clamp(0, 1);
+            UserSetting.Display.OuterJudgeDistance = UserSetting.Display.OuterJudgeDistance.Clamp(0, 1);
+        }
+        static void CheckNoteSkinFolder()
+        {
+            if (!Directory.Exists(SkinPath))
+                Directory.CreateDirectory(SkinPath);
+        }
     }
 }
