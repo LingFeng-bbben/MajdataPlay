@@ -57,33 +57,42 @@ namespace MajdataPlay.Game
                 _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
             _inputManager.BindAnyArea(OnAnyAreaTrigger);
-            
         }
         void OnDestroy()
         {
             MajInstanceHelper<NoteManager>.Free();
             _inputManager.UnbindAnyArea(OnAnyAreaTrigger);
         }
-#if UNITY_EDITOR || DEBUG
-        private void Update()
+        internal void OnUpdate()
         {
+            if (!_isUpdaterInitialized)
+                return;
+            for (var i = 0; i < _noteUpdaters.Length; i++)
+            {
+                var updater = _noteUpdaters[i];
+                updater.OnUpdate();
+            }
+#if UNITY_EDITOR || DEBUG
             _updateElapsedMs = 0;
             foreach (var updater in _noteUpdaters)
                 _updateElapsedMs += updater.UpdateElapsedMs;
-        }
-        private void FixedUpdate()
-        {
-            _fixedUpdateElapsedMs = 0;
-            foreach (var updater in _noteUpdaters)
-                _fixedUpdateElapsedMs += updater.FixedUpdateElapsedMs;
+#endif
         }
         private void LateUpdate()
         {
+            if (!_isUpdaterInitialized)
+                return;
+            for (var i = 0; i < _noteUpdaters.Length; i++)
+            {
+                var updater = _noteUpdaters[i];
+                updater.OnLateUpdate();
+            }
+#if UNITY_EDITOR || DEBUG
             _lateUpdateElapsedMs = 0;
             foreach (var updater in _noteUpdaters)
                 _lateUpdateElapsedMs += updater.LateUpdateElapsedMs;
-        }
 #endif
+        }
         internal void OnFixedUpdate()
         {
             for (var i = 0; i < 8; i++)
@@ -102,11 +111,20 @@ namespace MajdataPlay.Game
                     updater.OnFixedUpdate();
                 }
             }
+#if UNITY_EDITOR || DEBUG
+            _fixedUpdateElapsedMs = 0;
+            foreach (var updater in _noteUpdaters)
+                _fixedUpdateElapsedMs += updater.FixedUpdateElapsedMs;
+#endif
         }
         public void InitializeUpdater()
         {
+            if (_isUpdaterInitialized)
+                return;
             foreach(var updater in _noteUpdaters)
+            {
                 updater.Initialize();
+            }
             _isUpdaterInitialized = true;
         }
         public void ResetCounter()

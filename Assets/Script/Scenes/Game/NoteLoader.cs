@@ -994,7 +994,7 @@ namespace MajdataPlay.Game
         {
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
+            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time, -5f);
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = (float)timing.time + appearDiff;
             _slideQueueInfos.Add(new()

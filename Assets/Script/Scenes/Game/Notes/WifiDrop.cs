@@ -249,10 +249,10 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            var timing = ThisFixedUpdateSec - _timing;
-            var startTiming = ThisFixedUpdateSec - _startTiming;
+            var thisFrameSec = ThisFrameSec;
+            var startTiming = thisFrameSec - _startTiming;
             var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = ThisFixedUpdateSec - tooLateTiming >= 0;
+            var isTooLate = thisFrameSec - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
                 _isCheckable = true;
@@ -263,9 +263,9 @@ namespace MajdataPlay.Game.Notes
                 {
                     HideAllBar();
                     if (IsClassic)
-                        Judge_Classic(ThisFixedUpdateSec);
+                        Judge_Classic(thisFrameSec);
                     else
-                        Judge(ThisFixedUpdateSec);
+                        Judge(thisFrameSec);
                 }
                 else if (isTooLate)
                     TooLateJudge();

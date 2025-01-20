@@ -146,6 +146,10 @@ namespace MajdataPlay.IO
         {
             _updateIOListener();
         }
+        internal void OnUpdate()
+        {
+
+        }
         void StartInternalIOManager()
         {
             _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);

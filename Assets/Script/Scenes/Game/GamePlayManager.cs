@@ -500,11 +500,7 @@ namespace MajdataPlay.Game
                     break;
                 await UniTask.Yield();
             }
-            _noteManager.InitializeUpdater();
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            MajInstances.SceneSwitcher.FadeOut();
-
-            MajInstances.GameManager.DisableGC();
+            
             Time.timeScale = 1f;
             var firstClockTiming = _anwserSoundList[0].time;
             float extraTime = 5f;
@@ -513,9 +509,15 @@ namespace MajdataPlay.Game
             if (FirstNoteAppearTiming != 0)
                 extraTime += -(FirstNoteAppearTiming + 4f);
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
+            _thisFrameSec = -extraTime;
+            _thisFixedUpdateSec = _thisFrameSec;
 
             StartToPlayAnswer();
-            //UpdateThisFrameSec().Forget();
+            _noteManager.InitializeUpdater();
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            MajInstances.SceneSwitcher.FadeOut();
+
+            MajInstances.GameManager.DisableGC();
 
             State = ComponentState.Running;
             
@@ -591,7 +593,7 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
         }
-        void Update()
+        internal void OnUpdate()
         {
             UpdateAudioTime();
             if (_audioSample is null)
@@ -622,12 +624,6 @@ namespace MajdataPlay.Game
                 }
             }
 
-        }
-        void LateUpdate()
-        {
-            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
-            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-            _thisFrameSec = timeOffset - chartOffset;
         }
         private void CalculateScore(bool playEffect = true)
         {

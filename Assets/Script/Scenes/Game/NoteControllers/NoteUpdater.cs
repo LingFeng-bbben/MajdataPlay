@@ -61,7 +61,7 @@ namespace MajdataPlay.Game
             _lateUpdatableComponents = lateUpdatableComponents.ToArray();
         }
 
-        protected virtual void Update()
+        internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
             foreach (var component in ArrayHelper.ToEnumerable(_updatableComponents))
@@ -103,7 +103,7 @@ namespace MajdataPlay.Game
             var timeSpan = end - start;
             _fixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
-        protected virtual void LateUpdate()
+        internal virtual void OnLateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
             foreach (var component in ArrayHelper.ToEnumerable(_lateUpdatableComponents))

@@ -408,9 +408,10 @@ namespace MajdataPlay.Game.Notes
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
             //var timing = _gpManager.AudioTime - _timing;
-            var startTiming = ThisFixedUpdateSec - _startTiming;
+            var thisFrameSec = ThisFrameSec;
+            var startTiming = thisFrameSec - _startTiming;
             var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = ThisFixedUpdateSec - tooLateTiming >= 0;
+            var isTooLate = thisFrameSec - tooLateTiming >= 0;
 
             if (!_isCheckable)
             {
@@ -435,9 +436,9 @@ namespace MajdataPlay.Game.Notes
                     {
                         HideAllBar();
                         if (IsClassic)
-                            Judge_Classic(ThisFixedUpdateSec);
+                            Judge_Classic(thisFrameSec);
                         else
-                            Judge(ThisFixedUpdateSec);
+                            Judge(thisFrameSec);
                         return;
                     }
                     else if (isTooLate)

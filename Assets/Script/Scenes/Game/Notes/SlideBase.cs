@@ -285,7 +285,6 @@ namespace MajdataPlay.Game.Notes
                     slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
             SetStarActive(state);
-            Active = state;
         }
         protected void SetStarActive(bool state)
         {
@@ -380,6 +379,11 @@ namespace MajdataPlay.Game.Notes
             if(ThisFrameSec > num)
             {
                 SetSlideBarAlpha(1f);
+                return;
+            }
+            else if(ThisFrameSec > fullFadeInTiming)
+            {
+                SetSlideBarAlpha(_maxFadeInAlpha);
                 return;
             }
             else if(ThisFrameSec < fullFadeInTiming)

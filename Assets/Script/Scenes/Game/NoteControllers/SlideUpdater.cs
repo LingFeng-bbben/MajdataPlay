@@ -24,8 +24,8 @@ namespace MajdataPlay.Game
             _queueInfos = infos;
         }
         internal override void OnFixedUpdate() => base.OnFixedUpdate();
-        protected override void LateUpdate() => base.LateUpdate();
-        protected override void Update()
+        internal override void OnLateUpdate() => base.OnLateUpdate();
+        internal override void OnUpdate()
         {
             var gameTime = _gpManager.AudioTime;
             for (var i = 0; i < _queueInfos.Length; i++)
@@ -41,7 +41,7 @@ namespace MajdataPlay.Game
                 }
 
             }
-            base.Update();
+            base.OnUpdate();
         }
         private void OnDestroy()
         {

@@ -31,5 +31,14 @@ namespace MajdataPlay
             noteManager?.OnFixedUpdate();
             _inputManager.OnFixedUpdate();
         }
+        void Update()
+        {
+            var gpManager = MajInstanceHelper<GamePlayManager>.Instance;
+            var noteManager = MajInstanceHelper<NoteManager>.Instance;
+
+            gpManager?.OnUpdate();
+            noteManager?.OnUpdate();
+            _inputManager.OnUpdate();
+        }
     }
 }

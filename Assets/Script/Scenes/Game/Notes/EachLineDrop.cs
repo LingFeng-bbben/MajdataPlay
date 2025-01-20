@@ -9,9 +9,8 @@ using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer
+    internal class EachLineDrop : MajComponent,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer
     {
-        public bool Active { get; private set; }
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -36,7 +35,6 @@ namespace MajdataPlay.Game.Notes
         public NoteStatus State { get; set; } = NoteStatus.Start;
         public bool IsDestroyed => State == NoteStatus.End;
         public NoteQueueInfo QueueInfo => TapQueueInfo.Default;
-        public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
 
         public float timing;
@@ -89,7 +87,7 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             Active = true;
         }
-        public void OnLateUpdate()
+        void OnLateUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
