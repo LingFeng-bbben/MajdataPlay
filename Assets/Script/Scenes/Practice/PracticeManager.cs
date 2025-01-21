@@ -16,7 +16,7 @@ using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 public class PracticeManager : MonoBehaviour
 {
     public TextMeshProUGUI startTimeText;
@@ -48,10 +48,10 @@ public class PracticeManager : MonoBehaviour
         var level = gameinfo.Levels.FirstOrDefault();
         if (songinfo.IsOnline)
         {
-            songinfo = await songinfo.DumpToLocal(cts);
+            songinfo = await songinfo.DumpToLocal(cts.Token);
         }
-        audioTrack = await MajInstances.AudioManager.LoadMusicAsync(songinfo.TrackPath, true);
-        audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
+        audioTrack = (await MajInstances.AudioManager.LoadMusicAsync(songinfo.TrackPath ?? string.Empty, true))!;
+        //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
         await chartAnalyzer.AnalyzeSongDetail(songinfo, level);
@@ -71,7 +71,8 @@ public class PracticeManager : MonoBehaviour
     bool isPressed = false;
     private void OnAreaDown(object sender, InputEventArgs e)
     {
-        if (e.IsUp){
+        if (e.IsUp)
+        {
             isPressed = false;
             return;
         }

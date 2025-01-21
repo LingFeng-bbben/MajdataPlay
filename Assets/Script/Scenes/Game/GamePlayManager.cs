@@ -216,7 +216,7 @@ namespace MajdataPlay.Game
             try
             {
                 if (_songDetail.IsOnline)
-                    _songDetail = await _songDetail.DumpToLocal(_cts);
+                    _songDetail = await _songDetail.DumpToLocal(_cts.Token);
                 await LoadAudioTrack();
                 await ParseChart();
                 await PrepareToPlay();
@@ -279,10 +279,11 @@ namespace MajdataPlay.Game
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
                 {
+                    var playbackSpeed = _playbackSpeed;
                     var startAt = timeRange.Start;
                     var endAt = timeRange.End;
-                    startAt = Math.Max(startAt - 3, 0);
-                    endAt = Math.Min(endAt, _audioSample.Length.TotalSeconds);
+                    startAt = Math.Max(startAt - 3, 0) / playbackSpeed;
+                    endAt = Math.Min(endAt, _audioSample.Length.TotalSeconds) / playbackSpeed;
 
                     if(startAt >= endAt)
                     {
@@ -310,15 +311,7 @@ namespace MajdataPlay.Game
             }
             ChartMirror(ref maidata);
             _chart = new SimaiProcess(maidata);
-            if(PlaybackSpeed != 1)
-                _chart.Scale(PlaybackSpeed);
-            if(_isAllBreak)
-                _chart.ConvertToBreak();
-            if (_isAllEx)
-                _chart.ConvertToEx();
-            if(_isAllTouch)
-                _chart.ConvertToTouch();
-
+            
             if(IsPracticeMode)
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
@@ -337,6 +330,14 @@ namespace MajdataPlay.Game
                     }
                 }
             }
+            if (PlaybackSpeed != 1)
+                _chart.Scale(PlaybackSpeed);
+            if (_isAllBreak)
+                _chart.ConvertToBreak();
+            if (_isAllEx)
+                _chart.ConvertToEx();
+            if (_isAllTouch)
+                _chart.ConvertToTouch();
             if (_chart.notelist.Count == 0)
             {
                 throw new EmptyChartException();
@@ -520,8 +521,9 @@ namespace MajdataPlay.Game
                 while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             }
+            _audioSample.Volume = 0;
             _audioSample.Play();
-            _audioSample.CurrentSec = _audioTrackStartAt;
+            _audioSample.CurrentSec = _audioTrackStartAt * _playbackSpeed;
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
             MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
@@ -529,7 +531,7 @@ namespace MajdataPlay.Game
             {
                 var elapsedSeconds = 0f;
                 var originVol = _setting.Audio.Volume.BGM;
-                _audioSample.Volume = 0;
+                
                 BgHeaderFadeOut();
                 while (elapsedSeconds < 3)
                 {
@@ -541,6 +543,7 @@ namespace MajdataPlay.Game
             }
             else
             {
+                _audioSample.Volume = _setting.Audio.Volume.BGM;
                 await UniTask.Delay(3000);
                 BgHeaderFadeOut();
             }

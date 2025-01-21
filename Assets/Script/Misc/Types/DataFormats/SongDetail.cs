@@ -274,7 +274,7 @@ namespace MajdataPlay.Types
         }
 
         //Dump an online chart to local, return a new SongDetail points to local song
-        public async UniTask<SongDetail> DumpToLocal(CancellationTokenSource _cts)
+        public async UniTask<SongDetail> DumpToLocal(CancellationToken token = default)
         {
             if(!this.IsOnline) throw new Exception("Not an online song");
             var _songDetail = this;
@@ -289,7 +289,6 @@ namespace MajdataPlay.Types
             var chartUri = _songDetail.MaidataPath;
             var bgUri = _songDetail.BGPath;
             var videoUri = _songDetail.VideoPath;
-            var token = _cts.Token;
 
             if (trackUri is null or "")
                 throw new AudioTrackNotFoundException(trackPath);
@@ -303,14 +302,14 @@ namespace MajdataPlay.Types
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                 await UniTask.Yield();
-                await DownloadFile(trackUri, trackPath, _cts);
+                await DownloadFile(trackUri, trackPath, token);
             }
             token.ThrowIfCancellationRequested();
             if (!File.Exists(chartPath))
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                 await UniTask.Yield();
-                await DownloadFile(chartUri, chartPath, _cts);
+                await DownloadFile(chartUri, chartPath, token);
             }
             token.ThrowIfCancellationRequested();
             SongDetail song;
@@ -321,7 +320,7 @@ namespace MajdataPlay.Types
                 {
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                     await UniTask.Yield();
-                    await DownloadFile(bgUri, bgPath, _cts);
+                    await DownloadFile(bgUri, bgPath, token);
                 }
                 catch
                 {
@@ -338,7 +337,7 @@ namespace MajdataPlay.Types
                 {
                     MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     await UniTask.Yield();
-                    await DownloadFile(videoUri, videoPath, _cts);
+                    await DownloadFile(videoUri, videoPath, token);
                 }
                 catch
                 {
@@ -359,10 +358,9 @@ namespace MajdataPlay.Types
         }
 
 
-        static async UniTask DownloadFile(string uri, string savePath, CancellationTokenSource _cts)
+        static async UniTask DownloadFile(string uri, string savePath, CancellationToken token = default)
         {
             var task = HttpTransporter.ShareClient.GetByteArrayAsync(uri);
-            var token = _cts.Token;
             while (!task.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
