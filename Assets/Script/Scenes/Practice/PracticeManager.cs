@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using TMPro;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
@@ -35,9 +36,9 @@ public class PracticeManager : MonoBehaviour
     private AudioSampleWrap audioTrack;
 
     [SerializeField]
-    TextMeshProUGUI _practiveCountText;
+    TextMeshProUGUI _practiceCountText;
     [SerializeField]
-    TextMeshProUGUI _practiveCountValueText;
+    TextMeshProUGUI _practiceCountValueText;
 
     private CancellationTokenSource cts = new CancellationTokenSource();
 
@@ -46,7 +47,7 @@ public class PracticeManager : MonoBehaviour
     Ref<float> _endTimeRef = default;
 
 
-    int _practiveCount = 5;
+    int _practiceCount = 114514;
     bool _isPressed = false;
     float _pressTime = 0;
     float _releaseTime = 0;
@@ -62,8 +63,8 @@ public class PracticeManager : MonoBehaviour
         _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         _startTimeRef = new Ref<float>(ref startTime);
         _endTimeRef = new Ref<float>(ref endTime);
-        _practiveCountText.text = Localization.GetLocalizedText("PractiveCount");
-        _gameInfo.PracticeCount = _practiveCount;
+        //_practiceCountText.text = Localization.GetLocalizedText("PracticeCount");
+        _gameInfo.PracticeCount = _practiceCount;
         Load().Forget();
     }
     async UniTaskVoid Load()
@@ -78,7 +79,7 @@ public class PracticeManager : MonoBehaviour
         //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
-        await chartAnalyzer.AnalyzeSongDetail(songinfo, level);
+        await chartAnalyzer.AnalyzeSongDetail(songinfo, level, totalTime);
         if (_gameInfo.TimeRange is not null)
         {
             startTime = (float)_gameInfo.TimeRange.Value.Start;
@@ -122,7 +123,7 @@ public class PracticeManager : MonoBehaviour
         {
             switch (e.Type)
             {
-                case SensorType.B1:
+/*                case SensorType.B1:
                     _practiveCount--;
                     _practiveCount = _practiveCount.Clamp(1, 99);
                     _practiveCountValueText.SetText(_practiveCount);
@@ -133,10 +134,10 @@ public class PracticeManager : MonoBehaviour
                     _practiveCount = _practiveCount.Clamp(1, 99);
                     _practiveCountValueText.SetText(_practiveCount);
                     _gameInfo.PracticeCount = _practiveCount;
-                    break;
+                    break;*/
                 case SensorType.E6:
                     startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
-                    
+                    audioTrack.CurrentSec = startTime;
                     _isPressed = true;
                     _valueRef = _startTimeRef;
                     _direction = -1;
@@ -145,7 +146,7 @@ public class PracticeManager : MonoBehaviour
                     break;
                 case SensorType.B5:
                     startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
-                    
+                    audioTrack.CurrentSec = startTime;
                     _isPressed = true;
                     _valueRef = _startTimeRef;
                     _direction = 1;
@@ -154,7 +155,7 @@ public class PracticeManager : MonoBehaviour
                     break;
                 case SensorType.B4:
                     endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
-
+                    audioTrack.CurrentSec = endTime;
                     _isPressed = true;
                     _valueRef = _endTimeRef;
                     _direction = -1;
@@ -163,7 +164,7 @@ public class PracticeManager : MonoBehaviour
                     break;
                 case SensorType.E4:
                     endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
-
+                    audioTrack.CurrentSec = endTime;
                     _isPressed = true;
                     _valueRef = _endTimeRef;
                     _direction = 1;
@@ -176,6 +177,10 @@ public class PracticeManager : MonoBehaviour
 
     void Update()
     {
+        if (audioTrack is null)
+        {
+            return;
+        }
         UpdateSBTextMeshProUGUI();
 
         if(_isPressed)
@@ -183,26 +188,29 @@ public class PracticeManager : MonoBehaviour
             _releaseTime = 0;
             if (_valueRef is not Ref<float> valueRef)
                 return;
-            if(_pressTime >= 0.5f)
-            {
-                audioTrack.Pause();
-            }
 
             var deltaTime = Time.deltaTime;
+            _pressTime += deltaTime;
+            if (_pressTime <= 0.5f)
+            {
+                return;
+            }
+
             var ratio = _pressTime switch
             {
-                > 7 => 64,
-                > 5 => 32,
-                > 3 => 16,
+                > 4 => 64,
+                > 3 => 32,
+                > 2 => 16,
                 > 1 => 8,
-                > 0.5f => 2,
+                > 0.5f => 4,
                 _ => 0
             };
             var oldValue = valueRef.Target;
             var newValue = (oldValue + (_step * deltaTime * ratio * _direction)).Clamp(_minValue, _maxValue);
             valueRef.Target = newValue;
-            _pressTime += deltaTime;
-            MajDebug.Log($"Ratio: {ratio}x");
+            
+            audioTrack.CurrentSec = newValue;
+            audioTrack.Play();
         }
         else
         {
@@ -212,7 +220,7 @@ public class PracticeManager : MonoBehaviour
                 _releaseTime += Time.deltaTime;
                 return;
             }
-            else if(!audioTrack.IsPlaying)
+/*            else if(!audioTrack.IsPlaying)
             {
                 //var currentSec = audioTrack.CurrentSec;
 
@@ -226,7 +234,7 @@ public class PracticeManager : MonoBehaviour
                 //}
                 audioTrack.CurrentSec = startTime;
                 audioTrack.Play();
-            }
+            }*/
             else
             {
                 var currentSec = audioTrack.CurrentSec;
@@ -240,10 +248,6 @@ public class PracticeManager : MonoBehaviour
     }
     void UpdateSBTextMeshProUGUI()
     {
-        if (audioTrack is null)
-        {
-            return;
-        }
         var start = TimeSpan.FromSeconds(startTime);
         var end = TimeSpan.FromSeconds(endTime);
         var anarect = chartAnalyzer.GetComponent<RectTransform>().rect;

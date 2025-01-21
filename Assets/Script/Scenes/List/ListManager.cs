@@ -91,7 +91,7 @@ namespace MajdataPlay.List
                         break;
                 }
             }
-            else
+            else if (e.IsButton)
             {
                 if (e.IsUp)
                 {

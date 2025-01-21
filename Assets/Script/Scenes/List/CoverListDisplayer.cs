@@ -44,7 +44,7 @@ namespace MajdataPlay.List
         {
             foreach (var cover in covers)
             {
-                Destroy(cover.GameObject);
+                Destroy(cover.gameObject);
             }
             covers.Clear();
             Mode = CoverListMode.Directory;
@@ -62,7 +62,7 @@ namespace MajdataPlay.List
                 //coversmall.SetCover(song.SongCover);
                 coversmall.SetLevelText(dir.Name);
                 covers.Add(coversmall);
-                coversmall.SetActive(false);
+                coversmall.gameObject.SetActive(false);
                 coversmall.IsOnline = dir.IsOnline;
             }
             if (desiredListPos > covers.Count) desiredListPos = 0;
@@ -76,7 +76,7 @@ namespace MajdataPlay.List
             if (songs.Type == ChartStorageType.Dan) return;
             foreach (var cover in covers)
             {
-                Destroy(cover.GameObject);
+                Destroy(cover.gameObject);
             }
             covers.Clear();
             Mode = CoverListMode.Chart;
@@ -89,7 +89,7 @@ namespace MajdataPlay.List
                 coversmall.SetCover(song);
                 coversmall.SetLevelText(song.Levels[selectedDifficulty]);
                 covers.Add(coversmall);
-                coversmall.SetActive(false);
+                coversmall.gameObject.SetActive(false);
             }
             if (desiredListPos > covers.Count) desiredListPos = 0;
             listPosReal = desiredListPos;
@@ -208,10 +208,12 @@ namespace MajdataPlay.List
                 var cover = covers[i];
                 if (Mathf.Abs(distance) > 7)
                 {
-                    cover.SetActive(false);
+                    if(cover.gameObject.activeSelf)
+                        cover.gameObject.SetActive(false);
                     continue;
                 }
-                cover.SetActive(true);
+                if (!cover.gameObject.activeSelf)
+                    cover.gameObject.SetActive(true);
                 cover.RectTransform.anchoredPosition = GetCoverPosition(radius, distance * Mathf.Deg2Rad * 22.5f);
                 if (Mathf.Abs(distance) > 6)
                 {

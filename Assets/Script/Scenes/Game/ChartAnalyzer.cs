@@ -28,7 +28,7 @@ namespace MajdataPlay.Game
             _rawImage = GetComponent<RawImage>();
         }
         bool lockFlag = false;
-        public async UniTask AnalyzeSongDetail(SongDetail songDetail, ChartLevel level)
+        public async UniTask AnalyzeSongDetail(SongDetail songDetail, ChartLevel level, float length = -1)
         {
             if (lockFlag) return;
             lockFlag = true;
@@ -36,7 +36,7 @@ namespace MajdataPlay.Game
             {
                 var maidata = await songDetail.GetInnerMaidata((int)level);
                 var chart = new SimaiProcess(maidata);
-                var lastnoteTiming = chart.notelist.Last().time;
+                var lastnoteTiming = length == -1 ? chart.notelist.Last().time : length;
                 AnalyzeMaidata(chart, (float)lastnoteTiming);
             }
             catch
