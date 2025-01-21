@@ -34,18 +34,34 @@ public class PracticeManager : MonoBehaviour
     private float totalTime = 0;
     private AudioSampleWrap audioTrack;
 
-    private CancellationTokenSource cts;
-    // Start is called before the first frame update
+    private CancellationTokenSource cts = new CancellationTokenSource();
+
+    Ref<float>? _valueRef = null;
+    Ref<float> _startTimeRef = default;
+    Ref<float> _endTimeRef = default;
+
+
+    bool _isPressed = false;
+    float _pressTime = 0;
+    float _releaseTime = 0;
+    float _minValue = 0;
+    float _maxValue = 0;
+    float _step = 0.2f;
+    float _direction = 1;
+
+    GameInfo _gameInfo;
+
     private void Start()
     {
-        cts = new CancellationTokenSource();
+        _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        _startTimeRef = new Ref<float>(ref startTime);
+        _endTimeRef = new Ref<float>(ref endTime);
         Load().Forget();
     }
     async UniTaskVoid Load()
     {
-        var gameinfo = MajInstanceHelper<GameInfo>.Instance;
-        var songinfo = gameinfo.Charts.FirstOrDefault();
-        var level = gameinfo.Levels.FirstOrDefault();
+        var songinfo = _gameInfo.Charts.FirstOrDefault();
+        var level = _gameInfo.Levels.FirstOrDefault();
         if (songinfo.IsOnline)
         {
             songinfo = await songinfo.DumpToLocal(cts.Token);
@@ -55,25 +71,29 @@ public class PracticeManager : MonoBehaviour
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
         await chartAnalyzer.AnalyzeSongDetail(songinfo, level);
-        if (gameinfo.TimeRange is not null)
+        if (_gameInfo.TimeRange is not null)
         {
-            startTime = (float)gameinfo.TimeRange.Value.Start;
-            endTime = (float)gameinfo.TimeRange.Value.End;
+            startTime = (float)_gameInfo.TimeRange.Value.Start;
+            endTime = (float)_gameInfo.TimeRange.Value.End;
             
         }
-        else { endTime = totalTime; }
+        else 
+        { 
+            endTime = totalTime; 
+        }
         audioTrack.Play();
         audioTrack.CurrentSec = startTime;
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
         MajInstances.SceneSwitcher.FadeOut();
     }
 
-    bool isPressed = false;
+    
     private void OnAreaDown(object sender, InputEventArgs e)
     {
         if (e.IsUp)
         {
-            isPressed = false;
+            _valueRef = null;
+            _isPressed = false;
             return;
         }
         if (e.IsButton)
@@ -81,8 +101,7 @@ public class PracticeManager : MonoBehaviour
             switch (e.Type)
             {
                 case SensorType.A4:
-                    var gameinfo = MajInstanceHelper<GameInfo>.Instance;
-                    gameinfo.TimeRange = new Range<double>(startTime, endTime);
+                    _gameInfo.TimeRange = new Range<double>(startTime, endTime);
                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                     break;
                 case SensorType.A5:
@@ -97,70 +116,123 @@ public class PracticeManager : MonoBehaviour
             {
                 case SensorType.E6:
                     startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
-                    audioTrack.CurrentSec = startTime;
-                    isPressed = true;
-                    ChangeValue(new Ref<float>(ref startTime), -3f).Forget();
+                    
+                    _isPressed = true;
+                    _valueRef = _startTimeRef;
+                    _direction = -1;
+                    _maxValue = endTime;
+                    _minValue = 0;
                     break;
                 case SensorType.B5:
                     startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
-                    audioTrack.CurrentSec = startTime;
-                    isPressed = true;
-                    ChangeValue(new Ref<float>(ref startTime), 3f).Forget();
+                    
+                    _isPressed = true;
+                    _valueRef = _startTimeRef;
+                    _direction = 1;
+                    _maxValue = endTime;
+                    _minValue = 0;
                     break;
                 case SensorType.B4:
                     endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
-                    audioTrack.CurrentSec = endTime-1f;
-                    isPressed = true;
-                    ChangeValue(new Ref<float>(ref endTime), -3f).Forget();
+
+                    _isPressed = true;
+                    _valueRef = _endTimeRef;
+                    _direction = -1;
+                    _maxValue = totalTime;
+                    _minValue = startTime;
                     break;
                 case SensorType.E4:
                     endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
-                    audioTrack.CurrentSec = endTime - 1f;
-                    isPressed = true;
-                    ChangeValue(new Ref<float>(ref endTime), 3f).Forget();
+
+                    _isPressed = true;
+                    _valueRef = _endTimeRef;
+                    _direction = 1;
+                    _maxValue = totalTime;
+                    _minValue = startTime;
                     break;
             }
         }
     }
 
-    async UniTask ChangeValue(Ref<float> value, float delta)
-    {
-        var time = 0f;
-        while (isPressed)
-        {
-            await UniTask.Yield();
-            time += Time.deltaTime;
-            if (time > 0.4)
-            {
-                value.Target = Mathf.Clamp(value.Target + delta*Time.deltaTime, 0, totalTime);
-                audioTrack.CurrentSec = value.Target;
-            }
-            if (time > 1)
-            {
-                value.Target = Mathf.Clamp(value.Target + delta * Time.deltaTime * 2, 0, totalTime);
-                audioTrack.CurrentSec = value.Target;
-            }
-            if (time > 5)
-            {
-                value.Target = Mathf.Clamp(value.Target + delta * Time.deltaTime * 8, 0, totalTime);
-                audioTrack.CurrentSec = value.Target;
-            }
-
-        }
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        if(audioTrack is null) { return; }
+        UpdateSBTextMeshProUGUI();
+
+        if(_isPressed)
+        {
+            _releaseTime = 0;
+            if (_valueRef is not Ref<float> valueRef)
+                return;
+            if(_pressTime >= 0.5f)
+            {
+                audioTrack.Pause();
+            }
+
+            var deltaTime = Time.deltaTime;
+            var ratio = _pressTime switch
+            {
+                > 7 => 64,
+                > 5 => 32,
+                > 3 => 16,
+                > 1 => 8,
+                > 0.5f => 2,
+                _ => 0
+            };
+            var oldValue = valueRef.Target;
+            var newValue = (oldValue + (_step * deltaTime * ratio * _direction)).Clamp(_minValue, _maxValue);
+            valueRef.Target = newValue;
+            _pressTime += deltaTime;
+            MajDebug.Log($"Ratio: {ratio}x");
+        }
+        else
+        {
+            _pressTime = 0;
+            if(_releaseTime < 0.5f)
+            {
+                _releaseTime += Time.deltaTime;
+                return;
+            }
+            else if(!audioTrack.IsPlaying)
+            {
+                //var currentSec = audioTrack.CurrentSec;
+
+                //if (currentSec > endTime)
+                //{
+                //    audioTrack.CurrentSec = startTime;
+                //}
+                //else if (currentSec < startTime)
+                //{
+                //    audioTrack.CurrentSec = startTime;
+                //}
+                audioTrack.CurrentSec = startTime;
+                audioTrack.Play();
+            }
+            else
+            {
+                var currentSec = audioTrack.CurrentSec;
+
+                if(currentSec > endTime)
+                {
+                    audioTrack.CurrentSec = startTime;
+                }
+            }
+        }
+    }
+    void UpdateSBTextMeshProUGUI()
+    {
+        if (audioTrack is null)
+        {
+            return;
+        }
         var start = TimeSpan.FromSeconds(startTime);
-        startTimeText.text = ZString.Format(TIME_STRING, start.Minutes, start.Seconds, start.Milliseconds);
         var end = TimeSpan.FromSeconds(endTime);
-        endTimeText.text = ZString.Format(TIME_STRING, end.Minutes, end.Seconds, end.Milliseconds);
         var anarect = chartAnalyzer.GetComponent<RectTransform>().rect;
         var x = startTime / totalTime * anarect.width;
         var width = (endTime - startTime) / totalTime * anarect.width;
-        selectionBox.sizeDelta =  new Vector2((float)width, anarect.height);
+
+        startTimeText.text = ZString.Format(TIME_STRING, start.Minutes, start.Seconds, start.Milliseconds);
+        endTimeText.text = ZString.Format(TIME_STRING, end.Minutes, end.Seconds, end.Milliseconds);
+        selectionBox.sizeDelta = new Vector2((float)width, anarect.height);
         selectionBox.anchoredPosition = new Vector2((float)x, 0);
 
         var audioLen = audioTrack.Length;
@@ -169,14 +241,7 @@ public class PracticeManager : MonoBehaviour
         timeText.text = ZString.Format(TIME_STRING, current.Minutes, current.Seconds, current.Milliseconds);
         rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);
         progress.value = ((float)(current.TotalMilliseconds / audioLen.TotalMilliseconds)).Clamp(0, 1);
-
-
-        if (audioTrack.CurrentSec >= endTime+1)
-        {
-            audioTrack.CurrentSec = startTime;
-        }
     }
-
     private void OnDestroy()
     {
         cts?.Cancel();
