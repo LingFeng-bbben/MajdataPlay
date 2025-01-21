@@ -34,6 +34,11 @@ public class PracticeManager : MonoBehaviour
     private float totalTime = 0;
     private AudioSampleWrap audioTrack;
 
+    [SerializeField]
+    TextMeshProUGUI _practiveCountText;
+    [SerializeField]
+    TextMeshProUGUI _practiveCountValueText;
+
     private CancellationTokenSource cts = new CancellationTokenSource();
 
     Ref<float>? _valueRef = null;
@@ -41,6 +46,7 @@ public class PracticeManager : MonoBehaviour
     Ref<float> _endTimeRef = default;
 
 
+    int _practiveCount = 5;
     bool _isPressed = false;
     float _pressTime = 0;
     float _releaseTime = 0;
@@ -56,6 +62,8 @@ public class PracticeManager : MonoBehaviour
         _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         _startTimeRef = new Ref<float>(ref startTime);
         _endTimeRef = new Ref<float>(ref endTime);
+        _practiveCountText.text = Localization.GetLocalizedText("PractiveCount");
+        _gameInfo.PracticeCount = _practiveCount;
         Load().Forget();
     }
     async UniTaskVoid Load()
@@ -114,6 +122,18 @@ public class PracticeManager : MonoBehaviour
         {
             switch (e.Type)
             {
+                case SensorType.B1:
+                    _practiveCount--;
+                    _practiveCount = _practiveCount.Clamp(1, 99);
+                    _practiveCountValueText.SetText(_practiveCount);
+                    _gameInfo.PracticeCount = _practiveCount;
+                    break;
+                case SensorType.E2:
+                    _practiveCount++;
+                    _practiveCount = _practiveCount.Clamp(1, 99);
+                    _practiveCountValueText.SetText(_practiveCount);
+                    _gameInfo.PracticeCount = _practiveCount;
+                    break;
                 case SensorType.E6:
                     startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
                     

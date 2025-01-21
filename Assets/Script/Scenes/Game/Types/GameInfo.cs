@@ -26,12 +26,28 @@ namespace MajdataPlay.Game.Types
         public bool IsForceGameover => DanInfo?.IsForceGameover ?? false; 
         public DanInfo? DanInfo { get; init; } = null;
         // TO-DO: Practice Mode
-        public int PracticeCount { get; set; } = 1;
+        public int PracticeCount
+        {
+            get => _practiceCount;
+            set
+            {
+                if (Mode == GameMode.Practice)
+                {
+                    if (_index != 0)
+                        throw new InvalidOperationException();
+                    else if (value <= 0)
+                        throw new ArgumentException();
+
+                    Results = new GameResult[value];
+                }
+                _practiceCount = value;
+            }
+        }
         public Range<long>? ComboRange { get; set; }
         public Range<double>? TimeRange { get; set; }
-        public GameResult[] Results { get; init; }
+        public GameResult[] Results { get; private set; }
 
-        int _playedCount = 0;
+        int _practiceCount = 1;
         int _index = 0;
         SongDetail[] _chartQueue;
         ChartLevel[] _levels;
@@ -140,7 +156,6 @@ namespace MajdataPlay.Game.Types
                         {
                             Current = _chartQueue[_index];
                             CurrentLevel = _levels[_index];
-                            _playedCount++;
                             return true;
                         }
                     }

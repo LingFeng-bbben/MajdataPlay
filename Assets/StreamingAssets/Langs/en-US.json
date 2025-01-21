@@ -626,6 +626,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "How difficult will the judge be"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PractiveCount",
+      "Content": "Count"
     }
   ]
 }
