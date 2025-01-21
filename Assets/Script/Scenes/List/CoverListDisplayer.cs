@@ -34,6 +34,7 @@ namespace MajdataPlay.List
         public float turnSpeed;
         public float radius;
         public float offset;
+        public float angle;
 
         public int selectedDifficulty = 0;
 
@@ -206,7 +207,7 @@ namespace MajdataPlay.List
             {
                 var distance = i - listPosReal;
                 var cover = covers[i];
-                if (Mathf.Abs(distance) > 7)
+                if (Mathf.Abs(distance) > 5)
                 {
                     if(cover.gameObject.activeSelf)
                         cover.gameObject.SetActive(false);
@@ -214,10 +215,10 @@ namespace MajdataPlay.List
                 }
                 if (!cover.gameObject.activeSelf)
                     cover.gameObject.SetActive(true);
-                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, distance * Mathf.Deg2Rad * 22.5f);
-                if (Mathf.Abs(distance) > 6)
+                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
+                if (Mathf.Abs(distance) > 4)
                 {
-                    cover.SetOpacity(-Mathf.Abs(distance) + 7);
+                    cover.SetOpacity(-Mathf.Abs(distance) + 5);
                 }
                 else
                 {
