@@ -45,42 +45,24 @@ namespace MajdataPlay.List
             {
                 switch (e.Type)
                 {
-                    /*case SensorType.A1:
+                    case SensorType.A7:
                         CoverListDisplayer.SlideList(1);
                         break;
-                    case SensorType.D2:
+                    case SensorType.A8:
                         CoverListDisplayer.SlideList(2);
                         break;
-                    case SensorType.A2:
+                    case SensorType.A1:
                         CoverListDisplayer.SlideList(3);
                         break;
-                    case SensorType.D3:
-                        CoverListDisplayer.SlideList(4);
-                        break;
-                    case SensorType.A3:
-                        CoverListDisplayer.SlideList(5);
-                        break;
-                    case SensorType.D4:
-                        CoverListDisplayer.SlideList(6);
-                        break;
-                    case SensorType.A8:
+                    case SensorType.A6:
                         CoverListDisplayer.SlideList(-1);
                         break;
-                    case SensorType.D8:
+                    case SensorType.A5:
                         CoverListDisplayer.SlideList(-2);
                         break;
-                    case SensorType.A7:
+                    case SensorType.A4:
                         CoverListDisplayer.SlideList(-3);
                         break;
-                    case SensorType.D7:
-                        CoverListDisplayer.SlideList(-4);
-                        break;
-                    case SensorType.A6:
-                        CoverListDisplayer.SlideList(-5);
-                        break;
-                    case SensorType.D6:
-                        CoverListDisplayer.SlideList(-6);
-                        break;*/
                     // xxlb
                     case SensorType.B7:
                     case SensorType.B6:
