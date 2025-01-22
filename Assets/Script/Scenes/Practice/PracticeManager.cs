@@ -92,6 +92,7 @@ public class PracticeManager : MonoBehaviour
         }
         audioTrack.Play();
         audioTrack.CurrentSec = startTime;
+        audioTrack.Volume = MajInstances.Setting.Audio.Volume.BGM;
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
         MajInstances.SceneSwitcher.FadeOut();
     }
