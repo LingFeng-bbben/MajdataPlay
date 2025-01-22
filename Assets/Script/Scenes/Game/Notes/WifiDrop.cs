@@ -47,9 +47,9 @@ namespace MajdataPlay.Game.Notes
             _stars[0] = rightStar;
             _stars[1] = centerStar;
             _stars[2] = leftStar;
-            _starRenderers[0] = _stars[0].GetComponent<SpriteRenderer>();
-            _starRenderers[1] = _stars[1].GetComponent<SpriteRenderer>();
-            _starRenderers[2] = _stars[2].GetComponent<SpriteRenderer>();
+            _starRenderers[0] = _stars[0]!.GetComponent<SpriteRenderer>();
+            _starRenderers[1] = _stars[1]!.GetComponent<SpriteRenderer>();
+            _starRenderers[2] = _stars[2]!.GetComponent<SpriteRenderer>();
             _judgeQueues[0] = wifiTable[0];
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
@@ -156,7 +156,7 @@ namespace MajdataPlay.Game.Notes
             Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
 
             LoadSkin();
-            _slideOK.transform.SetParent(transform.parent);
+            _slideOK!.transform.SetParent(transform.parent);
             for (var i = 0; i < _stars.Length; i++)
             {
                 var star = _stars[i];
@@ -452,13 +452,13 @@ namespace MajdataPlay.Game.Notes
             {
                 if (IsClassic)
                 {
-                    _slideOKAnim.SetTrigger("classic");
+                    _slideOKAnim!.SetTrigger("classic");
                 }
                 else if (IsBreak && _judgeResult == JudgeGrade.Perfect)
                 {
-                    _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                    _slideOKAnim!.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                 }
-                _slideOKController.SetResult(_judgeResult);
+                _slideOKController!.SetResult(_judgeResult);
             }
             PlayJudgeSFX(result);
             //PlaySlideOK(result);
@@ -514,12 +514,12 @@ namespace MajdataPlay.Game.Notes
 
             if (_isJustR)
             {
-                _slideOKController.SetR();
+                _slideOKController!.SetR();
             }
             else
             {
-                _slideOKController.SetL();
-                _slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
+                _slideOKController!.SetL();
+                _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
         }
     }

@@ -139,7 +139,7 @@ namespace MajdataPlay.Game.Notes
                 _table.Mirror();
                 Transform.localScale = new Vector3(-1f, 1f, 1f);
                 Transform.rotation = Quaternion.Euler(0f, 0f, -45f * StartPos);
-                _slideOK.transform.localScale = new Vector3(-1f, 1f, 1f);
+                _slideOK!.transform.localScale = new Vector3(-1f, 1f, 1f);
             }
             else
             {
@@ -154,7 +154,7 @@ namespace MajdataPlay.Game.Notes
 
             LoadSlidePath();
             LoadSkin();
-            _slideOK.transform.SetParent(transform.parent);
+            _slideOK!.transform.SetParent(transform.parent);
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             _fadeInTiming = -3.926913f / Speed;
@@ -175,6 +175,14 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[0] = _table.JudgeQueue;
 
             InitializeSlideGroup();
+
+            if(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+            {
+                Destroy(_slideOK);
+                _slideOK = null;
+                _slideOKAnim = null;
+                _slideOKController = null;
+            }
 
             State = NoteStatus.Initialized;
         }
@@ -504,13 +512,13 @@ namespace MajdataPlay.Game.Notes
                 {
                     if (IsClassic)
                     {
-                        _slideOKAnim.SetTrigger("classic");
+                        _slideOKAnim!.SetTrigger("classic");
                     }
                     else if (IsBreak && _judgeResult == JudgeGrade.Perfect)
                     {
-                        _slideOKAnim.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
+                        _slideOKAnim!.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
                     }
-                    _slideOKController.SetResult(_judgeResult);
+                    _slideOKController!.SetResult(_judgeResult);
                 }
                 
                 PlayJudgeSFX(result);
@@ -647,18 +655,18 @@ namespace MajdataPlay.Game.Notes
 
             if (_isJustR)
             {
-                if (_slideOKController.SetR() == 1 && _isMirror)
+                if (_slideOKController!.SetR() == 1 && _isMirror)
                 {
-                    _slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
                     _slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
                 }
             }
             else
             {
-                if (_slideOKController.SetL() == 1 && !_isMirror)
+                if (_slideOKController!.SetL() == 1 && !_isMirror)
                 {
-                    _slideOK.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
                     _slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
                 }

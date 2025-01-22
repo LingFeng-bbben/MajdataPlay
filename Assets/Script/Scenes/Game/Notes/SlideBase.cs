@@ -120,9 +120,9 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         protected GameObject?[] _stars = new GameObject[3];
 
-        protected GameObject _slideOK;
-        protected Animator _slideOKAnim;
-        protected LoadJustSprite _slideOKController;
+        protected GameObject? _slideOK;
+        protected Animator? _slideOKAnim;
+        protected LoadJustSprite? _slideOKController;
 
         protected float _lastWaitTime;
         
@@ -233,7 +233,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected bool PlaySlideOK(in JudgeResult result)
         {
-            if (_slideOK == null)
+            if (_slideOK is null)
                 return false;
             
             bool canPlay;
