@@ -335,7 +335,7 @@ namespace MajdataPlay.Game.Notes
         public virtual void End(bool forceEnd = false)
         {
             if (Parent is not null && !Parent.IsEnded)
-                Parent.End(true);
+                Parent.End(false);
             //foreach (var obj in _slideBars.AsSpan())
             //    obj.SetActive(false);
             //DestroyStars();
