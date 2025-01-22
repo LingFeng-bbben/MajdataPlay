@@ -23,11 +23,6 @@ namespace MajdataPlay.Game.Notes
             get => _isMirror; 
             set => _isMirror = value; 
         }
-        public bool IsSpecialFlip 
-        { 
-            get => _isSpecialFlip; 
-            set => _isSpecialFlip = value; 
-        } // fixes known star problem
 
         List<Vector3> _slidePositions = new();
         List<Quaternion> _slideRotations = new();
@@ -573,13 +568,17 @@ namespace MajdataPlay.Game.Notes
             var starTransform = _starTransforms[0];
             if (star is null)
                 return;
-            var halfFlip = newRotation.eulerAngles;
-
-            halfFlip.z += 180f;
-            if (_isSpecialFlip)
+            
+            if (_isMirror)
+            {
+                var halfFlip = newRotation.eulerAngles;
+                halfFlip.z += 180f;
                 starTransform.rotation = Quaternion.Euler(halfFlip);
+            }
             else
+            {
                 starTransform.rotation = newRotation;
+            }
             //starTransform.rotation = newRotation;
         }
         void LoadSlidePath()
@@ -676,8 +675,5 @@ namespace MajdataPlay.Game.Notes
         [ReadOnlyField]
         [SerializeField]
         bool _isMirror = false;
-        [ReadOnlyField]
-        [SerializeField]
-        bool _isSpecialFlip = false;
     }
 }

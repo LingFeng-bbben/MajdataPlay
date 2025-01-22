@@ -1057,19 +1057,6 @@ namespace MajdataPlay.Game
             SliCompo.IsMirror = isMirror;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
-            if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
-            {
-                // known slide sprite issue
-                //    1 2 3 4 5 6 7 8
-                // p  X X X X X X O O
-                // q  X O O X X X X X
-                var pqEndPos = slideIndex - 26;
-                SliCompo.IsSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
-            }
-            else
-            {
-                SliCompo.IsSpecialFlip = isMirror;
-            }
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = startPos;
