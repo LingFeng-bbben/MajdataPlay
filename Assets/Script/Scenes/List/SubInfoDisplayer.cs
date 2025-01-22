@@ -14,8 +14,10 @@ namespace MajdataPlay.List
     {
         public TMP_Text id_text;
         public TMP_Text good_text;
-        public GameObject commentPrefab;
-        List<GameObject> comments = new List<GameObject>();
+        public TMP_Text CommentText;
+        public GameObject CommentBox;
+        public GameObject llxb;
+
         // Start is called before the first frame update
         public void RefreshContent(SongDetail song)
         {
@@ -23,17 +25,15 @@ namespace MajdataPlay.List
             {
                 id_text.text = "ID: " + song.OnlineId;
                 StopAllCoroutines();
-                foreach (var obj in comments)
-                {
-                    Destroy(obj);
-                }
-                comments.Clear();
                 StartCoroutine(GetOnlineInteraction(song));
+                llxb.SetActive(true);
             }
             else
             {
                 id_text.text = "";
                 good_text.text = "";
+                CommentBox.SetActive(false);
+                llxb.SetActive(false);
             }
         }
 
@@ -54,15 +54,14 @@ namespace MajdataPlay.List
             });
             good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
 
+            CommentBox.SetActive(true);
             foreach (var comment in list.Comments)
             {
-                var text = comment.Sender.Username + "\n" + comment.Content + "\n";
-                var obj = Instantiate(commentPrefab, gameObject.transform);
-                comments.Add(obj);
-                obj.GetComponent<Text>().text = text;
-                yield return new WaitForSeconds(2f);
+                var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
+                CommentText.text = text;
+                yield return new WaitForSeconds(5f);
             }
-
+            CommentBox.SetActive(false);
         }
     }
 }

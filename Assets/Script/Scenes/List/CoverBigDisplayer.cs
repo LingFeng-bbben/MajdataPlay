@@ -24,6 +24,7 @@ namespace MajdataPlay.List
         public TMP_Text ArchieveRate;
         public GameObject APbg;
         public TMP_Text ClearMark;
+        public TMP_Text Rank;
 
         public Color[] diffColors = new Color[6];
 
@@ -96,6 +97,7 @@ namespace MajdataPlay.List
             {
                 APbg.SetActive(false);
                 ArchieveRate.enabled = false;
+                Rank.text = "";
             }
             else
             {
@@ -122,6 +124,36 @@ namespace MajdataPlay.List
                 {
                     APbg.SetActive(true);
                     ClearMark.text = "FC";
+                }
+                var dxacc = score.Acc.DX;
+                var rank = Rank;
+                if (dxacc >= 100.5f)
+                {
+                    rank.text = "SSS+";
+                }
+                else if (dxacc >= 100f)
+                {
+                    rank.text = "SSS";
+                }
+                else if (dxacc >= 99.5f)
+                {
+                    rank.text = "SS+";
+                }
+                else if (dxacc >= 99f)
+                {
+                    rank.text = "SS";
+                }
+                else if (dxacc >= 98f)
+                {
+                    rank.text = "S+";
+                }
+                else if (dxacc >= 97f)
+                {
+                    rank.text = "S";
+                }
+                else
+                {
+                    Rank.text = "";
                 }
             }
         }
