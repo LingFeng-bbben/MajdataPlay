@@ -330,8 +330,6 @@ namespace MajdataPlay.Game
 
                         var startPos = noteA.StartPos;
                         var endPos = noteB.StartPos;
-                        startPos = Rotation(startPos);
-                        endPos = Rotation(endPos);
                         endPos = endPos - startPos;
                         if (endPos == 0)
                             continue;
@@ -349,8 +347,6 @@ namespace MajdataPlay.Game
                         {
                             startPos = noteB.StartPos;
                             endPos = noteA.StartPos;
-                            startPos = Rotation(startPos);
-                            endPos = Rotation(endPos);
                             endPos = endPos - startPos;
                             endPos = endPos < 0 ? endPos + 8 : endPos;
                             endPos = endPos > 8 ? endPos - 8 : endPos;
