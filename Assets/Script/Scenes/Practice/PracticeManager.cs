@@ -94,6 +94,9 @@ public class PracticeManager : MonoBehaviour
         audioTrack.CurrentSec = startTime;
         audioTrack.Volume = MajInstances.Setting.Audio.Volume.BGM;
         MajInstances.InputManager.BindAnyArea(OnAreaDown);
+        MajInstances.LightManager.SetAllLight(Color.white);
+        MajInstances.LightManager.SetButtonLight(Color.green,3);
+        MajInstances.LightManager.SetButtonLight(Color.red, 4);
         MajInstances.SceneSwitcher.FadeOut();
     }
 
