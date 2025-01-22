@@ -146,21 +146,13 @@ namespace MajdataPlay.Game
         }
         static bool IsClassCAvailable(in JudgeResult judgeResult)
         {
-            bool canPlay;
-            var isBreak = judgeResult.IsBreak;
-
             if (judgeResult.IsMissOrTooFast)
                 return false;
-            if (isBreak)
-            {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, judgeResult);
-                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakFastLateType, judgeResult);
-            }
-            else
-            {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
-                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
-            }
+
+            var isBreak = judgeResult.IsBreak;
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
+            canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
+
             if (!canPlay)
                 return canPlay;
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
