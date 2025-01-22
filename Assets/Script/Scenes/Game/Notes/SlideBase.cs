@@ -237,10 +237,7 @@ namespace MajdataPlay.Game.Notes
                 return false;
             
             bool canPlay;
-            if(result.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, result);
-            else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
+            canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
             if (canPlay)
             {
