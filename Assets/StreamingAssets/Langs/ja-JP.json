@@ -501,7 +501,8 @@
       "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "利用不可"
-    },{
+    },
+    {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Audio Track",
       "Content": "トラックをダウンロード中"
@@ -620,6 +621,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "判定の厳しさを調整"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PracticeCount",
+      "Content": "回数"
     }
   ]
 }

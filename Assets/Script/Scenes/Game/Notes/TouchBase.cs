@@ -7,7 +7,7 @@ using MajdataPlay.Game.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public abstract class TouchBase : NoteDrop, INoteQueueMember<TouchQueueInfo>
+    internal abstract class TouchBase : NoteDrop, INoteQueueMember<TouchQueueInfo>
     {
         public TouchGroup? GroupInfo { get; set; }
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;

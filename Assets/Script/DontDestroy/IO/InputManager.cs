@@ -44,6 +44,8 @@ namespace MajdataPlay.IO
         Mutex _buttonCheckerMutex = new();
         IOManager? _ioManager = null;
 
+        Action _updateIOListener = () => { };
+
         void Awake()
         {
             MajInstances.InputManager = this;
@@ -95,7 +97,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                Debug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
@@ -119,7 +121,7 @@ namespace MajdataPlay.IO
             //        Application.Quit();
             //    }
             //    else
-            //        Debug.LogWarning("Missing environment: MSVC runtime library not found.");
+            //        MajDebug.LogWarning("Missing environment: MSVC runtime library not found.");
             //}
         }
         void Start()
@@ -129,15 +131,23 @@ namespace MajdataPlay.IO
                 case DeviceType.Keyboard:
                     CheckEnvironment(false);
                     StartInternalIOManager();
-                    StartInternalIOListener();
+                    _updateIOListener = UpdateInternalIOListener;
                     break;
                 case DeviceType.IO4:
                 case DeviceType.HID:
                     CheckEnvironment();
                     StartExternalIOManager();
-                    StartExternalIOListener();
+                    _updateIOListener = UpdateExternalIOListener;
                     break;
             }
+
+        }
+        internal void OnFixedUpdate()
+        {
+            _updateIOListener();
+        }
+        internal void OnUpdate()
+        {
 
         }
         void StartInternalIOManager()
@@ -158,8 +168,9 @@ namespace MajdataPlay.IO
         {
             if(_ioManager is null)
                 _ioManager = new();
+            MajInstanceHelper<IOManager>.Instance = _ioManager;
             var useHID = MajInstances.Setting.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
-            var executionQueue = GameManager.ExecutionQueue;
+            var executionQueue = MajEnv.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
@@ -222,57 +233,41 @@ namespace MajdataPlay.IO
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
             }
         }
-        void StartInternalIOListener()
+        void UpdateInternalIOListener()
         {
-            UniTask.Void(async () =>
+            try
             {
-                var token = GameManager.GlobalCT;
-                var executionQueue = GameManager.ExecutionQueue;
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (useDummy)
-                            UpdateMousePosition();
-                        else
-                            UpdateSensorState();
-                        UpdateButtonState();
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                    }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
-                }
-            });
+                var executionQueue = MajEnv.ExecutionQueue;
+                if (useDummy)
+                    UpdateMousePosition();
+                else
+                    UpdateSensorState();
+                UpdateButtonState();
+                while (executionQueue.TryDequeue(out var eventAction))
+                    eventAction();
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
-        void StartExternalIOListener()
+        void UpdateExternalIOListener()
         {
-            UniTask.Void(async () =>
+            var executionQueue = MajEnv.ExecutionQueue;
+            try
             {
-                var token = GameManager.GlobalCT;
-                var executionQueue = GameManager.ExecutionQueue;
-                while (!token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        while (executionQueue.TryDequeue(out var eventAction))
-                            eventAction();
-                        UpdateSensorState();
-                        UpdateButtonState();
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                    }
-                    await UniTask.Yield(PlayerLoopTiming.FixedUpdate, token);
-                }
-            });
+                while (executionQueue.TryDequeue(out var eventAction))
+                    eventAction();
+                UpdateSensorState();
+                UpdateButtonState();
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
         void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
         {
@@ -282,17 +277,17 @@ namespace MajdataPlay.IO
             {
                 case IOEventType.Attach:
                 case IOEventType.Debug:
-                    executionQueue.Enqueue(() => Debug.Log(logContent));
+                    executionQueue.Enqueue(() => MajDebug.Log(logContent));
                     break;
                 case IOEventType.ConnectionError:
                 case IOEventType.SerialDeviceReadError:
                 case IOEventType.HidDeviceReadError:
                 case IOEventType.ReconnectionError:
                 case IOEventType.InvalidDevicePropertyError:
-                    executionQueue.Enqueue(() => Debug.LogError(logContent));
+                    executionQueue.Enqueue(() => MajDebug.LogError(logContent));
                     break;
                 case IOEventType.Detach:
-                    executionQueue.Enqueue(() => Debug.LogWarning(logContent));
+                    executionQueue.Enqueue(() => MajDebug.LogWarning(logContent));
                     break;
             }
         }

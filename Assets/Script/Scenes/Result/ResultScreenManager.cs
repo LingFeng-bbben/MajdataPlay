@@ -49,31 +49,7 @@ namespace MajdataPlay.Result
         {
             rank.text = "";
             var gameManager = MajInstances.GameManager;
-            GameResult result;
-            var lastResult = GameManager.LastGameResult;
-            if (lastResult is null)
-            {
-                result = new GameResult()
-                {
-                    Acc = new()
-                    {
-                        Classic = 0,
-                        DX = 0,
-                    },
-                    SongInfo = _gameInfo.Current,
-                    Level = _gameInfo.CurrentLevel,
-                    Fast = 0,
-                    Late = 0,
-                    DXScore = 0,
-                    TotalDXScore = 1,
-                    JudgeRecord = JudgeDetail.Empty,
-                    ComboState = ComboState.None,
-                };
-            }
-            else
-            {
-                result = (GameResult)lastResult;
-            }
+            var result = _gameInfo.GetLastResult();
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
             MajInstances.LightManager.SetAllLight(Color.white);
@@ -142,7 +118,7 @@ namespace MajdataPlay.Result
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
                 MajInstances.ScoreManager.SaveScore(result, result.Level);
-                var score = MajInstances.ScoreManager.ResultToScore(result,result.Level);
+                var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song.ApiEndpoint != null)
                 {
                     OnlineSaveTask = intractSender.SendScore(score);
@@ -242,10 +218,9 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsClick && e.IsButton && e.Type == SensorType.A4)
+            if (e.IsDown && e.IsButton && e.Type == SensorType.A4)
             {
                 var canNextRound = _gameInfo.NextRound();
-                GameManager.LastGameResult = null;
                 if (_gameInfo.IsDanMode)
                 {
                     if (!canNextRound)

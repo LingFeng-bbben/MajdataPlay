@@ -785,6 +785,13 @@ namespace MajdataPlay.Game
         void UpdateMainOutput()
         {
             var bgInfo = MajInstances.Setting.Game.BGInfo;
+            if (_gameInfo.IsDanMode)
+            {
+                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
+                _bgInfoText.color = ComboColor;
+                SetBgInfoActive(true);
+                return;
+            }
             switch (bgInfo)
             {
                 case BGInfoType.CPCombo:
@@ -854,12 +861,6 @@ namespace MajdataPlay.Game
                     break;
                 default:
                     return;
-            }
-            if (_gameInfo.IsDanMode)
-            {
-                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
-                _bgInfoText.color = ComboColor;
-                SetBgInfoActive(true);
             }
         }
         void UpdateRankBoard(in BGInfoType bgInfo)

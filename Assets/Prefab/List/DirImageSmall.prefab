@@ -375,3 +375,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8c0b2efa70a48344b1dcaa65411d6d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  RectTransform: {fileID: 5306759000060175328}
+  Cover: {fileID: 5148527730981321500}
+  LevelBackground: {fileID: 3731573031523001300}
+  Background: {fileID: 3731573031523001300}
+  LevelText: {fileID: 7734258577827090023}
+  Loading: {fileID: 0}
+  Icon: {fileID: 1785469138811009723}

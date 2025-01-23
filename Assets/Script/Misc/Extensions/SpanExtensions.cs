@@ -63,5 +63,23 @@ namespace MajdataPlay.Extensions
                     return index;
             return -1;
         }
+        public static bool Contains<T>(this Span<T> source, T obj) where T : IEquatable<T>
+        {
+            foreach(var item in source)
+            {
+                if (item.Equals(obj))
+                    return true;
+            }
+            return false;
+        }
+        public static bool Any<T>(this Span<T> source, in Predicate<T> matcher)
+        {
+            foreach (var item in source)
+            {
+                if (matcher(item))
+                    return true;
+            }
+            return false;
+        }
     }
 }

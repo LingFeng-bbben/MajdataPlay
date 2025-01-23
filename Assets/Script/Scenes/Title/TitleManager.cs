@@ -56,7 +56,7 @@ namespace MajdataPlay.Title
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (!e.IsClick)
+            if (!e.IsDown)
                 return;
             if (e.IsButton)
                 NextScene();
@@ -107,7 +107,7 @@ namespace MajdataPlay.Title
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogError(ex);
+                                    MajDebug.LogError(ex);
                                     echoText.text = "Login failed for " + endpoint.Name;
                                     await UniTask.Delay(1000);
                                 }

@@ -367,7 +367,7 @@ namespace MajdataPlay.Setting
             {
                 case 1:
                 case -1:
-                    return new Vector3(0.7f, 0.7f, 0.7f);
+                    return new Vector3(0.6f, 0.6f, 0.6f);
                 case 0:
                     return new Vector3(1, 1, 1);
                 default:
@@ -379,9 +379,9 @@ namespace MajdataPlay.Setting
             switch (diff)
             {
                 case 1:
-                    return new Vector3(-365, 0, 0);
+                    return new Vector3(-330, 0, 0);
                 case -1:
-                    return new Vector3(365, 0, 0);
+                    return new Vector3(330, 0, 0);
                 case 0:
                     return new Vector3(0, 0, 0);
                 default:

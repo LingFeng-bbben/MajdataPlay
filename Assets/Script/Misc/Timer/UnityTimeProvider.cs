@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace MajdataPlay.Timer
                 }
                 catch(Exception e)
                 {
-                    Debug.LogException(e);
+                    MajDebug.LogException(e);
                 }
                 
             }

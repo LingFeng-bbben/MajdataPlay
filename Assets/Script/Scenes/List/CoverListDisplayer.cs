@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -25,12 +27,14 @@ namespace MajdataPlay.List
         public GameObject DanSmallPrefab;
         public CoverBigDisplayer CoverBigDisplayer;
         public SubInfoDisplayer SubInfoDisplayer;
+        public ChartAnalyzer chartAnalyzer;
 
         public int desiredListPos = 0;
         public float listPosReal;
         public float turnSpeed;
         public float radius;
         public float offset;
+        public float angle;
 
         public int selectedDifficulty = 0;
 
@@ -41,7 +45,7 @@ namespace MajdataPlay.List
         {
             foreach (var cover in covers)
             {
-                Destroy(cover.GameObject);
+                Destroy(cover.gameObject);
             }
             covers.Clear();
             Mode = CoverListMode.Directory;
@@ -59,7 +63,7 @@ namespace MajdataPlay.List
                 //coversmall.SetCover(song.SongCover);
                 coversmall.SetLevelText(dir.Name);
                 covers.Add(coversmall);
-                coversmall.SetActive(false);
+                coversmall.gameObject.SetActive(false);
                 coversmall.IsOnline = dir.IsOnline;
             }
             if (desiredListPos > covers.Count) desiredListPos = 0;
@@ -73,7 +77,7 @@ namespace MajdataPlay.List
             if (songs.Type == ChartStorageType.Dan) return;
             foreach (var cover in covers)
             {
-                Destroy(cover.GameObject);
+                Destroy(cover.gameObject);
             }
             covers.Clear();
             Mode = CoverListMode.Chart;
@@ -86,7 +90,7 @@ namespace MajdataPlay.List
                 coversmall.SetCover(song);
                 coversmall.SetLevelText(song.Levels[selectedDifficulty]);
                 covers.Add(coversmall);
-                coversmall.SetActive(false);
+                coversmall.gameObject.SetActive(false);
             }
             if (desiredListPos > covers.Count) desiredListPos = 0;
             listPosReal = desiredListPos;
@@ -119,6 +123,7 @@ namespace MajdataPlay.List
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
+                chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
 
                 for (int i = 0; i < covers.Count; i++)
                 {
@@ -170,7 +175,7 @@ namespace MajdataPlay.List
                     songs = dirs[desiredListPos];
                     if(songs.Type == ChartStorageType.List)
                     {
-                        CoverBigDisplayer.SetMeta(songs.Name, "", "", "");
+                        CoverBigDisplayer.SetMeta(songs.Name, "Count:"+songs.Count, "", "");
                     }
                     else
                     {
@@ -188,6 +193,7 @@ namespace MajdataPlay.List
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
+                    chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     break;
             }
@@ -201,16 +207,18 @@ namespace MajdataPlay.List
             {
                 var distance = i - listPosReal;
                 var cover = covers[i];
-                if (Mathf.Abs(distance) > 7)
+                if (Mathf.Abs(distance) > 5)
                 {
-                    cover.SetActive(false);
+                    if(cover.gameObject.activeSelf)
+                        cover.gameObject.SetActive(false);
                     continue;
                 }
-                cover.SetActive(true);
-                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, distance * Mathf.Deg2Rad * 22.5f);
-                if (Mathf.Abs(distance) > 6)
+                if (!cover.gameObject.activeSelf)
+                    cover.gameObject.SetActive(true);
+                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
+                if (Mathf.Abs(distance) > 4)
                 {
-                    cover.SetOpacity(-Mathf.Abs(distance) + 7);
+                    cover.SetOpacity(-Mathf.Abs(distance) + 5);
                 }
                 else
                 {

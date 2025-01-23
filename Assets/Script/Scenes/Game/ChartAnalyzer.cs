@@ -1,3 +1,7 @@
+using Cysharp.Text;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using MajSimaiDecode;
 using SkiaSharp;
 using System;
@@ -6,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,10 +23,33 @@ namespace MajdataPlay.Game
         public UnityEngine.Color slideColor;
         public UnityEngine.Color touchColor;
 
+        public Text anaText;
         void Start()
         {
             _rawImage = GetComponent<RawImage>();
-
+        }
+        bool lockFlag = false;
+        public async UniTask AnalyzeSongDetail(SongDetail songDetail, ChartLevel level, float length = -1)
+        {
+            if (lockFlag) return;
+            lockFlag = true;
+            try
+            {
+                var maidata = await songDetail.GetInnerMaidata((int)level);
+                var chart = new SimaiProcess(maidata);
+                var lastnoteTiming = length == -1 ? chart.notelist.Last().time : length;
+                AnalyzeMaidata(chart, (float)lastnoteTiming);
+            }
+            catch(Exception ex) 
+            {
+                MajDebug.LogException(ex);
+                _rawImage.texture = new Texture2D(0, 0);
+                if (anaText is not null)
+                {
+                    anaText.text = "";
+                }
+            }
+            finally { lockFlag = false; }
         }
 
         public void AnalyzeMaidata(SimaiProcess data, float totalLength)
@@ -30,6 +58,8 @@ namespace MajdataPlay.Game
             var slidePoints = new List<Vector2>();
             var touchPoints = new List<Vector2>();
             var max = 0f;
+            var maxBPM = 0f;
+            var minBPM = 0f;
             for (float time = 0; time < totalLength; time += 0.5f)
             {
                 var timingPoints = data.notelist.FindAll(o => o.time > time - 0.75f && o.time <= time + 0.75f).ToList();
@@ -59,8 +89,20 @@ namespace MajdataPlay.Game
                 tapPoints.Add(new Vector2(x, y0));
                 slidePoints.Add(new Vector2(x, y1));
                 touchPoints.Add(new Vector2(x, y2));
+                maxBPM = data.notelist.Max(o => o.currentBpm);
+                minBPM = data.notelist.Min(o => o.currentBpm);
             }
-
+            if (anaText is not null)
+            {
+                
+                var time = TimeSpan.FromSeconds(totalLength);
+                anaText.text = "Peak Density = " + max +"\n";
+                var avg = tapPoints.Average(o => o.y) + 3f * slidePoints.Average(o => o.y) + 0.5f * touchPoints.Average(o => o.y);
+                var esti = 7.5f * Mathf.Log10(3.8f*(avg + 0.3f * max));
+                anaText.text += "Esti = Lv." + (esti) + "\n";
+                anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
+                anaText.text += "BPM = " + minBPM + " - " + maxBPM; 
+            }
             //normalize
             for (var i = 0; i < tapPoints.Count; i++)
             {

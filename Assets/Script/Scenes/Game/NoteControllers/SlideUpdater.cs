@@ -17,15 +17,15 @@ namespace MajdataPlay.Game
         {
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
-        public void AddSlideQueueInfos(SlideQueueInfo[] infos)
+        internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
             if (infos is null)
                 throw new ArgumentNullException();
             _queueInfos = infos;
         }
-        protected override void FixedUpdate() => base.FixedUpdate();
-        protected override void LateUpdate() => base.LateUpdate();
-        protected override void Update()
+        internal override void OnFixedUpdate() => base.OnFixedUpdate();
+        internal override void OnLateUpdate() => base.OnLateUpdate();
+        internal override void OnUpdate()
         {
             var gameTime = _gpManager.AudioTime;
             for (var i = 0; i < _queueInfos.Length; i++)
@@ -41,7 +41,7 @@ namespace MajdataPlay.Game
                 }
 
             }
-            base.Update();
+            base.OnUpdate();
         }
         private void OnDestroy()
         {

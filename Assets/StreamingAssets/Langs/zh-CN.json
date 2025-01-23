@@ -706,6 +706,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "调整判定的松严"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PracticeCount",
+      "Content": "次数"
     }
   ]
 }

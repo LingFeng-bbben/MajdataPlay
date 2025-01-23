@@ -2,8 +2,8 @@
 {
     public class TouchHoldUpdater : NoteUpdater
     {
-        protected override void FixedUpdate() => base.FixedUpdate();
-        protected override void LateUpdate() => base.LateUpdate();
-        protected override void Update() => base.Update();
+        internal override void OnFixedUpdate() => base.OnFixedUpdate();
+        internal override void OnLateUpdate() => base.OnLateUpdate();
+        internal override void OnUpdate() => base.OnUpdate();
     }
 }

@@ -40,7 +40,7 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsClick && (e.Type == SensorType.E3 || e.Type == SensorType.B3))
+            if (e.IsDown && (e.Type == SensorType.E3 || e.Type == SensorType.B3))
             {
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(SongDetail);
@@ -69,7 +69,7 @@ namespace MajdataPlay.Result
             catch (Exception ex)
             {
                 infotext.text = ex.Message;
-                Debug.LogError(ex);
+                MajDebug.LogError(ex);
                 //MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
@@ -86,7 +86,7 @@ namespace MajdataPlay.Result
             catch (Exception ex)
             {
                 uploadtext.text = ex.Message;
-                Debug.LogError(ex);
+                MajDebug.LogError(ex);
                 return;
             }
         }

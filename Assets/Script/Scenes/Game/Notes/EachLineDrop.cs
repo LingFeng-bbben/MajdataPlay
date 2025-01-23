@@ -9,9 +9,8 @@ using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    public class EachLineDrop : MonoBehaviour,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer, ILateUpdatableComponent<NoteStatus>
+    internal class EachLineDrop : MajComponent,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer
     {
-        public bool Active { get; private set; }
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -34,9 +33,8 @@ namespace MajdataPlay.Game.Notes
         public IStatefulNote? NoteA { get; set; }
         public IStatefulNote? NoteB { get; set; }
         public NoteStatus State { get; set; } = NoteStatus.Start;
-        public bool IsDestroyed => State == NoteStatus.Destroyed;
+        public bool IsDestroyed => State == NoteStatus.End;
         public NoteQueueInfo QueueInfo => TapQueueInfo.Default;
-        public GameObject GameObject => gameObject;
         public bool IsInitialized => State >= NoteStatus.Initialized;
 
         public float timing;
@@ -50,7 +48,7 @@ namespace MajdataPlay.Game.Notes
         NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.Destroyed)
+            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
                 return;
             startPosition = poolingInfo.StartPos;
             timing = poolingInfo.Timing;
@@ -64,11 +62,11 @@ namespace MajdataPlay.Game.Notes
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
             if (DistanceProvider is null)
-                Debug.LogWarning("DistanceProvider not found");
+                MajDebug.LogWarning("DistanceProvider not found");
         }
         public void End(bool forceEnd = false)
         {
-            State = NoteStatus.Destroyed;
+            State = NoteStatus.End;
             RendererState = RendererStatus.Off;
             if (forceEnd)
                 return;
@@ -89,7 +87,7 @@ namespace MajdataPlay.Game.Notes
             RendererState = RendererStatus.Off;
             Active = true;
         }
-        public void ComponentLateUpdate()
+        void OnLateUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
@@ -125,7 +123,7 @@ namespace MajdataPlay.Game.Notes
                     transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     if (NoteA is not null && NoteB is not null)
                     {
-                        if (NoteA.State == NoteStatus.Destroyed || NoteB.State == NoteStatus.Destroyed)
+                        if (NoteA.State == NoteStatus.End || NoteB.State == NoteStatus.End)
                         {
                             End();
                             return;

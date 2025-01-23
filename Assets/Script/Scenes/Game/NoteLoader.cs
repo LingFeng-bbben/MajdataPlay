@@ -330,8 +330,6 @@ namespace MajdataPlay.Game
 
                         var startPos = noteA.StartPos;
                         var endPos = noteB.StartPos;
-                        startPos = Rotation(startPos);
-                        endPos = Rotation(endPos);
                         endPos = endPos - startPos;
                         if (endPos == 0)
                             continue;
@@ -349,8 +347,6 @@ namespace MajdataPlay.Game
                         {
                             startPos = noteB.StartPos;
                             endPos = noteA.StartPos;
-                            startPos = Rotation(startPos);
-                            endPos = Rotation(endPos);
                             endPos = endPos - startPos;
                             endPos = endPos < 0 ? endPos + 8 : endPos;
                             endPos = endPos > 8 ? endPos - 8 : endPos;
@@ -396,7 +392,7 @@ namespace MajdataPlay.Game
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             if (appearTiming < -5f)
@@ -437,7 +433,7 @@ namespace MajdataPlay.Game
             var speed = Math.Abs(NoteSpeed * timing.HSpeed);
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             if (appearTiming < -5f)
@@ -477,7 +473,7 @@ namespace MajdataPlay.Game
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
             var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = noteTiming + appearDiff;
+            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.noteList.Count > 1;
             bool isDouble = false;
@@ -554,7 +550,7 @@ namespace MajdataPlay.Game
             var isFirework = note.isHanabi;
             var noteSortOrder = _touchSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = noteTiming - moveDuration;
+            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.noteType];
@@ -604,7 +600,7 @@ namespace MajdataPlay.Game
             var isBreak = note.isBreak;
             var isEach = timing.noteList.Count > 1;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = noteTiming - moveDuration;
+            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
             var noteSortOrder = _touchSortOrder;
             if (appearTiming < -5f)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
@@ -931,6 +927,7 @@ namespace MajdataPlay.Game
                     eachNotes.Add(result.StarInfo);
                     AddSlideToQueue(timing, result.SlideInstance);
                     UpdateStarRotateSpeed(result, (float)subSlide[i].slideTime, 8.93760109f);
+                    sliObj.Initialize();
                 }
                 else
                 {
@@ -961,8 +958,7 @@ namespace MajdataPlay.Game
                 var isEnd = i == slideCount - 1;
                 var table = SlideTables.FindTableByName(s.SlideType);
                 
-                s.Initialize();
-                totalSlideLen += s.GetSlideLength();
+                totalSlideLen += s.SlideLength;
                 if (isEnd)
                     judgeQueueLen += table!.JudgeQueue.Length;
                 else
@@ -973,7 +969,8 @@ namespace MajdataPlay.Game
                 s.ConnectInfo.TotalSlideLen = totalSlideLen;
                 s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
             });
-            if(slideResult is not null)
+            subSlides.ForEach(s => s.Initialize());
+            if (slideResult is not null)
             {
                 UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
             }
@@ -993,7 +990,7 @@ namespace MajdataPlay.Game
         {
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time;
+            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.time, -5f);
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = (float)timing.time + appearDiff;
             _slideQueueInfos.Add(new()
@@ -1015,12 +1012,12 @@ namespace MajdataPlay.Game
             }
             var slideIndex = SLIDE_PREFAB_MAP[slideShape];
             var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
-            var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var SliCompo = slide.AddComponent<SlideDrop>();
+            //var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            var SliCompo = slide.GetComponent<SlideDrop>();
             var isJustR = detectJustType(note.noteContent, out int endPos);
             var startPos = note.startPosition;
 
-            slide_star.SetActive(true);
+            //slide_star.SetActive(true);
             slide.SetActive(true);
             startPos = Rotation(startPos);
             endPos = Rotation(endPos);
@@ -1033,7 +1030,7 @@ namespace MajdataPlay.Game
                 starInfo = _info;
             }
 
-            SliCompo.SlideType = slideShape;
+            //SliCompo.SlideType = slideShape;
 
             if (timing.noteList.Count > 1)
             {
@@ -1056,23 +1053,10 @@ namespace MajdataPlay.Game
             SliCompo.IsMirror = isMirror;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
-            if (slideIndex - 26 > 0 && slideIndex - 26 <= 8)
-            {
-                // known slide sprite issue
-                //    1 2 3 4 5 6 7 8
-                // p  X X X X X X O O
-                // q  X O O X X X X X
-                var pqEndPos = slideIndex - 26;
-                SliCompo.IsSpecialFlip = isMirror == (pqEndPos == 7 || pqEndPos == 8);
-            }
-            else
-            {
-                SliCompo.IsSpecialFlip = isMirror;
-            }
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
             SliCompo.StartTiming = (float)timing.time;
             SliCompo.StartPos = startPos;
-            SliCompo._stars = new GameObject[] { slide_star };
+            //SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)note.slideStartTime;
             SliCompo.Length = (float)note.slideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.time) * -100) + sort * 5;
@@ -1146,15 +1130,15 @@ namespace MajdataPlay.Game
             WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)note.slideStartTime;
             WifiCompo.Length = (float)note.slideTime;
-            var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
-            WifiCompo._stars = new GameObject[3]
-            {
-                rightStar,
-                centerStar,
-                leftStar
-            };
+            //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
+            //WifiCompo._stars = new GameObject[3]
+            //{
+            //    rightStar,
+            //    centerStar,
+            //    leftStar
+            //};
             if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();

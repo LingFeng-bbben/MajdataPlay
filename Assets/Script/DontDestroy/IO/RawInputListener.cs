@@ -52,7 +52,7 @@ namespace MajdataPlay.IO
         {
             await Task.Run(async () =>
             {
-                var token = GameManager.GlobalCT;
+                var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 while (!token.IsCancellationRequested)
                 {
@@ -85,7 +85,7 @@ namespace MajdataPlay.IO
                     _btnLastTriggerTimes[button.Type] = now;
                 }
                 button.Status = newState;
-                Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+                MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()
                 {
                     Type = button.Type,
@@ -103,7 +103,7 @@ namespace MajdataPlay.IO
             //    var button = buttons.Find(x => x.BindingKey == keyId);
             //    if (button == null)
             //    {
-            //        Debug.LogError($"Key not found:\n{keyId}");
+            //        MajDebug.LogError($"Key not found:\n{keyId}");
             //        continue;
             //    }
             //    var oldState = button.Status;
@@ -115,7 +115,7 @@ namespace MajdataPlay.IO
             //        continue;
             //    _btnLastTriggerTimes[button.Type] = now;
             //    button.Status = newState;
-            //    Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+            //    MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
             //    var msg = new InputEventArgs()
             //    {
             //        Type = button.Type,
@@ -212,7 +212,7 @@ namespace MajdataPlay.IO
         //    var button = buttons.Find(x => x.BindingKey == key);
         //    if (button == null)
         //    {
-        //        Debug.LogError($"Key not found:\n{key}");
+        //        MajDebug.LogError($"Key not found:\n{key}");
         //        return;
         //    }
         //    var oldState = button.Status;
@@ -224,7 +224,7 @@ namespace MajdataPlay.IO
         //        return;
         //    _btnLastTriggerTimes[button.Type] = now;
         //    button.Status = newState;
-        //    Debug.Log($"Key \"{button.BindingKey}\": {newState}");
+        //    MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
         //    var msg = new InputEventArgs()
         //    {
         //        Type = button.Type,

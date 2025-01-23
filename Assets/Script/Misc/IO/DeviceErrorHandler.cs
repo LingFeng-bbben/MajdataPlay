@@ -73,21 +73,21 @@ namespace MajdataPlay.IO
                 if (!isConn)
                     _retryCount++;
                 else
-                    Debug.LogWarning("[DeviceErrHandler] Received a error event but the device connection is OK");
+                    MajDebug.LogWarning("[DeviceErrHandler] Received a error event but the device connection is OK");
             }
             _deviceHandleState[deviceType] = false;
         }
         void Log<T>(T msg)
         {
-            _executionQueue.Enqueue(() => Debug.Log(msg));
+            _executionQueue.Enqueue(() => MajDebug.Log(msg));
         }
         void Warning<T>(T msg)
         {
-            _executionQueue.Enqueue(() => Debug.LogWarning(msg));
+            _executionQueue.Enqueue(() => MajDebug.LogWarning(msg));
         }
         void Error<T>(T msg)
         {
-            _executionQueue.Enqueue(() => Debug.LogError(msg));
+            _executionQueue.Enqueue(() => MajDebug.LogError(msg));
         }
     }
 }
