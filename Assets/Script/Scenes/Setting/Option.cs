@@ -45,6 +45,8 @@ namespace MajdataPlay.Setting
         float? _minValue = null;
 
         int _lastIndex = 0;
+
+        AudioManager _audioManager = MajInstances.AudioManager;
         void Start()
         {
             Localization.OnLanguageChanged += OnLangChanged;
@@ -93,6 +95,11 @@ namespace MajdataPlay.Setting
             {
                 switch (PropertyInfo.Name)
                 {
+                    case "Global":
+                        _maxValue = 1;
+                        _step = 0.05f;
+                        _minValue = 0;
+                        break;
                     case "Answer":
                     case "BGM":
                     case "Tap":
@@ -230,6 +237,24 @@ namespace MajdataPlay.Setting
                     break;
             }
             valueText.text = localizedText;
+            switch (PropertyInfo.Name)
+            {
+                case "Global":
+                case "Answer":
+                case "BGM":
+                case "Tap":
+                case "Judge":
+                case "Slide":
+                case "Break":
+                case "Touch":
+                case "Voice":
+                    UpdateVolume();
+                    break;
+            }
+        }
+        void UpdateVolume()
+        {
+            _audioManager.ReadVolumeFromSettings();
         }
         void Up()
         {

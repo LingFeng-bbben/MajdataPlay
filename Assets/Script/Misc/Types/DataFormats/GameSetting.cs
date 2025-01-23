@@ -68,6 +68,7 @@ namespace MajdataPlay.Types
     }
     public class SFXVolume
     {
+        public float Global { get; set; } = 1f;
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
         public float Tap { get; set; } = 0.3f;

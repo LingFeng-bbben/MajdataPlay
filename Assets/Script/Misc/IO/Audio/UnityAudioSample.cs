@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -27,7 +28,11 @@ namespace MajdataPlay.IO
         public override float Volume
         {
             get => _audioSource.volume;
-            set => _audioSource.volume = value.Clamp(0, 1);
+            set
+            {
+                var volume = value.Clamp(0, 1) * MajInstances.Setting.Audio.Volume.Global.Clamp(0, 1);
+                _audioSource.volume = volume;
+            }
         }
         public override float Speed
         {

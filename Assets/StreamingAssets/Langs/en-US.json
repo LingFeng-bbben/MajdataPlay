@@ -631,6 +631,16 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "PracticeCount",
       "Content": "Count"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global",
+      "Content": "Global"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global_MAJSETTING_DESC",
+      "Content": "Controlling global volume"
     }
   ]
 }
