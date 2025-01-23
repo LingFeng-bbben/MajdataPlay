@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.Types;
 using MajdataPlay.Utils;
-using MajSimaiDecode;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;

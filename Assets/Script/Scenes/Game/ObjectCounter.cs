@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
-using MajSimaiDecode;
+using MajSimai;
 using System;
 using System.Collections.Generic;
 using System.Linq;

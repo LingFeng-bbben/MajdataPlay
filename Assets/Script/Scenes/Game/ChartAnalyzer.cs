@@ -2,7 +2,7 @@ using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
-using MajSimaiDecode;
+using MajSimai;
 using SkiaSharp;
 using System;
 using System.Buffers;
@@ -24,6 +24,7 @@ namespace MajdataPlay.Game
         public UnityEngine.Color touchColor;
 
         public Text anaText;
+        static SimaiParser _simaiParser = SimaiParser.Shared;
         void Start()
         {
             _rawImage = GetComponent<RawImage>();
@@ -35,10 +36,10 @@ namespace MajdataPlay.Game
             lockFlag = true;
             try
             {
-                var maidata = await songDetail.GetInnerMaidata((int)level);
-                var chart = new SimaiProcess(maidata);
-                var lastnoteTiming = length == -1 ? chart.notelist.Last().time : length;
-                AnalyzeMaidata(chart, (float)lastnoteTiming);
+                var simaiFileInfo = await _simaiParser.ParseAsync(songDetail.MaidataPath ?? string.Empty);
+                var maiChart = simaiFileInfo.Levels[(int)level];
+                var lastnoteTiming = length == -1 ? maiChart.NoteTimings.Last().Timing : length;
+                AnalyzeMaidata(maiChart, (float)lastnoteTiming);
             }
             catch(Exception ex) 
             {
@@ -52,7 +53,7 @@ namespace MajdataPlay.Game
             finally { lockFlag = false; }
         }
 
-        public void AnalyzeMaidata(SimaiProcess data, float totalLength)
+        public void AnalyzeMaidata(SimaiChart data, float totalLength)
         {
             var tapPoints = new List<Vector2>();
             var slidePoints = new List<Vector2>();
@@ -62,21 +63,21 @@ namespace MajdataPlay.Game
             var minBPM = 0f;
             for (float time = 0; time < totalLength; time += 0.5f)
             {
-                var timingPoints = data.notelist.FindAll(o => o.time > time - 0.75f && o.time <= time + 0.75f).ToList();
+                var timingPoints = data.NoteTimings.ToList().FindAll(o => o.Timing > time - 0.75f && o.Timing <= time + 0.75f);
                 float y0 = 0, y1 = 0, y2 = 0;
                 foreach (var timingPoint in timingPoints)
                 {
-                    foreach (var note in timingPoint.noteList)
+                    foreach (var note in timingPoint.Notes)
                     {
-                        if (note.noteType == SimaiNoteType.Tap || note.noteType == SimaiNoteType.Hold)
+                        if (note.Type == SimaiNoteType.Tap || note.Type == SimaiNoteType.Hold)
                         {
                             y0++;
                         }
-                        else if (note.noteType == SimaiNoteType.Slide)
+                        else if (note.Type == SimaiNoteType.Slide)
                         {
                             y1 += 2;
                         }
-                        else if (note.noteType == SimaiNoteType.Touch || note.noteType == SimaiNoteType.TouchHold)
+                        else if (note.Type == SimaiNoteType.Touch || note.Type == SimaiNoteType.TouchHold)
                         {
                             y2++;
                         }
@@ -89,8 +90,8 @@ namespace MajdataPlay.Game
                 tapPoints.Add(new Vector2(x, y0));
                 slidePoints.Add(new Vector2(x, y1));
                 touchPoints.Add(new Vector2(x, y2));
-                maxBPM = data.notelist.Max(o => o.currentBpm);
-                minBPM = data.notelist.Min(o => o.currentBpm);
+                maxBPM = data.NoteTimings.Max(o => o.Bpm);
+                minBPM = data.NoteTimings.Min(o => o.Bpm);
             }
             if (anaText is not null)
             {

@@ -1,4 +1,4 @@
-﻿using MajSimaiDecode;
+﻿using MajSimai;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,11 @@ namespace MajdataPlay.Types
     {
         public string RawContent { get; init; } = string.Empty;
 
-        public InvalidChartSyntaxException(SimaiTimingPoint timingPoint) : this(timingPoint.notesContent, $"(at L{timingPoint.rawTextPositionY}:C{timingPoint.rawTextPositionX}) \"{timingPoint.notesContent}\" is not a valid simai syntax", null)
+        public InvalidChartSyntaxException(SimaiTimingPoint timingPoint) : this(timingPoint.RawContent, $"(at L{timingPoint.RawTextPositionY}:C{timingPoint.RawTextPositionX}) \"{timingPoint.RawContent}\" is not a valid simai syntax", null)
         {
 
         }
-        public InvalidChartSyntaxException(SimaiTimingPoint timingPoint, Exception innerE) : this(timingPoint.notesContent, $"(at L{timingPoint.rawTextPositionY}:C{timingPoint.rawTextPositionX}) \"{timingPoint.notesContent}\" is not a valid simai syntax", innerE)
+        public InvalidChartSyntaxException(SimaiTimingPoint timingPoint, Exception innerE) : this(timingPoint.RawContent, $"(at L{timingPoint.RawTextPositionY}:C{timingPoint.RawTextPositionX}) \"{timingPoint.RawContent}\" is not a valid simai syntax", innerE)
         {
 
         }

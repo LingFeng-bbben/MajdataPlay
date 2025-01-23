@@ -4,7 +4,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using MajdataPlay.Attributes;
-using MajSimaiDecode;
+using MajSimai;
 using System;
 using System.IO;
 using System.Linq;
@@ -134,7 +134,7 @@ namespace MajdataPlay.Game
 
         GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         HttpTransporter _httpDownloader = new();
-        SimaiProcess _chart;
+        SimaiChart _chart;
         SongDetail _songDetail;
 
         AudioSampleWrap? _audioSample = null;
@@ -303,14 +303,17 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
-            var maidata = await _songDetail.GetInnerMaidata((int)_gameInfo.CurrentLevel);
+            var levelIndex = (int)_gameInfo.CurrentLevel;
+            var maidata = await _songDetail.GetInnerMaidata(levelIndex);
+            
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
             if (string.IsNullOrEmpty(maidata))
             {
                 throw new EmptyChartException();
             }
             ChartMirror(ref maidata);
-            _chart = new SimaiProcess(maidata);
+            var simaiParser = SimaiParser.Shared;
+            _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
             
             if(IsPracticeMode)
             {
@@ -321,9 +324,9 @@ namespace MajdataPlay.Game
                 else if(_gameInfo.ComboRange is Range<long> comboRange)
                 {
                     _chart.Clamp(comboRange);
-                    if(_chart.notelist.Count != 0)
+                    if(_chart.NoteTimings.Length != 0)
                     {
-                        var startAt = _chart.notelist[0].time;
+                        var startAt = _chart.NoteTimings[0].Timing;
                         startAt = Math.Max(startAt - 3, 0);
 
                         _audioTrackStartAt = (float)startAt;
@@ -338,7 +341,7 @@ namespace MajdataPlay.Game
                 _chart.ConvertToEx();
             if (_isAllTouch)
                 _chart.ConvertToTouch();
-            if (_chart.notelist.Count == 0)
+            if (_chart.IsEmpty)
             {
                 throw new EmptyChartException();
             }
@@ -348,10 +351,10 @@ namespace MajdataPlay.Game
             {
                 //Generate ClockSounds
                 var countnum = _songDetail.ClockCount == null ? 4 : (int)_songDetail.ClockCount;
-                var firstBpm = _chart.notelist.FirstOrDefault().currentBpm;
+                var firstBpm = _chart.NoteTimings.FirstOrDefault().Bpm;
                 var interval = 60 / firstBpm;
                 if(!IsPracticeMode)
-                if (_chart.notelist.Any(o => o.time < countnum * interval))
+                if (_chart.NoteTimings.Any(o => o.Timing < countnum * interval))
                 {
                     //if there is something in first measure, we add clock before the bgm
                     for (int i = 0; i < countnum; i++)
@@ -383,22 +386,23 @@ namespace MajdataPlay.Game
                 }
 
                 //Generate AnwserSounds
-                foreach (var timingPoint in _chart.notelist)
+                foreach (var timingPoint in _chart.NoteTimings)
                 {
-                    if (timingPoint.noteList.All(o => o.isSlideNoHead)) continue;
+                    if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
 
                     _anwserSoundList.Add(new AnwserSoundPoint()
                     {
-                        time = timingPoint.time,
+                        time = timingPoint.Timing,
                         isClock = false,
                         isPlayed = false
                     });
-                    var holds = timingPoint.noteList.FindAll(o => o.noteType == SimaiNoteType.Hold || o.noteType == SimaiNoteType.TouchHold);
-                    if (holds.Count == 0) continue;
+                    var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
+                    if (holds.Length == 0) 
+                        continue;
                     foreach (var hold in holds)
                     {
-                        var newtime = timingPoint.time + hold.holdTime;
-                        if (!_chart.notelist.Any(o => Math.Abs(o.time - newtime) < 0.001) &&
+                        var newtime = timingPoint.Timing + hold.HoldTime;
+                        if (!_chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
                             !_anwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
                             )
                             _anwserSoundList.Add(new AnwserSoundPoint()
