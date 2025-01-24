@@ -18,7 +18,14 @@ namespace MajdataPlay.Utils
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
+            
             LogWriteback();
+#if !(UNITY_EDITOR || DEBUG)
+            Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
+            {
+                MajDebug.Log($"{condition}\n{stackTrace}", type);
+            };
+#endif
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Log<T>(T obj,LogType logLevel = LogType.Log)
