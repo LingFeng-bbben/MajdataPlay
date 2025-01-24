@@ -94,64 +94,6 @@ namespace MajdataPlay.IO
             MajDebug.Log(Bass.LastError);
             MajDebug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }
-        //public BassAudioSample(string path, int globalMixer, bool normalize = true, bool speedChange = false)
-        //{
-        //    if (path.StartsWith("http"))
-        //    {
-        //        MajDebug.Log("Load Online Stream "+ path);
-        //        //var client = HttpTransporter.ShareClient;
-        //        //var task = client.GetByteArrayAsync(path);
-        //        //task.Wait();
-        //        //var buf = task.Result;
-        //        _decode = Bass.CreateStream(path, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
-        //        MajDebug.Log(_decode);
-        //        MajDebug.Log(Bass.LastError);
-        //        var bytelength = Bass.ChannelGetLength(_decode);
-        //        _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
-        //        Volume = 1;
-        //    }
-        //    else
-        //    {
-        //        var buf = System.IO.File.ReadAllBytes(path);
-        //        var decode_orig = Bass.CreateStream(buf, 0, buf.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-        //        if (speedChange)
-        //        {
-        //            //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
-        //            _decode = BassFx.TempoCreate(decode_orig, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-        //        }
-        //        else
-        //        {
-        //            _decode = decode_orig;
-        //        }
-        //        _isSpeedChangeSupported = speedChange;
-        //       Bass.ChannelSetAttribute(_decode, ChannelAttribute.Buffer, 0);
-
-        //        //scan the peak here
-        //        var bytelength = Bass.ChannelGetLength(_decode);
-        //        _length = Bass.ChannelBytes2Seconds(_decode, bytelength);
-        //        if (normalize)
-        //        {
-        //            double channelmax = 0;
-        //            while (Bass.ChannelGetPosition(_decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
-        //            {
-        //                var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(_decode)) / 32768;
-        //                if (level > channelmax) channelmax = level;
-        //            }
-        //            _gain = 1 / channelmax;
-        //            Volume = 1;
-        //        }
-                
-        //    }
-        //    Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
-        //    var reqfreq = (int)Bass.ChannelGetAttribute(globalMixer, ChannelAttribute.Frequency);
-        //    _resampler = BassMix.CreateMixerStream(reqfreq, 2, BassFlags.MixerChanPause | BassFlags.Decode | BassFlags.Float);
-        //    Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
-        //    BassMix.MixerAddChannel(_resampler, _decode , BassFlags.Default);
-        //    BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-        //    //Bass.ChannelStop(_decode);
-        //    MajDebug.Log(Bass.LastError);
-        //    MajDebug.Log("Mixer Add Channel" + path + BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default));
-        //}
         ~BassAudioSample() => Dispose();
 
         public override void PlayOneShot()
@@ -195,6 +137,10 @@ namespace MajdataPlay.IO
         static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
         {
             var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            if(decode == 0)
+            {
+                throw new NotSupportedException();
+            }
             if (speedChange)
             {
                 //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
