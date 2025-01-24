@@ -13,29 +13,33 @@ namespace MajdataPlay.IO
         Dictionary<int, SensorType> _instanceID2SensorTypeMappingTable = new();
         void UpdateMousePosition()
         {
-            if (Input.GetMouseButton(0))
+            Input.multiTouchEnabled = true;
+            if (Input.touchCount>0)
             {
-                Vector3 cubeRay = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var ray = new Ray(cubeRay, Vector3.forward);
-                var ishit = Physics.Raycast(ray, out var hitInfo);
+                Debug.Log(Input.touchCount);
+                var touches = Input.touches;
 
                 Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type, s => s.Status);
                 Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type, x => SensorStatus.Off);
 
-                if (ishit)
+                foreach ( var touch in touches)
                 {
-                    var id = hitInfo.colliderInstanceID;
-                    if (_instanceID2SensorTypeMappingTable.TryGetValue(id,out var type))
+                    if(touch.phase == TouchPhase.Ended|| touch.phase == TouchPhase.Canceled)
                     {
-                        newSensorsState[type] = SensorStatus.On;
+                        continue;
+                    }
+                    Vector3 cubeRay = Camera.main.ScreenToWorldPoint(touch.position);
+                    var ray = new Ray(cubeRay, Vector3.forward);
+                    var ishit = Physics.Raycast(ray, out var hitInfo);
+                    if (ishit)
+                    {
+                        var id = hitInfo.colliderInstanceID;
+                        if (_instanceID2SensorTypeMappingTable.TryGetValue(id, out var type))
+                        {
+                            newSensorsState[type] = SensorStatus.On;
+                        }
                     }
                 }
-                else
-                {
-                    foreach (var s in _sensors.AsSpan())
-                        SetSensorState(s.Type, SensorStatus.Off);
-                }
-
                 /*var x = Input.mousePosition.x / Screen.width * 2 - 1;
                 var y = Input.mousePosition.y / Screen.width * 2 - 1;
                 var distance = Math.Sqrt(x * x + y * y);
@@ -124,6 +128,31 @@ namespace MajdataPlay.IO
                     if (isInRange(angle, 0, 90) || isInRange(angle, 180, 90))
                         newSensorsState[SensorType.C] = SensorStatus.On;
                 }*/
+
+                foreach (var pair in newSensorsState)
+                {
+                    var type = pair.Key;
+                    var nState = newSensorsState[type];
+                    var oState = oldSensorsState[type];
+                    if (oState != nState)
+                        SetSensorState(type, nState);
+                }
+            }else if (Input.GetMouseButton(0))
+            {
+                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type, s => s.Status);
+                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type, x => SensorStatus.Off);
+
+                Vector3 cubeRaym = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var raym = new Ray(cubeRaym, Vector3.forward);
+                var ishitm = Physics.Raycast(raym, out var hitInfom);
+                if (ishitm)
+                {
+                    var id = hitInfom.colliderInstanceID;
+                    if (_instanceID2SensorTypeMappingTable.TryGetValue(id, out var type))
+                    {
+                        newSensorsState[type] = SensorStatus.On;
+                    }
+                }
 
                 foreach (var pair in newSensorsState)
                 {

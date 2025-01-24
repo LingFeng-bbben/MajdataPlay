@@ -626,6 +626,16 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "PracticeCount",
       "Content": "回数"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global",
+      "Content": "グローバル"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global_MAJSETTING_DESC",
+      "Content": "グローバルボリュームの制御"
     }
   ]
 }

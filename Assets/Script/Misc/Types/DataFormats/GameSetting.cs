@@ -56,7 +56,7 @@ namespace MajdataPlay.Types
         public float InnerJudgeDistance { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
         public string Resolution { get; set; } = "Auto";
-        public int TargetFPS = 240;
+        public int TargetFPS { get; set; } = 240;
     }
     public class SoundOptions
     {
@@ -68,6 +68,7 @@ namespace MajdataPlay.Types
     }
     public class SFXVolume
     {
+        public float Global { get; set; } = 1f;
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
         public float Tap { get; set; } = 0.3f;

@@ -50,7 +50,11 @@ namespace MajdataPlay.IO
         public override float Volume
         {
             get => (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
-            set => Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, value.Clamp(0, 2)*_gain) ;
+            set
+            {
+                var volume = value.Clamp(0, 2) * _gain * MajInstances.Setting.Audio.Volume.Global.Clamp(0, 1);
+                Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
+            }
         }
         public override float Speed 
         {

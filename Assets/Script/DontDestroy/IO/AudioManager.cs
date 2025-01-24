@@ -17,6 +17,7 @@ using UnityEditor;
 using System;
 using System.Linq;
 using MajdataPlay.Collections;
+using System.Text;
 
 #nullable enable
 namespace MajdataPlay.IO
