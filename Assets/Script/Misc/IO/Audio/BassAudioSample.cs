@@ -42,6 +42,7 @@ namespace MajdataPlay.IO
                 }
             }
         }
+        public override bool IsEmpty => false;
         public override double CurrentSec
         {
             get => Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));

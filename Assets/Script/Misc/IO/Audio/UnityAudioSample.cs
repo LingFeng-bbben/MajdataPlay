@@ -20,6 +20,7 @@ namespace MajdataPlay.IO
             }
             set { _audioSource.loop = value; }
         }
+        public override bool IsEmpty => false;
         public override double CurrentSec
         {
             get => _audioSource.time;

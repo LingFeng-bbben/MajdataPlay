@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NeoSmart.AsyncLock</id>
+    <version>3.2.1</version>
+    <authors>NeoSmart Technologies, Mahmoud Al-Qudsi</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://neosmart.net/blog/2017/asynclock-an-asyncawait-friendly-locking-library-for-c-and-net/</projectUrl>
+    <description>A C# lock replacement for async/await, supporting recursion/re-entrance and asynchronous waits. Handles async recursion correctly - note that Nito.AsyncEx does not!</description>
+    <releaseNotes>3.2: New TryLock() and TryLockAsync() methods, CancellationToken support for synchronous locking routines.
+
+3.0: Smarter method of detecting recursion for faster and more-reliable locking on all platforms.
+
+3.1: Added synchronous locking that may be intermixed with async locking.
+
+3.2: Added TryLock() and TryLockAsync() methods.</releaseNotes>
+    <copyright>Copyright NeoSmart Technologies 2017-2022</copyright>
+    <tags>asynclock, async await, async, await, lock, synchronization</tags>
+    <repository type="git" url="https://github.com/neosmart/AsyncLock" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net5.0" />
+    </dependencies>
+  </metadata>
+</package>

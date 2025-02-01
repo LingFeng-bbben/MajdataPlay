@@ -6,6 +6,7 @@ namespace MajdataPlay.IO
     public abstract class AudioSampleWrap : IDisposable, IPausableSoundProvider
     {
         public string Name { get; set; }
+        public abstract bool IsEmpty { get; }
         public SFXSampleType SampleType { get; set; }
         public abstract bool IsPlaying { get; }
         public abstract float Volume { get; set; }

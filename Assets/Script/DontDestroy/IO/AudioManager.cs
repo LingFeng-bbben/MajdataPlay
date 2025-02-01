@@ -195,7 +195,7 @@ namespace MajdataPlay.IO
             var volume = MajInstances.Setting.Audio.Volume;
             foreach(var sample in SFXSamples)
             {
-                if(sample is null) 
+                if(sample is null || sample.IsEmpty) 
                     continue;
                 var vol = sample.SampleType switch
                 {
@@ -212,7 +212,7 @@ namespace MajdataPlay.IO
             }
         }
 
-        public AudioSampleWrap? LoadMusic(string path, bool speedChange = false)
+        public AudioSampleWrap LoadMusic(string path, bool speedChange = false)
         {
             var backend = MajInstances.Setting.Audio.Backend;
             if (File.Exists(path))
@@ -231,10 +231,10 @@ namespace MajdataPlay.IO
             else
             {
                 MajDebug.LogWarning(path + " dos not exists");
-                return null;
+                return EmptyAudioSample.Shared;
             }
         }
-        public AudioSampleWrap? LoadMusicFromUri(Uri uri)
+        public AudioSampleWrap LoadMusicFromUri(Uri uri)
         {
             var backend = MajInstances.Setting.Audio.Backend;
             switch (backend)
@@ -248,7 +248,7 @@ namespace MajdataPlay.IO
                     throw new NotImplementedException("Backend not supported");
             }
         }
-        public async UniTask<AudioSampleWrap?> LoadMusicAsync(string path, bool speedChange = false)
+        public async UniTask<AudioSampleWrap> LoadMusicAsync(string path, bool speedChange = false)
         {
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Setting.Audio.Backend;
@@ -269,10 +269,10 @@ namespace MajdataPlay.IO
             else
             {
                 MajDebug.LogWarning(path + " dos not exists");
-                return null;
+                return EmptyAudioSample.Shared;
             }
         }
-        public async UniTask<AudioSampleWrap?> LoadMusicFromUriAsync(Uri uri)
+        public async UniTask<AudioSampleWrap> LoadMusicFromUriAsync(Uri uri)
         {
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Setting.Audio.Backend;

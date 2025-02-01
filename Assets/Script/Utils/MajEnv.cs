@@ -6,6 +6,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,6 +21,9 @@ namespace MajdataPlay.Utils
     {
         public const int DEFAULT_LAYER = 0;
         public const int HIDDEN_LAYER = 3;
+        public const int HTTP_BUFFER_SIZE = 8192;
+        public const int HTTP_REQUEST_MAX_RETRY = 4;
+        public const int HTTP_TIMEOUT_MS = 4000;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         public static string AssestPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string ChartPath { get; } = Path.Combine(AssestPath, "MaiCharts");
@@ -30,6 +35,13 @@ namespace MajdataPlay.Utils
         public static string ScoreDBPath { get; } = Path.Combine(AssestPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
         public static Thread MainThread { get; } = Thread.CurrentThread;
+        public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()
+        {
+            Proxy = WebRequest.GetSystemWebProxy(),
+            UseProxy = true,
+            UseCookies = true,
+            CookieContainer = new CookieContainer(),
+        });
         public static GameSetting UserSetting => MajInstances.Setting;
         public static CancellationToken GlobalCT => GameManager.GlobalCT;
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
@@ -52,6 +64,7 @@ namespace MajdataPlay.Utils
 
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
+            SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
         }
         static void CheckAndLoadUserSetting()
         {

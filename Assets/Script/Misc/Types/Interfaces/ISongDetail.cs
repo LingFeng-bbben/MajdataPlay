@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -21,11 +22,11 @@ namespace MajdataPlay.Types
         DateTime Timestamp { get; }
         string Hash { get; }
 
-        UniTask Preload();
-        UniTask<string> GetVideoPathAsync();
-        UniTask<Sprite> GetCoverAsync(bool isCompressed);
-        UniTask<AudioSampleWrap> GetAudioTrackAsync();
-        UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync();
-        UniTask<SimaiFile> GetMaidataAsync();
+        UniTask Preload(CancellationToken token = default);
+        UniTask<string> GetVideoPathAsync(CancellationToken token = default);
+        UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default);
+        UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default);
+        UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default);
+        UniTask<SimaiFile> GetMaidataAsync(CancellationToken token = default);
     }
 }
