@@ -28,6 +28,7 @@ namespace MajdataPlay.Types
         public ChartStorageLocation Location { get; } = ChartStorageLocation.Online;
         public DateTime Timestamp { get; init; }
         public string Hash { get; init; }
+        public ApiEndpoint ServerInfo => _serverInfo;
 
         readonly string _hashHexStr = string.Empty;
         readonly string _cachePath = string.Empty;
@@ -48,12 +49,13 @@ namespace MajdataPlay.Types
         AudioSampleWrap? _previewAudioTrack = null;
         Sprite? _cover = null;
         Sprite? _fullSizeCover = null;
+        SimaiFile? _maidata = null;
 
-        AsyncLock _previewAudioTrackLock = new();
-        AsyncLock _audioTrackLock = new();
-        AsyncLock _videoPathLock = new();
-        AsyncLock _coverLock = new();
-        AsyncLock _maidataLock = new();
+        readonly AsyncLock _previewAudioTrackLock = new();
+        readonly AsyncLock _audioTrackLock = new();
+        readonly AsyncLock _videoPathLock = new();
+        readonly AsyncLock _coverLock = new();
+        readonly AsyncLock _maidataLock = new();
 
         public OnlineSongDetail(ApiEndpoint serverInfo, MajnetSongDetail songDetail)
         {
@@ -93,132 +95,189 @@ namespace MajdataPlay.Types
 
         public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default)
         {
-            using (await _previewAudioTrackLock.LockAsync(token))
+            try
             {
-                if (_previewAudioTrack is not null)
+                using (await _previewAudioTrackLock.LockAsync(token))
+                {
+                    if (_previewAudioTrack is not null)
+                        return _previewAudioTrack;
+                    var audioManager = MajInstances.AudioManager;
+                    var sample = await audioManager.LoadMusicFromUriAsync(_trackUri);
+
+                    _previewAudioTrack = sample;
+
                     return _previewAudioTrack;
-                var audioManager = MajInstances.AudioManager;
-                var sample = await audioManager.LoadMusicFromUriAsync(_trackUri);
-
-                _previewAudioTrack = sample;
-
-                return _previewAudioTrack;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
             }
         }
         public async UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default)
         {
-            using (await _audioTrackLock.LockAsync(token))
+            try
             {
-                if(_audioTrack is not null)
-                    return _audioTrack;
-                var savePath = Path.Combine(_cachePath, "track.mp3");
-                
-                if(File.Exists(savePath))
+                using (await _audioTrackLock.LockAsync(token))
                 {
-                    var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                    if(!sampleWarp.IsEmpty)
+                    if (_audioTrack is not null)
+                        return _audioTrack;
+                    var savePath = Path.Combine(_cachePath, "track.mp3");
+
+                    if (File.Exists(savePath))
                     {
-                        _audioTrack = sampleWarp;
+                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                        if (!sampleWarp.IsEmpty)
+                        {
+                            _audioTrack = sampleWarp;
+                        }
+                        else
+                        {
+                            File.Delete(savePath);
+                            await DownloadFile(_trackUri, savePath, token);
+                            sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                            _audioTrack = sampleWarp;
+                        }
+                        return sampleWarp;
                     }
                     else
-                    { 
-                        File.Delete(savePath);
+                    {
                         await DownloadFile(_trackUri, savePath, token);
-                        sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
                         _audioTrack = sampleWarp;
-                    }
-                    return sampleWarp;
-                }
-                else
-                {
-                    await DownloadFile(_trackUri, savePath, token);
-                    var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                    _audioTrack = sampleWarp;
 
-                    return sampleWarp;
+                        return sampleWarp;
+                    }
                 }
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
             }
         }
         public async UniTask Preload(CancellationToken token = default)
         {
             //await GetAudioTrackAsync(token);
-            await GetMaidataAsync(token);
+            await GetMaidataAsync(token: token);
             await GetCoverAsync(false, token);
             await GetCoverAsync(true, token);
         }
         public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
         {
-            using (await _videoPathLock.LockAsync(token))
+            try
             {
-                var savePath = Path.Combine(_cachePath, "bg.mp4");
-
-                if(File.Exists(savePath))
+                using (await _videoPathLock.LockAsync(token))
                 {
+                    var savePath = Path.Combine(_cachePath, "bg.mp4");
+
+                    if (File.Exists(savePath))
+                    {
+                        return savePath;
+                    }
+                    await DownloadFile(_videoUri, savePath, token);
+
                     return savePath;
                 }
-                await DownloadFile(_videoUri, savePath, token);
-
-                return savePath;
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
             }
         }
         public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
         {
-            using (await _coverLock.LockAsync(token))
+            try
             {
-                if (isCompressed)
+                using (await _coverLock.LockAsync(token))
                 {
-                    if (_cover is not null)
-                        return _cover;
-                    var savePath = Path.Combine(_cachePath, "bg.jpg");
-                    if(File.Exists(savePath))
+                    if (isCompressed)
                     {
-                        _cover = await SpriteLoader.LoadAsync(savePath,token);
+                        if (_cover is not null)
+                            return _cover;
+                        var savePath = Path.Combine(_cachePath, "bg.jpg");
+                        if (File.Exists(savePath))
+                        {
+                            _cover = await SpriteLoader.LoadAsync(savePath, token);
+
+                            return _cover;
+                        }
+                        await DownloadFile(_coverUri, savePath, token);
+                        _cover = await SpriteLoader.LoadAsync(savePath, token);
 
                         return _cover;
                     }
-                    await DownloadFile(_coverUri, savePath, token);
-                    _cover = await SpriteLoader.LoadAsync(savePath, token);
-
-                    return _cover;
-                }
-                else
-                {
-                    if(_fullSizeCover is not null)
-                        return _fullSizeCover;
-                    var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
-                    if (File.Exists(savePath))
+                    else
                     {
+                        if (_fullSizeCover is not null)
+                            return _fullSizeCover;
+                        var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
+                        if (File.Exists(savePath))
+                        {
+                            _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
+
+                            return _fullSizeCover;
+                        }
+                        await DownloadFile(_fullSizeCoverUri, savePath, token);
                         _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
 
                         return _fullSizeCover;
                     }
-                    await DownloadFile(_fullSizeCoverUri, savePath, token);
-                    _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
-
-                    return _fullSizeCover;
                 }
             }
-        }
-        public async UniTask<SimaiFile> GetMaidataAsync(CancellationToken token = default)
-        {
-            using (await _maidataLock.LockAsync(token))
+            catch
             {
-                var savePath = Path.Combine(_cachePath, "maidata.txt");
-
-                if(File.Exists(savePath))
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }
+        }
+        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default)
+        {
+            if (!ignoreCache && _maidata is not null)
+                return _maidata;
+            try
+            {
+                using (await _maidataLock.LockAsync(token))
                 {
-                    var oldHash = await HashHelper.ComputeHashAsBase64StringAsync(await File.ReadAllBytesAsync(savePath, token));
-                    if (oldHash != Hash)
+                    var savePath = Path.Combine(_cachePath, "maidata.txt");
+
+                    if (File.Exists(savePath))
+                    {
+                        var oldHash = await HashHelper.ComputeHashAsBase64StringAsync(await File.ReadAllBytesAsync(savePath, token));
+                        if (oldHash != Hash)
+                        {
+                            await DownloadFile(_maidataUri, savePath, token);
+                        }
+                    }
+                    else
                     {
                         await DownloadFile(_maidataUri, savePath, token);
                     }
+                    _maidata = await SimaiParser.Shared.ParseAsync(savePath);
+                    return _maidata;
                 }
-                else
-                {
-                    await DownloadFile(_maidataUri, savePath, token);
-                }
-
-                return await SimaiParser.Shared.ParseAsync(savePath);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
             }
         }
 

@@ -24,7 +24,7 @@ namespace MajdataPlay.List
         public GameObject Loading;
         public GameObject Icon;
         public GameObject? mask = null;
-        SongDetail _boundSong;
+        ISongDetail _boundSong;
 
         readonly CancellationTokenSource _cts = new();
 
@@ -52,7 +52,7 @@ namespace MajdataPlay.List
         {
             LevelText.text = text;
         }
-        public void SetCover(SongDetail detail)
+        public void SetSongDetail(ISongDetail detail)
         {
             _boundSong = detail;
         }
@@ -62,7 +62,7 @@ namespace MajdataPlay.List
             {
                 if (!_isRefreshed)
                 {
-                    SetCoverAsync(_boundSong).Forget();
+                    SetCoverAsync().Forget();
                     _isRefreshed = true;
                 }
             }
@@ -71,14 +71,13 @@ namespace MajdataPlay.List
         {
             _cts.Cancel();
         }
-        async UniTaskVoid SetCoverAsync(SongDetail detail)
+        async UniTaskVoid SetCoverAsync()
         {
-            var spriteTask = detail.GetSpriteAsync(_cts.Token);
+            var token = _cts.Token;
             Loading.SetActive(true);
-            while (!spriteTask.IsCompleted)
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, _cts.Token);
-            _cts.Token.ThrowIfCancellationRequested();
-            Cover.sprite = spriteTask.Result;
+            var cover = await _boundSong.GetCoverAsync(true, token);
+            token.ThrowIfCancellationRequested();
+            Cover.sprite = cover;
             Loading.SetActive(false);
         }
     }

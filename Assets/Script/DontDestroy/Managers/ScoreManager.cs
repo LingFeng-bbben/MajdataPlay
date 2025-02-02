@@ -41,7 +41,7 @@ namespace MajdataPlay
                 scores = result;
             }
         }
-        public MaiScore GetScore(SongDetail song, ChartLevel level)
+        public MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
             var record = scores.Find(x => x.Hash == song.Hash && x.ChartLevel == level);
             if (record is null)
@@ -59,7 +59,7 @@ namespace MajdataPlay
         {
             try
             {
-                var songInfo = result.SongInfo;
+                var songInfo = result.SongDetail;
 
                 var record = scores.Find(x => x.Hash == songInfo.Hash && x.ChartLevel == level);
                 if (record is null)

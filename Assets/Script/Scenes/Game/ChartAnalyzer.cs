@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajSimai;
+using NeoSmart.AsyncLock;
 using SkiaSharp;
 using System;
 using System.Buffers;
@@ -24,33 +25,37 @@ namespace MajdataPlay.Game
         public UnityEngine.Color touchColor;
 
         public Text anaText;
-        static SimaiParser _simaiParser = SimaiParser.Shared;
+        readonly AsyncLock _locker = new();
+
         void Start()
         {
             _rawImage = GetComponent<RawImage>();
         }
-        bool lockFlag = false;
-        public async UniTask AnalyzeSongDetail(SongDetail songDetail, ChartLevel level, float length = -1)
+        
+        public async UniTask AnalyzeSongDetail(ISongDetail songDetail, ChartLevel level, float length = -1)
         {
-            if (lockFlag) return;
-            lockFlag = true;
-            try
+            if (!_locker.TryLock(() => { }, TimeSpan.Zero))
+                return;
+            using (await _locker.LockAsync())
             {
-                var simaiFileInfo = await _simaiParser.ParseAsync(songDetail.MaidataPath ?? string.Empty);
-                var maiChart = simaiFileInfo.Levels[(int)level];
-                var lastnoteTiming = length == -1 ? maiChart.NoteTimings.Last().Timing : length;
-                AnalyzeMaidata(maiChart, (float)lastnoteTiming);
-            }
-            catch(Exception ex) 
-            {
-                MajDebug.LogException(ex);
-                _rawImage.texture = new Texture2D(0, 0);
-                if (anaText is not null)
+                try
                 {
-                    anaText.text = "";
+                    var simaiFile = await songDetail.GetMaidataAsync();
+                    var maiChart = simaiFile.Levels[(int)level];
+                    var lastnoteTiming = length == -1 ? maiChart.NoteTimings.Last().Timing : length;
+                    AnalyzeMaidata(maiChart, (float)lastnoteTiming);
+                }
+                catch(Exception ex)
+                {
+                    MajDebug.LogException(ex);
+                    await UniTask.Yield();
+                    _rawImage.texture = new Texture2D(0, 0);
+                    if (anaText is not null)
+                    {
+                        anaText.text = "";
+                    }
                 }
             }
-            finally { lockFlag = false; }
         }
 
         public void AnalyzeMaidata(SimaiChart data, float totalLength)
@@ -115,7 +120,7 @@ namespace MajdataPlay.Game
 
         }
 
-        public void DrawGraph(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
+        void DrawGraph(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
         {
             var width = 1018;
             var height = 187;

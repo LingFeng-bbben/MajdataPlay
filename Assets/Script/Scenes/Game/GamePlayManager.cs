@@ -134,8 +134,10 @@ namespace MajdataPlay.Game
 
         GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
         HttpTransporter _httpDownloader = new();
+
+        SimaiFile _simaiFile;
         SimaiChart _chart;
-        SongDetail _songDetail;
+        ISongDetail _songDetail;
 
         AudioSampleWrap? _audioSample = null;
 
@@ -215,8 +217,7 @@ namespace MajdataPlay.Game
             var inputManager = MajInstances.InputManager;
             try
             {
-                if (_songDetail.IsOnline)
-                    _songDetail = await _songDetail.DumpToLocal(_cts.Token);
+                await _songDetail.Preload();
                 await LoadAudioTrack();
                 await ParseChart();
                 await PrepareToPlay();
@@ -260,19 +261,16 @@ namespace MajdataPlay.Game
                 State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
                 MajDebug.LogError(e);
-                return;
+                throw;
             }
         }
         
         async UniTask LoadAudioTrack()
         {
-            var trackPath = _songDetail.TrackPath ?? string.Empty;
-            if(!File.Exists(trackPath))
-                throw new AudioTrackNotFoundException(trackPath);
-            _audioSample = await MajInstances.AudioManager.LoadMusicAsync(trackPath,true);
-            await UniTask.Yield();
-            if (_audioSample is null)
-                throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
+            var audioSample = await _songDetail.GetAudioTrackAsync();
+            if(audioSample is null || audioSample.IsEmpty)
+                throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
+            _audioSample = audioSample;
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
             if(IsPracticeMode)
@@ -303,118 +301,137 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
-            var levelIndex = (int)_gameInfo.CurrentLevel;
-            var maidata = await _songDetail.GetInnerMaidata(levelIndex);
-            
-            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
-            if (string.IsNullOrEmpty(maidata))
+            try
             {
-                throw new EmptyChartException();
-            }
-            ChartMirror(ref maidata);
-            var simaiParser = SimaiParser.Shared;
-            _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
-            
-            if(IsPracticeMode)
-            {
-                if(_gameInfo.TimeRange is Range<double> timeRange)
-                {
-                    _chart.Clamp(timeRange);
-                }
-                else if(_gameInfo.ComboRange is Range<long> comboRange)
-                {
-                    _chart.Clamp(comboRange);
-                    if(_chart.NoteTimings.Length != 0)
-                    {
-                        var startAt = _chart.NoteTimings[0].Timing;
-                        startAt = Math.Max(startAt - 3, 0);
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
 
-                        _audioTrackStartAt = (float)startAt;
+                _simaiFile = await _songDetail.GetMaidataAsync(true);
+                var levelIndex = (int)_gameInfo.CurrentLevel;
+                var maidata = _simaiFile.Fumens[levelIndex];
+
+                if (string.IsNullOrEmpty(maidata))
+                {
+                    throw new EmptyChartException();
+                }
+
+                ChartMirror(ref maidata);
+                var simaiParser = SimaiParser.Shared;
+                _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
+
+                if (IsPracticeMode)
+                {
+                    if (_gameInfo.TimeRange is Range<double> timeRange)
+                    {
+                        _chart.Clamp(timeRange);
                     }
-                }
-            }
-            if (PlaybackSpeed != 1)
-                _chart.Scale(PlaybackSpeed);
-            if (_isAllBreak)
-                _chart.ConvertToBreak();
-            if (_isAllEx)
-                _chart.ConvertToEx();
-            if (_isAllTouch)
-                _chart.ConvertToTouch();
-            if (_chart.IsEmpty)
-            {
-                throw new EmptyChartException();
-            }
-
-            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart, AudioLength);
-            await Task.Run(() =>
-            {
-                //Generate ClockSounds
-                var countnum = _songDetail.ClockCount == null ? 4 : (int)_songDetail.ClockCount;
-                var firstBpm = _chart.NoteTimings.FirstOrDefault().Bpm;
-                var interval = 60 / firstBpm;
-                if(!IsPracticeMode)
-                if (_chart.NoteTimings.Any(o => o.Timing < countnum * interval))
-                {
-                    //if there is something in first measure, we add clock before the bgm
-                    for (int i = 0; i < countnum; i++)
+                    else if (_gameInfo.ComboRange is Range<long> comboRange)
                     {
-                        _anwserSoundList.Add(new AnwserSoundPoint()
+                        _chart.Clamp(comboRange);
+                        if (_chart.NoteTimings.Length != 0)
                         {
-                            time = -(i + 1) * interval,
-                            isClock = true,
-                            isPlayed = false
-                        });
+                            var startAt = _chart.NoteTimings[0].Timing;
+                            startAt = Math.Max(startAt - 3, 0);
+
+                            _audioTrackStartAt = (float)startAt;
+                        }
                     }
                 }
-                else
+                if (PlaybackSpeed != 1)
+                    _chart.Scale(PlaybackSpeed);
+                if (_isAllBreak)
+                    _chart.ConvertToBreak();
+                if (_isAllEx)
+                    _chart.ConvertToEx();
+                if (_isAllTouch)
+                    _chart.ConvertToTouch();
+                if (_chart.IsEmpty)
                 {
-                    //if nothing there, we can add it with bgm
-                    for (int i = 0; i < countnum; i++)
+                    throw new EmptyChartException();
+                }
+
+                GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart, AudioLength);
+                await Task.Run(() =>
+                {
+                    //Generate ClockSounds
+                    var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
+                                                      .FirstOrDefault();
+                    var countnum = 4;
+                    var firstBpm = _chart.NoteTimings.FirstOrDefault().Bpm;
+                    var interval = 60 / firstBpm;
+
+                    if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
                     {
-                        _anwserSoundList.Add(new AnwserSoundPoint()
+                        countnum = 4;
+                    }
+                    if (!IsPracticeMode)
+                    {
+                        if (_chart.NoteTimings.Any(o => o.Timing < countnum * interval))
                         {
-                            time = i * interval,
-                            isClock = true,
-                            isPlayed = false
-                        });
-                    }
-                }
-                
-                {
-
-                }
-
-                //Generate AnwserSounds
-                foreach (var timingPoint in _chart.NoteTimings)
-                {
-                    if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
-
-                    _anwserSoundList.Add(new AnwserSoundPoint()
-                    {
-                        time = timingPoint.Timing,
-                        isClock = false,
-                        isPlayed = false
-                    });
-                    var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
-                    if (holds.Length == 0) 
-                        continue;
-                    foreach (var hold in holds)
-                    {
-                        var newtime = timingPoint.Timing + hold.HoldTime;
-                        if (!_chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
-                            !_anwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
-                            )
-                            _anwserSoundList.Add(new AnwserSoundPoint()
+                            //if there is something in first measure, we add clock before the bgm
+                            for (int i = 0; i < countnum; i++)
                             {
-                                time = newtime,
-                                isClock = false,
-                                isPlayed = false
-                            });
+                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                {
+                                    time = -(i + 1) * interval,
+                                    isClock = true,
+                                    isPlayed = false
+                                });
+                            }
+                        }
+                        else
+                        {
+                            //if nothing there, we can add it with bgm
+                            for (int i = 0; i < countnum; i++)
+                            {
+                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                {
+                                    time = i * interval,
+                                    isClock = true,
+                                    isPlayed = false
+                                });
+                            }
+                        }
                     }
-                }
-                _anwserSoundList = _anwserSoundList.OrderBy(o => o.time).ToList();
-            });
+
+                    //Generate AnwserSounds
+                    foreach (var timingPoint in _chart.NoteTimings)
+                    {
+                        if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
+
+                        _anwserSoundList.Add(new AnwserSoundPoint()
+                        {
+                            time = timingPoint.Timing,
+                            isClock = false,
+                            isPlayed = false
+                        });
+                        var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
+                        if (holds.Length == 0)
+                            continue;
+                        foreach (var hold in holds)
+                        {
+                            var newtime = timingPoint.Timing + hold.HoldTime;
+                            if (!_chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
+                                !_anwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
+                                )
+                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                {
+                                    time = newtime,
+                                    isClock = false,
+                                    isPlayed = false
+                                });
+                        }
+                    }
+                    _anwserSoundList = _anwserSoundList.OrderBy(o => o.time).ToList();
+                });
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }
         }
 
         /// <summary>
@@ -429,16 +446,14 @@ namespace MajdataPlay.Game
             var dim = _setting.Game.BackgroundDim;
             if (dim < 1f)
             {
-                if (!string.IsNullOrEmpty(_songDetail.VideoPath))
-                    BGManager.SetBackgroundMovie(_songDetail.VideoPath, PlaybackSpeed);
+                var videoPath = await _songDetail.GetVideoPathAsync();
+                if (!string.IsNullOrEmpty(videoPath))
+                {
+                    BGManager.SetBackgroundMovie(videoPath, PlaybackSpeed);
+                }
                 else
                 {
-                    var task = _songDetail.GetSpriteAsync();
-                    while (!task.IsCompleted)
-                    {
-                        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-                    }
-                    BGManager.SetBackgroundPic(task.Result);
+                    BGManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
                 }
             }
 
@@ -702,9 +717,16 @@ namespace MajdataPlay.Game
         }
         internal void OnFixedUpdate()
         {
-            var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
-            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-            _thisFixedUpdateSec = timeOffset - chartOffset;
+            if (_audioSample is null)
+                return;
+            else if (AudioStartTime == -114514f)
+                return;
+            if (State == ComponentState.Running || State == ComponentState.Calculate)
+            {
+                var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                _thisFixedUpdateSec = timeOffset - chartOffset;
+            }
         }
         void UpdateAudioTime()
         {
@@ -716,7 +738,7 @@ namespace MajdataPlay.Game
             {
                 //Do not use this!!!! This have connection with sample batch size
                 //AudioTime = (float)audioSample.GetCurrentTime();
-                var chartOffset = ((float)_songDetail.First + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
                 var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                 _audioTime = timeOffset - chartOffset;
                 _thisFrameSec = _audioTime;
@@ -794,8 +816,7 @@ namespace MajdataPlay.Game
         {
             if (_audioSample is not null)
             {
-                _audioSample.Pause();
-                _audioSample.Dispose();
+                _audioSample.Stop();
                 _audioSample = null;
             }
         }

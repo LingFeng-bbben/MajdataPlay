@@ -21,12 +21,13 @@ namespace MajdataPlay.Types
         ChartStorageLocation Location { get; }
         DateTime Timestamp { get; }
         string Hash { get; }
+        bool IsOnline => Location == ChartStorageLocation.Online;
 
         UniTask Preload(CancellationToken token = default);
         UniTask<string> GetVideoPathAsync(CancellationToken token = default);
         UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default);
         UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default);
         UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default);
-        UniTask<SimaiFile> GetMaidataAsync(CancellationToken token = default);
+        UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default);
     }
 }

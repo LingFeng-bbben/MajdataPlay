@@ -59,7 +59,7 @@ namespace MajdataPlay.List
             }
 
         }
-        public void SetCover(SongDetail detail)
+        public void SetSongDetail(ISongDetail detail)
         {
             if(_cts is not null)
                 _cts.Cancel();
@@ -74,14 +74,12 @@ namespace MajdataPlay.List
         {
             _cts?.Cancel();    
         }
-        async UniTaskVoid SetCoverAsync(SongDetail detail, CancellationToken ct = default)
+        async UniTaskVoid SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
-            var spriteTask = detail.GetSpriteAsync(ct);
+            var cover = await detail.GetCoverAsync(false, ct);
             //TODO:set the cover to be now loading?
-            while (!spriteTask.IsCompleted)
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct);
             ct.ThrowIfCancellationRequested();
-            Cover.sprite = spriteTask.Result;
+            Cover.sprite = cover;
         }
 
         public void SetMeta(string _Title, string _Artist, string _Charter, string _Level)

@@ -25,15 +25,17 @@ namespace MajdataPlay.Utils
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 4000;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
-        public static string AssestPath { get; } = Path.Combine(Application.dataPath, "../");
-        public static string ChartPath { get; } = Path.Combine(AssestPath, "MaiCharts");
-        public static string SettingPath { get; } = Path.Combine(AssestPath, "settings.json");
-        public static string SkinPath { get; } = Path.Combine(AssestPath, "Skins");
-        public static string CachePath { get; } = Path.Combine(AssestPath, "Cache");
-        public static string LogsPath { get; } = Path.Combine(AssestPath, $"Logs");
+        public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
+        public static string AssetsPath { get; } = Application.streamingAssetsPath;
+        public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
+        public static string SettingPath { get; } = Path.Combine(RootPath, "settings.json");
+        public static string SkinPath { get; } = Path.Combine(RootPath, "Skins");
+        public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
+        public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
-        public static string ScoreDBPath { get; } = Path.Combine(AssestPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
+        public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static Sprite EmptySongCover { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()
         {
@@ -59,12 +61,15 @@ namespace MajdataPlay.Utils
             CheckAndLoadUserSetting();
             CheckNoteSkinFolder();
 
-            if(!Directory.Exists(CachePath))
+            var netCachePath = Path.Combine(CachePath, "Net");
+            if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
-
+            if (!Directory.Exists(netCachePath))
+                Directory.CreateDirectory(netCachePath);
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            EmptySongCover = SpriteLoader.Load(Path.Combine(AssetsPath, "dummy.jpg"));
         }
         static void CheckAndLoadUserSetting()
         {

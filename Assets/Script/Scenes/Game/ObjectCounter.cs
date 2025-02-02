@@ -341,7 +341,7 @@ namespace MajdataPlay.Game
             UpdateState();
             UpdateOutput();
         }
-        internal GameResult GetPlayRecord(SongDetail song, ChartLevel level)
+        internal GameResult GetPlayRecord(ISongDetail song, ChartLevel level)
         {
             //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
             //                           .Select(x => x.Value)
@@ -390,7 +390,7 @@ namespace MajdataPlay.Game
                     DX = _accRate[4],
                     Classic = _accRate[0]
                 },
-                SongInfo = song,
+                SongDetail = song,
                 Level = level,
                 JudgeRecord = judgeRecord,
                 Fast = _fast,

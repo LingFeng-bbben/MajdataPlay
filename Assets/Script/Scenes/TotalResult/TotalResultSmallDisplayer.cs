@@ -19,7 +19,7 @@ namespace MajdataPlay.TotalResult
         public TextMeshProUGUI accDX;
         public Image coverImg;
 
-        public void DisplayResult(SongDetail song, GameResult result, ChartLevel chartlevel)
+        public void DisplayResult(ISongDetail song, GameResult result, ChartLevel chartlevel)
         {
             var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
             title.text = song.Title;
@@ -29,14 +29,9 @@ namespace MajdataPlay.TotalResult
             accDX.text = isClassic ? $"{result.Acc.Classic:F2}%" : $"{result.Acc.DX:F4}%";
             LoadCover(song).Forget();
         }
-        async UniTask LoadCover(SongDetail song)
+        async UniTask LoadCover(ISongDetail song)
         {
-            var task = song.GetSpriteAsync();
-            while (!task.IsCompleted)
-            {
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            }
-            coverImg.sprite = task.Result;
+            coverImg.sprite = await song.GetCoverAsync(true);
         }
     }
 }

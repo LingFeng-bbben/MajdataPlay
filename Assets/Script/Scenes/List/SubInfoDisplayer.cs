@@ -7,7 +7,10 @@ using MajdataPlay.Types;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
 using System.Text.Json;
-
+using System.Threading;
+using MajdataPlay.Utils;
+using System.Threading.Tasks;
+#nullable enable
 namespace MajdataPlay.List
 {
     public class SubInfoDisplayer : MonoBehaviour
@@ -18,40 +21,42 @@ namespace MajdataPlay.List
         public GameObject CommentBox;
         public GameObject llxb;
 
+        CancellationTokenSource _cts = new();
+
         // Start is called before the first frame update
-        public void RefreshContent(SongDetail song)
+        public void RefreshContent(ISongDetail detail)
         {
-            if (song.IsOnline)
+            if (detail is OnlineSongDetail onlineDetail)
             {
-                id_text.text = "ID: " + song.OnlineId;
-                StopAllCoroutines();
-                StartCoroutine(GetOnlineInteraction(song));
+                id_text.text = "ID: " + onlineDetail.Id;
+                _cts.Cancel();
+                _cts = new();
+                GetOnlineInteraction(onlineDetail, _cts.Token).Forget();
                 llxb.SetActive(true);
             }
             else
             {
                 id_text.text = "";
                 good_text.text = "";
+                _cts.Cancel();
                 CommentBox.SetActive(false);
                 llxb.SetActive(false);
             }
         }
 
-        IEnumerator GetOnlineInteraction(SongDetail song)
+        async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
         {
+            await UniTask.SwitchToThreadPool();
             var client = HttpTransporter.ShareClient;
-            var interactUrl = song.ApiEndpoint.Url + "/maichart/" + song.OnlineId + "/interact";
-            var task = client.GetStringAsync(interactUrl);
-            while (!task.IsCompleted)
-            {
-                yield return new WaitForEndOfFrame();
-            }
-            var intjson = task.Result;
-
-            var list = JsonSerializer.Deserialize<MajNetSongInteract>(intjson, new JsonSerializerOptions
+            var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
+            using var rsp = await client.GetAsync(interactUrl, token);
+            using var intjson = await rsp.Content.ReadAsStreamAsync();
+            var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+            await UniTask.Yield(cancellationToken: token);
+            token.ThrowIfCancellationRequested();
             good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
 
             CommentBox.SetActive(true);
@@ -59,7 +64,8 @@ namespace MajdataPlay.List
             {
                 var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
                 CommentText.text = text;
-                yield return new WaitForSeconds(5f);
+                await UniTask.Delay(5000, cancellationToken: token);
+                token.ThrowIfCancellationRequested();
             }
             CommentBox.SetActive(false);
         }

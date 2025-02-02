@@ -21,7 +21,7 @@ namespace MajdataPlay.Types
         public ComboState ComboState { get; set; } = ComboState.None;
         public static MaiScore CreateFromResult(in GameResult result, ChartLevel level)
         {
-            var songInfo = result.SongInfo;
+            var songInfo = result.SongDetail;
             var record = new MaiScore()
             {
                 ChartLevel = level,

@@ -11,12 +11,12 @@ namespace MajdataPlay.Game.Types
     internal class GameInfo
     {
         public GameMode Mode { get; init; }
-        public SongDetail? Current { get; private set; } = null;
+        public ISongDetail? Current { get; private set; } = null;
         public ChartLevel CurrentLevel { get; private set; } = ChartLevel.Easy;
         public bool IsDanMode => Mode == GameMode.Dan;
         public bool IsPracticeMode => Mode == GameMode.Practice;
 
-        public SongDetail[] Charts => _chartQueue;
+        public ISongDetail[] Charts => _chartQueue;
         public ChartLevel[] Levels => _levels;
 
         // Dan Mode
@@ -49,14 +49,14 @@ namespace MajdataPlay.Game.Types
 
         int _practiceCount = 1;
         int _index = 0;
-        SongDetail[] _chartQueue;
+        ISongDetail[] _chartQueue;
         ChartLevel[] _levels;
-        public GameInfo(GameMode mode, SongDetail[] chartQueue,ChartLevel[] levels, int practiceCount)
+        public GameInfo(GameMode mode, ISongDetail[] chartQueue,ChartLevel[] levels, int practiceCount)
         {
             Mode = mode;
             if(chartQueue is null)
             {
-                _chartQueue = Array.Empty<SongDetail>();
+                _chartQueue = Array.Empty<ISongDetail>();
                 Results = Array.Empty<GameResult>();
                 _levels = Array.Empty<ChartLevel>();
             }
@@ -75,7 +75,7 @@ namespace MajdataPlay.Game.Types
                         {
                             levels[0]
                         };
-                        _chartQueue = new SongDetail[1]
+                        _chartQueue = new ISongDetail[1]
                         {
                             chartQueue[0]
                         };
@@ -94,7 +94,7 @@ namespace MajdataPlay.Game.Types
                 }
             }
         }
-        public GameInfo(GameMode mode, SongDetail[] chartQueue, ChartLevel[] levels) : this(mode, chartQueue, levels, 1)
+        public GameInfo(GameMode mode, ISongDetail[] chartQueue, ChartLevel[] levels) : this(mode, chartQueue, levels, 1)
         {
 
         }

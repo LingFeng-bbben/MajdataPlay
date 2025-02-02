@@ -87,7 +87,7 @@ namespace MajdataPlay.List
                 var obj = Instantiate(CoverSmallPrefab, transform);
                 var coversmall = obj.GetComponent<CoverSmallDisplayer>();
                 coversmall.SetOpacity(0f);
-                coversmall.SetCover(song);
+                coversmall.SetSongDetail(song);
                 coversmall.SetLevelText(song.Levels[selectedDifficulty]);
                 covers.Add(coversmall);
                 coversmall.gameObject.SetActive(false);
@@ -188,7 +188,7 @@ namespace MajdataPlay.List
                 case CoverListMode.Chart:
                     var songinfo = songs[desiredListPos];
                     var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
-                    CoverBigDisplayer.SetCover(songinfo);
+                    CoverBigDisplayer.SetSongDetail(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
@@ -230,7 +230,7 @@ namespace MajdataPlay.List
                 if (songs.Count > 0)
                 {
                     if (coveri >= songs.Count) coveri = 0;
-                    CoverBigDisplayer.SetCover(songs[coveri++]);
+                    CoverBigDisplayer.SetSongDetail(songs[coveri++]);
                 }
                 else
                 {

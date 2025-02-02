@@ -36,14 +36,9 @@ namespace MajdataPlay.Game
             LoadCover(song).Forget();
         }
 
-        async UniTask LoadCover(SongDetail song)
+        async UniTask LoadCover(ISongDetail song)
         {
-            var task = song.GetSpriteAsync();
-            while (!task.IsCompleted)
-            {
-                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            }
-            coverImg.sprite = task.Result;
+            coverImg.sprite = await song.GetCoverAsync(true);
         }
     }
 }

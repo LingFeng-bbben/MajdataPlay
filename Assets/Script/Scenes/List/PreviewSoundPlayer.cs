@@ -16,7 +16,7 @@ namespace MajdataPlay.List
     public class PreviewSoundPlayer : MonoBehaviour
     {
         CancellationTokenSource? _cancellationTokenSource = null;
-        public void PlayPreviewSound(SongDetail info)
+        public void PlayPreviewSound(ISongDetail info)
         {
             if (_cancellationTokenSource is not null)
             {
@@ -27,7 +27,7 @@ namespace MajdataPlay.List
             PlayPreviewAsync(info, _cancellationTokenSource.Token).Forget();
         }
 
-        async UniTaskVoid PlayPreviewAsync(SongDetail info, CancellationToken token)
+        async UniTaskVoid PlayPreviewAsync(ISongDetail info, CancellationToken token)
         {
 
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
@@ -35,30 +35,40 @@ namespace MajdataPlay.List
             token.ThrowIfCancellationRequested();
             await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
             token.ThrowIfCancellationRequested();
-            var trackPath = info.TrackPath ?? string.Empty;
-            if (!File.Exists(trackPath) && !info.IsOnline)
-                throw new AudioTrackNotFoundException(trackPath);
-            using var previewSample = trackPath.StartsWith("http") ? await MajInstances.AudioManager.LoadMusicFromUriAsync(new Uri(trackPath)) : await MajInstances.AudioManager.LoadMusicAsync(trackPath);
 
-            if (previewSample is null)
-                throw new InvalidAudioTrackException("Failed to decode audio track", trackPath);
-            previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
-            //set sample.CurrentSec Not implmented
-            previewSample.IsLoop = true;
-            previewSample.CurrentSec = 0;
-            previewSample.Play();
-            token.ThrowIfCancellationRequested();
-            await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);
-            token.ThrowIfCancellationRequested();
-            for (var i = 1f; i > 0; i = i - 0.2f)
+            var previewSample = await info.GetPreviewAudioTrackAsync(token);
+
+            try
             {
+                if (previewSample is null || previewSample.IsEmpty)
+                    throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
+                previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
+                //set sample.CurrentSec Not implmented
+                previewSample.IsLoop = true;
+                previewSample.CurrentSec = 0;
+                previewSample.Play();
                 token.ThrowIfCancellationRequested();
-                selectSound.Volume = i * MajInstances.Setting.Audio.Volume.BGM;
-                await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+                await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);
+                token.ThrowIfCancellationRequested();
+                for (var i = 1f; i > 0; i = i - 0.2f)
+                {
+                    token.ThrowIfCancellationRequested();
+                    selectSound.Volume = i * MajInstances.Setting.Audio.Volume.BGM;
+                    await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+                }
+                while (true)
+                {
+                    await UniTask.Yield(token, cancelImmediately: true);
+                }
             }
-            while (true)
+            catch
             {
-                await UniTask.Yield(token, cancelImmediately: true);
+                throw;
+            }
+            finally
+            {
+                if (previewSample is not null && !previewSample.IsEmpty)
+                    previewSample.Pause();
             }
         }
 

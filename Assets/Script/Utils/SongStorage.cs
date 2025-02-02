@@ -104,6 +104,8 @@ namespace MajdataPlay.Utils
             {
                 foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
                 {
+                    if (string.IsNullOrEmpty(item.Name))
+                        continue;
                     progressReporter.Report(new ChartScanProgress()
                     {
                         StorageType = ChartStorageLocation.Online,
@@ -115,7 +117,7 @@ namespace MajdataPlay.Utils
                 }
             }
             //Add all songs to "All" folder
-            var allcharts = new List<SongDetail>();
+            var allcharts = new List<ISongDetail>();
             foreach (var collection in collections)
             {
                 foreach (var item in collection)
@@ -138,7 +140,7 @@ namespace MajdataPlay.Utils
                     MajDebug.LogError("Failed to load dan file:" + file.FullName);
                     continue;
                 }
-                List<SongDetail> danSongs = new();
+                List<ISongDetail> danSongs = new();
                 foreach (var hash in dan.SongHashs)
                 {
                     // search online first (so can upload score)
@@ -191,7 +193,7 @@ namespace MajdataPlay.Utils
                     if (maidataFile is null || trackFile is null)
                         continue;
 
-                    var parsingTask = SongDetail.ParseAsync(files);
+                    var parsingTask = SongDetail.ParseAsync(songDir.FullName);
 
                     tasks.Add(parsingTask);
                 }
@@ -217,21 +219,26 @@ namespace MajdataPlay.Utils
             try
             {
                 var client = HttpTransporter.ShareClient;
-                var liststr = await client.GetStringAsync(listurl);
-                var list = JsonSerializer.Deserialize<MajnetSongDetail[]>(liststr, new JsonSerializerOptions
+                var rspStream = await client.GetStreamAsync(listurl);
+                var list = await JsonSerializer.DeserializeAsync<MajnetSongDetail[]>(rspStream, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
                 if (list is null || list.IsEmpty())
                     return collection;
 
-                var gameList = new List<SongDetail>();
+                var gameList = new List<ISongDetail>();
                 foreach (var song in list)
                 {
-                    SongDetail songDetail = SongDetail.ParseOnline(api, song);
+                    var songDetail = new OnlineSongDetail(api, song);
                     gameList.Add(songDetail);
                 }
                 MajDebug.Log("Loaded Online Charts List:" + gameList.Count);
+                var cacheFolder = Path.Combine(MajEnv.CachePath, $"Net/{name}");
+                if (!Directory.Exists(cacheFolder))
+                {
+                    Directory.CreateDirectory(cacheFolder);
+                }
                 return new SongCollection(name, gameList.ToArray())
                 {
                     Location = ChartStorageLocation.Online

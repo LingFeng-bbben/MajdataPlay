@@ -10,9 +10,9 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Collections
 {
-    public class SongCollection : IEnumerable<SongDetail>
+    public class SongCollection : IEnumerable<ISongDetail>
     {
-        public SongDetail Current => sorted[Index];
+        public ISongDetail Current => sorted[Index];
         public int Index
         {
             get => _index;
@@ -32,10 +32,10 @@ namespace MajdataPlay.Collections
         public bool IsEmpty => sorted.Length == 0;
         public DanInfo? DanInfo { get; init; }
 
-        SongDetail[] sorted;
-        SongDetail[] origin;
-        public SongDetail this[int index] => sorted[index];
-        public SongCollection(string name, in SongDetail[] pArray)
+        ISongDetail[] sorted;
+        ISongDetail[] origin;
+        public ISongDetail this[int index] => sorted[index];
+        public SongCollection(string name, in ISongDetail[] pArray)
         {
             sorted = pArray;
             origin = pArray;
@@ -43,7 +43,7 @@ namespace MajdataPlay.Collections
         }
         public SongCollection()
         {
-            origin = new SongDetail[0];
+            origin = new ISongDetail[0];
             sorted = origin;
             Name = string.Empty;
         }
@@ -89,14 +89,14 @@ namespace MajdataPlay.Collections
             }
             sorted = origin;
         }
-        public SongDetail[] ToArray() => origin;
-        static SongDetail[] Sort(SongDetail[] origin, SortType sortType)
+        public ISongDetail[] ToArray() => origin;
+        static ISongDetail[] Sort(ISongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())
                 return origin;
-            IEnumerable<SongDetail> result = sortType switch
+            IEnumerable<ISongDetail> result = sortType switch
             {
-                SortType.ByTime => origin.OrderByDescending(o => o.AddTime),
+                SortType.ByTime => origin.OrderByDescending(o => o.Timestamp),
                 SortType.ByDiff => origin.OrderByDescending(o => o.Levels[4]),
                 SortType.ByDes => origin.OrderBy(o => o.Designers[4]),
                 SortType.ByTitle => origin.OrderBy(o => o.Title),
@@ -104,12 +104,12 @@ namespace MajdataPlay.Collections
             };
             return result.ToArray();
         }
-        static SongDetail[] Filter(SongDetail[] origin, string keyword)
+        static ISongDetail[] Filter(ISongDetail[] origin, string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
                 return origin;
             keyword = keyword.ToLower();
-            var result = new Span<SongDetail>(new SongDetail[origin.Length]);
+            var result = new Span<ISongDetail>(new ISongDetail[origin.Length]);
             var i = 0;
             foreach (var song in origin)
             {
@@ -124,18 +124,18 @@ namespace MajdataPlay.Collections
             }
             return result.Slice(0, i).ToArray();
         }
-        public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<SongDetail>());
-        public IEnumerator<SongDetail> GetEnumerator() => new Enumerator(sorted);
+        public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<ISongDetail>());
+        public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(sorted);
 
         // Implementation for the GetEnumerator method.
         IEnumerator IEnumerable.GetEnumerator() => origin.GetEnumerator();
-        struct Enumerator : IEnumerator<SongDetail>
+        struct Enumerator : IEnumerator<ISongDetail>
         {
-            SongDetail[] songs;
-            public SongDetail Current { get; private set; }
+            ISongDetail[] songs;
+            public ISongDetail Current { get; private set; }
             object IEnumerator.Current { get => Current; }
             int index;
-            public Enumerator(in SongDetail[] songs)
+            public Enumerator(in ISongDetail[] songs)
             {
                 this.songs = songs;
                 Current = default;

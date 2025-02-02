@@ -5,7 +5,7 @@ namespace MajdataPlay.Types
     public readonly struct GameResult
     {
         public Accurate Acc { get; init; }
-        public SongDetail SongInfo { get; init; }
+        public ISongDetail SongDetail { get; init; }
         public JudgeDetail JudgeRecord { get; init; }
         public ChartLevel Level { get; init; }
         public long Fast { get; init; }

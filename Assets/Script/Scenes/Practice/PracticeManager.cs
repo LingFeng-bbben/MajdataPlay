@@ -33,7 +33,7 @@ public class PracticeManager : MonoBehaviour
     private float startTime = 0;
     private float endTime = 0;
     private float totalTime = 0;
-    private AudioSampleWrap audioTrack;
+    private AudioSampleWrap? audioTrack;
 
     [SerializeField]
     TextMeshProUGUI _practiceCountText;
@@ -71,11 +71,8 @@ public class PracticeManager : MonoBehaviour
     {
         var songinfo = _gameInfo.Charts.FirstOrDefault();
         var level = _gameInfo.Levels.FirstOrDefault();
-        if (songinfo.IsOnline)
-        {
-            songinfo = await songinfo.DumpToLocal(cts.Token);
-        }
-        audioTrack = (await MajInstances.AudioManager.LoadMusicAsync(songinfo.TrackPath ?? string.Empty, true))!;
+        await songinfo.Preload();
+        audioTrack = await songinfo.GetAudioTrackAsync();
         //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
@@ -273,6 +270,7 @@ public class PracticeManager : MonoBehaviour
     private void OnDestroy()
     {
         cts?.Cancel();
-        audioTrack?.Dispose();
+        audioTrack?.Stop();
+        audioTrack = null;
     }
 }

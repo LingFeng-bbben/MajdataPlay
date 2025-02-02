@@ -64,7 +64,7 @@ namespace MajdataPlay.Utils
         static async Task LogWriteback()
         {
             var token = MajEnv.GlobalCT;
-            var oldLogPath = Path.Combine(MajEnv.AssestPath, "MajPlayRuntime.log");
+            var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
             if (!Directory.Exists(MajEnv.LogsPath))
                 Directory.CreateDirectory(MajEnv.LogsPath);
             if (File.Exists(oldLogPath))

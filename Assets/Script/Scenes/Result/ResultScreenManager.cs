@@ -55,7 +55,7 @@ namespace MajdataPlay.Result
             MajInstances.LightManager.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
-            var song = result.SongInfo;
+            var song = result.SongDetail;
             var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
             var intractSender = GetComponent<OnlineInteractionSender>();
@@ -119,24 +119,19 @@ namespace MajdataPlay.Result
             {
                 MajInstances.ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
-                if (score is not null && song.ApiEndpoint != null)
+                if (score is not null && song is OnlineSongDetail)
                 {
                     OnlineSaveTask = intractSender.SendScore(score);
                 }
             }
         }
 
-        async UniTask LoadCover(SongDetail song)
-            {
-                var task = song.GetSpriteAsync();
-                while (!task.IsCompleted)
-                {
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-                }
-                coverImg.sprite = task.Result;
-            }
+        async UniTask LoadCover(ISongDetail song)
+        {
+            coverImg.sprite = await song.GetCoverAsync(true);
+        }
 
-        async UniTask PlayVoice(double dxacc, SongDetail song)
+        async UniTask PlayVoice(double dxacc, ISongDetail song)
         {
             if (dxacc >= 97)
             {
@@ -179,7 +174,7 @@ namespace MajdataPlay.Result
                 var list = new string[] { "good.wav", "good_2.wav", "good_3.wav", "good_4.wav", "good_5.wav", "good_6.wav" };
                 MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 await UniTask.WaitForSeconds(3);
-                if (song.ApiEndpoint != null)
+                if (song is OnlineSongDetail)
                 {
                     MajInstances.AudioManager.PlaySFX("dian_zan.wav");
                 }

@@ -135,9 +135,9 @@ namespace MajdataPlay.List
                                 {
                                 MajInstances.GameManager.SelectedDiff
                                 };
-                                var charts = new SongDetail[]
+                                var charts = new ISongDetail[]
                                 {
-                                SongStorage.WorkingCollection.Current
+                                    SongStorage.WorkingCollection.Current
                                 };
                                 if (_pressTime > 1f)
                                 {

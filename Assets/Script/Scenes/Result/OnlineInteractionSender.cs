@@ -11,9 +11,10 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.Result
 {
     public class OnlineInteractionSender : MonoBehaviour
@@ -22,17 +23,20 @@ namespace MajdataPlay.Result
         public Text uploadtext;
         public Image thumb;
 
-        SongDetail SongDetail;
+        OnlineSongDetail _onlineDetail;
 
-        public bool Init(SongDetail song)
+        public bool Init(ISongDetail song)
         {
-            if (song.ApiEndpoint == null)
+            if (song is not OnlineSongDetail onlineDetail)
+                return false;
+            var serverInfo = onlineDetail.ServerInfo;
+            if (serverInfo is null)
             {
                 infotext.text = "";
                 thumb.gameObject.SetActive(false);
                 return false;
             }
-            SongDetail = song;
+            _onlineDetail = onlineDetail;
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
             //MajInstances.LightManager.SetButtonLight(Color.yellow, 2);
             return true;
@@ -43,7 +47,7 @@ namespace MajdataPlay.Result
             if (e.IsDown && (e.Type == SensorType.E3 || e.Type == SensorType.B3))
             {
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                SendInteraction(SongDetail);
+                SendInteraction(_onlineDetail);
             }
         }
 
@@ -52,12 +56,12 @@ namespace MajdataPlay.Result
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
         }
 
-        public void SendInteraction(SongDetail song)
+        internal void SendInteraction(OnlineSongDetail song)
         {
             SendLike(song).Forget();
         }
 
-        async UniTask SendLike(SongDetail song)
+        async UniTask SendLike(OnlineSongDetail song)
         {
             infotext.text = "稍等...";
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
@@ -80,7 +84,7 @@ namespace MajdataPlay.Result
             uploadtext.text = "正在上传成绩";
             try
             {
-                await MajInstances.OnlineManager.SendScore(SongDetail, score);
+                await MajInstances.OnlineManager.SendScore(_onlineDetail, score);
                 uploadtext.text = "上传成绩成功";
             }
             catch (Exception ex)

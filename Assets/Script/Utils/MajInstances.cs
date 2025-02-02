@@ -73,7 +73,7 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => MajInstanceHelper<LightManager>.Instance = value;
         }
-        public static OnlineManager OnlineManager
+        internal static OnlineManager OnlineManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => MajInstanceHelper<OnlineManager>.Instance!;
