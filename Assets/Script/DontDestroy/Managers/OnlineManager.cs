@@ -16,7 +16,7 @@ namespace MajdataPlay
 {
     internal class OnlineManager : MonoBehaviour
     {
-        private HttpClient _client => HttpTransporter.ShareClient;
+        readonly HttpClient _client = MajEnv.SharedHttpClient;
         private void Awake()
         {
             DontDestroyOnLoad(this);

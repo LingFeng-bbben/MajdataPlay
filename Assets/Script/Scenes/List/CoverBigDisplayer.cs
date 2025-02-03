@@ -76,7 +76,7 @@ namespace MajdataPlay.List
         }
         async UniTaskVoid SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
-            var cover = await detail.GetCoverAsync(false, ct);
+            var cover = await detail.GetCoverAsync(true, ct);
             //TODO:set the cover to be now loading?
             ct.ThrowIfCancellationRequested();
             Cover.sprite = cover;

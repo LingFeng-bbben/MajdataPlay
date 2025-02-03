@@ -13,6 +13,7 @@ using System.IO;
 using System.Net.Http;
 using System.Buffers;
 using System.Threading;
+using Unity.VisualScripting.Antlr3.Runtime;
 #nullable enable
 namespace MajdataPlay.Types
 {
@@ -54,7 +55,11 @@ namespace MajdataPlay.Types
         readonly AsyncLock _audioTrackLock = new();
         readonly AsyncLock _videoPathLock = new();
         readonly AsyncLock _coverLock = new();
+        readonly AsyncLock _fullSizeCoverLock = new();
         readonly AsyncLock _maidataLock = new();
+        readonly AsyncLock _preloadLock = new();
+
+        readonly Func<Task> _preloadCallback;
 
         public OnlineSongDetail(ApiEndpoint serverInfo, MajnetSongDetail songDetail)
         {
@@ -90,6 +95,7 @@ namespace MajdataPlay.Types
             {
                 Directory.CreateDirectory(_cachePath);
             }
+            _preloadCallback = async () => { await UniTask.WhenAll(GetMaidataAsync(), GetCoverAsync(true)); };
         }
 
         public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default)
@@ -127,30 +133,15 @@ namespace MajdataPlay.Types
                         return _audioTrack;
                     var savePath = Path.Combine(_cachePath, "track.mp3");
 
-                    if (File.Exists(savePath))
+                    await CheckAndDownloadFile(_trackUri, savePath, token);
+                    var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                    if(sampleWarp.IsEmpty)
                     {
-                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                        if (!sampleWarp.IsEmpty)
-                        {
-                            _audioTrack = sampleWarp;
-                        }
-                        else
-                        {
-                            File.Delete(savePath);
-                            await DownloadFile(_trackUri, savePath, token);
-                            sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                            _audioTrack = sampleWarp;
-                        }
-                        return sampleWarp;
+                        await CheckAndDownloadFile(_trackUri, savePath, token);
                     }
-                    else
-                    {
-                        await DownloadFile(_trackUri, savePath, token);
-                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                        _audioTrack = sampleWarp;
+                    _audioTrack = sampleWarp;
 
-                        return sampleWarp;
-                    }
+                    return sampleWarp;
                 }
             }
             catch
@@ -164,10 +155,15 @@ namespace MajdataPlay.Types
         }
         public async UniTask Preload(CancellationToken token = default)
         {
-            //await GetAudioTrackAsync(token);
-            await GetMaidataAsync(token: token);
-            await GetCoverAsync(false, token);
-            await GetCoverAsync(true, token);
+            try
+            {
+                if (!await _preloadLock.TryLockAsync(_preloadCallback, TimeSpan.Zero))
+                    return;
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }
         }
         public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
         {
@@ -177,11 +173,7 @@ namespace MajdataPlay.Types
                 {
                     var savePath = Path.Combine(_cachePath, "bg.mp4");
 
-                    if (File.Exists(savePath))
-                    {
-                        return savePath;
-                    }
-                    await DownloadFile(_videoUri, savePath, token);
+                    await CheckAndDownloadFile(_videoUri, savePath, token);
 
                     return savePath;
                 }
@@ -197,51 +189,13 @@ namespace MajdataPlay.Types
         }
         public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
         {
-            try
+            if(isCompressed)
             {
-                using (await _coverLock.LockAsync(token))
-                {
-                    if (isCompressed)
-                    {
-                        if (_cover is not null)
-                            return _cover;
-                        var savePath = Path.Combine(_cachePath, "bg.jpg");
-                        if (File.Exists(savePath))
-                        {
-                            _cover = await SpriteLoader.LoadAsync(savePath, token);
-
-                            return _cover;
-                        }
-                        await DownloadFile(_coverUri, savePath, token);
-                        _cover = await SpriteLoader.LoadAsync(savePath, token);
-
-                        return _cover;
-                    }
-                    else
-                    {
-                        if (_fullSizeCover is not null)
-                            return _fullSizeCover;
-                        var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
-                        if (File.Exists(savePath))
-                        {
-                            _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
-
-                            return _fullSizeCover;
-                        }
-                        await DownloadFile(_fullSizeCoverUri, savePath, token);
-                        _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
-
-                        return _fullSizeCover;
-                    }
-                }
+                return await GetCompressedCoverAsync(token);
             }
-            catch
+            else
             {
-                throw;
-            }
-            finally
-            {
-                await UniTask.Yield();
+                return await GetFullSizeCoverAsync(token);
             }
         }
         public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default)
@@ -254,18 +208,8 @@ namespace MajdataPlay.Types
                 {
                     var savePath = Path.Combine(_cachePath, "maidata.txt");
 
-                    if (File.Exists(savePath))
-                    {
-                        var oldHash = await HashHelper.ComputeHashAsBase64StringAsync(await File.ReadAllBytesAsync(savePath, token));
-                        if (oldHash != Hash)
-                        {
-                            await DownloadFile(_maidataUri, savePath, token);
-                        }
-                    }
-                    else
-                    {
-                        await DownloadFile(_maidataUri, savePath, token);
-                    }
+                    await CheckAndDownloadFile(_maidataUri, savePath, token);
+
                     _maidata = await SimaiParser.Shared.ParseAsync(savePath);
                     return _maidata;
                 }
@@ -279,14 +223,57 @@ namespace MajdataPlay.Types
                 await UniTask.Yield();
             }
         }
+        async UniTask<Sprite> GetCompressedCoverAsync(CancellationToken token = default)
+        {
+            try
+            {
+                using (await _coverLock.LockAsync(token))
+                {
+                    if (_cover is not null)
+                        return _cover;
+                    var savePath = Path.Combine(_cachePath, "bg.jpg");
 
-        async Task DownloadFile(Uri uri, string savePath, CancellationToken token = default)
+                    await CheckAndDownloadFile(_coverUri, savePath, token);
+                    token.ThrowIfCancellationRequested();
+                    _cover = await SpriteLoader.LoadAsync(savePath, token);
+
+                    return _cover;
+                }
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }   
+        }
+        async UniTask<Sprite> GetFullSizeCoverAsync(CancellationToken token = default)
+        {
+            try
+            {
+                using (await _fullSizeCoverLock.LockAsync(token))
+                {
+                    if (_fullSizeCover is not null)
+                        return _fullSizeCover;
+                    var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
+
+                    await CheckAndDownloadFile(_fullSizeCoverUri, savePath, token);
+                    token.ThrowIfCancellationRequested();
+                    _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
+
+                    return _fullSizeCover;
+                }
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }
+        }
+        async Task CheckAndDownloadFile(Uri uri, string savePath, CancellationToken token = default)
         {
             await Task.Run(async () =>
             {
                 var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
                 using var bufferOwner = MemoryPool<byte>.Shared.Rent(bufferSize);
-                using var fileStream = File.Create(savePath);
+                var fileInfo = new FileInfo(savePath);
                 var httpClient = MajEnv.SharedHttpClient;
                 var buffer = bufferOwner.Memory;
 
@@ -294,8 +281,16 @@ namespace MajdataPlay.Types
                 {
                     try
                     {
-                        using var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
-                        using var httpStream = await response.Content.ReadAsStreamAsync();
+                        using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                        token.ThrowIfCancellationRequested();
+                        MajDebug.Log($"Received http response header from: {uri}");
+                        if(fileInfo.Exists)
+                        {
+                            if (fileInfo.Length == (rsp.Content.Headers.ContentLength ?? -1))
+                                return;
+                        }
+                        using var fileStream = File.Create(savePath);
+                        using var httpStream = await rsp.Content.ReadAsStreamAsync();
                         int read = 0;
                         do
                         {
@@ -306,10 +301,18 @@ namespace MajdataPlay.Types
                         }
                         while (read > 0);
                     }
-                    catch
+                    catch(OperationCanceledException)
+                    {
+                        MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
+                        throw;
+                    }
+                    catch(Exception e)
                     {
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                        {
+                            MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
                             throw;
+                        }
                     }
                 }
             });

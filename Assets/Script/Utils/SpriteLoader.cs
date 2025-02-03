@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Cysharp.Threading.Tasks;
+using SkiaSharp;
 using SkiaSharp.Unity;
 using System;
 using System.Drawing;
@@ -68,12 +69,13 @@ namespace MajdataPlay.Utils
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                 SpriteMeshType.FullRect, border);
         }
-        async static Task<Texture2D> ImageDecodeAsync(byte[] data)
+        async static UniTask<Texture2D> ImageDecodeAsync(byte[] data)
         {
             using var bitmap = await Task.Run(() =>
             {
                 return SKBitmap.Decode(data);
             });
+            await UniTask.Yield();
             return bitmap.ToTexture2D();
         }
     }

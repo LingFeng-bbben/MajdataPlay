@@ -67,9 +67,7 @@ namespace MajdataPlay.Types
         }
         public async UniTask Preload(CancellationToken token = default)
         {
-            await GetMaidataAsync(token: token);
-            await GetCoverAsync(false, token);
-            await GetCoverAsync(true, token);
+            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token));
         }
         public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
         {

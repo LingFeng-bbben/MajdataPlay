@@ -95,6 +95,7 @@ namespace MajdataPlay.List
             if (desiredListPos > covers.Count) desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideToList(desiredListPos);
+            PreloadSongDetail();
         }
 
 
@@ -128,7 +129,8 @@ namespace MajdataPlay.List
                 for (int i = 0; i < covers.Count; i++)
                 {
                     var text = songs[i].Levels[selectedDifficulty];
-                    if (text == null || text == "") text = "-";
+                    if (string.IsNullOrEmpty(text)) 
+                        text = "-";
                     covers[i].GetComponent<CoverSmallDisplayer>().SetLevelText(text);
                 }
             }
@@ -195,14 +197,27 @@ namespace MajdataPlay.List
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
                     chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     SongStorage.WorkingCollection.Index = desiredListPos;
+                    PreloadSongDetail();
                     break;
+            }
+        }
+        void PreloadSongDetail()
+        {
+            for (int i = 0; i < covers.Count; i++)
+            {
+                var distance = i - listPosReal;
+                if (Mathf.Abs(distance) <= 10)
+                {
+                    songs[i].Preload();
+                }
             }
         }
         private void FixedUpdate()
         {
             var delta = (desiredListPos - listPosReal) * turnSpeed;
             listPosReal += Mathf.Clamp(delta, -1f, 1f);
-            if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) listPosReal = desiredListPos;
+            if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) 
+                listPosReal = desiredListPos;
             for (int i = 0; i < covers.Count; i++)
             {
                 var distance = i - listPosReal;
