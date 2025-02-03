@@ -45,7 +45,7 @@ namespace MajdataPlay.List
             Background.color = new Color(Background.color.r, Background.color.g, Background.color.b, alpha);
             if (alpha > 0.5f)
             {
-                ShowCover();
+                ShowCoverAsync();
             }
         }
         public void SetLevelText(string text)
@@ -56,7 +56,7 @@ namespace MajdataPlay.List
         {
             _boundSong = detail;
         }
-        public void ShowCover()
+        public void ShowCoverAsync()
         {
             if (_boundSong != null)
             {
@@ -67,6 +67,7 @@ namespace MajdataPlay.List
                 }
             }
         }
+
         void OnDestroy()
         {
             _cts.Cancel();

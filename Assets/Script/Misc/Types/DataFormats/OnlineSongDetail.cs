@@ -104,6 +104,7 @@ namespace MajdataPlay.Types
             {
                 using (await _previewAudioTrackLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_previewAudioTrack is not null)
                         return _previewAudioTrack;
                     var audioManager = MajInstances.AudioManager;
@@ -129,6 +130,7 @@ namespace MajdataPlay.Types
             {
                 using (await _audioTrackLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_audioTrack is not null)
                         return _audioTrack;
                     var savePath = Path.Combine(_cachePath, "track.mp3");
@@ -143,10 +145,6 @@ namespace MajdataPlay.Types
 
                     return sampleWarp;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -171,16 +169,13 @@ namespace MajdataPlay.Types
             {
                 using (await _videoPathLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     var savePath = Path.Combine(_cachePath, "bg.mp4");
 
                     await CheckAndDownloadFile(_videoUri, savePath, token);
 
                     return savePath;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -206,6 +201,7 @@ namespace MajdataPlay.Types
             {
                 using (await _maidataLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     var savePath = Path.Combine(_cachePath, "maidata.txt");
 
                     await CheckAndDownloadFile(_maidataUri, savePath, token);
@@ -213,10 +209,6 @@ namespace MajdataPlay.Types
                     _maidata = await SimaiParser.Shared.ParseAsync(savePath);
                     return _maidata;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -229,6 +221,7 @@ namespace MajdataPlay.Types
             {
                 using (await _coverLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_cover is not null)
                         return _cover;
                     var savePath = Path.Combine(_cachePath, "bg.jpg");
@@ -251,6 +244,7 @@ namespace MajdataPlay.Types
             {
                 using (await _fullSizeCoverLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_fullSizeCover is not null)
                         return _fullSizeCover;
                     var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");

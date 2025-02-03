@@ -38,6 +38,9 @@ namespace MajdataPlay.Types
         readonly AsyncLock _audioTrackLock = new();
         readonly AsyncLock _coverLock = new();
         readonly AsyncLock _maidataLock = new();
+        readonly AsyncLock _preloadLock = new();
+
+        readonly Func<Task> _preloadCallback;
         public SongDetail(string chartFolder, SimaiMetadata metadata)
         {
             var files = new DirectoryInfo(chartFolder).GetFiles();
@@ -57,6 +60,7 @@ namespace MajdataPlay.Types
             Levels = metadata.Levels;
             Hash = metadata.Hash;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
+            _preloadCallback = async () => { await UniTask.WhenAll(GetMaidataAsync(), GetCoverAsync(true)); };
         }
         public static async Task<SongDetail> ParseAsync(string chartFolder)
         {
@@ -67,7 +71,15 @@ namespace MajdataPlay.Types
         }
         public async UniTask Preload(CancellationToken token = default)
         {
-            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token));
+            try
+            {
+                if (!await _preloadLock.TryLockAsync(_preloadCallback, TimeSpan.Zero))
+                    return;
+            }
+            finally
+            {
+                await UniTask.Yield();
+            }
         }
         public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
         {
@@ -80,16 +92,13 @@ namespace MajdataPlay.Types
             {
                 using (await _coverLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_cover is not null)
                         return _cover;
 
                     _cover = await SpriteLoader.LoadAsync(_coverPath, token);
                     return _cover;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -102,16 +111,13 @@ namespace MajdataPlay.Types
             {
                 using (await _audioTrackLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_audioTrack is not null)
                         return _audioTrack;
 
                     _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true);
                     return _audioTrack;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -124,16 +130,13 @@ namespace MajdataPlay.Types
             {
                 using (await _previewAudioTrackLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (_previewAudioTrack is not null)
                         return _previewAudioTrack;
 
                     _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, false);
                     return _previewAudioTrack;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
@@ -146,16 +149,13 @@ namespace MajdataPlay.Types
             {
                 using (await _maidataLock.LockAsync(token))
                 {
+                    token.ThrowIfCancellationRequested();
                     if (!ignoreCache && _maidata is not null)
                         return _maidata;
 
                     _maidata = await SimaiParser.Shared.ParseAsync(_maidataPath);
                     return _maidata;
                 }
-            }
-            catch
-            {
-                throw;
             }
             finally
             {
