@@ -134,11 +134,16 @@ namespace MajdataPlay.Types
                     if (_audioTrack is not null)
                         return _audioTrack;
                     var savePath = Path.Combine(_cachePath, "track.mp3");
+                    var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
 
                     await CheckAndDownloadFile(_trackUri, savePath, token);
                     var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
                     if(sampleWarp.IsEmpty)
                     {
+                        if(File.Exists(cacheFlagPath))
+                        {
+                            File.Delete(cacheFlagPath);
+                        }
                         await CheckAndDownloadFile(_trackUri, savePath, token);
                     }
                     _audioTrack = sampleWarp;
@@ -270,19 +275,20 @@ namespace MajdataPlay.Types
                 var fileInfo = new FileInfo(savePath);
                 var httpClient = MajEnv.SharedHttpClient;
                 var buffer = bufferOwner.Memory;
+                var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
 
                 for (int i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
                     {
+                        if (File.Exists(cacheFlagPath))
+                        {
+                            return;
+                        }
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
                         token.ThrowIfCancellationRequested();
                         MajDebug.Log($"Received http response header from: {uri}");
-                        if(fileInfo.Exists)
-                        {
-                            if (fileInfo.Length == (rsp.Content.Headers.ContentLength ?? -1))
-                                return;
-                        }
+                        
                         using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
                         int read = 0;
@@ -294,6 +300,8 @@ namespace MajdataPlay.Types
                             await fileStream.WriteAsync(buffer.Slice(0, read), token);
                         }
                         while (read > 0);
+                        using (File.Create(cacheFlagPath))
+                        break;
                     }
                     catch(OperationCanceledException)
                     {
