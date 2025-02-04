@@ -71,7 +71,7 @@ public class PracticeManager : MonoBehaviour
     {
         var songinfo = _gameInfo.Charts.FirstOrDefault();
         var level = _gameInfo.Levels.FirstOrDefault();
-        await songinfo.Preload();
+        await songinfo.PreloadAsync();
         audioTrack = await songinfo.GetAudioTrackAsync();
         //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
         totalTime = (float)audioTrack.Length.TotalSeconds;

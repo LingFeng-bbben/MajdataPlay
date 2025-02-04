@@ -23,7 +23,7 @@ namespace MajdataPlay.Types
         string Hash { get; }
         bool IsOnline => Location == ChartStorageLocation.Online;
 
-        UniTask Preload(CancellationToken token = default);
+        UniTask PreloadAsync(CancellationToken token = default);
         UniTask<string> GetVideoPathAsync(CancellationToken token = default);
         UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default);
         UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default);

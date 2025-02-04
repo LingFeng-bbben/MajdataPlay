@@ -156,7 +156,7 @@ namespace MajdataPlay.Types
                 await UniTask.Yield();
             }
         }
-        public async UniTask Preload(CancellationToken token = default)
+        public async UniTask PreloadAsync(CancellationToken token = default)
         {
             try
             {

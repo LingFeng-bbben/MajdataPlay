@@ -217,7 +217,7 @@ namespace MajdataPlay.Game
             var inputManager = MajInstances.InputManager;
             try
             {
-                await _songDetail.Preload();
+                await _songDetail.PreloadAsync();
                 await LoadAudioTrack();
                 await ParseChart();
                 await PrepareToPlay();

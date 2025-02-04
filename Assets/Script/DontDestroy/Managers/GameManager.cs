@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
+using System.Reflection;
 
 namespace MajdataPlay
 {
@@ -42,7 +43,8 @@ namespace MajdataPlay
         readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
         TimerType _timer = MajTimeline.Timer;
-
+        [SerializeField]
+        Sprite _emptySongCover;
         static GameManager()
         {
             _globalCTS = new();
@@ -79,6 +81,8 @@ namespace MajdataPlay
                 Setting.Game.Language = lang.ToString();
             }
             Localization.Current = lang;
+            typeof(MajEnv).GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                          .SetValue(null, _emptySongCover);
         }
         void ApplyScreenConfig()
         {

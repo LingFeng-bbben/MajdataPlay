@@ -69,7 +69,7 @@ namespace MajdataPlay.Types
 
             return new SongDetail(chartFolder, metadata);
         }
-        public async UniTask Preload(CancellationToken token = default)
+        public async UniTask PreloadAsync(CancellationToken token = default)
         {
             try
             {

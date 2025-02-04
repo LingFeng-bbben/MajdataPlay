@@ -36,7 +36,7 @@ namespace MajdataPlay.Utils
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
-        public static Sprite EmptySongCover { get; private set; }
+        public static Sprite EmptySongCover { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()
         {
@@ -70,13 +70,6 @@ namespace MajdataPlay.Utils
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-            LoadImageAsync().Forget();
-        }
-        static async UniTaskVoid LoadImageAsync()
-        {
-            await Task.Delay(3000);
-            await UniTask.Yield();
-            EmptySongCover = SpriteLoader.Load(Path.Combine(AssetsPath, "dummy.jpg"));
         }
         static void CheckAndLoadUserSetting()
         {
