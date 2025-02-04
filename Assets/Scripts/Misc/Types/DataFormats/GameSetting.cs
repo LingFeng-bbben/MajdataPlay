@@ -173,8 +173,11 @@ namespace MajdataPlay.Types
     }
     public class TouchPanelOptions
     {
+        public int Index { get; set; } = 1;
         public int COMPort { get; set; } = 3;
         public bool Debounce { get; set; } = true;
+        public bool SensitivityOverride { get; set; } = false;
+        public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 2;
         public int DebounceThresholdMs { get; set; } = 5;
     }

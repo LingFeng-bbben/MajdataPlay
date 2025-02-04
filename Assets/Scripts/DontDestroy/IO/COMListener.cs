@@ -105,7 +105,9 @@ namespace MajdataPlay.IO
                 serialSession.Open();
                 var encoding = Encoding.ASCII;
                 var serialStream = serialSession.BaseStream;
-
+                var isSensitivityOverride = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.SensitivityOverride;
+                var sens = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Sensitivity;
+                var index = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R'; 
                 //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                 await serialStream.WriteAsync(encoding.GetBytes("{RSET}"));
@@ -114,7 +116,15 @@ namespace MajdataPlay.IO
                 //send ratio
                 for (byte a = 0x41; a <= 0x62; a++)
                 {
-                    await serialStream.WriteAsync(encoding.GetBytes("{L" + (char)a + "r2}"));
+                    await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                }
+                if(isSensitivityOverride)
+                {
+                    for (byte a = 0x41; a <= 0x62; a++)
+                    {
+                        var value = GetSensitivityValue(a, sens);
+                        await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                    }
                 }
                 //send sensitivity
                 //adx have another method to set sens, so we dont do it here
@@ -126,6 +136,45 @@ namespace MajdataPlay.IO
                 serialSession.DiscardInBuffer();
 
                 return serialStream;
+            }
+        }
+        byte GetSensitivityValue(byte sensor,int sens)
+        {
+            if (sensor > 0x62 || sensor < 0x41)
+                return 0x28;
+            if(sensor < 0x49)
+            {
+                return sens switch
+                {
+                    -5 => 0x5A,
+                    -4 => 0x50,
+                    -3 => 0x46,
+                    -2 => 0x3C,
+                    -1 => 0x32,
+                    1  => 0x1E,
+                    2  => 0x1A,
+                    3  => 0x17,
+                    4  => 0x14,
+                    5  => 0x0A,
+                    _  => 0x28
+                };
+            }
+            else
+            {
+                return sens switch
+                {
+                    -5 => 0x46,
+                    -4 => 0x3C,
+                    -3 => 0x32,
+                    -2 => 0x28,
+                    -1 => 0x1E,
+                    1  => 0x14,
+                    2  => 0x0F,
+                    3  => 0x0A,
+                    4  => 0x05,
+                    5  => 0x01,
+                    _  => 0x01
+                };
             }
         }
     }
