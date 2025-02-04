@@ -69,8 +69,6 @@ namespace MajdataPlay
             DontDestroyOnLoad(this);
             ApplyScreenConfig();
 
-            var thiss = Process.GetCurrentProcess();
-            thiss.PriorityClass = ProcessPriorityClass.RealTime;
             var availableLangs = Localization.Available;
             if (availableLangs.IsEmpty())
                 return;

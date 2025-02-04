@@ -5,6 +5,7 @@ using MychIO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,6 +39,7 @@ namespace MajdataPlay.Utils
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
         public static Sprite EmptySongCover { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
+        public static Process GameProcess { get; } = Process.GetCurrentProcess();
         public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()
         {
             Proxy = WebRequest.GetSystemWebProxy(),
@@ -70,6 +72,7 @@ namespace MajdataPlay.Utils
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            GameProcess.PriorityClass = ProcessPriorityClass.High;
         }
         static void CheckAndLoadUserSetting()
         {
