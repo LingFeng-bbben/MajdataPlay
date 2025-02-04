@@ -32,6 +32,7 @@ namespace MajdataPlay.IO
 
             try
             {
+                await EnsureTouchPanelSerialStreamIsOpen(serial);
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();

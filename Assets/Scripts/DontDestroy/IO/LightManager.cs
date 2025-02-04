@@ -7,8 +7,11 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -137,8 +140,9 @@ namespace MajdataPlay.IO
             UniTask.Void(async () =>
             {
                 var token = MajEnv.GlobalCT;
-                while (!token.IsCancellationRequested)
+                while (true)
                 {
+                    token.ThrowIfCancellationRequested();
                     foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                     {
                         _dummyLights[device!.Index].color = device.Color;
@@ -160,80 +164,110 @@ namespace MajdataPlay.IO
         }
         async Task UpdateInternalLedManagerAsync()
         {
-            await Task.Run(async () =>
-            {
-                var token = MajEnv.GlobalCT;
-                var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
-                while (!token.IsCancellationRequested)
-                {
-                    var startAt = MajTimeline.UnscaledTime;
-                    try
-                    {
-                        var serialStream = _serial.BaseStream;
-                        foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
-                        {
-                            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
-                            {
-                                var index = device!.Index;
-                                var color = device.Color;
-                                var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
-                                //rentedMemory.Span[5] = (byte)index;
-                                //rentedMemory.Span[6] = (byte)(color.r * 255);
-                                //rentedMemory.Span[7] = (byte)(color.g * 255);
-                                //rentedMemory.Span[8] = (byte)(color.b * 255);
-                                //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+            await Task.Yield();
 
-                                await serialStream.WriteAsync(packet.Slice(0, 10));
-                            }
-                        }
-                        await serialStream.WriteAsync(_templateUpdate.AsMemory());
-                    }
-                    catch (Exception ex)
+            var token = MajEnv.GlobalCT;
+            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs);
+            var stopwatch = new Stopwatch();
+            var t1 = stopwatch.Elapsed;
+
+            stopwatch.Start();
+
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                try
+                {
+                    var serialStream = await EnsureSerialStreamIsOpen(_serial);
+                    foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                     {
-                        MajDebug.LogException(ex);
+                        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                        {
+                            var index = device!.Index;
+                            var color = device.Color;
+                            var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
+                            //rentedMemory.Span[5] = (byte)index;
+                            //rentedMemory.Span[6] = (byte)(color.r * 255);
+                            //rentedMemory.Span[7] = (byte)(color.g * 255);
+                            //rentedMemory.Span[8] = (byte)(color.b * 255);
+                            //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+
+                            await serialStream.WriteAsync(packet.Slice(0, 10));
+                        }
                     }
-                    var endAt = MajTimeline.UnscaledTime;
-                    var elapsedTime = endAt - startAt;
-                    var waitTime = elapsedTime.TotalMilliseconds > refreshRateMs ? 0 : refreshRateMs - elapsedTime.TotalMilliseconds;
-                    await Task.Delay(TimeSpan.FromMilliseconds(waitTime));
+                    await serialStream.WriteAsync(_templateUpdate.AsMemory());
                 }
-            });
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"From Led refresher: \n{e}");
+                }
+                finally
+                {
+                    var t2 = stopwatch.Elapsed;
+                    var elapsed = t2 - t1;
+                    t1 = t2;
+                    if (elapsed < refreshRate)
+                        await Task.Delay(refreshRate - elapsed, token);
+                }
+            }
         }
         async Task UpdateExternalLedManagerAsync()
         {
-            await Task.Run(async () =>
-            {
-                var ioManager = MajInstanceHelper<IOManager>.Instance!;
-                var token = MajEnv.GlobalCT;
-                var refreshRateMs = MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs;
-                var commands = new LedCommand[9];
-                commands[8] = LedCommand.Update;
-                while (!token.IsCancellationRequested)
-                {
-                    var startAt = MajTimeline.UnscaledTime;
-                    try
-                    {
-                        for (var i = 0; i < 8; i++) 
-                        {
-                            var device = _ledDevices[i];
-                            var index = device.Index;
-                            var color = device.Color;
-                            var command = BuildSetColorCommand(index, color);
+            await Task.Yield();
 
-                            commands[i] = command;
-                        }
-                        await ioManager.WriteToDevice(DeviceClassification.LedDevice, commands);
-                    }
-                    catch (Exception ex)
+            var ioManager = MajInstanceHelper<IOManager>.Instance!;
+            var token = MajEnv.GlobalCT;
+            var commands = new LedCommand[9];
+            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs);
+            var stopwatch = new Stopwatch();
+            var t1 = stopwatch.Elapsed;
+
+            stopwatch.Start();
+            commands[8] = LedCommand.Update;
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                try
+                {
+                    for (var i = 0; i < 8; i++)
                     {
-                        MajDebug.LogException(ex);
+                        var device = _ledDevices[i];
+                        var index = device.Index;
+                        var color = device.Color;
+                        var command = BuildSetColorCommand(index, color);
+
+                        commands[i] = command;
                     }
-                    var endAt = MajTimeline.UnscaledTime;
-                    var elapsedTime = endAt - startAt;
-                    var waitTime = elapsedTime.TotalMilliseconds > refreshRateMs ? 0 : refreshRateMs - elapsedTime.TotalMilliseconds;
-                    await Task.Delay(TimeSpan.FromMilliseconds(waitTime));
+                    await ioManager.WriteToDevice(DeviceClassification.LedDevice, commands);
                 }
-            });
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"From Led refresher: \n{e}");
+                }
+                finally
+                {
+                    var t2 = stopwatch.Elapsed;
+                    var elapsed = t2 - t1;
+                    t1 = t2;
+                    if (elapsed < refreshRate)
+                        await Task.Delay(refreshRate - elapsed, token);
+                }
+            }
+        }
+        async ValueTask<Stream> EnsureSerialStreamIsOpen(SerialPort serialSession)
+        {
+            if (serialSession.IsOpen)
+            {
+                return serialSession.BaseStream;
+            }
+            else
+            {
+                await Task.Yield();
+
+                serialSession.Open();
+
+                return serialSession.BaseStream;
+            }
         }
     }
 }
