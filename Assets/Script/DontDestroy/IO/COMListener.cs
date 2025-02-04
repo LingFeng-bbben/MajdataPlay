@@ -1,6 +1,8 @@
 ﻿using MajdataPlay.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -15,77 +17,107 @@ namespace MajdataPlay.IO
     {
         async void COMReceiveAsync()
         {
-            SerialPort? serial = null;
+            await Task.Yield();
+
+            var token = MajEnv.GlobalCT;
+            var pollingRate = _sensorPollingRateMs;
             var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
+            var stopwatch = new Stopwatch();
+            var t1 = stopwatch.Elapsed;
+            var reportData = new byte[9];
+            var sharedMemoryPool = MemoryPool<byte>.Shared;
+            using var serial = new SerialPort(comPort, 9600);
+
+            stopwatch.Start();
+
             try
             {
-                var token = MajEnv.GlobalCT;
-                serial = new SerialPort(comPort, 9600);
-                await Task.Run(async () =>
+                while (!token.IsCancellationRequested)
                 {
-                    var pollingRate = _sensorPollingRateMs;
-                    while (!token.IsCancellationRequested)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        if (serial.IsOpen)
-                        {
-                            int count = serial.BytesToRead;
-                            var buf = new byte[count];
-                            serial.Read(buf, 0, count);
-                            if (buf.Length < 9)
-                            {
-                                continue;
-                            }
-                            else
-                            {
+                    token.ThrowIfCancellationRequested();
+                    var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
+                    var bytesToRead = serial.BytesToRead;
 
-                                if (buf[0] == '(')
+                    if (bytesToRead % 9 != 0)
+                    {
+                        using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
+                        var buffer = bufferOwner.Memory;
+                        await serialStream.ReadAsync(buffer);
+
+                        for (var x = 0; x < bytesToRead % 9; x++)
+                        {
+                            var slicedBuffer = buffer.Slice(x * 9, 9);
+                            if (slicedBuffer.Length != 9)
+                                break;
+                            slicedBuffer.CopyTo(reportData);
+                            if (reportData[0] == '(')
+                            {
+                                int k = 0;
+                                for (int i = 1; i < 8; i++)
                                 {
-                                    int k = 0;
-                                    for (int i = 1; i < 8; i++)
+                                    //print(buf[i].ToString("X2"));
+                                    for (int j = 0; j < 5; j++)
                                     {
-                                        //print(buf[i].ToString("X2"));
-                                        for (int j = 0; j < 5; j++)
-                                        {
-                                            _COMReport[k] = (buf[i] & 0x01 << j) > 0;
-                                            k++;
-                                        }
+                                        _COMReport[k] = (reportData[i] & 0x01 << j) > 0;
+                                        k++;
                                     }
                                 }
-
-                            } 
-                        }
-                        else
-                        {
-                            serial.Open();
-                            //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
-                            serial.Write("{RSET}");
-                            serial.Write("{HALT}");
-                            //send ratio
-                            for(byte a = 0x41; a <= 0x62; a++)
-                            {
-                                serial.Write("{L"+(char)a+"r2}");
                             }
-                            //send sensitivity
-                            //adx have another method to set sens, so we dont do it here
-                            /*for (byte a = 0x41; a <= 0x62; a++)
-                            {
-                                serial.Write("{L" + (char)a + "k"+sens+"}");
-                            }*/
-                            serial.Write("{STAT}");
                         }
-                        await Task.Delay(_sensorPollingRateMs,token);
+                        serial.DiscardInBuffer();
                     }
-                });
+                    else if(bytesToRead != 0)
+                    {
+                        serial.DiscardInBuffer();
+                    }
+
+                    var t2 = stopwatch.Elapsed;
+                    var elapsed = t2 - t1;
+                    t1 = t2;
+                    if (elapsed >= pollingRate)
+                        continue;
+                    else
+                        await Task.Delay(pollingRate - elapsed, token);
+                }
             }
             catch(IOException)
             {
                 MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                 useDummy = true;
             }
-            finally
+        }
+        async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
+        {
+            if(serialSession.IsOpen)
             {
-                serial!.Close();
+                return serialSession.BaseStream;
+            }
+            else
+            {
+                serialSession.Open();
+                var encoding = Encoding.ASCII;
+                var serialStream = serialSession.BaseStream;
+
+                //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+
+                await serialStream.WriteAsync(encoding.GetBytes("{RSET}"));
+                await serialStream.WriteAsync(encoding.GetBytes("{HALT}"));
+
+                //send ratio
+                for (byte a = 0x41; a <= 0x62; a++)
+                {
+                    await serialStream.WriteAsync(encoding.GetBytes("{L" + (char)a + "r2}"));
+                }
+                //send sensitivity
+                //adx have another method to set sens, so we dont do it here
+                /*for (byte a = 0x41; a <= 0x62; a++)
+                {
+                    serial.Write("{L" + (char)a + "k"+sens+"}");
+                }*/
+                await serialStream.WriteAsync(encoding.GetBytes("{STAT}"));
+                serialSession.DiscardInBuffer();
+
+                return serialStream;
             }
         }
     }

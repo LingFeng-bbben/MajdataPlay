@@ -4,6 +4,7 @@ using MajdataPlay.Utils;
 using MychIO.Device;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -50,23 +51,32 @@ namespace MajdataPlay.IO
         readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
         async void RefreshKeyboardStateAsync()
         {
-            await Task.Run(async () =>
-            {
-                var token = MajEnv.GlobalCT;
-                var pollingRate = _btnPollingRateMs;
-                while (!token.IsCancellationRequested)
-                {
-                    token.ThrowIfCancellationRequested();
+            await Task.Yield();
 
-                    for (var i = 0; i < _buttons.Length; i++)
-                    {
-                        var button = _buttons[i];
-                        var keyCode = button.BindingKey;
-                        _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
-                    }
-                    await Task.Delay(_btnPollingRateMs,token);
+            var token = MajEnv.GlobalCT;
+            var pollingRate = _btnPollingRateMs;
+            var stopwatch = new Stopwatch();
+            var t1 = stopwatch.Elapsed;
+            
+            stopwatch.Start();
+            while (!token.IsCancellationRequested)
+            {
+                token.ThrowIfCancellationRequested();
+
+                for (var i = 0; i < _buttons.Length; i++)
+                {
+                    var button = _buttons[i];
+                    var keyCode = button.BindingKey;
+                    _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
                 }
-            });
+                var t2 = stopwatch.Elapsed;
+                var elapsed = t2 - t1;
+                t1 = t2;
+                if (elapsed >= pollingRate)
+                    continue;
+                else
+                    await Task.Delay(pollingRate - elapsed, token);
+            }
         }
         void UpdateButtonState()
         {
