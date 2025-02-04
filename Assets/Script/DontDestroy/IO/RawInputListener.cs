@@ -7,11 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityRawInput;
-using static UnityEngine.Rendering.DebugUI.Table;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -59,23 +57,31 @@ namespace MajdataPlay.IO
             var t1 = stopwatch.Elapsed;
             
             stopwatch.Start();
-            while (!token.IsCancellationRequested)
+            while (true)
             {
                 token.ThrowIfCancellationRequested();
 
-                for (var i = 0; i < _buttons.Length; i++)
+                try
                 {
-                    var button = _buttons[i];
-                    var keyCode = button.BindingKey;
-                    _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
+                    for (var i = 0; i < _buttons.Length; i++)
+                    {
+                        var button = _buttons[i];
+                        var keyCode = button.BindingKey;
+                        _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
+                    }
                 }
-                var t2 = stopwatch.Elapsed;
-                var elapsed = t2 - t1;
-                t1 = t2;
-                if (elapsed >= pollingRate)
-                    continue;
-                else
-                    await Task.Delay(pollingRate - elapsed, token);
+                catch(Exception e)
+                {
+                    MajDebug.LogError($"From KeyBoard listener: \n{e}");
+                }
+                finally
+                {
+                    var t2 = stopwatch.Elapsed;
+                    var elapsed = t2 - t1;
+                    t1 = t2;
+                    if (elapsed < pollingRate)
+                        await Task.Delay(pollingRate - elapsed, token);
+                }
             }
         }
         void UpdateButtonState()

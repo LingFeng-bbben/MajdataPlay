@@ -32,52 +32,59 @@ namespace MajdataPlay.IO
 
             try
             {
-                while (!token.IsCancellationRequested)
+                while (true)
                 {
                     token.ThrowIfCancellationRequested();
-                    var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
-                    var bytesToRead = serial.BytesToRead;
-
-                    if (bytesToRead % 9 != 0)
+                    try
                     {
-                        using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
-                        var buffer = bufferOwner.Memory;
-                        await serialStream.ReadAsync(buffer);
+                        var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
+                        var bytesToRead = serial.BytesToRead;
 
-                        for (var x = 0; x < bytesToRead % 9; x++)
+                        if (bytesToRead % 9 != 0)
                         {
-                            var slicedBuffer = buffer.Slice(x * 9, 9);
-                            if (slicedBuffer.Length != 9)
-                                break;
-                            slicedBuffer.CopyTo(reportData);
-                            if (reportData[0] == '(')
+                            using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
+                            var buffer = bufferOwner.Memory;
+                            await serialStream.ReadAsync(buffer);
+
+                            for (var x = 0; x < bytesToRead % 9; x++)
                             {
-                                int k = 0;
-                                for (int i = 1; i < 8; i++)
+                                var slicedBuffer = buffer.Slice(x * 9, 9);
+                                if (slicedBuffer.Length != 9)
+                                    break;
+                                slicedBuffer.CopyTo(reportData);
+                                if (reportData[0] == '(')
                                 {
-                                    //print(buf[i].ToString("X2"));
-                                    for (int j = 0; j < 5; j++)
+                                    int k = 0;
+                                    for (int i = 1; i < 8; i++)
                                     {
-                                        _COMReport[k] = (reportData[i] & 0x01 << j) > 0;
-                                        k++;
+                                        //print(buf[i].ToString("X2"));
+                                        for (int j = 0; j < 5; j++)
+                                        {
+                                            _COMReport[k] = (reportData[i] & 0x01 << j) > 0;
+                                            k++;
+                                        }
                                     }
                                 }
                             }
+                            serial.DiscardInBuffer();
                         }
-                        serial.DiscardInBuffer();
+                        else if (bytesToRead != 0)
+                        {
+                            serial.DiscardInBuffer();
+                        }
                     }
-                    else if(bytesToRead != 0)
+                    catch(Exception e)
                     {
-                        serial.DiscardInBuffer();
+                        MajDebug.LogError($"From SerialPort listener: \n{e}");
                     }
-
-                    var t2 = stopwatch.Elapsed;
-                    var elapsed = t2 - t1;
-                    t1 = t2;
-                    if (elapsed >= pollingRate)
-                        continue;
-                    else
-                        await Task.Delay(pollingRate - elapsed, token);
+                    finally
+                    {
+                        var t2 = stopwatch.Elapsed;
+                        var elapsed = t2 - t1;
+                        t1 = t2;
+                        if (elapsed < pollingRate)
+                            await Task.Delay(pollingRate - elapsed, token);
+                    }
                 }
             }
             catch(IOException)
