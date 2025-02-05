@@ -120,10 +120,24 @@ namespace MajdataPlay.IO
                 }
                 if(isSensitivityOverride)
                 {
-                    for (byte a = 0x41; a <= 0x62; a++)
+                    try
                     {
-                        var value = GetSensitivityValue(a, sens);
-                        await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                        for (byte a = 0x41; a <= 0x62; a++)
+                        {
+                            using var cts = new CancellationTokenSource();
+                            cts.CancelAfter(3000);
+
+                            var value = GetSensitivityValue(a, sens);
+                            await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"), cts.Token);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        MajDebug.LogWarning($"TouchPanel does not support sensitivity override: \"Write timeout\"");
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"Failed to override sensitivity: \n{e}");
                     }
                 }
                 //send sensitivity
