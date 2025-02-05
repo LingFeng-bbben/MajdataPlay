@@ -76,7 +76,7 @@ public class PracticeManager : MonoBehaviour
         //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
         totalTime = (float)audioTrack.Length.TotalSeconds;
         await UniTask.SwitchToMainThread();
-        await chartAnalyzer.AnalyzeSongDetail(songinfo, level, totalTime);
+        await chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, level, totalTime);
         if (_gameInfo.TimeRange is not null)
         {
             startTime = (float)_gameInfo.TimeRange.Value.Start;

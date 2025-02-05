@@ -124,7 +124,7 @@ namespace MajdataPlay.List
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
-                chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
+                chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
 
                 for (int i = 0; i < covers.Count; i++)
                 {
@@ -195,7 +195,7 @@ namespace MajdataPlay.List
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
-                    chartAnalyzer.AnalyzeSongDetail(songinfo, (ChartLevel)selectedDifficulty).Forget();
+                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     PreloadSongDetail();
                     break;

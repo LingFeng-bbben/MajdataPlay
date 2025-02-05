@@ -214,12 +214,11 @@ namespace MajdataPlay.Game
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             _slideUpdater = MajInstanceHelper<SlideUpdater>.Instance!;
         }
-        public async UniTask LoadNotesIntoPool(SimaiChart maiChart)
+        internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
         {
             List<Task> touchTasks = new();
             try
             {
-                State = NoteLoaderStatus.ParsingNote;
                 _noteManager.ResetCounter();
                 _noteIndex.Clear();
                 _touchIndex.Clear();
@@ -376,12 +375,10 @@ namespace MajdataPlay.Game
             }
             catch (Exception e)
             {
-                State = NoteLoaderStatus.Error;
                 throw e;
             }
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
-            State = NoteLoaderStatus.Finished;
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {

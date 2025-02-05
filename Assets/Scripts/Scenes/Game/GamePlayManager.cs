@@ -181,7 +181,7 @@ namespace MajdataPlay.Game
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
-            LoadChart().Forget();
+            InitGame().Forget();
         }
         void LoadGameMod()
         {
@@ -212,14 +212,16 @@ namespace MajdataPlay.Game
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
         /// </summary>
         /// <returns></returns>
-        async UniTaskVoid LoadChart()
+        async UniTaskVoid InitGame()
         {
             var inputManager = MajInstances.InputManager;
             try
             {
                 await _songDetail.PreloadAsync();
                 await LoadAudioTrack();
+                await InitBackground();
                 await ParseChart();
+                await LoadNotes();
                 await PrepareToPlay();
             }
             catch(EmptyChartException)
@@ -349,8 +351,8 @@ namespace MajdataPlay.Game
                     throw new EmptyChartException();
                 }
 
-                GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeMaidata(_chart, AudioLength);
-                await Task.Run(() =>
+                GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
+                await Task.Run(() => 
                 {
                     //Generate ClockSounds
                     var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
@@ -424,10 +426,6 @@ namespace MajdataPlay.Game
                     _anwserSoundList = _anwserSoundList.OrderBy(o => o.time).ToList();
                 });
             }
-            catch
-            {
-                throw;
-            }
             finally
             {
                 await UniTask.Yield();
@@ -478,42 +476,30 @@ namespace MajdataPlay.Game
             _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
-            var loaderTask = _noteLoader.LoadNotesIntoPool(_chart);
-            var timer = 1f;
+            var loaderTask = _noteLoader.LoadNotesIntoPool(_chart).AsTask();
 
-            while (_noteLoader.State < NoteLoaderStatus.Finished)
+            while (!loaderTask.IsCompleted)
             {
-                if (_noteLoader.State == NoteLoaderStatus.Error)
-                {
-                    var e = loaderTask.AsTask().Exception;
-                    MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%",Color.red);
-                    MajDebug.LogException(e);
-                    StopAllCoroutines();
-                    throw e;
-                }
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Process * 100:F2}%");
                 await UniTask.Yield();
             }
-            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
+            if(loaderTask.IsFaulted)
+            {
+                var e = loaderTask.Exception.InnerException;
 
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%", Color.red);
+                MajDebug.LogException(loaderTask.Exception);
+                StopAllCoroutines();
+                throw e;
+            }
+            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
+            await UniTask.Delay(1000);
         }
         async UniTask PrepareToPlay()
         {
             if (_audioSample is null)
                 return;
             _audioTime = -5f;
-
-            await InitBackground();
-            var noteLoaderTask = LoadNotes().AsTask();
-
-            while (true)
-            {
-                if (noteLoaderTask.IsFaulted)
-                    throw noteLoaderTask.Exception.InnerException;
-                else if (noteLoaderTask.IsCompleted)
-                    break;
-                await UniTask.Yield();
-            }
 
             Time.timeScale = 1f;
             var firstClockTiming = _anwserSoundList[0].time;
@@ -754,13 +740,15 @@ namespace MajdataPlay.Game
         }
         async void StartToPlayAnswer()
         {
-            int i = 0;
-            await Task.Run(() =>
+            await Task.Run(async () => 
             {
+                int i = 0;
+                var token = _allTaskTokenSource.Token;
                 var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
-                while (!_allTaskTokenSource.IsCancellationRequested)
+
+                while (true)
                 {
-                    
+                    token.ThrowIfCancellationRequested();
                     try
                     {
                         if (i >= _anwserSoundList.Count)
@@ -798,11 +786,14 @@ namespace MajdataPlay.Game
                             i++;
                         }
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         MajDebug.LogException(e);
                     }
-                    //await Task.Delay(1);
+                    finally
+                    {
+                        await Task.Delay(1);
+                    }
                 }
             });
         }

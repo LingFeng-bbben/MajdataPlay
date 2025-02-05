@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -28,8 +29,10 @@ namespace MajdataPlay.List
 
         public Color[] diffColors = new Color[6];
 
-        CancellationTokenSource? _cts = null;
+        int diff = 0;
 
+        CancellationTokenSource? _cts = null;
+        ChartAnalyzer _chartAnalyzer;
         private void Start()
         {
             /* Level = transform.Find("Level").GetComponent<TMP_Text>();
@@ -37,10 +40,12 @@ namespace MajdataPlay.List
              Title = transform.Find("Title").GetComponent<TMP_Text>();
              Artist = transform.Find("Artist").GetComponent<TMP_Text>();
              ArchieveRate = transform.Find("Rate").GetComponent<TMP_Text>();*/
+            _chartAnalyzer = GameObject.FindObjectOfType<ChartAnalyzer>();
         }
         public void SetDifficulty(int i)
         {
             bgCard.color = diffColors[i];
+            diff = i;
             if (i + 1 < diffColors.Length)
             {
                 MajInstances.LightManager.SetButtonLight(diffColors[i + 1], 0);
@@ -65,6 +70,7 @@ namespace MajdataPlay.List
                 _cts.Cancel();
             _cts = new();
             SetCoverAsync(detail, _cts.Token).Forget();
+            _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: _cts.Token).Forget();
         }
         public void SetNoCover()
         {
