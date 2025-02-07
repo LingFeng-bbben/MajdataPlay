@@ -49,161 +49,173 @@ namespace MajdataPlay.Utils
         static int _collectionIndex = 0;
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
-            if (!Directory.Exists(MajEnv.ChartPath))
+            try
             {
-                Directory.CreateDirectory(MajEnv.ChartPath);
-                Directory.CreateDirectory(Path.Combine(MajEnv.ChartPath, "default"));
-                return;
-            }
-            var rootPath = MajEnv.ChartPath;
-            var task = GetCollections(rootPath,progressReporter);
-            var songs = await task;
-            if (task.IsFaulted)
-            {
-                var e = task.AsTask().Exception.InnerException;
-                MajDebug.LogException(e);
-                throw e;
-            }
-            else
+                if (!Directory.Exists(MajEnv.ChartPath))
+                {
+                    Directory.CreateDirectory(MajEnv.ChartPath);
+                    Directory.CreateDirectory(Path.Combine(MajEnv.ChartPath, "default"));
+                    return;
+                }
+                var rootPath = MajEnv.ChartPath;
+                var songs = await GetCollections(rootPath, progressReporter);
+
                 Collections = songs;
-            TotalChartCount =  await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
-            MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                TotalChartCount = await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
+                MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+                throw;
+            }
         }
-        static async ValueTask<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress> progressReporter)
+        static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress> progressReporter)
         {
-            var dirs = new DirectoryInfo(rootPath).GetDirectories();
-            List<Task<SongCollection>> tasks = new();
-            List<SongCollection> collections = new();
-
-            //Local Charts
-            foreach (var dir in dirs)
+            try
             {
-                var path = dir.FullName;
-                var files = dir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
+                var dirs = new DirectoryInfo(rootPath).GetDirectories();
+                List<Task<SongCollection>> tasks = new();
+                List<SongCollection> collections = new();
 
-                if (maidataFile is not null || trackFile is not null)
-                    continue;
-
-                tasks.Add(GetCollection(path));
-            }
-            
-            var a = Task.WhenAll(tasks);
-            await a;
-
-            if (a.IsFaulted)
-                throw a.Exception.InnerException;
-            foreach (var task in tasks)
-            {
-                if (task.Result != null)
-                    collections.Add(task.Result);
-            }
-            //Online Charts
-            if (MajInstances.Setting.Online.Enable)
-            {
-                foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
+                //Local Charts
+                foreach (var dir in dirs)
                 {
-                    if (string.IsNullOrEmpty(item.Name))
+                    var path = dir.FullName;
+                    var files = dir.GetFiles();
+                    var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
+                    var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
+
+                    if (maidataFile is not null || trackFile is not null)
                         continue;
-                    progressReporter.Report(new ChartScanProgress()
+
+                    tasks.Add(GetCollection(path));
+                }
+
+                await Task.WhenAll(tasks);
+
+                foreach (var task in tasks)
+                {
+                    if (task.Result != null)
+                        collections.Add(task.Result);
+                }
+                //Online Charts
+                if (MajInstances.Setting.Online.Enable)
+                {
+                    foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
                     {
-                        StorageType = ChartStorageLocation.Online,
-                        Message = item.Name
-                    });
-                    var result = await GetOnlineCollection(item);
-                    if (!result.IsEmpty)
-                        collections.Add(result);
-                }
-            }
-            //Add all songs to "All" folder
-            var allcharts = new List<ISongDetail>();
-            foreach (var collection in collections)
-            {
-                foreach (var item in collection)
-                {
-                    allcharts.Add(item);
-                }
-            }
-            collections.Add(new SongCollection("All", allcharts.ToArray()));
-            MajDebug.Log("Load Dans");
-            var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
-            foreach (var file in danFiles)
-            {
-                var json = File.ReadAllText(file.FullName);
-                var dan = Serializer.Json.Deserialize<DanInfo>(json, new JsonSerializerOptions()
-                {
-                    PropertyNameCaseInsensitive = false
-                });
-                if(dan is null)
-                {
-                    MajDebug.LogError("Failed to load dan file:" + file.FullName);
-                    continue;
-                }
-                List<ISongDetail> danSongs = new();
-                foreach (var hash in dan.SongHashs)
-                {
-                    // search online first (so can upload score)
-                    var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash && x.IsOnline == true);
-                    if (songDetail ==  null)
-                        songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
-                    if (songDetail is not null)
-                        danSongs.Add(songDetail);
-                    else
-                    {
-                        MajDebug.LogError("Cannot find the song with hash:" + hash);
-                        if (dan.IsPlayList)
-                        {
+                        if (string.IsNullOrEmpty(item.Name))
                             continue;
-                        }
-                        danSongs.Clear();
-                        break;
+                        progressReporter.Report(new ChartScanProgress()
+                        {
+                            StorageType = ChartStorageLocation.Online,
+                            Message = item.Name
+                        });
+                        var result = await GetOnlineCollection(item);
+                        if (!result.IsEmpty)
+                            collections.Add(result);
                     }
                 }
-                if(danSongs.Count == 0)
+                //Add all songs to "All" folder
+                var allcharts = new List<ISongDetail>();
+                foreach (var collection in collections)
                 {
-                    MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + dan.Name);
-                    continue;
+                    foreach (var item in collection)
+                    {
+                        allcharts.Add(item);
+                    }
                 }
-                collections.Add(new SongCollection(dan.Name, danSongs.ToArray())
+                collections.Add(new SongCollection("All", allcharts.ToArray()));
+                MajDebug.Log("Load Dans");
+                var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
+                foreach (var file in danFiles)
                 {
-                    Type = dan.IsPlayList ? ChartStorageType.List : ChartStorageType.Dan,
-                    DanInfo = dan.IsPlayList ? null : dan
-                });
-                MajDebug.Log("Loaded Dan:" + dan.Name);
+                    var json = File.ReadAllText(file.FullName);
+                    var dan = Serializer.Json.Deserialize<DanInfo>(json, new JsonSerializerOptions()
+                    {
+                        PropertyNameCaseInsensitive = false
+                    });
+                    if (dan is null)
+                    {
+                        MajDebug.LogError("Failed to load dan file:" + file.FullName);
+                        continue;
+                    }
+                    List<ISongDetail> danSongs = new();
+                    foreach (var hash in dan.SongHashs)
+                    {
+                        // search online first (so can upload score)
+                        var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash && x.IsOnline == true);
+                        if (songDetail == null)
+                            songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
+                        if (songDetail is not null)
+                            danSongs.Add(songDetail);
+                        else
+                        {
+                            MajDebug.LogError("Cannot find the song with hash:" + hash);
+                            if (dan.IsPlayList)
+                            {
+                                continue;
+                            }
+                            danSongs.Clear();
+                            break;
+                        }
+                    }
+                    if (danSongs.Count == 0)
+                    {
+                        MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + dan.Name);
+                        continue;
+                    }
+                    collections.Add(new SongCollection(dan.Name, danSongs.ToArray())
+                    {
+                        Type = dan.IsPlayList ? ChartStorageType.List : ChartStorageType.Dan,
+                        DanInfo = dan.IsPlayList ? null : dan
+                    });
+                    MajDebug.Log("Loaded Dan:" + dan.Name);
+                }
+                return collections.ToArray();
             }
-            return collections.ToArray();
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+                throw;
+            }
         }
         static async Task<SongCollection> GetCollection(string rootPath)
         {
             return await Task.Run(async () =>
             {
-                var thisDir = new DirectoryInfo(rootPath);
-                var dirs = thisDir.GetDirectories()
-                                  .OrderBy(o => o.CreationTime)
-                                  .ToList();
-                var charts = new List<SongDetail>();
-                var tasks = new List<Task<SongDetail>>();
-                foreach (var songDir in dirs)
+                try
                 {
-                    var files = songDir.GetFiles();
-                    var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                    var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                    var thisDir = new DirectoryInfo(rootPath);
+                    var dirs = thisDir.GetDirectories()
+                                      .OrderBy(o => o.CreationTime)
+                                      .ToList();
+                    var charts = new List<SongDetail>();
+                    var tasks = new List<Task<SongDetail>>();
+                    foreach (var songDir in dirs)
+                    {
+                        var files = songDir.GetFiles();
+                        var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+                        var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
 
-                    if (maidataFile is null || trackFile is null)
-                        continue;
+                        if (maidataFile is null || trackFile is null)
+                            continue;
 
-                    var parsingTask = SongDetail.ParseAsync(songDir.FullName);
+                        var parsingTask = SongDetail.ParseAsync(songDir.FullName);
 
-                    tasks.Add(parsingTask);
+                        tasks.Add(parsingTask);
+                    }
+                    await Task.WhenAll(tasks);
+
+                    foreach (var task in tasks)
+                        charts.Add(task.Result);
+                    return new SongCollection(thisDir.Name, charts.ToArray());
                 }
-                var a = Task.WhenAll(tasks);
-                await a;
-                if (a.IsFaulted)
-                    throw a.Exception.InnerException;
-                foreach (var task in tasks)
-                    charts.Add(task.Result);
-                return new SongCollection(thisDir.Name, charts.ToArray());
+                catch(Exception e)
+                {
+                    MajDebug.LogException(e);
+                    throw;
+                }
             });
         }
         static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api)
@@ -246,7 +258,7 @@ namespace MajdataPlay.Utils
             }
             catch (Exception e)
             {
-                MajDebug.LogError(e);
+                MajDebug.LogException(e);
                 return collection;
             }
         }
