@@ -20,7 +20,7 @@ namespace MajdataPlay.Utils
             _unityLogger = Debug.unityLogger;
             
             LogWriteback();
-#if !UNITY_EDITOR
+#if !(UNITY_EDITOR || DEBUG)
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 MajDebug.Log($"{condition}\n{stackTrace}", type);
