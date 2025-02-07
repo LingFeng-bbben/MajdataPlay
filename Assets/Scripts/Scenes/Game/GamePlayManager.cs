@@ -217,7 +217,21 @@ namespace MajdataPlay.Game
             var inputManager = MajInstances.InputManager;
             try
             {
-                await _songDetail.PreloadAsync();
+                if(_songDetail.IsOnline)
+                {
+                    MajInstances.LightManager.SetAllLight(Color.blue);
+                    var sceneSwitcher = MajInstances.SceneSwitcher;
+                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
+                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
+                    await _songDetail.GetAudioTrackAsync();
+                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
+                    await _songDetail.GetMaidataAsync();
+                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
+                    await _songDetail.GetCoverAsync(false);
+                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
+                    await _songDetail.GetVideoPathAsync();
+                    sceneSwitcher.SetLoadingText(string.Empty);
+                }
                 await LoadAudioTrack();
                 await InitBackground();
                 await ParseChart();
