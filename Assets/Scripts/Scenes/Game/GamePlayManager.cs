@@ -559,9 +559,6 @@ namespace MajdataPlay.Game
                 return;
             switch (MajInstances.Setting.Game.BGInfo)
             {
-                case BGInfoType.CPCombo:
-                case BGInfoType.PCombo:
-                case BGInfoType.Combo:
                 case BGInfoType.Achievement_101:
                 case BGInfoType.Achievement_100:
                 case BGInfoType.Achievement:
@@ -574,6 +571,9 @@ namespace MajdataPlay.Game
                 case BGInfoType.DXScore:
                     _bgInfoHeaderAnim.SetTrigger("fadeOut");
                     break;
+                case BGInfoType.CPCombo:
+                case BGInfoType.PCombo:
+                case BGInfoType.Combo:
                 case BGInfoType.DXScoreRank:
                 case BGInfoType.Diff:
                     break;
