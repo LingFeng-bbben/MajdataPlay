@@ -33,7 +33,7 @@ namespace MajdataPlay.List
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
-        private void Start()
+        private void Awake()
         {
             /* Level = transform.Find("Level").GetComponent<TMP_Text>();
              Charter = transform.Find("Designer").GetComponent<TMP_Text>();
