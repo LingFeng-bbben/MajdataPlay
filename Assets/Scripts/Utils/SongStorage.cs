@@ -205,10 +205,21 @@ namespace MajdataPlay.Utils
 
                         tasks.Add(parsingTask);
                     }
-                    await Task.WhenAll(tasks);
+                    var allTask = Task.WhenAll(tasks);
 
+                    while(!allTask.IsCompleted)
+                    {
+                        await Task.Yield();
+                    }
                     foreach (var task in tasks)
+                    {
+                        if (task.IsFaulted)
+                        {
+                            MajDebug.LogException(task.Exception);
+                            continue;
+                        }
                         charts.Add(task.Result);
+                    }
                     return new SongCollection(thisDir.Name, charts.ToArray());
                 }
                 catch(Exception e)
