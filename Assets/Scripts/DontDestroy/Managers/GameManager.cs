@@ -11,6 +11,7 @@ using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
+using UnityEngine.SceneManagement;
 
 namespace MajdataPlay
 {
@@ -81,6 +82,13 @@ namespace MajdataPlay
             Localization.Current = lang;
             typeof(MajEnv).GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                           .SetValue(null, _emptySongCover);
+            
+        }
+        void SwitchToView()
+        {
+            typeof(MajEnv).GetField("<RunningMode>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                          .SetValue(null, RunningMode.View);
+            SceneManager.LoadScene("View");
         }
         void ApplyScreenConfig()
         {

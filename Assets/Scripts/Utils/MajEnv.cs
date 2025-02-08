@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
 using MychIO;
 using System;
@@ -27,6 +28,7 @@ namespace MajdataPlay.Utils
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 4000;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
+        internal static RunningMode Mode { get; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
