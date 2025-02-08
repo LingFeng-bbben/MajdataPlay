@@ -117,11 +117,11 @@ namespace MajdataPlay.Game.Notes
         {
             while (!_isJudged)
             {
-                if (_gpManager is null)
+                if (NoteController is null)
                     return;
                 else if (GetTimeSpanToJudgeTiming() >= 0)
                 {
-                    var autoplayGrade = _gpManager.AutoplayGrade;
+                    var autoplayGrade = AutoplayGrade;
                     if (((int)autoplayGrade).InRange(0, 14))
                         _judgeResult = autoplayGrade;
                     else
@@ -196,7 +196,7 @@ namespace MajdataPlay.Game.Notes
             _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
             _borderMask.backSortingOrder = SortOrder - _borderSortOrder - 1;
 
-            if (_gpManager.IsAutoplay)
+            if (IsAutoplay)
                 Autoplay();
 
             State = NoteStatus.Initialized;
@@ -451,7 +451,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);
-            if (on || _gpManager.IsAutoplay)
+            if (on || IsAutoplay)
             {
                 PlayHoldEffect();
             }

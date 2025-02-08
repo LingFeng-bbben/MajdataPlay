@@ -158,7 +158,7 @@ namespace MajdataPlay.Game.Notes
             SetJustBorderActive(false);
             SetPointActive(false);
 
-            if (_gpManager.IsAutoplay)
+            if (IsAutoplay)
                 Autoplay();
 
             State = NoteStatus.Initialized;

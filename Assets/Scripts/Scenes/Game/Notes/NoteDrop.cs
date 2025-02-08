@@ -66,10 +66,13 @@ namespace MajdataPlay.Game.Notes
             protected set => _state = value; 
         }
         public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
-        public float ThisFrameSec => _gpManager.ThisFrameSec;
-        public float ThisFixedUpdateSec => _gpManager.ThisFixedUpdateSec;
+        public float ThisFrameSec => _noteController.ThisFrameSec;
+        public float ThisFixedUpdateSec => _noteController.ThisFixedUpdateSec;
 
+        protected INoteController NoteController => _noteController;
         protected bool IsAutoplay => _isAutoplay;
+        protected AutoplayMode AutoplayMode => _autoplayMode;
+        protected JudgeGrade AutoplayGrade => _autoplayGrade;
         protected Material BreakMaterial => _breakMaterial;
         protected Material DefaultMaterial => _defaultMaterial;
         protected Material HoldShineMaterial => _holdShineMaterial;
@@ -103,6 +106,9 @@ namespace MajdataPlay.Game.Notes
 
 
         bool _isAutoplay = false;
+        JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
+        AutoplayMode _autoplayMode = AutoplayMode.Disable;
+        INoteController _noteController;
         protected override void Awake()
         {
             base.Awake();
@@ -111,11 +117,14 @@ namespace MajdataPlay.Game.Notes
             _noteManager = FindObjectOfType<NoteManager>();
             _audioEffMana = FindObjectOfType<NoteAudioManager>();
             _gpManager = FindObjectOfType<GamePlayManager>();
+            _noteController = _gpManager;
 
-            _breakMaterial = _gpManager.BreakMaterial;
-            _defaultMaterial = _gpManager.DefaultMaterial;
-            _holdShineMaterial = _gpManager.HoldShineMaterial;
-            _isAutoplay = _gpManager.IsAutoplay;
+            _breakMaterial = _noteController.BreakMaterial;
+            _defaultMaterial = _noteController.DefaultMaterial;
+            _holdShineMaterial = _noteController.HoldShineMaterial;
+            _isAutoplay = _noteController.IsAutoplay;
+            _autoplayGrade = _noteController.AutoplayGrade;
+            _autoplayMode = _noteController.AutoplayMode;
         }
         void OnDestroy()
         {
@@ -199,7 +208,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the judgment line, the result is a positive number.
         /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToArriveTiming() => _gpManager.ThisFrameSec - Timing;
+        protected float GetTimeSpanToArriveTiming() => ThisFrameSec - Timing;
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
         /// </summary>
@@ -207,7 +216,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the answer frame, the result is a positive number.
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
-        protected float GetTimeSpanToJudgeTiming() => _gpManager.ThisFrameSec - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTiming;
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
         public static Vector3 GetPositionFromDistance(float distance, int position)

@@ -109,7 +109,7 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (GetTimeSpanToJudgeTiming() >= 0)
                 {
-                    var autoplayGrade = _gpManager.AutoplayGrade;
+                    var autoplayGrade = AutoplayGrade;
                     if (((int)autoplayGrade).InRange(0, 14))
                         _judgeResult = autoplayGrade;
                     else
@@ -163,7 +163,7 @@ namespace MajdataPlay.Game.Notes
             SetActive(true);
             SetTapLineActive(false);
             SetEndActive(false);
-            if (_gpManager.IsAutoplay)
+            if (IsAutoplay)
                 Autoplay();
             else
                 SubscribeEvent();
@@ -406,7 +406,7 @@ namespace MajdataPlay.Game.Notes
 
             if (IsClassic)
             {
-                if (_gpManager.IsAutoplay && remainingTime == 0)
+                if (IsAutoplay && remainingTime == 0)
                 {
                     End();
                     return;
@@ -432,11 +432,11 @@ namespace MajdataPlay.Game.Notes
                     return;
             }
 
-            if (!_gpManager.IsStart) // 忽略暂停
+            if (!NoteController.IsStart) // 忽略暂停
                 return;
 
             var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
-            if (on || _gpManager.IsAutoplay)
+            if (on || IsAutoplay)
             {
                 if (remainingTime == 0)
                 {

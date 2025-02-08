@@ -175,7 +175,7 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
 
-            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)
@@ -215,7 +215,7 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = judge;
             _isJudged = true;
 
-            var remainingStartTime = _gpManager.AudioTime - ConnectInfo.StartTiming;
+            var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
             else if (diff >= 0.6166679 && !isFast)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Types
 {
-    internal enum AutoplayMode
+    public enum AutoplayMode
     {
         Disable,
         Enable,

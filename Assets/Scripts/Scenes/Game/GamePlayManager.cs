@@ -24,7 +24,7 @@ using Unity.VisualScripting.Antlr3.Runtime;
 namespace MajdataPlay.Game
 {
 #nullable enable
-    public class GamePlayManager : MonoBehaviour
+    public class GamePlayManager : MonoBehaviour, INoteController
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
@@ -64,7 +64,8 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
-        public bool IsAutoplay { get; private set; } = false;
+        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
+        public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Disable;
         public JudgeGrade AutoplayGrade { get; private set; } =  JudgeGrade.Perfect;
         public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
         public float PlaybackSpeed 
@@ -190,7 +191,7 @@ namespace MajdataPlay.Game
             _isAllBreak = modsetting.AllBreak;
             _isAllEx = modsetting.AllEx;
             _isAllTouch = modsetting.AllTouch;
-            IsAutoplay = modsetting.AutoPlay;
+            AutoplayMode = modsetting.AutoPlay;
             //AutoplayParam = mod5.Value ?? 7;
             JudgeStyle = modsetting.JudgeStyle;
             switch(modsetting.NoteMask)

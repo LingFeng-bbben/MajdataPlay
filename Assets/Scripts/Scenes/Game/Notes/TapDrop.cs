@@ -225,7 +225,7 @@ namespace MajdataPlay.Game.Notes
             }
             if(IsStar)
             {
-                if (_gpManager.IsStart && _gameSetting.Game.StarRotation)
+                if (NoteController.IsStart && _gameSetting.Game.StarRotation)
                     Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
             }
         }

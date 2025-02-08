@@ -537,7 +537,7 @@ namespace MajdataPlay.Game.Notes
             else if (process >= 1)
             {
                 HideAllBar();
-                var autoplayGrade = _gpManager.AutoplayGrade;
+                var autoplayGrade = AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
                     _judgeResult = autoplayGrade;
                 else
