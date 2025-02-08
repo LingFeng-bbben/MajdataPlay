@@ -65,7 +65,7 @@ namespace MajdataPlay.Game
         // Control
         public bool IsStart => _audioSample?.IsPlaying ?? false;
         public bool IsAutoplay { get; private set; } = false;
-        public float AutoplayParam { get; private set; } = 7;
+        public JudgeGrade AutoplayGrade { get; private set; } =  JudgeGrade.Perfect;
         public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
         public float PlaybackSpeed 
         {

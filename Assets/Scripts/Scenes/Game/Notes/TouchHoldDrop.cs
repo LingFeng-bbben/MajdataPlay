@@ -121,9 +121,9 @@ namespace MajdataPlay.Game.Notes
                     return;
                 else if (GetTimeSpanToJudgeTiming() >= 0)
                 {
-                    var autoplayParam = _gpManager.AutoplayParam;
-                    if (autoplayParam.InRange(0, 14))
-                        _judgeResult = (JudgeGrade)autoplayParam;
+                    var autoplayGrade = _gpManager.AutoplayGrade;
+                    if (((int)autoplayGrade).InRange(0, 14))
+                        _judgeResult = autoplayGrade;
                     else
                         _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                     ConvertJudgeGrade(ref _judgeResult);
