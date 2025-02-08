@@ -109,9 +109,6 @@ namespace MajdataPlay.Game.Notes
             LoadSkin();
             SetActive(true);
             SetTapLineActive(false);
-            
-            if (IsAutoplay)
-                Autoplay();
 
             State = NoteStatus.Initialized;
         }
@@ -173,6 +170,7 @@ namespace MajdataPlay.Game.Notes
             var scaleRate = _gameSetting.Debug.NoteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
+            Autoplay();
             Check();
 
             switch (State)

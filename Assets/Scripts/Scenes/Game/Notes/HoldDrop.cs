@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Types;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -101,31 +102,28 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.OnGameIOUpdate += GameIOListener;
             //_noteChecker = new(Check);
         }
-        protected override async void Autoplay()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void Autoplay()
         {
-            while (!_isJudged)
+            if (_isJudged)
+                return;
+            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {
-                if (_gpManager is null)
-                    return;
-                else if (GetTimeSpanToJudgeTiming() >= 0)
+                var autoplayGrade = AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                    _judgeResult = autoplayGrade;
+                else
+                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                ConvertJudgeGrade(ref _judgeResult);
+                _isJudged = true;
+                _judgeDiff = _judgeResult switch
                 {
-                    var autoplayGrade = AutoplayGrade;
-                    if (((int)autoplayGrade).InRange(0, 14))
-                        _judgeResult = autoplayGrade;
-                    else
-                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeGrade(ref _judgeResult);
-                    _isJudged = true;
-                    _judgeDiff = _judgeResult switch
-                    {
-                        < JudgeGrade.Perfect => 1,
-                        > JudgeGrade.Perfect => -1,
-                        _ => 0
-                    };
-                    PlaySFX();
-                    PlayHoldEffect();
-                }
-                await Task.Delay(1);
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
+                PlaySFX();
+                PlayHoldEffect();
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
@@ -163,10 +161,6 @@ namespace MajdataPlay.Game.Notes
             SetActive(true);
             SetTapLineActive(false);
             SetEndActive(false);
-            if (IsAutoplay)
-                Autoplay();
-            else
-                SubscribeEvent();
 
             State = NoteStatus.Initialized;
         }
@@ -287,6 +281,7 @@ namespace MajdataPlay.Game.Notes
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
 
+            Autoplay();
             BodyCheck();
 
             switch (State)

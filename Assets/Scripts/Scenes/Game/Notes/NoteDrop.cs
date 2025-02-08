@@ -176,31 +176,29 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
         }
-        protected virtual async void Autoplay()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual void Autoplay()
         {
-            while(!_isJudged)
+            if (_isJudged)
+                return;
+            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {
-                if (_gpManager is null)
-                    return;
-                else if (GetTimeSpanToJudgeTiming() >= 0)
+                var autoplayGrade = _gpManager.AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                    _judgeResult = autoplayGrade;
+                else
+                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                ConvertJudgeGrade(ref _judgeResult);
+                _isJudged = true;
+                _judgeDiff = _judgeResult switch
                 {
-                    var autoplayGrade = _gpManager.AutoplayGrade;
-                    if (((int)autoplayGrade).InRange(0, 14))
-                        _judgeResult = autoplayGrade;
-                    else
-                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeGrade(ref _judgeResult);
-                    _isJudged = true;
-                    _judgeDiff = _judgeResult switch
-                    {
-                        < JudgeGrade.Perfect => 1,
-                        > JudgeGrade.Perfect => -1,
-                        _ => 0
-                    };
-                }
-                await Task.Delay(1);
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
             }
         }
+
         /// <summary>
         /// Gets the time offset from the current moment to the judgment line.
         /// </summary>
@@ -208,6 +206,7 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the judgment line, the result is a positive number.
         /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected float GetTimeSpanToArriveTiming() => ThisFrameSec - Timing;
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
@@ -216,15 +215,20 @@ namespace MajdataPlay.Game.Notes
         /// If the current moment is behind the answer frame, the result is a positive number.
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTiming;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetPositionFromDistance(float distance, int position)
         {
             return new Vector3(
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetPositionFromDistance(float distance, float position)
         {
             return new Vector3(

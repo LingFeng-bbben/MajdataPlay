@@ -6,6 +6,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -113,37 +114,34 @@ namespace MajdataPlay.Game.Notes
 
             RendererState = RendererStatus.Off;
         }
-        protected override async void Autoplay()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void Autoplay()
         {
-            while (!_isJudged)
+            if (_isJudged)
+                return;
+            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {
-                if (NoteController is null)
-                    return;
-                else if (GetTimeSpanToJudgeTiming() >= 0)
+                var autoplayGrade = AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                    _judgeResult = autoplayGrade;
+                else
+                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                ConvertJudgeGrade(ref _judgeResult);
+                _isJudged = true;
+                _judgeDiff = _judgeResult switch
                 {
-                    var autoplayGrade = AutoplayGrade;
-                    if (((int)autoplayGrade).InRange(0, 14))
-                        _judgeResult = autoplayGrade;
-                    else
-                        _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                    ConvertJudgeGrade(ref _judgeResult);
-                    _isJudged = true;
-                    _judgeDiff = _judgeResult switch
-                    {
-                        < JudgeGrade.Perfect => 1,
-                        > JudgeGrade.Perfect => -1,
-                        _ => 0
-                    };
-                    PlayJudgeSFX(new JudgeResult()
-                    {
-                        Grade = _judgeResult,
-                        IsBreak = IsBreak,
-                        IsEX = IsEX,
-                        Diff = _judgeDiff
-                    });
-                    PlayHoldEffect();
-                }
-                await Task.Delay(1);
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
+                PlayJudgeSFX(new JudgeResult()
+                {
+                    Grade = _judgeResult,
+                    IsBreak = IsBreak,
+                    IsEX = IsEX,
+                    Diff = _judgeDiff
+                });
+                PlayHoldEffect();
             }
         }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
@@ -195,9 +193,6 @@ namespace MajdataPlay.Game.Notes
             _borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
             _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
             _borderMask.backSortingOrder = SortOrder - _borderSortOrder - 1;
-
-            if (IsAutoplay)
-                Autoplay();
 
             State = NoteStatus.Initialized;
         }
@@ -335,6 +330,7 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
 
+            Autoplay();
             BodyCheck();
 
             switch(State)

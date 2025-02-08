@@ -158,9 +158,6 @@ namespace MajdataPlay.Game.Notes
             SetJustBorderActive(false);
             SetPointActive(false);
 
-            if (IsAutoplay)
-                Autoplay();
-
             State = NoteStatus.Initialized;
         }
         public void End(bool forceEnd = false)
@@ -295,6 +292,7 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
 
+            Autoplay();
             Check();
 
             switch (State)
