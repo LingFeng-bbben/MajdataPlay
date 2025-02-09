@@ -201,7 +201,7 @@ namespace MajdataPlay.IO
             {
                 touchPanelCallbacks[zone] = (zone, state) =>
                 {
-                    _buttonRingInputBuffer.Enqueue(new()
+                    _touchPanelInputBuffer.Enqueue(new()
                     {
                         Index = (int)zone,
                         State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
