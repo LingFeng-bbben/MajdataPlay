@@ -1,4 +1,6 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -6,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,38 +44,12 @@ namespace MajdataPlay.IO
                             var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
                             var bytesToRead = serial.BytesToRead;
 
-                            if (bytesToRead % 9 != 0)
-                            {
-                                using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
-                                var buffer = bufferOwner.Memory;
-                                await serialStream.ReadAsync(buffer);
+                            using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
+                            var buffer = bufferOwner.Memory;
+                            await serialStream.ReadAsync(buffer);
 
-                                for (var x = 0; x < bytesToRead % 9; x++)
-                                {
-                                    var slicedBuffer = buffer.Slice(x * 9, 9);
-                                    if (slicedBuffer.Length != 9)
-                                        break;
-                                    slicedBuffer.CopyTo(reportData);
-                                    if (reportData[0] == '(')
-                                    {
-                                        int k = 0;
-                                        for (int i = 1; i < 8; i++)
-                                        {
-                                            //print(buf[i].ToString("X2"));
-                                            for (int j = 0; j < 5; j++)
-                                            {
-                                                _COMReport[k] = (reportData[i] & 0x01 << j) > 0;
-                                                k++;
-                                            }
-                                        }
-                                    }
-                                }
-                                serial.DiscardInBuffer();
-                            }
-                            else if (bytesToRead != 0)
-                            {
-                                serial.DiscardInBuffer();
-                            }
+                            TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
+
                         }
                         catch (Exception e)
                         {
@@ -94,6 +71,70 @@ namespace MajdataPlay.IO
                     useDummy = true;
                 }
             });
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void TouchPannelPacketHandle(ReadOnlyMemory<byte> packet)
+        {
+            if (packet.IsEmpty)
+                return;
+            var now = DateTime.Now;
+            var packetSpan = packet.Span;
+            Span<int> startIndexs = stackalloc int[packet.Length];
+            int x = -1;
+            for (var y = 0; y < packetSpan.Length; y++)
+            {
+                var @byte = packetSpan[y];
+                if(@byte == '(')
+                {
+                    startIndexs[++x] = y;
+                }
+            }
+            if (x == -1)
+                return;
+            startIndexs = startIndexs.Slice(0, x + 1);
+            foreach (var startIndex in startIndexs)
+            {
+                var packetBody = GetPacketBody(packet, startIndex);
+
+                if (packetBody.IsEmpty)
+                    continue;
+
+                int k = 0;
+                for (int i = 0; i < 7; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        var state = (packetBody[i] & 0x01 << j) > 0;
+
+                        _touchPanelInputBuffer.Enqueue(new ()
+                        {
+                            Index = k++,
+                            State = state ? SensorStatus.On : SensorStatus.Off,
+                            Timestamp = now,
+                        });
+                    }
+                }
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ReadOnlySpan<byte> GetPacketBody(ReadOnlyMemory<byte> packet, int start)
+        {
+            var endIndex = -1;
+            var packetSpan = packet.Span;
+            for (var i = start; i < packetSpan.Length; i++)
+            {
+                var @byte = packetSpan[i];
+                if (@byte == ')')
+                {
+                    endIndex = i;
+                    break;
+                }
+            }
+            if(endIndex == -1)
+            {
+                return ReadOnlySpan<byte>.Empty;
+            }
+            return packetSpan[(start + 1)..endIndex];
         }
         async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
         {
