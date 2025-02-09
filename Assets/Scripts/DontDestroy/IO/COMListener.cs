@@ -98,6 +98,8 @@ namespace MajdataPlay.IO
 
                 if (packetBody.IsEmpty)
                     continue;
+                else if (packetBody.Length != 7)
+                    continue;
 
                 int k = 0;
                 for (int i = 0; i < 7; i++)
