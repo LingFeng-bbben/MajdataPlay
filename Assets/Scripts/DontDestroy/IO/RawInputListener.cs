@@ -49,40 +49,41 @@ namespace MajdataPlay.IO
         readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
         async void RefreshKeyboardStateAsync()
         {
-            await Task.Yield();
-
-            var token = MajEnv.GlobalCT;
-            var pollingRate = _btnPollingRateMs;
-            var stopwatch = new Stopwatch();
-            var t1 = stopwatch.Elapsed;
-            
-            stopwatch.Start();
-            while (true)
+            await Task.Run(async () =>
             {
-                token.ThrowIfCancellationRequested();
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
 
-                try
+                stopwatch.Start();
+                while (true)
                 {
-                    for (var i = 0; i < _buttons.Length; i++)
+                    token.ThrowIfCancellationRequested();
+
+                    try
                     {
-                        var button = _buttons[i];
-                        var keyCode = button.BindingKey;
-                        _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
+                        for (var i = 0; i < _buttons.Length; i++)
+                        {
+                            var button = _buttons[i];
+                            var keyCode = button.BindingKey;
+                            _buttonStates[i] = RawInput.IsKeyDown(keyCode) ? true : false;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"From KeyBoard listener: \n{e}");
+                    }
+                    finally
+                    {
+                        var t2 = stopwatch.Elapsed;
+                        var elapsed = t2 - t1;
+                        t1 = t2;
+                        if (elapsed < pollingRate)
+                            await Task.Delay(pollingRate - elapsed, token);
                     }
                 }
-                catch(Exception e)
-                {
-                    MajDebug.LogError($"From KeyBoard listener: \n{e}");
-                }
-                finally
-                {
-                    var t2 = stopwatch.Elapsed;
-                    var elapsed = t2 - t1;
-                    t1 = t2;
-                    if (elapsed < pollingRate)
-                        await Task.Delay(pollingRate - elapsed, token);
-                }
-            }
+            });
         }
         void UpdateButtonState()
         {
