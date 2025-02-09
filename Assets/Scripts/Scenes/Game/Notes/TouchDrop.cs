@@ -63,6 +63,8 @@ namespace MajdataPlay.Game.Notes
         MultTouchHandler _multTouchHandler;
         NotePoolManager _notePoolManager;
 
+        readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
+
         const int _fanSpriteSortOrder = 3;
         const int _justBorderSortOrder = 1;
         const int _pointBorderSortOrder = 2;
@@ -245,7 +247,7 @@ namespace MajdataPlay.Game.Notes
 
             if (isUsed)
                 return;
-            Judge(ThisFixedUpdateSec);
+            Judge(ThisFixedUpdateSec - _touchPanelOffset);
 
             if (_isJudged)
             {
