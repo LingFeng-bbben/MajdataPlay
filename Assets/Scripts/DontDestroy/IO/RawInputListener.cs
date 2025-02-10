@@ -95,7 +95,7 @@ namespace MajdataPlay.IO
         {
             while(_buttonRingInputBuffer.TryDequeue(out var report))
             {
-                if (!report.Index.InRange(0, 7))
+                if (!report.Index.InRange(0, 11))
                     continue;
                 var button = _buttons[report.Index];
                 var oldState = button.Status;
