@@ -1,4 +1,6 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -6,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,82 +20,123 @@ namespace MajdataPlay.IO
     {
         async void COMReceiveAsync()
         {
-            await Task.Yield();
-
-            var token = MajEnv.GlobalCT;
-            var pollingRate = _sensorPollingRateMs;
-            var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
-            var stopwatch = new Stopwatch();
-            var t1 = stopwatch.Elapsed;
-            var reportData = new byte[9];
-            var sharedMemoryPool = MemoryPool<byte>.Shared;
-            using var serial = new SerialPort(comPort, 9600);
-
-            stopwatch.Start();
-
-            try
+            await Task.Run(async () =>
             {
-                await EnsureTouchPanelSerialStreamIsOpen(serial);
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    try
-                    {
-                        var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
-                        var bytesToRead = serial.BytesToRead;
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _sensorPollingRateMs;
+                var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var reportData = new byte[9];
+                var sharedMemoryPool = MemoryPool<byte>.Shared;
+                using var serial = new SerialPort(comPort, 9600);
 
-                        if (bytesToRead % 9 != 0)
+                stopwatch.Start();
+
+                try
+                {
+                    await EnsureTouchPanelSerialStreamIsOpen(serial);
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
                         {
+                            var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
+                            var bytesToRead = serial.BytesToRead;
+
                             using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
                             var buffer = bufferOwner.Memory;
                             await serialStream.ReadAsync(buffer);
 
-                            for (var x = 0; x < bytesToRead % 9; x++)
-                            {
-                                var slicedBuffer = buffer.Slice(x * 9, 9);
-                                if (slicedBuffer.Length != 9)
-                                    break;
-                                slicedBuffer.CopyTo(reportData);
-                                if (reportData[0] == '(')
-                                {
-                                    int k = 0;
-                                    for (int i = 1; i < 8; i++)
-                                    {
-                                        //print(buf[i].ToString("X2"));
-                                        for (int j = 0; j < 5; j++)
-                                        {
-                                            _COMReport[k] = (reportData[i] & 0x01 << j) > 0;
-                                            k++;
-                                        }
-                                    }
-                                }
-                            }
-                            serial.DiscardInBuffer();
+                            TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
+
                         }
-                        else if (bytesToRead != 0)
+                        catch (Exception e)
                         {
-                            serial.DiscardInBuffer();
+                            MajDebug.LogError($"From SerialPort listener: \n{e}");
+                        }
+                        finally
+                        {
+                            var t2 = stopwatch.Elapsed;
+                            var elapsed = t2 - t1;
+                            t1 = t2;
+                            if (elapsed < pollingRate)
+                                await Task.Delay(pollingRate - elapsed, token);
                         }
                     }
-                    catch(Exception e)
+                }
+                catch (IOException)
+                {
+                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                    useDummy = true;
+                }
+            });
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void TouchPannelPacketHandle(ReadOnlyMemory<byte> packet)
+        {
+            if (packet.IsEmpty)
+                return;
+            var now = DateTime.Now;
+            var packetSpan = packet.Span;
+            Span<int> startIndexs = stackalloc int[packet.Length];
+            int x = -1;
+            for (var y = 0; y < packetSpan.Length; y++)
+            {
+                var @byte = packetSpan[y];
+                if(@byte == '(')
+                {
+                    startIndexs[++x] = y;
+                }
+            }
+            if (x == -1)
+                return;
+            startIndexs = startIndexs.Slice(0, x + 1);
+            foreach (var startIndex in startIndexs)
+            {
+                var packetBody = GetPacketBody(packet, startIndex);
+
+                if (packetBody.IsEmpty)
+                    continue;
+                else if (packetBody.Length != 7)
+                    continue;
+
+                int k = 0;
+                for (int i = 0; i < 7; i++)
+                {
+                    for (int j = 0; j < 5; j++)
                     {
-                        MajDebug.LogError($"From SerialPort listener: \n{e}");
-                    }
-                    finally
-                    {
-                        var t2 = stopwatch.Elapsed;
-                        var elapsed = t2 - t1;
-                        t1 = t2;
-                        if (elapsed < pollingRate)
-                            await Task.Delay(pollingRate - elapsed, token);
+                        var state = (packetBody[i] & 0x01 << j) > 0;
+
+                        _touchPanelInputBuffer.Enqueue(new ()
+                        {
+                            Index = k++,
+                            State = state ? SensorStatus.On : SensorStatus.Off,
+                            Timestamp = now,
+                        });
                     }
                 }
             }
-            catch(IOException)
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ReadOnlySpan<byte> GetPacketBody(ReadOnlyMemory<byte> packet, int start)
+        {
+            var endIndex = -1;
+            var packetSpan = packet.Span;
+            for (var i = start; i < packetSpan.Length; i++)
             {
-                MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
-                useDummy = true;
+                var @byte = packetSpan[i];
+                if (@byte == ')')
+                {
+                    endIndex = i;
+                    break;
+                }
             }
+            if(endIndex == -1)
+            {
+                return ReadOnlySpan<byte>.Empty;
+            }
+            return packetSpan[(start + 1)..endIndex];
         }
         async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
         {
@@ -102,6 +146,7 @@ namespace MajdataPlay.IO
             }
             else
             {
+                MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
                 serialSession.Open();
                 var encoding = Encoding.ASCII;
                 var serialStream = serialSession.BaseStream;
@@ -140,15 +185,11 @@ namespace MajdataPlay.IO
                         MajDebug.LogError($"Failed to override sensitivity: \n{e}");
                     }
                 }
-                //send sensitivity
-                //adx have another method to set sens, so we dont do it here
-                /*for (byte a = 0x41; a <= 0x62; a++)
-                {
-                    serial.Write("{L" + (char)a + "k"+sens+"}");
-                }*/
+
                 await serialStream.WriteAsync(encoding.GetBytes("{STAT}"));
                 serialSession.DiscardInBuffer();
 
+                MajDebug.Log("TouchPannel connected");
                 return serialStream;
             }
         }

@@ -65,6 +65,8 @@ namespace MajdataPlay.Game.Notes
 
         NotePoolManager _poolManager;
 
+        readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
+
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
         const int _endSortOrder = 2;
@@ -223,7 +225,15 @@ namespace MajdataPlay.Game.Notes
 
             if (isUsed)
                 return;
-            Judge(ThisFixedUpdateSec);
+
+            if (args.IsButton)
+            {
+                Judge(ThisFixedUpdateSec);
+            }
+            else
+            {
+                Judge(ThisFixedUpdateSec - _touchPanelOffset);
+            }
 
             if (_isJudged)
             {

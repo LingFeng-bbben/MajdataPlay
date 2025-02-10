@@ -60,9 +60,16 @@ namespace MajdataPlay.Utils
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
-
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ChangedSynchronizationContext()
+        {
+#if !UNITY_EDITOR
+            SynchronizationContext.SetSynchronizationContext(new UniTaskSynchronizationContext());
+#endif
+        }
         static MajEnv()
         {
+            ChangedSynchronizationContext();
             CheckAndLoadUserSetting();
             CheckNoteSkinFolder();
 

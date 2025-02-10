@@ -18,6 +18,9 @@ using static UnityEngine.GraphicsBuffer;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting.Antlr3.Runtime;
 using MajdataPlay.Collections;
+using System.Collections.Concurrent;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+using static UnityEngine.Rendering.DebugUI.Table;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -36,7 +39,14 @@ namespace MajdataPlay.IO
         TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
         TimeSpan _btnPollingRateMs = TimeSpan.Zero;
         TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
+
+        ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
+        ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
+
         bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
+
+        bool C1 = false;
+        bool C2 = false;
 
         bool _isBtnDebounceEnabled = false;
         bool _isSensorDebounceEnabled = false;
@@ -178,14 +188,26 @@ namespace MajdataPlay.IO
             {
                 buttonRingCallbacks[zone] = (zone, state) =>
                 {
-                    var index = GetIndexByButtonRingZone(zone);
-                    _buttonStates[index] = state is InputState.On;
+                    _buttonRingInputBuffer.Enqueue(new()
+                    {
+                        Index = GetIndexByButtonRingZone(zone),
+                        State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                        Timestamp = DateTime.Now
+                    });
                 };
             }
 
             foreach (TouchPanelZone zone in Enum.GetValues(typeof(TouchPanelZone)))
             {
-                touchPanelCallbacks[zone] = (zone, state) => _COMReport[(int)zone] = state is InputState.On;
+                touchPanelCallbacks[zone] = (zone, state) =>
+                {
+                    _touchPanelInputBuffer.Enqueue(new()
+                    {
+                        Index = (int)zone,
+                        State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                        Timestamp = DateTime.Now
+                    });
+                };
             }
 
             

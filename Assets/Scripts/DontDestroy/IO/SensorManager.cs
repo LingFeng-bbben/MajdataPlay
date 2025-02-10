@@ -15,41 +15,46 @@ namespace MajdataPlay.IO
         readonly Dictionary<SensorType, DateTime> _sensorLastTriggerTimes = new();
         void UpdateSensorState()
         {
-            var now = DateTime.Now;
-            foreach (var (index, on) in _COMReport.AsSpan().WithIndex())
+            while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
-                if (index > _sensors.Length)
-                    break;
+                if (!report.Index.InRange(0, 32))
+                    continue;
+                var index = report.Index;
                 var sensor = index switch
                 {
                     <= (int)SensorType.C => _sensors[index],
-                     > 17 => _sensors[index - 1],
-                     _    => _sensors[16],
+                    > 17 => _sensors[index - 1],
+                    _ => _sensors[16],
                 };
-                if (sensor == null)
+                var timestamp = report.Timestamp;
+                if (sensor is null)
                 {
                     MajDebug.LogError($"{index}# Sensor instance is null");
                     continue;
                 }
-                var oState = sensor.Status;
-                var nState = on ? SensorStatus.On : SensorStatus.Off;
+                var oldState = sensor.Status;
+                var newState = report.State;
+                if (index == 16)
+                    C1 = newState == SensorStatus.On ? true : false;
+                else if (index == 17)
+                    C2 = newState == SensorStatus.On ? true : false;
                 if (sensor.Type == SensorType.C)
-                    nState = _COMReport[16] || _COMReport[17] ? SensorStatus.On : SensorStatus.Off;
-                if (oState == nState)
+                    newState = C1 || C2 ? SensorStatus.On : SensorStatus.Off;
+                if (oldState == newState)
                     continue;
                 else if (_isSensorDebounceEnabled)
                 {
-                    if (JitterDetect(sensor.Type, now))
+                    if (JitterDetect(sensor.Type, timestamp))
                         continue;
-                    _sensorLastTriggerTimes[sensor.Type] = now;
+                    _sensorLastTriggerTimes[sensor.Type] = timestamp;
                 }
-                MajDebug.Log($"Sensor \"{sensor.Type}\": {nState}");
-                sensor.Status = nState;
+                MajDebug.Log($"Sensor \"{sensor.Type}\": {newState}");
+                sensor.Status = newState;
                 var msg = new InputEventArgs()
                 {
                     Type = sensor.Type,
-                    OldStatus = oState,
-                    Status = nState,
+                    OldStatus = oldState,
+                    Status = newState,
                     IsButton = false
                 };
                 sensor.PushEvent(msg);
