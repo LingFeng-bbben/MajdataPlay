@@ -39,6 +39,7 @@ namespace MajdataPlay.Game
         Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
         InputManager _inputManager;
+        GamePlayManager? _gpManager;
         bool _isUpdaterInitialized = false;
         void Awake()
         {
@@ -57,6 +58,10 @@ namespace MajdataPlay.Game
                 _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
             _inputManager.BindAnyArea(OnAnyAreaTrigger);
+        }
+        void Start()
+        {
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
         }
         void OnDestroy()
         {
@@ -185,6 +190,17 @@ namespace MajdataPlay.Game
                 return;
             else if (OnGameIOUpdate is null)
                 return;
+            else if(_gpManager is not null)
+            {
+                switch(_gpManager.State)
+                {
+                    case GamePlayStatus.Running:
+                    case GamePlayStatus.Blocking:
+                        break;
+                    default:
+                        return;
+                }
+            }
 
             ref var reference = ref Unsafe.NullRef<Ref<bool>>();
             if(args.IsButton)
