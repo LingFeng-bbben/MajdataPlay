@@ -130,6 +130,8 @@ namespace MajdataPlay.Game
         bool _isAllEx = false;
         bool _isAllTouch = false;
         float? _allNotesFinishedTiming = null;
+        float _2367PressTime = 0;
+        float _3456PressTime = 0;
         long _fileTimeAtStart = 0;
 
         Text _errText;
@@ -137,7 +139,7 @@ namespace MajdataPlay.Game
         float _audioTrackStartAt = 0f;
 
         GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
-        HttpTransporter _httpDownloader = new();
+        InputManager _ioManager = MajInstances.InputManager;
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
@@ -598,6 +600,7 @@ namespace MajdataPlay.Game
         internal void OnUpdate()
         {
             UpdateAudioTime();
+            UpdateFnKeyState();
             if (_audioSample is null)
                 return;
             else if (State < GamePlayStatus.Running)
@@ -615,6 +618,8 @@ namespace MajdataPlay.Game
                     return;
             }
             var remainingTime = _audioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
+            _2367PressTime = 0;
+            _3456PressTime = 0;
             switch (State)
             {
                 case GamePlayStatus.Running:
@@ -658,6 +663,50 @@ namespace MajdataPlay.Game
                         }
                     }
                     break;
+            }
+        }
+        void UpdateFnKeyState()
+        {
+            switch(State)
+            {
+                case GamePlayStatus.Running:
+                    var _2367 = _ioManager.CheckButtonStatus(SensorType.A2, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A3, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A6, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A7, SensorStatus.On);
+                    var _3456 = _ioManager.CheckButtonStatus(SensorType.A3, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A4, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A5, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorType.A6, SensorStatus.On);
+                    if(_2367)
+                    {
+                        _2367PressTime += Time.deltaTime;
+                        _3456PressTime = 0;
+                    }
+                    else if(_3456)
+                    {
+                        _3456PressTime += Time.deltaTime;
+                        _2367PressTime = 0;
+                    }
+                    else
+                    {
+                        _3456PressTime = 0;
+                        _2367PressTime = 0;
+                    }
+                    break;
+                default:
+                    _3456PressTime = 0;
+                    _2367PressTime = 0;
+                    return;
+            }
+            if(_2367PressTime >= 1f)
+            {
+                CalculateScore();
+                EndGame().Forget();
+            }
+            else if(_3456PressTime >= 1f)
+            {
+                FastRetry().Forget();
             }
         }
         internal void OnFixedUpdate()
@@ -779,7 +828,15 @@ namespace MajdataPlay.Game
                 MajInstances.SceneSwitcher.SwitchScene("Result");
             }
         }
-        
+        async UniTaskVoid FastRetry()
+        {
+            if (State == GamePlayStatus.Ended)
+                return;
+            State = GamePlayStatus.Ended;
+            MajInstances.SceneSwitcher.SwitchScene("Game");
+            await UniTask.Delay(200);
+            ClearAllResources();
+        }
         
         async void StartToPlayAnswer()
         {
