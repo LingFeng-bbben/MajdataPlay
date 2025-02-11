@@ -5,16 +5,21 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.IO.Pipes;
-
-namespace MajdataPlay
+using MajdataPlay.Utils;
+using System.Threading;
+#nullable enable
+namespace MajdataPlay.View
 {
     internal class HttpServer: MajComponent
     {
         HttpListener _httpServer = new();
         int _httpPort = 8013;
+        readonly CancellationTokenSource _cts = new();
+        ViewManager _viewManager;
         protected override void Awake()
         {
             base.Awake();
+            MajInstanceHelper<HttpServer>.Instance = this;
             DontDestroyOnLoad(GameObject);
             var rd = new Random();
             while (IsPortInUse(_httpPort))
@@ -24,50 +29,64 @@ namespace MajdataPlay
             _httpServer.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             _httpServer.Prefixes.Add($"http://localhost:{_httpPort}/");
             _httpServer.Start();
-            StartToListenHttpRequest();
-            StartToListenPipe();
+            StartToListenHttpRequest(_cts.Token);
+            StartToListenPipe(_cts.Token);
         }
-        async void StartToListenHttpRequest()
+        void Start()
+        {
+            _viewManager = MajInstanceHelper<ViewManager>.Instance!;
+        }
+        async void StartToListenHttpRequest(CancellationToken token = default)
         {
             await Task.Run(async () =>
             {
                 while (_httpServer.IsListening)
                 {
-                    var context = await _httpServer.GetContextAsync();
-                    var req = context.Request;
-                    using var rsp = context.Response;
-                    var httpMethod = req.HttpMethod;
-
                     try
                     {
-                        using var reqReader = new StreamReader(req.InputStream);
-                        using var rspSender = new StreamWriter(rsp.OutputStream);
-                        var data = reqReader.ReadToEnd();
+                        token.ThrowIfCancellationRequested();
+                        var context = await _httpServer.GetContextAsync();
+                        var req = context.Request;
+                        using var rsp = context.Response;
+                        var httpMethod = req.HttpMethod;
 
-                        rsp.StatusCode = 200;
-                        await rspSender.WriteLineAsync("Hello!!!");
+                        try
+                        {
+                            using var reqReader = new StreamReader(req.InputStream);
+                            using var rspSender = new StreamWriter(rsp.OutputStream);
+                            var data = reqReader.ReadToEnd();
+
+                            rsp.StatusCode = 200;
+                            await rspSender.WriteLineAsync("Hello!!!");
+                        }
+                        catch (JsonException)
+                        {
+                            rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                        }
+                        catch
+                        {
+                            rsp.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        }
                     }
-                    catch(JsonException)
+                    catch(OperationCanceledException)
                     {
-                        rsp.StatusCode = (int)HttpStatusCode.BadRequest;
-                    }
-                    catch
-                    {
-                        rsp.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        _httpServer.Close();
+                        throw;
                     }
                 }
             });
         }
-        async void StartToListenPipe()
+        async void StartToListenPipe(CancellationToken token = default)
         {
             while (true)
             {
+                token.ThrowIfCancellationRequested();
                 var pipeServer = new NamedPipeServerStream("MajdataPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 await pipeServer.WaitForConnectionAsync();
-                PipeRequestHandleAsync(pipeServer);
+                PipeRequestHandleAsync(pipeServer, token);
             }
         }
-        async void PipeRequestHandleAsync(NamedPipeServerStream pipeStream)
+        async void PipeRequestHandleAsync(NamedPipeServerStream pipeStream, CancellationToken token = default)
         {
             await Task.Run(async () =>
             {
@@ -78,6 +97,7 @@ namespace MajdataPlay
                     writer.AutoFlush = true;
                     while (true)
                     {
+                        token.ThrowIfCancellationRequested();
                         var req = (await reader.ReadLineAsync()).Split(";");
                         if (req.Length == 0 || req[0] != "MajdataHello")
                             continue;
@@ -99,6 +119,15 @@ namespace MajdataPlay
             {
                 return true;
             }
+        }
+        private void Update()
+        {
+            if (MajEnv.Mode == RunningMode.Play)
+                Destroy(GameObject);
+        }
+        void OnDestroy()
+        {
+            _cts.Cancel();
         }
     }
 }

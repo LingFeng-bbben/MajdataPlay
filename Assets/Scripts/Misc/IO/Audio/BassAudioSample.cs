@@ -146,10 +146,12 @@ namespace MajdataPlay.IO
             {
                 throw new NotSupportedException();
             }
+            Bass.LastError.EnsureSuccessStatusCode();
             if (speedChange)
             {
                 //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
                 decode = BassFx.TempoCreate(decode, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+                Bass.LastError.EnsureSuccessStatusCode();
             }
             Bass.ChannelSetAttribute(decode, ChannelAttribute.Buffer, 0);
 
