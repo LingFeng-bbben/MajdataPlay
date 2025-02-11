@@ -17,7 +17,7 @@ namespace MajdataPlay.IO
         {
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
-                if (!report.Index.InRange(0, 32))
+                if (!report.Index.InRange(0, 33))
                     continue;
                 var index = report.Index;
                 var sensor = index switch
