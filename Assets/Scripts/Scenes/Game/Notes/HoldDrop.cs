@@ -107,7 +107,7 @@ namespace MajdataPlay.Game.Notes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
         {
-            if (_isJudged)
+            if (_isJudged || !IsAutoplay)
                 return;
             if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {

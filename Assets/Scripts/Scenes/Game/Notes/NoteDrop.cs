@@ -179,7 +179,7 @@ namespace MajdataPlay.Game.Notes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void Autoplay()
         {
-            if (_isJudged)
+            if (_isJudged || !IsAutoplay)
                 return;
             if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {
