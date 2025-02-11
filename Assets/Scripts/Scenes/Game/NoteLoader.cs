@@ -21,8 +21,6 @@ namespace MajdataPlay.Game
 #nullable enable
     public class NoteLoader : MonoBehaviour
     {
-        public NoteLoaderStatus State { get; private set; } = NoteLoaderStatus.Idle;
-        public long NoteLimit { get; set; } = 1000;
         public double Process { get; set; } = 0;
         public float NoteSpeed { get; set; } = 7f;
         public int ChartRotation { get; set; } = 0;
@@ -205,7 +203,14 @@ namespace MajdataPlay.Game
             {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
         };
 
-
+        void Awake()
+        {
+            MajInstanceHelper<NoteLoader>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            MajInstanceHelper<NoteLoader>.Free();
+        }
         private void Start()
         {
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;

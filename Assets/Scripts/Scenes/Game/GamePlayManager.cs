@@ -20,6 +20,8 @@ using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Types;
 using Unity.VisualScripting.Antlr3.Runtime;
+using Cysharp.Text;
+using Unity.VisualScripting;
 
 namespace MajdataPlay.Game
 {
@@ -73,7 +75,7 @@ namespace MajdataPlay.Game
             get => _playbackSpeed;
             private set => _playbackSpeed = value;
         }
-        public ComponentState State { get; private set; } = ComponentState.Idle;
+        public GamePlayStatus State { get; private set; } = GamePlayStatus.Start;
         // Data
         public bool IsPracticeMode => _gameInfo.IsPracticeMode;
         internal GameMode Mode => _gameInfo.Mode;
@@ -127,6 +129,7 @@ namespace MajdataPlay.Game
         bool _isAllBreak = false;
         bool _isAllEx = false;
         bool _isAllTouch = false;
+        float? _allNotesFinishedTiming = null;
         long _fileTimeAtStart = 0;
 
         Text _errText;
@@ -148,7 +151,6 @@ namespace MajdataPlay.Game
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
-        CancellationTokenSource _allTaskTokenSource = new();
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
         readonly CancellationTokenSource _cts = new();
         void Awake()
@@ -171,8 +173,6 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            State = ComponentState.Loading;
-
             _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
@@ -216,6 +216,7 @@ namespace MajdataPlay.Game
         async UniTaskVoid InitGame()
         {
             var inputManager = MajInstances.InputManager;
+            State = GamePlayStatus.Loading;
             try
             {
                 if(_songDetail.IsOnline)
@@ -251,14 +252,12 @@ namespace MajdataPlay.Game
             }
             catch(HttpTransmitException httpEx)
             {
-                State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
                 MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
-                State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
                 MajDebug.LogError(audioEx);
                 return;
@@ -275,7 +274,6 @@ namespace MajdataPlay.Game
             }
             catch(Exception e)
             {
-                State = ComponentState.Failed;
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
                 MajDebug.LogError(e);
                 throw;
@@ -534,7 +532,7 @@ namespace MajdataPlay.Game
 
             MajInstances.GameManager.DisableGC();
 
-            State = ComponentState.Running;
+            State = GamePlayStatus.Running;
 
             if (!IsPracticeMode)
             {
@@ -596,97 +594,168 @@ namespace MajdataPlay.Game
                     return;
             }
         }
-        void OnDestroy()
-        {
-            print("GPManagerDestroy");
-            DisposeAudioTrack();
-            _audioSample = null;
-            State = ComponentState.Finished;
-            _allTaskTokenSource.Cancel();
-            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
-            MajInstances.GameManager.EnableGC();
-            MajInstanceHelper<GamePlayManager>.Free();
-        }
+        
         internal void OnUpdate()
         {
             UpdateAudioTime();
             if (_audioSample is null)
                 return;
-
+            else if (State < GamePlayStatus.Running)
+                return;
             else if (!_objectCounter.AllFinished)
                 return;
-
-            if (State == ComponentState.Running)
+            if(_allNotesFinishedTiming is null)
             {
-                State = ComponentState.Calculate;
-                CalculateScore();
+                _allNotesFinishedTiming = _audioTime;
+                return;
             }
-            else if (State == ComponentState.Calculate)
+            else
             {
-                if(IsPracticeMode)
-                {
-                    NextRound4Practice().Forget();
+                if (_audioTime - (float)_allNotesFinishedTiming < 0.1)
                     return;
-                }
-                var remainingTime = AudioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-                if (remainingTime < -7)
-                    _skipBtn.SetActive(true);
-                else if (remainingTime >= 0)
-                {
-                    _skipBtn.SetActive(false);
-                    EndGame(2000).Forget();
-                }
             }
-
+            var remainingTime = _audioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
+            switch (State)
+            {
+                case GamePlayStatus.Running:
+                    {
+                        var result = CalculateScore();
+                        
+                        switch (result.ComboState)
+                        {
+                            case ComboState.APPlus:
+                            case ComboState.AP:
+                            case ComboState.FCPlus:
+                            case ComboState.FC:
+                                if(IsPracticeMode)
+                                {
+                                    NextRound4Practice(2000).Forget();
+                                }
+                                else
+                                {
+                                    EndGame(5000).Forget();
+                                }
+                                return;
+                        }
+                        if (remainingTime < -7 && !IsPracticeMode)
+                        {
+                            _skipBtn.SetActive(true);
+                        }
+                        State = GamePlayStatus.WaitForEnd;
+                    }
+                    break;
+                case GamePlayStatus.WaitForEnd:
+                    {
+                        if (IsPracticeMode)
+                        {
+                            NextRound4Practice().Forget();
+                            return;
+                        }
+                        else if (remainingTime >= 0)
+                        {
+                            _skipBtn.SetActive(false);
+                            EndGame(2000).Forget();
+                        }
+                    }
+                    break;
+            }
         }
-        private void CalculateScore(bool playEffect = true)
+        internal void OnFixedUpdate()
+        {
+            if (_audioSample is null)
+                return;
+            else if (AudioStartTime == -114514f)
+                return;
+
+            switch (State)
+            {
+                case GamePlayStatus.Running:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.WaitForEnd:
+                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    _thisFixedUpdateSec = timeOffset - chartOffset;
+                    break;
+            }
+        }
+        void UpdateAudioTime()
+        {
+            if (_audioSample is null)
+                return;
+            else if (AudioStartTime == -114514f)
+                return;
+
+            switch (State)
+            {
+                case GamePlayStatus.Running:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.WaitForEnd:
+                    //Do not use this!!!! This have connection with sample batch size
+                    //AudioTime = (float)audioSample.GetCurrentTime();
+                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
+
+                    _audioTime = timeOffset - chartOffset;
+                    _thisFrameSec = _audioTime;
+                    _audioTimeNoOffset = timeOffset;
+                    _errText.text = ZString.Format("Diff{0:F4}", Math.Abs(realTimeDifference));
+
+                    if (Math.Abs(realTimeDifference) > 0.01f && _audioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
+                    {
+                        _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    }
+                    break;
+            }
+        }
+        private GameResult CalculateScore(bool playEffect = true)
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
             var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             _gameInfo.RecordResult(result);
-            if (!playEffect) return;
-            if (result.ComboState == ComboState.APPlus)
+
+            if (!playEffect) 
+                return result;
+            PlayComboEffect(result);
+
+            return result;
+        }
+        void PlayComboEffect(GameResult result)
+        {
+            switch(result.ComboState)
             {
-                //AP+
-                AllPerfectAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
-            }
-            else if (result.ComboState == ComboState.AP)
-            {
-                //AP
-                AllPerfectAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("all_perfect.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
-            }
-            else if (result.ComboState == ComboState.FCPlus)
-            {
-                //FC+
-                FullComboAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
-            }
-            else if (result.ComboState == ComboState.FC)
-            {
-                //FC
-                FullComboAnimation.SetActive(true);
-                MajInstances.AudioManager.PlaySFX("full_combo.wav");
-                MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                EndGame(5000).Forget();
-                return;
+                case ComboState.APPlus:
+                    AllPerfectAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    break;
+                case ComboState.AP:
+                    AllPerfectAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("all_perfect.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    break;
+                case ComboState.FCPlus:
+                    FullComboAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    break;
+                case ComboState.FC:
+                    FullComboAnimation.SetActive(true);
+                    MajInstances.AudioManager.PlaySFX("full_combo.wav");
+                    MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    break;
             }
         }
-        async UniTaskVoid NextRound4Practice()
+        async UniTaskVoid NextRound4Practice(int delayMiliseconds = 100)
         {
-            State = ComponentState.Finished;
+            if (State == GamePlayStatus.Ended)
+                return;
 
+            State = GamePlayStatus.Ended;
+            
+            await UniTask.Delay(delayMiliseconds);
+            ClearAllResources();
             var remainingSeconds = 1f;
             var originVol = _setting.Audio.Volume.BGM;
             _audioSample!.Volume = 0;
@@ -700,12 +769,6 @@ namespace MajdataPlay.Game
             _audioSample.Volume = 0;
             _audioSample.Pause();
 
-            _cts.Cancel();
-            MajInstances.InputManager.ClearAllSubscriber();
-            _bgManager.CancelTimeRef();
-            DisposeAudioTrack();
-            MajInstances.GameManager.EnableGC();
-
             await UniTask.Delay(200);
             if(_gameInfo.NextRound())
             {
@@ -716,49 +779,14 @@ namespace MajdataPlay.Game
                 MajInstances.SceneSwitcher.SwitchScene("Result");
             }
         }
-        internal void OnFixedUpdate()
-        {
-            if (_audioSample is null)
-                return;
-            else if (AudioStartTime == -114514f)
-                return;
-            if (State == ComponentState.Running || State == ComponentState.Calculate)
-            {
-                var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                _thisFixedUpdateSec = timeOffset - chartOffset;
-            }
-        }
-        void UpdateAudioTime()
-        {
-            if (_audioSample is null)
-                return;
-            else if (AudioStartTime == -114514f)
-                return;
-            if (State == ComponentState.Running || State == ComponentState.Calculate)
-            {
-                //Do not use this!!!! This have connection with sample batch size
-                //AudioTime = (float)audioSample.GetCurrentTime();
-                var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                _audioTime = timeOffset - chartOffset;
-                _thisFrameSec = _audioTime;
-                _audioTimeNoOffset = timeOffset;
-
-                var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime)*PlaybackSpeed;
-                _errText.text = String.Format("Diff{0:F4}",Math.Abs(realTimeDifference));
-                if (Math.Abs(realTimeDifference) > 0.01f && AudioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
-                {
-                    _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                }
-            }
-        }
+        
+        
         async void StartToPlayAnswer()
         {
             await Task.Run(async () => 
             {
                 int i = 0;
-                var token = _allTaskTokenSource.Token;
+                var token = _cts.Token;
                 var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
 
                 while (true)
@@ -829,46 +857,42 @@ namespace MajdataPlay.Game
         public void GameOver()
         {
             //TODO: Play GameOver Animation
-            DisposeAudioTrack();
             CalculateScore(playEffect:false);
 
             EndGame(targetScene: "TotalResult").Forget();
         }
+        void ClearAllResources()
+        {
+            StopAllCoroutines();
 
+            _cts.Cancel();
+
+            if(!_bgManager.IsUnityNull())
+                _bgManager.CancelTimeRef();
+
+            MajInstances.InputManager.ClearAllSubscriber();
+            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
+            MajInstances.GameManager.EnableGC();
+            MajInstanceHelper<GamePlayManager>.Free();
+        }
         async UniTaskVoid BackToList()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
-            MajInstances.InputManager.ClearAllSubscriber();
-            MajInstances.GameManager.EnableGC();
-            StopAllCoroutines();
-            DisposeAudioTrack();
+            ClearAllResources();
 
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            
             MajInstances.SceneSwitcher.SwitchScene("List");
-
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
-            State = ComponentState.Finished;
-            if (IsPracticeMode)
-            {
-                delayMiliseconds = delayMiliseconds.Clamp(0, delayMiliseconds - 3000);
-                await UniTask.Delay(delayMiliseconds);
-                NextRound4Practice().Forget();
+            if (State == GamePlayStatus.Ended)
                 return;
-            }
-            _cts.Cancel();
-            MajInstances.InputManager.ClearAllSubscriber();
-            _bgManager.CancelTimeRef();
+            State = GamePlayStatus.Ended;
 
             await UniTask.Delay(delayMiliseconds);
-
-            MajInstances.GameManager.EnableGC();
-            
-            DisposeAudioTrack();
-
-            MajInstances.InputManager.UnbindAnyArea(OnPauseButton);
+            ClearAllResources();
             await UniTask.DelayFrame(5);
+            
             MajInstances.SceneSwitcher.SwitchScene(targetScene);
         }
         void ChartMirror(ref string chartContent)
@@ -877,6 +901,13 @@ namespace MajdataPlay.Game
             if (mirrorType is MirrorType.Off)
                 return;
             chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
+        }
+        void OnDestroy()
+        {
+            MajDebug.Log("GPManagerDestroy");
+
+            DisposeAudioTrack();
+            ClearAllResources();
         }
         class AnwserSoundPoint
         {

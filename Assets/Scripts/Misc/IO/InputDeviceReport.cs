@@ -1,0 +1,12 @@
+﻿using MajdataPlay.Types;
+using System;
+
+namespace MajdataPlay.IO
+{
+    internal readonly struct InputDeviceReport
+    {
+        public int Index { get; init; }
+        public SensorStatus State { get; init; }
+        public DateTime Timestamp { get; init; }
+    }
+}

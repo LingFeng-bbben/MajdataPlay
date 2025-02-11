@@ -36,6 +36,19 @@ namespace MajdataPlay.Utils
             var texture = await ImageDecodeAsync(bytes);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
+        public static async Task<Sprite> LoadAsync(byte[] bytes, CancellationToken ct = default)
+        {
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+                var texture = await ImageDecodeAsync(bytes);
+                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
+            catch
+            {
+                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
+        }
 
         public static async Task<Sprite> LoadAsync(Uri uri, CancellationToken ct = default)
         {
