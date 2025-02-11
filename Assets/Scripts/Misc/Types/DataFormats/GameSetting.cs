@@ -24,6 +24,8 @@ namespace MajdataPlay.Types
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
+        public bool TrackSkip { get; set; } = false;
+        public bool FastRetry { get; set; } = false;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
         public string Language { get; set; } = "zh-CN - Majdata";

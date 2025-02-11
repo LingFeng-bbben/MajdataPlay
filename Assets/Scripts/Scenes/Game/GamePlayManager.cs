@@ -129,6 +129,8 @@ namespace MajdataPlay.Game
         bool _isAllBreak = false;
         bool _isAllEx = false;
         bool _isAllTouch = false;
+        bool _isTrackSkipAvailable = MajEnv.UserSetting.Game.TrackSkip;
+        bool _isFastRetryAvailable = MajEnv.UserSetting.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
@@ -667,6 +669,8 @@ namespace MajdataPlay.Game
         }
         void UpdateFnKeyState()
         {
+            if (!_isFastRetryAvailable && !_isTrackSkipAvailable)
+                return;
             switch(State)
             {
                 case GamePlayStatus.Running:
@@ -699,12 +703,12 @@ namespace MajdataPlay.Game
                     _2367PressTime = 0;
                     return;
             }
-            if(_2367PressTime >= 1f)
+            if(_2367PressTime >= 1f && _isTrackSkipAvailable)
             {
                 CalculateScore();
                 EndGame().Forget();
             }
-            else if(_3456PressTime >= 1f)
+            else if(_3456PressTime >= 1f && _isFastRetryAvailable)
             {
                 FastRetry().Forget();
             }
@@ -833,8 +837,9 @@ namespace MajdataPlay.Game
             if (State == GamePlayStatus.Ended)
                 return;
             State = GamePlayStatus.Ended;
-            MajInstances.SceneSwitcher.SwitchScene("Game");
-            await UniTask.Delay(200);
+            MajInstances.SceneSwitcher.FadeIn();
+            await UniTask.Delay(400);
+            MajInstances.SceneSwitcher.SwitchScene("Game", false);
             ClearAllResources();
         }
         
@@ -947,6 +952,8 @@ namespace MajdataPlay.Game
             State = GamePlayStatus.Ended;
 
             await UniTask.Delay(delayMiliseconds);
+            MajInstances.SceneSwitcher.FadeIn();
+            await UniTask.Delay(400);
             ClearAllResources();
             await UniTask.DelayFrame(5);
             

@@ -44,7 +44,12 @@ namespace MajdataPlay
             animator.SetBool("In", false);
             loadingText.gameObject.SetActive(false);
         }
-
+        public void FadeIn()
+        {
+            animator.SetBool("In", true);
+            loadingText.text = string.Empty;
+            loadingText.gameObject.SetActive(true);
+        }
         public void SetLoadingText(string text , Color color)
         {
             loadingText.text = text;
