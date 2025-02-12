@@ -13,21 +13,21 @@ namespace MajdataPlay.Game.Types
         GameObject GameObject { get; }
         bool IsEnded { get; }
         /// <summary>
-        /// 如果判定队列已经完成，返回True，反之False
+        /// If all judgment areas have been completed, return True, otherwise False
         /// </summary>
         bool IsFinished { get; }
         /// <summary>
-        /// 如果判定队列剩余1个未完成判定区，返回True
+        /// If there is 1 unfinished judgment area left in the judgment queue, return True
         /// </summary>
         bool IsPendingFinish { get; }
         /// <summary>
-        /// 返回判定队列中未完成判定区的数量
+        /// Returns the number of unfinished judgment areas in the judgment queue
         /// </summary>
         int QueueRemaining { get; }
         Quaternion FinalStarAngle { get; }
         /// <summary>
         /// Connection Slide
-        /// <para>强制完成该Slide</para>
+        /// <para>Force finish this Slide</para>
         /// </summary>
         void ForceFinish();
     }

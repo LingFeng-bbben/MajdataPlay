@@ -251,7 +251,7 @@ namespace MajdataPlay.Game.Notes
             /// LastFor   是Slide的时值
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - _startTiming;
-            var tooLateTiming = _timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = thisFrameSec - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
@@ -338,7 +338,7 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Running;
                         goto case NoteStatus.Running;
                     }
-                    var alpha = (1f - -timing / (_timing - _startTiming)).Clamp(0, 1);
+                    var alpha = (1f - -timing / (Timing - _startTiming)).Clamp(0, 1);
 
                     for (var i = 0; i < _stars.Length; i++)
                     {
@@ -489,7 +489,7 @@ namespace MajdataPlay.Game.Notes
                 var barRenderer = bar.GetComponent<SpriteRenderer>();
 
                 barRenderer.color = new Color(1f, 1f, 1f, 0f);
-                barRenderer.sortingOrder = _sortOrder--;
+                barRenderer.sortingOrder = SortOrder--;
                 barRenderer.sortingLayerName = "Slides";
 
                 barRenderer.sprite = barSprites[i];

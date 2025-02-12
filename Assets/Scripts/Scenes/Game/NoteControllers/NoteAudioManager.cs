@@ -7,8 +7,9 @@ namespace MajdataPlay.Game
 {
     public class NoteAudioManager : MonoBehaviour
     {
-        AudioManager audioManager => MajInstances.AudioManager;
-        void Awake()
+        readonly AudioManager _audioManager = MajInstances.AudioManager;
+
+        public NoteAudioManager()
         {
             MajInstanceHelper<NoteAudioManager>.Instance = this;
         }
@@ -30,7 +31,7 @@ namespace MajdataPlay.Game
             }
             else if (isEx)
             {
-                audioManager.PlaySFX("tap_ex.wav");
+                _audioManager.PlaySFX("tap_ex.wav");
                 return;
             }
 
@@ -38,7 +39,7 @@ namespace MajdataPlay.Game
             {
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
-                    audioManager.PlaySFX("tap_good.wav");
+                    _audioManager.PlaySFX("tap_good.wav");
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat1:
@@ -46,16 +47,16 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat2:
                 case JudgeGrade.FastGreat1:
                 case JudgeGrade.FastGreat:
-                    audioManager.PlaySFX("tap_great.wav");
+                    _audioManager.PlaySFX("tap_great.wav");
                     break;
                 case JudgeGrade.LatePerfect2:
                 case JudgeGrade.FastPerfect2:
                 case JudgeGrade.LatePerfect1:
                 case JudgeGrade.FastPerfect1:
-                    audioManager.PlaySFX("tap_perfect.wav");
+                    _audioManager.PlaySFX("tap_perfect.wav");
                     break;
                 case JudgeGrade.Perfect:
-                    audioManager.PlaySFX("tap_perfect.wav");
+                    _audioManager.PlaySFX("tap_perfect.wav");
                     break;
             }
         }
@@ -75,51 +76,51 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastPerfect2:
                 case JudgeGrade.LatePerfect1:
                 case JudgeGrade.FastPerfect1:
-                    audioManager.PlaySFX("break_tap.wav");
+                    _audioManager.PlaySFX("break_tap.wav");
                     break;
                 case JudgeGrade.Perfect:
-                    audioManager.PlaySFX("break.wav");
-                    audioManager.PlaySFX("break_tap.wav");
+                    _audioManager.PlaySFX("break.wav");
+                    _audioManager.PlaySFX("break_tap.wav");
                     break;
             }
         }
 
         public void PlayTouchSound()
         {
-            audioManager.PlaySFX("touch.wav");
+            _audioManager.PlaySFX("touch.wav");
         }
 
         public void PlayHanabiSound()
         {
-            audioManager.PlaySFX("touch_hanabi.wav");
+            _audioManager.PlaySFX("touch_hanabi.wav");
         }
         public void PlayTouchHoldSound()
         {
-            var riser = audioManager.GetSFX("touch_Hold_riser.wav");
+            var riser = _audioManager.GetSFX("touch_Hold_riser.wav");
             if(!riser.IsPlaying)
-                audioManager.PlaySFX("touch_Hold_riser.wav");
+                _audioManager.PlaySFX("touch_Hold_riser.wav");
         }
         public void StopTouchHoldSound()
         {
-            audioManager.StopSFX("touch_Hold_riser.wav");
+            _audioManager.StopSFX("touch_Hold_riser.wav");
         }
 
         public void PlaySlideSound(bool isBreak)
         {
             if (isBreak)
             {
-                audioManager.PlaySFX("slide_break_start.wav");
+                _audioManager.PlaySFX("slide_break_start.wav");
             }
             else
             {
-                audioManager.PlaySFX("slide.wav");
+                _audioManager.PlaySFX("slide.wav");
             }
         }
 
         public void PlayBreakSlideEndSound()
         {
-            audioManager.PlaySFX("slide_break_slide.wav");
-            audioManager.PlaySFX("break_slide.wav");
+            _audioManager.PlaySFX("slide_break_slide.wav");
+            _audioManager.PlaySFX("break_slide.wav");
         }
     }
 }

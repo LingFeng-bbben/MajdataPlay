@@ -9,14 +9,17 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.Game.Types;
+using MajdataPlay.View;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
     internal abstract class NoteDrop : MajComponent, IStatefulNote
     {
         public int StartPos 
-        { 
-            get => _startPos; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _startPos;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 if (value.InRange(1, 8))
@@ -26,62 +29,121 @@ namespace MajdataPlay.Game.Notes
             } 
         }
         public float Timing 
-        { 
-            get => _timing; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _timing;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _timing = value; 
         }
         public int SortOrder 
-        { 
-            get => _sortOrder; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _sortOrder;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _sortOrder = value; 
         }
         public float Speed 
-        { 
-            get => _speed; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _speed;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _speed = value; 
         }
         public bool IsEach 
-        { 
-            get => _isEach; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _isEach;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEach = value; 
         }
         public bool IsBreak 
-        { 
-            get => _isBreak; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _isBreak;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isBreak = value; 
         }
         public bool IsEX 
-        { 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isEX;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEX = value; 
         }
-
-
-        public bool IsInitialized => State >= NoteStatus.Initialized;
-        public bool IsEnded => State == NoteStatus.End;
-        public bool IsClassic => _gameSetting.Judge.Mode == JudgeMode.Classic;
+        public bool IsInitialized
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => State >= NoteStatus.Initialized;
+        }
+        public bool IsEnded
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => State == NoteStatus.End;
+        }
+        public bool IsClassic
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _gameSetting.Judge.Mode == JudgeMode.Classic;
+        }
         public NoteStatus State 
-        { 
-            get => _state; 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _state;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _state = value; 
         }
-        public float JudgeTiming => _judgeTiming + _gameSetting.Judge.JudgeOffset;
-        public float ThisFrameSec => _noteController.ThisFrameSec;
-        public float ThisFixedUpdateSec => _noteController.ThisFixedUpdateSec;
+        public float JudgeTiming
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _judgeTiming + _gameSetting.Judge.JudgeOffset;
+        }
+        public float ThisFrameSec
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _noteController.ThisFrameSec;
+        }
+        public float ThisFixedUpdateSec
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _noteController.ThisFixedUpdateSec;
+        }
 
-        protected INoteController NoteController => _noteController;
-        protected bool IsAutoplay => _isAutoplay;
-        protected AutoplayMode AutoplayMode => _autoplayMode;
-        protected JudgeGrade AutoplayGrade => _autoplayGrade;
-        protected Material BreakMaterial => _breakMaterial;
-        protected Material DefaultMaterial => _defaultMaterial;
-        protected Material HoldShineMaterial => _holdShineMaterial;
+        protected INoteController NoteController
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _noteController;
+        }
+        protected bool IsAutoplay
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _isAutoplay;
+        }
+        protected AutoplayMode AutoplayMode
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _autoplayMode;
+        }
+        protected JudgeGrade AutoplayGrade
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _autoplayGrade;
+        }
+        protected Material BreakMaterial
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _breakMaterial;
+        }
+        protected Material DefaultMaterial
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _defaultMaterial;
+        }
+        protected Material HoldShineMaterial
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _holdShineMaterial;
+        }
 
-        [ReadOnlyField]
-        [SerializeField]
-        protected NoteStatus _state = NoteStatus.Start;
-        protected GamePlayManager _gpManager;
-        protected InputManager _ioManager = MajInstances.InputManager;
         protected bool _isJudged = false;
         /// <summary>
         /// The answer frame
@@ -92,32 +154,34 @@ namespace MajdataPlay.Game.Notes
         protected JudgeGrade _judgeResult = JudgeGrade.Miss;
 
         protected SensorType _sensorPos;
-        protected ObjectCounter _objectCounter;
-        protected NoteManager _noteManager;
-        protected NoteEffectManager _effectManager;
-        protected NoteAudioManager _audioEffMana;
-        protected GameSetting _gameSetting = MajInstances.Setting;
-        protected EventHandler<InputEventArgs> _noteChecker;
+
+        readonly protected ObjectCounter _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
+        readonly protected NoteManager _noteManager = MajInstanceHelper<NoteManager>.Instance!;
+        readonly protected NoteEffectManager _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
+        readonly protected NoteAudioManager _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
+        readonly protected InputManager _ioManager = MajInstances.InputManager;
+        readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
-        Material _breakMaterial;
-        Material _defaultMaterial;
-        Material _holdShineMaterial;
+        readonly GamePlayManager? _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
+        readonly ViewManager? _viewManager = MajInstanceHelper<ViewManager>.Instance;
 
-
-        bool _isAutoplay = false;
-        JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
-        AutoplayMode _autoplayMode = AutoplayMode.Disable;
-        INoteController _noteController;
         protected override void Awake()
         {
             base.Awake();
-            _effectManager = FindObjectOfType<NoteEffectManager>();
-            _objectCounter = FindObjectOfType<ObjectCounter>();
-            _noteManager = FindObjectOfType<NoteManager>();
-            _audioEffMana = FindObjectOfType<NoteAudioManager>();
-            _gpManager = FindObjectOfType<GamePlayManager>();
-            _noteController = _gpManager;
+
+            if(_gpManager is not null)
+            {
+                _noteController = _gpManager;
+            }
+            else if(_viewManager is not null)
+            {
+                _noteController = _gpManager!;
+            }
+            else
+            {
+                throw new NullReferenceException();
+            }
 
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;
@@ -183,7 +247,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             if (GetTimeSpanToJudgeTiming() >= -0.016667f)
             {
-                var autoplayGrade = _gpManager.AutoplayGrade;
+                var autoplayGrade = NoteController.AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
                     _judgeResult = autoplayGrade;
                 else
@@ -238,7 +302,7 @@ namespace MajdataPlay.Game.Notes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
-            var judgeStyle = _gpManager.JudgeStyle;
+            var judgeStyle = NoteController.JudgeStyle;
             switch(judgeStyle)
             {
                 case JudgeStyleType.MAJI:
@@ -340,26 +404,33 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
         }
-        [ReadOnlyField]
-        [SerializeField]
-        protected int _startPos = 1;
-        [ReadOnlyField]
-        [SerializeField]
-        protected float _timing;
-        [ReadOnlyField]
-        [SerializeField]
-        protected float _speed = 7;
-        [ReadOnlyField]
-        [SerializeField]
-        protected int _sortOrder;
-        [ReadOnlyField]
-        [SerializeField]
-        protected bool _isEach = false;
-        [ReadOnlyField]
-        [SerializeField]
-        protected bool _isBreak = false;
-        [ReadOnlyField]
-        [SerializeField]
-        protected bool _isEX = false;
+        [ReadOnlyField, SerializeField]
+        int _startPos = 1;
+        [ReadOnlyField, SerializeField]
+        float _timing;
+        [ReadOnlyField, SerializeField]
+        float _speed = 7;
+        [ReadOnlyField, SerializeField]
+        int _sortOrder;
+        [ReadOnlyField, SerializeField]
+        bool _isEach = false;
+        [ReadOnlyField, SerializeField]
+        bool _isBreak = false;
+        [ReadOnlyField, SerializeField]
+        bool _isEX = false;
+        [ReadOnlyField, SerializeField]
+        bool _isAutoplay = false;
+        [ReadOnlyField, SerializeField]
+        JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
+        [ReadOnlyField, SerializeField]
+        AutoplayMode _autoplayMode = AutoplayMode.Disable;
+        [ReadOnlyField, SerializeField]
+        NoteStatus _state = NoteStatus.Start;
+
+        Material _breakMaterial;
+        Material _defaultMaterial;
+        Material _holdShineMaterial;
+
+        INoteController _noteController;
     }
 }

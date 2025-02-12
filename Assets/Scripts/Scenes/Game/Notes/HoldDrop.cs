@@ -169,7 +169,6 @@ namespace MajdataPlay.Game.Notes
         public void End(bool forceEnd = false)
         {
             State = NoteStatus.End;
-            UnsubscribeEvent();
             if (forceEnd)
                 return;
             //else if (!_isJudged)
@@ -519,7 +518,7 @@ namespace MajdataPlay.Game.Notes
             else if (result.IsMissOrTooFast())
                 return result;
 
-            var releaseTiming = _gpManager.AudioTime - _gameSetting.Judge.JudgeOffset;
+            var releaseTiming = NoteController.ThisFrameSec - _gameSetting.Judge.JudgeOffset;
             var diff = (Timing + Length) - releaseTiming;
             var isFast = diff > 0;
             diff = MathF.Abs(diff);
@@ -646,14 +645,7 @@ namespace MajdataPlay.Game.Notes
             //_endRenderer.enabled = false;
             _thisRenderer.sprite = _holdSprite;
         }
-        void SubscribeEvent()
-        {
-            _ioManager.BindArea(_noteChecker, _sensorPos);
-        }
-        void UnsubscribeEvent()
-        {
-            _ioManager.UnbindArea(_noteChecker, _sensorPos);
-        }
+
         RendererStatus _rendererState = RendererStatus.Off;
     }
 }

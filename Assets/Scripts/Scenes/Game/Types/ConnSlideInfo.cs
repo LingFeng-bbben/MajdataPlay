@@ -7,19 +7,19 @@ namespace MajdataPlay.Game.Types
     public class ConnSlideInfo
     {
         /// <summary>
-        /// 表示Slide Group的总时值
+        /// Indicates the total duration of the Slide Group
         /// </summary>
         public float TotalLength { get; set; }
         /// <summary>
-        /// 表示Slide Group的总长度
+        /// Indicates the total length of the Slide Group
         /// </summary>
         public float TotalSlideLen { get; set; }
         /// <summary>
-        /// 表示Slide Group的判定队列长度
+        /// Indicates the length of the judgment queue of Slide Group
         /// </summary>
         public long TotalJudgeQueueLen { get; set; }
         /// <summary>
-        /// 指示该Slide是否位于Group的头部
+        /// Indicates whether the Slide is at the head of the Group
         /// </summary>
         public bool IsGroupPartHead
         {
@@ -27,15 +27,15 @@ namespace MajdataPlay.Game.Types
             set => _isGroupPartHead = value;
         }
         /// <summary>
-        /// 指示该Slide是否位于Group内
+        /// Indicates whether the Slide is in the Group, similar to the property IsConnSlide
         /// </summary>
         public bool IsGroupPart { get; set; }
         /// <summary>
-        /// 指示Group第一条Slide的启动时刻
+        /// Indicates the start timing of the first Slide of the Group
         /// </summary>
         public float StartTiming { get; set; }
         /// <summary>
-        /// 指示该Slide是否位于Group的尾部
+        /// Indicates whether the Slide is at the end of the Group
         /// </summary>
         public bool IsGroupPartEnd
         {
@@ -43,7 +43,7 @@ namespace MajdataPlay.Game.Types
             set => _isGroupPartEnd = value;
         }
         /// <summary>
-        /// 获取位于该Slide前方的Slide的GameObject对象
+        /// Get the Slide instance in front of this Slide
         /// </summary>
         public IConnectableSlide? Parent { get; set; } = null;
         /// <summary>
@@ -54,11 +54,11 @@ namespace MajdataPlay.Game.Types
             get => IsGroupPartEnd;
         }
         /// <summary>
-        /// 指示当前Slide是否为Connect Slide
+        /// Indicates whether the current Slide is a ConnSlide
         /// </summary>
         public bool IsConnSlide { get => IsGroupPart; }
         /// <summary>
-        /// 获取前方Slide是否完成
+        /// Get whether the previous slide is finished
         /// </summary>
         public bool ParentFinished
         {
@@ -71,7 +71,7 @@ namespace MajdataPlay.Game.Types
             }
         }
         /// <summary>
-        /// 获取前方Slide是否准备完成
+        /// If there is 1 unfinished judgment area left in the judgment queue, return True
         /// </summary>
         public bool ParentPendingFinish
         {

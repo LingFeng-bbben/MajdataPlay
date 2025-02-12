@@ -16,21 +16,24 @@ namespace MajdataPlay.Game
         GameObject _fireworkEffect;
         Animator _fireworkEffectAnimator;
 
-        InputManager _inputManager;
+        InputManager _inputManager = MajInstances.InputManager;
 
         public Color buttonGoodColor = Color.green;
         public Color buttonGreatColor = Color.red;
         public Color buttonPerfectColor = Color.yellow;
 
         Dictionary<SensorType, TimeSpan> _lastTriggerTimes = new();
-        GameSetting _setting;
+        GameSetting _setting = MajInstances.Setting;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
-        void Awake()
+
+        public NoteEffectManager()
         {
             MajInstanceHelper<NoteEffectManager>.Instance = this;
-            _inputManager = MajInstances.InputManager;
-            _setting = MajInstances.Setting;
-            if(_setting.Display.TouchFeedback != TouchFeedbackLevel.Disable)
+        }
+        void Awake()
+        {
+            _effectPool = MajInstanceHelper<NoteEffectPool>.Instance!;
+            if (_setting.Display.TouchFeedback != TouchFeedbackLevel.Disable)
             {
                 _inputManager.BindAnyArea(OnAnyAreaClick);
                 switch(_setting.Display.TouchFeedback)
@@ -83,8 +86,6 @@ namespace MajdataPlay.Game
         {
             _fireworkEffect = GameObject.Find("FireworkEffect");
             _fireworkEffectAnimator = _fireworkEffect.GetComponent<Animator>();
-
-            _effectPool = MajInstanceHelper<NoteEffectPool>.Instance!;
         }
         public void PlayFireworkEffect(in Vector3 position)
         {

@@ -282,7 +282,7 @@ namespace MajdataPlay.Game.Notes
                         return;
                     }
                     // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    var alpha = (1f - -timing / (_timing - _startTiming)).Clamp(0, 1);
+                    var alpha = (1f - -timing / (Timing - _startTiming)).Clamp(0, 1);
 
                     _starRenderer.color = new Color(1, 1, 1, alpha);
                     starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
@@ -364,6 +364,8 @@ namespace MajdataPlay.Game.Notes
                 if (canPlaySFX && first.On)
                     PlaySFX();
 
+                // Check the second area
+
                 if (second is not null && (first.IsSkippable || first.On))
                 {
                     var sAreas = second.IncludedAreas;
@@ -389,6 +391,8 @@ namespace MajdataPlay.Game.Notes
                     }
                 }
 
+                // Finally check the first area
+
                 if (first.IsFinished)
                 {
                     HideBar(first.ArrowProgressWhenFinished);
@@ -412,10 +416,10 @@ namespace MajdataPlay.Game.Notes
             /// time      是Slide启动的时间点
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
-            //var timing = _gpManager.AudioTime - _timing;
+            //var timing = _gpManager.AudioTime - Timing;
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - _startTiming;
-            var tooLateTiming = _timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = Timing + _length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = thisFrameSec - tooLateTiming >= 0;
 
             if (!_isCheckable)
@@ -642,7 +646,7 @@ namespace MajdataPlay.Game.Notes
                 var barRenderer = bar.GetComponent<SpriteRenderer>();
                 
                 barRenderer.color = new Color(1f, 1f, 1f, 0f);
-                barRenderer.sortingOrder = _sortOrder--;
+                barRenderer.sortingOrder = SortOrder--;
                 barRenderer.sortingLayerName = "Slides";
 
                 barRenderer.sprite = barSprite;

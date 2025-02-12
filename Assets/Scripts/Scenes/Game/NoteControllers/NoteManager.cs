@@ -38,13 +38,15 @@ namespace MajdataPlay.Game
         Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
-        InputManager _inputManager;
+        InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
         bool _isUpdaterInitialized = false;
-        void Awake()
+        public NoteManager()
         {
             MajInstanceHelper<NoteManager>.Instance = this;
-            _inputManager = MajInstances.InputManager;
+        }
+        void Awake()
+        {
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFixedUpdate[i] = false;

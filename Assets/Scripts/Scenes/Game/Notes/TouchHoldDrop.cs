@@ -446,7 +446,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (remainingTime <= 0.2f) // 忽略尾部12帧
                 return;
-            else if (!_gpManager.IsStart) // 忽略暂停
+            else if (!NoteController.IsStart) // 忽略暂停
                 return;
 
             var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);

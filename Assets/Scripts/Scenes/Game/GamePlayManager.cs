@@ -157,11 +157,14 @@ namespace MajdataPlay.Game
 
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
         readonly CancellationTokenSource _cts = new();
+        public GamePlayManager()
+        {
+            MajInstanceHelper<GamePlayManager>.Instance = this;
+        }
         void Awake()
         {
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
-            MajInstanceHelper<GamePlayManager>.Instance = this;
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);

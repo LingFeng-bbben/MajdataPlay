@@ -406,25 +406,19 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
         }
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected float _startTiming;
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected bool _isJustR = false;
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected float _fadeInTiming = 0;
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected float _fullFadeInTiming = 0.2f;
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected int _endPos = 1;
         [SerializeField]
         protected string _slideType = string.Empty;
-        [ReadOnlyField]
-        [SerializeField]
+        [ReadOnlyField, SerializeField]
         protected float _slideLength = 0f;
     }
 }
