@@ -30,14 +30,14 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _endPos = 5;
+            EndPos = 5;
             var slideParent = _noteManager.transform.GetChild(3);
             var centerStar = Instantiate(_slideStarPrefab, slideParent);
             var leftStar = Instantiate(_slideStarPrefab, slideParent);
             var rightStar = Instantiate(_slideStarPrefab, slideParent);
             var wifiTable = SlideTables.GetWifiTable(StartPos);
 
-            var sensorPos = (SensorType)(_endPos - 1);
+            var sensorPos = (SensorType)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
 
@@ -54,7 +54,7 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
             _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _starEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
+            _starEndPositions[1] = GetPositionFromDistance(4.8f, EndPos);// Center
             _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
 
             if (IsClassic)
@@ -100,7 +100,7 @@ namespace MajdataPlay.Game.Notes
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
-            _slideLength = (_starStartPositions[1] - _starEndPositions[1]).magnitude;
+            SlideLength = (_starStartPositions[1] - _starEndPositions[1]).magnitude;
         }
         public override void Initialize()
         {
@@ -113,28 +113,28 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
 
-            _judgeTiming = Timing + (Length * (1 - wifiConst));
+            _judgeTiming = StartTiming + (Length * (1 - wifiConst));
             _lastWaitTime = Length * wifiConst;
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
-            _fadeInTiming = -3.926913f / Speed;
-            _fadeInTiming += _gameSetting.Game.SlideFadeInOffset;
-            _fadeInTiming += _startTiming;
+            FadeInTiming = -3.926913f / Speed;
+            FadeInTiming += _gameSetting.Game.SlideFadeInOffset;
+            FadeInTiming += Timing;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            _fullFadeInTiming = _fadeInTiming + 0.2f;
+            FullFadeInTiming = FadeInTiming + 0.2f;
             //var interval = fullFadeInTiming - fadeInTiming;
             //Destroy(GetComponent<Animator>());
             _maxFadeInAlpha = 1f;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
-            var sensorPos = (SensorType)(_endPos - 1);
+            var sensorPos = (SensorType)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
             _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _starEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
+            _starEndPositions[1] = GetPositionFromDistance(4.8f, EndPos);// Center
             _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
 
             if(IsClassic)
@@ -250,8 +250,8 @@ namespace MajdataPlay.Game.Notes
             /// timeStart 是Slide完全显示但未启动
             /// LastFor   是Slide的时值
             var thisFrameSec = ThisFrameSec;
-            var startTiming = thisFrameSec - _startTiming;
-            var tooLateTiming = Timing + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var startTiming = thisFrameSec - Timing;
+            var tooLateTiming = StartTiming + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = thisFrameSec - tooLateTiming >= 0;
 
             if (startTiming >= -0.05f)
@@ -311,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFixedUpdateSec - StartTiming > 0)
+                    if (ThisFixedUpdateSec - Timing > 0)
                     {
                         SetStarActive(true);
                         for (var i = 0; i < _stars.Length; i++)
@@ -325,7 +325,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFixedUpdateSec - Timing;
+                    var timing = ThisFixedUpdateSec - StartTiming;
                     if (timing > 0f)
                     {
                         for (var i = 0; i < _stars.Length; i++)
@@ -338,7 +338,7 @@ namespace MajdataPlay.Game.Notes
                         State = NoteStatus.Running;
                         goto case NoteStatus.Running;
                     }
-                    var alpha = (1f - -timing / (Timing - _startTiming)).Clamp(0, 1);
+                    var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
                     for (var i = 0; i < _stars.Length; i++)
                     {
@@ -512,7 +512,7 @@ namespace MajdataPlay.Game.Notes
             }
             
 
-            if (_isJustR)
+            if (IsJustR)
             {
                 _slideOKController!.SetR();
             }

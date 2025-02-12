@@ -1054,10 +1054,10 @@ namespace MajdataPlay.Game
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
-            SliCompo.StartTiming = (float)timing.Timing;
+            SliCompo.StartTiming = (float)note.SlideStartTime;
             SliCompo.StartPos = startPos;
             //SliCompo._stars = new GameObject[] { slide_star };
-            SliCompo.Timing = (float)note.SlideStartTime;
+            SliCompo.Timing = (float)timing.Timing;
             SliCompo.Length = (float)note.SlideTime;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
             if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
@@ -1126,9 +1126,9 @@ namespace MajdataPlay.Game
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
-            WifiCompo.StartTiming = (float)timing.Timing;
+            WifiCompo.StartTiming = (float)note.SlideStartTime;
             WifiCompo.StartPos = startPos;
-            WifiCompo.Timing = (float)note.SlideStartTime;
+            WifiCompo.Timing = (float)timing.Timing;
             WifiCompo.Length = (float)note.SlideTime;
             //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));

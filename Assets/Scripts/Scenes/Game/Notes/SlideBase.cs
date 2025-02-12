@@ -86,6 +86,7 @@ namespace MajdataPlay.Game.Notes
         public float SlideLength
         {
             get => _slideLength;
+            protected set => _slideLength = value;
         }
         protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
         { 
@@ -407,18 +408,18 @@ namespace MajdataPlay.Game.Notes
             }
         }
         [ReadOnlyField, SerializeField]
-        protected float _startTiming;
+        float _startTiming;
         [ReadOnlyField, SerializeField]
-        protected bool _isJustR = false;
+        bool _isJustR = false;
         [ReadOnlyField, SerializeField]
-        protected float _fadeInTiming = 0;
+        float _fadeInTiming = 0;
         [ReadOnlyField, SerializeField]
-        protected float _fullFadeInTiming = 0.2f;
+        float _fullFadeInTiming = 0.2f;
         [ReadOnlyField, SerializeField]
-        protected int _endPos = 1;
+        int _endPos = 1;
         [SerializeField]
-        protected string _slideType = string.Empty;
+        string _slideType = string.Empty;
         [ReadOnlyField, SerializeField]
-        protected float _slideLength = 0f;
+        float _slideLength = 0f;
     }
 }
