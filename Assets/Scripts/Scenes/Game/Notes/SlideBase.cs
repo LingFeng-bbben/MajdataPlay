@@ -18,7 +18,11 @@ namespace MajdataPlay.Game.Notes
     internal abstract class SlideBase : NoteLongDrop
     {
         public IConnectableSlide? Parent => ConnectInfo.Parent;
-        public ConnSlideInfo ConnectInfo { get; set; } = new()
+        public ConnSlideInfo ConnectInfo 
+        { 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get; 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] set; 
+        } = new()
         {
             IsGroupPart = false,
             Parent = null
@@ -26,16 +30,25 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// 如果判定队列已经完成，返回True，反之False
         /// </summary>
-        public bool IsFinished { get => QueueRemaining == 0; }
+        public bool IsFinished 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => QueueRemaining == 0; 
+        }
         /// <summary>
         /// 如果判定队列剩余1个未完成判定区，返回True
         /// </summary>
-        public bool IsPendingFinish { get => QueueRemaining == 1; }
+        public bool IsPendingFinish 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => QueueRemaining == 1; 
+        }
         /// <summary>
         /// 返回判定队列中未完成判定区的数量
         /// </summary>
         public int QueueRemaining 
-        { 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 Span<int> reamaining = stackalloc int[3];
@@ -50,27 +63,37 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         public float StartTiming
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _startTiming;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _startTiming = value;
         }
         public bool IsJustR
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isJustR;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isJustR = value;
         }
         public float FadeInTiming
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _fadeInTiming;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _fadeInTiming = value;
         }
         public float FullFadeInTiming
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _fullFadeInTiming;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _fullFadeInTiming = value;
         }
         public int EndPos
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _endPos;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 if (value.InRange(1, 8))
@@ -81,11 +104,14 @@ namespace MajdataPlay.Game.Notes
         }
         public string SlideType
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _slideType;
         }
         public float SlideLength
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _slideLength;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _slideLength = value;
         }
         protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
