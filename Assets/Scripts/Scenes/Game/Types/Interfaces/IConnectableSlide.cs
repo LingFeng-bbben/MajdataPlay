@@ -24,6 +24,7 @@ namespace MajdataPlay.Game.Types
         /// 返回判定队列中未完成判定区的数量
         /// </summary>
         int QueueRemaining { get; }
+        Quaternion FinalStarAngle { get; }
         /// <summary>
         /// Connection Slide
         /// <para>强制完成该Slide</para>

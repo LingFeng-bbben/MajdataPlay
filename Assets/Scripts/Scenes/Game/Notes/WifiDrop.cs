@@ -21,11 +21,11 @@ namespace MajdataPlay.Game.Notes
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
 
-        readonly Vector3[] _slideEndPositions = new Vector3[3];
+        readonly Vector3[] _starEndPositions = new Vector3[3];
 
         readonly SpriteRenderer[] _starRenderers = new SpriteRenderer[3];
 
-        Vector3[] _slideStartPositions = new Vector3[3];
+        Vector3[] _starStartPositions = new Vector3[3];
 
         protected override void Awake()
         {
@@ -53,21 +53,21 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[0] = wifiTable[0];
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
-            _slideEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _slideEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
-            _slideEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
+            _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
+            _starEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
+            _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
 
             if (IsClassic)
             {
-                _slideStartPositions[0] = GetPositionFromDistance(4.55f, StartPos + 0.11f);
-                _slideStartPositions[1] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
+                _starStartPositions[0] = GetPositionFromDistance(4.55f, StartPos + 0.11f);
+                _starStartPositions[1] = GetPositionFromDistance(4.8f);
+                _starStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
             }
             else
             {
-                _slideStartPositions[0] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[1] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[2] = GetPositionFromDistance(4.8f);
+                _starStartPositions[0] = GetPositionFromDistance(4.8f);
+                _starStartPositions[1] = GetPositionFromDistance(4.8f);
+                _starStartPositions[2] = GetPositionFromDistance(4.8f);
             }
 
             _slideOK = Transform.GetChild(Transform.childCount - 1).gameObject; //slideok is the last one
@@ -97,10 +97,10 @@ namespace MajdataPlay.Game.Notes
                 if (star is null)
                     continue;
                 _starTransforms[i] = star.transform;
-                star.transform.position = _slideStartPositions[i];
+                star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
-            _slideLength = (_slideStartPositions[1] - _slideEndPositions[1]).magnitude;
+            _slideLength = (_starStartPositions[1] - _starEndPositions[1]).magnitude;
         }
         public override void Initialize()
         {
@@ -133,24 +133,24 @@ namespace MajdataPlay.Game.Notes
             var sensorPos = (SensorType)(_endPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
-            _slideEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _slideEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
-            _slideEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
+            _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
+            _starEndPositions[1] = GetPositionFromDistance(4.8f, _endPos);// Center
+            _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
 
             if(IsClassic)
             {
-                _slideStartPositions[0] = GetPositionFromDistance(4.55f,StartPos + 0.11f);
-                _slideStartPositions[1] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
+                _starStartPositions[0] = GetPositionFromDistance(4.55f,StartPos + 0.11f);
+                _starStartPositions[1] = GetPositionFromDistance(4.8f);
+                _starStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
 
                 _starRenderers[0].sortingOrder = -1;
                 _starRenderers[2].sortingOrder = -1;
             }
             else
             {
-                _slideStartPositions[0] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[1] = GetPositionFromDistance(4.8f);
-                _slideStartPositions[2] = GetPositionFromDistance(4.8f);
+                _starStartPositions[0] = GetPositionFromDistance(4.8f);
+                _starStartPositions[1] = GetPositionFromDistance(4.8f);
+                _starStartPositions[2] = GetPositionFromDistance(4.8f);
             }
 
             Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
@@ -163,7 +163,7 @@ namespace MajdataPlay.Game.Notes
                 if (star is null)
                     continue;
                 _starTransforms[i] = star.transform;
-                star.transform.position = _slideStartPositions[i];
+                star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
 
@@ -318,7 +318,7 @@ namespace MajdataPlay.Game.Notes
                         {
                             var starTransform = _starTransforms[i];
 
-                            starTransform.position = _slideStartPositions[i];
+                            starTransform.position = _starStartPositions[i];
                         }
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
@@ -354,7 +354,7 @@ namespace MajdataPlay.Game.Notes
                         for (var i = 0; i < _stars.Length; i++)
                         {
                             var starTransform = _starTransforms[i];
-                            starTransform.position = _slideEndPositions[i];
+                            starTransform.position = _starEndPositions[i];
                         }
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
@@ -364,8 +364,8 @@ namespace MajdataPlay.Game.Notes
                     for (var i = 0; i < _stars.Length; i++)
                     {
                         var starTransform = _starTransforms[i];
-                        var a = _slideEndPositions[i];
-                        var b = _slideStartPositions[i];
+                        var a = _starEndPositions[i];
+                        var b = _starStartPositions[i];
                         var ba = a - b;
                         var newPos = ba * process + b;
 

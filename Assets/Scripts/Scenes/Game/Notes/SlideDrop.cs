@@ -24,8 +24,10 @@ namespace MajdataPlay.Game.Notes
             set => _isMirror = value; 
         }
 
-        List<Vector3> _slidePositions = new();
-        List<Quaternion> _slideRotations = new();
+        public Quaternion FinalStarAngle { get; private set; } = default;
+
+        List<Vector3> _starPositions = new();
+        List<Quaternion> _starRotations = new();
 
         SpriteRenderer _starRenderer;
         SlideTable _table;
@@ -111,14 +113,14 @@ namespace MajdataPlay.Game.Notes
             SetActive(false);
             SetStarActive(false);
             SetSlideBarAlpha(0f);
-            for (int i = 0; i < _slidePositions.Count - 2; i++)
+            for (int i = 0; i < _starPositions.Count - 2; i++)
             {
-                var a = _slidePositions[i];
-                var b = _slidePositions[i + 1];
+                var a = _starPositions[i];
+                var b = _starPositions[i + 1];
                 _slideLength += (b - a).magnitude;
             }
 
-            _starTransforms[0].position = _slidePositions[0];
+            _starTransforms[0].position = _starPositions[0];
             _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
         }
         /// <summary>
@@ -165,7 +167,7 @@ namespace MajdataPlay.Game.Notes
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
             
-            _starTransforms[0].position = _slidePositions[0];
+            _starTransforms[0].position = _starPositions[0];
             _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
             _judgeQueues[0] = _table.JudgeQueue;
 
@@ -258,8 +260,8 @@ namespace MajdataPlay.Game.Notes
 
                         _starRenderer.color = new Color(1, 1, 1, 0);
                         starTransform.localScale = new Vector3(0, 0, 1);
-                        starTransform.position = _slidePositions[0];
-                        ApplyStarRotation(_slideRotations[0]);
+                        starTransform.position = _starPositions[0];
+                        ApplyStarRotation(_starRotations[0]);
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
@@ -289,8 +291,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     if(GetRemainingTimeWithoutOffset() == 0)
                     {
-                        starTransform.position = _slidePositions[_slidePositions.Count - 1];
-                        ApplyStarRotation(_slideRotations[_slideRotations.Count - 1]);
+                        starTransform.position = _starPositions[_starPositions.Count - 1];
+                        ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
                         if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
                         {
                             DestroyStars();
@@ -299,20 +301,20 @@ namespace MajdataPlay.Game.Notes
                         goto case NoteStatus.Arrived;
                     }
                     var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var indexProcess = (_slidePositions.Count - 1) * process;
+                    var indexProcess = (_starPositions.Count - 1) * process;
                     var index = (int)indexProcess;
                     var pos = indexProcess - index;
 
-                    var a = _slidePositions[index + 1];
-                    var b = _slidePositions[index];
+                    var a = _starPositions[index + 1];
+                    var b = _starPositions[index];
                     var ba = a - b;
                     var newPos = ba * pos + b;
 
                     starTransform.position = newPos;
-                    if (index < _slideRotations.Count - 1)
+                    if (index < _starRotations.Count - 1)
                     {
-                        var _a = _slideRotations[index + 1].eulerAngles.z;
-                        var _b = _slideRotations[index].eulerAngles.z;
+                        var _a = _starRotations[index + 1].eulerAngles.z;
+                        var _b = _starRotations[index].eulerAngles.z;
                         var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
                         dAngle = Mathf.Abs(dAngle);
                         var newRotation = Quaternion.Euler(0f, 0f,
@@ -583,27 +585,36 @@ namespace MajdataPlay.Game.Notes
         }
         void LoadSlidePath()
         {
-            _slidePositions = new();
-            _slideRotations = new();
+            _starPositions = new();
+            _starRotations = new();
 
-            _slidePositions.Add(GetPositionFromDistance(4.8f));
+            _starPositions.Add(GetPositionFromDistance(4.8f));
             for (int i = 0; i < _slideBars.Length; i++)
             {
                 var bar = _slideBars[i];
-                _slidePositions.Add(bar.transform.position);
+                _starPositions.Add(bar.transform.position);
 
-                _slideRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                _starRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
                 if(i == _slideBars.Length - 1)
                 {
                     var a = _slideBars[i - 1].transform.rotation.normalized.eulerAngles;
                     var b = bar.transform.rotation.normalized.eulerAngles;
                     var diff = a - b;
                     var newEulerAugle = b - diff;
-                    _slideRotations.Add(Quaternion.Euler(newEulerAugle + new Vector3(0f, 0f, 18f)));
+                    _starRotations.Add(Quaternion.Euler(newEulerAugle + new Vector3(0f, 0f, 18f)));
                 }
             }
             var endPos = GetPositionFromDistance(4.8f, _endPos);
-            _slidePositions.Add(endPos);
+            _starPositions.Add(endPos);
+            FinalStarAngle = _starRotations[_starRotations.Count - 1];
+            if(ConnectInfo.IsConnSlide)
+            {
+                var parent = ConnectInfo.Parent;
+                if(parent is not null)
+                {
+                    _starRotations[0] = parent.FinalStarAngle;
+                }
+            }
         }
         protected override void LoadSkin()
         {
