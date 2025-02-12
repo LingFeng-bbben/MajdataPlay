@@ -251,7 +251,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFixedUpdateSec - Timing > 0)
+                    if (ThisFrameSec - Timing > 0)
                     {
                         if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
                         {
@@ -267,7 +267,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFixedUpdateSec - StartTiming;
+                    var timing = ThisFrameSec - StartTiming;
                     if (timing > 0f)
                     {
                         _starRenderer.color = new Color(1, 1, 1, 1);

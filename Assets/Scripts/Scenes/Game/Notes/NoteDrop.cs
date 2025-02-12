@@ -271,7 +271,7 @@ namespace MajdataPlay.Game.Notes
         /// <para>If the current moment is ahead of the judgment line, the result is a negative number.</para>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected float GetTimeSpanToArriveTiming() => ThisFrameSec - Timing;
+        protected virtual float GetTimeSpanToArriveTiming() => ThisFrameSec - Timing;
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
         /// </summary>

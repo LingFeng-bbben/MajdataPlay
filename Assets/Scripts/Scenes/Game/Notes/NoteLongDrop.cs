@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Attributes;
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -19,7 +20,9 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         protected float _length = 1f;
 
-        protected float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
-        protected float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);
     }
 }

@@ -27,9 +27,12 @@ namespace MajdataPlay.Game
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
         GamePlayManager _gpManager;
-        void Awake()
+        public NoteEffectPool()
         {
             MajInstanceHelper<NoteEffectPool>.Instance = this;
+        }
+        void Awake()
+        {
             _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
         }
         void OnDestroy()

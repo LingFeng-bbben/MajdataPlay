@@ -68,6 +68,11 @@ namespace MajdataPlay.Game.Notes
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _startTiming = value;
         }
+        public float ArriveTiming
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _startTiming + Length;
+        }
         public bool IsJustR
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -396,7 +401,7 @@ namespace MajdataPlay.Game.Notes
             if (IsEnded)
                 return;
 
-            var num = _startTiming - 0.05f;
+            var num = Timing - 0.05f;
             float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
             float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
@@ -433,6 +438,12 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override float GetRemainingTime() => GetRemainingTimeWithoutOffset();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override float GetRemainingTimeWithoutOffset() => MathF.Max(ArriveTiming - ThisFrameSec, 0);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override float GetTimeSpanToArriveTiming() => ThisFrameSec - ArriveTiming;
         [ReadOnlyField, SerializeField]
         float _startTiming;
         [ReadOnlyField, SerializeField]
