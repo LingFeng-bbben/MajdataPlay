@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 #nullable enable
@@ -30,12 +31,11 @@ namespace MajdataPlay.Game
 
         GamePlayManager _gpManager;
         List<TapPoolingInfo> tapInfos = new();
-        List<TapPoolingInfo> starInfos = new();
         List<HoldPoolingInfo> holdInfos = new();
         List<TouchPoolingInfo> touchInfos = new();
         List<TouchHoldPoolingInfo> touchHoldInfos = new();
         List<EachLinePoolingInfo> eachLineInfos = new();
-        void Awake()
+        public NotePoolManager()
         {
             MajInstanceHelper<NotePoolManager>.Instance = this;
         }
@@ -46,11 +46,12 @@ namespace MajdataPlay.Game
             var touchParent = transform.GetChild(4);
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
-            tapPool = new (tapPrefab, tapParent, tapInfos.ToArray(),128);
-            holdPool = new (holdPrefab, holdParent, holdInfos.ToArray(),64);
-            touchPool = new (touchPrefab, touchParent, touchInfos.ToArray(),64);
-            touchHoldPool = new (touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(),64);
-            eachLinePool = new (eachLinePrefab, eachLineParent, eachLineInfos.ToArray(),64);
+            var debugOptions = MajEnv.UserSetting.Debug;
+            tapPool = new (tapPrefab, tapParent, tapInfos.ToArray(),Math.Max(debugOptions.TapPoolCapacity, 1));
+            holdPool = new (holdPrefab, holdParent, holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
+            touchPool = new (touchPrefab, touchParent, touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
+            touchHoldPool = new (touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
+            eachLinePool = new (eachLinePrefab, eachLineParent, eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
             State = ComponentState.Running;
         }
         void Start()

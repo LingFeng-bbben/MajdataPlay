@@ -140,6 +140,11 @@ namespace MajdataPlay.Types
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = true;
+        public int TapPoolCapacity { get; set; } = 128;
+        public int HoldPoolCapacity { get; set; } = 64;
+        public int TouchPoolCapacity { get; set; } = 64;
+        public int TouchHoldPoolCapacity { get; set; } = 64;
+        public int EachLinePoolCapacity { get; set; } = 96;
     }
     public class MiscOptions
     {
