@@ -12,6 +12,7 @@ using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 
 namespace MajdataPlay
 {
@@ -128,6 +129,8 @@ namespace MajdataPlay
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             _globalCTS.Cancel();
             MajDebug.OnApplicationQuit();
+            MajInstances.LightManager.SetAllLight(Color.white);
+            Task.Delay(1000).Wait();
         }
         public void Save()
         {
