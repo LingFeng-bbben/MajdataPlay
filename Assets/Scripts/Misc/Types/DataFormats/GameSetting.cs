@@ -177,8 +177,8 @@ namespace MajdataPlay.Types
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
         public bool Debounce { get; set; } = true;
-        public int PollingRateMs { get; set; } = 2;
-        public int DebounceThresholdMs { get; set; } = 5;
+        public int PollingRateMs { get; set; } = 1;
+        public int DebounceThresholdMs { get; set; } = 16;
     }
     public class TouchPanelOptions
     {
@@ -187,7 +187,7 @@ namespace MajdataPlay.Types
         public bool Debounce { get; set; } = true;
         public bool SensitivityOverride { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
-        public int PollingRateMs { get; set; } = 2;
-        public int DebounceThresholdMs { get; set; } = 5;
+        public int PollingRateMs { get; set; } = 1;
+        public int DebounceThresholdMs { get; set; } = 16;
     }
 }
