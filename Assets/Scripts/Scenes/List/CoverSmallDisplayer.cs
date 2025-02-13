@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
@@ -36,7 +37,10 @@ namespace MajdataPlay.List
             _cancellationToken = _listManager.CancellationToken;
             _rectTransform = GetComponent<RectTransform>();
 
-            Loading.SetActive(false);
+            if(!Loading.IsUnityNull())
+            {
+                Loading.SetActive(false);
+            }
         }
         private void Start()
         {
