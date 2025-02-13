@@ -208,7 +208,11 @@ namespace MajdataPlay.List
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
                 {
-                    ListManager.AllBackguardTasks.Add(songs[i].PreloadAsync());
+                    var preloadTask = songs[i].PreloadAsync();
+                    if(!preloadTask.AsValueTask().IsCompleted)
+                    {
+                        ListManager.AllBackguardTasks.Add(preloadTask);
+                    }
                 }
             }
         }

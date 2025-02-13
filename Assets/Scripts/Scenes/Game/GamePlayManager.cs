@@ -234,13 +234,21 @@ namespace MajdataPlay.Game
                     MajInstances.LightManager.SetAllLight(Color.blue);
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
-                    await _songDetail.GetAudioTrackAsync();
+                    var task1 = _songDetail.GetAudioTrackAsync().AsValueTask();
+                    while(!task1.IsCompleted)
+                        await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
-                    await _songDetail.GetMaidataAsync();
+                    var task2 = _songDetail.GetMaidataAsync().AsValueTask();
+                    while (!task2.IsCompleted)
+                        await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                    await _songDetail.GetCoverAsync(false);
+                    var task3 = _songDetail.GetCoverAsync(false).AsValueTask();
+                    while (!task3.IsCompleted)
+                        await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
-                    await _songDetail.GetVideoPathAsync();
+                    var task4 = _songDetail.GetVideoPathAsync().AsValueTask();
+                    while (!task4.IsCompleted)
+                        await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
                 await LoadAudioTrack();

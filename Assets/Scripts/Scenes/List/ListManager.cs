@@ -43,7 +43,10 @@ namespace MajdataPlay.List
             }
             MajInstances.InputManager.BindAnyArea(OnAreaDown);
         }
-
+        void OnDestroy()
+        {
+            MajEnv.SharedHttpClient.CancelPendingRequests();
+        }
         private void OnAreaDown(object sender, InputEventArgs e)
         {
             
