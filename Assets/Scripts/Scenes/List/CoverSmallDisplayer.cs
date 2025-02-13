@@ -62,7 +62,7 @@ namespace MajdataPlay.List
             {
                 if (!_isRefreshed)
                 {
-                    SetCoverAsync().Forget();
+                    ListManager.AllBackguardTasks.Add(SetCoverAsync());
                     _isRefreshed = true;
                 }
             }
@@ -72,7 +72,7 @@ namespace MajdataPlay.List
         {
             _cts.Cancel();
         }
-        async UniTaskVoid SetCoverAsync()
+        async UniTask SetCoverAsync()
         {
             var token = _cts.Token;
             Loading.SetActive(true);

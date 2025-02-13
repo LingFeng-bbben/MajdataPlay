@@ -3,6 +3,7 @@ using MajdataPlay.Game.Types;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,22 +13,27 @@ namespace MajdataPlay.List
     {
         public CoverListDisplayer CoverListDisplayer;
 
+        public static List<UniTask> AllBackguardTasks { get; } = new(8192);
+
         int _delta = 0;
         float _pressTime = 0;
         bool _isPressed = false;
-        
-        // Start is called before the first frame update
-        void Start()
+
+        void Awake()
         {
-            CoverListDisplayer.SwitchToDirList(SongStorage.Collections);
-            CoverListDisplayer.SwitchToSongList();
-            //MajInstances.LightManager.SetAllLight(Color.white);
+            AllBackguardTasks.Clear();
+
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
             MajInstances.LightManager.SetButtonLight(Color.red, 4);
             MajInstances.LightManager.SetButtonLight(Color.blue, 2);
             MajInstances.LightManager.SetButtonLight(Color.blue, 5);
             MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
             MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
+        }
+        void Start()
+        {
+            CoverListDisplayer.SwitchToDirList(SongStorage.Collections);
+            CoverListDisplayer.SwitchToSongList();            
             CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)

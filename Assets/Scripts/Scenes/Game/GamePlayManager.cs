@@ -22,6 +22,7 @@ using MajdataPlay.Game.Types;
 using Unity.VisualScripting.Antlr3.Runtime;
 using Cysharp.Text;
 using Unity.VisualScripting;
+using MajdataPlay.List;
 
 namespace MajdataPlay.Game
 {
@@ -136,6 +137,8 @@ namespace MajdataPlay.Game
         float _3456PressTime = 0;
         long _fileTimeAtStart = 0;
 
+        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
+
         Text _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
@@ -229,17 +232,16 @@ namespace MajdataPlay.Game
                 if(_songDetail.IsOnline)
                 {
                     MajInstances.LightManager.SetAllLight(Color.blue);
-                    var sceneSwitcher = MajInstances.SceneSwitcher;
-                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
-                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
+                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
+                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     await _songDetail.GetAudioTrackAsync();
-                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
+                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     await _songDetail.GetMaidataAsync();
-                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
+                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                     await _songDetail.GetCoverAsync(false);
-                    sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
+                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     await _songDetail.GetVideoPathAsync();
-                    sceneSwitcher.SetLoadingText(string.Empty);
+                    _sceneSwitcher.SetLoadingText(string.Empty);
                 }
                 await LoadAudioTrack();
                 await InitBackground();
@@ -534,6 +536,15 @@ namespace MajdataPlay.Game
 
             StartToPlayAnswer();
             _noteManager.InitializeUpdater();
+
+            var allBackguardTasks = UniTask.WhenAll(ListManager.AllBackguardTasks).AsValueTask();
+            while(!allBackguardTasks.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
+                await UniTask.Yield();
+            }
+            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.Delay(1000);
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             MajInstances.SceneSwitcher.FadeOut();
 
