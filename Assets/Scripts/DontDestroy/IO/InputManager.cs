@@ -184,6 +184,11 @@ namespace MajdataPlay.IO
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
             {
                 buttonRingCallbacks[zone] = (zone, state) =>
@@ -226,10 +231,12 @@ namespace MajdataPlay.IO
                 var comPortNum = MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort;
 
                 var btnPollingRate = MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs;
-                var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
+                //var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
+                var btnDebounceThresholdMs = 0;
 
                 var touchPanelPollingRate = MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs;
-                var touchPanelDebounceThresholdMs = touchPanelDebounce ? MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs : 0;
+                //var touchPanelDebounceThresholdMs = touchPanelDebounce ? MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs : 0;
+                var touchPanelDebounceThresholdMs = 0;
 
                 var btnConnProperties = new Dictionary<string, dynamic>()
                 {
@@ -339,6 +346,7 @@ namespace MajdataPlay.IO
         {
             return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckSensorStatus(SensorType target, SensorStatus targetStatus)
         {
             var sensor = _sensors[(int)target];
@@ -346,6 +354,7 @@ namespace MajdataPlay.IO
                 throw new Exception($"{target} Sensor or Button not found.");
             return sensor.Status == targetStatus;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckButtonStatus(SensorType target, SensorStatus targetStatus)
         {
             var keyRange = new Range<int>(0, 7, ContainsType.Closed);
@@ -449,6 +458,7 @@ namespace MajdataPlay.IO
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PushEvent(InputEventArgs args)
         {
             if (OnAnyAreaTrigger is not null)

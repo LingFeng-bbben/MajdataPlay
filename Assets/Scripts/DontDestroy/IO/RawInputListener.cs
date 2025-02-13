@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -91,6 +92,7 @@ namespace MajdataPlay.IO
                 }
             });
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void UpdateButtonState()
         {
             while(_buttonRingInputBuffer.TryDequeue(out var report))
@@ -157,6 +159,7 @@ namespace MajdataPlay.IO
                 _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         int GetIndexByButtonRingZone(ButtonRingZone btnZone)
         {
             return btnZone switch
