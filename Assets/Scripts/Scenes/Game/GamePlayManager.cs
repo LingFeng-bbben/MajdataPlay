@@ -263,7 +263,17 @@ namespace MajdataPlay.Game
                 var s = Localization.GetLocalizedText("Empty Chart");
                 var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "5");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}, {ss}", Color.red);
-                await UniTask.Delay(5000);
+                var waitTime = 0f;
+                do
+                {
+                    await UniTask.Yield();
+                    waitTime += Time.deltaTime;
+                    if(MajInstances.InputManager.CheckButtonStatus(SensorType.P1, SensorStatus.On))
+                    {
+                        break;
+                    }
+
+                } while (waitTime <= 5);
                 
                 BackToList().Forget();
             }

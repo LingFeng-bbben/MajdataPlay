@@ -348,7 +348,9 @@ namespace MajdataPlay.IO
         }
         public bool CheckButtonStatus(SensorType target, SensorStatus targetStatus)
         {
-            if (target > SensorType.A8)
+            var keyRange = new Range<int>(0, 7, ContainsType.Closed);
+            var specialRange = new Range<int>(33, 36, ContainsType.Closed);
+            if (!(keyRange.InRange((int)target) || specialRange.InRange((int)target)))
                 throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
             var button = GetButton(target);
 
