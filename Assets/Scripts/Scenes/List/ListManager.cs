@@ -4,6 +4,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,12 +14,19 @@ namespace MajdataPlay.List
     {
         public CoverListDisplayer CoverListDisplayer;
 
+        public CancellationToken CancellationToken => _cts.Token;
         public static List<UniTask> AllBackguardTasks { get; } = new(8192);
 
         int _delta = 0;
         float _pressTime = 0;
         bool _isPressed = false;
 
+        readonly CancellationTokenSource _cts = new();
+
+        public ListManager()
+        {
+            MajInstanceHelper<ListManager>.Instance = this;
+        }
         void Awake()
         {
             AllBackguardTasks.Clear();
@@ -45,7 +53,9 @@ namespace MajdataPlay.List
         }
         void OnDestroy()
         {
+            MajInstanceHelper<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
+            _cts.Cancel();
         }
         private void OnAreaDown(object sender, InputEventArgs e)
         {

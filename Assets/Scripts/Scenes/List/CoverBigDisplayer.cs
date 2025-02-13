@@ -16,16 +16,28 @@ namespace MajdataPlay.List
 {
     public class CoverBigDisplayer : MonoBehaviour
     {
-        public Image bgCard;
-        public Image Cover;
-        public TMP_Text Level;
-        public TMP_Text Charter;
-        public TMP_Text Title;
-        public TMP_Text Artist;
-        public TMP_Text ArchieveRate;
-        public GameObject APbg;
-        public TMP_Text ClearMark;
-        public TMP_Text Rank;
+        [SerializeField]
+        Image _bgCard;
+        [SerializeField]
+        Image _cover;
+        [SerializeField]
+        TMP_Text _level;
+        [SerializeField]
+        TMP_Text _charter;
+        [SerializeField]
+        TMP_Text _title;
+        [SerializeField]
+        TMP_Text _artist;
+        [SerializeField]
+        TMP_Text _archieveRate;
+        [SerializeField]
+        GameObject _APbg;
+        [SerializeField]
+        TMP_Text _clearMark;
+        [SerializeField]
+        TMP_Text _rank;
+        [SerializeField]
+        GameObject _loadingObj;
 
         public Color[] diffColors = new Color[6];
 
@@ -41,10 +53,11 @@ namespace MajdataPlay.List
              Artist = transform.Find("Artist").GetComponent<TMP_Text>();
              ArchieveRate = transform.Find("Rate").GetComponent<TMP_Text>();*/
             _chartAnalyzer = GameObject.FindObjectOfType<ChartAnalyzer>();
+            _loadingObj.SetActive(false);
         }
         public void SetDifficulty(int i)
         {
-            bgCard.color = diffColors[i];
+            _bgCard.color = diffColors[i];
             diff = i;
             if (i + 1 < diffColors.Length)
             {
@@ -74,7 +87,7 @@ namespace MajdataPlay.List
         }
         public void SetNoCover()
         {
-            Cover.sprite = null;
+            _cover.sprite = null;
         }
         void OnDestroy()
         {
@@ -82,55 +95,57 @@ namespace MajdataPlay.List
         }
         async UniTask SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
+            _loadingObj.SetActive(true);
+            _cover.sprite = SpriteLoader.EmptySprite;
             var cover = await detail.GetCoverAsync(true, ct);
-            //TODO:set the cover to be now loading?
             ct.ThrowIfCancellationRequested();
-            Cover.sprite = cover;
+            _cover.sprite = cover;
+            _loadingObj.SetActive(false);
         }
 
         public void SetMeta(string _Title, string _Artist, string _Charter, string _Level)
         {
-            Title.text = _Title;
-            Artist.text = _Artist;
-            Charter.text = _Charter;
-            Level.text = _Level;
+            _title.text = _Title;
+            _artist.text = _Artist;
+            _charter.text = _Charter;
+            _level.text = _Level;
         }
         public void SetScore(MaiScore score)
         {
             if (score.PlayCount == 0)
             {
-                APbg.SetActive(false);
-                ArchieveRate.enabled = false;
-                Rank.text = "";
+                _APbg.SetActive(false);
+                _archieveRate.enabled = false;
+                _rank.text = "";
             }
             else
             {
                 var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
-                ArchieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
-                ArchieveRate.enabled = true;
-                APbg.SetActive(false);
+                _archieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
+                _archieveRate.enabled = true;
+                _APbg.SetActive(false);
                 if (score.ComboState == ComboState.APPlus)
                 {
-                    APbg.SetActive(true);
-                    ClearMark.text = "AP+";
+                    _APbg.SetActive(true);
+                    _clearMark.text = "AP+";
                 }
                 else if (score.ComboState == ComboState.AP)
                 {
-                    APbg.SetActive(true);
-                    ClearMark.text = "AP";
+                    _APbg.SetActive(true);
+                    _clearMark.text = "AP";
                 }
                 else if (score.ComboState == ComboState.FCPlus)
                 {
-                    APbg.SetActive(true);
-                    ClearMark.text = "FC+";
+                    _APbg.SetActive(true);
+                    _clearMark.text = "FC+";
                 }
                 else if (score.ComboState == ComboState.FC)
                 {
-                    APbg.SetActive(true);
-                    ClearMark.text = "FC";
+                    _APbg.SetActive(true);
+                    _clearMark.text = "FC";
                 }
                 var dxacc = score.Acc.DX;
-                var rank = Rank;
+                var rank = _rank;
                 if (dxacc >= 100.5f)
                 {
                     rank.text = "SSS+";
@@ -157,7 +172,7 @@ namespace MajdataPlay.List
                 }
                 else
                 {
-                    Rank.text = "";
+                    _rank.text = "";
                 }
             }
         }

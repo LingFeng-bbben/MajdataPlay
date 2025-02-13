@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,12 +12,9 @@ namespace MajdataPlay.List
 {
     public class CoverSmallDisplayer : MonoBehaviour
     {
-        
         public bool IsOnline { get; set; } = false;
-        
-        bool _isRefreshed = false;
+        public RectTransform RectTransform => _rectTransform;
 
-        public RectTransform RectTransform;
         public Image Cover;
         public Image LevelBackground;
         public Image Background;
@@ -24,13 +22,21 @@ namespace MajdataPlay.List
         public GameObject Loading;
         public GameObject Icon;
         public GameObject? mask = null;
+
+        RectTransform _rectTransform;
         ISongDetail _boundSong;
 
-        readonly CancellationTokenSource _cts = new();
+        bool _isRefreshed = false;
+        ListManager _listManager;
+        CancellationToken _cancellationToken = default;
 
         void Awake()
         {
-            RectTransform = GetComponent<RectTransform>();
+            _listManager = MajInstanceHelper<ListManager>.Instance!;
+            _cancellationToken = _listManager.CancellationToken;
+            _rectTransform = GetComponent<RectTransform>();
+
+            Loading.SetActive(false);
         }
         private void Start()
         {
@@ -67,17 +73,11 @@ namespace MajdataPlay.List
                 }
             }
         }
-
-        void OnDestroy()
-        {
-            _cts.Cancel();
-        }
         async UniTask SetCoverAsync()
         {
-            var token = _cts.Token;
             Loading.SetActive(true);
-            var cover = await _boundSong.GetCoverAsync(true, token);
-            token.ThrowIfCancellationRequested();
+            var cover = await _boundSong.GetCoverAsync(true, _cancellationToken);
+            _cancellationToken.ThrowIfCancellationRequested();
             Cover.sprite = cover;
             Loading.SetActive(false);
         }

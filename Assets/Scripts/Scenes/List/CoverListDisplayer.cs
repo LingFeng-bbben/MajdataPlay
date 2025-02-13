@@ -41,6 +41,13 @@ namespace MajdataPlay.List
         private SongCollection[] dirs = Array.Empty<SongCollection>();
         private SongCollection songs = new SongCollection();
 
+        ListManager _listManager;
+
+        void Awake()
+        {
+            _listManager = MajInstanceHelper<ListManager>.Instance!;
+        }
+
         public void SwitchToDirList(SongCollection[] _dirs)
         {
             foreach (var cover in covers)
@@ -208,7 +215,7 @@ namespace MajdataPlay.List
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
                 {
-                    var preloadTask = songs[i].PreloadAsync();
+                    var preloadTask = songs[i].PreloadAsync(_listManager.CancellationToken);
                     if(!preloadTask.AsValueTask().IsCompleted)
                     {
                         ListManager.AllBackguardTasks.Add(preloadTask);
