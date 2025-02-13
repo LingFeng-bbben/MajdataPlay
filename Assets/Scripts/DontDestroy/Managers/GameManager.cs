@@ -82,7 +82,7 @@ namespace MajdataPlay
             Localization.Current = lang;
             typeof(MajEnv).GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                           .SetValue(null, _emptySongCover);
-            
+            QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
         }
         void SwitchToView()
         {

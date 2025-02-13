@@ -221,13 +221,14 @@ namespace MajdataPlay.Setting
         }
         void UpdateOption()
         {
-            var origin = PropertyInfo.GetValue(OptionObject).ToString();
+            var value = PropertyInfo.GetValue(OptionObject);
+            var origin = value.ToString();
             var localizedText = string.Empty;
             switch (PropertyInfo.Name)
             {
                 case "OuterJudgeDistance":
                 case "InnerJudgeDistance":
-                    if((float)PropertyInfo.GetValue(OptionObject) == 0)
+                    if((float)value == 0)
                         localizedText = Localization.GetLocalizedText("OFF");
                     else
                         localizedText = Localization.GetLocalizedText(origin);
@@ -249,6 +250,9 @@ namespace MajdataPlay.Setting
                 case "Touch":
                 case "Voice":
                     UpdateVolume();
+                    break;
+                case "RenderQuality":
+                    QualitySettings.SetQualityLevel((int)value, true);
                     break;
             }
         }

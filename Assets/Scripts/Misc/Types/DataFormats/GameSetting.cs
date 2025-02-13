@@ -29,6 +29,7 @@ namespace MajdataPlay.Types
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
         public string Language { get; set; } = "zh-CN - Majdata";
+        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
     }
     public class JudgeOptions
     {
