@@ -127,7 +127,7 @@ namespace MajdataPlay.IO
 
             return MemoryMarshal.Read<LedCommand>(data);
         }
-        public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 300)
+        public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
             _ledDevices[button].SetColor(lightColor, durationMs);
         }
