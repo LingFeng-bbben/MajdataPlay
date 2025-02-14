@@ -172,6 +172,9 @@ namespace MajdataPlay.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
+#if !UNITY_EDITOR
+            Cursor.visible = false;
+#endif
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
@@ -1000,10 +1003,17 @@ namespace MajdataPlay.Game
         }
         void OnDestroy()
         {
-            MajDebug.Log("GPManagerDestroy");
+            try
+            {
+                MajDebug.Log("GPManagerDestroy");
 
-            DisposeAudioTrack();
-            ClearAllResources();
+                DisposeAudioTrack();
+                ClearAllResources();
+            }
+            finally
+            {
+                Cursor.visible = true;
+            }
         }
         class AnwserSoundPoint
         {
