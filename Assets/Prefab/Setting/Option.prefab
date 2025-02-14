@@ -65,14 +65,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9186721, g: 0.75786155, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 5210745923401ed4b915161aa8c20bfe, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -97,7 +97,7 @@ MonoBehaviour:
   nameText: {fileID: 8161455356801973419}
   valueText: {fileID: 6421579727588266172}
   descriptionText: {fileID: 2626266208210806210}
-  current: 0
+  _current: 0
 --- !u!1 &1623285169268578866
 GameObject:
   m_ObjectHideFlags: 0
@@ -155,7 +155,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -3293904412965985367, guid: a014c8b097dfdb24997585b34c61b2ca, type: 2}
+  - {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -199,15 +199,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Option Value
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a014c8b097dfdb24997585b34c61b2ca, type: 2}
-  m_sharedMaterial: {fileID: -3293904412965985367, guid: a014c8b097dfdb24997585b34c61b2ca, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+  m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4282994524
+  m_fontColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -303,8 +303,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.48, y: 130}
-  m_SizeDelta: {x: 373.4555, y: 95}
+  m_AnchoredPosition: {x: 0.48, y: 6.6219}
+  m_SizeDelta: {x: 373.4555, y: 271.2439}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &2787244469170752012
 MeshRenderer:
@@ -377,8 +377,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -738,7 +738,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -789,7 +789,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 203}
+  m_AnchoredPosition: {x: 0.47998, y: 178}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &6582490647288386403
@@ -863,8 +863,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

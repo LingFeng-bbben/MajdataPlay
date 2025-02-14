@@ -168,6 +168,26 @@
       "Content": "调整屏幕中央显示的信息"
     },
     {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TrackSkip",
+      "Content": "跳过乐曲"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TrackSkip_MAJSETTING_DESC",
+      "Content": "开启后，按住2367即可强制跳过乐曲"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "FastRetry",
+      "Content": "快速重开"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "FastRetry_MAJSETTING_DESC",
+      "Content": "开启后，按住3456即可重新开始乐曲"
+    },
+    {
       "Type": "AUDIO_OFFSET",
       "Origin": "AudioOffset",
       "Content": "音频偏移"
@@ -706,6 +726,21 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "调整判定的松严"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "PracticeCount",
+      "Content": "次数"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global",
+      "Content": "全局"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Global_MAJSETTING_DESC",
+      "Content": "控制全局音量"
     }
   ]
 }
