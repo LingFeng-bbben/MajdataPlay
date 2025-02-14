@@ -128,6 +128,11 @@ namespace MajdataPlay.Game
         {
             try
             {
+                if(MajCache<SimaiChart, MaidataAnalyzeResult>.TryGetValue(data, out var cachedResult))
+                {
+                    return cachedResult;
+                }
+
                 var tapPoints = new List<Vector2>();
                 var slidePoints = new List<Vector2>();
                 var touchPoints = new List<Vector2>();
@@ -189,7 +194,7 @@ namespace MajdataPlay.Game
                 });
                 var tex = await DrawGraphAsync(tapPoints, slidePoints, touchPoints);
 
-                return new MaidataAnalyzeResult()
+                var result = new MaidataAnalyzeResult()
                 {
                     Esti = esti,
                     Length = length,
@@ -198,6 +203,8 @@ namespace MajdataPlay.Game
                     PeakDensity = max,
                     LineGraph = tex
                 };
+                MajCache<SimaiChart, MaidataAnalyzeResult>.Replace(data, result);
+                return result;
             }
             finally
             {
