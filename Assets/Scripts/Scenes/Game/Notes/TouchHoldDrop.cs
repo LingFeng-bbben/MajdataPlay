@@ -298,41 +298,12 @@ namespace MajdataPlay.Game.Notes
             _isJudged = true;
             PlayHoldEffect();
         }
-        void OnFixedUpdate()
-        {
-            // Too late check
-            if (IsEnded || _isJudged)
-                return;
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.316667f;
-
-            if (!isTooLate)
-            {
-                if (GroupInfo is not null)
-                {
-                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
-                    {
-                        _isJudged = true;
-                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                        _judgeDiff = GroupInfo.JudgeDiff;
-                        _noteManager.NextTouch(QueueInfo);
-                    }
-                }
-            }
-            else
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = 316.667f;
-                _noteManager.NextTouch(QueueInfo);
-            }
-        }
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 
             Autoplay();
+            TooLateCheck();
             BodyCheck();
 
             switch(State)
@@ -426,6 +397,36 @@ namespace MajdataPlay.Game.Notes
                 GroupInfo.JudgeResult = _judgeResult;
                 GroupInfo.JudgeDiff = _judgeDiff;
                 GroupInfo.RegisterResult(_judgeResult);
+            }
+        }
+        void TooLateCheck()
+        {
+            // Too late check
+            if (IsEnded || _isJudged)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.316667f;
+
+            if (!isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                        _noteManager.NextTouch(QueueInfo);
+                    }
+                }
+            }
+            else
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _judgeDiff = 316.667f;
+                _noteManager.NextTouch(QueueInfo);
             }
         }
         void BodyCheck()

@@ -149,22 +149,6 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
-        void OnFixedUpdate()
-        {
-            // Too late check
-            if (_isJudged || IsEnded)
-                return;
-
-            var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
-
-            if (isTooLate)
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _noteManager.NextNote(QueueInfo);
-            }
-        }
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
@@ -173,6 +157,7 @@ namespace MajdataPlay.Game.Notes
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             Autoplay();
+            TooLateCheck();
             Check();
 
             switch (State)
@@ -227,6 +212,22 @@ namespace MajdataPlay.Game.Notes
             {
                 if (NoteController.IsStart && _gameSetting.Game.StarRotation)
                     Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
+            }
+        }
+        void TooLateCheck()
+        {
+            // Too late check
+            if (_isJudged || IsEnded)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0.15f;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _noteManager.NextNote(QueueInfo);
             }
         }
         void Check()
