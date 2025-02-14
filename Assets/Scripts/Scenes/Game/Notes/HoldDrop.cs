@@ -144,7 +144,7 @@ namespace MajdataPlay.Game.Notes
             _isJudged = false;
             Distance = -100;
             Length = poolingInfo.LastFor;
-            _sensorPos = (SensorType)(StartPos - 1);
+            _sensorPos = (SensorArea)(StartPos - 1);
             _holdAnimStart = false;
             _playerIdleTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);

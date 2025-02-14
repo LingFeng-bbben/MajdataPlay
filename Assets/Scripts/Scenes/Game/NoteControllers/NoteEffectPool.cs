@@ -61,7 +61,7 @@ namespace MajdataPlay.Game
             }
             for(int i = 0;i < 33;i++)
             {
-                var sensorPos = (SensorType)i;
+                var sensorPos = (SensorArea)i;
                 var obj = Instantiate(touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
                 displayer.DistanceRatio= MajInstances.Setting.Display.InnerJudgeDistance;
@@ -96,7 +96,7 @@ namespace MajdataPlay.Game
             }
             for (int i = 0; i < 33; i++)
             {
-                var sensorPos = (SensorType)i;
+                var sensorPos = (SensorArea)i;
                 var obj = Instantiate(holdEffectPrefab, touchHoldParent);
                 obj.name = $"TouchHold_HoldingEffect_{sensorPos}";
                 var position = TouchBase.GetAreaPos(sensorPos);
@@ -108,10 +108,10 @@ namespace MajdataPlay.Game
             // Touch Feedback Effect
             for (var i = 0; i < 33; i++)
             {
-                var pos = (SensorType)i;
+                var pos = (SensorArea)i;
                 var obj = Instantiate(_touchFeedbackEffectPrefab, touchFeedbackParent);
                 obj.name = $"{pos}";
-                if(pos < SensorType.B1)
+                if(pos < SensorArea.B1)
                 {
                     var position = NoteDrop.GetPositionFromDistance(4.8f, i + 1);
                     obj.transform.position = position;
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
-        public void Play(in JudgeResult judgeResult, SensorType sensorPos)
+        public void Play(in JudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
@@ -152,7 +152,7 @@ namespace MajdataPlay.Game
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
-        public void PlayTouchHoldEffect(in JudgeResult judgeResult, SensorType sensorPos)
+        public void PlayTouchHoldEffect(in JudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
@@ -162,7 +162,7 @@ namespace MajdataPlay.Game
             var displayer = _holdEffects[keyIndex - 1];
             displayer.Play(judgeType);
         }
-        public void PlayHoldEffect(in JudgeGrade judgeType, SensorType sensorPos)
+        public void PlayHoldEffect(in JudgeGrade judgeType, SensorArea sensorPos)
         {
             var displayer = _touchHoldEffects[(int)sensorPos];
             displayer.Play(judgeType);
@@ -172,7 +172,7 @@ namespace MajdataPlay.Game
             var displayer = _holdEffects[keyIndex - 1];
             displayer.Reset();
         }
-        public void ResetHoldEffect(SensorType sensorPos)
+        public void ResetHoldEffect(SensorArea sensorPos)
         {
             var displayer = _touchHoldEffects[(int)sensorPos];
             displayer.Reset();
@@ -186,12 +186,12 @@ namespace MajdataPlay.Game
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Reset();
         }
-        public void PlayFeedbackEffect(SensorType sensorPos)
+        public void PlayFeedbackEffect(SensorArea sensorPos)
         {
             var effect = _touchFeedbackEffects[(int)sensorPos];
             effect.Play();
         }
-        public void ResetFeedbackEffect(SensorType sensorPos)
+        public void ResetFeedbackEffect(SensorArea sensorPos)
         {
             var effect = _touchFeedbackEffects[(int)sensorPos];
             effect.Reset();

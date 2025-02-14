@@ -64,10 +64,10 @@ namespace MajdataPlay.Title
             {
                 switch (e.Type)
                 {
-                    case SensorType.A8:
+                    case SensorArea.A8:
                         MajInstances.AudioManager.OpenAsioPannel();
                         break;
-                    case SensorType.E5:
+                    case SensorArea.E5:
                         NextScene();
                         break;
                 }

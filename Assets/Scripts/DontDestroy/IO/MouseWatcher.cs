@@ -10,7 +10,7 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        Dictionary<int, SensorType> _instanceID2SensorTypeMappingTable = new();
+        Dictionary<int, SensorArea> _instanceID2SensorTypeMappingTable = new();
         void UpdateMousePosition()
         {
             Input.multiTouchEnabled = true;
@@ -19,8 +19,8 @@ namespace MajdataPlay.IO
                 Debug.Log(Input.touchCount);
                 var touches = Input.touches;
 
-                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type, s => s.Status);
-                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type, x => SensorStatus.Off);
+                Dictionary<SensorArea, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Area, s => s.Status);
+                Dictionary<SensorArea, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Area, x => SensorStatus.Off);
 
                 foreach ( var touch in touches)
                 {
@@ -139,8 +139,8 @@ namespace MajdataPlay.IO
                 }
             }else if (Input.GetMouseButton(0))
             {
-                Dictionary<SensorType, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Type, s => s.Status);
-                Dictionary<SensorType, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Type, x => SensorStatus.Off);
+                Dictionary<SensorArea, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Area, s => s.Status);
+                Dictionary<SensorArea, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Area, x => SensorStatus.Off);
 
                 Vector3 cubeRaym = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 var raym = new Ray(cubeRaym, Vector3.forward);
@@ -166,7 +166,7 @@ namespace MajdataPlay.IO
             else
             {
                 foreach (var s in _sensors)
-                    SetSensorState(s.Type, SensorStatus.Off);
+                    SetSensorState(s.Area, SensorStatus.Off);
             }
         }
         bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;

@@ -110,11 +110,11 @@ public class PracticeManager : MonoBehaviour
         {
             switch (e.Type)
             {
-                case SensorType.A4:
+                case SensorArea.A4:
                     _gameInfo.TimeRange = new Range<double>(startTime, endTime);
                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                     break;
-                case SensorType.A5:
+                case SensorArea.A5:
                     MajInstances.SceneSwitcher.SwitchScene("List");
                     break;
             }
@@ -136,7 +136,7 @@ public class PracticeManager : MonoBehaviour
                     _practiveCountValueText.SetText(_practiveCount);
                     _gameInfo.PracticeCount = _practiveCount;
                     break;*/
-                case SensorType.E6:
+                case SensorArea.E6:
                     startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
                     audioTrack.CurrentSec = startTime;
                     _isPressed = true;
@@ -145,7 +145,7 @@ public class PracticeManager : MonoBehaviour
                     _maxValue = endTime;
                     _minValue = 0;
                     break;
-                case SensorType.B5:
+                case SensorArea.B5:
                     startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
                     audioTrack.CurrentSec = startTime;
                     _isPressed = true;
@@ -154,7 +154,7 @@ public class PracticeManager : MonoBehaviour
                     _maxValue = endTime;
                     _minValue = 0;
                     break;
-                case SensorType.B4:
+                case SensorArea.B4:
                     endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
                     audioTrack.CurrentSec = endTime;
                     _isPressed = true;
@@ -163,7 +163,7 @@ public class PracticeManager : MonoBehaviour
                     _maxValue = totalTime;
                     _minValue = startTime;
                     break;
-                case SensorType.E4:
+                case SensorArea.E4:
                     endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
                     audioTrack.CurrentSec = endTime;
                     _isPressed = true;

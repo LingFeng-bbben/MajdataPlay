@@ -9,7 +9,7 @@ namespace MajdataPlay.Game
     public sealed class TouchEffectDisplayer: MonoBehaviour
     {
         public float DistanceRatio { get; set; } = 1f;
-        public SensorType SensorPos { get; set; } = SensorType.C;
+        public SensorArea SensorPos { get; set; } = SensorArea.C;
 
         [SerializeField]
         GameObject effectObject;

@@ -98,7 +98,7 @@ namespace MajdataPlay.Game.Notes
             RotateSpeed = poolingInfo.RotateSpeed;
             _isJudged = false;
             Distance = -100;
-            _sensorPos = (SensorType)(StartPos - 1);
+            _sensorPos = (SensorArea)(StartPos - 1);
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));

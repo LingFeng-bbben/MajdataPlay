@@ -31,21 +31,21 @@ namespace MajdataPlay.IO
             RawKey.Numpad7,
             RawKey.Numpad3,
         };
-        readonly Dictionary<SensorType, DateTime> _btnLastTriggerTimes = new();
+        readonly Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
         readonly Button[] _buttons = new Button[12]
         {
-            new Button(RawKey.W,SensorType.A1),
-            new Button(RawKey.E,SensorType.A2),
-            new Button(RawKey.D,SensorType.A3),
-            new Button(RawKey.C,SensorType.A4),
-            new Button(RawKey.X,SensorType.A5),
-            new Button(RawKey.Z,SensorType.A6),
-            new Button(RawKey.A,SensorType.A7),
-            new Button(RawKey.Q,SensorType.A8),
-            new Button(RawKey.Numpad9,SensorType.Test),
-            new Button(RawKey.Multiply,SensorType.P1),
-            new Button(RawKey.Numpad7,SensorType.Service),
-            new Button(RawKey.Numpad3,SensorType.P2),
+            new Button(RawKey.W,SensorArea.A1),
+            new Button(RawKey.E,SensorArea.A2),
+            new Button(RawKey.D,SensorArea.A3),
+            new Button(RawKey.C,SensorArea.A4),
+            new Button(RawKey.X,SensorArea.A5),
+            new Button(RawKey.Z,SensorArea.A6),
+            new Button(RawKey.A,SensorArea.A7),
+            new Button(RawKey.Q,SensorArea.A8),
+            new Button(RawKey.Numpad9,SensorArea.Test),
+            new Button(RawKey.Multiply,SensorArea.P1),
+            new Button(RawKey.Numpad7,SensorArea.Service),
+            new Button(RawKey.Numpad3,SensorArea.P2),
         };
         readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
         async void RefreshKeyboardStateAsync()
@@ -108,15 +108,15 @@ namespace MajdataPlay.IO
                     continue;
                 else if (_isBtnDebounceEnabled)
                 {
-                    if (JitterDetect(button.Type, timestamp, true))
+                    if (JitterDetect(button.Area, timestamp, true))
                         continue;
-                    _btnLastTriggerTimes[button.Type] = timestamp;
+                    _btnLastTriggerTimes[button.Area] = timestamp;
                 }
                 button.Status = newState;
                 MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()
                 {
-                    Type = button.Type,
+                    Type = button.Area,
                     OldStatus = oldState,
                     Status = newState,
                     IsButton = true
@@ -126,14 +126,14 @@ namespace MajdataPlay.IO
                 SetIdle(msg);
             }
         }
-        public void BindButton(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void BindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.AddSubscriber(checker);
         }
-        public void UnbindButton(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void UnbindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var button = GetButton(sType);
             if (button == null)

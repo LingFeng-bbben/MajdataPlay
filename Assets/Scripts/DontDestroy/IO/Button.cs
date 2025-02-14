@@ -8,14 +8,14 @@ namespace MajdataPlay.IO
     public class Button: IEventPublisher<EventHandler<InputEventArgs>>
     {
         public RawKey BindingKey { get; set; }
-        public SensorType Type { get; set; }
+        public SensorArea Area { get; set; }
         public bool IsJudging { get; set; } = false;
         public SensorStatus Status { get; set; }
         event EventHandler<InputEventArgs>? OnStatusChanged;
-        public Button(RawKey bindingKey, SensorType type)
+        public Button(RawKey bindingKey, SensorArea type)
         {
             BindingKey = bindingKey;
-            Type = type;
+            Area = type;
             IsJudging = false;
             Status = SensorStatus.Off;
             OnStatusChanged = null;

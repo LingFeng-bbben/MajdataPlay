@@ -30,9 +30,9 @@ namespace MajdataPlay.Game
                 return;
             _isBound = true;
             await UniTask.Delay(1000);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B5);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E5);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B4);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B5);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.E5);
         }
         void OnDestroy()
         {
@@ -41,9 +41,9 @@ namespace MajdataPlay.Game
         void OnDisable()
         {
             _isBound = false;
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B4);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B5);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E5);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.E5);
         }
     }
 }

@@ -96,10 +96,10 @@ namespace MajdataPlay.Setting
                 return;
             switch(e.Type)
             {
-                case SensorType.A6:
+                case SensorArea.A6:
                     PreviousOption();
                     break;
-                case SensorType.A3:
+                case SensorArea.A3:
                     NextOption();
                     break;
                 default:
@@ -128,8 +128,8 @@ namespace MajdataPlay.Setting
                 return;
             _isBound = true;
             Localization.OnLanguageChanged += OnLangChanged;
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A3);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A3);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A6);
         }
         void UnbindArea()
         {
@@ -137,8 +137,8 @@ namespace MajdataPlay.Setting
                 return;
             _isBound = false;
             Localization.OnLanguageChanged -= OnLangChanged;
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A3);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
         }
         [SerializeField]
         int _selectedIndex = 0;

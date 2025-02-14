@@ -13,19 +13,19 @@ namespace MajdataPlay.Game.Controllers
         {
             for (var i = 0; i < 33; i++)
             {
-                var sensorType = (SensorType)i;
+                var sensorType = (SensorArea)i;
                 var obj = Instantiate(BorderPrefab,transform);
                 var border = obj.GetComponent<TouchBorder>();
                 border.AreaPosition = sensorType;
                 borders[i] = border;
             }
         }
-        public void Register(SensorType area,bool isEach,bool isBreak)
+        public void Register(SensorArea area,bool isEach,bool isBreak)
         {
             var border = borders[(int)area];
             border.Add(isBreak, isEach);
         }
-        public void Unregister(SensorType area)
+        public void Unregister(SensorArea area)
         {
             var border = borders[(int)area];
             border.Remove();

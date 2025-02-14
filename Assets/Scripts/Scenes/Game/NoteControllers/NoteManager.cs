@@ -16,7 +16,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
         Dictionary<int, int> _noteCurrentIndex = new();
-        Dictionary<SensorType, int> _touchCurrentIndex = new();
+        Dictionary<SensorArea, int> _touchCurrentIndex = new();
 
         [ReadOnlyField]
         [SerializeField]
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game
             for (int i = 1; i < 9; i++)
                 _noteCurrentIndex.Add(i, 0);
             for (int i = 0; i < 33; i++)
-                _touchCurrentIndex.Add((SensorType)i, 0);
+                _touchCurrentIndex.Add((SensorArea)i, 0);
         }
         public bool CanJudge(in TapQueueInfo queueInfo)
         {
@@ -188,7 +188,7 @@ namespace MajdataPlay.Game
         void OnAnyAreaTrigger(object sender, InputEventArgs args)
         {
             var area = args.Type;
-            if (area > SensorType.E8 || area < SensorType.A1)
+            if (area > SensorArea.E8 || area < SensorArea.A1)
                 return;
             else if (OnGameIOUpdate is null)
                 return;

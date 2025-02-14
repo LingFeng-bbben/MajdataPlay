@@ -153,7 +153,7 @@ namespace MajdataPlay.Game.Notes
         protected Range<float> _judgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
         protected JudgeGrade _judgeResult = JudgeGrade.Miss;
 
-        protected SensorType _sensorPos;
+        protected SensorArea _sensorPos;
 
         readonly protected ObjectCounter _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
         readonly protected NoteManager _noteManager = MajInstanceHelper<NoteManager>.Instance!;

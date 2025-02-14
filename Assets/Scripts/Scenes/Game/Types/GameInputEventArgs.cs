@@ -10,7 +10,7 @@ namespace MajdataPlay.Game.Types
 {
     internal readonly struct GameInputEventArgs
     {
-        public SensorType Area { get; init; }
+        public SensorArea Area { get; init; }
         public SensorStatus OldState { get; init; }
         public SensorStatus State { get; init; }
         public bool IsButton { get; init; }

@@ -213,7 +213,7 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && e.IsButton && e.Type == SensorType.A4)
+            if (e.IsDown && e.IsButton && e.Type == SensorArea.A4)
             {
                 var canNextRound = _gameInfo.NextRound();
                 if (_gameInfo.IsDanMode)

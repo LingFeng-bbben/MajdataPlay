@@ -64,28 +64,28 @@ namespace MajdataPlay.List
             {
                 switch (e.Type)
                 {
-                    case SensorType.A7:
+                    case SensorArea.A7:
                         CoverListDisplayer.SlideList(1);
                         break;
-                    case SensorType.A8:
+                    case SensorArea.A8:
                         CoverListDisplayer.SlideList(2);
                         break;
-                    case SensorType.A1:
+                    case SensorArea.A1:
                         CoverListDisplayer.SlideList(3);
                         break;
-                    case SensorType.A6:
+                    case SensorArea.A6:
                         CoverListDisplayer.SlideList(-1);
                         break;
-                    case SensorType.A5:
+                    case SensorArea.A5:
                         CoverListDisplayer.SlideList(-2);
                         break;
-                    case SensorType.A4:
+                    case SensorArea.A4:
                         CoverListDisplayer.SlideList(-3);
                         break;
                     // xxlb
-                    case SensorType.B7:
-                    case SensorType.B6:
-                    case SensorType.E7:
+                    case SensorArea.B7:
+                    case SensorArea.B6:
+                    case SensorArea.E7:
                         var list = new string[] { "notouch.wav", "notouch_2.wav", "notouch_3.wav", "notouch_4.wav", "notouch_5.wav" };
                         MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                         XxlbAnimation.instance.PlayTouchAnimation();
@@ -98,13 +98,13 @@ namespace MajdataPlay.List
                 {
                     switch (e.Type)
                     {
-                        case SensorType.A6:
-                        case SensorType.A3:
+                        case SensorArea.A6:
+                        case SensorArea.A3:
                             _isPressed = false;
                             _delta = 0;
                             _pressTime = 0;
                             break;
-                        case SensorType.A4:
+                        case SensorArea.A4:
                             if (CoverListDisplayer.IsDirList)
                             {
                                 if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
@@ -190,7 +190,7 @@ namespace MajdataPlay.List
 
                     switch (e.Type)
                     {
-                        case SensorType.A3:
+                        case SensorArea.A3:
                             if (_isPressed)
                                 return;
                             CoverListDisplayer.SlideList(1);
@@ -198,7 +198,7 @@ namespace MajdataPlay.List
                             _delta = 1;
                             AutoSlide().Forget();
                             break;
-                        case SensorType.A6:
+                        case SensorArea.A6:
                             if (_isPressed)
                                 return;
                             CoverListDisplayer.SlideList(-1);
@@ -206,17 +206,17 @@ namespace MajdataPlay.List
                             _delta = -1;
                             AutoSlide().Forget();
                             break;
-                        case SensorType.A8:
+                        case SensorArea.A8:
                             CoverListDisplayer.SlideDifficulty(-1);
                             break;
-                        case SensorType.A1:
+                        case SensorArea.A1:
                             CoverListDisplayer.SlideDifficulty(1);
                             break;
-                        case SensorType.P1:
+                        case SensorArea.P1:
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.SceneSwitcher.SwitchScene("SortFind");
                             break;
-                        case SensorType.A5:
+                        case SensorArea.A5:
                             if (CoverListDisplayer.IsChartList)
                             {
                                 CoverListDisplayer.SwitchToDirList(SongStorage.Collections);
@@ -224,19 +224,19 @@ namespace MajdataPlay.List
                                 SongStorage.WorkingCollection.Index = 0;
                             }
                             break;
-                        case SensorType.A4:
+                        case SensorArea.A4:
                             if (!CoverListDisplayer.IsDirList)
                             {
                                 _isPressed = true;
                                 PracticeTimer().Forget();
                             }
                             break;
-                        case SensorType.A7:
+                        case SensorArea.A7:
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 0;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");
                             break;
-                        case SensorType.A2:
+                        case SensorArea.A2:
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 4;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");

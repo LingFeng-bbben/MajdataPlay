@@ -37,7 +37,7 @@ namespace MajdataPlay.Game.Notes
             var rightStar = Instantiate(_slideStarPrefab, slideParent);
             var wifiTable = SlideTables.GetWifiTable(StartPos);
 
-            var sensorPos = (SensorType)(EndPos - 1);
+            var sensorPos = (SensorArea)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
 
@@ -130,7 +130,7 @@ namespace MajdataPlay.Game.Notes
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
-            var sensorPos = (SensorType)(EndPos - 1);
+            var sensorPos = (SensorArea)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
             _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R

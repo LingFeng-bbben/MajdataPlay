@@ -9,7 +9,7 @@ namespace MajdataPlay.Game.Notes
 {
     public class TouchBorder : MonoBehaviour
     {
-        public SensorType AreaPosition { get; set; } = SensorType.C;
+        public SensorArea AreaPosition { get; set; } = SensorArea.C;
 
         List<NoteRegister> queue = new();
 

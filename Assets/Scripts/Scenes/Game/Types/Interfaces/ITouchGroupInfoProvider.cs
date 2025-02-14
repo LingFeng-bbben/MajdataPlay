@@ -9,7 +9,7 @@ namespace MajdataPlay.Game.Types
 {
     public interface ITouchGroupInfoProvider
     {
-        SensorType SensorPos { get; init; }
+        SensorArea SensorPos { get; init; }
         TouchGroup? GroupInfo { get; set; }
     }
 }

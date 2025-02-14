@@ -95,13 +95,13 @@ namespace MajdataPlay.Setting
             {
                 switch(e.Type)
                 {
-                    case SensorType.A6:
+                    case SensorArea.A6:
                         if (Direction != -1)
                             return;
                         IsPressed = false;
                         PressTime = 0;
                         break;
-                    case SensorType.A3:
+                    case SensorArea.A3:
                         if (Direction != 1)
                             return;
                         IsPressed = false;
@@ -110,7 +110,7 @@ namespace MajdataPlay.Setting
                 }
                 return;
             }
-            else if (e.Type is SensorType.A5 or SensorType.A4)
+            else if (e.Type is SensorArea.A5 or SensorArea.A4)
             {
                 //refresh some setting here
                 MajInstances.AudioManager.ReadVolumeFromSettings();
@@ -121,24 +121,24 @@ namespace MajdataPlay.Setting
 
             switch(e.Type)
             {
-                case SensorType.A6:
+                case SensorArea.A6:
                     if (IsPressed)
                         return;
                     Direction = -1;
                     IsPressed = true;
                     PressTime = 0;
                     break;
-                case SensorType.A3:
+                case SensorArea.A3:
                     if (IsPressed)
                         return;
                     Direction = 1;
                     IsPressed = true;
                     PressTime = 0;
                     break;
-                case SensorType.A1:
+                case SensorArea.A1:
                     NextMenu();
                     break;
-                case SensorType.A8:
+                case SensorArea.A8:
                     PreviousMenu();
                     break;
             }
@@ -183,21 +183,21 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A1);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A8);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A5);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A4);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A3);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A1);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A8);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A5);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A4);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A3);
+            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A6);
         }
         void UnbindArea()
         {
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A1);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A8);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A5);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A4);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A3);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorType.A6);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A1);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A8);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A5);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A4);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
+            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
         }
         private void OnDestroy()
         {

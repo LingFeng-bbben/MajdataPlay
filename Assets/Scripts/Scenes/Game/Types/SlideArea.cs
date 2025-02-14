@@ -21,7 +21,7 @@ namespace MajdataPlay.Game.Types
                     return _isFinished;
             }
         }
-        public ReadOnlySpan<SensorType> IncludedAreas => _includedAreas.Span;
+        public ReadOnlySpan<SensorArea> IncludedAreas => _includedAreas.Span;
         public AreaPolicy Policy { get; init; } = AreaPolicy.OR;
         public int ArrowProgressWhenFinished
         {
@@ -37,13 +37,13 @@ namespace MajdataPlay.Game.Types
         int _arrowProgressWhenOn = 0;
 
         Memory<Area> _areas = Memory<Area>.Empty;
-        ReadOnlyMemory<SensorType> _includedAreas = Memory<SensorType>.Empty;
+        ReadOnlyMemory<SensorArea> _includedAreas = Memory<SensorArea>.Empty;
 
-        public SlideArea(Dictionary<SensorType, bool> types,int progressWhenOn ,int progressWhenFinished)
+        public SlideArea(Dictionary<SensorArea, bool> types,int progressWhenOn ,int progressWhenFinished)
         {
             if (types is null || types.Count == 0)
                 return;
-            Span<SensorType?> registeredAreas = stackalloc SensorType?[types.Count];
+            Span<SensorArea?> registeredAreas = stackalloc SensorArea?[types.Count];
             Span<Area?> areas = stackalloc Area?[types.Count];
             var i = 0;
             var i2 = 0;
@@ -62,12 +62,12 @@ namespace MajdataPlay.Game.Types
                 };
             }
 
-            Span<SensorType> _registeredAreas = stackalloc SensorType[i];
+            Span<SensorArea> _registeredAreas = stackalloc SensorArea[i];
             Span<Area> _areas = stackalloc Area[i2];
 
             for (var j = 0; j < i; j++)
             {
-                _registeredAreas[j] = (SensorType)registeredAreas[j]!;
+                _registeredAreas[j] = (SensorArea)registeredAreas[j]!;
             }
             for (var j = 0; j < i2; j++)
             {
@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Types
             _arrowProgressWhenFinished = progressWhenFinished;
             _arrowProgressWhenOn = progressWhenOn;
         }
-        public SlideArea(Dictionary<SensorType, bool> types, int arrowProgress) : this(types, arrowProgress, arrowProgress)
+        public SlideArea(Dictionary<SensorArea, bool> types, int arrowProgress) : this(types, arrowProgress, arrowProgress)
         {
             
         }
@@ -86,10 +86,10 @@ namespace MajdataPlay.Game.Types
         {
 
         }
-        public void Mirror(SensorType baseLine)
+        public void Mirror(SensorArea baseLine)
         {
             Area[] newAreas = new Area[_areas.Length];
-            SensorType[] includedAreas = new SensorType[_includedAreas.Length];
+            SensorArea[] includedAreas = new SensorArea[_includedAreas.Length];
             foreach (var (i, area) in _areas.Span.WithIndex())
             {
                 newAreas[i] = new Area()
@@ -108,7 +108,7 @@ namespace MajdataPlay.Game.Types
         public void Diff(int diff)
         {
             Area[] newAreas = new Area[_areas.Length];
-            SensorType[] includedAreas = new SensorType[_includedAreas.Length];
+            SensorArea[] includedAreas = new SensorArea[_includedAreas.Length];
             foreach (var (i, area) in _areas.Span.WithIndex())
             {
                 newAreas[i] = new Area()
@@ -142,7 +142,7 @@ namespace MajdataPlay.Game.Types
                 area.IsLast = false;
             }
         }
-        public void Check(in SensorType targetArea, in SensorStatus state)
+        public void Check(in SensorArea targetArea, in SensorStatus state)
         {
             if (_areas.Length == 0)
                 return;
@@ -171,7 +171,7 @@ namespace MajdataPlay.Game.Types
         {
             public bool On { get; private set; }
             public bool Off { get; private set; }
-            public SensorType TargetArea { get; init; }
+            public SensorArea TargetArea { get; init; }
             public bool IsLast { get; set; }
             public bool IsFinished
             {
@@ -183,7 +183,7 @@ namespace MajdataPlay.Game.Types
                         return On && Off;
                 }
             }
-            public void Check(in SensorType area, in SensorStatus status)
+            public void Check(in SensorArea area, in SensorStatus status)
             {
                 if (area != TargetArea)
                     return;

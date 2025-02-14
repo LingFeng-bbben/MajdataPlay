@@ -36,38 +36,38 @@ namespace MajdataPlay.SortFind
             {
                 switch (e.Type)
                 {
-                    case SensorType.E6:
+                    case SensorArea.E6:
                         //sort by add time
                         SetActiveSort(SortType.ByTime);
                         break;
-                    case SensorType.B5:
+                    case SensorArea.B5:
                         //sort by difficulty
                         SetActiveSort(SortType.ByDiff);
                         break;
-                    case SensorType.B4:
+                    case SensorArea.B4:
                         //sort by mapper
                         SetActiveSort(SortType.ByDes);
                         break;
-                    case SensorType.E4:
+                    case SensorArea.E4:
                         //sort by title
                         SetActiveSort(SortType.ByTitle);
                         break;
-                    case SensorType.E5:
+                    case SensorArea.E5:
                         //default
                         SetActiveSort(SortType.Default);
                         break;
 
-                    case SensorType.E7:
-                    case SensorType.B7:
-                    case SensorType.C:
-                    case SensorType.B2:
+                    case SensorArea.E7:
+                    case SensorArea.B7:
+                    case SensorArea.C:
+                    case SensorArea.B2:
                         EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
                         break;
-                    case SensorType.E3:
+                    case SensorArea.E3:
                         SearchBar.text = string.Empty;
                         break;
 
-                    case SensorType.D5:
+                    case SensorArea.D5:
                         MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                         SortAndExit();
                         break;

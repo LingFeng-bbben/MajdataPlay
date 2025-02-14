@@ -63,9 +63,9 @@ namespace MajdataPlay.IO
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
                 var collider = child.GetComponent<Collider>();
-                var type = (SensorType)index;
+                var type = (SensorArea)index;
                 _sensors[index] = child.GetComponent<Sensor>();
-                _sensors[index].Type = type;
+                _sensors[index].Area = type;
                 _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = type;
                 if(type.GetGroup() == SensorGroup.C)
                 {
@@ -73,7 +73,7 @@ namespace MajdataPlay.IO
                     _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = type;
                 }
             }
-            foreach(SensorType zone in Enum.GetValues(typeof(SensorType)))
+            foreach(SensorArea zone in Enum.GetValues(typeof(SensorArea)))
             {
                 if (((int)zone).InRange(0, 7))
                 {
@@ -90,7 +90,7 @@ namespace MajdataPlay.IO
         /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool JitterDetect(SensorType zone, DateTime now,bool isBtn = false)
+        protected bool JitterDetect(SensorArea zone, DateTime now,bool isBtn = false)
         {
             DateTime lastTriggerTime;
             TimeSpan debounceTime;
@@ -321,7 +321,7 @@ namespace MajdataPlay.IO
             }
         }
         public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
-        public void BindArea(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void BindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensor = GetSensor(sType);
             var button = GetButton(sType);
@@ -332,7 +332,7 @@ namespace MajdataPlay.IO
             button.AddSubscriber(checker);
         }
         public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
-        public void UnbindArea(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void UnbindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensor = GetSensor(sType);
             var button = GetButton(sType);
@@ -342,12 +342,12 @@ namespace MajdataPlay.IO
             sensor.RemoveSubscriber(checker);
             button.RemoveSubscriber(checker);
         }
-        public bool CheckAreaStatus(SensorType sType, SensorStatus targetStatus)
+        public bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
         {
             return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatus(SensorType target, SensorStatus targetStatus)
+        public bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
         {
             var sensor = _sensors[(int)target];
             if (sensor == null)
@@ -355,7 +355,7 @@ namespace MajdataPlay.IO
             return sensor.Status == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatus(SensorType target, SensorStatus targetStatus)
+        public bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
         {
             var keyRange = new Range<int>(0, 7, ContainsType.Closed);
             var specialRange = new Range<int>(33, 36, ContainsType.Closed);
@@ -431,21 +431,21 @@ namespace MajdataPlay.IO
             return isIdle;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Button? GetButton(SensorType type)
+        public Button? GetButton(SensorArea type)
         {
             return type switch
             {
-                _ when type < SensorType.A1 => throw new ArgumentOutOfRangeException(),
-                _ when type < SensorType.B1 => _buttons[(int)type],
-                SensorType.Test => _buttons[8],
-                SensorType.P1 => _buttons[9],
-                SensorType.Service => _buttons[10],
-                SensorType.P2 => _buttons[11],
+                _ when type < SensorArea.A1 => throw new ArgumentOutOfRangeException(),
+                _ when type < SensorArea.B1 => _buttons[(int)type],
+                SensorArea.Test => _buttons[8],
+                SensorArea.P1 => _buttons[9],
+                SensorArea.Service => _buttons[10],
+                SensorArea.P2 => _buttons[11],
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor GetSensor(SensorType target) => _sensors[(int)target];
+        public Sensor GetSensor(SensorArea target) => _sensors[(int)target];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Sensor[] GetSensors() => _sensors;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

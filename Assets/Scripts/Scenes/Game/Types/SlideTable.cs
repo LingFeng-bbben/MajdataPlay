@@ -10,7 +10,7 @@ namespace MajdataPlay.Game.Types
         public void Mirror()
         {
             foreach (var item in JudgeQueue)
-                item.Mirror(SensorType.A1);
+                item.Mirror(SensorArea.A1);
         }
         public void Diff(int diff)
         {

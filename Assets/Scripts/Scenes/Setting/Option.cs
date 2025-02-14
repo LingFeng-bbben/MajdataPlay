@@ -315,8 +315,8 @@ namespace MajdataPlay.Setting
             var canTrigger = on && !_isPressed;
             switch (e.Type)
             {
-                case SensorType.E4:
-                case SensorType.B4:
+                case SensorArea.E4:
+                case SensorArea.B4:
 
                     if (canTrigger)
                     {
@@ -330,8 +330,8 @@ namespace MajdataPlay.Setting
                         _pressTime = 0;
                     }
                     break;
-                case SensorType.E6:
-                case SensorType.B5:
+                case SensorArea.E6:
+                case SensorArea.B5:
                     if (canTrigger)
                     {
                         Down();
@@ -373,10 +373,10 @@ namespace MajdataPlay.Setting
             else if (Parent.SelectedIndex != Index)
                 return;
             _isBound = true;
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B4);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E4);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.B5);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorType.E6);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B4);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.E4);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B5);
+            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.E6);
         }
         void UnbindArea()
         {
@@ -385,10 +385,10 @@ namespace MajdataPlay.Setting
             _isPressed = false;
             _pressTime = 0;
             _isBound = false;
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B4);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E4);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.B5);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorType.E6);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.E4);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
+            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.E6);
         }
         Vector3 GetScale(int diff)
         {

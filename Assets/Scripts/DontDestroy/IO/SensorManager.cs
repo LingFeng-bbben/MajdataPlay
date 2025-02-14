@@ -12,7 +12,7 @@ namespace MajdataPlay.IO
     public partial class InputManager : MonoBehaviour
     {
         readonly Sensor[] _sensors = new Sensor[33];
-        readonly Dictionary<SensorType, DateTime> _sensorLastTriggerTimes = new();
+        readonly Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
         void UpdateSensorState()
         {
             while (_touchPanelInputBuffer.TryDequeue(out var report))
@@ -22,7 +22,7 @@ namespace MajdataPlay.IO
                 var index = report.Index;
                 var sensor = index switch
                 {
-                    <= (int)SensorType.C => _sensors[index],
+                    <= (int)SensorArea.C => _sensors[index],
                     > 17 => _sensors[index - 1],
                     _ => _sensors[16],
                 };
@@ -38,21 +38,21 @@ namespace MajdataPlay.IO
                     C1 = newState == SensorStatus.On ? true : false;
                 else if (index == 17)
                     C2 = newState == SensorStatus.On ? true : false;
-                if (sensor.Type == SensorType.C)
+                if (sensor.Area == SensorArea.C)
                     newState = C1 || C2 ? SensorStatus.On : SensorStatus.Off;
                 if (oldState == newState)
                     continue;
                 else if (_isSensorDebounceEnabled)
                 {
-                    if (JitterDetect(sensor.Type, timestamp))
+                    if (JitterDetect(sensor.Area, timestamp))
                         continue;
-                    _sensorLastTriggerTimes[sensor.Type] = timestamp;
+                    _sensorLastTriggerTimes[sensor.Area] = timestamp;
                 }
-                MajDebug.Log($"Sensor \"{sensor.Type}\": {newState}");
+                MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
                 sensor.Status = newState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Type,
+                    Type = sensor.Area,
                     OldStatus = oldState,
                     Status = newState,
                     IsButton = false
@@ -62,7 +62,7 @@ namespace MajdataPlay.IO
                 SetIdle(msg);
             }
         }
-        void SetSensorState(SensorType type,SensorStatus nState)
+        void SetSensorState(SensorArea type,SensorStatus nState)
         {
             var sensor = _sensors[(int)type];
             if (sensor == null)
@@ -72,11 +72,11 @@ namespace MajdataPlay.IO
 
             if (oState != nState)
             {
-                MajDebug.Log($"Sensor \"{sensor.Type}\": {nState}");
+                MajDebug.Log($"Sensor \"{sensor.Area}\": {nState}");
                 sensor.Status = nState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Type,
+                    Type = sensor.Area,
                     OldStatus = oState,
                     Status = nState,
                     IsButton = false
@@ -86,16 +86,16 @@ namespace MajdataPlay.IO
                 SetIdle(msg);
             }
         }
-        public void BindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void BindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
-            var sensor = _sensors.Find(x => x?.Type == sType);
+            var sensor = _sensors.Find(x => x?.Area == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
             sensor.AddSubscriber(checker);
         }
-        public void UnbindSensor(EventHandler<InputEventArgs> checker, SensorType sType)
+        public void UnbindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
-            var sensor = _sensors.Find(x => x?.Type == sType);
+            var sensor = _sensors.Find(x => x?.Area == sType);
             if (sensor == null)
                 throw new Exception($"{sType} Sensor not found.");
             sensor.RemoveSubscriber(checker);

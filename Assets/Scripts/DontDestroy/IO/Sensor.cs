@@ -10,13 +10,13 @@ namespace MajdataPlay.IO
     public class Sensor : MonoBehaviour, IEventPublisher<EventHandler<InputEventArgs>>
     {
         public bool IsJudging { get; set; } = false;
-        public SensorStatus Status = SensorStatus.Off;
-        public SensorType Type;
+        public SensorStatus Status { get; set; } = SensorStatus.Off;
+        public SensorArea Area { get; set; }
         public SensorGroup Group
         {
             get
             {
-                var i = (int)Type;
+                var i = (int)Area;
                 if (i <= 7)
                     return SensorGroup.A;
                 else if (i <= 15)

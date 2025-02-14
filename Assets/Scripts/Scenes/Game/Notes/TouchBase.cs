@@ -16,33 +16,33 @@ namespace MajdataPlay.Game.Notes
 
         protected Quaternion GetRoation()
         {
-            if (_sensorPos == SensorType.C)
+            if (_sensorPos == SensorArea.C)
                 return Quaternion.Euler(Vector3.zero);
             var d = Vector3.zero - transform.position;
             var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
 
             return Quaternion.Euler(new Vector3(0, 0, -deg));
         }
-        public SensorType GetSensor() => GetSensor(areaPosition, StartPos);
-        public static SensorType GetSensor(char areaPos, int startPos)
+        public SensorArea GetSensor() => GetSensor(areaPosition, StartPos);
+        public static SensorArea GetSensor(char areaPos, int startPos)
         {
             switch (areaPos)
             {
                 case 'A':
-                    return (SensorType)(startPos - 1);
+                    return (SensorArea)(startPos - 1);
                 case 'B':
-                    return (SensorType)(startPos + 7);
+                    return (SensorArea)(startPos + 7);
                 case 'C':
-                    return SensorType.C;
+                    return SensorArea.C;
                 case 'D':
-                    return (SensorType)(startPos + 16);
+                    return (SensorArea)(startPos + 16);
                 case 'E':
-                    return (SensorType)(startPos + 24);
+                    return (SensorArea)(startPos + 24);
                 default:
-                    return SensorType.A1;
+                    return SensorArea.A1;
             }
         }
-        public static Vector3 GetAreaPos(SensorType pos)
+        public static Vector3 GetAreaPos(SensorArea pos)
         {
             var group = pos.GetGroup();
             var index = pos.GetIndex();
@@ -88,9 +88,9 @@ namespace MajdataPlay.Game.Notes
                     return 3.0f;
             }
         }
-        public static Quaternion GetRoation(Vector3 position, SensorType sensorPos)
+        public static Quaternion GetRoation(Vector3 position, SensorArea sensorPos)
         {
-            if (sensorPos == SensorType.C)
+            if (sensorPos == SensorArea.C)
                 return Quaternion.Euler(Vector3.zero);
             var d = Vector3.zero - position;
             var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;

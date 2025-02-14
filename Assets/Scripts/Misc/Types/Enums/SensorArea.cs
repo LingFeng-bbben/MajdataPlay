@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.Types
 {
-    public enum SensorType
+    public enum SensorArea
     {
         A1,
         A2,

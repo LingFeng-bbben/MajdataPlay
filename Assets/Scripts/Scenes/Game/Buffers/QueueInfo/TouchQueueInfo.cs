@@ -7,11 +7,11 @@ namespace MajdataPlay.Game.Buffers
         public static TouchQueueInfo Default => new TouchQueueInfo()
         {
             Index = 0,
-            SensorPos = SensorType.C
+            SensorPos = SensorArea.C
         };
         /// <summary>
         /// 该Touch所处的传感器编号
         /// </summary>
-        public SensorType SensorPos { get; init; }
+        public SensorArea SensorPos { get; init; }
     }
 }

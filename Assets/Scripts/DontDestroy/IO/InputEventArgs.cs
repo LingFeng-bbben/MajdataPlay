@@ -5,7 +5,7 @@ namespace MajdataPlay.IO
 {
     public readonly struct InputEventArgs
     {
-        public SensorType Type { get; init; }
+        public SensorArea Type { get; init; }
         public SensorStatus OldStatus { get; init; }
         public SensorStatus Status { get; init; }
         public bool IsButton { get; init; }

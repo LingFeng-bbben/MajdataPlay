@@ -178,7 +178,7 @@ namespace MajdataPlay.Game
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
-            if (e.IsButton && e.IsDown && e.Type == SensorType.P1)
+            if (e.IsButton && e.IsDown && e.Type == SensorArea.P1)
             {
                 print("Pause!!");
                 BackToList().Forget();
@@ -271,7 +271,7 @@ namespace MajdataPlay.Game
                 {
                     await UniTask.Yield();
                     waitTime += Time.deltaTime;
-                    if(MajInstances.InputManager.CheckButtonStatus(SensorType.P1, SensorStatus.On))
+                    if(MajInstances.InputManager.CheckButtonStatus(SensorArea.P1, SensorStatus.On))
                     {
                         break;
                     }
@@ -709,14 +709,14 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = _ioManager.CheckButtonStatus(SensorType.A2, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A6, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A7, SensorStatus.On);
-                    var _3456 = _ioManager.CheckButtonStatus(SensorType.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A4, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A5, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorType.A6, SensorStatus.On);
+                    var _2367 = _ioManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
+                    var _3456 = _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
+                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
                     if(_2367)
                     {
                         _2367PressTime += Time.deltaTime;
