@@ -33,7 +33,6 @@ namespace MajdataPlay.List
 
         void Awake()
         {
-            _cancellationToken = _listManager.CancellationToken;
             _rectTransform = GetComponent<RectTransform>();
 
             if(!Loading.IsUnityNull())
@@ -44,6 +43,7 @@ namespace MajdataPlay.List
         private void Start()
         {
             _listManager = MajInstanceHelper<ListManager>.Instance!;
+            _cancellationToken = _listManager.CancellationToken;
             if (IsOnline)
                 Icon.gameObject.SetActive(true);
         }
