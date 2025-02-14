@@ -43,7 +43,7 @@ namespace MajdataPlay.List
 
         ListManager _listManager;
 
-        void Awake()
+        void Start()
         {
             _listManager = MajInstanceHelper<ListManager>.Instance!;
         }

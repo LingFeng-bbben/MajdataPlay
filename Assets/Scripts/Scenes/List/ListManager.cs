@@ -23,12 +23,9 @@ namespace MajdataPlay.List
 
         readonly CancellationTokenSource _cts = new();
 
-        public ListManager()
-        {
-            MajInstanceHelper<ListManager>.Instance = this;
-        }
         void Awake()
         {
+            MajInstanceHelper<ListManager>.Instance = this;
             AllBackguardTasks.Clear();
 
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
