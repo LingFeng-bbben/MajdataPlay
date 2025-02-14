@@ -259,7 +259,6 @@ namespace MajdataPlay.List
                 await UniTask.Delay(100);
             }
         }
-
         async UniTaskVoid PracticeTimer()
         {
             while (_isPressed)
@@ -272,6 +271,15 @@ namespace MajdataPlay.List
                     break;
                 }
             }
+        }
+        public static async UniTask WaitForBackgroundTasksSuspendAsync()
+        {
+            if (AllBackguardTasks.Count == 0)
+            {
+                return;
+            }
+            await UniTask.WhenAll(AllBackguardTasks);
+            AllBackguardTasks.Clear();
         }
     }
 }

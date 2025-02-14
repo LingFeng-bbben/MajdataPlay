@@ -9,7 +9,7 @@ namespace MajdataPlay.Game
     {
         readonly AudioManager _audioManager = MajInstances.AudioManager;
 
-        public NoteAudioManager()
+        void Awake()
         {
             MajInstanceHelper<NoteAudioManager>.Instance = this;
         }

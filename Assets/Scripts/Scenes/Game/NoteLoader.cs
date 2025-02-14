@@ -222,166 +222,161 @@ namespace MajdataPlay.Game
         internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
         {
             List<Task> touchTasks = new();
-            try
+
+            _noteManager.ResetCounter();
+            _noteIndex.Clear();
+            _touchIndex.Clear();
+
+            for (int i = 1; i < 9; i++)
+                _noteIndex.Add(i, 0);
+            for (int i = 0; i < 33; i++)
+                _touchIndex.Add((SensorArea)i, 0);
+
+
+            await CountNoteSumAsync(maiChart);
+
+            var sum = _objectCounter.tapSum +
+                      _objectCounter.holdSum +
+                      _objectCounter.touchSum +
+                      _objectCounter.breakSum +
+                      _objectCounter.slideSum;
+
+            var lastNoteTime = maiChart.NoteTimings.Last().Timing;
+
+            foreach (var timing in maiChart.NoteTimings)
             {
-                _noteManager.ResetCounter();
-                _noteIndex.Clear();
-                _touchIndex.Clear();
-
-                for (int i = 1; i < 9; i++)
-                    _noteIndex.Add(i, 0);
-                for (int i = 0; i < 33; i++)
-                    _touchIndex.Add((SensorArea)i, 0);
-
-
-                await CountNoteSumAsync(maiChart);
-
-                var sum = _objectCounter.tapSum +
-                          _objectCounter.holdSum +
-                          _objectCounter.touchSum +
-                          _objectCounter.breakSum +
-                          _objectCounter.slideSum;
-
-                var lastNoteTime = maiChart.NoteTimings.Last().Timing;
-
-                foreach (var timing in maiChart.NoteTimings)
+                //var eachNotes = timing.Notes.FindAll(o => o.Type != SimaiNoteType.Touch &&
+                //                                             o.Type != SimaiNoteType.TouchHold);
+                int? num = null;
+                touchTasks.Clear();
+                //IDistanceProvider? provider = null;
+                //IStatefulNote? noteA = null;
+                //IStatefulNote? noteB = null;
+                List<NotePoolingInfo?> eachNotes = new();
+                //NotePoolingInfo? noteA = null;
+                //NotePoolingInfo? noteB = null;
+                List<ITouchGroupInfoProvider> members = new();
+                foreach (var (i, note) in timing.Notes.WithIndex())
                 {
-                    //var eachNotes = timing.Notes.FindAll(o => o.Type != SimaiNoteType.Touch &&
-                    //                                             o.Type != SimaiNoteType.TouchHold);
-                    int? num = null;
-                    touchTasks.Clear();
-                    //IDistanceProvider? provider = null;
-                    //IStatefulNote? noteA = null;
-                    //IStatefulNote? noteB = null;
-                    List<NotePoolingInfo?> eachNotes = new();
-                    //NotePoolingInfo? noteA = null;
-                    //NotePoolingInfo? noteB = null;
-                    List<ITouchGroupInfoProvider> members = new();
-                    foreach (var (i, note) in timing.Notes.WithIndex())
+                    _noteCount++;
+                    Process = (double)_noteCount / sum;
+                    if (_noteCount % 100 == 0)
+                        await UniTask.Yield();
+
+                    try
                     {
-                        _noteCount++;
-                        Process = (double)_noteCount / sum;
-                        if (_noteCount % 100 == 0)
-                            await UniTask.Yield();
-
-                        try
+                        switch (note.Type)
                         {
-                            switch (note.Type)
-                            {
-                                case SimaiNoteType.Tap:
-                                    {
-                                        var obj = CreateTap(note, timing);
-                                        _poolManager.AddTap(obj);
-                                        eachNotes.Add(obj);
-                                        //if (eachNotes.Count > 1 && i < 2)
-                                        //{
-                                        //    if (num is null)
-                                        //        num = 0;
-                                        //    else if (num != 0)
-                                        //        break;
+                            case SimaiNoteType.Tap:
+                                {
+                                    var obj = CreateTap(note, timing);
+                                    _poolManager.AddTap(obj);
+                                    eachNotes.Add(obj);
+                                    //if (eachNotes.Count > 1 && i < 2)
+                                    //{
+                                    //    if (num is null)
+                                    //        num = 0;
+                                    //    else if (num != 0)
+                                    //        break;
 
-                                        //    if (noteA is null)
-                                        //        noteA = obj;
-                                        //    else
-                                        //        noteB = obj;
-                                        //}
-                                    }
-                                    break;
-                                case SimaiNoteType.Hold:
-                                    {
-                                        var obj = CreateHold(note, timing);
-                                        _poolManager.AddHold(obj);
-                                        eachNotes.Add(obj);
-                                        //if (eachNotes.Count > 1 && i < 2)
-                                        //{
-                                        //    if (num is null)
-                                        //        num = 1;
-                                        //    else if (num != 1)
-                                        //        break;
+                                    //    if (noteA is null)
+                                    //        noteA = obj;
+                                    //    else
+                                    //        noteB = obj;
+                                    //}
+                                }
+                                break;
+                            case SimaiNoteType.Hold:
+                                {
+                                    var obj = CreateHold(note, timing);
+                                    _poolManager.AddHold(obj);
+                                    eachNotes.Add(obj);
+                                    //if (eachNotes.Count > 1 && i < 2)
+                                    //{
+                                    //    if (num is null)
+                                    //        num = 1;
+                                    //    else if (num != 1)
+                                    //        break;
 
-                                        //    if (noteA is null)
-                                        //        noteA = obj;
-                                        //    else
-                                        //        noteB = obj;
-                                        //}
-                                    }
-                                    break;
-                                case SimaiNoteType.TouchHold:
-                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing, members));
-                                    break;
-                                case SimaiNoteType.Touch:
-                                    _poolManager.AddTouch(CreateTouch(note, timing, members));
-                                    break;
-                                case SimaiNoteType.Slide:
-                                    CreateSlideGroup(timing, note,eachNotes); // 星星组
-                                    break;
-                            }
-                        }
-                        catch(Exception e)
-                        {
-                            throw new InvalidChartSyntaxException(timing, e);
+                                    //    if (noteA is null)
+                                    //        noteA = obj;
+                                    //    else
+                                    //        noteB = obj;
+                                    //}
+                                }
+                                break;
+                            case SimaiNoteType.TouchHold:
+                                _poolManager.AddTouchHold(CreateTouchHold(note, timing, members));
+                                break;
+                            case SimaiNoteType.Touch:
+                                _poolManager.AddTouch(CreateTouch(note, timing, members));
+                                break;
+                            case SimaiNoteType.Slide:
+                                CreateSlideGroup(timing, note, eachNotes); // 星星组
+                                break;
                         }
                     }
-                    if (members.Count != 0)
-                        touchTasks.Add(AllocTouchGroup(members));
-                    var _eachNotes = eachNotes.FindAll(x => x is not null);
-                    if (_eachNotes.Count > 1) //有多个非touchnote
+                    catch (Exception e)
                     {
-                        var noteA = _eachNotes[0]!;
-                        var noteB = _eachNotes[1]!;
+                        throw new InvalidChartSyntaxException(timing, e);
+                    }
+                }
+                if (members.Count != 0)
+                    touchTasks.Add(AllocTouchGroup(members));
+                var _eachNotes = eachNotes.FindAll(x => x is not null);
+                if (_eachNotes.Count > 1) //有多个非touchnote
+                {
+                    var noteA = _eachNotes[0]!;
+                    var noteB = _eachNotes[1]!;
 
-                        var startPos = noteA.StartPos;
-                        var endPos = noteB.StartPos;
+                    var startPos = noteA.StartPos;
+                    var endPos = noteB.StartPos;
+                    endPos = endPos - startPos;
+                    if (endPos == 0)
+                        continue;
+                    var time = (float)timing.Timing;
+                    var speed = NoteSpeed * timing.HSpeed;
+                    var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                    var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+                    var appearTiming = time + appearDiff;
+
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+                    endPos++;
+
+                    if (endPos > 4)
+                    {
+                        startPos = noteB.StartPos;
+                        endPos = noteA.StartPos;
                         endPos = endPos - startPos;
-                        if (endPos == 0)
-                            continue;
-                        var time = (float)timing.Timing;
-                        var speed = NoteSpeed * timing.HSpeed;
-                        var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-                        var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-                        var appearTiming = time + appearDiff;
-
                         endPos = endPos < 0 ? endPos + 8 : endPos;
                         endPos = endPos > 8 ? endPos - 8 : endPos;
                         endPos++;
-
-                        if (endPos > 4)
-                        {
-                            startPos = noteB.StartPos;
-                            endPos = noteA.StartPos;
-                            endPos = endPos - startPos;
-                            endPos = endPos < 0 ? endPos + 8 : endPos;
-                            endPos = endPos > 8 ? endPos - 8 : endPos;
-                            endPos++;
-                        }
-
-                        var startPosition = startPos;
-                        var curvLength = endPos - 1;
-                        _poolManager.AddEachLine(new EachLinePoolingInfo()
-                        {
-                            StartPos = startPosition,
-                            Timing = time,
-                            AppearTiming = appearTiming,
-                            CurvLength = curvLength,
-                            MemberA = noteA,
-                            MemberB = noteB,
-                            Speed = speed
-                        });
                     }
-                }
 
-                var allTask = Task.WhenAll(touchTasks);
-                while (!allTask.IsCompleted)
-                {
-                    await UniTask.Yield();
-                    if (allTask.IsFaulted)
-                        throw allTask.Exception.InnerException;
+                    var startPosition = startPos;
+                    var curvLength = endPos - 1;
+                    _poolManager.AddEachLine(new EachLinePoolingInfo()
+                    {
+                        StartPos = startPosition,
+                        Timing = time,
+                        AppearTiming = appearTiming,
+                        CurvLength = curvLength,
+                        MemberA = noteA,
+                        MemberB = noteB,
+                        Speed = speed
+                    });
                 }
             }
-            catch (Exception e)
+
+            var allTask = Task.WhenAll(touchTasks);
+            while (!allTask.IsCompleted)
             {
-                throw e;
+                await UniTask.Yield();
+                if (allTask.IsFaulted)
+                    throw allTask.Exception.InnerException;
             }
+
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
         }

@@ -33,8 +33,29 @@ namespace MajdataPlay.IO
         bool _isDebug = false;
 
         MeshRenderer _meshRenderer;
+        MeshCollider _meshCollider;
         Material _material;
         event EventHandler<InputEventArgs>? OnStatusChanged;//oStatus nStatus
+        void Awake()
+        {
+            _meshRenderer = GetComponent<MeshRenderer>();
+            _meshCollider = GetComponent<MeshCollider>();
+            _material = new Material(Shader.Find("Sprites/Default"));
+        }
+        void Start()
+        {
+            _isDebug = MajInstances.Setting.Debug.DisplaySensor;
+            _meshRenderer.material = _material;
+            var color = Color.black;
+            color.a = 0;
+            _material.color = color;
+
+            if (Group == SensorGroup.C)
+            {
+                var c2MeshRenderer = transform.GetChild(0).GetComponent<MeshRenderer>();
+                c2MeshRenderer.material = _material;
+            }
+        }
         public void AddSubscriber(EventHandler<InputEventArgs> handler)
         {
             OnStatusChanged += handler;
@@ -50,22 +71,7 @@ namespace MajdataPlay.IO
                 OnStatusChanged(this, args);
         }
         public void ClearSubscriber() => OnStatusChanged = null;
-        void Start()
-        {
-            _isDebug = MajInstances.Setting.Debug.DisplaySensor;
-            _meshRenderer = GetComponent<MeshRenderer>();
-            _material = new Material(Shader.Find("Sprites/Default"));
-            var color = Color.black;
-            _meshRenderer.material = _material;
-            color.a = 0;
-            _material.color = color; 
-
-            if(Group == SensorGroup.C)
-            {
-                var c2MeshRenderer = transform.GetChild(0).GetComponent<MeshRenderer>();
-                c2MeshRenderer.material = _material;
-            }
-        }
+        
         private void Update()
         {
             if (_isDebug)

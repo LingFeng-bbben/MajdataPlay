@@ -160,12 +160,9 @@ namespace MajdataPlay.Game
 
         List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
         readonly CancellationTokenSource _cts = new();
-        public GamePlayManager()
-        {
-            MajInstanceHelper<GamePlayManager>.Instance = this;
-        }
         void Awake()
         {
+            MajInstanceHelper<GamePlayManager>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
             //print(MajInstances.GameManager.SelectedIndex);
@@ -558,7 +555,7 @@ namespace MajdataPlay.Game
             StartToPlayAnswer();
             _noteManager.InitializeUpdater();
 
-            var allBackguardTasks = UniTask.WhenAll(ListManager.AllBackguardTasks).AsValueTask();
+            var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
             while(!allBackguardTasks.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
@@ -705,6 +702,10 @@ namespace MajdataPlay.Game
         void UpdateFnKeyState()
         {
             if (!_isFastRetryAvailable && !_isTrackSkipAvailable)
+                return;
+            else if (IsPracticeMode)
+                return;
+            else if (_audioTime < 5f)
                 return;
             switch(State)
             {

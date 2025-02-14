@@ -41,12 +41,10 @@ namespace MajdataPlay.Game
         InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
         bool _isUpdaterInitialized = false;
-        public NoteManager()
-        {
-            MajInstanceHelper<NoteManager>.Instance = this;
-        }
+
         void Awake()
         {
+            MajInstanceHelper<NoteManager>.Instance = this;
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFixedUpdate[i] = false;

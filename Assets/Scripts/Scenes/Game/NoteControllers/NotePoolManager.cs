@@ -35,7 +35,7 @@ namespace MajdataPlay.Game
         List<TouchPoolingInfo> touchInfos = new();
         List<TouchHoldPoolingInfo> touchHoldInfos = new();
         List<EachLinePoolingInfo> eachLineInfos = new();
-        public NotePoolManager()
+        void Awake()
         {
             MajInstanceHelper<NotePoolManager>.Instance = this;
         }

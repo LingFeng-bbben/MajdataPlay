@@ -26,17 +26,14 @@ namespace MajdataPlay.Game
         GameSetting _setting = MajInstances.Setting;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
 
-        public NoteEffectManager()
-        {
-            MajInstanceHelper<NoteEffectManager>.Instance = this;
-        }
         void Awake()
         {
-            _effectPool = MajInstanceHelper<NoteEffectPool>.Instance!;
+            MajInstanceHelper<NoteEffectManager>.Instance = this;
+
             if (_setting.Display.TouchFeedback != TouchFeedbackLevel.Disable)
             {
                 _inputManager.BindAnyArea(OnAnyAreaClick);
-                switch(_setting.Display.TouchFeedback)
+                switch (_setting.Display.TouchFeedback)
                 {
                     case TouchFeedbackLevel.All:
                         _touchFeedbackLevel = new Range<int>(0, 32, ContainsType.Closed);
@@ -54,7 +51,7 @@ namespace MajdataPlay.Game
             for (var i = 0; i < 33; i++)
             {
                 var pos = (SensorArea)i;
-                _lastTriggerTimes[pos] = TimeSpan.Zero; 
+                _lastTriggerTimes[pos] = TimeSpan.Zero;
             }
         }
         void OnDestroy()
@@ -86,6 +83,7 @@ namespace MajdataPlay.Game
         {
             _fireworkEffect = GameObject.Find("FireworkEffect");
             _fireworkEffectAnimator = _fireworkEffect.GetComponent<Animator>();
+            _effectPool = MajInstanceHelper<NoteEffectPool>.Instance!;
         }
         public void PlayFireworkEffect(in Vector3 position)
         {

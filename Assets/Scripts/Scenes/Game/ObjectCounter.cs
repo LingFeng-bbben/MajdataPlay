@@ -223,12 +223,9 @@ namespace MajdataPlay.Game
         const string LATE_STRING = "LATE";
         const string FAST_STRING = "FAST";
         const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
-        public ObjectCounter()
-        {
-            MajInstanceHelper<ObjectCounter>.Instance = this;
-        }
         void Awake()
         {
+            MajInstanceHelper<ObjectCounter>.Instance = this;
             _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             _table = GameObject.Find("ObjectCount").GetComponent<Text>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();

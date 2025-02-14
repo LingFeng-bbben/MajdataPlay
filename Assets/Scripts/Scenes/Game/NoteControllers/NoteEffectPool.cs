@@ -27,14 +27,11 @@ namespace MajdataPlay.Game
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
         GamePlayManager _gpManager;
-        public NoteEffectPool()
+        void Awake()
         {
             MajInstanceHelper<NoteEffectPool>.Instance = this;
         }
-        void Awake()
-        {
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
-        }
+        
         void OnDestroy()
         {
             MajInstanceHelper<NoteEffectPool>.Free();
@@ -45,8 +42,10 @@ namespace MajdataPlay.Game
             var touchParent = transform.GetChild(1);
             var touchHoldParent = transform.GetChild(2);
             var touchFeedbackParent = transform.GetChild(3);
+
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
             // Judge Effect
-            for(int i = 0;i < 8;i++)
+            for (int i = 0;i < 8;i++)
             {
                 var rotation = Quaternion.Euler(0, 0, -22.5f + -45f * i);
                 var obj = Instantiate(tapEffectPrefab, tapParent);
