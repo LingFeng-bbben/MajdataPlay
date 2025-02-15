@@ -12,9 +12,9 @@
         AchievementClassical_100,
         DXScore,
         DXScoreRank,
-        S_Board,
-        SS_Board,
-        SSS_Board,
+        S_Border,
+        SS_Border,
+        SSS_Border,
         MyBest,
         Diff,
         None
