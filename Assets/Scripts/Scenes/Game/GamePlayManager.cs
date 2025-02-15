@@ -608,9 +608,9 @@ namespace MajdataPlay.Game
                 case BGInfoType.Achievement:
                 case BGInfoType.AchievementClassical:
                 case BGInfoType.AchievementClassical_100:
-                case BGInfoType.S_Board:
-                case BGInfoType.SS_Board:
-                case BGInfoType.SSS_Board:
+                case BGInfoType.S_Border:
+                case BGInfoType.SS_Border:
+                case BGInfoType.SSS_Border:
                 case BGInfoType.MyBest:
                 case BGInfoType.DXScore:
                     _bgInfoHeaderAnim.SetTrigger("fadeOut");
