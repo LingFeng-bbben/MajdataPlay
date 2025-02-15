@@ -72,7 +72,26 @@ namespace MajdataPlay.View
             _httpServer = MajInstanceHelper<HttpServer>.Instance!;
             _noteLoader = MajInstanceHelper<NoteLoader>.Instance!;
         }
-        internal void PlaybackRequestHandle(EditorRequest request)
+        internal bool Play(EditorRequest request)
+        {
+            switch(_state)
+            {
+                case ViewStatus.Ready:
+                case ViewStatus.Paused:
+                    break;
+                default:
+                    return false;
+            }
+        }
+        internal void Pause()
+        {
+
+        }
+        internal void Stop()
+        {
+
+        }
+        internal void Reset()
         {
 
         }
@@ -115,6 +134,7 @@ namespace MajdataPlay.View
             try
             {
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, string.Empty);
+                
                 await _noteLoader.LoadNotesIntoPool(_chart);
 
                 _state = ViewStatus.Ready;

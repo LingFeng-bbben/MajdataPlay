@@ -58,7 +58,7 @@ namespace MajdataPlay.Game
         Dictionary<SensorArea, int> _touchIndex = new();
 
         SlideUpdater _slideUpdater;
-        GamePlayManager _gpManager;
+        GamePlayManager? _gpManager;
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
 
@@ -216,7 +216,7 @@ namespace MajdataPlay.Game
             _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
             _noteManager = MajInstanceHelper<NoteManager>.Instance!;
             _poolManager = MajInstanceHelper<NotePoolManager>.Instance!;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
             _slideUpdater = MajInstanceHelper<SlideUpdater>.Instance!;
         }
         internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
@@ -390,7 +390,7 @@ namespace MajdataPlay.Game
             var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.Notes.Length > 1;
-            if (appearTiming < -5f)
+            if (appearTiming < -5f && _gpManager is not null)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             if(isEach)
             {
@@ -431,7 +431,7 @@ namespace MajdataPlay.Game
             var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
             var sortOrder = _noteSortOrder;
             var isEach = timing.Notes.Length > 1;
-            if (appearTiming < -5f)
+            if (appearTiming < -5f && _gpManager is not null)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             if (isEach)
             {
@@ -476,7 +476,7 @@ namespace MajdataPlay.Game
 
             appearTiming = Math.Min(appearTiming, slideFadeInTiming);
 
-            if (appearTiming < -5f)
+            if (appearTiming < -5f && _gpManager is not null)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
 
@@ -546,7 +546,7 @@ namespace MajdataPlay.Game
             var noteSortOrder = _touchSortOrder;
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
-            if (appearTiming < -5f)
+            if (appearTiming < -5f && _gpManager is not null)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
             _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
             if (isEach)
@@ -597,7 +597,7 @@ namespace MajdataPlay.Game
             var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
             var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
             var noteSortOrder = _touchSortOrder;
-            if (appearTiming < -5f)
+            if (appearTiming < -5f && _gpManager is not null)
                 _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
             _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
@@ -1034,7 +1034,7 @@ namespace MajdataPlay.Game
                 if (slides.Length > 1)
                 {
                     isEach = true;
-                    if (_gpManager.IsClassicMode)
+                    if (_gpManager is not null && _gpManager.IsClassicMode)
                     {
                         if (index == slides.Length && index % 2 != 0)
                             isEach = false;
@@ -1108,7 +1108,7 @@ namespace MajdataPlay.Game
                 if (slides.Length > 1)
                 {
                     isEach = true;
-                    if(_gpManager.IsClassicMode)
+                    if(_gpManager is not null && _gpManager.IsClassicMode)
                     {
                         if(index == slides.Length && index % 2 != 0)
                             isEach = false;
