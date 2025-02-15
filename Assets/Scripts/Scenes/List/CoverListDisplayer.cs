@@ -215,6 +215,8 @@ namespace MajdataPlay.List
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
                 {
+                    if (songs[i] is null)
+                        continue;
                     var preloadTask = songs[i].PreloadAsync(_listManager.CancellationToken);
                     if(!preloadTask.AsValueTask().IsCompleted)
                     {
