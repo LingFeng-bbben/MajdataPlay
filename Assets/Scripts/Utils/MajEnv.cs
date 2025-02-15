@@ -40,6 +40,9 @@ namespace MajdataPlay.Utils
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
         public static Sprite EmptySongCover { get; }
+        public static Material BreakMaterial { get; }
+        public static Material DefaultMaterial { get; }
+        public static Material HoldShineMaterial { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
         public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()

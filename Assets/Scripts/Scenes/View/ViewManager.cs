@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View.Types;
 using MajSimai;
@@ -14,7 +15,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.View
 {
-    internal class ViewManager: MajComponent
+    internal class ViewManager: MajComponent, INoteController
     {
         public static ViewSummary Summary
         {
@@ -28,7 +29,18 @@ namespace MajdataPlay.View
                 };
             }
         }
-        
+        public bool IsStart { get; private set; }
+        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
+        public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Enable;
+        public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
+        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
+        public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
+        public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
+        public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
+        public float ThisFrameSec { get; private set; }
+        public float ThisFixedUpdateSec { get; private set; }
+
+
         static ViewStatus _state = ViewStatus.Idle;
         static string _errMsg = string.Empty;
         static float _timeline = 0f;
@@ -52,6 +64,7 @@ namespace MajdataPlay.View
                 Directory.CreateDirectory(CACHE_PATH);
             }
             MajInstanceHelper<ViewManager>.Instance = this;
+            MajInstanceHelper<INoteController>.Instance = this;
             Screen.SetResolution(1920, 1080, false);
         }
         void Start()
@@ -116,6 +129,7 @@ namespace MajdataPlay.View
         void OnDestroy()
         {
             MajInstanceHelper<ViewManager>.Free();
+            MajInstanceHelper<INoteController>.Free();
         }
     }
 }

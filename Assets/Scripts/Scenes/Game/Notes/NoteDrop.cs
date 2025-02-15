@@ -163,25 +163,11 @@ namespace MajdataPlay.Game.Notes
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
-        readonly GamePlayManager? _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
-        readonly ViewManager? _viewManager = MajInstanceHelper<ViewManager>.Instance;
-
         protected override void Awake()
         {
             base.Awake();
 
-            if(_gpManager is not null)
-            {
-                _noteController = _gpManager;
-            }
-            else if(_viewManager is not null)
-            {
-                _noteController = _gpManager!;
-            }
-            else
-            {
-                throw new NullReferenceException();
-            }
+            _noteController = MajInstanceHelper<INoteController>.Instance!;
 
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;

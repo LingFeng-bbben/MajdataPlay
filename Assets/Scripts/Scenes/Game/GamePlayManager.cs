@@ -81,9 +81,9 @@ namespace MajdataPlay.Game
         public bool IsPracticeMode => _gameInfo.IsPracticeMode;
         internal GameMode Mode => _gameInfo.Mode;
         public MaiScore? HistoryScore { get; private set; }
-        public Material BreakMaterial => _breakMaterial;
-        public Material DefaultMaterial => _defaultMaterial;
-        public Material HoldShineMaterial => _holdShineMaterial;
+        public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
+        public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
+        public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
@@ -99,12 +99,6 @@ namespace MajdataPlay.Game
         GameSetting _setting = MajInstances.Setting;
         [SerializeField]
         GameObject _skipBtn;
-        [SerializeField]
-        Material _holdShineMaterial;
-        [SerializeField]
-        Material _breakMaterial;
-        [SerializeField]
-        Material _defaultMaterial;
         [SerializeField]
         SpriteMask _noteMask;
         [ReadOnlyField]
@@ -163,6 +157,7 @@ namespace MajdataPlay.Game
         void Awake()
         {
             MajInstanceHelper<GamePlayManager>.Instance = this;
+            MajInstanceHelper<INoteController>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
             //print(MajInstances.GameManager.SelectedIndex);
@@ -972,6 +967,7 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
             MajInstanceHelper<GamePlayManager>.Free();
+            MajInstanceHelper<INoteController>.Free();
         }
         async UniTaskVoid BackToList()
         {

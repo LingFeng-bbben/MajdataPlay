@@ -47,6 +47,12 @@ namespace MajdataPlay
         TimerType _timer = MajTimeline.Timer;
         [SerializeField]
         Sprite _emptySongCover;
+        [SerializeField]
+        Material _holdShineMaterial;
+        [SerializeField]
+        Material _breakMaterial;
+        [SerializeField]
+        Material _defaultMaterial;
         static GameManager()
         {
             _globalCTS = new();
@@ -81,8 +87,17 @@ namespace MajdataPlay
                 Setting.Game.Language = lang.ToString();
             }
             Localization.Current = lang;
-            typeof(MajEnv).GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                          .SetValue(null, _emptySongCover);
+
+            var envType = typeof(MajEnv);
+
+            envType.GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                   .SetValue(null, _emptySongCover);
+            envType.GetField("<BreakMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                   .SetValue(null, _breakMaterial);
+            envType.GetField("<DefaultMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                   .SetValue(null, _defaultMaterial);
+            envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                   .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
         }
         void SwitchToView()
