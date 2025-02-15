@@ -270,21 +270,21 @@ namespace MajdataPlay.Game
                     _bgInfoText.color = DXScoreColor;
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
-                case BGInfoType.S_Board:
+                case BGInfoType.S_Border:
                     _bgInfoHeader.text = "S  BORDER";
                     _bgInfoHeader.color = AchievementSilverColor;
                     _bgInfoText.color = AchievementSilverColor;
                     _bgInfoText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.SS_Board:
+                case BGInfoType.SS_Border:
                     _bgInfoHeader.text = "SS  BORDER";
                     _bgInfoHeader.color = AchievementGoldColor;
                     _bgInfoText.color = AchievementGoldColor;
                     _bgInfoText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.SSS_Board:
+                case BGInfoType.SSS_Border:
                     _bgInfoHeader.text = "SSS  BORDER";
                     _bgInfoHeader.color = AchievementGoldColor;
                     _bgInfoText.color = AchievementGoldColor;
@@ -829,9 +829,9 @@ namespace MajdataPlay.Game
                 case BGInfoType.DXScoreRank:
                     UpdateDXScoreRank();
                     break;
-                case BGInfoType.S_Board:
-                case BGInfoType.SS_Board:
-                case BGInfoType.SSS_Board:
+                case BGInfoType.S_Border:
+                case BGInfoType.SS_Border:
+                case BGInfoType.SSS_Border:
                 case BGInfoType.MyBest:
                     UpdateRankBoard(bgInfo);
                     break;
@@ -868,13 +868,13 @@ namespace MajdataPlay.Game
             double rate = -1;
             switch (bgInfo)
             {
-                case BGInfoType.S_Board:
+                case BGInfoType.S_Border:
                     rate = _accRate[2] - 97;
                     break;
-                case BGInfoType.SS_Board:
+                case BGInfoType.SS_Border:
                     rate = _accRate[2] - 99;
                     break;
-                case BGInfoType.SSS_Board:
+                case BGInfoType.SSS_Border:
                     rate = _accRate[2] - 100;
                     break;
                 case BGInfoType.MyBest:
