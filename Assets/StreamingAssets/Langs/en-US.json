@@ -635,7 +635,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed_MAJSETTING_DESC",
-      "Content": "Adjust the playback speed of tracks you play."
+      "Content": "Adjust the playback speed of tracks played."
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -700,7 +700,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
-      "Content": "All audio"
+      "Content": "Master audio"
     }
   ]
 }
