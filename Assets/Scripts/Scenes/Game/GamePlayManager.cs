@@ -344,7 +344,7 @@ namespace MajdataPlay.Game
 
                 _simaiFile = await _songDetail.GetMaidataAsync(true);
                 var levelIndex = (int)_gameInfo.CurrentLevel;
-                var maidata = _simaiFile.Fumens[levelIndex];
+                var maidata = _simaiFile.RawCharts[levelIndex];
 
                 if (string.IsNullOrEmpty(maidata))
                 {

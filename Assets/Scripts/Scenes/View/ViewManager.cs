@@ -1,6 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.Timer;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View.Types;
@@ -12,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #nullable enable
 namespace MajdataPlay.View
 {
@@ -25,7 +28,7 @@ namespace MajdataPlay.View
                 {
                     State = _state,
                     ErrMsg = _errMsg,
-                    Timeline = _timeline,
+                    Timeline = _thisFrameSec,
                 };
             }
         }
@@ -37,13 +40,14 @@ namespace MajdataPlay.View
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
-        public float ThisFrameSec { get; private set; }
-        public float ThisFixedUpdateSec { get; private set; }
+        public float ThisFrameSec => _thisFrameSec;
+        public float ThisFixedUpdateSec => _thisFrameSec;
 
+        float _timerStartAt = 0f;
 
         static ViewStatus _state = ViewStatus.Idle;
         static string _errMsg = string.Empty;
-        static float _timeline = 0f;
+        static float _thisFrameSec = 0f;
 
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
@@ -51,10 +55,13 @@ namespace MajdataPlay.View
 
         HttpServer _httpServer;
         NoteLoader _noteLoader;
+        BGManager _bgManager;
 
         SimaiChart? _chart;
         Sprite _bgCover = MajEnv.EmptySongCover;
         AudioSampleWrap? _audioSample = null;
+
+        static MajTimer _timer = MajTimeline.CreateTimer();
         
         protected override void Awake()
         {
@@ -69,10 +76,22 @@ namespace MajdataPlay.View
         }
         void Start()
         {
+            _bgManager = MajInstanceHelper<BGManager>.Instance!;
             _httpServer = MajInstanceHelper<HttpServer>.Instance!;
             _noteLoader = MajInstanceHelper<NoteLoader>.Instance!;
         }
-        internal bool Play(EditorRequest request)
+        void Update()
+        {
+            switch(_state)
+            {
+                case ViewStatus.Playing:
+                    var elasped = _timer.UnscaledElapsedSecondsAsFloat;
+                    _thisFrameSec += elasped - _timerStartAt;
+                    _timerStartAt = elasped;
+                    break;
+            }
+        }
+        internal async UniTask<bool> Play(EditorRequest request)
         {
             switch(_state)
             {
@@ -82,18 +101,94 @@ namespace MajdataPlay.View
                 default:
                     return false;
             }
+            try
+            {
+                _state = ViewStatus.Busy;
+                await UniTask.Yield();
+                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat;
+                _state = ViewStatus.Playing;
+                _thisFrameSec = (float)_audioSample!.CurrentSec;
+                _audioSample!.Play();
+                if (_state == ViewStatus.Paused)
+                    return true;
+                return true;
+            }
+            catch
+            {
+                _state = ViewStatus.Error;
+                throw;
+            }
         }
-        internal void Pause()
+        internal async UniTask<bool> Pause()
         {
-
+            switch (_state)
+            {
+                case ViewStatus.Playing:
+                    break;
+                default:
+                    return false;
+            }
+            try
+            {
+                _state = ViewStatus.Busy;
+                await UniTask.Yield();
+                _audioSample!.Pause();
+                _thisFrameSec = (float)_audioSample.CurrentSec;
+                _state = ViewStatus.Paused;
+                return true;
+            }
+            catch
+            {
+                _state = ViewStatus.Error;
+                throw;
+            }
         }
-        internal void Stop()
+        internal async UniTask<bool> Stop()
         {
-
+            switch (_state)
+            {
+                case ViewStatus.Playing:
+                case ViewStatus.Paused:
+                    break;
+                default:
+                    return false;
+            }
+            try
+            {
+                _state = ViewStatus.Busy;
+                await UniTask.Yield();
+                _audioSample!.Stop();
+                _thisFrameSec = 0;
+                return true;
+            }
+            catch
+            {
+                _state = ViewStatus.Error;
+                throw;
+            }
         }
-        internal void Reset()
+        internal async UniTask<bool> Reset()
         {
-
+            switch(_state)
+            {
+                case ViewStatus.Idle:
+                    return false;
+            }
+            try
+            {
+                _state = ViewStatus.Busy;
+                await UniTask.Yield();
+                _thisFrameSec = 0;
+                if (_audioSample is not null)
+                    _audioSample.Dispose();
+                _bgManager.CancelTimeRef();
+                await SceneManager.LoadSceneAsync("View");
+                return true;
+            }
+            finally
+            {
+                _state = ViewStatus.Idle;
+            }
         }
         internal async Task LoadAssests(byte[] audioTrack, byte[] bg, byte[]? pv)
         {
@@ -128,14 +223,19 @@ namespace MajdataPlay.View
                 throw;
             }
         }
-        internal async Task ParseAndLoadChartAsync()
+        internal async Task ParseAndLoadChartAsync(double startAt)
         {
             _state = ViewStatus.Busy;
             try
             {
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, string.Empty);
-                
+                var range = new Range<double>(startAt, double.MaxValue);
+                _chart.Clamp(range);
                 await _noteLoader.LoadNotesIntoPool(_chart);
+                if(_videoPath is null)
+                {
+                    _bgManager.SetBackgroundPic(_bgCover);
+                }
 
                 _state = ViewStatus.Ready;
             }

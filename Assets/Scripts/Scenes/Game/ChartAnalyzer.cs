@@ -48,7 +48,7 @@ namespace MajdataPlay.Game
                 try
                 {
                     var simaiFile = await songDetail.GetMaidataAsync();
-                    var maiChart = simaiFile.Levels[(int)level];
+                    var maiChart = simaiFile.Charts[(int)level];
                     var lastnoteTiming = length == -1 ? maiChart.NoteTimings.Last().Timing : length;
                     var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming);
 
