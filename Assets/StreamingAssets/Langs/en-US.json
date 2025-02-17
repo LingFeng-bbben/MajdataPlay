@@ -175,7 +175,7 @@
     {
       "Type": "AUDIO_OFFSET_DESC",
       "Origin": "AudioOffset_MAJSETTING_DESC",
-      "Content": "Move the chart to align to the music\nFAST = Negative (-) / LATE = Positive (+)\n(in seconds)"
+      "Content": "Move the chart to align to the music\nFAST = Negative (-)\nLATE = Positive (+)\n(in seconds)"
     },
     {
       "Type": "JUDGE_OFFSET",
@@ -185,7 +185,7 @@
     {
       "Type": "JUDGE_OFFSET_DESC",
       "Origin": "JudgeOffset_MAJSETTING_DESC",
-      "Content": "Move the timing window\nFAST = Negative (-) / LATE = Positive (+)\n(in seconds)"
+      "Content": "Move the timing window\nFAST = Negative (-)\nLATE = Positive (+)\n(in seconds)"
     },
     {
       "Type": "MODE",
@@ -235,7 +235,7 @@
     {
       "Type": "FAST_LATE_TYPE_DESC",
       "Origin": "FastLateType_MAJSETTING_DESC",
-      "Content": "Judgements that Fast/Late will appear\nHigher judgments are hidden"
+      "Content": "Judgments that Fast/Late will appear\nHigher judgments are hidden"
     },
     {
       "Type": "NOTE_JUDGE_TYPE",
@@ -316,6 +316,16 @@
       "Type": "OUTER_JUDGE_DISTANCE_DESC",
       "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
       "Content": "Adjust where judgments from the ring appear\nLower is towards the center"
+    },
+	{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback",
+      "Content": "Reaction Effect"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "TouchFeedback_MAJSETTING_DESC",
+      "Content": "Change where the reaction effect is displayed when you touch the screen"
     },
     {
       "Type": "RESOLUTION",
@@ -457,6 +467,16 @@
       "Origin": "DisableGCInGameing_MAJSETTING_DESC",
       "Content": ""
     },
+	{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer_Only",
+      "Content": "Outer only"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner_Only",
+      "Content": "Inner only"
+    },
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "All",
@@ -567,15 +587,55 @@
       "Origin": "SortbyDefault",
       "Content": "Default Sort"
     },
+	{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Inner",
+      "Content": "Inner"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Outer",
+      "Content": "Outer"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror",
+      "Content": "Mirror"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Mirror_MAJSETTING_DESC",
+      "Content": "Flip the chart by an axis."
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation",
+      "Content": "Rotation"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Rotation_MAJSETTING_DESC",
+      "Content": "Rotate the chart in 45 degree increments, or one button.\nPositive is clockwise and negative is counterclockwise."
+    },
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed",
       "Content": "Playback Speed"
     },
+	{
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask",
+      "Content": "Note Mask"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "NoteMask_MAJSETTING_DESC",
+      "Content": "Apply a mask that covers a portion of the gameplay screen."
+    },
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed_MAJSETTING_DESC",
-      "Content": "How fast will the track will play"
+      "Content": "Adjust the playback speed of tracks played."
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -585,7 +645,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "AllBreak_MAJSETTING_DESC",
-      "Content": "All notes become break"
+      "Content": "All notes become Break notes"
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -595,7 +655,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "AllEx_MAJSETTING_DESC",
-      "Content": "All notes become EX"
+      "Content": "All notes become Ex notes"
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -605,7 +665,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "AllTouch_MAJSETTING_DESC",
-      "Content": "All notes become touch"
+      "Content": "All notes become Touch notes"
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -615,7 +675,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "AutoPlay_MAJSETTING_DESC",
-      "Content": "XXLB help you play the chart"
+      "Content": "XXLB will help you play the chart"
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -625,7 +685,7 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
-      "Content": "How difficult will the judge be"
+      "Content": "How difficult judgment windows are"
     },
     {
       "Type": "OTHER_MAJTEXT",
@@ -635,12 +695,12 @@
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global",
-      "Content": "Global"
+      "Content": "Master"
     },
     {
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
-      "Content": "Controlling global volume"
+      "Content": "Master audio"
     }
   ]
 }
