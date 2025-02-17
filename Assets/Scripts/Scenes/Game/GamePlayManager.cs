@@ -736,8 +736,7 @@ namespace MajdataPlay.Game
             }
             if(_2367PressTime >= 1f && _isTrackSkipAvailable)
             {
-                CalculateScore();
-                EndGame().Forget();
+                BackToList().Forget();
             }
             else if(_3456PressTime >= 1f && _isFastRetryAvailable)
             {
@@ -971,6 +970,7 @@ namespace MajdataPlay.Game
         }
         async UniTaskVoid BackToList()
         {
+            State = GamePlayStatus.Ended;
             ClearAllResources();
 
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
