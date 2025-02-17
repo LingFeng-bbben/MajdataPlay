@@ -210,7 +210,7 @@ namespace MajdataPlay.List
         }
         void PreloadSongDetail()
         {
-            for (int i = 0; i < covers.Count; i++)
+            for (int i = 0; i < songs.Count; i++)
             {
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
