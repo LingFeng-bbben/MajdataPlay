@@ -120,7 +120,7 @@ namespace MajdataPlay.IO
         LedCommand BuildSetColorCommand(int index, Color newColor)
         {
             Span<byte> data = stackalloc byte[4];
-            data[0] = (byte)(LedCommand.SetColor0 + index);
+            data[0] = (byte)(LedCommand.SetColorBA1 + index);
             data[1] = (byte)(newColor.r * 255);
             data[2] = (byte)(newColor.g * 255);
             data[3] = (byte)(newColor.b * 255);
