@@ -50,7 +50,10 @@ namespace MajdataPlay.IO
 
         bool _isBtnDebounceEnabled = false;
         bool _isSensorDebounceEnabled = false;
-        Task? _recvTask = null;
+        
+        Task _serialPortUpdateTask = Task.CompletedTask;
+        Task _buttonRingUpdateTask = Task.CompletedTask;
+
         Mutex _buttonCheckerMutex = new();
         IOManager? _ioManager = null;
 
@@ -171,8 +174,8 @@ namespace MajdataPlay.IO
             //RawInput.OnKeyUp += OnRawKeyUp;
             _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
             _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
-            COMReceiveAsync();
-            RefreshKeyboardStateAsync();
+            StartUpdatingTouchPanelState();
+            StartUpdatingKeyboardState();
         }
         public void StartExternalIOManager()
         {

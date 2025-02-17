@@ -18,16 +18,17 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        async void COMReceiveAsync()
+        void StartUpdatingTouchPanelState()
         {
-            await Task.Run(async () =>
+            if (!_serialPortUpdateTask.IsCompleted)
+                return;
+            _serialPortUpdateTask = Task.Factory.StartNew(() =>
             {
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
                 var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var reportData = new byte[9];
                 var sharedMemoryPool = MemoryPool<byte>.Shared;
                 using var serial = new SerialPort(comPort, 9600);
 
@@ -35,21 +36,20 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    await EnsureTouchPanelSerialStreamIsOpen(serial);
+                    EnsureTouchPanelSerialStreamIsOpen(serial);
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            var serialStream = await EnsureTouchPanelSerialStreamIsOpen(serial);
+                            var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
                             var bytesToRead = serial.BytesToRead;
 
                             using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
                             var buffer = bufferOwner.Memory;
-                            await serialStream.ReadAsync(buffer);
+                            serialStream.Read(buffer.Span);
 
                             TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
-
                         }
                         catch (Exception e)
                         {
@@ -61,7 +61,7 @@ namespace MajdataPlay.IO
                             var elapsed = t2 - t1;
                             t1 = t2;
                             if (elapsed < pollingRate)
-                                await Task.Delay(pollingRate - elapsed, token);
+                                Thread.Sleep(pollingRate - elapsed);
                         }
                     }
                 }
@@ -138,7 +138,7 @@ namespace MajdataPlay.IO
             }
             return packetSpan[(start + 1)..endIndex];
         }
-        async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
+        async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpenAsync(SerialPort serialSession)
         {
             if(serialSession.IsOpen)
             {
@@ -193,6 +193,7 @@ namespace MajdataPlay.IO
                 return serialStream;
             }
         }
+        Stream EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession) => EnsureTouchPanelSerialStreamIsOpenAsync(serialSession).Result;
         byte GetSensitivityValue(byte sensor,int sens)
         {
             if (sensor > 0x62 || sensor < 0x41)

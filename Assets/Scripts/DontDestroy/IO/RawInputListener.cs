@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -48,9 +49,11 @@ namespace MajdataPlay.IO
             new Button(RawKey.Numpad3,SensorArea.P2),
         };
         readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
-        async void RefreshKeyboardStateAsync()
+        void StartUpdatingKeyboardState()
         {
-            await Task.Run(async () =>
+            if (!_buttonRingUpdateTask.IsCompleted)
+                return;
+            _buttonRingUpdateTask = Task.Factory.StartNew(() =>
             {
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -87,10 +90,10 @@ namespace MajdataPlay.IO
                         var elapsed = t2 - t1;
                         t1 = t2;
                         if (elapsed < pollingRate)
-                            await Task.Delay(pollingRate - elapsed, token);
+                            Thread.Sleep(pollingRate - elapsed);
                     }
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void UpdateButtonState()
