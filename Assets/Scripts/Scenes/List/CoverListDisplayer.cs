@@ -110,7 +110,6 @@ namespace MajdataPlay.List
             if (desiredListPos > _songCovers.Count) desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
-            PreloadSongDetail();
         }
 
 
