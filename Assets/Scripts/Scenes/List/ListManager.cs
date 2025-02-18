@@ -6,14 +6,11 @@ using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace MajdataPlay.List
 {
     public class ListManager : MonoBehaviour
     {
-        public CoverListDisplayer CoverListDisplayer;
-
         public CancellationToken CancellationToken => _cts.Token;
         public static List<UniTask> AllBackguardTasks { get; } = new(8192);
 
@@ -21,6 +18,7 @@ namespace MajdataPlay.List
         float _pressTime = 0;
         bool _isPressed = false;
 
+        CoverListDisplayer _coverListDisplayer;
         readonly CancellationTokenSource _cts = new();
 
         void Awake()
@@ -37,16 +35,30 @@ namespace MajdataPlay.List
         }
         void Start()
         {
-            CoverListDisplayer.SwitchToDirList(SongStorage.Collections);
-            CoverListDisplayer.SwitchToSongList();            
-            CoverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
+            _coverListDisplayer = MajInstanceHelper<CoverListDisplayer>.Instance!;
+            InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)
             {
                 MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+        }
+        async UniTaskVoid InitializeCoverListAsync()
+        {
+            try
+            {
+                await UniTask.Delay(100);
+                _coverListDisplayer.SwitchToDirList();
+                _coverListDisplayer.SwitchToSongList();
+                _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
+                await UniTask.Delay(100);
+            }
+            finally
+            {
+                MajInstances.SceneSwitcher.FadeOut();
+                MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            }
         }
         void OnDestroy()
         {
@@ -62,22 +74,22 @@ namespace MajdataPlay.List
                 switch (e.Type)
                 {
                     case SensorArea.A7:
-                        CoverListDisplayer.SlideList(1);
+                        _coverListDisplayer.SlideList(1);
                         break;
                     case SensorArea.A8:
-                        CoverListDisplayer.SlideList(2);
+                        _coverListDisplayer.SlideList(2);
                         break;
                     case SensorArea.A1:
-                        CoverListDisplayer.SlideList(3);
+                        _coverListDisplayer.SlideList(3);
                         break;
                     case SensorArea.A6:
-                        CoverListDisplayer.SlideList(-1);
+                        _coverListDisplayer.SlideList(-1);
                         break;
                     case SensorArea.A5:
-                        CoverListDisplayer.SlideList(-2);
+                        _coverListDisplayer.SlideList(-2);
                         break;
                     case SensorArea.A4:
-                        CoverListDisplayer.SlideList(-3);
+                        _coverListDisplayer.SlideList(-3);
                         break;
                     // xxlb
                     case SensorArea.B7:
@@ -102,7 +114,7 @@ namespace MajdataPlay.List
                             _pressTime = 0;
                             break;
                         case SensorArea.A4:
-                            if (CoverListDisplayer.IsDirList)
+                            if (_coverListDisplayer.IsDirList)
                             {
                                 if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
                                 {
@@ -137,7 +149,7 @@ namespace MajdataPlay.List
                                 }
                                 else
                                 {
-                                    CoverListDisplayer.SwitchToSongList();
+                                    _coverListDisplayer.SwitchToSongList();
                                     MajInstances.LightManager.SetButtonLight(Color.red, 4);
                                 }
                             }
@@ -190,7 +202,7 @@ namespace MajdataPlay.List
                         case SensorArea.A3:
                             if (_isPressed)
                                 return;
-                            CoverListDisplayer.SlideList(1);
+                            _coverListDisplayer.SlideList(1);
                             _isPressed = true;
                             _delta = 1;
                             AutoSlide().Forget();
@@ -198,31 +210,31 @@ namespace MajdataPlay.List
                         case SensorArea.A6:
                             if (_isPressed)
                                 return;
-                            CoverListDisplayer.SlideList(-1);
+                            _coverListDisplayer.SlideList(-1);
                             _isPressed = true;
                             _delta = -1;
                             AutoSlide().Forget();
                             break;
                         case SensorArea.A8:
-                            CoverListDisplayer.SlideDifficulty(-1);
+                            _coverListDisplayer.SlideDifficulty(-1);
                             break;
                         case SensorArea.A1:
-                            CoverListDisplayer.SlideDifficulty(1);
+                            _coverListDisplayer.SlideDifficulty(1);
                             break;
                         case SensorArea.P1:
                             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.SceneSwitcher.SwitchScene("SortFind");
                             break;
                         case SensorArea.A5:
-                            if (CoverListDisplayer.IsChartList)
+                            if (_coverListDisplayer.IsChartList)
                             {
-                                CoverListDisplayer.SwitchToDirList(SongStorage.Collections);
+                                _coverListDisplayer.SwitchToDirList();
                                 MajInstances.LightManager.SetButtonLight(Color.white, 4);
                                 SongStorage.WorkingCollection.Index = 0;
                             }
                             break;
                         case SensorArea.A4:
-                            if (!CoverListDisplayer.IsDirList)
+                            if (!_coverListDisplayer.IsDirList)
                             {
                                 _isPressed = true;
                                 PracticeTimer().Forget();
@@ -252,7 +264,7 @@ namespace MajdataPlay.List
                     await UniTask.Yield();
                     continue;
                 }
-                CoverListDisplayer.SlideList(_delta);
+                _coverListDisplayer.SlideList(_delta);
                 await UniTask.Delay(100);
             }
         }

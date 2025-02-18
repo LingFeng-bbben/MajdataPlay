@@ -136,7 +136,7 @@ namespace MajdataPlay.Title
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
 }
