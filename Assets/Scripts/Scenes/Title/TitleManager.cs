@@ -144,6 +144,7 @@ namespace MajdataPlay.Title
         {
             if(_pressTime >= 3f)
             {
+                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
                 MajInstances.AudioManager.StopSFX("bgm_title.mp3");
                 MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
                 MajInstances.SceneSwitcher.SwitchScene("SensorTest");
