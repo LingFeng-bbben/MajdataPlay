@@ -386,7 +386,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5306759000060175328}
   - component: {fileID: 7003519088196410334}
-  - component: {fileID: 4149431285490104326}
+  - component: {fileID: 5034297891636634299}
   m_Layer: 5
   m_Name: CoverImageSmall
   m_TagString: Untagged
@@ -424,7 +424,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7013899708052084777}
   m_CullTransparentMesh: 1
---- !u!114 &4149431285490104326
+--- !u!114 &5034297891636634299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -433,17 +433,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7013899708052084777}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8c0b2efa70a48344b1dcaa65411d6d9, type: 3}
+  m_Script: {fileID: 11500000, guid: a57d4ef4071bad9458680b4883d8c662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RectTransform: {fileID: 5306759000060175328}
-  Cover: {fileID: 1599038407429139701}
-  LevelBackground: {fileID: 3731573031523001300}
-  Background: {fileID: 3343031181785394282}
-  LevelText: {fileID: 7734258577827090023}
-  Loading: {fileID: 4847464798620932805}
-  Icon: {fileID: 0}
-  mask: {fileID: 3079272929449829841}
+  _songCover: {fileID: 1599038407429139701}
+  _levelBackground: {fileID: 3731573031523001300}
+  _background: {fileID: 3343031181785394282}
+  _levelText: {fileID: 7734258577827090023}
+  _loading: {fileID: 4847464798620932805}
 --- !u!1 &7204302593305637263
 GameObject:
   m_ObjectHideFlags: 0

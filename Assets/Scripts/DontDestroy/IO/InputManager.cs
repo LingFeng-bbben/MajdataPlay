@@ -43,10 +43,7 @@ namespace MajdataPlay.IO
         ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
 
-        bool[] _COMReport = Enumerable.Repeat(false,35).ToArray();
-
-        bool C1 = false;
-        bool C2 = false;
+        readonly bool[] _sensorStatuses = new bool[35];
 
         bool _isBtnDebounceEnabled = false;
         bool _isSensorDebounceEnabled = false;
@@ -467,5 +464,6 @@ namespace MajdataPlay.IO
             if (OnAnyAreaTrigger is not null)
                 OnAnyAreaTrigger(this, args);
         }
+        internal ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStatuses;
     }
 }

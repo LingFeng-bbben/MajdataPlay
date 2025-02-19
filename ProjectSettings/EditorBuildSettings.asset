@@ -32,4 +32,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/View.unity
     guid: aba1bc329bdeec04bbbcc90584e0ad24
+  - enabled: 1
+    path: Assets/Scenes/SensorTest.unity
+    guid: eb70393554bc7964c8d510bf5d9c3b7c
   m_configObjects: {}

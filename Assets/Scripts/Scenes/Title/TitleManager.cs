@@ -19,6 +19,8 @@ namespace MajdataPlay.Title
         public TextMeshProUGUI echoText;
         public Animator fadeInAnim;
 
+        bool _flag = false;
+        float _pressTime = 0f;
         Task? songStorageTask = null;
         void Start()
         {
@@ -59,7 +61,15 @@ namespace MajdataPlay.Title
             if (!e.IsDown)
                 return;
             if (e.IsButton)
+            {
+                switch (e.Type)
+                {
+                    case SensorArea.A8:
+                    case SensorArea.A1:
+                        return;
+                }
                 NextScene();
+            }
             else
             {
                 switch (e.Type)
@@ -115,15 +125,33 @@ namespace MajdataPlay.Title
                         }
                         echoText.text = Localization.GetLocalizedText("Press Any Key");
                         MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                        _flag = true;
                     }
                     break;
                 }
             }
             fadeInAnim.SetBool("IsDone", true);
-            if (isEmpty)
-                return;
         }
-
+        void Update()
+        {
+            if(_pressTime >= 3f)
+            {
+                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                MajInstances.AudioManager.StopSFX("bgm_title.mp3");
+                MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
+                MajInstances.SceneSwitcher.SwitchScene("SensorTest");
+                _pressTime = 0;
+                _flag = false;
+            }
+            else
+            {
+                var inputManager = MajInstances.InputManager;
+                if (inputManager.CheckButtonStatus(SensorArea.A8, SensorStatus.On) && inputManager.CheckButtonStatus(SensorArea.A1, SensorStatus.On))
+                {
+                    _pressTime += Time.deltaTime;
+                }
+            }
+        }
         async UniTaskVoid DelayPlayVoice()
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -134,9 +162,11 @@ namespace MajdataPlay.Title
         void NextScene()
         {
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            _pressTime = 0;
+            _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
 }

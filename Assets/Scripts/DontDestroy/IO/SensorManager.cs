@@ -34,21 +34,54 @@ namespace MajdataPlay.IO
                 }
                 var oldState = sensor.Status;
                 var newState = report.State;
-                if (index == 16)
-                    C1 = newState == SensorStatus.On ? true : false;
-                else if (index == 17)
-                    C2 = newState == SensorStatus.On ? true : false;
+                var C1 = _sensorStatuses[16];
+                var C2 =  _sensorStatuses[17];
+
                 if (sensor.Area == SensorArea.C)
-                    newState = C1 || C2 ? SensorStatus.On : SensorStatus.Off;
-                if (oldState == newState)
-                    continue;
-                else if (_isSensorDebounceEnabled)
+                {
+                    var CSubAreaState = report.State is SensorStatus.On ? true: false;
+                    switch (index)
+                    {
+                        case 16:
+                            newState = CSubAreaState || C2 ? SensorStatus.On : SensorStatus.Off;
+                            break;
+                        case 17:
+                            newState = CSubAreaState || C1 ? SensorStatus.On : SensorStatus.Off;
+                            break;
+                    }
+                }
+                if (_isSensorDebounceEnabled)
                 {
                     if (JitterDetect(sensor.Area, timestamp))
+                    {
                         continue;
+                    }
+                    else if(oldState == newState)
+                    {
+                        switch (index)
+                        {
+                            case 16:
+                            case 17:
+                                _sensorStatuses[index] = report.State is SensorStatus.On ? true : false;
+                                break;
+                        }
+                        continue;
+                    }
                     _sensorLastTriggerTimes[sensor.Area] = timestamp;
                 }
+                else if(oldState == newState)
+                {
+                    switch (index)
+                    {
+                        case 16:
+                        case 17:
+                            _sensorStatuses[index] = report.State is SensorStatus.On ? true : false;
+                            break;
+                    }
+                    continue;
+                }
                 MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
+                _sensorStatuses[index] = report.State is SensorStatus.On ? true : false;
                 sensor.Status = newState;
                 var msg = new InputEventArgs()
                 {
