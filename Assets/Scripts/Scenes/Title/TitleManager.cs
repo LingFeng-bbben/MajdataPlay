@@ -19,6 +19,8 @@ namespace MajdataPlay.Title
         public TextMeshProUGUI echoText;
         public Animator fadeInAnim;
 
+        bool _flag = false;
+        float _pressTime = 0f;
         Task? songStorageTask = null;
         void Start()
         {
@@ -59,7 +61,15 @@ namespace MajdataPlay.Title
             if (!e.IsDown)
                 return;
             if (e.IsButton)
+            {
+                switch (e.Type)
+                {
+                    case SensorArea.A8:
+                    case SensorArea.A1:
+                        return;
+                }
                 NextScene();
+            }
             else
             {
                 switch (e.Type)
@@ -76,54 +86,79 @@ namespace MajdataPlay.Title
 
         async UniTaskVoid WaitForScanningTask()
         {
-            if (songStorageTask is null)
-                return;
-            var isEmpty = false;
-            while (true)
+            try
             {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-
-                if (songStorageTask.IsCompleted)
+                if (songStorageTask is null)
+                    return;
+                var isEmpty = false;
+                while (true)
                 {
-                    if (songStorageTask.IsFaulted)
-                        echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
-                    else if (SongStorage.IsEmpty)
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+
+                    if (songStorageTask.IsCompleted)
                     {
-                        isEmpty = true;
-                        echoText.text = Localization.GetLocalizedText("No Charts");
-                    }
-                    else
-                    {
-                        if (MajInstances.Setting.Online.Enable)
+                        if (songStorageTask.IsFaulted)
+                            echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                        else if (SongStorage.IsEmpty)
                         {
-                            foreach (var endpoint in MajInstances.Setting.Online.ApiEndpoints)
+                            isEmpty = true;
+                            echoText.text = Localization.GetLocalizedText("No Charts");
+                        }
+                        else
+                        {
+                            if (MajInstances.Setting.Online.Enable)
                             {
-                                try
+                                foreach (var endpoint in MajInstances.Setting.Online.ApiEndpoints)
                                 {
-                                    if (endpoint.Username is null || endpoint.Password is null) continue;
-                                    echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                    await MajInstances.OnlineManager.Login(endpoint);
-                                    await UniTask.Delay(1000);
-                                }
-                                catch (Exception ex)
-                                {
-                                    MajDebug.LogError(ex);
-                                    echoText.text = "Login failed for " + endpoint.Name;
-                                    await UniTask.Delay(1000);
+                                    try
+                                    {
+                                        if (endpoint.Username is null || endpoint.Password is null) continue;
+                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
+                                        await MajInstances.OnlineManager.Login(endpoint);
+                                        await UniTask.Delay(1000);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MajDebug.LogError(ex);
+                                        echoText.text = "Login failed for " + endpoint.Name;
+                                        await UniTask.Delay(1000);
+                                    }
                                 }
                             }
+                            echoText.text = Localization.GetLocalizedText("Press Any Key");
+                            MajInstances.InputManager.BindAnyArea(OnAreaDown);
                         }
-                        echoText.text = Localization.GetLocalizedText("Press Any Key");
-                        MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                        break;
                     }
-                    break;
+                }
+                fadeInAnim.SetBool("IsDone", true);
+                if (isEmpty)
+                    return;
+            }
+            finally
+            {
+                _flag = true;
+            }
+        }
+        void Update()
+        {
+            if(_pressTime >= 3f)
+            {
+                MajInstances.AudioManager.StopSFX("bgm_title.mp3");
+                MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
+                MajInstances.SceneSwitcher.SwitchScene("SensorTest");
+                _pressTime = 0;
+                _flag = false;
+            }
+            else
+            {
+                var inputManager = MajInstances.InputManager;
+                if (inputManager.CheckButtonStatus(SensorArea.A8, SensorStatus.On) && inputManager.CheckButtonStatus(SensorArea.A1, SensorStatus.On))
+                {
+                    _pressTime += Time.deltaTime;
                 }
             }
-            fadeInAnim.SetBool("IsDone", true);
-            if (isEmpty)
-                return;
         }
-
         async UniTaskVoid DelayPlayVoice()
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -134,6 +169,8 @@ namespace MajdataPlay.Title
         void NextScene()
         {
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            _pressTime = 0;
+            _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
             MajInstances.SceneSwitcher.SwitchScene("List", false);
