@@ -86,54 +86,66 @@ namespace MajdataPlay.Title
 
         async UniTaskVoid WaitForScanningTask()
         {
-            if (songStorageTask is null)
-                return;
-            var isEmpty = false;
-            while (true)
+            try
             {
-                await UniTask.Yield(PlayerLoopTiming.Update);
-
-                if (songStorageTask.IsCompleted)
+                if (songStorageTask is null)
+                    return;
+                var isEmpty = false;
+                while (true)
                 {
-                    if (songStorageTask.IsFaulted)
-                        echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
-                    else if (SongStorage.IsEmpty)
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+
+                    if (songStorageTask.IsCompleted)
                     {
-                        isEmpty = true;
-                        echoText.text = Localization.GetLocalizedText("No Charts");
-                    }
-                    else
-                    {
-                        if (MajInstances.Setting.Online.Enable)
+                        if (songStorageTask.IsFaulted)
+                            echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                        else if (SongStorage.IsEmpty)
                         {
-                            foreach (var endpoint in MajInstances.Setting.Online.ApiEndpoints)
+                            isEmpty = true;
+                            echoText.text = Localization.GetLocalizedText("No Charts");
+                        }
+                        else
+                        {
+                            if (MajInstances.Setting.Online.Enable)
                             {
-                                try
+                                foreach (var endpoint in MajInstances.Setting.Online.ApiEndpoints)
                                 {
-                                    if (endpoint.Username is null || endpoint.Password is null) continue;
-                                    echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                    await MajInstances.OnlineManager.Login(endpoint);
-                                    await UniTask.Delay(1000);
-                                }
-                                catch (Exception ex)
-                                {
-                                    MajDebug.LogError(ex);
-                                    echoText.text = "Login failed for " + endpoint.Name;
-                                    await UniTask.Delay(1000);
+                                    try
+                                    {
+                                        if (endpoint.Username is null || endpoint.Password is null) continue;
+                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
+                                        await MajInstances.OnlineManager.Login(endpoint);
+                                        await UniTask.Delay(1000);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MajDebug.LogError(ex);
+                                        echoText.text = "Login failed for " + endpoint.Name;
+                                        await UniTask.Delay(1000);
+                                    }
                                 }
                             }
+                            echoText.text = Localization.GetLocalizedText("Press Any Key");
+                            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+
                         }
-                        echoText.text = Localization.GetLocalizedText("Press Any Key");
-                        MajInstances.InputManager.BindAnyArea(OnAreaDown);
-                        _flag = true;
+                        break;
                     }
-                    break;
                 }
+                fadeInAnim.SetBool("IsDone", true);
             }
-            fadeInAnim.SetBool("IsDone", true);
+            finally
+            {
+                _flag = true;
+            }
         }
         void Update()
         {
+            if (!_flag)
+            {
+                _pressTime = 0;
+                return;
+            }
             if(_pressTime >= 3f)
             {
                 MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
