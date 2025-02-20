@@ -65,6 +65,7 @@ namespace MajdataPlay.Game.Notes
 
         NotePoolManager _poolManager;
 
+        float _releaseTime = 0;
         readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
 
         const int _spriteSortOrder = 1;
@@ -454,13 +455,18 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                _playerIdleTime += Time.deltaTime;
-                StopHoldEffect();
-
                 if (IsClassic)
                 {
                     End();
+                    return;
                 }
+                else if (_releaseTime <= 0.05f)
+                {
+                    _releaseTime += Time.deltaTime;
+                    return;
+                }
+                _playerIdleTime += Time.deltaTime;
+                StopHoldEffect();
             }
         }
         JudgeGrade EndJudge(in JudgeGrade result)
