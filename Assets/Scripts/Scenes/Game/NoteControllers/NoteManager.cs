@@ -72,6 +72,14 @@ namespace MajdataPlay.Game
         {
             if (!_isUpdaterInitialized)
                 return;
+            for (var i = 0; i < 8; i++)
+            {
+                _isBtnUsedInThisFixedUpdate[i] = false;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _isSensorUsedInThisFixedUpdate[i] = false;
+            }
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
@@ -100,14 +108,14 @@ namespace MajdataPlay.Game
         }
         internal void OnFixedUpdate()
         {
-            for (var i = 0; i < 8; i++)
-            {
-                _isBtnUsedInThisFixedUpdate[i] = false;
-            }
-            for (var i = 0; i < 33; i++)
-            {
-                _isSensorUsedInThisFixedUpdate[i] = false;
-            }
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    _isBtnUsedInThisFixedUpdate[i] = false;
+            //}
+            //for (var i = 0; i < 33; i++)
+            //{
+            //    _isSensorUsedInThisFixedUpdate[i] = false;
+            //}
             if(_isUpdaterInitialized)
             {
                 for (var i = 0; i < _noteUpdaters.Length; i++)

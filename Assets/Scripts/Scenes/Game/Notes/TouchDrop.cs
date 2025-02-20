@@ -215,6 +215,34 @@ namespace MajdataPlay.Game.Notes
 
             _justBorderRenderer.sprite = skin.JustBorder;
         }
+        void TooLateCheck()
+        {
+            // Too late check
+            if (IsEnded || _isJudged)
+                return;
+
+            var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
+
+            if (!isTooLate)
+            {
+                if (GroupInfo is not null)
+                {
+                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
+                    {
+                        _isJudged = true;
+                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        _judgeDiff = GroupInfo.JudgeDiff;
+                        _noteManager.NextTouch(QueueInfo);
+                    }
+                }
+            }
+            else
+            {
+                _judgeResult = JudgeGrade.Miss;
+                _isJudged = true;
+                _noteManager.NextTouch(QueueInfo);
+            }
+        }
         void Check()
         {
             if (IsEnded)
@@ -262,39 +290,12 @@ namespace MajdataPlay.Game.Notes
                 GroupInfo.RegisterResult(_judgeResult);
             }
         }
-        void OnFixedUpdate()
-        {
-            // Too late check
-            if (IsEnded || _isJudged)
-                return;
-
-            var isTooLate = GetTimeSpanToJudgeTiming() >= 0.316667f;
-
-            if (!isTooLate)
-            {
-                if (GroupInfo is not null)
-                {
-                    if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
-                    {
-                        _isJudged = true;
-                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                        _judgeDiff = GroupInfo.JudgeDiff;
-                        _noteManager.NextTouch(QueueInfo);
-                    }
-                }
-            }
-            else
-            {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _noteManager.NextTouch(QueueInfo);
-            }
-        }
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
 
             Autoplay();
+            TooLateCheck();
             Check();
 
             switch (State)

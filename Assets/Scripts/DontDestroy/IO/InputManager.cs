@@ -154,11 +154,11 @@ namespace MajdataPlay.IO
         }
         internal void OnFixedUpdate()
         {
-            _updateIOListener();
+            //_updateIOListener();
         }
         internal void OnUpdate()
         {
-
+            _updateIOListener();
         }
         void StartInternalIOManager()
         {
