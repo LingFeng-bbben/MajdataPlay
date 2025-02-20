@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
@@ -7,10 +8,13 @@ namespace MajdataPlay.SensorTest
 {
     internal class IOListener: MajComponent
     {
+        public static string NextScene { get; set; } = "List";
+
         readonly GameObject[] _sensorObjects = new GameObject[35];
         readonly Material[] _materials = new Material[35];
         readonly MeshRenderer[] _meshRenderers = new MeshRenderer[35];
 
+        bool _exitFlag = false;
         InputManager _inputManager;
         protected override void Awake()
         {
@@ -28,6 +32,8 @@ namespace MajdataPlay.SensorTest
         }
         void Update()
         {
+            if (_exitFlag)
+                return;
             var rawData = _inputManager.GetTouchPanelRawData();
             foreach(var (i,state) in rawData.Span.WithIndex())
             {
@@ -42,6 +48,13 @@ namespace MajdataPlay.SensorTest
                         _materials[i].color = Color.blue;
                         break;
                 }
+            }
+            if (string.IsNullOrEmpty(NextScene))
+                return;
+            if(_inputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On)) 
+            {
+                _exitFlag = true;
+                MajInstances.SceneSwitcher.SwitchScene(NextScene);
             }
         }
     }

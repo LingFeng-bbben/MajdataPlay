@@ -64,8 +64,11 @@ namespace MajdataPlay.Title
             {
                 switch (e.Type)
                 {
-                    case SensorArea.A8:
-                    case SensorArea.A1:
+                    case SensorArea.Test:
+                        if(_flag)
+                        {
+                            EnterTestMode();
+                        }
                         return;
                 }
                 NextScene();
@@ -139,31 +142,6 @@ namespace MajdataPlay.Title
                 _flag = true;
             }
         }
-        void Update()
-        {
-            if (!_flag)
-            {
-                _pressTime = 0;
-                return;
-            }
-            if(_pressTime >= 3f)
-            {
-                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                MajInstances.AudioManager.StopSFX("bgm_title.mp3");
-                MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-                MajInstances.SceneSwitcher.SwitchScene("SensorTest");
-                _pressTime = 0;
-                _flag = false;
-            }
-            else
-            {
-                var inputManager = MajInstances.InputManager;
-                if (inputManager.CheckButtonStatus(SensorArea.A8, SensorStatus.On) && inputManager.CheckButtonStatus(SensorArea.A1, SensorStatus.On))
-                {
-                    _pressTime += Time.deltaTime;
-                }
-            }
-        }
         async UniTaskVoid DelayPlayVoice()
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -171,6 +149,14 @@ namespace MajdataPlay.Title
             MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
         }
 
+        void EnterTestMode()
+        {
+            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            _flag = false;
+            MajInstances.AudioManager.StopSFX("bgm_title.mp3");
+            MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
+            MajInstances.SceneSwitcher.SwitchScene("SensorTest");
+        }
         void NextScene()
         {
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);

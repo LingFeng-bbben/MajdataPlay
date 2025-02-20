@@ -13,6 +13,7 @@ using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
+using MajdataPlay.SensorTest;
 
 namespace MajdataPlay
 {
@@ -99,6 +100,20 @@ namespace MajdataPlay
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
+
+            foreach (var arg in Environment.GetCommandLineArgs())
+            {
+                if (arg == "--test-mode")
+                {
+                    EnterTestMode();
+                    break;
+                }
+            }
+        }
+        void EnterTestMode()
+        {
+            IOListener.NextScene = string.Empty;
+            SceneManager.LoadScene("SensorTest");
         }
         void SwitchToView()
         {
