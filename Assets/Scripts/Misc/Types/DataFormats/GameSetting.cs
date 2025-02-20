@@ -35,6 +35,7 @@ namespace MajdataPlay.Types
     {
         public float AudioOffset { get; set; } = 0f;
         public float JudgeOffset { get; set; } = 0f;
+        public float AnswerOffset { get; set; } = 0f;
         public float TouchPanelOffset { get; set; } = 0f;
         public JudgeMode Mode { get; set; } = JudgeMode.Modern;
     }

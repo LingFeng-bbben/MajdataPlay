@@ -877,6 +877,7 @@ namespace MajdataPlay.Game
         {
             await Task.Run(async () => 
             {
+                var offset = _setting.Judge.AnswerOffset;
                 int i = 0;
                 var token = _cts.Token;
                 var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
@@ -890,7 +891,7 @@ namespace MajdataPlay.Game
                             return;
 
                         var noteToPlay = _anwserSoundList[i].time;
-                        var delta = AudioTime - noteToPlay;
+                        var delta = AudioTime - (noteToPlay + offset);
 
                         if (delta > 0)
                         {
