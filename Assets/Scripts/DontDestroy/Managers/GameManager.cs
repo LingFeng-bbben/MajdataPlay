@@ -100,6 +100,7 @@ namespace MajdataPlay
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
+            QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
 
             foreach (var arg in Environment.GetCommandLineArgs())
             {
@@ -138,7 +139,7 @@ namespace MajdataPlay
                     return;
                 Screen.SetResolution(width, height, fullScreen);
             }
-            Application.targetFrameRate = Setting.Display.TargetFPS;
+            Application.targetFrameRate = Setting.Display.FPSLimit;
         }
         void Start()
         {

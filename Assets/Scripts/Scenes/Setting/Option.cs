@@ -134,6 +134,10 @@ namespace MajdataPlay.Setting
                         _minValue = 0;
                         _step = 0.1f;
                         break;
+                    case "FPSLimit":
+                        _minValue = -1;
+                        _step = 1;
+                        break;
                     default:
                         _maxValue = null;
                         _minValue = null;
@@ -250,6 +254,12 @@ namespace MajdataPlay.Setting
                 case "Touch":
                 case "Voice":
                     UpdateVolume();
+                    break;
+                case "VSync":
+                    QualitySettings.vSyncCount = (bool)value ? 1 : 0;
+                    break;
+                case "FPSLimit":
+                    Application.targetFrameRate = (int)value;
                     break;
                 case "RenderQuality":
                     QualitySettings.SetQualityLevel((int)value, true);

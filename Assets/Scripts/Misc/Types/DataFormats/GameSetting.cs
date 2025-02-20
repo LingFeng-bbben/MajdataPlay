@@ -60,7 +60,8 @@ namespace MajdataPlay.Types
         public float InnerJudgeDistance { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
         public string Resolution { get; set; } = "1080x1920";
-        public int TargetFPS { get; set; } = 240;
+        public int FPSLimit { get; set; } = 240;
+        public bool VSync { get; set; } = false;
     }
     public class SoundOptions
     {
