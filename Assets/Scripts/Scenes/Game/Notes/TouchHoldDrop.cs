@@ -66,6 +66,8 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _borderRenderer;
         NotePoolManager _notePoolManager;
 
+        bool _isHoldOn = false;
+        float _releaseTime = 0;
         readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
 
         const int _fanSpriteSortOrder = 2;
@@ -163,6 +165,7 @@ namespace MajdataPlay.Game.Notes
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
+            _isHoldOn = false;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
@@ -229,6 +232,7 @@ namespace MajdataPlay.Game.Notes
                 IsEX = false,
                 Diff = _judgeDiff
             });
+            _isHoldOn = false;
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
@@ -454,9 +458,15 @@ namespace MajdataPlay.Game.Notes
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
+                _releaseTime = 0;
             }
             else
             {
+                if (_releaseTime <= 0.05f)
+                {
+                    _releaseTime += Time.deltaTime;
+                    return;
+                }
                 _playerIdleTime += Time.deltaTime;
                 StopHoldEffect();
             }
@@ -574,6 +584,9 @@ namespace MajdataPlay.Game.Notes
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
+            if (_isHoldOn)
+                return;
+            _isHoldOn = true;
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _audioEffMana.PlayTouchHoldSound();
             _borderRenderer.sprite = board_On;
@@ -581,6 +594,9 @@ namespace MajdataPlay.Game.Notes
         }
         void StopHoldEffect()
         {
+            if (!_isHoldOn)
+                return;
+            _isHoldOn = false;
             _effectManager.ResetHoldEffect(_sensorPos);
             _audioEffMana.StopTouchHoldSound();
             _borderRenderer.sprite = board_Off;
