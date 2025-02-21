@@ -409,7 +409,7 @@ namespace MajdataPlay.Game.Utils
                     BuildSlideArea(new SensorArea[] { SensorArea.B8,SensorArea.A8 },4,7,false),
                     BuildSlideArea(SensorArea.A7,11,15),
                     BuildSlideArea(SensorArea.B8,18,21),
-                    BuildSlideArea(SensorArea.A1,23,26),
+                    BuildSlideArea(SensorArea.B1,23,26),
                     BuildSlideArea(SensorArea.A2,29,32,true,true),
                 },
                 Const = 0.09482f
