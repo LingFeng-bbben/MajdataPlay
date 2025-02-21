@@ -186,6 +186,7 @@ namespace MajdataPlay.Types
     {
         public int Index { get; set; } = 1;
         public int COMPort { get; set; } = 3;
+        public int BaudRate { get; set; } = 9600;
         public bool Debounce { get; set; } = true;
         public bool SensitivityOverride { get; set; } = false;
         public int Sensitivity { get; set; } = 0;

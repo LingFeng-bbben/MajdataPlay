@@ -30,7 +30,7 @@ namespace MajdataPlay.IO
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var sharedMemoryPool = MemoryPool<byte>.Shared;
-                using var serial = new SerialPort(comPort, 9600);
+                using var serial = new SerialPort(comPort, MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate);
 
                 stopwatch.Start();
 

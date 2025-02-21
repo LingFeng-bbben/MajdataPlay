@@ -249,7 +249,8 @@ namespace MajdataPlay.IO
                 {
                     { "PollingRateMs", touchPanelPollingRate },
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
-                    { "ComPortNumber", $"COM{comPortNum}" }
+                    { "ComPortNumber", $"COM{comPortNum}" },
+                    { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate }
                 };
 
                 _ioManager.AddButtonRing(deviceName,
