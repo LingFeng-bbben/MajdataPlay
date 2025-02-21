@@ -171,6 +171,7 @@ namespace MajdataPlay.Types
     {
         public bool Enable { get; set; } = true;
         public int COMPort { get; set; } = 21;
+        public int BaudRate { get; set; } = 115200;
         public int RefreshRateMs { get; set; } = 16;
     }
     public class ButtonRingOptions

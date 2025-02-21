@@ -252,6 +252,11 @@ namespace MajdataPlay.IO
                     { "ComPortNumber", $"COM{comPortNum}" },
                     { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate }
                 };
+                var ledConnProperties = new Dictionary<string, dynamic>()
+                {
+                    { "ComPortNumber", $"COM{MajInstances.Setting.Misc.OutputDevice.Led.COMPort}" },
+                    { "BaudRate", MajInstances.Setting.Misc.OutputDevice.Led.BaudRate }
+                };
 
                 _ioManager.AddButtonRing(deviceName,
                                          inputSubscriptions: buttonRingCallbacks,
@@ -259,7 +264,8 @@ namespace MajdataPlay.IO
                 _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
                                          inputSubscriptions: touchPanelCallbacks,
                                          connectionProperties: touchPanelConnProperties);
-                _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName());
+                _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName(),
+                                        connectionProperties: ledConnProperties);
             }
             catch (Exception e)
             {

@@ -21,7 +21,7 @@ namespace MajdataPlay.IO
     {
         bool _useDummy = true;
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();
-        SerialPort _serial = new SerialPort("COM21", 115200);
+        SerialPort _serial;
         LedDevice[] _ledDevices = new LedDevice[8];
         //Coroutine[] timers = new Coroutine[8];
         //List<byte> _templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -51,10 +51,7 @@ namespace MajdataPlay.IO
             var comPortStr = $"COM{comPort}";
             try
             {
-                if (comPort != 21)
-                {
-                    _serial = new SerialPort(comPortStr, 115200);
-                }
+                _serial = new SerialPort(comPortStr, MajInstances.Setting.Misc.OutputDevice.Led.BaudRate);
                 _serial.WriteBufferSize = 16;
                 _serial.Open();
                 _useDummy = false;
