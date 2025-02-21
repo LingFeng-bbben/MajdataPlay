@@ -73,7 +73,6 @@ namespace MajdataPlay.IO
         private void OnDestroy()
         {
             MajInstanceHelper<LightManager>.Free();
-            _serial!.Close();
         }
 
         byte CalculateCheckSum(List<byte> bytes)
@@ -172,42 +171,44 @@ namespace MajdataPlay.IO
             var t1 = stopwatch.Elapsed;
 
             stopwatch.Start();
-
-            while (true)
+            using (_serial)
             {
-                token.ThrowIfCancellationRequested();
-                try
+                while (true)
                 {
-                    var serialStream = await EnsureSerialStreamIsOpen(_serial);
-                    foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
+                    token.ThrowIfCancellationRequested();
+                    try
                     {
-                        using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                        var serialStream = await EnsureSerialStreamIsOpen(_serial);
+                        foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
                         {
-                            var index = device!.Index;
-                            var color = device.Color;
-                            var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
-                            //rentedMemory.Span[5] = (byte)index;
-                            //rentedMemory.Span[6] = (byte)(color.r * 255);
-                            //rentedMemory.Span[7] = (byte)(color.g * 255);
-                            //rentedMemory.Span[8] = (byte)(color.b * 255);
-                            //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+                            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
+                            {
+                                var index = device!.Index;
+                                var color = device.Color;
+                                var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
+                                //rentedMemory.Span[5] = (byte)index;
+                                //rentedMemory.Span[6] = (byte)(color.r * 255);
+                                //rentedMemory.Span[7] = (byte)(color.g * 255);
+                                //rentedMemory.Span[8] = (byte)(color.b * 255);
+                                //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
 
-                            await serialStream.WriteAsync(packet.Slice(0, 10));
+                                await serialStream.WriteAsync(packet.Slice(0, 10));
+                            }
                         }
+                        await serialStream.WriteAsync(_templateUpdate.AsMemory());
                     }
-                    await serialStream.WriteAsync(_templateUpdate.AsMemory());
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogError($"From Led refresher: \n{e}");
-                }
-                finally
-                {
-                    var t2 = stopwatch.Elapsed;
-                    var elapsed = t2 - t1;
-                    t1 = t2;
-                    if (elapsed < refreshRate)
-                        await Task.Delay(refreshRate - elapsed, token);
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"From Led refresher: \n{e}");
+                    }
+                    finally
+                    {
+                        var t2 = stopwatch.Elapsed;
+                        var elapsed = t2 - t1;
+                        t1 = t2;
+                        if (elapsed < refreshRate)
+                            await Task.Delay(refreshRate - elapsed, token);
+                    }
                 }
             }
         }
