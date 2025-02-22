@@ -1,22 +1,26 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public sealed class FastLateDisplayer: MonoBehaviour
+    internal sealed class FastLateDisplayer: MajComponent
     {
         public Vector3 Position
         {
-            get => _gameObject.transform.position;
-            set => _gameObject.transform.position = value;
+            get => Transform.position;
+            set => Transform.position = value;
         }
         public Vector3 LocalPosition
         {
-            get => _gameObject.transform.localPosition;
-            set => _gameObject.transform.localPosition = value;
+            get => Transform.localPosition;
+            set => Transform.localPosition = value;
         }
-        GameObject _gameObject;
         Animator _animator;
 
         [SerializeField]
@@ -24,17 +28,26 @@ namespace MajdataPlay.Game
 
         Sprite fastSprite;
         Sprite lateSprite;
-        void Awake()
+
+        GameObject[] _children = Array.Empty<GameObject>();
+
+        static readonly int PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
+        static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
+        protected override void Awake()
         {
-            _gameObject = gameObject;
-            _animator = gameObject.GetComponent<Animator>();
+            base.Awake();
+            _animator = GameObject.GetComponent<Animator>();
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
             fastSprite = skin.Fast;
             lateSprite = skin.Late;
+            _children = Transform.GetChildren()
+                                 .Select(x => x.gameObject)
+                                 .ToArray();
+            SetActiveInternal(false);
         }
         public void Reset()
         {
-            _gameObject.SetActive(false);
+            SetActive(false);
         }
         public void Play(in JudgeResult judgeResult)
         {
@@ -43,15 +56,47 @@ namespace MajdataPlay.Game
                 Reset();
                 return;
             }
-            _gameObject.SetActive(true);
+            SetActive(true);
             if (judgeResult.IsFast)
                 textRenderer.sprite = fastSprite;
             else
                 textRenderer.sprite = lateSprite;
             if (judgeResult.IsBreak)
-                _animator.SetTrigger("break");
+                _animator.SetTrigger(BREAK_ANIM_HASH);
             else
-                _animator.SetTrigger("perfect");
+                _animator.SetTrigger(PERFECT_ANIM_HASH);
+        }
+        public override void SetActive(bool state)
+        {
+            if (Active == state)
+                return;
+            SetActiveInternal(state);
+        }
+        void SetActiveInternal(bool state)
+        {
+            Active = state;
+            base.SetActive(state);
+            switch(state)
+            {
+                case true:
+                    foreach(var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.DEFAULT_LAYER;
+                    }
+                    GameObject.layer = MajEnv.DEFAULT_LAYER;
+                    break;
+                case false:
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.HIDDEN_LAYER;
+                    }
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
+                    break;
+            }
         }
     }
 }

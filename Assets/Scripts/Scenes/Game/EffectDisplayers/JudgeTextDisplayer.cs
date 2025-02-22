@@ -1,23 +1,25 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
+using System.Linq;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public sealed class JudgeTextDisplayer: MonoBehaviour
+    internal sealed class JudgeTextDisplayer: MajComponent
     {
         public Vector3 Position
         {
-            get => _gameObject.transform.position;
-            set => _gameObject.transform.position = value;
+            get => Transform.position;
+            set => Transform.position = value;
         }
         public Vector3 LocalPosition
         {
-            get => _gameObject.transform.localPosition;
-            set => _gameObject.transform.localPosition = value;
+            get => Transform.localPosition;
+            set => Transform.localPosition = value;
         }
 
-        GameObject _gameObject;
         Animator _animator;
 
         [SerializeField]
@@ -25,14 +27,18 @@ namespace MajdataPlay.Game
         [SerializeField]
         SpriteRenderer breakRenderer;
 
-
+        GameObject[] _children = Array.Empty<GameObject>();
         JudgeTextSkin _skin;
 
         bool _displayBreakScore = false;
         bool _displayCriticalPerfect = false;
-        void Awake()
+
+        static readonly int PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
+        static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
+
+        protected override void Awake()
         {
-            _gameObject = gameObject;
+            base.Awake();
             _animator = GetComponent<Animator>();
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
             _displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
@@ -54,14 +60,18 @@ namespace MajdataPlay.Game
                     breakSprite = _skin.P_Shine;
             }
             breakRenderer.sprite = breakSprite;
+            _children = Transform.GetChildren()
+                                 .Select(x => x.gameObject)
+                                 .ToArray();
+            SetActiveInternal(false);
         }
         public void Reset()
         {
-            _gameObject.SetActive(false);
+            SetActive(false);
         }
         public void Play(in JudgeResult judgeResult, bool isClassC = false)
         {
-            _gameObject.SetActive(true);
+            SetActive(true);
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Grade;
 
@@ -71,9 +81,9 @@ namespace MajdataPlay.Game
                 LoadTapSkin(judgeResult,isClassC);
             
             if (isBreak && result == JudgeGrade.Perfect)
-                _animator.SetTrigger("break");
+                _animator.SetTrigger(BREAK_ANIM_HASH);
             else
-                _animator.SetTrigger("perfect");
+                _animator.SetTrigger(PERFECT_ANIM_HASH);
         }
         void LoadTapSkin(in JudgeResult judgeResult,bool isClassC = false)
         {
@@ -204,6 +214,37 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        
+        public override void SetActive(bool state)
+        {
+            if (Active == state)
+                return;
+            SetActiveInternal(state);
+        }
+        void SetActiveInternal(bool state)
+        {
+            Active = state;
+            base.SetActive(state);
+            switch (state)
+            {
+                case true:
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.DEFAULT_LAYER;
+                    }
+                    GameObject.layer = MajEnv.DEFAULT_LAYER;
+                    break;
+                case false:
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.HIDDEN_LAYER;
+                    }
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
+                    break;
+            }
+        }
     }
 }
