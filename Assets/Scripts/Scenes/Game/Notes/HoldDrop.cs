@@ -263,7 +263,8 @@ namespace MajdataPlay.Game.Notes
             if (!_isJudged)
                 return;
             PlaySFX();
-            PlayHoldEffect();
+            _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+            _effectManager.ResetEffect(StartPos);
         }
         protected override void PlaySFX()
         {
@@ -561,10 +562,10 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            _effectManager.PlayHoldEffect(StartPos, _judgeResult);
             _effectManager.ResetEffect(StartPos);
             if(_lastHoldState is null || !(bool)_lastHoldState)
             {
+                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
                 _thisRenderer.sharedMaterial = HoldShineMaterial;
                 _thisRenderer.sprite = _holdOnSprite;
             }
