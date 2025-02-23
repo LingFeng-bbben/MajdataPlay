@@ -165,6 +165,8 @@ namespace MajdataPlay.Game.Notes
 
         protected const float HOLD_HEAD_IGNORE_LENGTH = 0.1f;
         protected const float HOLD_TAIL_IGNORE_LENGTH = 0.2f;
+        protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH = 0.25f;
+        protected const float TOUCHHOLD_TAIL_IGNORE_LENGTH = 0.2f;
         protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME = 0.03333333f;
         protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH = 0.333334f;
         protected override void Awake()

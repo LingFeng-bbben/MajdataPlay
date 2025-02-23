@@ -15,7 +15,7 @@ namespace MajdataPlay.Game.Notes
 
         [ReadOnlyField]
         [SerializeField]
-        protected float _playerIdleTime = 0;
+        protected float _playerReleaseTime = 0;
         [ReadOnlyField]
         [SerializeField]
         protected float _length = 1f;

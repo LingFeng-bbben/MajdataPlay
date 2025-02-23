@@ -66,14 +66,16 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _borderRenderer;
         NotePoolManager _notePoolManager;
 
-        bool _isHoldOn = false;
+        bool? _lastHoldState = null;
         float _releaseTime = 0;
+        Range<float> _bodyCheckRange;
         readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
 
         const int _fanSpriteSortOrder = 2;
         const int _borderSortOrder = 6;
         const int _pointBorderSortOrder = 1;
 
+        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
         protected override void Awake()
         {
             base.Awake();
@@ -165,12 +167,22 @@ namespace MajdataPlay.Game.Notes
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
-            _isHoldOn = false;
+            _lastHoldState = null;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
-            _playerIdleTime = 0;
+            _playerReleaseTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
+            _releaseTime = 0;
+
+            if (Length < TOUCHHOLD_HEAD_IGNORE_LENGTH + TOUCHHOLD_TAIL_IGNORE_LENGTH)
+            {
+                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+            }
+            else
+            {
+                _bodyCheckRange = new Range<float>(Timing + TOUCHHOLD_HEAD_IGNORE_LENGTH, (Timing + Length) - TOUCHHOLD_TAIL_IGNORE_LENGTH, ContainsType.Closed);
+            }
 
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
             moveDuration = 0.8f * wholeDuration;
@@ -232,7 +244,7 @@ namespace MajdataPlay.Game.Notes
                 IsEX = false,
                 Diff = _judgeDiff
             });
-            _isHoldOn = false;
+            _lastHoldState = false;
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
@@ -439,36 +451,34 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var remainingTime = GetRemainingTime();
-            var timing = GetTimeSpanToJudgeTiming();
 
             if (remainingTime == 0)
             {
                 End();
                 return;
             }
-
-            if (timing <= 0.25f) // 忽略头部15帧
+            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            {
                 return;
-            else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                return;
-            else if (!NoteController.IsStart) // 忽略暂停
-                return;
+            }
 
             var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
                 _releaseTime = 0;
+                _lastHoldState = true;
             }
             else
             {
-                if (_releaseTime <= 0.03333333f)
+                if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME)
                 {
                     _releaseTime += Time.deltaTime;
                     return;
                 }
-                _playerIdleTime += Time.deltaTime;
+                _playerReleaseTime += Time.deltaTime;
                 StopHoldEffect();
+                _lastHoldState = false;
             }
         }
         public override void SetActive(bool state)
@@ -538,7 +548,7 @@ namespace MajdataPlay.Game.Notes
                 return result;
             var offset = (int)result > 7 ? 0 : _judgeDiff;
             var realityHT = (Length - 0.45f - offset / 1000f).Clamp(0, Length - 0.45f);
-            var percent = ((realityHT - _playerIdleTime) / realityHT).Clamp(0, 1);
+            var percent = ((realityHT - _playerReleaseTime) / realityHT).Clamp(0, 1);
 
             if (realityHT > 0)
             {
@@ -584,23 +594,23 @@ namespace MajdataPlay.Game.Notes
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
-            if (_isHoldOn)
-                return;
-            _isHoldOn = true;
-            _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-            _audioEffMana.PlayTouchHoldSound();
-            _borderRenderer.sprite = board_On;
-            SetFansMaterial(DefaultMaterial);
+            if (_lastHoldState is null || !(bool)_lastHoldState)
+            {
+                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                _audioEffMana.PlayTouchHoldSound();
+                _borderRenderer.sprite = board_On;
+                SetFansMaterial(DefaultMaterial);
+            }
         }
         void StopHoldEffect()
         {
-            if (!_isHoldOn)
-                return;
-            _isHoldOn = false;
-            _effectManager.ResetHoldEffect(_sensorPos);
-            _audioEffMana.StopTouchHoldSound();
-            _borderRenderer.sprite = board_Off;
-            SetFansMaterial(DefaultMaterial);
+            if (_lastHoldState is null || (bool)_lastHoldState)
+            {
+                _effectManager.ResetHoldEffect(_sensorPos);
+                _audioEffMana.StopTouchHoldSound();
+                _borderRenderer.sprite = board_Off;
+                SetFansMaterial(DefaultMaterial);
+            }            
         }
         Vector3 GetAngle(int index)
         {

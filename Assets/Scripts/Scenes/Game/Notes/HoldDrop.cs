@@ -152,11 +152,12 @@ namespace MajdataPlay.Game.Notes
             Length = poolingInfo.LastFor;
             _sensorPos = (SensorArea)(StartPos - 1);
             _holdAnimStart = false;
-            _playerIdleTime = 0;
+            _playerReleaseTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
             _lastHoldState = null;
+            _releaseTime = 0;
 
-            if(Length < 0.3f)
+            if (Length < HOLD_HEAD_IGNORE_LENGTH + HOLD_TAIL_IGNORE_LENGTH)
             {
                 _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
             }
@@ -459,6 +460,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     PlayHoldEffect();
                 }
+                _releaseTime = 0;
                 _lastHoldState = true;
             }
             else
@@ -473,7 +475,7 @@ namespace MajdataPlay.Game.Notes
                     _releaseTime += Time.deltaTime;
                     return;
                 }
-                _playerIdleTime += Time.deltaTime;
+                _playerReleaseTime += Time.deltaTime;
                 StopHoldEffect();
                 _lastHoldState = false;
             }
@@ -485,7 +487,7 @@ namespace MajdataPlay.Game.Notes
 
             var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
             var realityHT = (Length - 0.3f - offset / 1000f).Clamp(0, Length - 0.3f);
-            var percent = ((realityHT - _playerIdleTime) / realityHT).Clamp(0, 1);
+            var percent = ((realityHT - _playerReleaseTime) / realityHT).Clamp(0, 1);
 
             if (realityHT > 0)
             {
