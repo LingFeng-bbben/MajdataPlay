@@ -2,7 +2,6 @@
 using MajdataPlay.Utils;
 using System.Windows.Forms;
 using UnityEngine;
-using static Unity.VisualScripting.Metadata;
 #nullable enable
 namespace MajdataPlay.Game
 {

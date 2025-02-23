@@ -460,7 +460,7 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                else if (_releaseTime <= 0.05f)
+                else if (_releaseTime <= 0.03333333f)
                 {
                     _releaseTime += Time.deltaTime;
                     return;
