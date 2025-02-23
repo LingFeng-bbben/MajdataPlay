@@ -16,15 +16,18 @@ namespace MajdataPlay.Game
         GameObject _fireworkEffect;
         Animator _fireworkEffectAnimator;
 
-        InputManager _inputManager = MajInstances.InputManager;
-
         public Color buttonGoodColor = Color.green;
         public Color buttonGreatColor = Color.red;
         public Color buttonPerfectColor = Color.yellow;
 
         Dictionary<SensorArea, TimeSpan> _lastTriggerTimes = new();
-        GameSetting _setting = MajInstances.Setting;
+
+        readonly InputManager _inputManager = MajInstances.InputManager;
+        readonly LightManager _lightManager = MajInstances.LightManager;
+        readonly GameSetting _setting = MajInstances.Setting;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
+
+        readonly static int FIREWORK_ANIM_HASH = Animator.StringToHash("Fire");
 
         void Awake()
         {
@@ -87,7 +90,7 @@ namespace MajdataPlay.Game
         }
         public void PlayFireworkEffect(in Vector3 position)
         {
-            _fireworkEffectAnimator.SetTrigger("Fire");
+            _fireworkEffectAnimator.SetTrigger(FIREWORK_ANIM_HASH);
             _fireworkEffect.transform.position = position;
         }
         /// <summary>
@@ -99,7 +102,7 @@ namespace MajdataPlay.Game
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
-            MajInstances.LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
+            _lightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if(!judgeResult.IsMissOrTooFast)
             {
@@ -110,7 +113,7 @@ namespace MajdataPlay.Game
         }
         public void PlayHoldEffect( int keyIndex, in JudgeGrade judgeType)
         {
-            MajInstances.LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
+            _lightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect( SensorArea sensorPos, in JudgeGrade judgeType)
@@ -119,7 +122,7 @@ namespace MajdataPlay.Game
         }
         public void ResetHoldEffect(int keyIndex)
         {
-            MajInstances.LightManager.SetButtonLight(Color.white, keyIndex - 1);
+            _lightManager.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorArea sensorPos)

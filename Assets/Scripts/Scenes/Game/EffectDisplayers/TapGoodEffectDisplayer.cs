@@ -3,43 +3,23 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
-#nullable enable
+
 namespace MajdataPlay.Game
 {
-    internal sealed class FastLateDisplayer: MajComponent
+    internal sealed class TapGoodEffectDisplayer : MajComponent
     {
-        public Vector3 Position
-        {
-            get => Transform.position;
-            set => Transform.position = value;
-        }
-        public Vector3 LocalPosition
-        {
-            get => Transform.localPosition;
-            set => Transform.localPosition = value;
-        }
         Animator _animator;
-
-        [SerializeField]
-        SpriteRenderer textRenderer;
-
-        Sprite fastSprite;
-        Sprite lateSprite;
-
         GameObject[] _children = Array.Empty<GameObject>();
 
-        static readonly int PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
-        static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
+        static readonly int TAP_GOOD_ANIM_HASH = Animator.StringToHash("good");
         protected override void Awake()
         {
             base.Awake();
             _animator = GameObject.GetComponent<Animator>();
-            var skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            fastSprite = skin.Fast;
-            lateSprite = skin.Late;
             _children = Transform.GetChildren()
                                  .Select(x => x.gameObject)
                                  .ToArray();
@@ -49,22 +29,21 @@ namespace MajdataPlay.Game
         {
             SetActive(false);
         }
-        public void Play(in JudgeResult judgeResult)
+        public void PlayEffect(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast || judgeResult.Diff == 0)
+            if (judgeResult.IsBreak)
             {
-                Reset();
                 return;
             }
-            SetActive(true);
-            if (judgeResult.IsFast)
-                textRenderer.sprite = fastSprite;
-            else
-                textRenderer.sprite = lateSprite;
-            if (judgeResult.IsBreak)
-                _animator.SetTrigger(BREAK_ANIM_HASH);
-            else
-                _animator.SetTrigger(PERFECT_ANIM_HASH);
+            var grade = judgeResult.Grade;
+            switch (grade)
+            {
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
+                    SetActive(true);
+                    _animator.SetTrigger(TAP_GOOD_ANIM_HASH);
+                    break;
+            }
         }
         public override void SetActive(bool state)
         {
@@ -76,10 +55,10 @@ namespace MajdataPlay.Game
         {
             Active = state;
             base.SetActive(state);
-            switch(state)
+            switch (state)
             {
                 case true:
-                    foreach(var child in ArrayHelper.ToEnumerable(_children))
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
                     {
                         if (child is null)
                             continue;

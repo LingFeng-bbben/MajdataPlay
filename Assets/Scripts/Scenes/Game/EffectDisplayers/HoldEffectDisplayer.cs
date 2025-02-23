@@ -1,37 +1,53 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
+using System.Windows.Forms;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public class HoldEffectDisplayer: MonoBehaviour
+    internal sealed class HoldEffectDisplayer: MajComponent
     {
         public Vector3 Position
         {
-            get => effectObject.transform.position;
-            set => effectObject.transform.position = value;
+            get => Transform.position;
+            set => Transform.position = value;
         }
         public Vector3 LocalPosition
         {
-            get => effectObject.transform.localPosition;
-            set => effectObject.transform.localPosition = value;
+            get => Transform.localPosition;
+            set => Transform.localPosition = value;
         }
-        [SerializeField]
-        GameObject effectObject;
-        [SerializeField]
-        ParticleSystemRenderer psRenderer;
 
-        bool isPlaying = false;
+        ParticleSystemRenderer _psRenderer;
+        Material _material;
+
+        bool _isPlaying = false;
+        Color _color = WHITE;
+
+        static readonly int MATERIAL_COLOR_ID = Shader.PropertyToID("_Color");
+        static readonly Color YELLOW = new Color(1f, 0.93f, 0.61f);
+        static readonly Color PINK = new Color(1f, 0.70f, 0.94f);
+        static readonly Color GREEN = new Color(0.56f, 1f, 0.59f);
+        static readonly Color WHITE = new Color(1f, 1f, 1f);
+        protected override void Awake()
+        {
+            base.Awake();
+            _psRenderer = GetComponent<ParticleSystemRenderer>();
+            _material = _psRenderer.material;
+            SetActiveInternal(false);
+        }
         public void Reset()
         {
-            effectObject.SetActive(false);
-            isPlaying = false;
+            SetActive(false);
+            _isPlaying = false;
         }
         public void Play(in JudgeGrade judgeType)
         {
-            if (isPlaying)
+            if (_isPlaying)
                 return;
-            isPlaying = true;
-            var material = psRenderer.material;
+            _isPlaying = true;
+
+            var newColor = WHITE;
             switch (judgeType)
             {
                 case JudgeGrade.LatePerfect2:
@@ -39,7 +55,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.LatePerfect1:
                 case JudgeGrade.FastPerfect1:
                 case JudgeGrade.Perfect:
-                    material.SetColor("_Color", new Color(1f, 0.93f, 0.61f)); // Yellow
+                    newColor = YELLOW;
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat1:
@@ -47,20 +63,41 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat2:
                 case JudgeGrade.FastGreat1:
                 case JudgeGrade.FastGreat:
-                    material.SetColor("_Color", new Color(1f, 0.70f, 0.94f)); // Pink
+                    newColor = PINK;
                     break;
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
-                    material.SetColor("_Color", new Color(0.56f, 1f, 0.59f)); // Green
-                    break;
-                case JudgeGrade.TooFast:
-                case JudgeGrade.Miss:
-                    material.SetColor("_Color", new Color(1f, 1f, 1f)); // White
-                    break;
-                default:
+                    newColor = GREEN;
                     break;
             }
-            effectObject.SetActive(true);
+            if(_color == newColor)
+            {
+                SetActive(true);
+                return;
+            }
+            SetActive(true);
+            _material.SetColor(MATERIAL_COLOR_ID, newColor);
+            _color = newColor;
+        }
+        public override void SetActive(bool state)
+        {
+            if (Active == state)
+                return;
+            SetActiveInternal(state);
+        }
+        void SetActiveInternal(bool state)
+        {
+            Active = state;
+            base.SetActive(state);
+            switch (state)
+            {
+                case true:
+                    GameObject.layer = MajEnv.DEFAULT_LAYER;
+                    break;
+                case false:
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
+                    break;
+            }
         }
     }
 }

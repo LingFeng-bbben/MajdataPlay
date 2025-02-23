@@ -47,18 +47,11 @@ namespace MajdataPlay.Game
         [SerializeField]
         GameObject effectParent;
         [SerializeField]
-        GameObject perfectDisplayer;
+        TapPerfectEffectDisplayer _perfectDisplayer;
         [SerializeField]
-        GameObject greatDisplayer;
+        TapGreatEffectDisplayer _greatDisplayer;
         [SerializeField]
-        GameObject goodDisplayer;
-
-        [SerializeField]
-        Animator perfectAnim;
-        [SerializeField]
-        Animator greatAnim;
-        [SerializeField]
-        Animator goodAnim;
+        TapGoodEffectDisplayer _goodDisplayer;
 
         [SerializeField]
         JudgeTextDisplayer _judgeTextDisplayer;
@@ -95,9 +88,9 @@ namespace MajdataPlay.Game
         }
         public void Reset()
         {
-            perfectDisplayer.SetActive(false);
-            greatDisplayer.SetActive(false);
-            goodDisplayer.SetActive(false);
+            _perfectDisplayer.Reset();
+            _greatDisplayer.Reset();
+            _goodDisplayer.Reset();
         }
         /// <summary>
         /// 将Effect、Text和FastLate设置为非活动状态
@@ -138,54 +131,44 @@ namespace MajdataPlay.Game
             var isBreak = judgeResult.IsBreak;
             var result = judgeResult.Grade;
             if (!judgeResult.IsMissOrTooFast)
-                Reset();
-            else
-                return;
-            switch (result)
             {
-                case JudgeGrade.LateGood:
-                case JudgeGrade.FastGood:
-                    if (isBreak)
-                    {
-                        perfectDisplayer.SetActive(true);
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("bGood");
-                    }
-                    else
-                        goodDisplayer.SetActive(true);
-                    break;
-                case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
-                case JudgeGrade.FastGreat:
-                    if (isBreak)
-                    {
-                        perfectDisplayer.SetActive(true);
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("bGreat");
-                    }
-                    else
-                    {
-                        greatDisplayer.SetActive(true);
-                        greatAnim.SetTrigger("great");
-                    }
-                    break;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.Perfect:
-                    perfectDisplayer.SetActive(true);
-                    if (isBreak)
-                    {
-                        perfectAnim.speed = 0.9f;
-                        perfectAnim.SetTrigger("break");
-                    }
-                    break;
-                default:
-                    break;
+                Reset();
+            }
+            else
+            {
+                return;
+            }
+
+            if (isBreak)
+            {
+                _perfectDisplayer.PlayEffect(judgeResult);
+            }
+            else
+            {
+                switch (result)
+                {
+                    case JudgeGrade.LateGood:
+                    case JudgeGrade.FastGood:
+                        _goodDisplayer.PlayEffect(judgeResult);
+                        break;
+                    case JudgeGrade.LateGreat:
+                    case JudgeGrade.LateGreat1:
+                    case JudgeGrade.LateGreat2:
+                    case JudgeGrade.FastGreat2:
+                    case JudgeGrade.FastGreat1:
+                    case JudgeGrade.FastGreat:
+                        _greatDisplayer.PlayEffect(judgeResult);
+                        break;
+                    case JudgeGrade.LatePerfect2:
+                    case JudgeGrade.FastPerfect2:
+                    case JudgeGrade.LatePerfect1:
+                    case JudgeGrade.FastPerfect1:
+                    case JudgeGrade.Perfect:
+                        _perfectDisplayer.PlayEffect(judgeResult);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         bool PlayResult(in JudgeResult judgeResult)

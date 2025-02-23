@@ -12,10 +12,7 @@ namespace MajdataPlay.Game
         public SensorArea SensorPos { get; set; } = SensorArea.C;
 
         [SerializeField]
-        GameObject effectObject;
-
-        [SerializeField]
-        Animator effectAnim;
+        TouchJudgeEffectDisplayer _judgeEffectDisplayer;
 
         [SerializeField]
         JudgeTextDisplayer _judgeTextDisplayer;
@@ -25,6 +22,10 @@ namespace MajdataPlay.Game
         FastLateDisplayer _fastLateDisplayerB;
 
         bool _isEnabled = true;
+
+        static readonly int TOUCH_PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
+        static readonly int TOUCH_GREAT_ANIM_HASH = Animator.StringToHash("great");
+        static readonly int TOUCH_GOOD_ANIM_HASH = Animator.StringToHash("good");
         void Start()
         {
             var distance = TouchBase.GetDistance(SensorPos.GetGroup());
@@ -33,9 +34,9 @@ namespace MajdataPlay.Game
             var fastLateDistance = textDistance - 0.56f;
             transform.rotation = rotation;
 
-            var effectPos = effectObject.transform.localPosition;
+            var effectPos = _judgeEffectDisplayer.transform.localPosition;
             effectPos.y += distance;
-            effectObject.transform.localPosition = effectPos;
+            _judgeEffectDisplayer.transform.localPosition = effectPos;
 
             var textPos = _judgeTextDisplayer.LocalPosition;
             textPos.y = textDistance;
@@ -50,7 +51,7 @@ namespace MajdataPlay.Game
         }
         public void Reset()
         {
-            effectObject.SetActive(false);
+            _judgeEffectDisplayer.SetActive(false);
         }
         public void ResetAll()
         {
@@ -85,36 +86,15 @@ namespace MajdataPlay.Game
         }
         void PlayEffect(in JudgeResult judgeResult)
         {
-            var result = judgeResult.Grade;
             if (!judgeResult.IsMissOrTooFast)
-                Reset();
-            else
-                return;
-            effectObject.SetActive(true);
-            switch (result)
             {
-                case JudgeGrade.LateGood:
-                case JudgeGrade.FastGood:
-                    effectAnim.SetTrigger("good");
-                    break;
-                case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
-                case JudgeGrade.FastGreat:
-                    effectAnim.SetTrigger("great");
-                    break;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.Perfect:
-                    effectAnim.SetTrigger("perfect");
-                    break;
-                default:
-                    break;
+                Reset();
             }
+            else
+            {
+                return;
+            }
+            _judgeEffectDisplayer.PlayEffect(judgeResult);
         }
         bool PlayResult(in JudgeResult judgeResult)
         {
