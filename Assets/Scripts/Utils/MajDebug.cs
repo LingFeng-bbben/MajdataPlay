@@ -1,5 +1,6 @@
 ﻿using Cysharp.Text;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,14 +13,14 @@ namespace MajdataPlay.Utils
 {
     public static class MajDebug
     {
-        readonly static Queue<GameLog> _logQueue = new(2048);
+        readonly static ConcurrentQueue<GameLog> _logQueue = new();
         readonly static ILogger _unityLogger;
 
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
             
-            LogWriteback();
+            StartLogWritebackTask();
 #if !(UNITY_EDITOR || DEBUG)
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
@@ -61,30 +62,37 @@ namespace MajdataPlay.Utils
         {
             return new StackTrace(2, true).ToString();
         }
-        static async Task LogWriteback()
+        static void StartLogWritebackTask()
         {
-            var token = MajEnv.GlobalCT;
-            var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
-            if (!Directory.Exists(MajEnv.LogsPath))
-                Directory.CreateDirectory(MajEnv.LogsPath);
-            if (File.Exists(oldLogPath))
-                File.Delete(oldLogPath);
-            if (File.Exists(MajEnv.LogPath))
-                File.Delete(MajEnv.LogPath);
-           
-            while (true)
+            Task.Run(async () =>
             {
-                if (token.IsCancellationRequested)
-                    return;
-                if (_logQueue.Count == 0)
+                var token = MajEnv.GlobalCT;
+                var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
+                if (!Directory.Exists(MajEnv.LogsPath))
+                    Directory.CreateDirectory(MajEnv.LogsPath);
+                if (File.Exists(oldLogPath))
+                    File.Delete(oldLogPath);
+                if (File.Exists(MajEnv.LogPath))
+                    File.Delete(MajEnv.LogPath);
+
+                while (true)
                 {
-                    await Task.Delay(50);
-                    continue;
+                    if (token.IsCancellationRequested)
+                        return;
+                    try
+                    {
+                        while (_logQueue.TryDequeue(out var log))
+                        {
+                            var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
+                            await File.AppendAllTextAsync(MajEnv.LogPath, msg);
+                        }
+                    }
+                    finally
+                    {
+                        await Task.Delay(50);
+                    }
                 }
-                var log = _logQueue.Dequeue();
-                var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
-                await File.AppendAllTextAsync(MajEnv.LogPath, msg);
-            }
+            });
         }
         struct GameLog
         {
