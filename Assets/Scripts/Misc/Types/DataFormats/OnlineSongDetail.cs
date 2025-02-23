@@ -367,7 +367,7 @@ namespace MajdataPlay.Types
 
                     if(File.Exists(cacheFlagPath))
                     {
-                        if(File.Exists(savePath))
+                        if(!File.Exists(savePath))
                             _fullSizeCover = MajEnv.EmptySongCover;
                         else
                             _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
