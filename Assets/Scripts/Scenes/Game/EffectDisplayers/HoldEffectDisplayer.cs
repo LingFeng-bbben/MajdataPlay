@@ -26,15 +26,15 @@ namespace MajdataPlay.Game
         Color _color = WHITE;
 
         static readonly int MATERIAL_COLOR_ID = Shader.PropertyToID("_Color");
-        static readonly Color YELLOW = new Color(1f, 1f, 1f);
-        static readonly Color PINK = new Color(1f, 1f, 1f);
-        static readonly Color GREEN = new Color(1f, 1f, 1f);
+        static readonly Color YELLOW = new Color(1f, 0.93f, 0.61f);
+        static readonly Color PINK = new Color(1f, 0.70f, 0.94f);
+        static readonly Color GREEN = new Color(0.56f, 1f, 0.59f);
         static readonly Color WHITE = new Color(1f, 1f, 1f);
         protected override void Awake()
         {
             base.Awake();
             _psRenderer = GetComponent<ParticleSystemRenderer>();
-            _material = _psRenderer.sharedMaterial;
+            _material = _psRenderer.material;
             SetActiveInternal(false);
         }
         public void Reset()
@@ -69,11 +69,6 @@ namespace MajdataPlay.Game
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
                     newColor = GREEN;
-                    break;
-                case JudgeGrade.TooFast:
-                case JudgeGrade.Miss:
-                    break;
-                default:
                     break;
             }
             if(_color == newColor)
