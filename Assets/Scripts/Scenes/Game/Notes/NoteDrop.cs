@@ -163,6 +163,10 @@ namespace MajdataPlay.Game.Notes
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
+        protected const float HOLD_HEAD_IGNORE_LENGTH = 0.1f;
+        protected const float HOLD_TAIL_IGNORE_LENGTH = 0.2f;
+        protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME = 0.03333333f;
+        protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH = 0.333334f;
         protected override void Awake()
         {
             base.Awake();

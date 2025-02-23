@@ -65,12 +65,17 @@ namespace MajdataPlay.Game.Notes
 
         NotePoolManager _poolManager;
 
+        bool? _lastHoldState = null;
         float _releaseTime = 0;
+        Range<float> _bodyCheckRange;
         readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
         const int _endSortOrder = 2;
+
+        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
+        
 
         protected override void Awake()
         {
@@ -149,6 +154,16 @@ namespace MajdataPlay.Game.Notes
             _holdAnimStart = false;
             _playerIdleTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
+            _lastHoldState = null;
+
+            if(Length < 0.3f)
+            {
+                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+            }
+            else
+            {
+                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH, (Timing + Length) - HOLD_TAIL_IGNORE_LENGTH, ContainsType.Closed);
+            }
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             Transform.localScale = new Vector3(0, 0);
@@ -417,7 +432,7 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                if (endTiming >= 0.333334f || _judgeResult.IsMissOrTooFast())
+                if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH || _judgeResult.IsMissOrTooFast())
                 {
                     End();
                     return;
@@ -428,18 +443,10 @@ namespace MajdataPlay.Game.Notes
                 End();
                 return;
             }
-
-
-            if (!IsClassic)
+            else if(!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
-                if (timing <= 0.1f) // 忽略头部6帧
-                    return;
-                else if (remainingTime <= 0.2f) // 忽略尾部12帧
-                    return;
-            }
-
-            if (!NoteController.IsStart) // 忽略暂停
                 return;
+            }
 
             var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
             if (on || IsAutoplay)
@@ -452,6 +459,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     PlayHoldEffect();
                 }
+                _lastHoldState = true;
             }
             else
             {
@@ -460,13 +468,14 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                else if (_releaseTime <= 0.03333333f)
+                else if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME)
                 {
                     _releaseTime += Time.deltaTime;
                     return;
                 }
                 _playerIdleTime += Time.deltaTime;
                 StopHoldEffect();
+                _lastHoldState = false;
             }
         }
         JudgeGrade EndJudge(in JudgeGrade result)
@@ -552,23 +561,20 @@ namespace MajdataPlay.Game.Notes
         {
             _effectManager.PlayHoldEffect(StartPos, _judgeResult);
             _effectManager.ResetEffect(StartPos);
-            if (Length <= 0.3)
-                return;
-            else if (!_holdAnimStart && GetTimeSpanToArriveTiming() >= 0.1f)//忽略开头6帧与结尾12帧
+            if(_lastHoldState is null || !(bool)_lastHoldState)
             {
-                _holdAnimStart = true;
-
                 _thisRenderer.sharedMaterial = HoldShineMaterial;
                 _thisRenderer.sprite = _holdOnSprite;
             }
         }
         void StopHoldEffect()
         {
-            _effectManager.ResetHoldEffect(StartPos);
-            _holdAnimStart = false;
-
-            _thisRenderer.sprite = _holdOffSprite;
-            _thisRenderer.sharedMaterial = DefaultMaterial;
+            if (_lastHoldState is null || (bool)_lastHoldState)
+            {
+                _effectManager.ResetHoldEffect(StartPos);
+                _thisRenderer.sprite = _holdOffSprite;
+                _thisRenderer.sharedMaterial = DefaultMaterial;
+            }
         }
         public override void SetActive(bool state)
         {
