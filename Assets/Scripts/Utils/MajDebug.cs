@@ -89,7 +89,7 @@ namespace MajdataPlay.Utils
                     }
                     finally
                     {
-                        await Task.Delay(50);
+                        await Task.Delay(100);
                     }
                 }
             });
