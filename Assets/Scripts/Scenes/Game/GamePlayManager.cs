@@ -40,7 +40,7 @@ namespace MajdataPlay.Game
         /// <summary>
         /// The timing of the current FixedUpdate<para>Unit: Second</para>
         /// </summary>
-        public float ThisFixedUpdateSec => _thisFixedUpdateSec;
+        public float ThisFixedUpdateSec => _thisFrameSec;
         /// <summary>
         ///  The first Note appear timing
         /// </summary>
@@ -743,24 +743,24 @@ namespace MajdataPlay.Game
                 FastRetry().Forget();
             }
         }
-        internal void OnFixedUpdate()
-        {
-            if (_audioSample is null)
-                return;
-            else if (AudioStartTime == -114514f)
-                return;
+        //internal void OnFixedUpdate()
+        //{
+        //    if (_audioSample is null)
+        //        return;
+        //    else if (AudioStartTime == -114514f)
+        //        return;
 
-            switch (State)
-            {
-                case GamePlayStatus.Running:
-                case GamePlayStatus.Blocking:
-                case GamePlayStatus.WaitForEnd:
-                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
-                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    _thisFixedUpdateSec = timeOffset - chartOffset;
-                    break;
-            }
-        }
+        //    switch (State)
+        //    {
+        //        case GamePlayStatus.Running:
+        //        case GamePlayStatus.Blocking:
+        //        case GamePlayStatus.WaitForEnd:
+        //            var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
+        //            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+        //            _thisFixedUpdateSec = timeOffset - chartOffset;
+        //            break;
+        //    }
+        //}
         void UpdateAudioTime()
         {
             if (_audioSample is null)

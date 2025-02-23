@@ -102,11 +102,6 @@ namespace MajdataPlay.Game.Notes
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _noteController.ThisFrameSec;
         }
-        public float ThisFixedUpdateSec
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _noteController.ThisFixedUpdateSec;
-        }
 
         protected INoteController NoteController
         {

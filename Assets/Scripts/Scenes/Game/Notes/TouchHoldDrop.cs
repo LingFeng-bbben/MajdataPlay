@@ -387,7 +387,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!args.IsClick)
                 return;
-            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
+            else if (!_judgableRange.InRange(ThisFrameSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
@@ -397,7 +397,7 @@ namespace MajdataPlay.Game.Notes
             if (isUsed)
                 return;
 
-            Judge(ThisFixedUpdateSec - _touchPanelOffset);
+            Judge(ThisFrameSec - _touchPanelOffset);
 
             if (_isJudged)
             {

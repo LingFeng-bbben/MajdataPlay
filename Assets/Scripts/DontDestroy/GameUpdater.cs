@@ -22,15 +22,15 @@ namespace MajdataPlay
         {
             _inputManager = MajInstances.InputManager;
         }
-        void FixedUpdate()
-        {
-            var gpManager = MajInstanceHelper<GamePlayManager>.Instance;
-            var noteManager = MajInstanceHelper<NoteManager>.Instance;
+        //void FixedUpdate()
+        //{
+        //    var gpManager = MajInstanceHelper<GamePlayManager>.Instance;
+        //    var noteManager = MajInstanceHelper<NoteManager>.Instance;
 
-            gpManager?.OnFixedUpdate();
-            noteManager?.OnFixedUpdate();
-            _inputManager.OnFixedUpdate();
-        }
+        //    gpManager?.OnFixedUpdate();
+        //    noteManager?.OnFixedUpdate();
+        //    _inputManager.OnFixedUpdate();
+        //}
         void Update()
         {
             var gpManager = MajInstanceHelper<GamePlayManager>.Instance;

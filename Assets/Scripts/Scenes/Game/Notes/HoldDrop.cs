@@ -232,7 +232,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!args.IsClick)
                 return;
-            else if (!_judgableRange.InRange(ThisFixedUpdateSec))
+            else if (!_judgableRange.InRange(ThisFrameSec))
                 return;
             else if (!_noteManager.CanJudge(QueueInfo))
                 return;
@@ -244,11 +244,11 @@ namespace MajdataPlay.Game.Notes
 
             if (args.IsButton)
             {
-                Judge(ThisFixedUpdateSec);
+                Judge(ThisFrameSec);
             }
             else
             {
-                Judge(ThisFixedUpdateSec - _touchPanelOffset);
+                Judge(ThisFrameSec - _touchPanelOffset);
             }
 
             if (_isJudged)
@@ -407,7 +407,7 @@ namespace MajdataPlay.Game.Notes
             if (IsEnded || _isJudged)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming(ThisFixedUpdateSec);
+            var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > 0.15f;
 
             if (isTooLate)

@@ -311,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFixedUpdateSec - Timing > 0)
+                    if (ThisFrameSec - Timing > 0)
                     {
                         SetStarActive(true);
                         for (var i = 0; i < _stars.Length; i++)
@@ -325,7 +325,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFixedUpdateSec - StartTiming;
+                    var timing = ThisFrameSec - StartTiming;
                     if (timing > 0f)
                     {
                         for (var i = 0; i < _stars.Length; i++)
