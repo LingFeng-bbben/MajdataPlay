@@ -163,6 +163,10 @@ namespace MajdataPlay.Game
 #if !UNITY_EDITOR
             Cursor.visible = false;
 #endif
+            if (MajInstances.InputManager.IsTouchPanelConnected)
+            {
+                Destroy(GameObject.Find("EventSystem"));
+            }
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {

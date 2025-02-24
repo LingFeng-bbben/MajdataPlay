@@ -23,6 +23,7 @@ namespace MajdataPlay.IO
 {
     public unsafe partial class InputManager : MonoBehaviour
     {
+        public bool IsTouchPanelConnected { get; private set; } = false;
         public bool displayDebug = false;
         public static bool useDummy = false;
 
@@ -296,13 +297,7 @@ namespace MajdataPlay.IO
         void Start()
         {
             _isSensorRendererEnabled = MajInstances.Setting.Debug.DisplaySensor;
-            if(!_isSensorRendererEnabled)
-            {
-                foreach(var renderer in _sensorRenderers.Span)
-                {
-                    renderer.Destroy();
-                }
-            }
+            
             switch(MajInstances.Setting.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
@@ -318,6 +313,16 @@ namespace MajdataPlay.IO
                     break;
             }
 
+        }
+        void OnTouchPanelConnected()
+        {
+            if (!_isSensorRendererEnabled)
+            {
+                foreach (var renderer in _sensorRenderers.Span)
+                {
+                    renderer.Destroy();
+                }
+            }
         }
         internal void OnFixedUpdate()
         {
@@ -618,6 +623,7 @@ namespace MajdataPlay.IO
             _material = new Material(Shader.Find("Sprites/Default"));
             MeshRenderer.material = _material;
             GameObject = gameObject;
+            Color = new Color(0, 0, 0, 0f);
         }
         public void Destroy()
         {
