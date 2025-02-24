@@ -194,11 +194,11 @@ namespace MajdataPlay.Game.Notes
             var result = diff switch
             {
                 _ when diff <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
-                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
+                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat1 : JudgeGrade.LateGreat1,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat2 : JudgeGrade.LateGreat2,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
@@ -235,11 +235,11 @@ namespace MajdataPlay.Game.Notes
             var judge = diff switch
             {
                 <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
-                <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
+                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat1 : JudgeGrade.LateGreat1,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat2 : JudgeGrade.LateGreat2,
+                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
@@ -430,10 +430,10 @@ namespace MajdataPlay.Game.Notes
         {
             switch(result)
             {
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.FastPerfect3rd:
                     result = JudgeGrade.Perfect;
                     break;
             }

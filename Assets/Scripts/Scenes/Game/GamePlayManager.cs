@@ -38,10 +38,6 @@ namespace MajdataPlay.Game
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
         /// <summary>
-        /// The timing of the current FixedUpdate<para>Unit: Second</para>
-        /// </summary>
-        public float ThisFixedUpdateSec => _thisFrameSec;
-        /// <summary>
         ///  The first Note appear timing
         /// </summary>
         public float FirstNoteAppearTiming

@@ -9,6 +9,5 @@ namespace MajdataPlay
     internal interface INoteTimeProvider
     {
         float ThisFrameSec { get; }
-        float ThisFixedUpdateSec { get; }
     }
 }

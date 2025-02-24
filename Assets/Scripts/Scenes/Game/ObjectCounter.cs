@@ -86,17 +86,17 @@ namespace MajdataPlay.Game
         { 
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -104,17 +104,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -122,17 +122,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -140,17 +140,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -158,17 +158,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -176,17 +176,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -194,17 +194,17 @@ namespace MajdataPlay.Game
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat2, 0 },
-            {JudgeGrade.FastGreat1, 0 },
+            {JudgeGrade.FastGreat3rd, 0 },
+            {JudgeGrade.FastGreat2nd, 0 },
             {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect2, 0 },
-            {JudgeGrade.FastPerfect1, 0 },
+            {JudgeGrade.FastPerfect3rd, 0 },
+            {JudgeGrade.FastPerfect2nd, 0 },
             {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect1, 0 },
-            {JudgeGrade.LatePerfect2, 0 },
+            {JudgeGrade.LatePerfect2nd, 0 },
+            {JudgeGrade.LatePerfect3rd, 0 },
             {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat1, 0 },
-            {JudgeGrade.LateGreat2, 0 },
+            {JudgeGrade.LateGreat2nd, 0 },
+            {JudgeGrade.LateGreat3rd, 0 },
             {JudgeGrade.LateGood, 0 },
             {JudgeGrade.Miss, 0 },
         };
@@ -450,19 +450,19 @@ namespace MajdataPlay.Game
                     var count = judgeResult.Value;
                     switch (judgeResult.Key)
                     {
-                        case JudgeGrade.LatePerfect2:
-                        case JudgeGrade.LatePerfect1:
+                        case JudgeGrade.LatePerfect3rd:
+                        case JudgeGrade.LatePerfect2nd:
                         case JudgeGrade.Perfect:
-                        case JudgeGrade.FastPerfect1:
-                        case JudgeGrade.FastPerfect2:
+                        case JudgeGrade.FastPerfect2nd:
+                        case JudgeGrade.FastPerfect3rd:
                             score += baseScore * 1 * count;
                             break;
-                        case JudgeGrade.LateGreat2:
-                        case JudgeGrade.LateGreat1:
+                        case JudgeGrade.LateGreat3rd:
+                        case JudgeGrade.LateGreat2nd:
                         case JudgeGrade.LateGreat:
                         case JudgeGrade.FastGreat:
-                        case JudgeGrade.FastGreat1:
-                        case JudgeGrade.FastGreat2:
+                        case JudgeGrade.FastGreat2nd:
+                        case JudgeGrade.FastGreat3rd:
                             score += (long)(baseScore * 0.8) * count;
                             lostScore += (long)(baseScore * 0.2) * count;
                             break;
@@ -488,16 +488,16 @@ namespace MajdataPlay.Game
                         extraScore += 100 * count;
                         extraScoreClassic += 100 * count;
                         break;
-                    case JudgeGrade.LatePerfect1:
-                    case JudgeGrade.FastPerfect1:
+                    case JudgeGrade.LatePerfect2nd:
+                    case JudgeGrade.FastPerfect2nd:
                         score += 2500 * count;
                         extraScore += 75 * count;
                         extraScoreClassic += 50 * count;
                         lostExtraScore += 25 * count;
                         lostExtraScoreClassic += 50 * count;
                         break;
-                    case JudgeGrade.LatePerfect2:
-                    case JudgeGrade.FastPerfect2:
+                    case JudgeGrade.LatePerfect3rd:
+                    case JudgeGrade.FastPerfect3rd:
                         score += 2500 * count;
                         extraScore += 50 * count;
                         extraScoreClassic += 0 * count;
@@ -513,8 +513,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 60 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeGrade.LateGreat1:
-                    case JudgeGrade.FastGreat1:
+                    case JudgeGrade.LateGreat2nd:
+                    case JudgeGrade.FastGreat2nd:
                         score += 1500 * count;
                         extraScore += 40 * count;
                         extraScoreClassic += 0 * count;
@@ -522,8 +522,8 @@ namespace MajdataPlay.Game
                         lostExtraScore += 60 * count;
                         lostExtraScoreClassic += 100 * count;
                         break;
-                    case JudgeGrade.LateGreat2:
-                    case JudgeGrade.FastGreat2:
+                    case JudgeGrade.LateGreat3rd:
+                    case JudgeGrade.FastGreat3rd:
                         score += 1250 * count;
                         extraScore += 40 * count;
                         extraScoreClassic += 0 * count;
@@ -680,21 +680,21 @@ namespace MajdataPlay.Game
                     _cPCombo++;
                     _pCombo++;
                     break;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.FastPerfect3rd:
                     _cPCombo = 0;
                     _pCombo++;
                     _perfectCount++;
                     _lostDXScore -= 1;
                     break;
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.LateGreat2nd:
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.FastGreat:
-                case JudgeGrade.FastGreat1:
-                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat2nd:
+                case JudgeGrade.FastGreat3rd:
                     _cPCombo = 0;
                     _pCombo = 0;
                     _greatCount++;

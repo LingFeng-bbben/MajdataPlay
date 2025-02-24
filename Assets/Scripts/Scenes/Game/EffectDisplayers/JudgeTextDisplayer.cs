@@ -96,21 +96,21 @@ namespace MajdataPlay.Game
                     textRenderer.sprite = isClassC ? _skin.Good.Fast : _skin.Good.Normal;
                     break;
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
                     textRenderer.sprite = isClassC ? _skin.Great.Late : _skin.Great.Normal;
                     break;
                 case JudgeGrade.FastGreat:
-                case JudgeGrade.FastGreat1:
-                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat2nd:
+                case JudgeGrade.FastGreat3rd:
                     textRenderer.sprite = isClassC ? _skin.Great.Fast : _skin.Great.Normal;
                     break;
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.LatePerfect3rd:
                     textRenderer.sprite = isClassC ? _skin.Perfect.Late : _skin.Perfect.Normal;
                     break;
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.FastPerfect3rd:
                     textRenderer.sprite = isClassC ? _skin.Perfect.Fast : _skin.Perfect.Normal;
                     break;
                 case JudgeGrade.Perfect:
@@ -160,16 +160,16 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGood:
                     textRenderer.sprite = isClassC ? _skin.Break_1000.Fast : _skin.Break_1000.Normal;
                     break;
-                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat3rd:
                     textRenderer.sprite = isClassC ? _skin.Break_1250.Late : _skin.Break_1250.Normal;
                     break;
-                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat3rd:
                     textRenderer.sprite = isClassC ? _skin.Break_1250.Fast : _skin.Break_1250.Normal;
                     break;
-                case JudgeGrade.LateGreat1:
+                case JudgeGrade.LateGreat2nd:
                     textRenderer.sprite = isClassC ? _skin.Break_1500.Late : _skin.Break_1500.Normal;
                     break;
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat2nd:
                     textRenderer.sprite = isClassC ? _skin.Break_1500.Fast : _skin.Break_1500.Normal;
                     break;
                 case JudgeGrade.LateGreat:
@@ -178,16 +178,16 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat:
                     textRenderer.sprite = isClassC ? _skin.Break_2000.Fast : _skin.Break_2000.Normal;
                     break;
-                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.LatePerfect3rd:
                     textRenderer.sprite = isClassC ? _skin.Break_2500.Late : _skin.Break_2500.Normal;
                     break;
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.FastPerfect3rd:
                     textRenderer.sprite = isClassC ? _skin.Break_2500.Fast : _skin.Break_2500.Normal;
                     break;
-                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.LatePerfect2nd:
                     textRenderer.sprite = isClassC ? _skin.Break_2550.Late : _skin.Break_2550.Normal;
                     break;
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.FastPerfect2nd:
                     textRenderer.sprite = isClassC ? _skin.Break_2550.Fast : _skin.Break_2550.Normal;
                     break;
                 case JudgeGrade.Perfect:

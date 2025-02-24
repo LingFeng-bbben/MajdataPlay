@@ -508,7 +508,7 @@ namespace MajdataPlay.Game.Notes
                     else if (MathF.Abs((int)result - 7) == 6)
                         return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
                     else if (result == JudgeGrade.Perfect)
-                        return (int)result < 7 ? JudgeGrade.LatePerfect1 : JudgeGrade.FastPerfect1;
+                        return (int)result < 7 ? JudgeGrade.LatePerfect2nd : JudgeGrade.FastPerfect2nd;
                 }
                 else if (percent >= 0.33f)
                 {
@@ -545,8 +545,8 @@ namespace MajdataPlay.Game.Notes
             JudgeGrade endResult = diff switch
             {
                 <= 0.05f => JudgeGrade.Perfect,
-                <= 0.1f => isFast ? JudgeGrade.FastPerfect1 : JudgeGrade.LatePerfect1,
-                <= 0.15f => isFast ? JudgeGrade.FastPerfect2 : JudgeGrade.LatePerfect2,
+                <= 0.1f => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= 0.15f => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 //<= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
                 //<= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
                 //<= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,

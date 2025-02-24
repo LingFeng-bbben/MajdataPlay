@@ -158,6 +158,14 @@ namespace MajdataPlay.Game.Notes
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
+        protected const float TAP_JUDGE_SEG_1ST_PERFECT = 16.666666f;
+        protected const float TAP_JUDGE_SEG_2ND_PERFECT = 2 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_SEG_3RD_PERFECT = 3 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_SEG_1ST_GREAT = 4 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_SEG_2ND_GREAT = 5 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_SEG_3RD_GREAT = 6 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_GOOD_AREA = 9 * TAP_JUDGE_SEG_1ST_PERFECT;
+
         protected const float HOLD_HEAD_IGNORE_LENGTH = 0.1f;
         protected const float HOLD_TAIL_IGNORE_LENGTH = 0.2f;
         protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH = 0.25f;
@@ -186,40 +194,28 @@ namespace MajdataPlay.Game.Notes
         protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
-            const int JUDGE_GOOD_AREA = 150;
-            const int JUDGE_GREAT_AREA = 100;
-            const int JUDGE_PERFECT_AREA = 50;
-
-            const float JUDGE_SEG_PERFECT1 = 16.66667f;
-            const float JUDGE_SEG_PERFECT2 = 33.33334f;
-            const float JUDGE_SEG_GREAT1 = 66.66667f;
-            const float JUDGE_SEG_GREAT2 = 83.33334f;
-
             if (_isJudged)
                 return;
 
-            //var timing = GetTimeSpanToJudgeTiming();
             var timing = currentSec - JudgeTiming;
             var isFast = timing < 0;
             _judgeDiff = timing * 1000;
             var diff = MathF.Abs(timing * 1000);
 
-            if (diff > JUDGE_GOOD_AREA && isFast)
+            if (diff > TAP_JUDGE_GOOD_AREA && isFast)
                 return;
             var result = diff switch
             {
-                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                <= JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect1,
-                <= JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect2,
-                <= JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat1,
-                <= JUDGE_GREAT_AREA => JudgeGrade.LateGreat,
-                <= JUDGE_GOOD_AREA => JudgeGrade.LateGood,
+                <= TAP_JUDGE_SEG_1ST_PERFECT => JudgeGrade.Perfect,
+                <= TAP_JUDGE_SEG_2ND_PERFECT => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= TAP_JUDGE_SEG_3RD_PERFECT => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= TAP_JUDGE_SEG_1ST_GREAT => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= TAP_JUDGE_SEG_2ND_GREAT => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= TAP_JUDGE_SEG_3RD_GREAT => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
+                <= TAP_JUDGE_GOOD_AREA => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood,
                 _ => JudgeGrade.Miss
             };
 
-            if (result != JudgeGrade.Miss && isFast)
-                result = 14 - result;
             if (result != JudgeGrade.Miss && IsEX)
                 result = JudgeGrade.Perfect;
 
@@ -313,18 +309,18 @@ namespace MajdataPlay.Game.Notes
             switch(judgeType)
             {
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
                 case JudgeGrade.FastGreat:
-                case JudgeGrade.FastGreat1:
-                case JudgeGrade.FastGreat2:
+                case JudgeGrade.FastGreat2nd:
+                case JudgeGrade.FastGreat3rd:
                     if (isFast)
                         judgeType = JudgeGrade.FastGood;
                     else
                         judgeType = JudgeGrade.LateGood;
                     break;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
                     if (isFast)
                         judgeType = JudgeGrade.FastGreat;
                     else
@@ -336,8 +332,8 @@ namespace MajdataPlay.Game.Notes
                     else if (judgeType < JudgeGrade.Perfect)
                         judgeType = JudgeGrade.Miss;
                     break;
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.Perfect:
                 case JudgeGrade.Miss:
                 case JudgeGrade.TooFast:
@@ -350,15 +346,15 @@ namespace MajdataPlay.Game.Notes
             var isFast = (int)judgeType > 7;
             switch (judgeType)
             {                    
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
                     if (isFast)
                         judgeType = JudgeGrade.FastGood;
                     else
                         judgeType = JudgeGrade.LateGood;
                     break;
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
                     if (isFast)
                         judgeType = JudgeGrade.FastGreat;
                     else

@@ -170,16 +170,16 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGood:
                     return buttonGoodColor;
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.FastGreat3rd:
+                case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     return buttonGreatColor;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.Perfect:
                     return buttonPerfectColor;
                 default:

@@ -39,10 +39,10 @@ namespace MajdataPlay.Game
             switch (result)
             {
                 case JudgeGrade.Perfect:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.LatePerfect2:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.FastPerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.LatePerfect3rd:
                     animator.SetTrigger("dance");
                     if (dir == 0)//left
                     {

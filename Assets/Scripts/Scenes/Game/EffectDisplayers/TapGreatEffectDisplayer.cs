@@ -39,10 +39,10 @@ namespace MajdataPlay.Game
             switch (grade)
             {
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.FastGreat3rd:
+                case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     SetActive(true);
                     _animator.SetTrigger(TAP_GREAT_ANIM_HASH);

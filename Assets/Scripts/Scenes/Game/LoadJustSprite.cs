@@ -16,18 +16,18 @@ namespace MajdataPlay.Game
             var displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
             switch (result)
             {
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.LatePerfect1:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.Perfect:
-                case JudgeGrade.FastPerfect1:
-                case JudgeGrade.FastPerfect2:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.FastPerfect3rd:
                     if (displayCP)
                         SetJustCP();
                     else
                         SetJustP();
                     break;
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.FastGreat3rd:
+                case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     SetFastGr();
                     break;
@@ -37,8 +37,8 @@ namespace MajdataPlay.Game
                 case JudgeGrade.LateGood:
                     SetLateGd();
                     break;
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
                 case JudgeGrade.LateGreat:
                     SetLateGr();
                     break;

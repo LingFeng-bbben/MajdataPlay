@@ -42,17 +42,17 @@ namespace MajdataPlay.Game
                     _audioManager.PlaySFX("tap_good.wav");
                     break;
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.FastGreat3rd:
+                case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     _audioManager.PlaySFX("tap_great.wav");
                     break;
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
                     _audioManager.PlaySFX("tap_perfect.wav");
                     break;
                 case JudgeGrade.Perfect:
@@ -67,15 +67,15 @@ namespace MajdataPlay.Game
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
                 case JudgeGrade.LateGreat:
-                case JudgeGrade.LateGreat1:
-                case JudgeGrade.LateGreat2:
-                case JudgeGrade.FastGreat2:
-                case JudgeGrade.FastGreat1:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.FastGreat3rd:
+                case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
-                case JudgeGrade.LatePerfect2:
-                case JudgeGrade.FastPerfect2:
-                case JudgeGrade.LatePerfect1:
-                case JudgeGrade.FastPerfect1:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
                     _audioManager.PlaySFX("break_tap.wav");
                     break;
                 case JudgeGrade.Perfect:
