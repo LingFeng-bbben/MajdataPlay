@@ -166,6 +166,10 @@ namespace MajdataPlay.Game.Notes
         protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
         protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
 
+        protected const float HOLD_END_JUDGE_SEG_1ST_PERFECT_MSEC = 150f;
+        protected const float HOLD_END_JUDGE_SEG_2ND_PERFECT_MSEC = 200f;
+        protected const float HOLD_END_JUDGE_SEG_3RD_PERFECT_MSEC = 250f;
+
         protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 150f;
         protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 175f;
         protected const float TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC = 200f;

@@ -537,19 +537,16 @@ namespace MajdataPlay.Game.Notes
             else if (result.IsMissOrTooFast())
                 return result;
 
-            var releaseTiming = NoteController.ThisFrameSec - _gameSetting.Judge.JudgeOffset;
-            var diff = (Timing + Length) - releaseTiming;
-            var isFast = diff > 0;
-            diff = MathF.Abs(diff);
+            var releaseTiming = ThisFrameSec - _gameSetting.Judge.JudgeOffset;
+            var diffSec = (Timing + Length) - releaseTiming;
+            var isFast = diffSec > 0;
+            var diffMSec = MathF.Abs(diffSec) * 1000;
 
-            JudgeGrade endResult = diff switch
+            var endResult = diffMSec switch
             {
-                <= 0.05f => JudgeGrade.Perfect,
-                <= 0.1f => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= 0.15f => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
-                //<= 0.150f =>    isFast ? JudgeType.FastGreat : JudgeType.LateGreat,
-                //<= 0.16667f =>  isFast ? JudgeType.FastGreat1 : JudgeType.LateGreat1,
-                //<= 0.183337f => isFast ? JudgeType.FastGreat2 : JudgeType.LateGreat2,
+                <= HOLD_END_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= HOLD_END_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= HOLD_END_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
