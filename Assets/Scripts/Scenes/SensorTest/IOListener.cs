@@ -34,7 +34,7 @@ namespace MajdataPlay.SensorTest
         {
             if (_exitFlag)
                 return;
-            var rawData = _inputManager.GetTouchPanelRawData();
+            var rawData = InputManager.GetTouchPanelRawData();
             foreach(var (i,state) in rawData.Span.WithIndex())
             {
                 if (i == 34)

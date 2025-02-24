@@ -17,38 +17,6 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        readonly static RawKey[] _bindingKeys = new RawKey[12]
-        {
-            RawKey.W,
-            RawKey.E,
-            RawKey.D,
-            RawKey.C,
-            RawKey.X,
-            RawKey.Z,
-            RawKey.A,
-            RawKey.Q,
-            RawKey.Numpad9,
-            RawKey.Multiply,
-            RawKey.Numpad7,
-            RawKey.Numpad3,
-        };
-        readonly Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
-        readonly Button[] _buttons = new Button[12]
-        {
-            new Button(RawKey.W,SensorArea.A1),
-            new Button(RawKey.E,SensorArea.A2),
-            new Button(RawKey.D,SensorArea.A3),
-            new Button(RawKey.C,SensorArea.A4),
-            new Button(RawKey.X,SensorArea.A5),
-            new Button(RawKey.Z,SensorArea.A6),
-            new Button(RawKey.A,SensorArea.A7),
-            new Button(RawKey.Q,SensorArea.A8),
-            new Button(RawKey.Numpad9,SensorArea.Test),
-            new Button(RawKey.Multiply,SensorArea.P1),
-            new Button(RawKey.Numpad7,SensorArea.Service),
-            new Button(RawKey.Numpad3,SensorArea.P2),
-        };
-        readonly bool[] _buttonStates = Enumerable.Repeat(false, 12).ToArray();
         void StartUpdatingKeyboardState()
         {
             if (!_buttonRingUpdateTask.IsCompleted)
@@ -67,9 +35,10 @@ namespace MajdataPlay.IO
                     try
                     {
                         var now = DateTime.Now;
-                        for (var i = 0; i < _buttons.Length; i++)
+                        var buttons = _buttons.Span;
+                        for (var i = 0; i < buttons.Length; i++)
                         {
-                            var button = _buttons[i];
+                            var button = buttons[i];
                             var keyCode = button.BindingKey;
 
                             _buttonRingInputBuffer.Enqueue(new ()
@@ -96,13 +65,14 @@ namespace MajdataPlay.IO
             }, TaskCreationOptions.LongRunning);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void UpdateButtonState()
+        static void UpdateButtonState()
         {
-            while(_buttonRingInputBuffer.TryDequeue(out var report))
+            var buttons = _buttons.Span;
+            while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
                 if (!report.Index.InRange(0, 11))
                     continue;
-                var button = _buttons[report.Index];
+                var button = buttons[report.Index];
                 var oldState = button.Status;
                 var newState = report.State;
                 var timestamp = report.Timestamp;
@@ -126,7 +96,6 @@ namespace MajdataPlay.IO
                 };
                 button.PushEvent(msg);
                 PushEvent(msg);
-                SetIdle(msg);
             }
         }
         public void BindButton(EventHandler<InputEventArgs> checker, SensorArea sType)

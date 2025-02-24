@@ -1,26 +1,19 @@
 using UnityEngine;
-using System.Threading;
 using System;
 using System.Linq;
-using UnityRawInput;
 using System.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MychIO;
-using Cysharp.Threading.Tasks;
 using DeviceType = MajdataPlay.Types.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
-using MychIO.Connection;
-using static UnityEngine.GraphicsBuffer;
 using System.Runtime.CompilerServices;
-using Unity.VisualScripting.Antlr3.Runtime;
 using MajdataPlay.Collections;
 using System.Collections.Concurrent;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
-using static UnityEngine.Rendering.DebugUI.Table;
+using UnityRawInput;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -28,51 +21,87 @@ using static UnityEngine.Rendering.DebugUI.Table;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class InputManager : MonoBehaviour
+    public unsafe partial class InputManager : MonoBehaviour
     {
         public bool displayDebug = false;
-        public bool useDummy = false;
+        public static bool useDummy = false;
 
-        public event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
+        public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
-        TimeSpan _btnDebounceThresholdMs = TimeSpan.Zero;
-        TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
-        TimeSpan _btnPollingRateMs = TimeSpan.Zero;
-        TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
+        static TimeSpan _btnDebounceThresholdMs = TimeSpan.Zero;
+        static TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
+        static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
+        static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
 
-        ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
-        ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
+        readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
+        readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
 
-        readonly bool[] _sensorStatuses = new bool[35];
+        readonly static ReadOnlyMemory<RawKey> _bindingKeys = new RawKey[12]
+        {
+            RawKey.W,
+            RawKey.E,
+            RawKey.D,
+            RawKey.C,
+            RawKey.X,
+            RawKey.Z,
+            RawKey.A,
+            RawKey.Q,
+            RawKey.Numpad9,
+            RawKey.Multiply,
+            RawKey.Numpad7,
+            RawKey.Numpad3,
+        };
+        readonly static ReadOnlyMemory<Button> _buttons = new Button[12]
+        {
+            new Button(RawKey.W,SensorArea.A1),
+            new Button(RawKey.E,SensorArea.A2),
+            new Button(RawKey.D,SensorArea.A3),
+            new Button(RawKey.C,SensorArea.A4),
+            new Button(RawKey.X,SensorArea.A5),
+            new Button(RawKey.Z,SensorArea.A6),
+            new Button(RawKey.A,SensorArea.A7),
+            new Button(RawKey.Q,SensorArea.A8),
+            new Button(RawKey.Numpad9,SensorArea.Test),
+            new Button(RawKey.Multiply,SensorArea.P1),
+            new Button(RawKey.Numpad7,SensorArea.Service),
+            new Button(RawKey.Numpad3,SensorArea.P2),
+        };
+        readonly static Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
+        readonly static Memory<bool> _buttonStates = new bool[12];
 
-        bool _isBtnDebounceEnabled = false;
-        bool _isSensorDebounceEnabled = false;
-        
-        Task _serialPortUpdateTask = Task.CompletedTask;
-        Task _buttonRingUpdateTask = Task.CompletedTask;
+        static ReadOnlyMemory<Sensor> _sensors = ReadOnlyMemory<Sensor>.Empty;
+        static readonly Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
+        readonly static Memory<bool> _sensorStates = new bool[35];
 
-        Mutex _buttonCheckerMutex = new();
-        IOManager? _ioManager = null;
+        static bool _isBtnDebounceEnabled = false;
+        static bool _isSensorDebounceEnabled = false;
 
-        Action _updateIOListener = () => { };
+        static Task _serialPortUpdateTask = Task.CompletedTask;
+        static Task _buttonRingUpdateTask = Task.CompletedTask;
+
+        static IOManager? _ioManager = null;
+
+        static delegate*<void> _updateIOListenerPtr = &DefaultIOListener;
 
         void Awake()
         {
             MajInstances.InputManager = this;
             DontDestroyOnLoad(this);
+            var sensors = new Sensor[33];
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
                 var collider = child.GetComponent<Collider>();
-                var type = (SensorArea)index;
-                _sensors[index] = child.GetComponent<Sensor>();
-                _sensors[index].Area = type;
-                _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = type;
-                if(type.GetGroup() == SensorGroup.C)
+                var area = (SensorArea)index;
+                sensors[index] = child.GetComponent<Sensor>();
+                sensors[index].Area = area;
+                _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = area;
+                if(area.GetGroup() == SensorGroup.C)
                 {
                     var childCollider = child.GetChild(0).GetComponent<Collider>();
-                    _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = type;
+                    _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = area;
                 }
             }
+            _sensors = sensors;
             foreach(SensorArea zone in Enum.GetValues(typeof(SensorArea)))
             {
                 if (((int)zone).InRange(0, 7))
@@ -90,7 +119,7 @@ namespace MajdataPlay.IO
         /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool JitterDetect(SensorArea zone, DateTime now,bool isBtn = false)
+        protected static bool JitterDetect(SensorArea zone, DateTime now,bool isBtn = false)
         {
             DateTime lastTriggerTime;
             TimeSpan debounceTime;
@@ -141,13 +170,13 @@ namespace MajdataPlay.IO
                 case DeviceType.Keyboard:
                     CheckEnvironment(false);
                     StartInternalIOManager();
-                    _updateIOListener = UpdateInternalIOListener;
+                    _updateIOListenerPtr = &UpdateInternalIOListener;
                     break;
                 case DeviceType.IO4:
                 case DeviceType.HID:
                     CheckEnvironment();
                     StartExternalIOManager();
-                    _updateIOListener = UpdateExternalIOListener;
+                    _updateIOListenerPtr = &UpdateExternalIOListener;
                     break;
             }
 
@@ -158,7 +187,11 @@ namespace MajdataPlay.IO
         }
         internal void OnUpdate()
         {
-            _updateIOListener();
+            _updateIOListenerPtr();
+        }
+        static void DefaultIOListener()
+        {
+
         }
         void StartInternalIOManager()
         {
@@ -272,7 +305,8 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
-        void UpdateInternalIOListener()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void UpdateInternalIOListener()
         {
             try
             {
@@ -290,7 +324,8 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
-        void UpdateExternalIOListener()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void UpdateExternalIOListener()
         {
             var executionQueue = MajEnv.ExecutionQueue;
             try
@@ -343,12 +378,13 @@ namespace MajdataPlay.IO
         {
             var sensor = GetSensor(sType);
             var button = GetButton(sType);
-            if (sensor == null || button is null)
+            if (sensor is null || button is null)
                 throw new Exception($"{sType} Sensor or Button not found.");
 
             sensor.RemoveSubscriber(checker);
             button.RemoveSubscriber(checker);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
         {
             return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
@@ -356,8 +392,8 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
         {
-            var sensor = _sensors[(int)target];
-            if (sensor == null)
+            var sensor = _sensors.Span[(int)target];
+            if (sensor is null)
                 throw new Exception($"{target} Sensor or Button not found.");
             return sensor.Status == targetStatus;
         }
@@ -375,102 +411,41 @@ namespace MajdataPlay.IO
 
             return button.Status == targetStatus;
         }
-        public void SetBusy(InputEventArgs args)
-        {
-            var type = args.Type;
-            if (args.IsButton)
-            {
-                var button = GetButton(type);
-                if (button is null)
-                    throw new Exception($"{type} Button not found.");
-
-                button.IsJudging = true;
-            }
-            else
-            {
-                var sensor = GetSensor(type);
-                if (sensor is null)
-                    throw new Exception($"{type} Sensor not found.");
-
-                sensor.IsJudging = true;
-            }
-        }
-        public void SetIdle(InputEventArgs args)
-        {
-            var type = args.Type;
-            if (args.IsButton)
-            {
-                var button = GetButton(type);
-                if (button is null)
-                    throw new Exception($"{type} Button not found.");
-
-                button.IsJudging = false;
-            }
-            else
-            {
-                var sensor = GetSensor(type);
-                if (sensor is null)
-                    throw new Exception($"{type} Sensor not found.");
-
-                sensor.IsJudging = false;
-            }
-        }
-        public bool IsIdle(InputEventArgs args)
-        {
-            bool isIdle;
-            var type = args.Type;
-            if (args.IsButton)
-            {
-                var button = GetButton(type);
-                if (button is null)
-                    throw new Exception($"{type} Button not found.");
-
-                isIdle = !button.IsJudging;
-            }
-            else
-            {
-                var sensor = GetSensor(type);
-                if (sensor is null)
-                    throw new Exception($"{type} Sensor not found.");
-
-                isIdle = !sensor.IsJudging;
-            }
-            return isIdle;
-        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Button? GetButton(SensorArea type)
         {
+            var buttons = _buttons.Span;
             return type switch
             {
                 _ when type < SensorArea.A1 => throw new ArgumentOutOfRangeException(),
-                _ when type < SensorArea.B1 => _buttons[(int)type],
-                SensorArea.Test => _buttons[8],
-                SensorArea.P1 => _buttons[9],
-                SensorArea.Service => _buttons[10],
-                SensorArea.P2 => _buttons[11],
+                _ when type < SensorArea.B1 => buttons[(int)type],
+                SensorArea.Test => buttons[8],
+                SensorArea.P1 => buttons[9],
+                SensorArea.Service => buttons[10],
+                SensorArea.P2 => buttons[11],
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor GetSensor(SensorArea target) => _sensors[(int)target];
+        public Sensor GetSensor(SensorArea target) => _sensors.Span[(int)target];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor[] GetSensors() => _sensors;
+        public ReadOnlyMemory<Sensor> GetSensors() => _sensors;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor[] GetSensors(SensorGroup group) => _sensors.Where(x => x.Group == group).ToArray();
         public void ClearAllSubscriber()
         {
-            foreach(var sensor in _sensors.AsSpan())
+            foreach(var sensor in _sensors.Span)
                 sensor.ClearSubscriber();
-            foreach(var button in _buttons.AsSpan())
+            foreach(var button in _buttons.Span)
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void PushEvent(InputEventArgs args)
+        static void PushEvent(InputEventArgs args)
         {
             if (OnAnyAreaTrigger is not null)
-                OnAnyAreaTrigger(this, args);
+                OnAnyAreaTrigger(null, args);
         }
-        internal ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStatuses;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStates;
     }
 }

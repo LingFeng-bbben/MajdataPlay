@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,21 +11,21 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        Dictionary<int, SensorArea> _instanceID2SensorTypeMappingTable = new();
-        void UpdateMousePosition()
+        readonly static Dictionary<SensorArea, SensorStatus> oldSensorsState = new();
+        readonly static Dictionary<SensorArea, SensorStatus> newSensorsState = new();
+        readonly static Dictionary<int, SensorArea> _instanceID2SensorTypeMappingTable = new();
+        static void UpdateMousePosition()
         {
+            var sensors = _sensors.Span;
             Input.multiTouchEnabled = true;
-            if (Input.touchCount>0)
+            if (Input.touchCount > 0)
             {
-                Debug.Log(Input.touchCount);
-                var touches = Input.touches;
-
-                Dictionary<SensorArea, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Area, s => s.Status);
-                Dictionary<SensorArea, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Area, x => SensorStatus.Off);
-
-                foreach ( var touch in touches)
+                MajDebug.Log(Input.touchCount);
+                RefreshSensorCurrentState();
+                for (var i = 0; i < Input.touchCount; i++)
                 {
-                    if(touch.phase == TouchPhase.Ended|| touch.phase == TouchPhase.Canceled)
+                    var touch = Input.GetTouch(i);
+                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     {
                         continue;
                     }
@@ -137,11 +138,10 @@ namespace MajdataPlay.IO
                     if (oState != nState)
                         SetSensorState(type, nState);
                 }
-            }else if (Input.GetMouseButton(0))
+            }
+            else if (Input.GetMouseButton(0))
             {
-                Dictionary<SensorArea, SensorStatus> oldSensorsState = _sensors.ToDictionary(s => s.Area, s => s.Status);
-                Dictionary<SensorArea, SensorStatus> newSensorsState = _sensors.ToDictionary(s => s.Area, x => SensorStatus.Off);
-
+                RefreshSensorCurrentState();
                 Vector3 cubeRaym = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 var raym = new Ray(cubeRaym, Vector3.forward);
                 var ishitm = Physics.Raycast(raym, out var hitInfom);
@@ -165,8 +165,17 @@ namespace MajdataPlay.IO
             }
             else
             {
-                foreach (var s in _sensors)
+                foreach (var s in sensors)
                     SetSensorState(s.Area, SensorStatus.Off);
+            }
+        }
+        static void RefreshSensorCurrentState()
+        {
+            var sensors = _sensors.Span;
+            foreach (var sensor in sensors)
+            {
+                oldSensorsState[sensor.Area] = sensor.Status;
+                newSensorsState[sensor.Area] = SensorStatus.Off;
             }
         }
         bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;
