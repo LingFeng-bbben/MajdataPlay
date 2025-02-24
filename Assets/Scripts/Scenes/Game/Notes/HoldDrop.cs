@@ -544,9 +544,9 @@ namespace MajdataPlay.Game.Notes
 
             var endResult = diffMSec switch
             {
-                <= HOLD_END_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
-                <= HOLD_END_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= HOLD_END_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= HOLD_CLASSIC_END_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= HOLD_CLASSIC_END_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= HOLD_CLASSIC_END_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
