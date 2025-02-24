@@ -33,7 +33,7 @@ namespace MajdataPlay.IO
                     continue;
                 }
                 var sensorStates = _sensorStates.Span;
-                var oldState = sensor.Status;
+                var oldState = sensor.State;
                 var newState = report.State;
                 var C1 = sensorStates[16];
                 var C2 = sensorStates[17];
@@ -83,7 +83,7 @@ namespace MajdataPlay.IO
                 }
                 MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
                 sensorStates[index] = report.State is SensorStatus.On ? true : false;
-                sensor.Status = newState;
+                sensor.State = newState;
                 var msg = new InputEventArgs()
                 {
                     Type = sensor.Area,
@@ -101,13 +101,13 @@ namespace MajdataPlay.IO
             var sensor = sensors[(int)type];
             if (sensor is null)
                 throw new Exception($"{type} Sensor not found.");
-            var oState = sensor.Status;
-            sensor.Status = nState;
+            var oState = sensor.State;
+            sensor.State = nState;
 
             if (oState != nState)
             {
                 MajDebug.Log($"Sensor \"{sensor.Area}\": {nState}");
-                sensor.Status = nState;
+                sensor.State = nState;
                 var msg = new InputEventArgs()
                 {
                     Type = sensor.Area,

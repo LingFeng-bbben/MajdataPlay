@@ -73,7 +73,7 @@ namespace MajdataPlay.IO
                 if (!report.Index.InRange(0, 11))
                     continue;
                 var button = buttons[report.Index];
-                var oldState = button.Status;
+                var oldState = button.State;
                 var newState = report.State;
                 var timestamp = report.Timestamp;
 
@@ -85,7 +85,7 @@ namespace MajdataPlay.IO
                         continue;
                     _btnLastTriggerTimes[button.Area] = timestamp;
                 }
-                button.Status = newState;
+                button.State = newState;
                 MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
                 var msg = new InputEventArgs()
                 {

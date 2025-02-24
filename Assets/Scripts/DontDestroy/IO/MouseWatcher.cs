@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -11,17 +12,16 @@ namespace MajdataPlay.IO
 {
     public partial class InputManager : MonoBehaviour
     {
-        readonly static Dictionary<SensorArea, SensorStatus> oldSensorsState = new();
-        readonly static Dictionary<SensorArea, SensorStatus> newSensorsState = new();
-        readonly static Dictionary<int, SensorArea> _instanceID2SensorTypeMappingTable = new();
+        readonly static Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
             Input.multiTouchEnabled = true;
+            Span<bool> newStates = stackalloc bool[34];
             if (Input.touchCount > 0)
             {
                 MajDebug.Log(Input.touchCount);
-                RefreshSensorCurrentState();
+                
                 for (var i = 0; i < Input.touchCount; i++)
                 {
                     var touch = Input.GetTouch(i);
@@ -35,148 +35,38 @@ namespace MajdataPlay.IO
                     if (ishit)
                     {
                         var id = hitInfo.colliderInstanceID;
-                        if (_instanceID2SensorTypeMappingTable.TryGetValue(id, out var type))
+                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                         {
-                            newSensorsState[type] = SensorStatus.On;
+                            newStates[index] = true;
                         }
                     }
-                }
-                /*var x = Input.mousePosition.x / Screen.width * 2 - 1;
-                var y = Input.mousePosition.y / Screen.width * 2 - 1;
-                var distance = Math.Sqrt(x * x + y * y);
-                var angle = Mathf.Atan2(y, x) * Mathf.Rad2Deg;
-
-
-
-                if (distance > 0.75)
-                {
-                    if (isInRange(angle, 0))
-                        newSensorsState[SensorType.D3] = SensorStatus.On;
-                    else if (isInRange(angle, 45f))
-                        newSensorsState[SensorType.D2] = SensorStatus.On;
-                    else if (isInRange(angle, 90f))
-                        newSensorsState[SensorType.D1] = SensorStatus.On;
-                    else if (isInRange(angle, 135f))
-                        newSensorsState[SensorType.D8] = SensorStatus.On;
-                    else if (isInRange(angle, 180f))
-                        newSensorsState[SensorType.D7] = SensorStatus.On;
-                    else if (isInRange(angle, -135f))
-                        newSensorsState[SensorType.D6] = SensorStatus.On;
-                    else if (isInRange(angle, -90f))
-                        newSensorsState[SensorType.D5] = SensorStatus.On;
-                    else if (isInRange(angle, -45f))
-                        newSensorsState[SensorType.D4] = SensorStatus.On;
-                }
-                if (distance > 0.6)
-                {
-                    if (isInRange(angle, 22.5f))
-                        newSensorsState[SensorType.A2] = SensorStatus.On;
-                    else if (isInRange(angle, 67.5f))
-                        newSensorsState[SensorType.A1] = SensorStatus.On;
-                    else if (isInRange(angle, 112.5f))
-                        newSensorsState[SensorType.A8] = SensorStatus.On;
-                    else if (isInRange(angle, 157.5f))
-                        newSensorsState[SensorType.A7] = SensorStatus.On;
-                    else if (isInRange(angle, -157.5f))
-                        newSensorsState[SensorType.A6] = SensorStatus.On;
-                    else if (isInRange(angle, -112.5f))
-                        newSensorsState[SensorType.A5] = SensorStatus.On;
-                    else if (isInRange(angle, -67.5f))
-                        newSensorsState[SensorType.A4] = SensorStatus.On;
-                    else if (isInRange(angle, -22.5f))
-                        newSensorsState[SensorType.A3] = SensorStatus.On;
-                }
-                if (distance > 0.42 && distance <= 0.71)
-                {
-                    if (isInRange(angle, 0))
-                        newSensorsState[SensorType.E3] = SensorStatus.On;
-                    else if (isInRange(angle, 45f))
-                        newSensorsState[SensorType.E2] = SensorStatus.On;
-                    else if (isInRange(angle, 90f))
-                        newSensorsState[SensorType.E1] = SensorStatus.On;
-                    else if (isInRange(angle, 135f))
-                        newSensorsState[SensorType.E8] = SensorStatus.On;
-                    else if (isInRange(angle, 180f))
-                        newSensorsState[SensorType.E7] = SensorStatus.On;
-                    else if (isInRange(angle, -135f))
-                        newSensorsState[SensorType.E6] = SensorStatus.On;
-                    else if (isInRange(angle, -90f))
-                        newSensorsState[SensorType.E5] = SensorStatus.On;
-                    else if (isInRange(angle, -45f))
-                        newSensorsState[SensorType.E4] = SensorStatus.On;
-                }
-                if (distance > 0.267 && distance <= 0.53)
-                {
-                    if (isInRange(angle, 22.5f, 22.5f))
-                        newSensorsState[SensorType.B2] = SensorStatus.On;
-                    else if (isInRange(angle, 67.5f, 22.5f))
-                        newSensorsState[SensorType.B1] = SensorStatus.On;
-                    else if (isInRange(angle, 112.5f, 22.5f))
-                        newSensorsState[SensorType.B8] = SensorStatus.On;
-                    else if (isInRange(angle, 157.5f, 22.5f))
-                        newSensorsState[SensorType.B7] = SensorStatus.On;
-                    else if (isInRange(angle, -157.5f, 22.5f))
-                        newSensorsState[SensorType.B6] = SensorStatus.On;
-                    else if (isInRange(angle, -112.5f, 22.5f))
-                        newSensorsState[SensorType.B5] = SensorStatus.On;
-                    else if (isInRange(angle, -67.5f, 22.5f))
-                        newSensorsState[SensorType.B4] = SensorStatus.On;
-                    else if (isInRange(angle, -22.5f, 22.5f))
-                        newSensorsState[SensorType.B3] = SensorStatus.On;
-                }
-                if (distance <= 0.267)
-                {
-                    if (isInRange(angle, 0, 90) || isInRange(angle, 180, 90))
-                        newSensorsState[SensorType.C] = SensorStatus.On;
-                }*/
-
-                foreach (var pair in newSensorsState)
-                {
-                    var type = pair.Key;
-                    var nState = newSensorsState[type];
-                    var oState = oldSensorsState[type];
-                    if (oState != nState)
-                        SetSensorState(type, nState);
                 }
             }
             else if (Input.GetMouseButton(0))
             {
-                RefreshSensorCurrentState();
                 Vector3 cubeRaym = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 var raym = new Ray(cubeRaym, Vector3.forward);
                 var ishitm = Physics.Raycast(raym, out var hitInfom);
                 if (ishitm)
                 {
                     var id = hitInfom.colliderInstanceID;
-                    if (_instanceID2SensorTypeMappingTable.TryGetValue(id, out var type))
+                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                     {
-                        newSensorsState[type] = SensorStatus.On;
+                        newStates[index] = true;
                     }
                 }
-
-                foreach (var pair in newSensorsState)
+            }
+            var now = DateTime.Now;
+            foreach (var (i, state) in newStates.WithIndex())
+            {
+                _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
-                    var type = pair.Key;
-                    var nState = newSensorsState[type];
-                    var oState = oldSensorsState[type];
-                    if (oState != nState)
-                        SetSensorState(type, nState);
-                }
+                    Index = i,
+                    State = state ? SensorStatus.On : SensorStatus.Off,
+                    Timestamp = now
+                });
             }
-            else
-            {
-                foreach (var s in sensors)
-                    SetSensorState(s.Area, SensorStatus.Off);
-            }
-        }
-        static void RefreshSensorCurrentState()
-        {
-            var sensors = _sensors.Span;
-            foreach (var sensor in sensors)
-            {
-                oldSensorsState[sensor.Area] = sensor.Status;
-                newSensorsState[sensor.Area] = SensorStatus.Off;
-            }
+            UpdateSensorState();
         }
         bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;
     }

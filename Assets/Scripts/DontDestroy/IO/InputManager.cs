@@ -69,12 +69,148 @@ namespace MajdataPlay.IO
         readonly static Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
         readonly static Memory<bool> _buttonStates = new bool[12];
 
-        static ReadOnlyMemory<Sensor> _sensors = ReadOnlyMemory<Sensor>.Empty;
+        static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
+        {
+            new Sensor()
+            {
+                Area = SensorArea.A1,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A2,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A3,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A4,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A5,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A6,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A7,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.A8,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B1,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B2,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B3,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B4,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B5,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B6,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B7,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.B8,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.C,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D1,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D2,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D3,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D4,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D5,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D6,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D7,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.D8,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E1,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E2,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E3,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E4,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E5,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E6,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E7,
+            },
+            new Sensor()
+            {
+                Area = SensorArea.E8,
+            },
+        };
         static readonly Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
+        readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
         readonly static Memory<bool> _sensorStates = new bool[35];
 
         static bool _isBtnDebounceEnabled = false;
         static bool _isSensorDebounceEnabled = false;
+        static bool _isSensorRendererEnabled = false;
 
         static Task _serialPortUpdateTask = Task.CompletedTask;
         static Task _buttonRingUpdateTask = Task.CompletedTask;
@@ -87,21 +223,15 @@ namespace MajdataPlay.IO
         {
             MajInstances.InputManager = this;
             DontDestroyOnLoad(this);
-            var sensors = new Sensor[33];
+            var sensorRenderers = _sensorRenderers.Span;
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {
-                var collider = child.GetComponent<Collider>();
-                var area = (SensorArea)index;
-                sensors[index] = child.GetComponent<Sensor>();
-                sensors[index].Area = area;
-                _instanceID2SensorTypeMappingTable[collider.GetInstanceID()] = area;
-                if(area.GetGroup() == SensorGroup.C)
-                {
-                    var childCollider = child.GetChild(0).GetComponent<Collider>();
-                    _instanceID2SensorTypeMappingTable[childCollider.GetInstanceID()] = area;
-                }
+                var collider = child.GetComponent<MeshCollider>();
+                var renderer = child.GetComponent<MeshRenderer>();
+                var filter = child.GetComponent<MeshFilter>();
+                sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider);
+                _instanceID2SensorIndexMappingTable[collider.GetInstanceID()] = index;
             }
-            _sensors = sensors;
             foreach(SensorArea zone in Enum.GetValues(typeof(SensorArea)))
             {
                 if (((int)zone).InRange(0, 7))
@@ -165,6 +295,14 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
+            _isSensorRendererEnabled = MajInstances.Setting.Debug.DisplaySensor;
+            if(!_isSensorRendererEnabled)
+            {
+                foreach(var renderer in _sensorRenderers.Span)
+                {
+                    renderer.Destroy();
+                }
+            }
             switch(MajInstances.Setting.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
@@ -188,6 +326,16 @@ namespace MajdataPlay.IO
         internal void OnUpdate()
         {
             _updateIOListenerPtr();
+            if(_isSensorRendererEnabled)
+            {
+                var sensorRenderers = _sensorRenderers.Span;
+                foreach (var (i, state) in _sensorStates.Span.WithIndex())
+                {
+                    if (i == 34)
+                        continue;
+                    sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
+                }
+            }
         }
         static void DefaultIOListener()
         {
@@ -395,7 +543,7 @@ namespace MajdataPlay.IO
             var sensor = _sensors.Span[(int)target];
             if (sensor is null)
                 throw new Exception($"{target} Sensor or Button not found.");
-            return sensor.Status == targetStatus;
+            return sensor.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
@@ -409,7 +557,7 @@ namespace MajdataPlay.IO
             if (button is null)
                 throw new Exception($"{target} Button not found.");
 
-            return button.Status == targetStatus;
+            return button.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Button? GetButton(SensorArea type)
@@ -447,5 +595,34 @@ namespace MajdataPlay.IO
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStates;
+    }
+    class SensorRenderer
+    {
+        public int Index { get; init; }
+        public MeshFilter MeshFilter { get; init; }
+        public MeshRenderer MeshRenderer { get; init; }
+        public MeshCollider MeshCollider { get; init; }
+        public Color Color 
+        {
+            get => _material.color;
+            set => _material.color = value; 
+        }
+        Material _material;
+        public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider)
+        {
+            Index = index;
+            MeshFilter = meshFilter;
+            MeshRenderer = meshRenderer;
+            MeshCollider = meshCollider;
+            _material = new Material(Shader.Find("Sprites/Default"));
+            MeshRenderer.material = _material;
+        }
+        public void Destroy()
+        {
+            GameObject.Destroy(MeshFilter);
+            GameObject.Destroy(MeshRenderer);
+            GameObject.Destroy(MeshCollider);
+            GameObject.Destroy(_material);
+        }
     }
 }
