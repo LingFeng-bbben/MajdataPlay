@@ -46,15 +46,15 @@ namespace MajdataPlay.List
 
         private void Awake()
         {
-            MajInstanceHelper<CoverListDisplayer>.Instance = this;
+            Majdata<CoverListDisplayer>.Instance = this;
         }
         void Start()
         {
-            _listManager = MajInstanceHelper<ListManager>.Instance!;
+            _listManager = Majdata<ListManager>.Instance!;
         }
         void OnDestroy()
         {
-            MajInstanceHelper<CoverListDisplayer>.Free();
+            Majdata<CoverListDisplayer>.Free();
         }
 
         public void SwitchToDirList()

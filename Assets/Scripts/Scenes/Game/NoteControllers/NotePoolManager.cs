@@ -37,7 +37,7 @@ namespace MajdataPlay.Game
         List<EachLinePoolingInfo> eachLineInfos = new();
         void Awake()
         {
-            MajInstanceHelper<NotePoolManager>.Instance = this;
+            Majdata<NotePoolManager>.Instance = this;
         }
         public void Initialize()
         {
@@ -56,7 +56,7 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
         }
         void Update()
         {
@@ -117,7 +117,7 @@ namespace MajdataPlay.Game
             touchPool?.Destroy();
             touchHoldPool?.Destroy();
             eachLinePool?.Destroy();
-            MajInstanceHelper<NotePoolManager>.Free();
+            Majdata<NotePoolManager>.Free();
         }
     }
 }

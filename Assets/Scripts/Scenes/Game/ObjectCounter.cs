@@ -209,7 +209,7 @@ namespace MajdataPlay.Game
             {JudgeGrade.Miss, 0 },
         };
 
-        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
@@ -225,7 +225,7 @@ namespace MajdataPlay.Game
         const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
         void Awake()
         {
-            MajInstanceHelper<ObjectCounter>.Instance = this;
+            Majdata<ObjectCounter>.Instance = this;
             _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
             _table = GameObject.Find("ObjectCount").GetComponent<Text>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
@@ -312,13 +312,13 @@ namespace MajdataPlay.Game
         }
         void OnDestroy()
         {
-            MajInstanceHelper<ObjectCounter>.Free();
+            Majdata<ObjectCounter>.Free();
         }
         private void Start()
         {
-            _outline = MajInstanceHelper<OutlineLoader>.Instance!;
-            _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _outline = Majdata<OutlineLoader>.Instance!;
+            _xxlbController = Majdata<XxlbAnimationController>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
             
 
             if (_gameInfo.IsDanMode)

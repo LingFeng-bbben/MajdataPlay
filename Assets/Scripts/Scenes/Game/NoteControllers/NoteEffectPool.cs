@@ -29,12 +29,12 @@ namespace MajdataPlay.Game
         GamePlayManager _gpManager;
         void Awake()
         {
-            MajInstanceHelper<NoteEffectPool>.Instance = this;
+            Majdata<NoteEffectPool>.Instance = this;
         }
         
         void OnDestroy()
         {
-            MajInstanceHelper<NoteEffectPool>.Free();
+            Majdata<NoteEffectPool>.Free();
         }
         void Start () 
         {
@@ -43,7 +43,7 @@ namespace MajdataPlay.Game
             var touchHoldParent = transform.GetChild(2);
             var touchFeedbackParent = transform.GetChild(3);
 
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
             // Judge Effect
             for (int i = 0;i < 8;i++)
             {

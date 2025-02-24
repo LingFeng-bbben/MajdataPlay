@@ -41,7 +41,7 @@ namespace MajdataPlay.Result
 
         public Image coverImg;
 
-        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         UniTask OnlineSaveTask = UniTask.Delay(0);
 

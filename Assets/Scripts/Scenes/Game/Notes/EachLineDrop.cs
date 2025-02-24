@@ -79,7 +79,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (IsInitialized)
                 return;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
             poolManager = FindObjectOfType<NotePoolManager>();
             gameSetting = MajInstances.Setting;
             sr = gameObject.GetComponent<SpriteRenderer>();

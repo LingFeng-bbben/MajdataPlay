@@ -15,11 +15,11 @@ namespace MajdataPlay.Game
         private VideoPlayer videoPlayer;
         void Awake()
         {
-            MajInstanceHelper<BGManager>.Instance = this;
+            Majdata<BGManager>.Instance = this;
         }
         void OnDestroy()
         {
-            MajInstanceHelper<BGManager>.Free();
+            Majdata<BGManager>.Free();
         }
 
         // Start is called before the first frame update
@@ -27,7 +27,7 @@ namespace MajdataPlay.Game
         {
             spriteRender = GetComponent<SpriteRenderer>();
             videoPlayer = GetComponent<VideoPlayer>();
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
         }
 
         private void Update()

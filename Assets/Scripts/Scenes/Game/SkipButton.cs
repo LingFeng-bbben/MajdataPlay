@@ -17,7 +17,7 @@ namespace MajdataPlay.Game
             if (a)
                 return;
             a = true;
-            MajInstanceHelper<GamePlayManager>.Instance!.EndGame().Forget();
+            Majdata<GamePlayManager>.Instance!.EndGame().Forget();
             Destroy(gameObject);
         }
         void OnEnable()

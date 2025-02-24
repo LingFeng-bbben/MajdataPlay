@@ -150,10 +150,10 @@ namespace MajdataPlay.Game.Notes
 
         protected SensorArea _sensorPos;
 
-        readonly protected ObjectCounter _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
-        readonly protected NoteManager _noteManager = MajInstanceHelper<NoteManager>.Instance!;
-        readonly protected NoteEffectManager _effectManager = MajInstanceHelper<NoteEffectManager>.Instance!;
-        readonly protected NoteAudioManager _audioEffMana = MajInstanceHelper<NoteAudioManager>.Instance!;
+        readonly protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
+        readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
+        readonly protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
+        readonly protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
         readonly protected InputManager _ioManager = MajInstances.InputManager;
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
@@ -202,7 +202,7 @@ namespace MajdataPlay.Game.Notes
         {
             base.Awake();
 
-            _noteController = MajInstanceHelper<INoteController>.Instance!;
+            _noteController = Majdata<INoteController>.Instance!;
 
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;

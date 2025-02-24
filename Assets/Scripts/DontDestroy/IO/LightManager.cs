@@ -69,7 +69,7 @@ namespace MajdataPlay.IO
         }
         private void OnDestroy()
         {
-            MajInstanceHelper<LightManager>.Free();
+            Majdata<LightManager>.Free();
         }
 
         byte CalculateCheckSum(List<byte> bytes)
@@ -149,7 +149,7 @@ namespace MajdataPlay.IO
             if (_useDummy || !MajInstances.Setting.Misc.OutputDevice.Led.Enable)
                 return;
 
-            if (MajInstanceHelper<IOManager>.Instance is null)
+            if (Majdata<IOManager>.Instance is null)
             {
                 await UpdateInternalLedManagerAsync();
             }
@@ -213,7 +213,7 @@ namespace MajdataPlay.IO
         {
             await Task.Yield();
 
-            var ioManager = MajInstanceHelper<IOManager>.Instance!;
+            var ioManager = Majdata<IOManager>.Instance!;
             var token = MajEnv.GlobalCT;
             var commands = new LedCommand[9];
             var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs);

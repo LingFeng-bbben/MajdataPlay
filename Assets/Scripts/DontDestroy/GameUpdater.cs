@@ -33,8 +33,8 @@ namespace MajdataPlay
         //}
         void Update()
         {
-            var gpManager = MajInstanceHelper<GamePlayManager>.Instance;
-            var noteManager = MajInstanceHelper<NoteManager>.Instance;
+            var gpManager = Majdata<GamePlayManager>.Instance;
+            var noteManager = Majdata<NoteManager>.Instance;
 
             gpManager?.OnUpdate();
             noteManager?.OnUpdate();

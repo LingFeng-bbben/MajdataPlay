@@ -133,7 +133,7 @@ namespace MajdataPlay.Game
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
 
-        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         InputManager _ioManager = MajInstances.InputManager;
 
         SimaiFile _simaiFile;
@@ -152,8 +152,8 @@ namespace MajdataPlay.Game
         readonly CancellationTokenSource _cts = new();
         void Awake()
         {
-            MajInstanceHelper<GamePlayManager>.Instance = this;
-            MajInstanceHelper<INoteController>.Instance = this;
+            Majdata<GamePlayManager>.Instance = this;
+            Majdata<INoteController>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
             //print(MajInstances.GameManager.SelectedIndex);
@@ -178,10 +178,10 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
-            _bgManager = MajInstanceHelper<BGManager>.Instance!;
-            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
-            _xxlbController = MajInstanceHelper<XxlbAnimationController>.Instance!;
+            _noteManager = Majdata<NoteManager>.Instance!;
+            _bgManager = Majdata<BGManager>.Instance!;
+            _objectCounter = Majdata<ObjectCounter>.Instance!;
+            _xxlbController = Majdata<XxlbAnimationController>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -966,8 +966,8 @@ namespace MajdataPlay.Game
             MajInstances.InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
-            MajInstanceHelper<GamePlayManager>.Free();
-            MajInstanceHelper<INoteController>.Free();
+            Majdata<GamePlayManager>.Free();
+            Majdata<INoteController>.Free();
         }
         async UniTaskVoid BackToList()
         {

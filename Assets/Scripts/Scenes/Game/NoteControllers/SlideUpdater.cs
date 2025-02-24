@@ -11,11 +11,11 @@ namespace MajdataPlay.Game
         GamePlayManager _gpManager;
         private void Awake()
         {
-            MajInstanceHelper<SlideUpdater>.Instance = this;
+            Majdata<SlideUpdater>.Instance = this;
         }
         private void Start()
         {
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
         }
         internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
@@ -45,7 +45,7 @@ namespace MajdataPlay.Game
         }
         private void OnDestroy()
         {
-            MajInstanceHelper<SlideUpdater>.Free();
+            Majdata<SlideUpdater>.Free();
         }
     }
 }

@@ -44,7 +44,7 @@ namespace MajdataPlay.Game
 
         void Awake()
         {
-            MajInstanceHelper<NoteManager>.Instance = this;
+            Majdata<NoteManager>.Instance = this;
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFixedUpdate[i] = false;
@@ -61,11 +61,11 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
+            _gpManager = Majdata<GamePlayManager>.Instance;
         }
         void OnDestroy()
         {
-            MajInstanceHelper<NoteManager>.Free();
+            Majdata<NoteManager>.Free();
             _inputManager.UnbindAnyArea(OnAnyAreaTrigger);
         }
         internal void OnUpdate()

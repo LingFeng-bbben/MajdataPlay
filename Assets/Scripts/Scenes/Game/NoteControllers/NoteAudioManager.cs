@@ -11,11 +11,11 @@ namespace MajdataPlay.Game
 
         void Awake()
         {
-            MajInstanceHelper<NoteAudioManager>.Instance = this;
+            Majdata<NoteAudioManager>.Instance = this;
         }
         void OnDestroy()
         {
-            MajInstanceHelper<NoteAudioManager>.Free();
+            Majdata<NoteAudioManager>.Free();
         }
         public void PlayTapSound(in JudgeResult judgeResult)
         {

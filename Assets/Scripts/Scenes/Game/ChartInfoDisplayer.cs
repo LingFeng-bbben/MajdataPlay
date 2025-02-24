@@ -23,7 +23,7 @@ namespace MajdataPlay.Game
 
         public Image coverImg;
 
-        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         private void Start()
         {
             if (_gameInfo is null)

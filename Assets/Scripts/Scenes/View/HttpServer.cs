@@ -19,7 +19,7 @@ namespace MajdataPlay.View
         protected override void Awake()
         {
             base.Awake();
-            MajInstanceHelper<HttpServer>.Instance = this;
+            Majdata<HttpServer>.Instance = this;
             DontDestroyOnLoad(GameObject);
             var rd = new Random();
             while (IsPortInUse(_httpPort))
@@ -34,7 +34,7 @@ namespace MajdataPlay.View
         }
         void Start()
         {
-            _viewManager = MajInstanceHelper<ViewManager>.Instance!;
+            _viewManager = Majdata<ViewManager>.Instance!;
         }
         async void StartToListenHttpRequest(CancellationToken token = default)
         {

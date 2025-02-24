@@ -19,73 +19,73 @@ namespace MajdataPlay.Utils
         public static GameManager GameManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<GameManager>.Instance!;
+            get => Majdata<GameManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<GameManager>.Instance = value;
+            set => Majdata<GameManager>.Instance = value;
         }
         public static GameSetting Setting
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<GameSetting>.Instance!;
+            get => Majdata<GameSetting>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<GameSetting>.Instance = value;
+            set => Majdata<GameSetting>.Instance = value;
         }
         public static AudioManager AudioManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<AudioManager>.Instance!;
+            get => Majdata<AudioManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<AudioManager>.Instance = value;
+            set => Majdata<AudioManager>.Instance = value;
         }
         public static InputManager InputManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<InputManager>.Instance!;
+            get => Majdata<InputManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<InputManager>.Instance = value;
+            set => Majdata<InputManager>.Instance = value;
         }
         public static ScoreManager ScoreManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<ScoreManager>.Instance!;
+            get => Majdata<ScoreManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<ScoreManager>.Instance = value;
+            set => Majdata<ScoreManager>.Instance = value;
 
         }
         public static SkinManager SkinManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<SkinManager>.Instance!;
+            get => Majdata<SkinManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<SkinManager>.Instance = value;
+            set => Majdata<SkinManager>.Instance = value;
         }
         public static SceneSwitcher SceneSwitcher
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<SceneSwitcher>.Instance!;
+            get => Majdata<SceneSwitcher>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<SceneSwitcher>.Instance = value;
+            set => Majdata<SceneSwitcher>.Instance = value;
         }
         public static LightManager LightManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<LightManager>.Instance!;
+            get => Majdata<LightManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<LightManager>.Instance = value;
+            set => Majdata<LightManager>.Instance = value;
         }
         internal static OnlineManager OnlineManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<OnlineManager>.Instance!;
+            get => Majdata<OnlineManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<OnlineManager>.Instance = value;
+            set => Majdata<OnlineManager>.Instance = value;
         }
         internal static GameUpdater GameUpdater
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajInstanceHelper<GameUpdater>.Instance!;
+            get => Majdata<GameUpdater>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => MajInstanceHelper<GameUpdater>.Instance = value;
+            set => Majdata<GameUpdater>.Instance = value;
         }
     }
 }

@@ -16,12 +16,12 @@ namespace MajdataPlay.Game
         GamePlayManager _gpManager;
         void Awake()
         {
-            MajInstanceHelper<OutlineLoader>.Instance = this;
+            Majdata<OutlineLoader>.Instance = this;
         }
         void Start()
         {
             _gameManager = MajInstances.GameManager;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
             _renderer = GetComponent<SpriteRenderer>();
             _renderer.sprite = MajInstances.SkinManager.SelectedSkin.Outline;
             _effectAvailable = MajInstances.SkinManager.SelectedSkin.IsOutlineAvailable && _gpManager.IsClassicMode;
@@ -37,7 +37,7 @@ namespace MajdataPlay.Game
         }
         void OnDestroy()
         {
-            MajInstanceHelper<GamePlayManager>.Free();
+            Majdata<GamePlayManager>.Free();
         }
         void SetColor()
         {

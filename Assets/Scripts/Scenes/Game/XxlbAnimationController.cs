@@ -18,7 +18,7 @@ namespace MajdataPlay.Game
 
         private void Awake()
         {
-            MajInstanceHelper<XxlbAnimationController>.Instance = this;
+            Majdata<XxlbAnimationController>.Instance = this;
         }
 
         // Start is called before the first frame update
@@ -89,7 +89,7 @@ namespace MajdataPlay.Game
 
         private void OnDestroy()
         {
-            MajInstanceHelper<XxlbAnimationController>.Free();
+            Majdata<XxlbAnimationController>.Free();
         }
     }
 }

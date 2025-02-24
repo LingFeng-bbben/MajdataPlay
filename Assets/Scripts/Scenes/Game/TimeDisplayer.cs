@@ -27,7 +27,7 @@ namespace MajdataPlay.Game
 
         void Awake()
         {
-            _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+            _gameInfo = Majdata<GameInfo>.Instance!;
 
             //if(_gameInfo.Mode == GameMode.Practice)
             //{
@@ -42,7 +42,7 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance!;
         }
 
         void Update()

@@ -205,19 +205,19 @@ namespace MajdataPlay.Game
 
         void Awake()
         {
-            MajInstanceHelper<NoteLoader>.Instance = this;
+            Majdata<NoteLoader>.Instance = this;
         }
         void OnDestroy()
         {
-            MajInstanceHelper<NoteLoader>.Free();
+            Majdata<NoteLoader>.Free();
         }
         private void Start()
         {
-            _objectCounter = MajInstanceHelper<ObjectCounter>.Instance!;
-            _noteManager = MajInstanceHelper<NoteManager>.Instance!;
-            _poolManager = MajInstanceHelper<NotePoolManager>.Instance!;
-            _gpManager = MajInstanceHelper<GamePlayManager>.Instance;
-            _slideUpdater = MajInstanceHelper<SlideUpdater>.Instance!;
+            _objectCounter = Majdata<ObjectCounter>.Instance!;
+            _noteManager = Majdata<NoteManager>.Instance!;
+            _poolManager = Majdata<NotePoolManager>.Instance!;
+            _gpManager = Majdata<GamePlayManager>.Instance;
+            _slideUpdater = Majdata<SlideUpdater>.Instance!;
         }
         internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
         {

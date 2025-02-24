@@ -70,15 +70,15 @@ namespace MajdataPlay.View
             {
                 Directory.CreateDirectory(CACHE_PATH);
             }
-            MajInstanceHelper<ViewManager>.Instance = this;
-            MajInstanceHelper<INoteController>.Instance = this;
+            Majdata<ViewManager>.Instance = this;
+            Majdata<INoteController>.Instance = this;
             Screen.SetResolution(1920, 1080, false);
         }
         void Start()
         {
-            _bgManager = MajInstanceHelper<BGManager>.Instance!;
-            _httpServer = MajInstanceHelper<HttpServer>.Instance!;
-            _noteLoader = MajInstanceHelper<NoteLoader>.Instance!;
+            _bgManager = Majdata<BGManager>.Instance!;
+            _httpServer = Majdata<HttpServer>.Instance!;
+            _noteLoader = Majdata<NoteLoader>.Instance!;
         }
         void Update()
         {
@@ -248,8 +248,8 @@ namespace MajdataPlay.View
         }
         void OnDestroy()
         {
-            MajInstanceHelper<ViewManager>.Free();
-            MajInstanceHelper<INoteController>.Free();
+            Majdata<ViewManager>.Free();
+            Majdata<INoteController>.Free();
         }
     }
 }

@@ -23,7 +23,7 @@ namespace MajdataPlay.List
 
         void Awake()
         {
-            MajInstanceHelper<ListManager>.Instance = this;
+            Majdata<ListManager>.Instance = this;
             AllBackguardTasks.Clear();
 
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
@@ -35,7 +35,7 @@ namespace MajdataPlay.List
         }
         void Start()
         {
-            _coverListDisplayer = MajInstanceHelper<CoverListDisplayer>.Instance!;
+            _coverListDisplayer = Majdata<CoverListDisplayer>.Instance!;
             InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)
@@ -62,7 +62,7 @@ namespace MajdataPlay.List
         }
         void OnDestroy()
         {
-            MajInstanceHelper<ListManager>.Free();
+            Majdata<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
             _cts.Cancel();
         }
@@ -140,7 +140,7 @@ namespace MajdataPlay.List
                                         HPRecover = SongStorage.WorkingCollection.DanInfo.RestoreHP,
                                         DanInfo = danInfo
                                     };
-                                    MajInstanceHelper<GameInfo>.Instance = info;
+                                    Majdata<GameInfo>.Instance = info;
                                     //MajInstances.GameManager.isDanMode = true;
                                     //MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
                                     //MajInstances.GameManager.DanResults.Clear();
@@ -169,14 +169,14 @@ namespace MajdataPlay.List
                                 };
                                 if (_pressTime > 1f)
                                 {
-                                    var oldinfo = MajInstanceHelper<GameInfo>.Instance;
+                                    var oldinfo = Majdata<GameInfo>.Instance;
                                     var info = new GameInfo(GameMode.Practice, charts, levels, 114514);
                                     if (oldinfo is not null && oldinfo.TimeRange is not null)
                                     {
                                         info.TimeRange = oldinfo.TimeRange;
                                     }
                                     
-                                    MajInstanceHelper<GameInfo>.Instance = info;
+                                    Majdata<GameInfo>.Instance = info;
                                     _pressTime = 0;
                                     _isPressed = false;
                                     MajInstances.SceneSwitcher.SwitchScene("Practice", false);
@@ -184,7 +184,7 @@ namespace MajdataPlay.List
                                 else
                                 {
                                     var info = new GameInfo(GameMode.Normal, charts, levels);
-                                    MajInstanceHelper<GameInfo>.Instance = info;
+                                    Majdata<GameInfo>.Instance = info;
                                     _pressTime = 0;
                                     _isPressed = false;
                                     MajInstances.SceneSwitcher.SwitchScene("Game", false);

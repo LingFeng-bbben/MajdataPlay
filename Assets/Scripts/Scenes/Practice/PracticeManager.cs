@@ -60,7 +60,7 @@ public class PracticeManager : MonoBehaviour
 
     private void Start()
     {
-        _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        _gameInfo = Majdata<GameInfo>.Instance!;
         _startTimeRef = new Ref<float>(ref startTime);
         _endTimeRef = new Ref<float>(ref endTime);
         //_practiceCountText.text = Localization.GetLocalizedText("PracticeCount");

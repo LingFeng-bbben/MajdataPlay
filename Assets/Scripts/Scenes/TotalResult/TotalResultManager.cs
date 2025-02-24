@@ -22,7 +22,7 @@ namespace MajdataPlay.TotalResult
         public TextMeshProUGUI Life;
         public TextMeshProUGUI Title;
 
-        GameInfo _gameInfo = MajInstanceHelper<GameInfo>.Instance!;
+        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         // Start is called before the first frame update
         void Start()
         {
