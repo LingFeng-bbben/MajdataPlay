@@ -102,20 +102,15 @@ namespace MajdataPlay
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
             QualitySettings.maxQueuedFrames = 1;
-
-            foreach (var arg in Environment.GetCommandLineArgs())
-            {
-                if (arg == "--test-mode")
-                {
-                    EnterTestMode();
-                    break;
-                }
-            }
         }
         void EnterTestMode()
         {
-            IOListener.NextScene = string.Empty;
+            IOListener.NextScene = "Title";
             SceneManager.LoadScene("SensorTest");
+        }
+        void EnterTitle()
+        {
+            SceneManager.LoadScene("Title");
         }
         void SwitchToView()
         {
@@ -146,6 +141,15 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
+            foreach (var arg in Environment.GetCommandLineArgs())
+            {
+                if (arg == "--test-mode")
+                {
+                    EnterTestMode();
+                    return;
+                }
+            }
+            EnterTitle();
         }
         void Update()
         {

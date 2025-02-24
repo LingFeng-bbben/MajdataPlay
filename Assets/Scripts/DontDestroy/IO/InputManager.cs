@@ -229,7 +229,7 @@ namespace MajdataPlay.IO
                 var collider = child.GetComponent<MeshCollider>();
                 var renderer = child.GetComponent<MeshRenderer>();
                 var filter = child.GetComponent<MeshFilter>();
-                sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider);
+                sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider, child.gameObject);
                 _instanceID2SensorIndexMappingTable[collider.GetInstanceID()] = index;
             }
             foreach(SensorArea zone in Enum.GetValues(typeof(SensorArea)))
@@ -602,13 +602,14 @@ namespace MajdataPlay.IO
         public MeshFilter MeshFilter { get; init; }
         public MeshRenderer MeshRenderer { get; init; }
         public MeshCollider MeshCollider { get; init; }
+        public GameObject GameObject { get; init; }
         public Color Color 
         {
             get => _material.color;
             set => _material.color = value; 
         }
         Material _material;
-        public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider)
+        public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider, GameObject gameObject)
         {
             Index = index;
             MeshFilter = meshFilter;
@@ -616,12 +617,11 @@ namespace MajdataPlay.IO
             MeshCollider = meshCollider;
             _material = new Material(Shader.Find("Sprites/Default"));
             MeshRenderer.material = _material;
+            GameObject = gameObject;
         }
         public void Destroy()
         {
-            GameObject.Destroy(MeshFilter);
-            GameObject.Destroy(MeshRenderer);
-            GameObject.Destroy(MeshCollider);
+            GameObject.Destroy(GameObject);
             GameObject.Destroy(_material);
         }
     }
