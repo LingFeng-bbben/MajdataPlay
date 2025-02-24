@@ -523,12 +523,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 
                 PlayJudgeSFX(result);
-                //PlaySlideOK(result);
             }
-            //else
-            //    Destroy(_slideOK);
-            // Destroy(gameObject);
-            //SetActive(false);
         }
         protected override void Autoplay()
         {

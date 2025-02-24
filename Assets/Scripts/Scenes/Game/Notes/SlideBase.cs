@@ -172,37 +172,32 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
-            var stayTime = _lastWaitTime; // 停留时间
+            var stayTimeMSec = _lastWaitTime * 1000; // 停留时间
 
             // By Minepig
-            var diff = currentSec - JudgeTiming;
-            var isFast = diff < 0;
-            _judgeDiff = diff * 1000;
+            var diffSec = currentSec - JudgeTiming;
+            var isFast = diffSec < 0;
+            var diffMSec = MathF.Abs(diffSec) * 1000;
+            _judgeDiff = diffSec * 1000;
             // input latency simulation
             //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
-            var ext = MathF.Min(stayTime / 4, 0.36666667f);
+            var ext = MathF.Min(stayTimeMSec / 4, SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC);
+            var JUDGE_SEG_3RD_PERFECT_MSEC = SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC + ext;
+            var JUDGE_SEG_1ST_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.333333f;
+            var JUDGE_SEG_2ND_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.666666f;
 
-            const float JUDGE_GREAT_AREA = 0.4833333f;
-            const float JUDGE_SEG_GREAT1 = 0.35f;
-            const float JUDGE_SEG_GREAT2 = 0.4166667f;
-
-            var JUDGE_PERFECT_AREA = 0.2333333f + ext;
-            var JUDGE_SEG_PERFECT1 = JUDGE_PERFECT_AREA * 0.333333f;
-            var JUDGE_SEG_PERFECT2 = JUDGE_PERFECT_AREA * 0.666666f;
-            diff = MathF.Abs(diff);
-
-            var result = diff switch
+            var result = diffMSec switch
             {
-                _ when diff <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                _ when diff <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                _ when diff <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
-                <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
+                _ when diffSec <= JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                _ when diffSec <= JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                _ when diffSec <= JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= SLIDE_JUDGE_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= SLIDE_JUDGE_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= SLIDE_JUDGE_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
+            MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
@@ -210,8 +205,8 @@ namespace MajdataPlay.Game.Notes
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
-            else if (diff >= 0.6166679 && !isFast)
-                _lastWaitTime = 0;
+            else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
+                _lastWaitTime = 0.05f;
         }
         protected void Judge_Classic(float currentSec)
         {
@@ -219,39 +214,32 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
-            const float JUDGE_GREAT_AREA = 0.3916672f;
-            const float JUDGE_PERFECT_AREA = 0.15f;
 
-            const float JUDGE_SEG_PERFECT1 = 0.05f;
-            const float JUDGE_SEG_PERFECT2 = 0.1f;
-            const float JUDGE_SEG_GREAT1 = 0.2305557f;
-            const float JUDGE_SEG_GREAT2 = 0.3111114f;
+            var diffSec = currentSec - JudgeTiming;
+            var isFast = diffSec < 0;
+            _judgeDiff = diffSec * 1000;
+            var diffMSec = MathF.Abs(diffSec) * 1000;
 
-            var diff = currentSec - JudgeTiming;
-            var isFast = diff < 0;
-            _judgeDiff = diff * 1000;
-            diff = MathF.Abs(diff);
-
-            var judge = diff switch
+            var judge = diffMSec switch
             {
-                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                <= JUDGE_SEG_PERFECT2 => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= JUDGE_PERFECT_AREA => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
-                <= JUDGE_SEG_GREAT1 => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
-                <= JUDGE_GREAT_AREA => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
+                <= SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            print($"Slide diff : {MathF.Round(diff * 1000, 2)} ms");
+            MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             _judgeResult = judge;
             _isJudged = true;
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
                 _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
-            else if (diff >= 0.6166679 && !isFast)
-                _lastWaitTime = 0;
+            else if (diffSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
+                _lastWaitTime = 0.05f;
         }
         protected void HideBar(int endIndex)
         {

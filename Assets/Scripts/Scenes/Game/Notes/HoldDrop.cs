@@ -157,13 +157,13 @@ namespace MajdataPlay.Game.Notes
             _lastHoldState = null;
             _releaseTime = 0;
 
-            if (Length < HOLD_HEAD_IGNORE_LENGTH + HOLD_TAIL_IGNORE_LENGTH)
+            if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH, (Timing + Length) - HOLD_TAIL_IGNORE_LENGTH, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH_SEC, (Timing + Length) - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
@@ -434,7 +434,7 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH || _judgeResult.IsMissOrTooFast())
+                if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || _judgeResult.IsMissOrTooFast())
                 {
                     End();
                     return;
@@ -471,7 +471,7 @@ namespace MajdataPlay.Game.Notes
                     End();
                     return;
                 }
-                else if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME)
+                else if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
                 {
                     _releaseTime += Time.deltaTime;
                     return;

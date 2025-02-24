@@ -357,37 +357,27 @@ namespace MajdataPlay.Game.Notes
         }
         protected override void Judge(float currentSec)
         {
-
-            const float JUDGE_GOOD_AREA = 316.667f;
-            const int JUDGE_GREAT_AREA = 250;
-            const int JUDGE_PERFECT_AREA = 200;
-
-            const float JUDGE_SEG_PERFECT1 = 150f;
-            const float JUDGE_SEG_PERFECT2 = 175f;
-            const float JUDGE_SEG_GREAT1 = 216.6667f;
-            const float JUDGE_SEG_GREAT2 = 233.3334f;
-
             if (_isJudged)
                 return;
 
-            var timing = currentSec - JudgeTiming;
-            var isFast = timing < 0;
-            _judgeDiff = timing * 1000;
-            var diff = MathF.Abs(timing * 1000);
+            var diffSec = currentSec - JudgeTiming;
+            var isFast = diffSec < 0;
+            _judgeDiff = diffSec * 1000;
+            var diffMSec = MathF.Abs(diffSec * 1000);
 
-            if (diff > JUDGE_SEG_PERFECT1 && isFast)
+            if (isFast && diffMSec > TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC)
                 return;
 
-            JudgeGrade result = diff switch
+            var result = diffMSec switch
             {
-                <= JUDGE_SEG_PERFECT1 => JudgeGrade.Perfect,
-                <= JUDGE_SEG_PERFECT2 => JudgeGrade.LatePerfect2nd,
-                <= JUDGE_PERFECT_AREA => JudgeGrade.LatePerfect3rd,
-                <= JUDGE_SEG_GREAT1 => JudgeGrade.LateGreat,
-                <= JUDGE_SEG_GREAT2 => JudgeGrade.LateGreat2nd,
-                <= JUDGE_GREAT_AREA => JudgeGrade.LateGreat3rd,
-                <= JUDGE_GOOD_AREA => JudgeGrade.LateGood,
-                _ => JudgeGrade.Miss
+                <= TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC => JudgeGrade.LatePerfect2nd,
+                <= TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC => JudgeGrade.LatePerfect3rd,
+                <= TOUCH_JUDGE_SEG_1ST_GREAT_MSEC => JudgeGrade.LateGreat,
+                <= TOUCH_JUDGE_SEG_2ND_GREAT_MSEC => JudgeGrade.LateGreat2nd,
+                <= TOUCH_JUDGE_SEG_3RD_GREAT_MSEC => JudgeGrade.LateGreat3rd,
+                <= TOUCH_JUDGE_GOOD_AREA_MSEC => JudgeGrade.LateGood,
+                _ => isFast ? JudgeGrade.TooFast : JudgeGrade.Miss
             };
 
             ConvertJudgeGrade(ref result);

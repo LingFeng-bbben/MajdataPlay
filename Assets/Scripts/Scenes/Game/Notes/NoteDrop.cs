@@ -158,20 +158,42 @@ namespace MajdataPlay.Game.Notes
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
-        protected const float TAP_JUDGE_SEG_1ST_PERFECT = 16.666666f;
-        protected const float TAP_JUDGE_SEG_2ND_PERFECT = 2 * TAP_JUDGE_SEG_1ST_PERFECT;
-        protected const float TAP_JUDGE_SEG_3RD_PERFECT = 3 * TAP_JUDGE_SEG_1ST_PERFECT;
-        protected const float TAP_JUDGE_SEG_1ST_GREAT = 4 * TAP_JUDGE_SEG_1ST_PERFECT;
-        protected const float TAP_JUDGE_SEG_2ND_GREAT = 5 * TAP_JUDGE_SEG_1ST_PERFECT;
-        protected const float TAP_JUDGE_SEG_3RD_GREAT = 6 * TAP_JUDGE_SEG_1ST_PERFECT;
-        protected const float TAP_JUDGE_GOOD_AREA = 9 * TAP_JUDGE_SEG_1ST_PERFECT;
+        protected const float TAP_JUDGE_SEG_1ST_PERFECT_MSEC = 16.666666f;
+        protected const float TAP_JUDGE_SEG_2ND_PERFECT_MSEC = 2 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float TAP_JUDGE_SEG_3RD_PERFECT_MSEC = 3 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float TAP_JUDGE_SEG_1ST_GREAT_MSEC = 4 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float TAP_JUDGE_SEG_2ND_GREAT_MSEC = 5 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
 
-        protected const float HOLD_HEAD_IGNORE_LENGTH = 0.1f;
-        protected const float HOLD_TAIL_IGNORE_LENGTH = 0.2f;
-        protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH = 0.25f;
-        protected const float TOUCHHOLD_TAIL_IGNORE_LENGTH = 0.2f;
-        protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME = 0.03333333f;
-        protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH = 0.333334f;
+        protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 150f;
+        protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 175f;
+        protected const float TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC = 200f;
+        protected const float TOUCH_JUDGE_SEG_1ST_GREAT_MSEC = 216.666666f;
+        protected const float TOUCH_JUDGE_SEG_2ND_GREAT_MSEC = 233.333333f;
+        protected const float TOUCH_JUDGE_SEG_3RD_GREAT_MSEC = 250f;
+        protected const float TOUCH_JUDGE_GOOD_AREA_MSEC = 316.666666f;
+
+        protected const float SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC = 366.666666f;
+        protected const float SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC = 233.333333f;
+        protected const float SLIDE_JUDGE_SEG_1ST_GREAT_MSEC = 350f;
+        protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 416.666666f;
+        protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 483.333333f;
+
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 50f;  // 3f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC = 100f; // 6f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC = 150f; // 9f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 250f;   // 15f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 350f;   // 21f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 450f;   // 27f
+        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 600f;               // 36f
+
+        protected const float HOLD_HEAD_IGNORE_LENGTH_SEC = 0.1f;
+        protected const float HOLD_TAIL_IGNORE_LENGTH_SEC = 0.2f;
+        protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC = 0.25f;
+        protected const float TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC = 0.2f;
+        protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC = 0.03333333f;
+        protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC = 0.333333f;
         protected override void Awake()
         {
             base.Awake();
@@ -197,26 +219,25 @@ namespace MajdataPlay.Game.Notes
             if (_isJudged)
                 return;
 
-            var timing = currentSec - JudgeTiming;
-            var isFast = timing < 0;
-            _judgeDiff = timing * 1000;
-            var diff = MathF.Abs(timing * 1000);
-
-            if (diff > TAP_JUDGE_GOOD_AREA && isFast)
-                return;
-            var result = diff switch
+            var diffSec = currentSec - JudgeTiming;
+            var isFast = diffSec < 0;
+            _judgeDiff = diffSec * 1000;
+            var diffMSec = MathF.Abs(diffSec * 1000);
+            var result = diffMSec switch
             {
-                <= TAP_JUDGE_SEG_1ST_PERFECT => JudgeGrade.Perfect,
-                <= TAP_JUDGE_SEG_2ND_PERFECT => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= TAP_JUDGE_SEG_3RD_PERFECT => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
-                <= TAP_JUDGE_SEG_1ST_GREAT => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= TAP_JUDGE_SEG_2ND_GREAT => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
-                <= TAP_JUDGE_SEG_3RD_GREAT => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
-                <= TAP_JUDGE_GOOD_AREA => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood,
-                _ => JudgeGrade.Miss
+                <= TAP_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= TAP_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= TAP_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= TAP_JUDGE_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= TAP_JUDGE_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= TAP_JUDGE_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
+                <= TAP_JUDGE_GOOD_AREA_MSEC => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood,
+                _ => isFast ? JudgeGrade.TooFast : JudgeGrade.Miss
             };
 
-            if (result != JudgeGrade.Miss && IsEX)
+            if (result is JudgeGrade.TooFast)
+                return;
+            else if (result != JudgeGrade.Miss && IsEX)
                 result = JudgeGrade.Perfect;
 
             ConvertJudgeGrade(ref result);
