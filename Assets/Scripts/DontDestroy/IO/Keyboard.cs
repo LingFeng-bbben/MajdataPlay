@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace MajdataPlay.IO
 {
@@ -11,16 +12,12 @@ namespace MajdataPlay.IO
             var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
             return (result & 0x8000) != 0;
 #else
-            return false;
+            return Input.GetKey(ToUnityKeyCode(keyCode));
 #endif
         }
         public static bool IsKeyUp(KeyCode keyCode)
         {
-#if UNITY_STANDALONE_WIN
             return !IsKeyDown(keyCode);
-#else
-            return true;
-#endif
         }
         static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
         {
@@ -38,6 +35,25 @@ namespace MajdataPlay.IO
                 KeyCode.SelectP1 => Win32API.RawKey.Multiply,
                 KeyCode.Service => Win32API.RawKey.Numpad7,
                 KeyCode.SelectP2 => Win32API.RawKey.Numpad3,
+                _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
+            };
+        }
+        static UnityEngine.KeyCode ToUnityKeyCode(KeyCode keyCode)
+        {
+            return keyCode switch
+            {
+                KeyCode.B1 => UnityEngine.KeyCode.W,
+                KeyCode.B2 => UnityEngine.KeyCode.E,
+                KeyCode.B3 => UnityEngine.KeyCode.D,
+                KeyCode.B4 => UnityEngine.KeyCode.C,
+                KeyCode.B5 => UnityEngine.KeyCode.X,
+                KeyCode.B6 => UnityEngine.KeyCode.Z,
+                KeyCode.B7 => UnityEngine.KeyCode.A,
+                KeyCode.B8 => UnityEngine.KeyCode.Q,
+                KeyCode.Test => UnityEngine.KeyCode.Keypad9,
+                KeyCode.SelectP1 => UnityEngine.KeyCode.KeypadMultiply,
+                KeyCode.Service => UnityEngine.KeyCode.Keypad7,
+                KeyCode.SelectP2 => UnityEngine.KeyCode.Keypad3,
                 _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
             };
         }
