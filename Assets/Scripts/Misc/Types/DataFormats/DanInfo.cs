@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Types
@@ -11,12 +12,14 @@ namespace MajdataPlay.Types
         public string Name { get; init; }
         public string Description { get; init; }
         public string[] SongHashs { get; init; }
+        public Dictionary<string, JsonElement> Mods { get; init; } = new();
         public int[] SongLevels { get; init; }
         public int StartHP { get; init; } = 50;
         public int RestoreHP { get; init; } = 10;
         public bool IsPlayList { get; init; } = false;
         public bool IsForceGameover { get; init; } = false;
-        public Dictionary<JudgeGrade, int> Damages { get; init; } = new Dictionary<JudgeGrade, int> {
+        public Dictionary<JudgeGrade, int> Damages { get; init; } = new Dictionary<JudgeGrade, int> 
+        {
             { JudgeGrade.Miss,-5 },
             { JudgeGrade.TooFast,-5 },
             { JudgeGrade.LateGood,-3 },

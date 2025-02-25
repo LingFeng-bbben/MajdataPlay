@@ -23,6 +23,8 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
+using System.Text.Json;
+using System.Windows.Forms.VisualStyles;
 
 namespace MajdataPlay.Game
 {
@@ -187,7 +189,85 @@ namespace MajdataPlay.Game
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             MajInstances.InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
+            if(_gameInfo.IsDanMode)
+            {
+                LoadDanModSettings();
+            }
             InitGame().Forget();
+        }
+        void LoadDanModSettings()
+        {
+            var danInfo = _gameInfo.DanInfo;
+
+            foreach (var (k,v) in danInfo!.Mods)
+            {
+                switch(k)
+                {
+                    case "PlaybackSpeed":
+                        if (v.ValueKind is JsonValueKind.Number && 
+                            v.TryGetSingle(out var playbackSpeed) || (float.TryParse(v.ToString(), out playbackSpeed)))
+                        {
+                            PlaybackSpeed = playbackSpeed;
+                        }
+                        break;
+                    case "AllBreak":
+                        if(v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _isAllBreak = v.GetBoolean();
+                        }
+                        else if(bool.TryParse(v.ToString(), out var allBreak))
+                        {
+                            _isAllBreak = allBreak;
+                        }
+                        break;
+                    case "AllEx":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _isAllEx = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var allEx))
+                        {
+                            _isAllEx = allEx;
+                        }
+                        break;
+                    case "AutoPlay":
+                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
+                        {
+                            AutoplayMode = (AutoplayMode)modeIndex;
+                        }
+                        else if(Enum.TryParse<AutoplayMode>(v.ToString(), false, out var mode))
+                        {
+                            AutoplayMode = mode;
+                        }
+                        break;
+                    case "JudgeStyle":
+                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
+                        {
+                            JudgeStyle = (JudgeStyleType)styleIndex;
+                        }
+                        else if (Enum.TryParse<JudgeStyleType>(v.ToString(), false, out var style))
+                        {
+                            JudgeStyle = style;
+                        }
+                        break;
+                    case "NoteMask":
+                        switch (v.ToString())
+                        {
+                            case "Inner":
+                                _noteMask.gameObject.SetActive(true);
+                                _noteMask.sprite = _maskSpriteB;
+                                break;
+                            case "Outer":
+                                _noteMask.gameObject.SetActive(true);
+                                _noteMask.sprite = _maskSpriteA;
+                                break;
+                            case "Disable":
+                                _noteMask.gameObject.SetActive(false);
+                                break;
+                        }
+                        break;
+                }
+            }
         }
         void LoadGameMod()
         {
