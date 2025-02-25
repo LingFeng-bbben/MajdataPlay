@@ -17,7 +17,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public class LightManager : MonoBehaviour
+    internal class LightManager : MonoBehaviour
     {
         bool _useDummy = true;
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();

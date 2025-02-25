@@ -1,7 +1,7 @@
 ﻿#nullable enable
 namespace MajdataPlay.Utils
 {
-    public static class Majdata<T>
+    internal static class Majdata<T>
     {
         /// <summary>
         /// Get or set a globally unique instance

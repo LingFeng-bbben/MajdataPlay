@@ -9,7 +9,7 @@ namespace MajdataPlay.Utils
     /// <summary>
     /// This class holds a reference to the only instance of a type.
     /// </summary>
-    public static class MajInstances
+    internal static class MajInstances
     {
 #if UNITY_EDITOR || DEBUG
         public static SemVersion GameVersion { get; } = SemVersion.Parse("0.1.0", SemVersionStyles.Strict);

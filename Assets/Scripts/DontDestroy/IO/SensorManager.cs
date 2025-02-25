@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class InputManager : MonoBehaviour
+    internal partial class InputManager : MonoBehaviour
     {
         
         static void UpdateSensorState()

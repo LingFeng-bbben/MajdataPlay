@@ -21,7 +21,7 @@ using UnityRawInput;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public unsafe partial class InputManager : MonoBehaviour
+    internal unsafe partial class InputManager : MonoBehaviour
     {
         public bool IsTouchPanelConnected { get; private set; } = false;
 
@@ -35,35 +35,35 @@ namespace MajdataPlay.IO
         readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
 
-        readonly static ReadOnlyMemory<RawKey> _bindingKeys = new RawKey[12]
+        readonly static ReadOnlyMemory<KeyCode> _bindingKeys = new KeyCode[12]
         {
-            RawKey.W,
-            RawKey.E,
-            RawKey.D,
-            RawKey.C,
-            RawKey.X,
-            RawKey.Z,
-            RawKey.A,
-            RawKey.Q,
-            RawKey.Numpad9,
-            RawKey.Multiply,
-            RawKey.Numpad7,
-            RawKey.Numpad3,
+            KeyCode.B1,
+            KeyCode.B2,
+            KeyCode.B3,
+            KeyCode.B4,
+            KeyCode.B5,
+            KeyCode.B6,
+            KeyCode.B7,
+            KeyCode.B8,
+            KeyCode.Test,
+            KeyCode.SelectP1,
+            KeyCode.Service,
+            KeyCode.SelectP2
         };
         readonly static ReadOnlyMemory<Button> _buttons = new Button[12]
         {
-            new Button(RawKey.W,SensorArea.A1),
-            new Button(RawKey.E,SensorArea.A2),
-            new Button(RawKey.D,SensorArea.A3),
-            new Button(RawKey.C,SensorArea.A4),
-            new Button(RawKey.X,SensorArea.A5),
-            new Button(RawKey.Z,SensorArea.A6),
-            new Button(RawKey.A,SensorArea.A7),
-            new Button(RawKey.Q,SensorArea.A8),
-            new Button(RawKey.Numpad9,SensorArea.Test),
-            new Button(RawKey.Multiply,SensorArea.P1),
-            new Button(RawKey.Numpad7,SensorArea.Service),
-            new Button(RawKey.Numpad3,SensorArea.P2),
+            new Button(KeyCode.B1,SensorArea.A1),
+            new Button(KeyCode.B2,SensorArea.A2),
+            new Button(KeyCode.B3,SensorArea.A3),
+            new Button(KeyCode.B4,SensorArea.A4),
+            new Button(KeyCode.B5,SensorArea.A5),
+            new Button(KeyCode.B6,SensorArea.A6),
+            new Button(KeyCode.B7,SensorArea.A7),
+            new Button(KeyCode.B8,SensorArea.A8),
+            new Button(KeyCode.Test,SensorArea.Test),
+            new Button(KeyCode.SelectP1,SensorArea.P1),
+            new Button(KeyCode.Service,SensorArea.Service),
+            new Button(KeyCode.SelectP2,SensorArea.P2),
         };
         readonly static Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
         readonly static Memory<bool> _buttonStates = new bool[12];

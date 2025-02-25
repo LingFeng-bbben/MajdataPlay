@@ -5,13 +5,13 @@ using UnityRawInput;
 
 namespace MajdataPlay.IO
 {
-    public class Button: IEventPublisher<EventHandler<InputEventArgs>>
+    internal class Button: IEventPublisher<EventHandler<InputEventArgs>>
     {
-        public RawKey BindingKey { get; set; }
+        public KeyCode BindingKey { get; set; }
         public SensorArea Area { get; set; }
         public SensorStatus State { get; set; }
         event EventHandler<InputEventArgs>? OnStatusChanged;
-        public Button(RawKey bindingKey, SensorArea type)
+        public Button(KeyCode bindingKey, SensorArea type)
         {
             BindingKey = bindingKey;
             Area = type;

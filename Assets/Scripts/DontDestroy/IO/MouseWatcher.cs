@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace MajdataPlay.IO
 {
-    public partial class InputManager : MonoBehaviour
+    internal partial class InputManager : MonoBehaviour
     {
         readonly static Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
         static void UpdateMousePosition()

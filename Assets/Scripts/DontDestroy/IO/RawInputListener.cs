@@ -3,19 +3,15 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MychIO.Device;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityRawInput;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    public partial class InputManager : MonoBehaviour
+    internal partial class InputManager : MonoBehaviour
     {
         void StartUpdatingKeyboardState()
         {
@@ -44,7 +40,7 @@ namespace MajdataPlay.IO
                             _buttonRingInputBuffer.Enqueue(new ()
                             {
                                 Index = i,
-                                State = RawInput.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off,
+                                State = Keyboard.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off,
                                 Timestamp = now
                             });
                         }
@@ -111,25 +107,6 @@ namespace MajdataPlay.IO
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.RemoveSubscriber(checker);
-        }
-        RawKey ButtonRingZone2RawKey(ButtonRingZone btnZone)
-        {
-            return btnZone switch
-            {
-                ButtonRingZone.BA1 => RawKey.W,
-                ButtonRingZone.BA2 => RawKey.E,
-                ButtonRingZone.BA3 => RawKey.D,
-                ButtonRingZone.BA4 => RawKey.C,
-                ButtonRingZone.BA5 => RawKey.X,
-                ButtonRingZone.BA6 => RawKey.Z,
-                ButtonRingZone.BA7 => RawKey.A,
-                ButtonRingZone.BA8 => RawKey.Q,
-                ButtonRingZone.ArrowUp => RawKey.Multiply,
-                ButtonRingZone.ArrowDown => RawKey.Numpad3,
-                ButtonRingZone.Select => RawKey.Numpad9,
-                ButtonRingZone.InsertCoin => RawKey.Numpad7,
-                _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
-            };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         int GetIndexByButtonRingZone(ButtonRingZone btnZone)
