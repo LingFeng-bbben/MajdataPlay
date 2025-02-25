@@ -74,7 +74,7 @@ namespace MajdataPlay.Types
     }
     public class SFXVolume
     {
-        public float Global { get; set; } = 1f;
+        public float Global { get; set; } = 0.3f;
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
         public float Tap { get; set; } = 0.3f;
@@ -179,7 +179,7 @@ namespace MajdataPlay.Types
         public DeviceType Type { get; set; } = DeviceType.Keyboard;
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
-        public bool Debounce { get; set; } = true;
+        public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;
     }
@@ -188,7 +188,7 @@ namespace MajdataPlay.Types
         public int Index { get; set; } = 1;
         public int COMPort { get; set; } = 3;
         public int BaudRate { get; set; } = 9600;
-        public bool Debounce { get; set; } = true;
+        public bool Debounce { get; set; } = false;
         public bool SensitivityOverride { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 1;
