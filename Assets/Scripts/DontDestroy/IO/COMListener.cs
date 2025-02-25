@@ -70,7 +70,7 @@ namespace MajdataPlay.IO
                 catch (IOException)
                 {
                     MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
-                    useDummy = true;
+                    _useDummy = true;
                 }
             });
         }

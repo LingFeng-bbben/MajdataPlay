@@ -24,8 +24,6 @@ namespace MajdataPlay.IO
     public unsafe partial class InputManager : MonoBehaviour
     {
         public bool IsTouchPanelConnected { get; private set; } = false;
-        public bool displayDebug = false;
-        public static bool useDummy = false;
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
@@ -70,7 +68,7 @@ namespace MajdataPlay.IO
         readonly static Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
         readonly static Memory<bool> _buttonStates = new bool[12];
 
-        static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
+        readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
         {
             new Sensor()
             {
@@ -205,10 +203,11 @@ namespace MajdataPlay.IO
                 Area = SensorArea.E8,
             },
         };
-        static readonly Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
+        readonly static Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
         readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
         readonly static Memory<bool> _sensorStates = new bool[35];
 
+        static bool _useDummy = false;
         static bool _isBtnDebounceEnabled = false;
         static bool _isSensorDebounceEnabled = false;
         static bool _isSensorRendererEnabled = false;
@@ -242,58 +241,6 @@ namespace MajdataPlay.IO
                 _sensorLastTriggerTimes[zone] = DateTime.MinValue;
             }
         }
-        /// <summary>
-        /// Used to check whether the device activation is caused by abnormal jitter
-        /// </summary>
-        /// <param name="zone"></param>
-        /// <returns>
-        /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static bool JitterDetect(SensorArea zone, DateTime now,bool isBtn = false)
-        {
-            DateTime lastTriggerTime;
-            TimeSpan debounceTime;
-            if(isBtn)
-            {
-                _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
-                debounceTime = _btnDebounceThresholdMs;
-            }
-            else
-            {
-                _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
-                debounceTime = _sensorDebounceThresholdMs;
-            }
-            var diff = now - lastTriggerTime;
-            if (diff < debounceTime)
-            {
-                MajDebug.Log($"[Debounce] Received {(isBtn?"button":"sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
-                return true;
-            }
-            return false;
-        }
-        void CheckEnvironment(bool forceQuit = true)
-        {
-            //// MSVC 2015-2019
-            //var registryKey = @"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64";
-            //using var key = Registry.LocalMachine.OpenSubKey(registryKey);
-            //if(key is null)
-            //{
-            //    //var msg = "IO4 and HID input methods depend on the MSVC runtime library, but MajdataPlay did not find the MSVC runtime library on your computer. Please click \"OK\" to jump to download and install.";
-            //    var msg = Localization.GetLocalizedText(MajText.MISSING_MSVC_CONTENT);
-            //    if (string.IsNullOrEmpty(msg))
-            //        msg = "MSVCRT not found\r\nClick \"OK\" to download";
-            //    var title = "Missing MSVC";
-            //    if (forceQuit)
-            //    {
-            //        MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //        Application.OpenURL("https://aka.ms/vs/17/release/vc_redist.x64.exe");
-            //        Application.Quit();
-            //    }
-            //    else
-            //        MajDebug.LogWarning("Missing environment: MSVC runtime library not found.");
-            //}
-        }
         void Start()
         {
             _isSensorRendererEnabled = MajInstances.Setting.Debug.DisplaySensor;
@@ -301,13 +248,11 @@ namespace MajdataPlay.IO
             switch(MajInstances.Setting.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
-                    CheckEnvironment(false);
                     StartInternalIOManager();
                     _updateIOListenerPtr = &UpdateInternalIOListener;
                     break;
                 case DeviceType.IO4:
                 case DeviceType.HID:
-                    CheckEnvironment();
                     StartExternalIOManager();
                     _updateIOListenerPtr = &UpdateExternalIOListener;
                     break;
@@ -464,7 +409,7 @@ namespace MajdataPlay.IO
             try
             {
                 var executionQueue = MajEnv.ExecutionQueue;
-                if (useDummy)
+                if (_useDummy)
                     UpdateMousePosition();
                 else
                     UpdateSensorState();
@@ -600,6 +545,36 @@ namespace MajdataPlay.IO
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStates;
+        /// <summary>
+        /// Used to check whether the device activation is caused by abnormal jitter
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <returns>
+        /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool JitterDetect(SensorArea zone, DateTime now, bool isBtn = false)
+        {
+            DateTime lastTriggerTime;
+            TimeSpan debounceTime;
+            if (isBtn)
+            {
+                _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _btnDebounceThresholdMs;
+            }
+            else
+            {
+                _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                debounceTime = _sensorDebounceThresholdMs;
+            }
+            var diff = now - lastTriggerTime;
+            if (diff < debounceTime)
+            {
+                MajDebug.Log($"[Debounce] Received {(isBtn ? "button" : "sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                return true;
+            }
+            return false;
+        }
     }
     class SensorRenderer
     {
