@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using MajdataPlay.Types;
 using System;
-using UnityRawInput;
 
 namespace MajdataPlay.IO
 {
