@@ -19,7 +19,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE_WIN
             return !IsKeyDown(keyCode);
 #else
-            return false;
+            return true;
 #endif
         }
         static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
