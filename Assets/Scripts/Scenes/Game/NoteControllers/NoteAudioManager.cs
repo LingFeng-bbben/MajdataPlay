@@ -2,36 +2,186 @@ using MajdataPlay.Types;
 using UnityEngine;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
+using MajdataPlay.Game.Types;
+using System;
 #nullable enable
 namespace MajdataPlay.Game
 {
     public class NoteAudioManager : MonoBehaviour
     {
+        readonly bool[] _noteSFXPlaybackRequests = new bool[12];
+        readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[12];
         readonly AudioManager _audioManager = MajInstances.AudioManager;
+
+        bool _isTouchHoldRiserPlaying = false;
+        static readonly ReadOnlyMemory<string> SFX_NAMES = new string[12]
+        {
+            "tap_perfect.wav",
+            "tap_great.wav",
+            "tap_good.wav",
+            "tap_ex.wav",
+            "break_tap.wav",
+            "break.wav",
+            "slide.wav",
+            "slide.wav",
+            "slide_break_start.wav",
+            "touch.wav",
+            "touch_Hold_riser.wav",
+            "touch_hanabi.wav"
+        };
+
+        const int TAP_PERFECT = 0;
+        const int TAP_GREAT = 1;
+        const int TAP_GOOD = 2;
+        const int TAP_EX = 3;
+        const int BREAK_JUDGE = 4;
+        const int BREAK_SFX = 5;
+        const int SLIDE = 6;
+        const int BREAK_SLIDE = 7;
+        const int BREAK_SLIDE_JUDGE = 8;
+        const int TOUCH = 9;
+        const int TOUCHHOLD = 10;
+        const int FIREWORK = 11;
 
         void Awake()
         {
             Majdata<NoteAudioManager>.Instance = this;
+            for (var i = 0; i < SFX_NAMES.Length; i++)
+            {
+                var name = SFX_NAMES.Span[i];
+                var sfx = _audioManager.GetSFX(name);
+                if(sfx.Volume == 0)
+                {
+                    _noteSFXs[i] = EmptyAudioSample.Shared;
+                }
+                else
+                {
+                    _noteSFXs[i] = sfx;
+                }
+            }
         }
         void OnDestroy()
         {
             Majdata<NoteAudioManager>.Free();
         }
+        internal void OnUpdate()
+        {
+            for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+            {
+                _noteSFXPlaybackRequests[i] = false;
+            }
+        }
+        internal void OnLateUpdate()
+        {
+            for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+            {
+                var isRequested = _noteSFXPlaybackRequests[i];
+                switch (i)
+                {
+                    case TAP_PERFECT:
+                        if (isRequested)
+                        {
+                            _noteSFXs[TAP_PERFECT].PlayOneShot();
+                        }
+                        break;
+                    case TAP_GREAT:
+                        if (isRequested)
+                        {
+                            _noteSFXs[TAP_GREAT].PlayOneShot();
+                        }
+                        break;
+                    case TAP_GOOD:
+                        if (isRequested)
+                        {
+                            _noteSFXs[TAP_GOOD].PlayOneShot();
+                        }
+                        break;
+                    case TAP_EX:
+                        if (isRequested)
+                        {
+                            _noteSFXs[TAP_EX].PlayOneShot();
+                        }
+                        break;
+                    case BREAK_JUDGE:
+                        if (isRequested)
+                        {
+                            _noteSFXs[BREAK_JUDGE].PlayOneShot();
+                        }
+                        break;
+                    case BREAK_SFX:
+                        if (isRequested)
+                        {
+                            _noteSFXs[BREAK_SFX].PlayOneShot();
+                        }
+                        break;
+                    case SLIDE:
+                        if (isRequested)
+                        {
+                            _noteSFXs[SLIDE].PlayOneShot();
+                        }
+                        break;
+                    case BREAK_SLIDE:
+                        if (isRequested)
+                        {
+                            _noteSFXs[BREAK_SLIDE].PlayOneShot();
+                        }
+                        break;
+                    case BREAK_SLIDE_JUDGE:
+                        if (isRequested)
+                        {
+                            _noteSFXs[BREAK_SLIDE_JUDGE].PlayOneShot();
+                            _noteSFXs[BREAK_SFX].PlayOneShot();
+                        }
+                        break;
+                    case TOUCH:
+                        if (isRequested)
+                        {
+                            _noteSFXs[TOUCH].PlayOneShot();
+                        }
+                        break;
+                    case TOUCHHOLD:
+                        if (isRequested)
+                        {
+                            if (_isTouchHoldRiserPlaying)
+                                return;
+                            _isTouchHoldRiserPlaying = true;
+                            _noteSFXs[TOUCHHOLD].PlayOneShot();
+                        }
+                        else
+                        {
+                            if (!_isTouchHoldRiserPlaying)
+                                return;
+                            _isTouchHoldRiserPlaying = false;
+                            _noteSFXs[TOUCHHOLD].Stop();
+                        }
+                        break;
+                    case FIREWORK:
+                        if (isRequested)
+                        {
+                            _noteSFXs[FIREWORK].PlayOneShot();
+                        }
+                        break;
+                }
+            }
+        }
         public void PlayTapSound(in JudgeResult judgeResult)
         {
+            if (judgeResult.IsMissOrTooFast)
+                return;
+
             var isBreak = judgeResult.IsBreak;
             var isEx = judgeResult.IsEX;
 
-            if (judgeResult.IsMissOrTooFast)
-                return;
-            else if (isBreak)
+            
+            if (isBreak)
             {
                 PlayBreakTapSound(judgeResult);
                 return;
             }
             else if (isEx)
             {
-                _audioManager.PlaySFX("tap_ex.wav");
+                _noteSFXPlaybackRequests[TAP_EX] = true;
+                //_audioManager.PlaySFX("tap_ex.wav");
                 return;
             }
 
@@ -39,7 +189,8 @@ namespace MajdataPlay.Game
             {
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
-                    _audioManager.PlaySFX("tap_good.wav");
+                    _noteSFXPlaybackRequests[TAP_GOOD] = true;
+                    //_audioManager.PlaySFX("tap_good.wav");
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -47,16 +198,16 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat3rd:
                 case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
-                    _audioManager.PlaySFX("tap_great.wav");
+                    _noteSFXPlaybackRequests[TAP_GREAT] = true;
+                    //_audioManager.PlaySFX("tap_great.wav");
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
                 case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.FastPerfect2nd:
-                    _audioManager.PlaySFX("tap_perfect.wav");
-                    break;
                 case JudgeGrade.Perfect:
-                    _audioManager.PlaySFX("tap_perfect.wav");
+                    _noteSFXPlaybackRequests[TAP_PERFECT] = true;
+                    //_audioManager.PlaySFX("tap_perfect.wav");
                     break;
             }
         }
@@ -76,51 +227,61 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastPerfect3rd:
                 case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.FastPerfect2nd:
-                    _audioManager.PlaySFX("break_tap.wav");
+                    _noteSFXPlaybackRequests[BREAK_JUDGE] = true;
+                    //_audioManager.PlaySFX("break_tap.wav");
                     break;
                 case JudgeGrade.Perfect:
-                    _audioManager.PlaySFX("break.wav");
-                    _audioManager.PlaySFX("break_tap.wav");
+                    _noteSFXPlaybackRequests[BREAK_JUDGE] = true;
+                    _noteSFXPlaybackRequests[BREAK_SFX] = true;
+                    //_audioManager.PlaySFX("break.wav");
+                    //_audioManager.PlaySFX("break_tap.wav");
                     break;
             }
         }
 
         public void PlayTouchSound()
         {
-            _audioManager.PlaySFX("touch.wav");
+            _noteSFXPlaybackRequests[TOUCH] = true;
+            //_audioManager.PlaySFX("touch.wav");
         }
 
         public void PlayHanabiSound()
         {
-            _audioManager.PlaySFX("touch_hanabi.wav");
+            _noteSFXPlaybackRequests[FIREWORK] = true;
+            //_audioManager.PlaySFX("touch_hanabi.wav");
         }
         public void PlayTouchHoldSound()
         {
-            var riser = _audioManager.GetSFX("touch_Hold_riser.wav");
-            if(!riser.IsPlaying)
-                _audioManager.PlaySFX("touch_Hold_riser.wav");
+            _noteSFXPlaybackRequests[TOUCHHOLD] = true;
+            //var riser = _audioManager.GetSFX("touch_Hold_riser.wav");
+            //if(!riser.IsPlaying)
+            //    _audioManager.PlaySFX("touch_Hold_riser.wav");
         }
         public void StopTouchHoldSound()
         {
-            _audioManager.StopSFX("touch_Hold_riser.wav");
+            _noteSFXPlaybackRequests[TOUCHHOLD] = false;
+            //_audioManager.StopSFX("touch_Hold_riser.wav");
         }
 
         public void PlaySlideSound(bool isBreak)
         {
             if (isBreak)
             {
-                _audioManager.PlaySFX("slide_break_start.wav");
+                _noteSFXPlaybackRequests[BREAK_SLIDE] = true;
+                //_audioManager.PlaySFX("slide_break_start.wav");
             }
             else
             {
-                _audioManager.PlaySFX("slide.wav");
+                _noteSFXPlaybackRequests[SLIDE] = true;
+                //_audioManager.PlaySFX("slide.wav");
             }
         }
 
         public void PlayBreakSlideEndSound()
         {
-            _audioManager.PlaySFX("slide_break_slide.wav");
-            _audioManager.PlaySFX("break_slide.wav");
+            _noteSFXPlaybackRequests[BREAK_SLIDE_JUDGE] = true;
+            //_audioManager.PlaySFX("slide_break_slide.wav");
+            //_audioManager.PlaySFX("break_slide.wav");
         }
     }
 }

@@ -147,9 +147,12 @@ namespace MajdataPlay.Game
         BGManager _bgManager;
         NoteLoader _noteLoader;
         NoteManager _noteManager;
+        NoteAudioManager _noteAudioManager;
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
+        readonly AudioSampleWrap _answerSFX = MajInstances.AudioManager.GetSFX("answer.wav");
+        readonly AudioSampleWrap _answerClockSFX = MajInstances.AudioManager.GetSFX("answer_clock.wav");
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         readonly CancellationTokenSource _cts = new();
 
@@ -187,6 +190,7 @@ namespace MajdataPlay.Game
             _bgManager = Majdata<BGManager>.Instance!;
             _objectCounter = Majdata<ObjectCounter>.Instance!;
             _xxlbController = Majdata<XxlbAnimationController>.Instance!;
+            _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -713,7 +717,7 @@ namespace MajdataPlay.Game
         internal void OnUpdate()
         {
             UpdateAudioTime();
-            UpdateAnswerSFX();
+            _noteAudioManager.OnUpdate();
             UpdateFnKeyState();
             if (_audioSample is null)
                 return;
@@ -778,6 +782,11 @@ namespace MajdataPlay.Game
                     }
                     break;
             }
+        }
+        internal void OnLateUpdate()
+        {
+            UpdateAnswerSFX();
+            _noteAudioManager.OnLateUpdate();
         }
         void UpdateFnKeyState()
         {
@@ -886,12 +895,12 @@ namespace MajdataPlay.Game
                     {
                         if (sfxInfo.IsClock)
                         {
-                            MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+                            _answerClockSFX.PlayOneShot();
                             _xxlbController.Stepping();
                         }
                         else
                         {
-                            MajInstances.AudioManager.PlaySFX("answer.wav");
+                            _answerSFX.PlayOneShot();
                         }
                         sfxInfo.IsPlayed = true;
                     }

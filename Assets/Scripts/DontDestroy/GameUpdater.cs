@@ -40,5 +40,11 @@ namespace MajdataPlay
             noteManager?.OnUpdate();
             _inputManager.OnUpdate();
         }
+        void LateUpdate()
+        {
+            var gpManager = Majdata<GamePlayManager>.Instance;
+
+            gpManager?.OnLateUpdate();
+        }
     }
 }

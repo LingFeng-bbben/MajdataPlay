@@ -585,10 +585,10 @@ namespace MajdataPlay.Game.Notes
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
+            _audioEffMana.PlayTouchHoldSound();
             if (_lastHoldState is null || !(bool)_lastHoldState)
             {
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-                _audioEffMana.PlayTouchHoldSound();
                 _borderRenderer.sprite = board_On;
                 SetFansMaterial(DefaultMaterial);
             }
