@@ -14,6 +14,7 @@ using System.Reflection;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using MajdataPlay.SensorTest;
+using System.Collections.Generic;
 
 namespace MajdataPlay
 {
@@ -102,6 +103,29 @@ namespace MajdataPlay
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
             QualitySettings.maxQueuedFrames = 1;
+
+            SetWindowTopmost();
+        }
+        void SetWindowTopmost()
+        {
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            var handles = new List<IntPtr>();
+            Win32API.EnumWindows((hWnd, lParam) =>
+            {
+                Win32API.GetWindowThreadProcessId(hWnd, out int processId);
+
+                if (processId == lParam && Win32API.IsWindowVisible(hWnd))
+                {
+                    handles.Add(hWnd);
+                }
+                return true;
+            }, Process.GetCurrentProcess().Id);
+            MajDebug.Log($"Found window count: {handles.Count}");
+            foreach (var handle in handles)
+            {
+                Win32API.SetWindowPos(handle, Win32API.HWND_TOPMOST, 0, 0, 0, 0, Win32API.SWP_NOMOVE | Win32API.SWP_NOSIZE);
+            }
+#endif
         }
         void EnterTestMode()
         {

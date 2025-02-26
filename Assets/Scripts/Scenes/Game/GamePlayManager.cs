@@ -151,8 +151,8 @@ namespace MajdataPlay.Game
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
-        readonly AudioSampleWrap _answerSFX = MajInstances.AudioManager.GetSFX("answer.wav");
-        readonly AudioSampleWrap _answerClockSFX = MajInstances.AudioManager.GetSFX("answer_clock.wav");
+        readonly AudioSampleWrap _answerSFX = MajInstances.AudioManager?.GetSFX("answer.wav") ?? EmptyAudioSample.Shared;
+        readonly AudioSampleWrap _answerClockSFX = MajInstances.AudioManager?.GetSFX("answer_clock.wav") ?? EmptyAudioSample.Shared;
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         readonly CancellationTokenSource _cts = new();
 
