@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.IO.Pipes;
 using MajdataPlay.Utils;
 using System.Threading;
+using System.Net.Http;
 #nullable enable
 namespace MajdataPlay.View
 {
@@ -36,37 +37,18 @@ namespace MajdataPlay.View
         {
             _viewManager = Majdata<ViewManager>.Instance!;
         }
-        async void StartToListenHttpRequest(CancellationToken token = default)
+        void StartToListenHttpRequest(CancellationToken token = default)
         {
-            await Task.Run(async () =>
+            Task.Factory.StartNew(() =>
             {
                 while (_httpServer.IsListening)
                 {
                     try
                     {
                         token.ThrowIfCancellationRequested();
-                        var context = await _httpServer.GetContextAsync();
-                        var req = context.Request;
-                        using var rsp = context.Response;
-                        var httpMethod = req.HttpMethod;
+                        var context = _httpServer.GetContext();
 
-                        try
-                        {
-                            using var reqReader = new StreamReader(req.InputStream);
-                            using var rspSender = new StreamWriter(rsp.OutputStream);
-                            var data = reqReader.ReadToEnd();
-
-                            rsp.StatusCode = 200;
-                            await rspSender.WriteLineAsync("Hello!!!");
-                        }
-                        catch (JsonException)
-                        {
-                            rsp.StatusCode = (int)HttpStatusCode.BadRequest;
-                        }
-                        catch
-                        {
-                            rsp.StatusCode = (int)HttpStatusCode.InternalServerError;
-                        }
+                        HttpRequestHandleAsync(context.Request, context.Response);
                     }
                     catch(OperationCanceledException)
                     {
@@ -74,7 +56,90 @@ namespace MajdataPlay.View
                         throw;
                     }
                 }
+            }, TaskCreationOptions.LongRunning);
+        }
+        void HttpRequestHandleAsync(HttpListenerRequest req,HttpListenerResponse rsp)
+        {
+            Task.Run(async () =>
+            {
+                using (rsp)
+                {
+                    try
+                    {
+                        var httpMethod = req.HttpMethod;
+                        switch (httpMethod)
+                        {
+                            case "GET":
+                                await GetRequestHandleAsync(req, rsp);
+                                break;
+                            case "POST":
+                                await PostRequestHandleAsync(req, rsp);
+                                break;
+                            default:
+                                rsp.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                                break;
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        rsp.StatusCode = (int)HttpStatusCode.BadRequest;
+                    }
+                    catch
+                    {
+                        rsp.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    }
+                }
             });
+        }
+        async Task GetRequestHandleAsync(HttpListenerRequest req, HttpListenerResponse rsp)
+        {
+            switch (req.RawUrl)
+            {
+                case "/api/timestramp":
+                case "/api/state":
+                    await Serializer.Json.SerializeAsync(rsp.OutputStream, ViewManager.Summary);
+                    rsp.StatusCode = 200;
+                    break;
+                case "/api/pause":
+                    await _viewManager.PauseAsync();
+                    rsp.StatusCode = 200;
+                    break;
+                case "/api/resume":
+                    await _viewManager.PlayAsync();
+                    rsp.StatusCode = 200;
+                    break;
+                case "/api/stop":
+                    await _viewManager.StopAsync();
+                    rsp.StatusCode = 200;
+                    break;
+                case "/api/reset":
+                    await _viewManager.ResetAsync();
+                    rsp.StatusCode = 200;
+                    break;
+                default:
+                    using (var writer = new StreamWriter(rsp.OutputStream))
+                    {
+                        await writer.WriteLineAsync("Hello!!!");
+                    }
+                    rsp.StatusCode = 200;
+                    break;
+            }
+        }
+        async Task PostRequestHandleAsync(HttpListenerRequest req, HttpListenerResponse rsp)
+        {
+            switch (req.RawUrl)
+            {
+                case "/api/play":
+                case "/api/maidata":
+                case "/api/load":
+                default:
+                    using (var writer = new StreamWriter(rsp.OutputStream))
+                    {
+                        await writer.WriteLineAsync("Hello!!!");
+                    }
+                    rsp.StatusCode = 200;
+                    break;
+            }
         }
         async void StartToListenPipe(CancellationToken token = default)
         {
@@ -119,11 +184,6 @@ namespace MajdataPlay.View
             {
                 return true;
             }
-        }
-        private void Update()
-        {
-            if (MajEnv.Mode == RunningMode.Play)
-                Destroy(GameObject);
         }
         void OnDestroy()
         {

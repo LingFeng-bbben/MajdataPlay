@@ -91,7 +91,7 @@ namespace MajdataPlay.View
                     break;
             }
         }
-        internal async UniTask<bool> Play(EditorRequest request)
+        internal async UniTask<bool> PlayAsync()
         {
             switch(_state)
             {
@@ -103,6 +103,8 @@ namespace MajdataPlay.View
             }
             try
             {
+                while (_state is ViewStatus.Busy)
+                    await UniTask.Yield();
                 _state = ViewStatus.Busy;
                 await UniTask.Yield();
                 _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat;
@@ -119,7 +121,7 @@ namespace MajdataPlay.View
                 throw;
             }
         }
-        internal async UniTask<bool> Pause()
+        internal async UniTask<bool> PauseAsync()
         {
             switch (_state)
             {
@@ -130,6 +132,8 @@ namespace MajdataPlay.View
             }
             try
             {
+                while (_state is ViewStatus.Busy)
+                    await UniTask.Yield();
                 _state = ViewStatus.Busy;
                 await UniTask.Yield();
                 _audioSample!.Pause();
@@ -143,7 +147,7 @@ namespace MajdataPlay.View
                 throw;
             }
         }
-        internal async UniTask<bool> Stop()
+        internal async UniTask<bool> StopAsync()
         {
             switch (_state)
             {
@@ -155,6 +159,8 @@ namespace MajdataPlay.View
             }
             try
             {
+                while (_state is ViewStatus.Busy)
+                    await UniTask.Yield();
                 _state = ViewStatus.Busy;
                 await UniTask.Yield();
                 _audioSample!.Stop();
@@ -167,7 +173,7 @@ namespace MajdataPlay.View
                 throw;
             }
         }
-        internal async UniTask<bool> Reset()
+        internal async UniTask<bool> ResetAsync()
         {
             switch(_state)
             {
@@ -176,6 +182,8 @@ namespace MajdataPlay.View
             }
             try
             {
+                while(_state is ViewStatus.Busy)
+                    await UniTask.Yield();
                 _state = ViewStatus.Busy;
                 await UniTask.Yield();
                 _thisFrameSec = 0;
@@ -192,6 +200,8 @@ namespace MajdataPlay.View
         }
         internal async Task LoadAssests(byte[] audioTrack, byte[] bg, byte[]? pv)
         {
+            while (_state is ViewStatus.Busy)
+                await UniTask.Yield();
             _state = ViewStatus.Busy;
             try
             {
@@ -225,6 +235,8 @@ namespace MajdataPlay.View
         }
         internal async Task ParseAndLoadChartAsync(double startAt)
         {
+            while (_state is ViewStatus.Busy)
+                await UniTask.Yield();
             _state = ViewStatus.Busy;
             try
             {
@@ -236,7 +248,7 @@ namespace MajdataPlay.View
                 {
                     _bgManager.SetBackgroundPic(_bgCover);
                 }
-
+                _audioSample!.CurrentSec = startAt;
                 _state = ViewStatus.Ready;
             }
             catch (Exception ex)
