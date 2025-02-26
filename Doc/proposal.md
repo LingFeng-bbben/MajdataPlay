@@ -13,9 +13,10 @@ The viewer should have these states.
 ```
                                       ^-maidata-v----> [Error] -maidata--v
                                       |v--------<------------------------<
-[Idle] -load-> [Loaded] -maidata-> [Ready] -play-> [Playing] -pause-> [Paused]
-                                      ^                      -stop------>|
-                                      <----------------------------------v
+[Idle] -load-> [Loaded] -maidata-> [Ready] -play-> [Playing] -pause-> [Paused] -resume -> |
+                                      ^                ^     -stop------>|                |
+                                      <----------------|-----------------v                |
+                                                       ^----------------------------------<
 ```
 
 ### Play setting
@@ -68,6 +69,9 @@ If it is recording, render audio, start ffmpeg and pipe screenshots out.
 
 ### GET /api/pause
 pause the playback
+
+### GET /api/resume
+resume the playback
 
 ### GET /api/stop
 Stop the playback
