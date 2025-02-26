@@ -953,14 +953,15 @@ namespace MajdataPlay.Game
             ClearAllResources();
         }
         
-        async void StartToPlayAnswer()
+        void StartToPlayAnswer()
         {
-            await Task.Run(async () => 
+            Task.Factory.StartNew(async () => 
             {
                 var offset = _setting.Judge.AnswerOffset;
                 int i = 0;
                 var token = _cts.Token;
                 var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
 
                 while (true)
                 {
@@ -1008,10 +1009,10 @@ namespace MajdataPlay.Game
                     }
                     finally
                     {
-                        await Task.Delay(1);
+                        Thread.Sleep(1);
                     }
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
         public float GetFrame()
         {

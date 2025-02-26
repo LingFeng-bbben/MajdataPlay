@@ -32,6 +32,7 @@ namespace MajdataPlay.IO
                 var sharedMemoryPool = MemoryPool<byte>.Shared;
                 using var serial = new SerialPort(comPort, MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate);
 
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
                 stopwatch.Start();
 
                 try
@@ -72,7 +73,7 @@ namespace MajdataPlay.IO
                     MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                     _useDummy = true;
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void TouchPannelPacketHandle(ReadOnlyMemory<byte> packet)

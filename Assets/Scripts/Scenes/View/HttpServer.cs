@@ -132,7 +132,9 @@ namespace MajdataPlay.View
                 case "/api/play":
                 case "/api/maidata":
                 case "/api/load":
+                    break;
                 default:
+                    var str = await new StreamReader(req.InputStream).ReadToEndAsync();
                     using (var writer = new StreamWriter(rsp.OutputStream))
                     {
                         await writer.WriteLineAsync("Hello!!!");
