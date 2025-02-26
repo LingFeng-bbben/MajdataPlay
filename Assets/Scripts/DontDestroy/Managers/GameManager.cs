@@ -140,8 +140,8 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
-            EnterView();
-            return;
+            //EnterView();
+            //return;
             foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "--test-mode")

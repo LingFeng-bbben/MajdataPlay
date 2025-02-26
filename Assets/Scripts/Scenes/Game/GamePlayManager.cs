@@ -150,8 +150,11 @@ namespace MajdataPlay.Game
         ObjectCounter _objectCounter;
         XxlbAnimationController _xxlbController;
 
-        List<AnwserSoundPoint> _anwserSoundList = new List<AnwserSoundPoint>();
+        Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         readonly CancellationTokenSource _cts = new();
+
+        float _userAnswerOffset = MajInstances.Setting.Judge.AnswerOffset;
+        const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         void Awake()
         {
             Majdata<GamePlayManager>.Instance = this;
@@ -475,6 +478,7 @@ namespace MajdataPlay.Game
                     var countnum = 4;
                     var firstBpm = _chart.NoteTimings.FirstOrDefault().Bpm;
                     var interval = 60 / firstBpm;
+                    List<AnswerSoundPoint> answerTimingPoints = new();
 
                     if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
                     {
@@ -487,11 +491,11 @@ namespace MajdataPlay.Game
                             //if there is something in first measure, we add clock before the bgm
                             for (int i = 0; i < countnum; i++)
                             {
-                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                answerTimingPoints.Add(new AnswerSoundPoint()
                                 {
-                                    time = -(i + 1) * interval,
-                                    isClock = true,
-                                    isPlayed = false
+                                    Timing = -(i + 1) * interval,
+                                    IsClock = true,
+                                    IsPlayed = false
                                 });
                             }
                         }
@@ -500,26 +504,27 @@ namespace MajdataPlay.Game
                             //if nothing there, we can add it with bgm
                             for (int i = 0; i < countnum; i++)
                             {
-                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                answerTimingPoints.Add(new AnswerSoundPoint()
                                 {
-                                    time = i * interval,
-                                    isClock = true,
-                                    isPlayed = false
+                                    Timing = i * interval,
+                                    IsClock = true,
+                                    IsPlayed = false
                                 });
                             }
                         }
                     }
 
                     //Generate AnwserSounds
+                    
                     foreach (var timingPoint in _chart.NoteTimings)
                     {
                         if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
 
-                        _anwserSoundList.Add(new AnwserSoundPoint()
+                        answerTimingPoints.Add(new AnswerSoundPoint()
                         {
-                            time = timingPoint.Timing,
-                            isClock = false,
-                            isPlayed = false
+                            Timing = timingPoint.Timing,
+                            IsClock = false,
+                            IsPlayed = false
                         });
                         var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
                         if (holds.Length == 0)
@@ -528,17 +533,17 @@ namespace MajdataPlay.Game
                         {
                             var newtime = timingPoint.Timing + hold.HoldTime;
                             if (!_chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
-                                !_anwserSoundList.Any(o => Math.Abs(o.time - newtime) < 0.001)
+                                !answerTimingPoints.Any(o => Math.Abs(o.Timing - newtime) < 0.001)
                                 )
-                                _anwserSoundList.Add(new AnwserSoundPoint()
+                                answerTimingPoints.Add(new AnswerSoundPoint()
                                 {
-                                    time = newtime,
-                                    isClock = false,
-                                    isPlayed = false
+                                    Timing = newtime,
+                                    IsClock = false,
+                                    IsPlayed = false
                                 });
                         }
                     }
-                    _anwserSoundList = _anwserSoundList.OrderBy(o => o.time).ToList();
+                    _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
                 });
             }
             finally
@@ -617,7 +622,7 @@ namespace MajdataPlay.Game
             _audioTime = -5f;
 
             Time.timeScale = 1f;
-            var firstClockTiming = _anwserSoundList[0].time;
+            var firstClockTiming = _answerTimingPoints.Span[0].Timing;
             float extraTime = 5f;
             if (firstClockTiming < -5f)
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
@@ -627,7 +632,6 @@ namespace MajdataPlay.Game
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
 
-            StartToPlayAnswer();
             _noteManager.InitializeUpdater();
 
             var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
@@ -709,6 +713,7 @@ namespace MajdataPlay.Game
         internal void OnUpdate()
         {
             UpdateAudioTime();
+            UpdateAnswerSFX();
             UpdateFnKeyState();
             if (_audioSample is null)
                 return;
@@ -823,24 +828,6 @@ namespace MajdataPlay.Game
                 FastRetry().Forget();
             }
         }
-        //internal void OnFixedUpdate()
-        //{
-        //    if (_audioSample is null)
-        //        return;
-        //    else if (AudioStartTime == -114514f)
-        //        return;
-
-        //    switch (State)
-        //    {
-        //        case GamePlayStatus.Running:
-        //        case GamePlayStatus.Blocking:
-        //        case GamePlayStatus.WaitForEnd:
-        //            var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
-        //            var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-        //            _thisFixedUpdateSec = timeOffset - chartOffset;
-        //            break;
-        //    }
-        //}
         void UpdateAudioTime()
         {
             if (_audioSample is null)
@@ -869,6 +856,55 @@ namespace MajdataPlay.Game
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     }
                     break;
+            }
+        }
+        void UpdateAnswerSFX()
+        {
+            switch(State)
+            {
+                case GamePlayStatus.Running:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.WaitForEnd:
+                    break;
+                default:
+                    return;
+            }
+
+            try
+            {
+                if (_answerTimingPoints.IsEmpty)
+                    return;
+                var timingPoints = _answerTimingPoints.Span;
+                var i = 0;
+                for (; i < timingPoints.Length; i++)
+                {
+                    ref var sfxInfo = ref _answerTimingPoints.Span[i];
+                    var playTiming = sfxInfo.Timing;
+                    var delta = ThisFrameSec - (playTiming + _userAnswerOffset + ANSWER_PLAYBACK_OFFSET_SEC);
+
+                    if (delta > 0)
+                    {
+                        if (sfxInfo.IsClock)
+                        {
+                            MajInstances.AudioManager.PlaySFX("answer_clock.wav");
+                            _xxlbController.Stepping();
+                        }
+                        else
+                        {
+                            MajInstances.AudioManager.PlaySFX("answer.wav");
+                        }
+                        sfxInfo.IsPlayed = true;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                _answerTimingPoints = _answerTimingPoints.Slice(i);
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
             }
         }
         private GameResult CalculateScore(bool playEffect = true)
@@ -952,68 +988,6 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
             ClearAllResources();
         }
-        
-        void StartToPlayAnswer()
-        {
-            Task.Factory.StartNew(async () => 
-            {
-                var offset = _setting.Judge.AnswerOffset;
-                int i = 0;
-                var token = _cts.Token;
-                var isUnityFMOD = MajInstances.Setting.Audio.Backend == SoundBackendType.Unity;
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
-
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    try
-                    {
-                        if (i >= _anwserSoundList.Count)
-                            return;
-
-                        var noteToPlay = _anwserSoundList[i].time;
-                        var delta = AudioTime - (noteToPlay + offset);
-
-                        if (delta > 0)
-                        {
-                            if (_anwserSoundList[i].isClock)
-                            {
-#if UNITY_EDITOR
-                                if (isUnityFMOD)
-                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer_clock.wav"));
-                                else
-                                    MajInstances.AudioManager.PlaySFX("answer_clock.wav");
-#else
-                                MajInstances.AudioManager.PlaySFX("answer_clock.wav");
-#endif
-                                MajEnv.ExecutionQueue.Enqueue(() => _xxlbController.Stepping());
-                            }
-                            else
-                            {
-#if UNITY_EDITOR
-                                if (isUnityFMOD)
-                                    MajEnv.ExecutionQueue.Enqueue(() => MajInstances.AudioManager.PlaySFX("answer.wav"));
-                                else
-                                    MajInstances.AudioManager.PlaySFX("answer.wav");
-#else
-                                MajInstances.AudioManager.PlaySFX("answer.wav");
-#endif
-                            }
-                            _anwserSoundList[i].isPlayed = true;
-                            i++;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogException(e);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(1);
-                    }
-                }
-            }, TaskCreationOptions.LongRunning);
-        }
         public float GetFrame()
         {
             var _audioTime = AudioTime * 1000;
@@ -1094,11 +1068,11 @@ namespace MajdataPlay.Game
                 Cursor.visible = true;
             }
         }
-        class AnwserSoundPoint
+        struct AnswerSoundPoint
         {
-            public double time;
-            public bool isClock;
-            public bool isPlayed;
+            public double Timing { get; init; }
+            public bool IsClock { get; init; }
+            public bool IsPlayed { get; set; }
         }
     }
 }
