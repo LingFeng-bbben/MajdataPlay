@@ -19,6 +19,7 @@ namespace MajdataPlay.IO
 {
     internal class LightManager : MonoBehaviour
     {
+        public bool IsEnabled => _isEnabled;
         bool _useDummy = true;
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();
         SerialPort _serial;
@@ -31,6 +32,7 @@ namespace MajdataPlay.IO
         {
             0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F
         };
+        bool _isEnabled = true;
 
         private void Awake()
         {
@@ -40,12 +42,20 @@ namespace MajdataPlay.IO
         }
         private void Start()
         {
+            _isEnabled = MajInstances.Setting.Misc.OutputDevice.Led.Enable;
             for (var i = 0; i < 8; i++)
             {
                 _ledDevices[i] = new()
                 {
                     Index = i,
                 };
+            }
+            if (!_isEnabled)
+            {
+                for (var i = 0; i < 8; i++)
+                {
+                    _ledDevices[i].SetColor(Color.black);
+                }
             }
             var comPort = MajInstances.Setting.Misc.OutputDevice.Led.COMPort;
             var comPortStr = $"COM{comPort}";
@@ -92,6 +102,8 @@ namespace MajdataPlay.IO
         }
         public void SetAllLight(Color lightColor)
         {
+            if (!_isEnabled)
+                return;
             foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
             {
                 device!.SetColor(lightColor);
@@ -99,6 +111,8 @@ namespace MajdataPlay.IO
         }
         public void SetButtonLight(Color lightColor, int button)
         {
+            if (!_isEnabled)
+                return;
             _ledDevices[button].SetColor(lightColor);
         }
         Memory<byte> BuildSetColorPacket(Memory<byte> memory, int index, Color newColor)
@@ -125,10 +139,14 @@ namespace MajdataPlay.IO
         }
         public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
+            if (!_isEnabled)
+                return;
             _ledDevices[button].SetColor(lightColor, durationMs);
         }
         public void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
+            if (!_isEnabled)
+                return;
             _ledDevices[button].SetColor(lightColor, duration);
         }
         async void UpdateLedDeviceAsync()

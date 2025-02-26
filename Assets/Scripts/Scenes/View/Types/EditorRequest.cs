@@ -11,6 +11,5 @@ namespace MajdataPlay.View.Types
         public PlaybackMode Mode { get; init; }
         public float PlaybackSpeed { get; init; }
         public float StartAt { get; init; }
-        public DateTime StartTimestamp { get; init; }
     }
 }

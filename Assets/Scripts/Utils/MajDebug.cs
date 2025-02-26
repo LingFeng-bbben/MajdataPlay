@@ -19,7 +19,11 @@ namespace MajdataPlay.Utils
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
-            
+            TaskScheduler.UnobservedTaskException += (sender,args) =>
+            {
+                LogException(args.Exception);
+                args.SetObserved();
+            };
             StartLogWritebackTask();
 #if !(UNITY_EDITOR || DEBUG)
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
