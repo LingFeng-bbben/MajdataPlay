@@ -112,10 +112,9 @@ namespace MajdataPlay
         {
             SceneManager.LoadScene("Title");
         }
-        void SwitchToView()
+        void EnterView()
         {
-            typeof(MajEnv).GetField("<RunningMode>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                          .SetValue(null, RunningMode.View);
+            MajEnv.Mode = RunningMode.View;
             SceneManager.LoadScene("View");
         }
         void ApplyScreenConfig()
@@ -141,6 +140,8 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
+            EnterView();
+            return;
             foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "--test-mode")
