@@ -51,12 +51,12 @@ namespace MajdataPlay.Game.Notes
                 case SensorGroup.A:
                     {
                         var angle = -index * (Mathf.PI / 4) + Mathf.PI * 5 / 8;
-                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 4.1f;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 4.0f;
                     }
                 case SensorGroup.B:
                     {
                         var angle = -index * (Mathf.PI / 4) + Mathf.PI * 5 / 8;
-                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 2.3f;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 2.2f;
                     }
                 case SensorGroup.C:
                     return Vector3.zero;
@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes
                 case SensorGroup.E:
                     {
                         var angle = -index * (Mathf.PI / 4) + Mathf.PI * 6 / 8;
-                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 3.0f;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * 3.1f;
                     }
             }
             return Vector3.zero;
