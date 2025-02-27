@@ -2,17 +2,19 @@
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Controllers;
 using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
-    internal sealed class TouchDrop : TouchBase , IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>, IMajComponent
+    internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
     {
+        public TouchGroup? GroupInfo { get; set; }
+        public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState 
         {
             get => _rendererState;
@@ -37,18 +39,20 @@ namespace MajdataPlay.Game.Notes
                 _rendererState = value;
             }
         }
+
+        bool _isFirework = false;
         /// <summary>
         /// Undefined
         /// </summary>
-        float displayDuration;
+        float _displayDuration;
         /// <summary>
         /// Touch淡入结束，开始移动
         /// </summary>
-        float moveDuration;
+        float _moveDuration;
         /// <summary>
         /// Touch开始淡入的时刻
         /// </summary>
-        float wholeDuration;
+        float _wholeDuration;
 
         readonly SpriteRenderer[] _fanRenderers = new SpriteRenderer[4];
         readonly GameObject[] _fans = new GameObject[4];
@@ -120,7 +124,6 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             StartPos = poolingInfo.StartPos;
-            areaPosition = poolingInfo.AreaPos;
             Timing = poolingInfo.Timing;
             _judgeTiming = Timing;
             SortOrder = poolingInfo.NoteSortOrder;
@@ -130,23 +133,22 @@ namespace MajdataPlay.Game.Notes
             IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             _isJudged = false;
-            isFirework = poolingInfo.IsFirework;
+            _isFirework = poolingInfo.IsFirework;
             GroupInfo = poolingInfo.GroupInfo;
             _sensorPos = poolingInfo.SensorPos;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
 
-            wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
-            moveDuration = 0.8f * wholeDuration;
-            displayDuration = 0.2f * wholeDuration;
+            _wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
+            _moveDuration = 0.8f * _wholeDuration;
+            _displayDuration = 0.2f * _wholeDuration;
 
             LoadSkin();
 
-            Transform.position = GetAreaPos(StartPos, areaPosition);
+            Transform.position = NoteHelper.GetTouchAreaPosition(_sensorPos);
             //_pointObject.SetActive(false);
             //_justBorderObject.SetActive(false);
 
             SetFansColor(new Color(1f, 1f, 1f, 0f));
-            _sensorPos = GetSensor();
             SetFansPosition(0.4f);
             RendererState = RendererStatus.Off;
 
@@ -183,7 +185,7 @@ namespace MajdataPlay.Game.Notes
             //_justBorderObject.SetActive(false);
 
             
-            if (isFirework && !result.IsMissOrTooFast)
+            if (_isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
             PlayJudgeSFX(result);
@@ -301,7 +303,7 @@ namespace MajdataPlay.Game.Notes
             switch (State)
             {
                 case NoteStatus.Initialized:
-                    if (-timing < wholeDuration)
+                    if (-timing < _wholeDuration)
                     {
                         _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
                         RendererState = RendererStatus.On;
@@ -315,20 +317,20 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Scaling:
                     {
                         var newColor = Color.white;
-                        if (-timing < moveDuration)
+                        if (-timing < _moveDuration)
                         {
                             SetFansColor(Color.white);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
+                        var alpha = ((_wholeDuration + timing) / _displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetFansColor(newColor);
                     }
                     return;
                 case NoteStatus.Running:
                     {
-                        var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
+                        var pow = -Mathf.Exp(8 * (timing * 0.43f / _moveDuration) - 0.85f) + 0.42f;
                         var distance = Mathf.Clamp(pow, 0f, 0.4f);
                         if (float.IsNaN(distance))
                             distance = 0f;
@@ -484,7 +486,7 @@ namespace MajdataPlay.Game.Notes
                 _audioEffMana.PlayTapSound(judgeResult);
             else
                 _audioEffMana.PlayTouchSound();
-            if(isFirework)
+            if(_isFirework)
                 _audioEffMana.PlayHanabiSound();
         }
         RendererStatus _rendererState = RendererStatus.Off;

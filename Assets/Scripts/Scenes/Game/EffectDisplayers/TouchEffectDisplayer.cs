@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
@@ -28,8 +29,8 @@ namespace MajdataPlay.Game
         static readonly int TOUCH_GOOD_ANIM_HASH = Animator.StringToHash("good");
         void Start()
         {
-            var distance = TouchBase.GetDistance(SensorPos.GetGroup());
-            var rotation = TouchBase.GetRoation(TouchBase.GetAreaPos(SensorPos), SensorPos);
+            var distance = NoteHelper.GetTouchAreaDistance(SensorPos.GetGroup());
+            var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(SensorPos), SensorPos);
             var textDistance = distance - (0.66f * (2 - DistanceRatio));
             var fastLateDistance = textDistance - 0.56f;
             transform.rotation = rotation;

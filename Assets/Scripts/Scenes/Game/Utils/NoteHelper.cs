@@ -1,0 +1,114 @@
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Types;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace MajdataPlay.Game.Utils
+{
+    internal static class NoteHelper
+    {
+        public static SensorArea GetSensor(char areaPos, int startPos)
+        {
+            switch (areaPos)
+            {
+                case 'A':
+                    return (SensorArea)(startPos - 1);
+                case 'B':
+                    return (SensorArea)(startPos + 7);
+                case 'C':
+                    return SensorArea.C;
+                case 'D':
+                    return (SensorArea)(startPos + 16);
+                case 'E':
+                    return (SensorArea)(startPos + 24);
+                default:
+                    return SensorArea.A1;
+            }
+        }
+        public static Vector3 GetTouchAreaPosition(SensorArea area)
+        {
+            var group = area.GetGroup();
+            var index = area.GetIndex();
+            /// <summary>
+            /// AreaDistance: 
+            /// C:   0
+            /// E:   3.1
+            /// B:   2.21
+            /// A,D: 4.8
+            /// </summary>
+            switch (group)
+            {
+                case SensorGroup.A:
+                    {
+                        var distance = GetTouchAreaDistance(group);
+                        var angle = -index * (Mathf.PI / 4) + Mathf.PI * 5 / 8;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+                    }
+                case SensorGroup.B:
+                    {
+                        var distance = GetTouchAreaDistance(group);
+                        var angle = -index * (Mathf.PI / 4) + Mathf.PI * 5 / 8;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+                    }
+                case SensorGroup.C:
+                    return Vector3.zero;
+                case SensorGroup.D:
+                    {
+                        var distance = GetTouchAreaDistance(group);
+                        var angle = -index * (Mathf.PI / 4) + Mathf.PI * 6 / 8;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+                    }
+                case SensorGroup.E:
+                    {
+                        var distance = GetTouchAreaDistance(group);
+                        var angle = -index * (Mathf.PI / 4) + Mathf.PI * 6 / 8;
+                        return new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+                    }
+                default:
+                    return Vector3.zero;
+
+            }
+        }
+        public static Vector3 GetTouchAreaPosition(int index, char area)
+        {
+            return GetTouchAreaPosition(area switch
+            {
+                'A' => SensorArea.A1 + (index - 1),
+                'B' => SensorArea.B1 + (index - 1),
+                'C' => SensorArea.C,
+                'D' => SensorArea.D1 + (index - 1),
+                'E' => SensorArea.E1 + (index - 1),
+                _ => throw new ArgumentOutOfRangeException(nameof(index)),
+            });
+        }
+        public static float GetTouchAreaDistance(SensorGroup group)
+        {
+            switch (group)
+            {
+                case SensorGroup.A:
+                    return 4.0f;
+                case SensorGroup.B:
+                    return 2.2f;
+                default:
+                    return 0;
+                case SensorGroup.D:
+                    return 4.1f;
+                case SensorGroup.E:
+                    return 3.1f;
+            }
+        }
+        public static Quaternion GetTouchRoation(Vector3 position, SensorArea sensorPos)
+        {
+            if (sensorPos == SensorArea.C)
+                return Quaternion.Euler(Vector3.zero);
+            var d = Vector3.zero - position;
+            var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
+
+            return Quaternion.Euler(new Vector3(0, 0, -deg));
+        }
+    }
+}

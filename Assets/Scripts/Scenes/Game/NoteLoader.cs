@@ -530,7 +530,7 @@ namespace MajdataPlay.Game
                                      in List<ITouchGroupInfoProvider> members)
         {
             note.StartPosition = Rotation(note.StartPosition);
-            var sensorPos = TouchBase.GetSensor(note.TouchArea, note.StartPosition);
+            var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
             var queueInfo = new TouchQueueInfo()
             {
                 SensorPos = sensorPos,
@@ -580,7 +580,7 @@ namespace MajdataPlay.Game
                                              in List<ITouchGroupInfoProvider> members)
         {
             note.StartPosition = Rotation(note.StartPosition);
-            var sensorPos = TouchBase.GetSensor(note.TouchArea, note.StartPosition);
+            var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
             var queueInfo = new TouchQueueInfo()
             {
                 SensorPos = sensorPos,

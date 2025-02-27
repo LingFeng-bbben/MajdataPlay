@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Controllers;
 using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -198,9 +199,7 @@ namespace MajdataPlay.Game.Notes
             SetBorderActive(false);
             SetPointActive(false);
 
-            _sensorPos = TouchBase.GetSensor(areaPosition, StartPos);
-            var pos = TouchBase.GetAreaPos(_sensorPos);
-            transform.position = pos;
+            Transform.position = NoteHelper.GetTouchAreaPosition(_sensorPos);
             SetFansPosition(0.4f);
             RendererState = RendererStatus.Off;
 

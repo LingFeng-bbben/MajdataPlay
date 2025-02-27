@@ -1,5 +1,6 @@
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace MajdataPlay.Game.Notes
                 SensorGroup.E => 'E',
                 _ => 'C',
             };
-            var pos = TouchBase.GetAreaPos(index, area);
+            var pos = NoteHelper.GetTouchAreaPosition(index, area);
             transform.position = pos;
             two = transform.GetChild(0).gameObject;
             three = transform.GetChild(1).gameObject;

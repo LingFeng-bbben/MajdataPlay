@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
@@ -70,10 +71,10 @@ namespace MajdataPlay.Game
                 _touchJudgeEffects[i] = displayer;
 
                 var obj4Hold = Instantiate(tapEffectPrefab, touchHoldParent);
-                var distance = TouchBase.GetDistance(sensorPos.GetGroup());
+                var distance = NoteHelper.GetTouchAreaDistance(sensorPos.GetGroup());
                 var position = Vector3.zero;
                 position.y += distance;
-                var rotation = TouchBase.GetRoation(TouchBase.GetAreaPos(sensorPos), sensorPos);
+                var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
                 var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
                 obj4Hold.transform.rotation = rotation;
                 displayer4Hold.DistanceRatio = MajInstances.Setting.Display.InnerJudgeDistance;
@@ -98,7 +99,7 @@ namespace MajdataPlay.Game
                 var sensorPos = (SensorArea)i;
                 var obj = Instantiate(holdEffectPrefab, touchHoldParent);
                 obj.name = $"TouchHold_HoldingEffect_{sensorPos}";
-                var position = TouchBase.GetAreaPos(sensorPos);
+                var position = NoteHelper.GetTouchAreaPosition(sensorPos);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
                 displayer.Position = position;
                 displayer.Reset();
@@ -117,7 +118,7 @@ namespace MajdataPlay.Game
                 }
                 else
                 {
-                    var position = TouchBase.GetAreaPos(pos);
+                    var position = NoteHelper.GetTouchAreaPosition(pos);
                     obj.transform.position = position;
                 }
                 var displayer = obj.GetComponent<TouchFeedbackDisplayer>();
