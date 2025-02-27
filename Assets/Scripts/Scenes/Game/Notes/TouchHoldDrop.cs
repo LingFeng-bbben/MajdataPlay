@@ -70,7 +70,7 @@ namespace MajdataPlay.Game.Notes
         bool? _lastHoldState = null;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
-        readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
+        readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _fanSpriteSortOrder = 2;
         const int _borderSortOrder = 6;

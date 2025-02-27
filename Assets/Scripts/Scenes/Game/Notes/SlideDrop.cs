@@ -587,7 +587,7 @@ namespace MajdataPlay.Game.Notes
             _starPositions = new();
             _starRotations = new();
 
-            _starPositions.Add(GetPositionFromDistance(4.8f));
+            _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
             for (int i = 0; i < _slideBars.Length; i++)
             {
                 var bar = _slideBars[i];
@@ -603,7 +603,7 @@ namespace MajdataPlay.Game.Notes
                     _starRotations.Add(Quaternion.Euler(newEulerAugle + new Vector3(0f, 0f, 18f)));
                 }
             }
-            var endPos = GetPositionFromDistance(4.8f, EndPos);
+            var endPos = NoteHelper.GetTapPosition(EndPos, 4.8f);
             _starPositions.Add(endPos);
             FinalStarAngle = _starRotations[_starRotations.Count - 1];
             if(ConnectInfo.IsConnSlide)

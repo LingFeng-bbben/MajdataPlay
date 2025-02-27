@@ -53,21 +53,24 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[0] = wifiTable[0];
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
-            _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _starEndPositions[1] = GetPositionFromDistance(4.8f, EndPos);// Center
-            _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
+            _starEndPositions[0] = NoteHelper.GetTapPosition(rIndex, 4.8f);// R
+            _starEndPositions[1] = NoteHelper.GetTapPosition(EndPos, 4.8f);// Center
+            _starEndPositions[2] = NoteHelper.GetTapPosition(lIndex, 4.8f); // L
 
             if (IsClassic)
             {
-                _starStartPositions[0] = GetPositionFromDistance(4.55f, StartPos + 0.11f);
-                _starStartPositions[1] = GetPositionFromDistance(4.8f);
-                _starStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
+                _starStartPositions[0] = NoteHelper.GetTapPosition(StartPos + 0.11f, 4.55f);
+                _starStartPositions[1] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[2] = NoteHelper.GetTapPosition(StartPos - 0.13f, 4.55f);
+
+                _starRenderers[0].sortingOrder = -1;
+                _starRenderers[2].sortingOrder = -1;
             }
             else
             {
-                _starStartPositions[0] = GetPositionFromDistance(4.8f);
-                _starStartPositions[1] = GetPositionFromDistance(4.8f);
-                _starStartPositions[2] = GetPositionFromDistance(4.8f);
+                _starStartPositions[0] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[1] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[2] = NoteHelper.GetTapPosition(StartPos, 4.8f);
             }
 
             _slideOK = Transform.GetChild(Transform.childCount - 1).gameObject; //slideok is the last one
@@ -133,24 +136,21 @@ namespace MajdataPlay.Game.Notes
             var sensorPos = (SensorArea)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
             var lIndex = sensorPos.Diff(1).GetIndex();
-            _starEndPositions[0] = GetPositionFromDistance(4.8f, rIndex);// R
-            _starEndPositions[1] = GetPositionFromDistance(4.8f, EndPos);// Center
-            _starEndPositions[2] = GetPositionFromDistance(4.8f, lIndex); // L
+            _starEndPositions[0] = NoteHelper.GetTapPosition(rIndex, 4.8f);// R
+            _starEndPositions[1] = NoteHelper.GetTapPosition(EndPos, 4.8f);// Center
+            _starEndPositions[2] = NoteHelper.GetTapPosition(lIndex, 4.8f); // L
 
-            if(IsClassic)
+            if (IsClassic)
             {
-                _starStartPositions[0] = GetPositionFromDistance(4.55f,StartPos + 0.11f);
-                _starStartPositions[1] = GetPositionFromDistance(4.8f);
-                _starStartPositions[2] = GetPositionFromDistance(4.55f, StartPos - 0.13f);
-
-                _starRenderers[0].sortingOrder = -1;
-                _starRenderers[2].sortingOrder = -1;
+                _starStartPositions[0] = NoteHelper.GetTapPosition(StartPos + 0.11f, 4.55f);
+                _starStartPositions[1] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[2] = NoteHelper.GetTapPosition(StartPos - 0.13f, 4.55f);
             }
             else
             {
-                _starStartPositions[0] = GetPositionFromDistance(4.8f);
-                _starStartPositions[1] = GetPositionFromDistance(4.8f);
-                _starStartPositions[2] = GetPositionFromDistance(4.8f);
+                _starStartPositions[0] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[1] = NoteHelper.GetTapPosition(StartPos, 4.8f);
+                _starStartPositions[2] = NoteHelper.GetTapPosition(StartPos, 4.8f);
             }
 
             Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));

@@ -88,7 +88,7 @@ namespace MajdataPlay.Game
             {
                 var obj = Instantiate(holdEffectPrefab, tapParent);
                 obj.name = $"HoldEffect_{i + 1}";
-                var position = NoteDrop.GetPositionFromDistance(4.8f, i + 1);
+                var position = NoteHelper.GetTapPosition(i + 1, 4.8f);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
                 displayer.Position = position;
                 displayer.Reset();
@@ -113,7 +113,7 @@ namespace MajdataPlay.Game
                 obj.name = $"{pos}";
                 if(pos < SensorArea.B1)
                 {
-                    var position = NoteDrop.GetPositionFromDistance(4.8f, i + 1);
+                    var position = NoteHelper.GetTapPosition(i + 1, 4.8f);
                     obj.transform.position = position;
                 }
                 else

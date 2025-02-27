@@ -3,6 +3,7 @@ using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace MajdataPlay.Game.Utils
 {
     internal static class NoteHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SensorArea GetSensor(char areaPos, int startPos)
         {
             switch (areaPos)
@@ -73,6 +75,7 @@ namespace MajdataPlay.Game.Utils
 
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 GetTouchAreaPosition(int index, char area)
         {
             return GetTouchAreaPosition(area switch
@@ -85,6 +88,7 @@ namespace MajdataPlay.Game.Utils
                 _ => throw new ArgumentOutOfRangeException(nameof(index)),
             });
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float GetTouchAreaDistance(SensorGroup group)
         {
             switch (group)
@@ -109,6 +113,34 @@ namespace MajdataPlay.Game.Utils
             var deg = 180 + Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
 
             return Quaternion.Euler(new Vector3(0, 0, -deg));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 GetTapPosition(SensorArea area, float distance)
+        {
+            var group = area.GetGroup();
+            switch(group)
+            {
+                case SensorGroup.A:
+                    return GetTapPosition((int)area + 1, distance); 
+                case SensorGroup.D:
+                    return GetTapPosition((int)area - 16.5f, distance);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(area));
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 GetTapPosition(int position, float distance)
+        {
+            return new Vector3(
+                distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
+                distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3 GetTapPosition(float position, float distance)
+        {
+            return new Vector3(
+                distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
+                distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
         }
     }
 }

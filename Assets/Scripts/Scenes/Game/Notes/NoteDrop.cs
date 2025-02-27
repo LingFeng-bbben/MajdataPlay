@@ -292,22 +292,6 @@ namespace MajdataPlay.Game.Notes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected Vector3 GetPositionFromDistance(float distance) => GetPositionFromDistance(distance, StartPos);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 GetPositionFromDistance(float distance, int position)
-        {
-            return new Vector3(
-                distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
-                distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 GetPositionFromDistance(float distance, float position)
-        {
-            return new Vector3(
-                distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
-                distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
             var judgeStyle = NoteController.JudgeStyle;

@@ -9,6 +9,8 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Types;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Game.Utils;
+using static UnityEditor.PlayerSettings;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -65,10 +67,15 @@ namespace MajdataPlay.Game.Notes
 
         NotePoolManager _poolManager;
 
+        Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
+        Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
+
         bool? _lastHoldState = null;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
-        readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
+
+        readonly float _noteAppearRate = MajInstances.Setting?.Debug.NoteAppearRate ?? 0.265f;
+        readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
@@ -150,6 +157,8 @@ namespace MajdataPlay.Game.Notes
             _isJudged = false;
             Distance = -100;
             Length = poolingInfo.LastFor;
+            _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
+            _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
             _holdAnimStart = false;
             _playerReleaseTime = 0;
@@ -284,7 +293,7 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
-            var scaleRate = _gameSetting.Debug.NoteAppearRate;
+            var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             var remaining = GetRemainingTimeWithoutOffset();
@@ -306,7 +315,7 @@ namespace MajdataPlay.Game.Notes
                         _exRenderer.size = new Vector2(1.22f, 1.42f);
                         _thisRenderer.size = new Vector2(1.22f, 1.42f);
                         _tapLineTransform.localScale = new Vector3(0.2552f, 0.2552f, 1f);
-
+                        Transform.position = _innerPos;
                         RendererState = RendererStatus.On;
 
                         State = NoteStatus.Scaling;
@@ -324,11 +333,6 @@ namespace MajdataPlay.Game.Notes
                     {
                         Distance = distance;
                         Transform.localScale = new Vector3(destScale, destScale);
-                        //_thisRenderer.size = new Vector2(1.22f, 1.42f);
-                        distance = 1.225f;
-                        var pos = GetPositionFromDistance(distance);
-                        //_tapLineTransform.localScale = new Vector3(0.2552f, 0.2552f, 1f);
-                        Transform.position = pos;
                     }
                     else
                     {
@@ -370,7 +374,7 @@ namespace MajdataPlay.Game.Notes
 
                     lineScale = lineScale >= 1f ? 1f : lineScale;
 
-                    Transform.position = GetPositionFromDistance(dis); //0.325
+                    Transform.position = _outerPos * (dis / 4.8f); //0.325
                     _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
                     _thisRenderer.size = new Vector2(1.22f, size);
                     _exRenderer.size = new Vector2(1.22f, size);
@@ -385,13 +389,14 @@ namespace MajdataPlay.Game.Notes
                     if (IsClassic)
                     {
                         Distance = endDistance;
-                        var scale = Mathf.Abs(endDistance / 4.8f);
-                        Transform.position = GetPositionFromDistance(endDistance);
+                        var ratio = endDistance / 4.8f;
+                        var scale = Mathf.Abs(ratio);
+                        Transform.position = _outerPos * (ratio);
                         _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
                     }
                     else
                     {
-                        Transform.position = GetPositionFromDistance(4.8f);
+                        Transform.position = _outerPos;
                     }
                     break;
                 default:

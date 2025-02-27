@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Controllers;
 using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -43,6 +44,8 @@ namespace MajdataPlay.Game.Notes
         [SerializeField]
         GameObject _tapLinePrefab;
 
+
+        Transform _tapLineTransform;
         GameObject _tapLineObject;
         GameObject _exObject;
 
@@ -52,7 +55,11 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _tapLineRenderer;
         NotePoolManager _notePoolManager;
 
-        readonly float _touchPanelOffset = MajEnv.UserSetting.Judge.TouchPanelOffset;
+        Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
+        Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
+
+        readonly float _noteAppearRate = MajInstances.Setting?.Debug.NoteAppearRate ?? 0.265f;
+        readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
@@ -69,6 +76,7 @@ namespace MajdataPlay.Game.Notes
             _tapLineObject = Instantiate(_tapLinePrefab, _noteManager.gameObject.transform.GetChild(7));
             _tapLineObject.SetActive(true);
             _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
+            _tapLineTransform = _tapLineObject.transform;
 
             Transform.localScale = new Vector3(0, 0);
 
@@ -98,6 +106,8 @@ namespace MajdataPlay.Game.Notes
             RotateSpeed = poolingInfo.RotateSpeed;
             _isJudged = false;
             Distance = -100;
+            _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
+            _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
 
@@ -153,7 +163,7 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
-            var scaleRate = _gameSetting.Debug.NoteAppearRate;
+            var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
 
             Autoplay();
@@ -165,8 +175,8 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (destScale >= 0f)
                     {
-                        Transform.position = GetPositionFromDistance(1.225f);
-                        _tapLineObject.transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+                        Transform.position = _innerPos;
+                        _tapLineTransform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
 
                         RendererState = RendererStatus.On;
                         State = NoteStatus.Scaling;
@@ -185,12 +195,10 @@ namespace MajdataPlay.Game.Notes
                         {
                             Distance = distance;
                             Transform.localScale = new Vector3(destScale, destScale);
-                            //Transform.position = GetPositionFromDistance(1.225f);
-                            //var lineScale = Mathf.Abs(1.225f / 4.8f);
-                            //_tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
                         else
                         {
+                            Transform.localScale = new Vector3(1f, 1f);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
@@ -199,10 +207,9 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Running:
                     {
                         Distance = distance;
-                        Transform.position = GetPositionFromDistance(distance);
-                        Transform.localScale = new Vector3(1f, 1f);
+                        Transform.position = _outerPos * (distance / 4.8f);
                         var lineScale = Mathf.Abs(distance / 4.8f);
-                        _tapLineObject.transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                        _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
                     }
                     break;
                 default:
