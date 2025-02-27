@@ -11,7 +11,7 @@ using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public class NoteManager : MonoBehaviour
+    internal class NoteManager : MonoBehaviour
     {
         [SerializeField]
         NoteUpdater[] _noteUpdaters = new NoteUpdater[8];

@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public sealed class TapPoolingInfo : NotePoolingInfo
+    internal sealed class TapPoolingInfo : NotePoolingInfo
     {
         public bool IsStar { get; init; }
         public bool IsDouble { get; init; }

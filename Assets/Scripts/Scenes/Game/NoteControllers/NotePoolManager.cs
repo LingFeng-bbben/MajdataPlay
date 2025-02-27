@@ -8,7 +8,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public class NotePoolManager: MonoBehaviour
+    internal class NotePoolManager: MonoBehaviour
     {
         public ComponentState State { get; private set; } = ComponentState.Idle;
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public class TouchPoolingInfo : NotePoolingInfo, ITouchGroupInfoProvider
+    internal class TouchPoolingInfo : NotePoolingInfo, ITouchGroupInfoProvider
     {
         public char AreaPos { get; init; }
         public bool IsFirework { get; init; }

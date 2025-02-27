@@ -2,7 +2,7 @@
 
 namespace MajdataPlay.Game.Buffers
 {
-    public sealed class TouchQueueInfo : NoteQueueInfo
+    internal sealed class TouchQueueInfo : NoteQueueInfo
     {
         public static TouchQueueInfo Default => new TouchQueueInfo()
         {

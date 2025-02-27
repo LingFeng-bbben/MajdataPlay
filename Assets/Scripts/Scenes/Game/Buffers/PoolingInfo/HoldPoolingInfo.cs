@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Game.Buffers
 {
-    public class HoldPoolingInfo : NotePoolingInfo
+    internal class HoldPoolingInfo : NotePoolingInfo
     {
         public float LastFor { get; init; }
         public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;

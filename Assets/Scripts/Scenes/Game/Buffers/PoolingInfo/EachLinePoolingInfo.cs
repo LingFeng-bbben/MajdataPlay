@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public class EachLinePoolingInfo : NotePoolingInfo
+    internal class EachLinePoolingInfo : NotePoolingInfo
     {
         public NotePoolingInfo? MemberA { get; init; } = null;
         public NotePoolingInfo? MemberB { get; init; } = null;

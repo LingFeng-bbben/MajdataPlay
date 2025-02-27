@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>
+    internal class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {
         public int Capacity { get; set; } = 64;
@@ -129,7 +130,7 @@ namespace MajdataPlay.Game.Buffers
         }
         void ActiveObject(IPoolableNote<TInfo, TMember> element, TInfo info)
         {
-            info.Instance = element.GameObject;
+            info.Instance = element as NoteDrop;
             element.Initialize(info);
         }
         public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)

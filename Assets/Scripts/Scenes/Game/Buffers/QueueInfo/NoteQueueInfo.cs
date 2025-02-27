@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.Game.Buffers
 {
-    public abstract class NoteQueueInfo
+    internal abstract class NoteQueueInfo
     {
         /// <summary>
         /// 该Note的索引

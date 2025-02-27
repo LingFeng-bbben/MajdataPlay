@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using MajdataPlay.Game.Notes;
+using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public abstract class NotePoolingInfo
+    internal abstract class NotePoolingInfo
     {
         public int StartPos { get; init; }
         /// <summary>
@@ -18,7 +19,7 @@ namespace MajdataPlay.Game.Buffers
         /// <summary>
         /// 该Info绑定的实例
         /// </summary>
-        public GameObject? Instance { get; set; }
+        public NoteDrop? Instance { get; set; }
 
     }
 }

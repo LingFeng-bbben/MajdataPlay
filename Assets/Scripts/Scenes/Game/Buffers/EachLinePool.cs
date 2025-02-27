@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
-    public sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
+    internal sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
         new Queue<EachLineDrop> _storage;
         Queue<EachLineDrop> _idleEachLines;
@@ -114,15 +114,15 @@ namespace MajdataPlay.Game.Buffers
         }
         bool ActiveObject(EachLinePoolingInfo info, EachLineDrop eachLine)
         {
-            object? noteA = info.MemberA?.Instance;
-            object? noteB = info.MemberB?.Instance;
+            var noteA = info.MemberA?.Instance;
+            var noteB = info.MemberB?.Instance;
 
             if (noteA is null && noteB is null)
                 return false;
 
             eachLine.DistanceProvider = (noteA as IDistanceProvider ?? noteB as IDistanceProvider);
-            eachLine.NoteA = noteA as IStatefulNote;
-            eachLine.NoteB = noteB as IStatefulNote;
+            eachLine.NoteA = noteA;
+            eachLine.NoteB = noteB;
             eachLine.Initialize(info);
 
             return true;
