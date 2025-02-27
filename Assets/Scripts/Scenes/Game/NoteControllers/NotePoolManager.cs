@@ -58,16 +58,16 @@ namespace MajdataPlay.Game
         {
             _gpManager = Majdata<GamePlayManager>.Instance!;
         }
-        void Update()
+        internal void OnUpdate()
         {
             if (State < ComponentState.Running)
                 return;
             var currentSec = _gpManager.AudioTime;
-            tapPool.Update(currentSec);
-            holdPool.Update(currentSec);
-            touchPool.Update(currentSec);
-            touchHoldPool.Update(currentSec);
-            eachLinePool.Update(currentSec);
+            tapPool.OnUpdate(currentSec);
+            holdPool.OnUpdate(currentSec);
+            touchPool.OnUpdate(currentSec);
+            touchHoldPool.OnUpdate(currentSec);
+            eachLinePool.OnUpdate(currentSec);
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {

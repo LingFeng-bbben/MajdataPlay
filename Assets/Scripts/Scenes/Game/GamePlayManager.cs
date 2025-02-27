@@ -127,10 +127,10 @@ namespace MajdataPlay.Game
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
-        long _fileTimeAtStart = 0;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
+        Task _generateAnswerSFXTask = Task.CompletedTask;
         Text _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
@@ -148,16 +148,11 @@ namespace MajdataPlay.Game
         NoteLoader _noteLoader;
         NoteManager _noteManager;
         NoteAudioManager _noteAudioManager;
+        NotePoolManager _notePoolManager;
         ObjectCounter _objectCounter;
-        XxlbAnimationController _xxlbController;
 
-        readonly AudioSampleWrap _answerSFX = MajInstances.AudioManager?.GetSFX("answer.wav") ?? EmptyAudioSample.Shared;
-        readonly AudioSampleWrap _answerClockSFX = MajInstances.AudioManager?.GetSFX("answer_clock.wav") ?? EmptyAudioSample.Shared;
-        Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         readonly CancellationTokenSource _cts = new();
 
-        float _userAnswerOffset = MajInstances.Setting.Judge.AnswerOffset;
-        const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         void Awake()
         {
             Majdata<GamePlayManager>.Instance = this;
@@ -189,8 +184,8 @@ namespace MajdataPlay.Game
             _noteManager = Majdata<NoteManager>.Instance!;
             _bgManager = Majdata<BGManager>.Instance!;
             _objectCounter = Majdata<ObjectCounter>.Instance!;
-            _xxlbController = Majdata<XxlbAnimationController>.Instance!;
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
+            _notePoolManager = Majdata<NotePoolManager>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -474,81 +469,14 @@ namespace MajdataPlay.Game
                 }
 
                 GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
-                await Task.Run(() => 
+                var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
+                                                  .FirstOrDefault();
+                var countnum = 4;
+                if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
                 {
-                    //Generate ClockSounds
-                    var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
-                                                      .FirstOrDefault();
-                    var countnum = 4;
-                    var firstBpm = _chart.NoteTimings.FirstOrDefault().Bpm;
-                    var interval = 60 / firstBpm;
-                    List<AnswerSoundPoint> answerTimingPoints = new();
-
-                    if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
-                    {
-                        countnum = 4;
-                    }
-                    if (!IsPracticeMode)
-                    {
-                        if (_chart.NoteTimings.Any(o => o.Timing < countnum * interval))
-                        {
-                            //if there is something in first measure, we add clock before the bgm
-                            for (int i = 0; i < countnum; i++)
-                            {
-                                answerTimingPoints.Add(new AnswerSoundPoint()
-                                {
-                                    Timing = -(i + 1) * interval,
-                                    IsClock = true,
-                                    IsPlayed = false
-                                });
-                            }
-                        }
-                        else
-                        {
-                            //if nothing there, we can add it with bgm
-                            for (int i = 0; i < countnum; i++)
-                            {
-                                answerTimingPoints.Add(new AnswerSoundPoint()
-                                {
-                                    Timing = i * interval,
-                                    IsClock = true,
-                                    IsPlayed = false
-                                });
-                            }
-                        }
-                    }
-
-                    //Generate AnwserSounds
-                    
-                    foreach (var timingPoint in _chart.NoteTimings)
-                    {
-                        if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
-
-                        answerTimingPoints.Add(new AnswerSoundPoint()
-                        {
-                            Timing = timingPoint.Timing,
-                            IsClock = false,
-                            IsPlayed = false
-                        });
-                        var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
-                        if (holds.Length == 0)
-                            continue;
-                        foreach (var hold in holds)
-                        {
-                            var newtime = timingPoint.Timing + hold.HoldTime;
-                            if (!_chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
-                                !answerTimingPoints.Any(o => Math.Abs(o.Timing - newtime) < 0.001)
-                                )
-                                answerTimingPoints.Add(new AnswerSoundPoint()
-                                {
-                                    Timing = newtime,
-                                    IsClock = false,
-                                    IsPlayed = false
-                                });
-                        }
-                    }
-                    _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
-                });
+                    countnum = 4;
+                }
+                _generateAnswerSFXTask = _noteAudioManager.GenerateAnswerSFX(_chart, IsPracticeMode, countnum);
             }
             finally
             {
@@ -626,7 +554,7 @@ namespace MajdataPlay.Game
             _audioTime = -5f;
 
             Time.timeScale = 1f;
-            var firstClockTiming = _answerTimingPoints.Span[0].Timing;
+            var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
             float extraTime = 5f;
             if (firstClockTiming < -5f)
                 extraTime += (-(float)firstClockTiming - 5f) + 2f;
@@ -637,7 +565,8 @@ namespace MajdataPlay.Game
             _thisFixedUpdateSec = _thisFrameSec;
 
             _noteManager.InitializeUpdater();
-
+            while (!_generateAnswerSFXTask.IsCompleted)
+                await UniTask.Yield();
             var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
             while(!allBackguardTasks.IsCompleted)
             {
@@ -716,16 +645,20 @@ namespace MajdataPlay.Game
         
         internal void OnUpdate()
         {
-            UpdateAudioTime();
-            _noteAudioManager.OnUpdate();
-            UpdateFnKeyState();
+            AudioTimeUpdate();
+            ComponentUpdate();
+            GameControlUpdate();
+            FnKeyStateUpdate();
+        }
+        void GameControlUpdate()
+        {
             if (_audioSample is null)
                 return;
             else if (State < GamePlayStatus.Running)
                 return;
             else if (!_objectCounter.AllFinished)
                 return;
-            if(_allNotesFinishedTiming is null)
+            if (_allNotesFinishedTiming is null)
             {
                 _allNotesFinishedTiming = _audioTime;
                 return;
@@ -743,14 +676,14 @@ namespace MajdataPlay.Game
                 case GamePlayStatus.Running:
                     {
                         var result = CalculateScore();
-                        
+
                         switch (result.ComboState)
                         {
                             case ComboState.APPlus:
                             case ComboState.AP:
                             case ComboState.FCPlus:
                             case ComboState.FC:
-                                if(IsPracticeMode)
+                                if (IsPracticeMode)
                                 {
                                     NextRound4Practice(2000).Forget();
                                 }
@@ -783,12 +716,33 @@ namespace MajdataPlay.Game
                     break;
             }
         }
+        void ComponentUpdate()
+        {
+            switch(State)
+            {
+                case GamePlayStatus.WaitForEnd:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.Running:
+                    _noteAudioManager.OnUpdate();
+                    _noteManager.OnUpdate();
+                    _notePoolManager.OnUpdate();
+                    break;
+            }
+        }
         internal void OnLateUpdate()
         {
-            UpdateAnswerSFX();
-            _noteAudioManager.OnLateUpdate();
+            
+            switch (State)
+            {
+                case GamePlayStatus.WaitForEnd:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.Running:
+                    _noteAudioManager.OnLateUpdate();
+                    _noteManager.OnLateUpdate();
+                    break;
+            }
         }
-        void UpdateFnKeyState()
+        void FnKeyStateUpdate()
         {
             if (!_isFastRetryAvailable && !_isTrackSkipAvailable)
                 return;
@@ -837,7 +791,7 @@ namespace MajdataPlay.Game
                 FastRetry().Forget();
             }
         }
-        void UpdateAudioTime()
+        void AudioTimeUpdate()
         {
             if (_audioSample is null)
                 return;
@@ -865,55 +819,6 @@ namespace MajdataPlay.Game
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     }
                     break;
-            }
-        }
-        void UpdateAnswerSFX()
-        {
-            switch(State)
-            {
-                case GamePlayStatus.Running:
-                case GamePlayStatus.Blocking:
-                case GamePlayStatus.WaitForEnd:
-                    break;
-                default:
-                    return;
-            }
-
-            try
-            {
-                if (_answerTimingPoints.IsEmpty)
-                    return;
-                var timingPoints = _answerTimingPoints.Span;
-                var i = 0;
-                for (; i < timingPoints.Length; i++)
-                {
-                    ref var sfxInfo = ref _answerTimingPoints.Span[i];
-                    var playTiming = sfxInfo.Timing;
-                    var delta = ThisFrameSec - (playTiming + _userAnswerOffset + ANSWER_PLAYBACK_OFFSET_SEC);
-
-                    if (delta > 0)
-                    {
-                        if (sfxInfo.IsClock)
-                        {
-                            _answerClockSFX.PlayOneShot();
-                            _xxlbController.Stepping();
-                        }
-                        else
-                        {
-                            _answerSFX.PlayOneShot();
-                        }
-                        sfxInfo.IsPlayed = true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                _answerTimingPoints = _answerTimingPoints.Slice(i);
-            }
-            catch (Exception e)
-            {
-                MajDebug.LogException(e);
             }
         }
         private GameResult CalculateScore(bool playEffect = true)
@@ -1076,12 +981,6 @@ namespace MajdataPlay.Game
             {
                 Cursor.visible = true;
             }
-        }
-        struct AnswerSoundPoint
-        {
-            public double Timing { get; init; }
-            public bool IsClock { get; init; }
-            public bool IsPlayed { get; set; }
         }
     }
 }

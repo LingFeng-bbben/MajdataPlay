@@ -2,19 +2,32 @@ using MajdataPlay.Types;
 using UnityEngine;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game.Types;
 using System;
+using System.Threading.Tasks;
+using MajSimai;
+using System.Collections.Generic;
+using System.Linq;
+using MajdataPlay.Collections;
 #nullable enable
 namespace MajdataPlay.Game
 {
-    public class NoteAudioManager : MonoBehaviour
+    internal class NoteAudioManager : MonoBehaviour
     {
-        readonly bool[] _noteSFXPlaybackRequests = new bool[12];
-        readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[12];
-        readonly AudioManager _audioManager = MajInstances.AudioManager;
+        public ReadOnlySpan<AnswerSoundPoint> AnswerSFXTimings => _answerTimingPoints.Span;
+
+        XxlbAnimationController _xxlbController;
+        INoteController _noteController;
 
         bool _isTouchHoldRiserPlaying = false;
-        static readonly ReadOnlyMemory<string> SFX_NAMES = new string[12]
+
+        Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
+        
+        readonly bool[] _noteSFXPlaybackRequests = new bool[14];
+        readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
+        readonly AudioManager _audioManager = MajInstances.AudioManager;
+        static readonly ReadOnlyMemory<string> SFX_NAMES = new string[14]
         {
             "tap_perfect.wav",
             "tap_great.wav",
@@ -27,9 +40,12 @@ namespace MajdataPlay.Game
             "slide_break_start.wav",
             "touch.wav",
             "touch_Hold_riser.wav",
-            "touch_hanabi.wav"
+            "touch_hanabi.wav",
+            "answer.wav",
+            "answer_clock.wav"
         };
-
+        float _userAnswerOffset = MajInstances.Setting?.Judge.AnswerOffset ?? 0;
+        const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
         const int TAP_GREAT = 1;
         const int TAP_GOOD = 2;
@@ -42,6 +58,8 @@ namespace MajdataPlay.Game
         const int TOUCH = 9;
         const int TOUCHHOLD = 10;
         const int FIREWORK = 11;
+        const int ANSWER = 12;
+        const int ANSWER_CLOCK = 13;
 
         void Awake()
         {
@@ -60,6 +78,11 @@ namespace MajdataPlay.Game
                 }
             }
         }
+        private void Start()
+        {
+            _noteController = Majdata<INoteController>.Instance!;
+            _xxlbController = Majdata<XxlbAnimationController>.Instance!;
+        }
         void OnDestroy()
         {
             Majdata<NoteAudioManager>.Free();
@@ -73,6 +96,7 @@ namespace MajdataPlay.Game
         }
         internal void OnLateUpdate()
         {
+            AnswerSFXUpdate();
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {
                 var isRequested = _noteSFXPlaybackRequests[i];
@@ -143,14 +167,14 @@ namespace MajdataPlay.Game
                         if (isRequested)
                         {
                             if (_isTouchHoldRiserPlaying)
-                                return;
+                                break;
                             _isTouchHoldRiserPlaying = true;
                             _noteSFXs[TOUCHHOLD].PlayOneShot();
                         }
                         else
                         {
                             if (!_isTouchHoldRiserPlaying)
-                                return;
+                                break;
                             _isTouchHoldRiserPlaying = false;
                             _noteSFXs[TOUCHHOLD].Stop();
                         }
@@ -161,7 +185,57 @@ namespace MajdataPlay.Game
                             _noteSFXs[FIREWORK].PlayOneShot();
                         }
                         break;
+                    case ANSWER:
+                        if (isRequested)
+                        {
+                            _noteSFXs[ANSWER].PlayOneShot();
+                        }
+                        break;
+                    case ANSWER_CLOCK:
+                        if (isRequested)
+                        {
+                            _noteSFXs[ANSWER_CLOCK].PlayOneShot();
+                        }
+                        break;
                 }
+            }
+        }
+        void AnswerSFXUpdate()
+        {
+            try
+            {
+                if (_answerTimingPoints.IsEmpty)
+                    return;
+                var timingPoints = _answerTimingPoints.Span;
+                var i = 0;
+                for (; i < timingPoints.Length; i++)
+                {
+                    ref var sfxInfo = ref _answerTimingPoints.Span[i];
+                    var playTiming = sfxInfo.Timing;
+                    var delta = _noteController.ThisFrameSec - (playTiming + _userAnswerOffset + ANSWER_PLAYBACK_OFFSET_SEC);
+
+                    if (delta > 0)
+                    {
+                        if (sfxInfo.IsClock)
+                        {
+                            _noteSFXPlaybackRequests[ANSWER_CLOCK] = true;
+                            _xxlbController.Stepping();
+                        }
+                        else
+                        {
+                            _noteSFXPlaybackRequests[ANSWER] = true;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                _answerTimingPoints = _answerTimingPoints.Slice(i);
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
             }
         }
         public void PlayTapSound(in JudgeResult judgeResult)
@@ -238,7 +312,77 @@ namespace MajdataPlay.Game
                     break;
             }
         }
+        internal async Task GenerateAnswerSFX(SimaiChart chart,bool isPracticeMode,int clockCount = 4)
+        {
+            await Task.Run(() =>
+            {
+                //Generate ClockSounds
+                var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
+                var interval = 60 / firstBpm;
+                List<AnswerSoundPoint> answerTimingPoints = new();
 
+                if (!isPracticeMode)
+                {
+                    if (chart.NoteTimings.Any(o => o.Timing < clockCount * interval))
+                    {
+                        //if there is something in first measure, we add clock before the bgm
+                        for (int i = 0; i < clockCount; i++)
+                        {
+                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            {
+                                Timing = -(i + 1) * interval,
+                                IsClock = true,
+                                IsPlayed = false
+                            });
+                        }
+                    }
+                    else
+                    {
+                        //if nothing there, we can add it with bgm
+                        for (int i = 0; i < clockCount; i++)
+                        {
+                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            {
+                                Timing = i * interval,
+                                IsClock = true,
+                                IsPlayed = false
+                            });
+                        }
+                    }
+                }
+
+                //Generate AnwserSounds
+
+                foreach (var timingPoint in chart.NoteTimings)
+                {
+                    if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
+
+                    answerTimingPoints.Add(new AnswerSoundPoint()
+                    {
+                        Timing = timingPoint.Timing,
+                        IsClock = false,
+                        IsPlayed = false
+                    });
+                    var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
+                    if (holds.Length == 0)
+                        continue;
+                    foreach (var hold in holds)
+                    {
+                        var newtime = timingPoint.Timing + hold.HoldTime;
+                        if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
+                            !answerTimingPoints.Any(o => Math.Abs(o.Timing - newtime) < 0.001)
+                            )
+                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            {
+                                Timing = newtime,
+                                IsClock = false,
+                                IsPlayed = false
+                            });
+                    }
+                }
+                _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
+            });
+        }
         public void PlayTouchSound()
         {
             _noteSFXPlaybackRequests[TOUCH] = true;
@@ -282,6 +426,12 @@ namespace MajdataPlay.Game
             _noteSFXPlaybackRequests[BREAK_SLIDE_JUDGE] = true;
             //_audioManager.PlaySFX("slide_break_slide.wav");
             //_audioManager.PlaySFX("break_slide.wav");
+        }
+        internal struct AnswerSoundPoint
+        {
+            public double Timing { get; init; }
+            public bool IsClock { get; init; }
+            public bool IsPlayed { get; set; }
         }
     }
 }

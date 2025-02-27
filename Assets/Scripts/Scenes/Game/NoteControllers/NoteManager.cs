@@ -40,7 +40,6 @@ namespace MajdataPlay.Game
 
         InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
-        bool _isUpdaterInitialized = false;
 
         void Awake()
         {
@@ -70,8 +69,6 @@ namespace MajdataPlay.Game
         }
         internal void OnUpdate()
         {
-            if (!_isUpdaterInitialized)
-                return;
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFixedUpdate[i] = false;
@@ -91,10 +88,8 @@ namespace MajdataPlay.Game
                 _updateElapsedMs += updater.UpdateElapsedMs;
 #endif
         }
-        private void LateUpdate()
+        internal void OnLateUpdate()
         {
-            if (!_isUpdaterInitialized)
-                return;
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
@@ -116,13 +111,10 @@ namespace MajdataPlay.Game
             //{
             //    _isSensorUsedInThisFixedUpdate[i] = false;
             //}
-            if(_isUpdaterInitialized)
+            for (var i = 0; i < _noteUpdaters.Length; i++)
             {
-                for (var i = 0; i < _noteUpdaters.Length; i++)
-                {
-                    var updater = _noteUpdaters[i];
-                    updater.OnFixedUpdate();
-                }
+                var updater = _noteUpdaters[i];
+                updater.OnFixedUpdate();
             }
 #if UNITY_EDITOR || DEBUG
             _fixedUpdateElapsedMs = 0;
@@ -132,13 +124,10 @@ namespace MajdataPlay.Game
         }
         public void InitializeUpdater()
         {
-            if (_isUpdaterInitialized)
-                return;
             foreach(var updater in _noteUpdaters)
             {
                 updater.Initialize();
             }
-            _isUpdaterInitialized = true;
         }
         public void ResetCounter()
         {

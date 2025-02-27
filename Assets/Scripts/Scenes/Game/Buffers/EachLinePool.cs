@@ -33,7 +33,7 @@ namespace MajdataPlay.Game.Buffers
                 _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
             }
         }
-        public override void Update(float currentSec)
+        public override void OnUpdate(float currentSec)
         {
             if (_timingPoints.IsEmpty)
                 return;
