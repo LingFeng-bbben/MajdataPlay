@@ -12,11 +12,11 @@ namespace MajdataPlay.Game.Notes
     {
         public SensorArea AreaPosition { get; set; } = SensorArea.C;
 
-        List<NoteRegister> queue = new();
+        List<NoteRegister> queue = new(64);
 
-        GameObject two, three;
-        SpriteRenderer twoRenderer, threeRenderer;
-        Sprite[] normal, each,bReak;
+        GameObject _two, _three;
+        SpriteRenderer _twoRenderer, _threeRenderer;
+        Sprite[] _normal, _each, _break;
         void Start()
         {
             var index = AreaPosition.GetIndex();
@@ -30,20 +30,23 @@ namespace MajdataPlay.Game.Notes
             };
             var pos = NoteHelper.GetTouchAreaPosition(index, area);
             transform.position = pos;
-            two = transform.GetChild(0).gameObject;
-            three = transform.GetChild(1).gameObject;
-            twoRenderer = two.GetComponent<SpriteRenderer>();
-            threeRenderer = three.GetComponent<SpriteRenderer>();
+            _two = transform.GetChild(0).gameObject;
+            _three = transform.GetChild(1).gameObject;
+            _twoRenderer = _two.GetComponent<SpriteRenderer>();
+            _threeRenderer = _three.GetComponent<SpriteRenderer>();
             var skin = MajInstances.SkinManager.GetTouchSkin();
-            normal = skin.Border_Normal;
-            each = skin.Border_Each;
-            bReak = skin.Border_Break;
+            _normal = skin.Border_Normal;
+            _each = skin.Border_Each;
+            _break = skin.Border_Break;
 
-            twoRenderer.sprite = normal[0];
-            threeRenderer.sprite = normal[1];
+            _twoRenderer.sprite = _normal[0];
+            _threeRenderer.sprite = _normal[1];
 
-            twoRenderer.forceRenderingOff = true;
-            threeRenderer.forceRenderingOff = true;
+            _twoRenderer.forceRenderingOff = true;
+            _threeRenderer.forceRenderingOff = true;
+
+            _two.SetActive(true);
+            _three.SetActive(true);
         }
         public void Add(bool isBreak, bool isEach)
         {
@@ -65,10 +68,8 @@ namespace MajdataPlay.Game.Notes
         {
             if (queue.IsEmpty() || queue.Count < 2)
             {
-                twoRenderer.forceRenderingOff = true;
-                threeRenderer.forceRenderingOff = true;
-                two.SetActive(false);
-                three.SetActive(false);
+                _twoRenderer.forceRenderingOff = true;
+                _threeRenderer.forceRenderingOff = true;
                 return;
             }
 
@@ -77,31 +78,28 @@ namespace MajdataPlay.Game.Notes
             if (queue.Count > 2)
                 second = queue[2];
 
-            two.SetActive(true);
-            twoRenderer.forceRenderingOff = false;
+            _twoRenderer.forceRenderingOff = false;
             if (first.IsBreak)
-                twoRenderer.sprite = bReak[0];
+                _twoRenderer.sprite = _break[0];
             else if (first.IsEach)
-                twoRenderer.sprite = each[0];
+                _twoRenderer.sprite = _each[0];
             else
-                twoRenderer.sprite = normal[0];
+                _twoRenderer.sprite = _normal[0];
 
             if (second is not null)
             {
                 var _second = (NoteRegister)second;
-                three.SetActive(true);
-                threeRenderer.forceRenderingOff = false;
+                _threeRenderer.forceRenderingOff = false;
                 if (_second.IsBreak)
-                    threeRenderer.sprite = bReak[1];
+                    _threeRenderer.sprite = _break[1];
                 else if (_second.IsEach)
-                    threeRenderer.sprite = each[1];
+                    _threeRenderer.sprite = _each[1];
                 else
-                    threeRenderer.sprite = normal[1];
+                    _threeRenderer.sprite = _normal[1];
             }
             else
             {
-                threeRenderer.forceRenderingOff = true;
-                three.SetActive(false);
+                _threeRenderer.forceRenderingOff = true;
             }
 
         }
