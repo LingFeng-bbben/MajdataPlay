@@ -41,10 +41,11 @@ namespace MajdataPlay.Game.Notes
         public int startPosition = 1;
         public int curvLength = 1;
         public float speed = 1;
+        float _noteAppearRate = 0.265f;
         public Sprite[] curvSprites;
         private SpriteRenderer sr;
         GameSetting gameSetting = new();
-        GamePlayManager _gpManager;
+        INoteController _noteController;
         NotePoolManager poolManager;
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
@@ -54,11 +55,9 @@ namespace MajdataPlay.Game.Notes
             timing = poolingInfo.Timing;
             speed = poolingInfo.Speed;
             curvLength = poolingInfo.CurvLength;
-            if (State == NoteStatus.Start)
-                Start();
             sr.sprite = curvSprites[curvLength - 1];
-            transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
-            transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
+            Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+            Transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
             RendererState = RendererStatus.Off;
             if (DistanceProvider is null)
@@ -75,25 +74,26 @@ namespace MajdataPlay.Game.Notes
             DistanceProvider = null;
             poolManager.Collect(this);
         }
-        private void Start()
+        protected override void Awake()
         {
-            if (IsInitialized)
-                return;
-            _gpManager = Majdata<GamePlayManager>.Instance!;
+            base.Awake();
+            _noteController = Majdata<INoteController>.Instance!;
             poolManager = FindObjectOfType<NotePoolManager>();
             gameSetting = MajInstances.Setting;
+            _noteAppearRate = gameSetting.Debug.NoteAppearRate;
             sr = gameObject.GetComponent<SpriteRenderer>();
             sr.sprite = curvSprites[curvLength - 1];
             RendererState = RendererStatus.Off;
+            sr.forceRenderingOff = true;
             Active = true;
         }
         void OnLateUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
-            var timing = _gpManager.AudioTime - this.timing;
+            var timing = _noteController.ThisFrameSec - this.timing;
             var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
-            var scaleRate = gameSetting.Debug.NoteAppearRate;
+            var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
             var lineScale = Mathf.Abs(distance / 4.8f);
 
@@ -112,7 +112,7 @@ namespace MajdataPlay.Game.Notes
                     if (destScale > 0.3f)
                         RendererState = RendererStatus.On;
                     if (distance < 1.225f)
-                        transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+                        Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
                     else
                     {
                         State = NoteStatus.Running;
@@ -120,7 +120,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Running:
-                    transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                    Transform.localScale = new Vector3(lineScale, lineScale, 1f);
                     if (NoteA is not null && NoteB is not null)
                     {
                         if (NoteA.State == NoteStatus.End || NoteB.State == NoteStatus.End)

@@ -22,6 +22,10 @@ namespace MajdataPlay.Game.Buffers
             {
                 _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
             }
+            foreach (var obj in base._idleNotes)
+            {
+                _idleEachLines.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
+            }
         }
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos) : base(prefab, parent, noteInfos)
         {

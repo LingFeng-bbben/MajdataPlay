@@ -27,11 +27,22 @@ namespace MajdataPlay.Game.Buffers
             for (var i = 0; i < capacity; i++)
             {
                 var obj = UnityEngine.Object.Instantiate(prefab, parent);
-                obj.SetActive(false);
-                var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
-                if (noteObj is null)
-                    throw new NotSupportedException();
-                _storage.Enqueue(noteObj);
+                if(i < capacity / 2)
+                {
+                    obj.SetActive(true);
+                    var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
+                    if (noteObj is null)
+                        throw new NotSupportedException();
+                    _idleNotes.Enqueue(noteObj);
+                }
+                else
+                {
+                    obj.SetActive(false);
+                    var noteObj = obj.GetComponent<IPoolableNote<TInfo, TMember>>();
+                    if (noteObj is null)
+                        throw new NotSupportedException();
+                    _storage.Enqueue(noteObj);
+                }
             }
             var orderedTimingPoints = noteInfos.GroupBy(x => x.AppearTiming)
                                         .OrderBy(x => x.Key);
