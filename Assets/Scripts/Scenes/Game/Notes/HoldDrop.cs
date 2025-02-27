@@ -10,7 +10,6 @@ using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Types;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
-using static UnityEditor.PlayerSettings;
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {

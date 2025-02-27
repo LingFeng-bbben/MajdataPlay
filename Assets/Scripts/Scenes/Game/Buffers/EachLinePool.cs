@@ -4,73 +4,139 @@ using MajdataPlay.Game.Notes;
 using MajdataPlay.Game.Types;
 using MajdataPlay.Utils;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers
 {
     public sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
+        new Queue<EachLineDrop> _storage;
+        Queue<EachLineDrop> _idleEachLines;
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {
+            _storage = new Queue<EachLineDrop>(capacity);
+            _idleEachLines = new Queue<EachLineDrop>(capacity);
 
+            foreach(var obj in base._storage)
+            {
+                _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
+            }
         }
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos) : base(prefab, parent, noteInfos)
         {
+            _storage = new Queue<EachLineDrop>(64);
+            _idleEachLines = new Queue<EachLineDrop>(64);
 
+            foreach (var obj in base._storage)
+            {
+                _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
+            }
         }
         public override void Update(float currentSec)
         {
-            if (_idleNotes.IsEmpty())
+            if (_timingPoints.IsEmpty)
                 return;
-            foreach (var (i, tp) in _timingPoints.AsSpan().WithIndex())
+            var timingPoints = _timingPoints.Span;
+            var i = 0;
+            try
             {
-                if (tp is null)
-                    continue;
-                var timeDiff = currentSec - tp.Timing;
-                if (timeDiff > -0.15f)
+                for (; i < timingPoints.Length; i++)
                 {
-                    if (!Dequeue(tp.Infos))
-                        continue;
-                    _timingPoints[i] = null;
+                    ref var tp = ref timingPoints[i];
+                    var timeDiff = currentSec - tp.Timing;
+                    if (timeDiff > -0.15f)
+                    {
+                        if (!Dequeue(ref tp))
+                            return;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                if (i != 0)
+                {
+                    _timingPoints = _timingPoints.Slice(i);
                 }
             }
         }
-        bool Dequeue(EachLinePoolingInfo?[] infos)
+        bool Dequeue(ref TimingPoint<EachLinePoolingInfo> tp)
         {
-            foreach (var (i, info) in infos.AsSpan().WithIndex())
+            var infos = tp.Infos;
+            if (infos.IsEmpty)
+                return true;
+            var _infos = infos.Span;
+            var i = 0;
+            try
             {
-                if (info is null)
-                    continue;
-                else if (!Dequeue(info))
-                    return false;
-                infos[i] = null;
+                for (; i < _infos.Length; i++)
+                {
+                    var info = _infos[i];
+                    var eachLine = Dequeue();
+                    if (eachLine is null)
+                        return false;
+                    else if (!ActiveObject(info, eachLine))
+                        return false;
+                }
+            }
+            finally
+            {
+                tp.Infos = infos.Slice(i);
             }
             return true;
         }
-        bool Dequeue(EachLinePoolingInfo info)
+        new EachLineDrop? Dequeue()
         {
-            var noteA = info.MemberA?.Instance;
-            var noteB = info.MemberB?.Instance;
-            if (_idleNotes.IsEmpty())
+            EachLineDrop idleEachLine;
+            if (_idleEachLines.Count == 0)
             {
-                MajDebug.LogWarning($"No more EachLine can use");
-                return false;
+                if (_storage.Count != 0)
+                {
+                    idleEachLine = _storage.Dequeue();
+                    idleEachLine.GameObject.SetActive(true);
+                }
+                else
+                {
+                    MajDebug.LogWarning($"No more EachLine can use");
+                    return null;
+                }
             }
-            else if (noteA is null && noteB is null)
+            else
+            {
+                idleEachLine = _idleEachLines.Dequeue();
+            }
+
+            return idleEachLine;
+        }
+        bool ActiveObject(EachLinePoolingInfo info, EachLineDrop eachLine)
+        {
+            object? noteA = info.MemberA?.Instance;
+            object? noteB = info.MemberB?.Instance;
+
+            if (noteA is null && noteB is null)
                 return false;
-            var idleNote = _idleNotes[0];
-            var obj = idleNote.GameObject;
-            info.Instance = obj;
-            var eachLine = obj.GetComponent<EachLineDrop>();
-            eachLine.DistanceProvider = (noteA ?? noteB)?.GetComponent<IDistanceProvider>();
-            eachLine.NoteA = noteA?.GetComponent<IStatefulNote>();
-            eachLine.NoteB = noteB?.GetComponent<IStatefulNote>();
-            _inUseNotes.Add(idleNote);
-            _idleNotes.RemoveAt(0);
-            idleNote.Initialize(info);
-            if (!obj.activeSelf)
-                obj.SetActive(true);
+
+            eachLine.DistanceProvider = (noteA as IDistanceProvider ?? noteB as IDistanceProvider);
+            eachLine.NoteA = noteA as IStatefulNote;
+            eachLine.NoteB = noteB as IStatefulNote;
+            eachLine.Initialize(info);
+
             return true;
+        }
+        public override void Collect(in IPoolableNote<EachLinePoolingInfo, NoteQueueInfo> endNote)
+        {
+            if(endNote is EachLineDrop eachLine)
+            {
+                _idleEachLines.Enqueue(eachLine);
+            }
+            else
+            {
+                throw new ArgumentException(nameof(eachLine));
+            }
         }
     }
 }
