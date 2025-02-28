@@ -437,7 +437,7 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
-        void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
+        static void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
         {
             var logContent = $"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {msg.Trim()}";
             switch (eventType)
