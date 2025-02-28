@@ -61,6 +61,7 @@ namespace MajdataPlay.Types
         public float InnerJudgeDistance { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
         public string Resolution { get; set; } = "1080x1920";
+        public bool Topmost { get; set; } = true;
         public int FPSLimit { get; set; } = 240;
         public bool VSync { get; set; } = false;
     }
@@ -143,7 +144,7 @@ namespace MajdataPlay.Types
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = false;
-        public int Direct3DMaxQueuedFrames { get; set; } = 2;
+        public int MaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;
         public int HoldPoolCapacity { get; set; } = 48;
         public int TouchPoolCapacity { get; set; } = 64;
