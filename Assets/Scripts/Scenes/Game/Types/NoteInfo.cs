@@ -26,16 +26,19 @@ namespace MajdataPlay.Game.Types
             if(noteObj is IMajComponent component)
                 _component = component;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnUpdate()
         {
             if (IsExecutable())
                 base.OnUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnLateUpdate()
         {
             if (IsExecutable())
                 base.OnLateUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnFixedUpdate()
         {
             if (IsExecutable())

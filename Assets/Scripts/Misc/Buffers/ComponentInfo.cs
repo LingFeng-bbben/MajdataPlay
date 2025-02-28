@@ -5,62 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Buffers
 {
-    public class ComponentInfo<TComponent>
+    public class ComponentInfo<TComponent>: ComponentInfo
     {
-        public TComponent? Component { get; init; }
-        public bool IsUpdatable { get; init; }
-        public bool IsFixedUpdatable { get; init; }
-        public bool IsLateUpdatable { get; init; }
-
-        protected readonly Action? _onUpdate = null;
-        protected readonly Action? _onFixedUpdate = null;
-        protected readonly Action? _onLateUpdate = null;
-        public ComponentInfo(TComponent component)
+        public new TComponent? Component => (TComponent?)base.Component;
+        public ComponentInfo(TComponent? component): base(component)
         {
-            if(component is null)
-            {
-                Component = default;
-                IsUpdatable = false;
-                IsFixedUpdatable = false;
-                IsLateUpdatable = false;
-                return;
-            }
-            var methods = Reflection<TComponent>.Methods.Span;
-            var actionType = typeof(Action);
-            var onUpdateMethod = methods.Find(x => x.Name == "OnUpdate" && x.GetParameters().Length == 0 && x.IsStatic == false);
-            var onFixedUpdateMethod = methods.Find(x => x.Name == "OnFixedUpdate" && x.GetParameters().Length == 0 && x.IsStatic == false);
-            var onLateUpdateMethod = methods.Find(x => x.Name == "OnLateUpdate" && x.GetParameters().Length == 0 && x.IsStatic == false);
-
-            _onUpdate = (Action?)onUpdateMethod?.CreateDelegate(actionType, component);
-            _onFixedUpdate = (Action?)onFixedUpdateMethod?.CreateDelegate(actionType, component);
-            _onLateUpdate = (Action?)onLateUpdateMethod?.CreateDelegate(actionType, component);
-
-            IsUpdatable = _onUpdate is not null;
-            IsFixedUpdatable = _onFixedUpdate is not null;
-            IsLateUpdatable = _onLateUpdate is not null;
-        }
-        public virtual void OnUpdate()
-        {
-            if (_onUpdate is null)
-                return;
-            _onUpdate();
-        }
-        public virtual void OnLateUpdate()
-        {
-            if (_onLateUpdate is null)
-                return;
-            _onLateUpdate();
-        }
-        public virtual void OnFixedUpdate()
-        {
-            if (_onFixedUpdate is null)
-                return;
-            _onFixedUpdate();
+            
         }
     }
     public class ComponentInfo
@@ -70,10 +27,12 @@ namespace MajdataPlay.Buffers
         public bool IsFixedUpdatable { get; init; }
         public bool IsLateUpdatable { get; init; }
 
-        protected readonly Action? _onUpdate = null;
-        protected readonly Action? _onFixedUpdate = null;
-        protected readonly Action? _onLateUpdate = null;
-        public ComponentInfo(object component)
+        protected readonly PlayerLoopEventMethod? _onUpdate = null;
+        protected readonly PlayerLoopEventMethod? _onFixedUpdate = null;
+        protected readonly PlayerLoopEventMethod? _onLateUpdate = null;
+
+        protected delegate void PlayerLoopEventMethod();
+        public ComponentInfo(object? component)
         {
             if (component is null)
             {
@@ -84,32 +43,48 @@ namespace MajdataPlay.Buffers
                 return;
             }
             var componentType = component.GetType();
-            var actionType = typeof(Action);
             var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
-            var onUpdateMethod = componentType.GetMethod("OnUpdate", flags);
-            var onFixedUpdateMethod = componentType.GetMethod("OnFixedUpdate", flags);
-            var onLateUpdateMethod = componentType.GetMethod("OnLateUpdate", flags);
-
-            _onUpdate = (Action?)onUpdateMethod?.CreateDelegate(actionType, component);
-            _onFixedUpdate = (Action?)onFixedUpdateMethod?.CreateDelegate(actionType, component);
-            _onLateUpdate = (Action?)onLateUpdateMethod?.CreateDelegate(actionType, component);
-
+            var methods = componentType.GetMethods(flags);
+            var delegateType = typeof(PlayerLoopEventMethod);
+            foreach (var method in methods)
+            {
+                if (method.GetParameters().Length != 0)
+                    continue;
+                switch(method.Name)
+                {
+                    case "OnUpdate":
+                        if(_onUpdate is null)
+                            _onUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        break;
+                    case "OnFixedUpdate":
+                        if (_onFixedUpdate is null)
+                            _onFixedUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        break;
+                    case "OnLateUpdate":
+                        if (_onLateUpdate is null)
+                            _onLateUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        break;
+                }
+            }
             IsUpdatable = _onUpdate is not null;
             IsFixedUpdatable = _onFixedUpdate is not null;
             IsLateUpdatable = _onLateUpdate is not null;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void OnUpdate()
         {
             if (_onUpdate is null)
                 return;
             _onUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void OnLateUpdate()
         {
             if (_onLateUpdate is null)
                 return;
             _onLateUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void OnFixedUpdate()
         {
             if (_onFixedUpdate is null)
