@@ -152,9 +152,7 @@ namespace MajdataPlay.Game.Notes
         /// </summary>
         protected GameObject?[] _stars = new GameObject[3];
 
-        protected GameObject? _slideOK;
-        protected Animator? _slideOKAnim;
-        protected LoadJustSprite? _slideOKController;
+        protected SlideOK? _slideOK;
 
         protected float _lastWaitTime;
         
@@ -259,14 +257,6 @@ namespace MajdataPlay.Game.Notes
             bool canPlay;
             canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
-            if (canPlay)
-            {
-                _slideOK.SetActive(true);
-            }
-            //else
-            //{
-            //    //Destroy(_slideOK);
-            //}
             return canPlay;
         }
         protected void HideAllBar() => HideBar(int.MaxValue);

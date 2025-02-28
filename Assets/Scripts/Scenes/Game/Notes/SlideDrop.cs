@@ -94,10 +94,11 @@ namespace MajdataPlay.Game.Notes
             _starTransforms[0] = star.transform;
             _starRenderer = star.GetComponent<SpriteRenderer>();
 
-            _slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
-            _slideOKAnim = _slideOK.GetComponent<Animator>();
-            _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
-            _slideOK.SetActive(false);
+            var slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
+            slideOK.SetActive(true);
+            _slideOK = slideOK.GetComponent<SlideOK>();
+            _slideOK.IsClassic = IsClassic;
+            _slideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType(SlideType);
             
             _slideBars = new GameObject[transform.childCount - 1];
             _slideBarTransforms = new Transform[transform.childCount - 1];
@@ -177,8 +178,6 @@ namespace MajdataPlay.Game.Notes
             {
                 Destroy(_slideOK);
                 _slideOK = null;
-                _slideOKAnim = null;
-                _slideOKController = null;
             }
 
             State = NoteStatus.Initialized;
@@ -511,15 +510,7 @@ namespace MajdataPlay.Game.Notes
                 _objectCounter.ReportResult(this, result);
                 if(PlaySlideOK(result))
                 {
-                    if (IsClassic)
-                    {
-                        _slideOKAnim!.SetTrigger("classic");
-                    }
-                    else if (IsBreak && _judgeResult == JudgeGrade.Perfect)
-                    {
-                        _slideOKAnim!.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-                    }
-                    _slideOKController!.SetResult(_judgeResult);
+                    _slideOK!.PlayResult(result);
                 }
                 
                 PlayJudgeSFX(result);
@@ -664,7 +655,7 @@ namespace MajdataPlay.Game.Notes
 
             if (IsJustR)
             {
-                if (_slideOKController!.SetR() == 1 && _isMirror)
+                if (_slideOK!.SetR() == 1 && _isMirror)
                 {
                     _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
@@ -673,7 +664,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                if (_slideOKController!.SetL() == 1 && !_isMirror)
+                if (_slideOK!.SetL() == 1 && !_isMirror)
                 {
                     _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
                     var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;

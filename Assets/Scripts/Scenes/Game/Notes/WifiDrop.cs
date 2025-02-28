@@ -73,10 +73,11 @@ namespace MajdataPlay.Game.Notes
                 _starStartPositions[2] = NoteHelper.GetTapPosition(StartPos, 4.8f);
             }
 
-            _slideOK = Transform.GetChild(Transform.childCount - 1).gameObject; //slideok is the last one
-            _slideOKAnim = _slideOK.GetComponent<Animator>();
-            _slideOKController = _slideOK.GetComponent<LoadJustSprite>();
-            _slideOK.SetActive(false);
+            var slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
+            slideOK.SetActive(true);
+            _slideOK = slideOK.GetComponent<SlideOK>();
+            _slideOK.IsClassic = IsClassic;
+            _slideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType("wifi");
 
             //Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
             _slideBars = new GameObject[Transform.childCount - 1];
@@ -450,15 +451,7 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             if(PlaySlideOK(result))
             {
-                if (IsClassic)
-                {
-                    _slideOKAnim!.SetTrigger("classic");
-                }
-                else if (IsBreak && _judgeResult == JudgeGrade.Perfect)
-                {
-                    _slideOKAnim!.runtimeAnimatorController = MajInstances.SkinManager.JustBreak;
-                }
-                _slideOKController!.SetResult(_judgeResult);
+                _slideOK!.PlayResult(result);
             }
             PlayJudgeSFX(result);
             //PlaySlideOK(result);
@@ -514,11 +507,11 @@ namespace MajdataPlay.Game.Notes
 
             if (IsJustR)
             {
-                _slideOKController!.SetR();
+                _slideOK!.SetR();
             }
             else
             {
-                _slideOKController!.SetL();
+                _slideOK!.SetL();
                 _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
         }

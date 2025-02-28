@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
@@ -141,6 +142,25 @@ namespace MajdataPlay.Game.Utils
             return new Vector3(
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
+        }
+        public static SlideOKShape GetSlideOKShapeFromSlideType(string slideType)
+        {
+            switch(slideType)
+            {
+                case "circle1":
+                case "circle2":
+                case "circle3":
+                case "circle4":
+                case "circle5":
+                case "circle6":
+                case "circle7":
+                case "circle8":
+                    return SlideOKShape.Curv;
+                case "wifi":
+                    return SlideOKShape.Wifi;
+                default:
+                    return SlideOKShape.Str;
+            }
         }
     }
 }

@@ -1,38 +1,49 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Types;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Game
 {
-    public class LoadJustSprite : MonoBehaviour
+    public class SlideOK : MonoBehaviour
     {
-        public int _0curv1str2wifi;
+        public SlideOKShape Shape { get; set; } = SlideOKShape.Curv;
+        public bool IsClassic { get; set; } = false;
 
-        public int indexOffset;
-        public int judgeOffset = 0;
+        int _indexOffset;
+        int _judgeOffset = 0;
+        bool _displayCP = false;
 
         Sprite[] _justSprites = Array.Empty<Sprite>();
         SpriteRenderer _spriteRenderer;
+        Animator _animator;
+
+        readonly static int CLASSIC_ANIM_HASH = Animator.StringToHash("classic");
+        readonly static int MODERN_ANIM_HASH = Animator.StringToHash("modern");
+        readonly static int BREAK_ANIM_HASH = Animator.StringToHash("break");
         private void Awake()
         {
+            _displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
             _spriteRenderer = GetComponent<SpriteRenderer>();
+            _animator = GetComponent<Animator>();
             _justSprites = MajInstances.SkinManager.SelectedSkin.Just;
         }
-        public void SetResult(JudgeGrade result)
+        public void PlayResult(in JudgeResult result)
         {
-            var displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
-            switch (result)
+            var isBreak = false;
+            switch (result.Grade)
             {
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.Perfect:
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.FastPerfect3rd:
-                    if (displayCP)
+                    if (_displayCP)
                         SetJustCP();
                     else
                         SetJustP();
+                    isBreak = result.IsBreak;
                     break;
                 case JudgeGrade.FastGreat3rd:
                 case JudgeGrade.FastGreat2nd:
@@ -57,72 +68,82 @@ namespace MajdataPlay.Game
                     SetMiss();
                     break;
             }
+            Play(isBreak);
+        }
+        void Play(bool isBreak)
+        {
+            if(IsClassic)
+                _animator.SetTrigger(CLASSIC_ANIM_HASH);
+            else if(isBreak)
+                _animator.SetTrigger(BREAK_ANIM_HASH);
+            else
+                _animator.SetTrigger(MODERN_ANIM_HASH);
         }
         public int SetR()
         {
-            indexOffset = 0;
+            _indexOffset = 0;
             RefreshSprite();
-            return _0curv1str2wifi;
+            return (int)Shape;
         }
         public int SetL()
         {
-            indexOffset = 3;
+            _indexOffset = 3;
             RefreshSprite();
-            return _0curv1str2wifi;
+            return (int)Shape;
         }
         public void SetJustCP()
         {
-            judgeOffset = 0;
+            _judgeOffset = 0;
             RefreshSprite();
         }
         public void SetJustP()
         {
-            judgeOffset = 6;
+            _judgeOffset = 6;
             RefreshSprite();
         }
         public void SetFastP()
         {
-            judgeOffset = 12;
+            _judgeOffset = 12;
             RefreshSprite();
         }
         public void SetFastGr()
         {
-            judgeOffset = 18;
+            _judgeOffset = 18;
             RefreshSprite();
         }
         public void SetFastGd()
         {
-            judgeOffset = 24;
+            _judgeOffset = 24;
             RefreshSprite();
         }
         public void SetLateP()
         {
-            judgeOffset = 30;
+            _judgeOffset = 30;
             RefreshSprite();
         }
         public void SetLateGr()
         {
-            judgeOffset = 36;
+            _judgeOffset = 36;
             RefreshSprite();
         }
         public void SetLateGd()
         {
-            judgeOffset = 42;
+            _judgeOffset = 42;
             RefreshSprite();
         }
         public void SetMiss()
         {
-            judgeOffset = 48;
+            _judgeOffset = 48;
             RefreshSprite();
         }
         public void SetTooFast()
         {
-            judgeOffset = 54;
+            _judgeOffset = 54;
             RefreshSprite();
         }
         private void RefreshSprite()
         {
-            _spriteRenderer.sprite = _justSprites[_0curv1str2wifi + indexOffset + judgeOffset];
+            _spriteRenderer.sprite = _justSprites[(int)Shape + _indexOffset + _judgeOffset];
         }
     }
 }
