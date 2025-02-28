@@ -150,6 +150,7 @@ namespace MajdataPlay.Game
         NoteAudioManager _noteAudioManager;
         NotePoolManager _notePoolManager;
         ObjectCounter _objectCounter;
+        TimeDisplayer _timeDisplayer;
 
         readonly CancellationTokenSource _cts = new();
 
@@ -186,6 +187,7 @@ namespace MajdataPlay.Game
             _objectCounter = Majdata<ObjectCounter>.Instance!;
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -728,6 +730,7 @@ namespace MajdataPlay.Game
                     _notePoolManager.OnUpdate();
                     break;
             }
+            _timeDisplayer.OnUpdate();
         }
         internal void OnLateUpdate()
         {

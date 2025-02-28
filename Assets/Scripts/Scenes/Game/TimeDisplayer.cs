@@ -16,17 +16,17 @@ namespace MajdataPlay.Game
         public Text rTimeText;
         public Slider progress;
 
+        TimeSpan _lastUpdateTime = TimeSpan.Zero;
         TimeSpan _audioTimeOffset = TimeSpan.Zero;
         GameInfo _gameInfo;
-        GamePlayManager _gpManager;
+        INoteController _noteController;
 
-        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}.{2:000}";
-        const string TIME_STRING = "{0}:{1:00}.{2:000}";
-
-        
+        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}";
+        const string TIME_STRING = "{0}:{1:00}";
 
         void Awake()
         {
+            Majdata<TimeDisplayer>.Instance = this;
             _gameInfo = Majdata<GameInfo>.Instance!;
 
             //if(_gameInfo.Mode == GameMode.Practice)
@@ -42,43 +42,26 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _gpManager = Majdata<GamePlayManager>.Instance!;
+            _noteController = Majdata<INoteController>.Instance!;
+            _lastUpdateTime = TimeSpan.FromSeconds(_noteController.ThisFrameSec) - _audioTimeOffset;
         }
 
-        void Update()
+        internal void OnUpdate()
         {
             // Lock AudioTime variable for real
-            var audioLen = TimeSpan.FromSeconds(_gpManager.AudioLength);
-            var current = TimeSpan.FromSeconds(_gpManager.AudioTime) - _audioTimeOffset;
+            var audioLen = TimeSpan.FromSeconds(_noteController.AudioLength);
+            var current = TimeSpan.FromSeconds(_noteController.ThisFrameSec) - _audioTimeOffset;
             var remaining = audioLen - current;
             var timeStr = current.TotalSeconds < 0 ? NEGATIVE_TIME_STRING : TIME_STRING;
 
-            timeText.text = ZString.Format(timeStr,current.Minutes,current.Seconds,current.Milliseconds);
-            rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);
+            if(_lastUpdateTime != current)
+            {
+                timeText.text = ZString.Format(timeStr, current.Minutes, current.Seconds);
+                rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds);
+                _lastUpdateTime = current;
+            }
+
             progress.value = ((float)(current.TotalMilliseconds / audioLen.TotalMilliseconds)).Clamp(0, 1);
-        }
-
-        string TimeToString(float time)
-        {
-            var timenowInt = (int)time;
-            var minute = timenowInt / 60;
-            var second = timenowInt - 60 * minute;
-            double mili = (time - timenowInt) * 10000;
-
-            // Make timing display "cleaner" on negative timing.
-            if (time < 0)
-            {
-                minute = Math.Abs(minute);
-                second = Math.Abs(second);
-                mili = Math.Abs(mili);
-
-                //_timeText.text = string.Format("-{0}:{1:00}.{2:000}", minute, second, mili / 10);
-                return $"-{minute}:{second:00}.{mili / 10:000}";
-            }
-            else
-            {
-                return $"{minute}:{second:00}.{mili / 10:000}";
-            }
         }
     }
 }

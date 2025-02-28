@@ -32,6 +32,7 @@ namespace MajdataPlay.View
                 };
             }
         }
+        public float AudioLength { get; private set; } = 0f;
         public bool IsStart { get; private set; }
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
         public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Enable;

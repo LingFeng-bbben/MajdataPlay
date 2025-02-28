@@ -10,6 +10,7 @@ namespace MajdataPlay
 {
     internal interface INoteController: INoteTimeProvider
     {
+        float AudioLength { get; }
         bool IsStart { get; }
         bool IsAutoplay { get; }
         AutoplayMode AutoplayMode { get; }
