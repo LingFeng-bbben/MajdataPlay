@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
 using UnityEngine;
 
 namespace MajdataPlay.Game
@@ -11,6 +12,13 @@ namespace MajdataPlay.Game
         public int indexOffset;
         public int judgeOffset = 0;
 
+        Sprite[] _justSprites = Array.Empty<Sprite>();
+        SpriteRenderer _spriteRenderer;
+        private void Awake()
+        {
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _justSprites = MajInstances.SkinManager.SelectedSkin.Just;
+        }
         public void SetResult(JudgeGrade result)
         {
             var displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
@@ -114,7 +122,7 @@ namespace MajdataPlay.Game
         }
         private void RefreshSprite()
         {
-            gameObject.GetComponent<SpriteRenderer>().sprite = MajInstances.SkinManager.SelectedSkin.Just[_0curv1str2wifi + indexOffset + judgeOffset];
+            _spriteRenderer.sprite = _justSprites[_0curv1str2wifi + indexOffset + judgeOffset];
         }
     }
 }
