@@ -3,6 +3,7 @@ using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
+using MajdataPlay.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,13 +31,14 @@ namespace MajdataPlay.Game
         double _lateUpdateElapsedMs = 0;
         public void Initialize()
         {
-            Transform[] childs = new Transform[transform.childCount];
+            Transform[] children = transform.GetChildren();
+            
             List<NoteInfo> updatableComponents = new();
             List<NoteInfo> fixedUpdatableComponents = new();
             List<NoteInfo> lateUpdatableComponents = new();
-            for (int i = 0; i < childs.Length; i++)
-                childs[i] = transform.GetChild(i);
-            foreach(var child in childs)
+            //for (int i = 0; i < children.Length; i++)
+            //    children[i] = transform.GetChild(i);
+            foreach(var child in children)
             {
                 var childComponents = child.GetComponents<IStateful<NoteStatus>>();
                 if(childComponents.Length != 0)
