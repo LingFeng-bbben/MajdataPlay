@@ -138,6 +138,10 @@ namespace MajdataPlay.Setting
                         _minValue = -1;
                         _step = 1;
                         break;
+                    case "Direct3DMaxQueuedFrames":
+                        _minValue = 0;
+                        _step = 1;
+                        break;
                     default:
                         _maxValue = null;
                         _minValue = null;
@@ -263,6 +267,9 @@ namespace MajdataPlay.Setting
                     break;
                 case "RenderQuality":
                     QualitySettings.SetQualityLevel((int)value, true);
+                    break;
+                case "Direct3DMaxQueuedFrames":
+                    QualitySettings.maxQueuedFrames = (int)value;
                     break;
             }
         }

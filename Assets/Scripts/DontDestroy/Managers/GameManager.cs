@@ -102,7 +102,7 @@ namespace MajdataPlay
                    .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
-            QualitySettings.maxQueuedFrames = 1;
+            QualitySettings.maxQueuedFrames = Setting.Debug.Direct3DMaxQueuedFrames;
 
             SetWindowTopmost();
         }

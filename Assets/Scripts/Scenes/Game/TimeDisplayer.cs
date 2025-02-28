@@ -54,7 +54,7 @@ namespace MajdataPlay.Game
             var remaining = audioLen - current;
             var timeStr = current.TotalSeconds < 0 ? NEGATIVE_TIME_STRING : TIME_STRING;
 
-            if(_lastUpdateTime != current)
+            if(_lastUpdateTime.TotalSeconds != current.TotalSeconds)
             {
                 timeText.text = ZString.Format(timeStr, current.Minutes, current.Seconds);
                 rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds);

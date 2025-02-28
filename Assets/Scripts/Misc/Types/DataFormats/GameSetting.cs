@@ -142,7 +142,8 @@ namespace MajdataPlay.Types
         public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
-        public bool DisableGCInGameing { get; set; } = true;
+        public bool DisableGCInGameing { get; set; } = false;
+        public int Direct3DMaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;
         public int HoldPoolCapacity { get; set; } = 48;
         public int TouchPoolCapacity { get; set; } = 64;
