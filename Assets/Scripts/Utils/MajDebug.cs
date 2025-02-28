@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -13,6 +14,7 @@ namespace MajdataPlay.Utils
 {
     public static class MajDebug
     {
+        readonly static object _lockObject = new();
         readonly static ConcurrentQueue<GameLog> _logQueue = new();
         readonly static ILogger _unityLogger;
 
@@ -59,8 +61,11 @@ namespace MajdataPlay.Utils
         public static void LogWarning<T>(T obj) => Log(obj, LogType.Warning);
         public static void OnApplicationQuit()
         {
-            foreach (var log in _logQueue)
-                File.AppendAllText(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
+            lock(_lockObject)
+            {
+                foreach (var log in _logQueue)
+                    File.AppendAllText(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
+            }
         }
         static string GetStackTrack()
         {
@@ -68,7 +73,7 @@ namespace MajdataPlay.Utils
         }
         static void StartLogWritebackTask()
         {
-            Task.Run(async () =>
+            Task.Factory.StartNew(() =>
             {
                 var token = MajEnv.GlobalCT;
                 var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
@@ -85,18 +90,21 @@ namespace MajdataPlay.Utils
                         return;
                     try
                     {
-                        while (_logQueue.TryDequeue(out var log))
+                        lock(_lockObject)
                         {
-                            var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
-                            await File.AppendAllTextAsync(MajEnv.LogPath, msg);
+                            while (_logQueue.TryDequeue(out var log))
+                            {
+                                var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
+                                File.AppendAllText(MajEnv.LogPath, msg);
+                            }
                         }
                     }
                     finally
                     {
-                        await Task.Delay(100);
+                        Thread.Sleep(100);
                     }
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
         }
         struct GameLog
         {
