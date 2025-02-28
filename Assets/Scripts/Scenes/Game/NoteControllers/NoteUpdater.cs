@@ -66,8 +66,10 @@ namespace MajdataPlay.Game
         internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in ArrayHelper.ToEnumerable(_updatableComponents))
+            var len = _updatableComponents.Length;
+            for (var i = 0; i < len; i++)
             {
+                var component = _updatableComponents[i];
                 try
                 {
                     component.OnUpdate();
@@ -77,6 +79,7 @@ namespace MajdataPlay.Game
                     MajDebug.LogException(e);
                 }
             }
+
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
             _updateElapsedMs = timeSpan.TotalMilliseconds;
@@ -84,8 +87,10 @@ namespace MajdataPlay.Game
         internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in ArrayHelper.ToEnumerable(_fixedUpdatableComponents))
+            var len = _fixedUpdatableComponents.Length;
+            for (var i = 0; i < len; i++)
             {
+                var component = _fixedUpdatableComponents[i];
                 try
                 {
                     component.OnFixedUpdate();
@@ -102,8 +107,10 @@ namespace MajdataPlay.Game
         internal virtual void OnLateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            foreach (var component in ArrayHelper.ToEnumerable(_lateUpdatableComponents))
+            var len = _lateUpdatableComponents.Length;
+            for (var i = 0; i < len; i++)
             {
+                var component = _lateUpdatableComponents[i];
                 try
                 {
                     component.OnLateUpdate();
@@ -113,6 +120,7 @@ namespace MajdataPlay.Game
                     MajDebug.LogException(e);
                 }
             }
+
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
             _lateUpdateElapsedMs = timeSpan.TotalMilliseconds;
