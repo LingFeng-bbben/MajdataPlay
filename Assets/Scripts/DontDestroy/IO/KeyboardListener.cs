@@ -110,7 +110,7 @@ namespace MajdataPlay.IO
             button.RemoveSubscriber(checker);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        int GetIndexByButtonRingZone(ButtonRingZone btnZone)
+        static int GetIndexByButtonRingZone(ButtonRingZone btnZone)
         {
             return btnZone switch
             {

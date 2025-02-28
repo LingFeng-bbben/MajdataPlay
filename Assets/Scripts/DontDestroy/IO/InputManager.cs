@@ -439,23 +439,22 @@ namespace MajdataPlay.IO
         }
         void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
         {
-            var executionQueue = IOManager.ExecutionQueue;
             var logContent = $"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {msg.Trim()}";
             switch (eventType)
             {
                 case IOEventType.Attach:
                 case IOEventType.Debug:
-                    executionQueue.Enqueue(() => MajDebug.Log(logContent));
+                    MajDebug.Log(logContent);
                     break;
                 case IOEventType.ConnectionError:
                 case IOEventType.SerialDeviceReadError:
                 case IOEventType.HidDeviceReadError:
                 case IOEventType.ReconnectionError:
                 case IOEventType.InvalidDevicePropertyError:
-                    executionQueue.Enqueue(() => MajDebug.LogError(logContent));
+                    MajDebug.LogError(logContent);
                     break;
                 case IOEventType.Detach:
-                    executionQueue.Enqueue(() => MajDebug.LogWarning(logContent));
+                    MajDebug.LogWarning(logContent);
                     break;
             }
         }
@@ -573,6 +572,25 @@ namespace MajdataPlay.IO
                 return true;
             }
             return false;
+        }
+
+        static void OnTouchPanelStateChanged(TouchPanelZone zone, InputState state)
+        {
+            _touchPanelInputBuffer.Enqueue(new()
+            {
+                Index = (int)zone,
+                State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                Timestamp = DateTime.Now
+            });
+        }
+        static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
+        {
+            _buttonRingInputBuffer.Enqueue(new()
+            {
+                Index = GetIndexByButtonRingZone(zone),
+                State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                Timestamp = DateTime.Now
+            });
         }
     }
     class SensorRenderer

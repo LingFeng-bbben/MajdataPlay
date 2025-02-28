@@ -531,7 +531,7 @@ namespace MajdataPlay.Game.Notes
                         return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
                 }
             }
-            MajDebug.Log($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
+            //MajDebug.Log($"Hold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
             return result;
         }
         JudgeGrade EndJudge_Classic(in JudgeGrade result)
