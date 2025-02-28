@@ -29,20 +29,26 @@ namespace MajdataPlay.Game.Types
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnUpdate()
         {
+            if (_onUpdate is null)
+                return;
             if (IsExecutable())
-                base.OnUpdate();
+                _onUpdate();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnLateUpdate()
         {
+            if (_onLateUpdate is null)
+                return;
             if (IsExecutable())
-                base.OnLateUpdate();
+                _onLateUpdate();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnFixedUpdate()
         {
+            if (_onFixedUpdate is null)
+                return;
             if (IsExecutable())
-                base.OnFixedUpdate();
+                _onFixedUpdate();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExecutable()

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Buffers
 {
-    public class ComponentInfo<TComponent>: ComponentInfo
+    public abstract class ComponentInfo<TComponent>: ComponentInfo
     {
         public new TComponent? Component => (TComponent?)base.Component;
         public ComponentInfo(TComponent? component): base(component)
@@ -20,7 +20,7 @@ namespace MajdataPlay.Buffers
             
         }
     }
-    public class ComponentInfo
+    public abstract class ComponentInfo
     {
         public object? Component { get; init; }
         public bool IsUpdatable { get; init; }
@@ -71,25 +71,10 @@ namespace MajdataPlay.Buffers
             IsLateUpdatable = _onLateUpdate is not null;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void OnUpdate()
-        {
-            if (_onUpdate is null)
-                return;
-            _onUpdate();
-        }
+        public abstract void OnUpdate();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void OnLateUpdate()
-        {
-            if (_onLateUpdate is null)
-                return;
-            _onLateUpdate();
-        }
+        public abstract void OnLateUpdate();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void OnFixedUpdate()
-        {
-            if (_onFixedUpdate is null)
-                return;
-            _onFixedUpdate();
-        }
+        public abstract void OnFixedUpdate();
     }
 }

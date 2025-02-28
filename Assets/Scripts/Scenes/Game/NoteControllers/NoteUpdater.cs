@@ -68,10 +68,7 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.IsExecutable())
-                        component.OnUpdate();
-                    else
-                        continue;
+                    component.OnUpdate();
                 }
                 catch (Exception e)
                 {
@@ -89,10 +86,7 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.IsExecutable())
-                        component.OnFixedUpdate();
-                    else
-                        continue;
+                    component.OnFixedUpdate();
                 }
                 catch (Exception e)
                 {
@@ -110,10 +104,7 @@ namespace MajdataPlay.Game
             {
                 try
                 {
-                    if (component.IsExecutable())
-                        component.OnLateUpdate();
-                    else
-                        continue;
+                    component.OnLateUpdate();
                 }
                 catch (Exception e)
                 {
