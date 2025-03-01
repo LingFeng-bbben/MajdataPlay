@@ -636,6 +636,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
       "Content": "グローバルボリュームの制御"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Empty Chart",
+      "Content": "この難易度は存在しません"
     }
   ]
 }

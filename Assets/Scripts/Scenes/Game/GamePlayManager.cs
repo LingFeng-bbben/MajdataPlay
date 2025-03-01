@@ -340,20 +340,9 @@ namespace MajdataPlay.Game
             {
                 inputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
-                var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "5");
-                MajInstances.SceneSwitcher.SetLoadingText($"{s}, {ss}", Color.red);
-                var waitTime = 0f;
-                do
-                {
-                    await UniTask.Yield();
-                    waitTime += Time.deltaTime;
-                    if(MajInstances.InputManager.CheckButtonStatus(SensorArea.P1, SensorStatus.On))
-                    {
-                        break;
-                    }
-
-                } while (waitTime <= 5);
-                
+                //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
+                MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
+                await UniTask.Delay(1000);
                 BackToList().Forget();
             }
             catch(HttpTransmitException httpEx)
@@ -948,7 +937,7 @@ namespace MajdataPlay.Game
 
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             
-            MajInstances.SceneSwitcher.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List",false);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {

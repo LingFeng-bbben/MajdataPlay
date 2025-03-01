@@ -741,6 +741,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
       "Content": "控制全局音量"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Empty Chart",
+      "Content": "此难度为空"
     }
   ]
 }

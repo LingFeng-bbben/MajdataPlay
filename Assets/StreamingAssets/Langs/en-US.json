@@ -701,6 +701,11 @@
       "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
       "Content": "Master audio"
+    },
+    {
+      "Type": "OTHER_MAJTEXT",
+      "Origin": "Empty Chart",
+      "Content": "This level is empty"
     }
   ]
 }

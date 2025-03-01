@@ -66,7 +66,7 @@ namespace MajdataPlay.TotalResult
 
             MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
             MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-            MajInstances.SceneSwitcher.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
             return;
         }
     }

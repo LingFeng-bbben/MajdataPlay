@@ -114,7 +114,7 @@ namespace MajdataPlay.Setting
             {
                 //refresh some setting here
                 MajInstances.AudioManager.ReadVolumeFromSettings();
-                MajInstances.SceneSwitcher.SwitchScene("List");
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
                 return;
             }
             

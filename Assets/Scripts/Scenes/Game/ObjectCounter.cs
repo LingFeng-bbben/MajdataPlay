@@ -51,8 +51,6 @@ namespace MajdataPlay.Game
 
         Text _bgInfoHeader;
         Text _bgInfoText;
-
-        private Text _table;
         private Text _judgeResultCount;
 
         public double[] _accRate = new double[5]
@@ -227,7 +225,6 @@ namespace MajdataPlay.Game
         {
             Majdata<ObjectCounter>.Instance = this;
             _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
-            _table = GameObject.Find("ObjectCount").GetComponent<Text>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
             _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();

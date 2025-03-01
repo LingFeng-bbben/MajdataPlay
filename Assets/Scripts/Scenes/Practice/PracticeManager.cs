@@ -115,7 +115,7 @@ public class PracticeManager : MonoBehaviour
                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                     break;
                 case SensorArea.A5:
-                    MajInstances.SceneSwitcher.SwitchScene("List");
+                    MajInstances.SceneSwitcher.SwitchScene("List",false);
                     break;
             }
             return;
