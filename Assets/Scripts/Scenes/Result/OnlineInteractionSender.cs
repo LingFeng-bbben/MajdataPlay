@@ -28,7 +28,12 @@ namespace MajdataPlay.Result
         public bool Init(ISongDetail song)
         {
             if (song is not OnlineSongDetail onlineDetail)
+            {
+                infotext.text = "";
+                thumb.gameObject.SetActive(false);
                 return false;
+            }
+                
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null)
             {
