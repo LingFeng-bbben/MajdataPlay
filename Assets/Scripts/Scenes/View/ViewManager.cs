@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 #nullable enable
@@ -73,7 +74,8 @@ namespace MajdataPlay.View
             }
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
-            Screen.SetResolution(1920, 1080, false);
+            PlayerSettings.resizableWindow = true;
+            //Screen.SetResolution(1920, 1080, false);
         }
         void Start()
         {
