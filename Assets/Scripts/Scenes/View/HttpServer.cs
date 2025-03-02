@@ -9,12 +9,16 @@ using MajdataPlay.Utils;
 using System.Threading;
 using System.Net.Http;
 using System.Text;
+using System.Net.WebSockets;
+using WebSocketSharp.Server;
+using MajdataPlay.View.Services;
 
 #nullable enable
 namespace MajdataPlay.View
 {
     internal class HttpServer: MajComponent
     {
+        WebSocketServer _wsServer = new();
         HttpListener _httpServer = new();
         int _httpPort = 8013;
         readonly CancellationTokenSource _cts = new();
@@ -29,9 +33,17 @@ namespace MajdataPlay.View
             {
                 _httpPort = rd.Next(1000, 65535);
             }
-            _httpServer.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-            _httpServer.Prefixes.Add($"http://localhost:{_httpPort}/");
-            _httpServer.Start();
+            _wsServer = new (_httpPort);
+            _wsServer.AddWebSocketService<PlayerController>("/api/play");
+            _wsServer.AddWebSocketService<PlayerController>("/api/resume");
+            _wsServer.AddWebSocketService<PlayerController>("/api/stop");
+            _wsServer.AddWebSocketService<PlayerController>("/api/pause");
+            _wsServer.AddWebSocketService<PlayerController>("/api/state");
+            _wsServer.AddWebSocketService<PlayerController>("/api/timestramp");
+            _wsServer.Start();
+            //_httpServer.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+            //_httpServer.Prefixes.Add($"http://localhost:{_httpPort}/");
+            //_httpServer.Start();
             StartToListenHttpRequest(_cts.Token);
             StartToListenPipe(_cts.Token);
         }
@@ -198,6 +210,7 @@ namespace MajdataPlay.View
         void OnDestroy()
         {
             _cts.Cancel();
+            _wsServer.Stop();
         }
     }
 }
