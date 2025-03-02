@@ -52,7 +52,7 @@ namespace MajdataPlay.Game
                 var obj = Instantiate(tapEffectPrefab, tapParent);
                 obj.name = $"TapEffect_{i + 1}";
                 obj.transform.rotation = rotation;
-                if(_gpManager.IsClassicMode)
+                if(_gpManager != null &&_gpManager.IsClassicMode)
                     obj.transform.GetChild(0).localScale = new Vector3(1.4f, 1.4f, 0);
                 var displayer = obj.GetComponent<TapEffectDisplayer>();
                 displayer.DistanceRatio = MajInstances.Setting.Display.OuterJudgeDistance;

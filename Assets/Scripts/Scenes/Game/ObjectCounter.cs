@@ -316,7 +316,8 @@ namespace MajdataPlay.Game
             _outline = Majdata<OutlineLoader>.Instance!;
             _xxlbController = Majdata<XxlbAnimationController>.Instance!;
             _gpManager = Majdata<GamePlayManager>.Instance!;
-            
+
+            if (MajEnv.Mode == RunningMode.View) return;
 
             if (_gameInfo.IsDanMode)
             {
@@ -782,7 +783,7 @@ namespace MajdataPlay.Game
         void UpdateMainOutput()
         {
             var bgInfo = MajInstances.Setting.Game.BGInfo;
-            if (_gameInfo.IsDanMode)
+            if (MajEnv.Mode != RunningMode.View &&_gameInfo.IsDanMode)
             {
                 _bgInfoText.text = _gameInfo.CurrentHP.ToString();
                 _bgInfoText.color = ComboColor;
