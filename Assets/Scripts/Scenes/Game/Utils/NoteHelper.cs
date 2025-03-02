@@ -36,13 +36,11 @@ namespace MajdataPlay.Game.Utils
         {
             var group = area.GetGroup();
             var index = area.GetIndex();
-            /// <summary>
-            /// AreaDistance: 
-            /// C:   0
-            /// E:   3.1
-            /// B:   2.21
-            /// A,D: 4.8
-            /// </summary>
+            // AreaDistance: 
+            // C:   0
+            // E:   3.1
+            // B:   2.21
+            // A,D: 4.8
             switch (group)
             {
                 case SensorGroup.A:

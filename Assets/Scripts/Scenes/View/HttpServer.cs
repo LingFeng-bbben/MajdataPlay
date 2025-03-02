@@ -8,6 +8,8 @@ using System.IO.Pipes;
 using MajdataPlay.Utils;
 using System.Threading;
 using System.Net.Http;
+using System.Text;
+
 #nullable enable
 namespace MajdataPlay.View
 {
@@ -142,6 +144,12 @@ namespace MajdataPlay.View
                     rsp.StatusCode = 200;
                     break;
             }
+        }
+
+        async Task LoadRequestHandleAsync(HttpListenerRequest req, HttpListenerResponse rsp)
+        {
+            using var reader = new StreamReader(req.InputStream);
+            var content = await reader.ReadToEndAsync();
         }
         async void StartToListenPipe(CancellationToken token = default)
         {
