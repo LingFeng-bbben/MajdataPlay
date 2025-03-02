@@ -55,6 +55,7 @@ namespace MajdataPlay
         Material _breakMaterial;
         [SerializeField]
         Material _defaultMaterial;
+        public bool IsEnterView = false;
         static GameManager()
         {
             _globalCTS = new();
@@ -167,13 +168,21 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
-            //EnterView();
-            //return;
+            if (IsEnterView)
+            {
+                EnterView();
+                return;
+            }
             foreach (var arg in Environment.GetCommandLineArgs())
             {
                 if (arg == "--test-mode")
                 {
                     EnterTestMode();
+                    return;
+                }
+                if (arg == "--view-mode")
+                {
+                    EnterView();
                     return;
                 }
             }
