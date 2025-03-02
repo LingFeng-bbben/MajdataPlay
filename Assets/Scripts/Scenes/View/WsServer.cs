@@ -68,10 +68,20 @@ namespace MajdataPlay.View
                     case MajWsRequestType.Play:
                         var payload1 = JsonSerializer.Deserialize<MajWsRequestPlay>(payloadjson);
                         if (payload1 is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
+                        //we need offset here
                         await _viewManager.ParseAndLoadChartAsync(payload1.StartAt, payload1.SimaiFumen);
                         await _viewManager.PlayAsync();
                         Send(Response(MajWsResponseType.PlayStarted));
                         break;
+                    case MajWsRequestType.Pause:
+                        await _viewManager.PauseAsync();
+                        Send(Response());
+                        break;
+                    case MajWsRequestType.Stop:
+                        await _viewManager.StopAsync();
+                        Send(Response());
+                        break;
+                    //TODO: Status
                     default:
                         Send(Response(MajWsResponseType.Error,"Not Supported"));
                         break;
