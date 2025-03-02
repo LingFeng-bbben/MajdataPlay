@@ -24,7 +24,8 @@ namespace MajdataPlay.Game
             _gpManager = Majdata<GamePlayManager>.Instance!;
             _renderer = GetComponent<SpriteRenderer>();
             _renderer.sprite = MajInstances.SkinManager.SelectedSkin.Outline;
-            _effectAvailable = MajInstances.SkinManager.SelectedSkin.IsOutlineAvailable && _gpManager.IsClassicMode;
+            if(MajEnv.Mode != RunningMode.View)
+                _effectAvailable = MajInstances.SkinManager.SelectedSkin.IsOutlineAvailable && _gpManager.IsClassicMode;
             if (_effectAvailable)
                 SetColor();
         }

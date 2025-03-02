@@ -44,6 +44,8 @@ namespace MajdataPlay.View
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
         public float ThisFrameSec => _thisFrameSec;
         public float ThisFixedUpdateSec => _thisFrameSec;
+        public float AudioTimeNoOffset;
+
 
         float _timerStartAt = 0f;
 
@@ -55,7 +57,7 @@ namespace MajdataPlay.View
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
         string? _videoPath = null;
 
-        HttpServer _httpServer;
+        WsServer _httpServer;
         NoteLoader _noteLoader;
         BGManager _bgManager;
 
@@ -80,17 +82,18 @@ namespace MajdataPlay.View
         void Start()
         {
             _bgManager = Majdata<BGManager>.Instance!;
-            _httpServer = Majdata<HttpServer>.Instance!;
+            _httpServer = Majdata<WsServer>.Instance!;
             _noteLoader = Majdata<NoteLoader>.Instance!;
         }
         void Update()
         {
-            switch(_state)
+            //Debug.Log(_timer.UnscaledElapsedSecondsAsFloat);
+            switch (_state)
             {
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
-                    _thisFrameSec += elasped - _timerStartAt;
-                    _timerStartAt = elasped;
+                    _thisFrameSec += elasped - _timerStartAt; // +offset?
+                    AudioTimeNoOffset = elasped - _timerStartAt;
                     break;
             }
         }
@@ -118,8 +121,9 @@ namespace MajdataPlay.View
                     return true;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                MajDebug.LogException(ex);
                 _state = ViewStatus.Error;
                 throw;
             }
@@ -144,9 +148,10 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Paused;
                 return true;
             }
-            catch
+            catch(Exception ex) 
             {
-                _state = ViewStatus.Error;
+                    MajDebug.LogException(ex);
+                    _state = ViewStatus.Error;
                 throw;
             }
         }
@@ -170,8 +175,9 @@ namespace MajdataPlay.View
                 _thisFrameSec = 0;
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                MajDebug.LogException(ex);
                 _state = ViewStatus.Error;
                 throw;
             }
@@ -231,31 +237,39 @@ namespace MajdataPlay.View
             }
             catch (Exception ex)
             {
+                MajDebug.LogException(ex);
                 _errMsg = ex.ToString();
                 _state = ViewStatus.Error;
                 throw;
             }
         }
-        internal async Task ParseAndLoadChartAsync(double startAt)
+        internal async Task ParseAndLoadChartAsync(double startAt, string fumen)
         {
             while (_state is ViewStatus.Busy)
                 await UniTask.Yield();
             _state = ViewStatus.Busy;
             try
             {
-                _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, string.Empty);
+                _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
                 var range = new Range<double>(startAt, double.MaxValue);
                 _chart.Clamp(range);
+                await UniTask.SwitchToMainThread();
                 await _noteLoader.LoadNotesIntoPool(_chart);
                 if(_videoPath is null)
                 {
                     _bgManager.SetBackgroundPic(_bgCover);
                 }
+                else
+                {
+                    _bgManager.SetBackgroundMovie(Path.Combine(CACHE_PATH, "bg.mp4"));
+                }
                 _audioSample!.CurrentSec = startAt;
+                await UniTask.SwitchToThreadPool();
                 _state = ViewStatus.Ready;
             }
             catch (Exception ex)
             {
+                MajDebug.LogException(ex);
                 _errMsg = ex.ToString();
                 _state = ViewStatus.Error;
                 throw;

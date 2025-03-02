@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Utils;
+using MajdataPlay.View;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Video;
@@ -9,6 +10,7 @@ namespace MajdataPlay.Game
     {
         private float playSpeed;
         private GamePlayManager _gpManager;
+        private ViewManager _viewManager;
 
         private SpriteRenderer spriteRender;
 
@@ -28,12 +30,18 @@ namespace MajdataPlay.Game
             spriteRender = GetComponent<SpriteRenderer>();
             videoPlayer = GetComponent<VideoPlayer>();
             _gpManager = Majdata<GamePlayManager>.Instance!;
+            _viewManager = Majdata<ViewManager>.Instance!;
         }
 
         private void Update()
         {
             if (videoPlayer.isPlaying)
-                videoPlayer.externalReferenceTime = _gpManager.AudioTimeNoOffset;
+            {
+                if (MajEnv.Mode == RunningMode.Play)
+                    videoPlayer.externalReferenceTime = _gpManager.AudioTimeNoOffset;
+                if (MajEnv.Mode == RunningMode.View)
+                    videoPlayer.externalReferenceTime = _viewManager.AudioTimeNoOffset;
+            }
             /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
 
             if (delta < -0.01f)
@@ -92,7 +100,14 @@ namespace MajdataPlay.Game
 
             videoPlayer.timeReference = VideoTimeReference.ExternalTime;
 
-            while (_gpManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
+            if (MajEnv.Mode == RunningMode.Play)
+            {
+                while (_gpManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
+            }
+            if (MajEnv.Mode == RunningMode.View)
+            {
+                while (_viewManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
+            }
             while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
             videoPlayer.Play();
             //videoPlayer.time = gamePlayManager.AudioTimeNoOffset;
