@@ -7,7 +7,8 @@ namespace MajdataPlay.View.Types
         public MajWsRequestType requestType {  get; set; }
         public object requestData { get; set; }
     }
-    public enum MajWsRequestType {
+    public enum MajWsRequestType 
+    {
         Reset,
         Load,
         Play,

@@ -44,61 +44,75 @@ namespace MajdataPlay.View
 
     public class MajdataWsService : WebSocketBehavior
     {
+        ViewManager _viewManager = Majdata<ViewManager>.Instance!;
         protected override async void OnMessage(MessageEventArgs e)
         {
             try
             {
-                var _viewManager = Majdata<ViewManager>.Instance!;
                 var req = JsonSerializer.Deserialize<MajWsRequestBase>(e.Data);
                 if (req is null) { Send(Response(MajWsResponseType.Error, "Wrong Format")); ; return; }
                 var payloadjson = req.requestData.ToString();
                 switch (req.requestType)
                 {
                     case MajWsRequestType.Load:
-                        
-                        var payload = JsonSerializer.Deserialize<MajWsRequestLoad>(payloadjson);
-                        if (payload is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
-                        //TODO: Check Exist
-                        var trackbyte = await File.ReadAllBytesAsync(payload.TrackPath);
-                        var bgbyte = await File.ReadAllBytesAsync(payload.ImagePath);
-                        var videobyte = await File.ReadAllBytesAsync(payload.VideoPath);
-                        await _viewManager.LoadAssests(trackbyte, bgbyte, videobyte);
-                        Send(Response());
+                        {
+                            var payload = JsonSerializer.Deserialize<MajWsRequestLoad>(payloadjson);
+                            if (payload is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
+                            //TODO: Check Exist
+                            var trackbyte = await File.ReadAllBytesAsync(payload.TrackPath);
+                            var bgbyte = await File.ReadAllBytesAsync(payload.ImagePath);
+                            var videobyte = await File.ReadAllBytesAsync(payload.VideoPath);
+                            await _viewManager.LoadAssests(trackbyte, bgbyte, videobyte);
+                            Send(Response());
+                        }
                         break;
                     case MajWsRequestType.Play:
-                        var payload1 = JsonSerializer.Deserialize<MajWsRequestPlay>(payloadjson);
-                        if (payload1 is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
-                        //we need offset here
-                        await _viewManager.ParseAndLoadChartAsync(payload1.StartAt, payload1.SimaiFumen);
-                        await _viewManager.PlayAsync();
-                        Send(Response(MajWsResponseType.PlayStarted));
+                        {
+                            var payload = JsonSerializer.Deserialize<MajWsRequestPlay>(payloadjson);
+                            if (payload is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
+                            //we need offset here
+                            await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
+                            await _viewManager.PlayAsync();
+                            Send(Response(MajWsResponseType.PlayStarted));
+                        }
                         break;
                     case MajWsRequestType.Pause:
-                        await _viewManager.PauseAsync();
-                        Send(Response());
+                        {
+                            await _viewManager.PauseAsync();
+                            Send(Response());
+                        }
                         break;
                     case MajWsRequestType.Stop:
-                        await _viewManager.StopAsync();
-                        Send(Response());
+                        {
+                            await _viewManager.StopAsync();
+                            Send(Response());
+                        }
                         break;
                     //TODO: Status
+                    case MajWsRequestType.Status:
+                        {
+                            Send(Response(MajWsResponseType.Ok, ViewManager.Summary));
+                        }
+                        break;
                     default:
                         Send(Response(MajWsResponseType.Error,"Not Supported"));
                         break;
                 }
-            }catch(Exception ex)
+            }
+            catch(Exception ex)
             {
                 Send(Response(MajWsResponseType.Error, ex.ToString()));
                 MajDebug.LogException(ex);
             }
         }
 
-        string Response(MajWsResponseType type = MajWsResponseType.Ok, string message = "") {
+        string Response(MajWsResponseType type = MajWsResponseType.Ok, object? data = null) 
+        {
             var resp = JsonSerializer.Serialize<MajWsResponseBase>(
                 new MajWsResponseBase()
                 {
                     responseType = type,
-                    responseData = message
+                    responseData = data
                 });
             return resp;
         }
