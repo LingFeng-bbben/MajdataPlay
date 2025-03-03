@@ -339,6 +339,174 @@ namespace MajdataPlay.Game
             UpdateState();
             UpdateOutput();
         }
+        internal void Clear()
+        {
+            _judgedTapCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _judgedHoldCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _judgedTouchCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _judgedTouchHoldCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _judgedSlideCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _judgedBreakCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _totalJudgedCount = new()
+            {
+                {JudgeGrade.TooFast, 0 },
+                {JudgeGrade.FastGood, 0 },
+                {JudgeGrade.FastGreat3rd, 0 },
+                {JudgeGrade.FastGreat2nd, 0 },
+                {JudgeGrade.FastGreat, 0 },
+                {JudgeGrade.FastPerfect3rd, 0 },
+                {JudgeGrade.FastPerfect2nd, 0 },
+                {JudgeGrade.Perfect, 0 },
+                {JudgeGrade.LatePerfect2nd, 0 },
+                {JudgeGrade.LatePerfect3rd, 0 },
+                {JudgeGrade.LateGreat, 0 },
+                {JudgeGrade.LateGreat2nd, 0 },
+                {JudgeGrade.LateGreat3rd, 0 },
+                {JudgeGrade.LateGood, 0 },
+                {JudgeGrade.Miss, 0 },
+            };
+            _accRate = new double[5]
+            {
+                0.00,    // classic acc (+)
+                100.00,  // classic acc (-)
+                101.0000,// acc 101(-)
+                100.0000,// acc 100(-)
+                0.0000,  // acc (+)
+            };
+            tapCount = 0;
+            holdCount = 0;
+            slideCount = 0;
+            touchCount = 0;
+            breakCount = 0;
+
+            tapSum = 0;
+            holdSum = 0;
+            slideSum = 0;
+            touchSum = 0;
+            breakSum = 0;
+
+
+            _cPerfectCount = 0;
+            _perfectCount = 0;
+            _greatCount = 0;
+            _goodCount = 0;
+            _missCount = 0;
+
+            _fast = 0;
+            _late = 0;
+
+            _diff = 0; // Note judge diff
+            _diffTimer = 3;
+
+            _totalDXScore = 0;
+            _lostDXScore = 0;
+
+            _combo = 0; // Combo
+            _pCombo = 0; // Perfect Combo
+            _cPCombo = 0; // Critical Perfect
+        }
         internal GameResult GetPlayRecord(ISongDetail song, ChartLevel level)
         {
             //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)

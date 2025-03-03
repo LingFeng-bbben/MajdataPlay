@@ -64,6 +64,11 @@ namespace MajdataPlay.Game.Notes
                 queue.RemoveAt(0);
             Refresh();
         }
+        internal void Clear()
+        {
+            queue.Clear();
+            Refresh();
+        }
         void Refresh()
         {
             if (queue.IsEmpty() || queue.Count < 2)

@@ -383,6 +383,19 @@ namespace MajdataPlay.Game
                 _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
             });
         }
+        internal void Clear()
+        {
+            _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
+            foreach(var sfx in _noteSFXs)
+            {
+                sfx.Stop();
+            }
+            for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+            {
+                _noteSFXPlaybackRequests[i] = false;
+            }
+            _isTouchHoldRiserPlaying = false;
+        }
         public void PlayTouchSound()
         {
             _noteSFXPlaybackRequests[TOUCH] = true;

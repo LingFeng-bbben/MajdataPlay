@@ -25,6 +25,11 @@ namespace MajdataPlay.Game
                 _noteTimeProvider = Majdata<ViewManager>.Instance!;
             }
         }
+        internal override void Clear()
+        {
+            base.Clear();
+            _queueInfos = Array.Empty<SlideQueueInfo>();
+        }
         internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
             if (infos is null)

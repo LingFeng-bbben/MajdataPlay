@@ -127,5 +127,42 @@ namespace MajdataPlay.Game
             eachLinePool?.Destroy();
             Majdata<NotePoolManager>.Free();
         }
+        internal void Clear()
+        {
+            tapPool?.Destroy();
+            holdPool?.Destroy();
+            touchPool?.Destroy();
+            touchHoldPool?.Destroy();
+            eachLinePool?.Destroy();
+
+            //Transform[] children = new Transform[5]
+            //{
+            //    transform.GetChild(0),
+            //    transform.GetChild(1),
+            //    transform.GetChild(4),
+            //    transform.GetChild(5),
+            //    transform.GetChild(6)
+            //};
+
+            //foreach(var child in children)
+            //{
+
+            //}
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                var childCountInChild = child.childCount;
+                for (var ii = 0; ii < childCountInChild; ii++)
+                {
+                    var childInChild = child.GetChild(ii);
+                    Destroy(childInChild.gameObject);
+                }
+            }
+            tapInfos.Clear();
+            holdInfos.Clear();
+            touchInfos.Clear();
+            touchHoldInfos.Clear();
+            eachLineInfos.Clear();
+        }
     }
 }
