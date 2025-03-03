@@ -105,7 +105,20 @@ namespace MajdataPlay.View
         {
             try
             {
-                if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(e.Data,out var r, JSON_READER_OPTIONS) || 
+                var json = string.Empty;
+                if (e.IsText)
+                {
+                    json = e.Data;
+                }
+                else if(e.IsBinary)
+                {
+                    json = Encoding.UTF8.GetString(e.RawData);
+                }
+                else
+                {
+                    return;
+                }
+                if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(json,out var r, JSON_READER_OPTIONS) || 
                     r is null)
                 {
                     Error("Wrong Fromat");
