@@ -55,6 +55,8 @@ namespace MajdataPlay.View
         static float _thisFrameSec = 0f;
         static float _audioTimeNoOffset = 0f;
 
+        float _playbackSpeed = 1f;
+
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
         string? _videoPath = null;
@@ -100,13 +102,13 @@ namespace MajdataPlay.View
             {
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
-                    _thisFrameSec = elasped - _timerStartAt - Offset;
+                    _thisFrameSec = (elasped - _timerStartAt - Offset) * _playbackSpeed;
                     //_audioTimeNoOffset = elasped - _timerStartAt;
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
                     _noteAudioManager.OnUpdate();
                     if(_audioSample != null)
-                        _audioTimeNoOffset = (float)_audioSample.CurrentSec;
+                        _audioTimeNoOffset = (float)_audioSample.CurrentSec * _playbackSpeed;
                     break;
             }
         }
@@ -122,6 +124,10 @@ namespace MajdataPlay.View
         }
         internal async UniTask<bool> PlayAsync()
         {
+            return await PlayAsync(_playbackSpeed);
+        }
+        internal async UniTask<bool> PlayAsync(float speed)
+        {
             switch(_state)
             {
                 case ViewStatus.Ready:
@@ -135,16 +141,16 @@ namespace MajdataPlay.View
                 while (_state is ViewStatus.Busy)
                     await UniTask.Yield();
                 _state = ViewStatus.Busy;
+                _playbackSpeed = speed;
                 await UniTask.SwitchToMainThread();
                 await UniTask.Yield();
                 _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat- (float)_audioSample!.CurrentSec;
                 _state = ViewStatus.Playing;
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
+                _audioSample.Speed = speed;
                 _audioSample!.Play();
-                _bgManager.PlayVideo(1);
+                _bgManager.PlayVideo(speed);
                 await UniTask.SwitchToThreadPool();
-                if (_state == ViewStatus.Paused)
-                    return true;
                 return true;
             }
             catch (Exception ex)

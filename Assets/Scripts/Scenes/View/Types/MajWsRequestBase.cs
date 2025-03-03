@@ -11,6 +11,7 @@ namespace MajdataPlay.View.Types
     {
         Reset,
         Load,
+        Parse,
         Play,
         Pause,
         Resume,

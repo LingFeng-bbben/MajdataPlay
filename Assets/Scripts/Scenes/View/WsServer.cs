@@ -132,6 +132,19 @@ namespace MajdataPlay.View
                             }
                         }
                         break;
+                    case MajWsRequestType.Parse:
+                        {
+                            if (!Serializer.Json.TryDeserialize<MajWsRequestParse?>(payloadjson, out var p) || p is null)
+                            {
+                                Error("Wrong Fromat");
+                                return;
+                            }
+                            var payload = (MajWsRequestParse)p;
+                            _viewManager.Offset = (float)payload.Offset;
+                            await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
+                            Response();
+                        }
+                        break;
                     case MajWsRequestType.Play:
                         {
                             if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p) || p is null)
@@ -140,11 +153,7 @@ namespace MajdataPlay.View
                                 return;
                             }
                             var payload = (MajWsRequestPlay)p;
-                            _viewManager.Offset = (float)payload.Offset;
-                            Response();
-                            await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
-                            Response();
-                            await _viewManager.PlayAsync();
+                            await _viewManager.PlayAsync(payload.Speed);
                             Response(MajWsResponseType.PlayStarted);
                         }
                         break;

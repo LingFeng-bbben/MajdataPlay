@@ -1,6 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace MajdataPlay.View.Types
 {
-    internal readonly struct MajWsRequestPlay
+    internal readonly struct MajWsRequestParse
     {
         public double StartAt { get; init; }
         public string SimaiFumen { get; init; }
