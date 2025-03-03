@@ -1,9 +1,9 @@
 namespace MajdataPlay.View.Types
 {
-    public partial class MajWsRequestPlay
+    internal readonly struct MajWsRequestPlay
     {
-        public double StartAt {  get; set; }
-        public string SimaiFumen {  get; set; }
+        public double StartAt { get; init; }
+        public string SimaiFumen { get; init; }
         //TODO: speed,offset
     }
 }

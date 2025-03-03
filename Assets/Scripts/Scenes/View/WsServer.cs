@@ -11,6 +11,7 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 using MajdataPlay.View.Types;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 
 #nullable enable
 namespace MajdataPlay.View
@@ -45,76 +46,105 @@ namespace MajdataPlay.View
     public class MajdataWsService : WebSocketBehavior
     {
         ViewManager _viewManager = Majdata<ViewManager>.Instance!;
+        readonly static JsonSerializerOptions JSON_READER_OPTIONS = new()
+        {
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            },
+        };
         protected override async void OnMessage(MessageEventArgs e)
         {
             try
             {
-                var req = JsonSerializer.Deserialize<MajWsRequestBase>(e.Data);
-                if (req is null) { Send(Response(MajWsResponseType.Error, "Wrong Format")); ; return; }
-                var payloadjson = req.requestData.ToString();
+                
+                if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(e.Data,out var r, JSON_READER_OPTIONS) || 
+                    r is null)
+                {
+                    await ErrorAsync("Wrong Fromat");
+                    return;
+                }
+                var req = (MajWsRequestBase)r; 
+                var payloadjson = req.requestData?.ToString() ?? string.Empty;
                 switch (req.requestType)
                 {
                     case MajWsRequestType.Load:
                         {
-                            var payload = JsonSerializer.Deserialize<MajWsRequestLoad>(payloadjson);
-                            if (payload is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
+                            if (!Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson,out var p) || p is null) 
+                            {
+                                await ErrorAsync("Wrong Fromat");
+                                return; 
+                            }
+                            var payload = (MajWsRequestLoad)p;
                             //TODO: Check Exist
                             var trackbyte = await File.ReadAllBytesAsync(payload.TrackPath);
                             var bgbyte = await File.ReadAllBytesAsync(payload.ImagePath);
                             var videobyte = await File.ReadAllBytesAsync(payload.VideoPath);
                             await _viewManager.LoadAssests(trackbyte, bgbyte, videobyte);
-                            Send(Response());
+                            await ResponseAsync();
                         }
                         break;
                     case MajWsRequestType.Play:
                         {
-                            var payload = JsonSerializer.Deserialize<MajWsRequestPlay>(payloadjson);
-                            if (payload is null) { Send(Response(MajWsResponseType.Error, "Wrong Fromat")); ; return; }
+                            if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p) || p is null)
+                            {
+                                await ErrorAsync("Wrong Fromat");
+                                return;
+                            }
+                            var payload = (MajWsRequestPlay)p;
                             //we need offset here
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             await _viewManager.PlayAsync();
-                            Send(Response(MajWsResponseType.PlayStarted));
+                            await ResponseAsync(MajWsResponseType.PlayStarted);
                         }
                         break;
                     case MajWsRequestType.Pause:
                         {
                             await _viewManager.PauseAsync();
-                            Send(Response());
+                            await ResponseAsync();
                         }
                         break;
                     case MajWsRequestType.Stop:
                         {
                             await _viewManager.StopAsync();
-                            Send(Response());
+                            await ResponseAsync();
                         }
                         break;
                     //TODO: Status
                     case MajWsRequestType.Status:
                         {
-                            Send(Response(MajWsResponseType.Ok, ViewManager.Summary));
+                            await ResponseAsync(MajWsResponseType.Ok, ViewManager.Summary);
                         }
                         break;
                     default:
-                        Send(Response(MajWsResponseType.Error,"Not Supported"));
+                        await ErrorAsync("Not Supported");
                         break;
                 }
             }
             catch(Exception ex)
             {
-                Send(Response(MajWsResponseType.Error, ex.ToString()));
+                await ErrorAsync(ex);
                 MajDebug.LogException(ex);
             }
         }
-
-        string Response(MajWsResponseType type = MajWsResponseType.Ok, object? data = null) 
+        async Task ErrorAsync<T>(T exception) where T : Exception
         {
-            var resp = JsonSerializer.Serialize<MajWsResponseBase>(
-                new MajWsResponseBase()
-                {
-                    responseType = type,
-                    responseData = data
-                });
-            return resp;
+            await ResponseAsync(MajWsResponseType.Error, exception.ToString());
+        }
+        async Task ErrorAsync(string errMsg)
+        {
+            await ResponseAsync(MajWsResponseType.Error, errMsg);
+        }
+        async Task ResponseAsync(MajWsResponseType type = MajWsResponseType.Ok, object? data = null) 
+        {
+            var stream = new MemoryStream();
+            var rsp = new MajWsResponseBase()
+            {
+                responseType = type,
+                responseData = data
+            };
+            await JsonSerializer.SerializeAsync(stream,rsp,JSON_READER_OPTIONS);
+            SendAsync(stream, (int)stream.Length, null);
         }
     }
 

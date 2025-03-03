@@ -2,10 +2,10 @@ using System;
 
 namespace MajdataPlay.View.Types
 {
-    public partial class MajWsRequestBase
+    internal readonly struct MajWsRequestBase
     {
-        public MajWsRequestType requestType {  get; set; }
-        public object requestData { get; set; }
+        public MajWsRequestType requestType { get; init; }
+        public object requestData { get; init; }
     }
     public enum MajWsRequestType 
     {

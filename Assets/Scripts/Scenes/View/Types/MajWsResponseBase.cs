@@ -1,9 +1,9 @@
 namespace MajdataPlay.View.Types
 {
-    public partial class MajWsResponseBase
+    internal readonly struct MajWsResponseBase
     {
-        public MajWsResponseType responseType { get; set; }
-        public object responseData { get; set; }
+        public MajWsResponseType responseType { get; init; }
+        public object responseData { get; init; }
     }
     public enum MajWsResponseType
     {
