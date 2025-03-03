@@ -230,6 +230,7 @@ namespace MajdataPlay.View
             _noteManager.Clear();
             _notePoolManager.Clear();
             _noteAudioManager.Clear();
+            Majdata<NoteEffectPool>.Instance?.Reset();
             Majdata<ObjectCounter>.Instance?.Clear();
             Majdata<MultTouchHandler>.Instance?.Clear();
         }

@@ -28,6 +28,29 @@ namespace MajdataPlay.Game
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
         GamePlayManager _gpManager;
+        internal void Reset()
+        {
+            foreach (var effect in _tapJudgeEffects)
+            { 
+                effect.Reset(); 
+            }
+            foreach (var effect in _touchHoldJudgeEffects)
+            {
+                effect.Reset();
+            }
+            foreach (var effect in _touchJudgeEffects)
+            {
+                effect.Reset();
+            }
+            foreach (var effect in _holdEffects)
+            {
+                effect.Reset();
+            }
+            foreach (var effect in _touchHoldEffects)
+            {
+                effect.Reset();
+            }
+        }
         void Awake()
         {
             Majdata<NoteEffectPool>.Instance = this;
