@@ -100,10 +100,12 @@ namespace MajdataPlay.View
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
                     _thisFrameSec = elasped - _timerStartAt - Offset;
-                    _audioTimeNoOffset = elasped - _timerStartAt;
+                    //_audioTimeNoOffset = elasped - _timerStartAt;
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
                     _noteAudioManager.OnUpdate();
+                    if(_audioSample != null)
+                        _audioTimeNoOffset = (float)_audioSample.CurrentSec;
                     break;
             }
         }
@@ -117,7 +119,7 @@ namespace MajdataPlay.View
                     break;
             }
         }
-        internal async UniTask<bool> PlayAsync()
+        internal async UniTask<bool> PlayAsync(double startAt)
         {
             switch(_state)
             {
@@ -135,7 +137,7 @@ namespace MajdataPlay.View
                 await UniTask.SwitchToMainThread();
                 _noteManager.InitializeUpdater();
                 await UniTask.Yield();
-                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat;
+                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat- (float)startAt;
                 _state = ViewStatus.Playing;
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample!.Play();
@@ -230,32 +232,23 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Idle;
             }
         }
-        internal async Task LoadAssests(byte[] audioTrack, byte[] bg, byte[]? pv)
+        internal async Task LoadAssests(string audioPath, string bgPath, string? pvPath)
         {
             while (_state is ViewStatus.Busy)
                 await UniTask.Yield();
             _state = ViewStatus.Busy;
             try
             {
-                var audioTrackPath = Path.Combine(CACHE_PATH, "audioTrack.track");
-                var videoPath = Path.Combine(CACHE_PATH, "bg.mp4");
-
-                await File.WriteAllBytesAsync(audioTrackPath, audioTrack);
-
-                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioTrackPath);
-                var cover = await SpriteLoader.LoadAsync(bg);
-
-                if (pv is null || pv.Length == 0)
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath);
+                if (File.Exists(bgPath))
                 {
-                    _videoPath = string.Empty;
+                    var cover = await SpriteLoader.LoadAsync(bgPath);
+                    _bgCover = cover;
                 }
-                else
-                {
-                    await File.WriteAllBytesAsync(videoPath, pv);
-                    _videoPath = videoPath;
-                }
+                if (File.Exists(pvPath))
+                    _videoPath = pvPath;
                 _audioSample = sample;
-                _bgCover = cover;
+
                 _state = ViewStatus.Loaded;
             }
             catch (Exception ex)

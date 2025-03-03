@@ -113,11 +113,7 @@ namespace MajdataPlay.View
                                 return; 
                             }
                             var payload = (MajWsRequestLoad)p;
-                            //TODO: Check Exist
-                            var trackbyte = await File.ReadAllBytesAsync(payload.TrackPath);
-                            var bgbyte = await File.ReadAllBytesAsync(payload.ImagePath);
-                            var videobyte = await File.ReadAllBytesAsync(payload.VideoPath);
-                            await _viewManager.LoadAssests(trackbyte, bgbyte, videobyte);
+                            await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
                             Response();
                         }
                         break;
@@ -133,7 +129,7 @@ namespace MajdataPlay.View
                             Response();
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             Response();
-                            await _viewManager.PlayAsync();
+                            await _viewManager.PlayAsync(payload.StartAt);
                             Response(MajWsResponseType.PlayStarted);
                         }
                         break;
