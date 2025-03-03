@@ -267,7 +267,7 @@ namespace MajdataPlay.View
                 throw;
             }
         }
-        internal async Task LoadAssests(byte[] audio, byte[] bg, byte[]? pv)
+        /*internal async Task LoadAssests(byte[] audio, byte[] bg, byte[]? pv)
         {
             while (_state is ViewStatus.Busy)
                 await UniTask.Yield();
@@ -301,7 +301,7 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Error;
                 throw;
             }
-        }
+        }*/
         internal async Task ParseAndLoadChartAsync(double startAt, string fumen)
         {
             while (_state is ViewStatus.Busy)
@@ -330,7 +330,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovie(Path.Combine(CACHE_PATH, "bg.mp4"));
+                    await _bgManager.SetBackgroundMovie(_videoPath);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);

@@ -41,10 +41,11 @@ namespace MajdataPlay.View
 
         void OnDestroy()
         {
+            _webSocket.RemoveWebSocketService("/majdata");
             _webSocket.Stop();
         }
     }
-    public class MajdataWsService : WebSocketBehavior
+    public class MajdataWsService : WebSocketBehavior, IDisposable
     {
         ViewManager _viewManager = Majdata<ViewManager>.Instance!;
 
@@ -60,7 +61,6 @@ namespace MajdataPlay.View
         {
             Task.Factory.StartNew(() =>
             {
-                var stream = new MemoryStream();
                 while (true)
                 {
                     _cts.Cancel();
@@ -68,29 +68,36 @@ namespace MajdataPlay.View
                     {
                         if (Sessions is null)
                             continue;
-                        var rsp = new MajWsResponseBase()
-                        {
-                            responseType = MajWsResponseType.Heartbeat,
-                            responseData = ViewManager.Summary
-                        };
-                        stream.SetLength(0);
-                        JsonSerializer.Serialize(stream, rsp, JSON_READER_OPTIONS);
-                        stream.Position = 0;
-                        Sessions.Broadcast(stream, (int)stream.Length);
+                        string json = GetSummaryJson();
+                        Sessions.Broadcast(json);
                     }
                     catch (Exception e)
                     {
+                        if (e is InvalidOperationException)
+                            _cts.Cancel();
                         MajDebug.LogException(e);
                     }
                     finally
                     {
-                        Thread.Sleep(16);
+                        Thread.Sleep(1000);
                     }
                 }
 
             }, TaskCreationOptions.LongRunning);
         }
-        ~MajdataWsService()
+
+        private static string GetSummaryJson()
+        {
+            var rsp = new MajWsResponseBase()
+            {
+                responseType = MajWsResponseType.Heartbeat,
+                responseData = ViewManager.Summary
+            };
+            var json = JsonSerializer.Serialize(rsp, JSON_READER_OPTIONS);
+            return json;
+        }
+
+        public void Dispose()
         {
             _cts.Cancel();
         }
@@ -124,15 +131,15 @@ namespace MajdataPlay.View
                                 await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
                                 Response();
                             }
-                            else if(pBinary is not null)
+                            /*else if(pBinary is not null)
                             {
                                 var payload = (MajWsRequestLoadBinary)pBinary;
                                 await _viewManager.LoadAssests(payload.Track, payload.Image, payload.Video);
                                 Response();
-                            }
+                            }*/
                         }
                         break;
-                    case MajWsRequestType.Parse:
+/*                    case MajWsRequestType.Parse:
                         {
                             if (!Serializer.Json.TryDeserialize<MajWsRequestParse?>(payloadjson, out var p) || p is null)
                             {
@@ -144,7 +151,7 @@ namespace MajdataPlay.View
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             Response();
                         }
-                        break;
+                        break;*/
                     case MajWsRequestType.Play:
                         {
                             if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p) || p is null)
@@ -153,25 +160,31 @@ namespace MajdataPlay.View
                                 return;
                             }
                             var payload = (MajWsRequestPlay)p;
+                            _viewManager.Offset = (float)payload.Offset;
+                            await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             await _viewManager.PlayAsync(payload.Speed);
+                            Send(GetSummaryJson());
                             Response(MajWsResponseType.PlayStarted);
                         }
                         break;
                     case MajWsRequestType.Resume:
                         {
                             await _viewManager.PlayAsync();
+                            Send(GetSummaryJson());
                             Response(MajWsResponseType.PlayResumed);
                         }
                         break;
                     case MajWsRequestType.Pause:
                         {
                             await _viewManager.PauseAsync();
+                            Send(GetSummaryJson());
                             Response();
                         }
                         break;
                     case MajWsRequestType.Stop:
                         {
                             await _viewManager.StopAsync();
+                            Send(GetSummaryJson());
                             Response();
                         }
                         break;

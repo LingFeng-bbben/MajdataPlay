@@ -8,8 +8,8 @@ namespace MajdataPlay.View.Types
 {
     internal readonly struct MajWsRequestParse
     {
-        public double StartAt { get; init; }
-        public string SimaiFumen { get; init; }
-        public double Offset { get; init; }
+        //public double StartAt { get; init; }
+        //public string SimaiFumen { get; init; }
+        //public double Offset { get; init; }
     }
 }

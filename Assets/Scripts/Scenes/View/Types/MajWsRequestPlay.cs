@@ -2,7 +2,9 @@ namespace MajdataPlay.View.Types
 {
     internal readonly struct MajWsRequestPlay
     {
-        public PlaybackMode Mode { get; init; }
+        public double StartAt { get; init; }
+        public string SimaiFumen { get; init; }
+        public double Offset { get; init; }
         public float Speed { get; init; }
     }
 }
