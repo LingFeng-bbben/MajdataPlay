@@ -126,7 +126,9 @@ namespace MajdataPlay.View
                             }
                             else if(pBinary is not null)
                             {
-
+                                var payload = (MajWsRequestLoadBinary)pBinary;
+                                await _viewManager.LoadAssests(payload.Track, payload.Image, payload.Video);
+                                Response();
                             }
                         }
                         break;

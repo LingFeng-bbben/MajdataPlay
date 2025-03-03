@@ -7,6 +7,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View.Types;
 using MajSimai;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -248,6 +249,41 @@ namespace MajdataPlay.View
                 }
                 if (File.Exists(pvPath))
                     _videoPath = pvPath;
+                _audioSample = sample;
+
+                _state = ViewStatus.Loaded;
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+                _errMsg = ex.ToString();
+                _state = ViewStatus.Error;
+                throw;
+            }
+        }
+        internal async Task LoadAssests(byte[] audio, byte[] bg, byte[]? pv)
+        {
+            while (_state is ViewStatus.Busy)
+                await UniTask.Yield();
+            _state = ViewStatus.Busy;
+            try
+            {
+                var sampleCachePath = Path.Combine(CACHE_PATH, "track.majplay");
+                var videoCachePath = Path.Combine(CACHE_PATH, "video.majplay");
+                await File.WriteAllBytesAsync(sampleCachePath, audio);
+
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(sampleCachePath);
+                if (pv is null || pv.Length == 0)
+                {
+                    var cover = await SpriteLoader.LoadAsync(bg);
+                    _bgCover = cover;
+                    _videoPath = string.Empty;
+                }
+                else
+                {
+                    await File.WriteAllBytesAsync(videoCachePath, pv);
+                    _videoPath = videoCachePath;
+                }
                 _audioSample = sample;
 
                 _state = ViewStatus.Loaded;
