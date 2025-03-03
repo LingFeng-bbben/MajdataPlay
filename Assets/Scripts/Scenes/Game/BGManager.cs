@@ -39,7 +39,7 @@ namespace MajdataPlay.Game
             {
                 if (MajEnv.Mode == RunningMode.Play)
                     videoPlayer.externalReferenceTime = _gpManager.AudioTimeNoOffset;
-                if (MajEnv.Mode == RunningMode.View)
+                else if (MajEnv.Mode == RunningMode.View)
                     videoPlayer.externalReferenceTime = _viewManager.AudioTimeNoOffset;
             }
             /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
@@ -100,17 +100,8 @@ namespace MajdataPlay.Game
 
             videoPlayer.timeReference = VideoTimeReference.ExternalTime;
 
-            if (MajEnv.Mode == RunningMode.Play)
-            {
-                while (_gpManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
-            }
-            if (MajEnv.Mode == RunningMode.View)
-            {
-                while (_viewManager.AudioTimeNoOffset <= 0) yield return new WaitForEndOfFrame();
-            }
             while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
             videoPlayer.Play();
-            //videoPlayer.time = gamePlayManager.AudioTimeNoOffset;
 
             var scale = videoPlayer.height / (float)videoPlayer.width;
 

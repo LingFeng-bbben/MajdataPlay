@@ -129,8 +129,10 @@ namespace MajdataPlay.View
                                 return;
                             }
                             var payload = (MajWsRequestPlay)p;
-                            //we need offset here
+                            _viewManager.Offset = (float)payload.Offset;
+                            Response();
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
+                            Response();
                             await _viewManager.PlayAsync();
                             Response(MajWsResponseType.PlayStarted);
                         }

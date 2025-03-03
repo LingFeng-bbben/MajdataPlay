@@ -45,7 +45,7 @@ namespace MajdataPlay.View
         public float ThisFrameSec => _thisFrameSec;
         public float ThisFixedUpdateSec => _thisFrameSec;
         public float AudioTimeNoOffset => _audioTimeNoOffset;
-
+        public float Offset { get; set; } = 0f;
 
         float _timerStartAt = 0f;
 
@@ -53,7 +53,6 @@ namespace MajdataPlay.View
         static string _errMsg = string.Empty;
         static float _thisFrameSec = 0f;
         static float _audioTimeNoOffset = 0f;
-        static float _offset = 0f;
 
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
@@ -82,7 +81,7 @@ namespace MajdataPlay.View
             }
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
-            PlayerSettings.resizableWindow = true;
+            //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
         void Start()
@@ -100,7 +99,7 @@ namespace MajdataPlay.View
             {
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
-                    _thisFrameSec = elasped - _timerStartAt - _offset;
+                    _thisFrameSec = elasped - _timerStartAt - Offset;
                     _audioTimeNoOffset = elasped - _timerStartAt;
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
