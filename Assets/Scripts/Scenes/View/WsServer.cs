@@ -74,7 +74,10 @@ namespace MajdataPlay.View
                     catch (Exception e)
                     {
                         if (e is InvalidOperationException)
+                        {
                             _cts.Cancel();
+                            break;
+                        }
                         MajDebug.LogException(e);
                     }
                     finally

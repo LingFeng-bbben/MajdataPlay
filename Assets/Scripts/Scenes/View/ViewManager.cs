@@ -266,6 +266,7 @@ namespace MajdataPlay.View
             _state = ViewStatus.Busy;
             try
             {
+                if(_audioSample is not null) _audioSample.Dispose();
                 var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true);
                 if (File.Exists(bgPath))
                 {
