@@ -13,6 +13,7 @@ using MajdataPlay.View.Types;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Net.WebSockets;
+using System.Text;
 
 #nullable enable
 namespace MajdataPlay.View
@@ -55,10 +56,11 @@ namespace MajdataPlay.View
                 new JsonStringEnumConverter()
             },
         };
-       /* public MajdataWsService()
+        public MajdataWsService()
         {
             Task.Factory.StartNew(() =>
             {
+                var stream = new MemoryStream();
                 while (true)
                 {
                     _cts.Cancel();
@@ -66,13 +68,14 @@ namespace MajdataPlay.View
                     {
                         if (Sessions is null)
                             continue;
-                        var stream = new MemoryStream();
                         var rsp = new MajWsResponseBase()
                         {
                             responseType = MajWsResponseType.Ok,
                             responseData = ViewManager.Summary
                         };
+                        stream.SetLength(0);
                         JsonSerializer.Serialize(stream, rsp, JSON_READER_OPTIONS);
+                        stream.Position = 0;
                         Sessions.Broadcast(stream, (int)stream.Length);
                     }
                     catch (Exception e)
@@ -86,7 +89,7 @@ namespace MajdataPlay.View
                 }
 
             }, TaskCreationOptions.LongRunning);
-        }*/
+        }
         ~MajdataWsService()
         {
             _cts.Cancel();
@@ -107,14 +110,24 @@ namespace MajdataPlay.View
                 {
                     case MajWsRequestType.Load:
                         {
-                            if (!Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson,out var p) || p is null) 
+                            var isValid = Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson, out var p) |
+                                          Serializer.Json.TryDeserialize<MajWsRequestLoadBinary?>(payloadjson, out var pBinary);
+                            isValid = isValid && (p is not null || pBinary is not null);
+                            if (!isValid) 
                             {
                                 Error("Wrong Fromat");
                                 return; 
                             }
-                            var payload = (MajWsRequestLoad)p;
-                            await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
-                            Response();
+                            if(p is not null)
+                            {
+                                var payload = (MajWsRequestLoad)p;
+                                await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
+                                Response();
+                            }
+                            else if(pBinary is not null)
+                            {
+
+                            }
                         }
                         break;
                     case MajWsRequestType.Play:

@@ -1,11 +1,11 @@
 using System;
-
+#nullable enable
 namespace MajdataPlay.View.Types
 {
     internal readonly struct MajWsRequestBase
     {
         public MajWsRequestType requestType { get; init; }
-        public object requestData { get; init; }
+        public object? requestData { get; init; }
     }
     public enum MajWsRequestType 
     {
