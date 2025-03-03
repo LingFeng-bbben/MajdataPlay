@@ -9,6 +9,8 @@ namespace MajdataPlay.Game
 {
     public class BGManager : MonoBehaviour
     {
+        public Sprite DefaultSprite;
+        public Vector3 DefaultScale;
         private GamePlayManager _gpManager;
         private ViewManager _viewManager;
 
@@ -27,6 +29,7 @@ namespace MajdataPlay.Game
         // Start is called before the first frame update
         private void Start()
         {
+            DefaultScale = transform.localScale;
             spriteRender = GetComponent<SpriteRenderer>();
             videoPlayer = GetComponent<VideoPlayer>();
             _gpManager = Majdata<GamePlayManager>.Instance!;
@@ -79,7 +82,11 @@ namespace MajdataPlay.Game
 
         public void SetBackgroundPic(Sprite sprite)
         {
-            if (sprite == null) return;
+            if (sprite == null) { 
+                spriteRender.sprite = DefaultSprite;
+                transform.localScale = DefaultScale;
+                return; 
+            }
             spriteRender.sprite = sprite;
             //todo:set correct scale
             var scale = 1080f / sprite.texture.width;

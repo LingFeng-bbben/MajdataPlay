@@ -155,7 +155,7 @@ namespace MajdataPlay.View
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample.Speed = speed;
                 _audioSample!.Play();
-                _bgManager.PlayVideo(AudioTimeNoOffset,speed);
+                _bgManager.PlayVideo(_thisFrameSec, speed);
                 await UniTask.SwitchToThreadPool();
                 return true;
             }
@@ -213,7 +213,7 @@ namespace MajdataPlay.View
                 _audioSample!.Stop();
                 _thisFrameSec = 0;
                 ClearAll();
-                _bgManager.SetBackgroundPic(MajEnv.EmptySongCover);
+                _bgManager.SetBackgroundPic(null);
                 _state = ViewStatus.Loaded;
                 return true;
             }
