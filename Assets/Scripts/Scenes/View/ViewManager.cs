@@ -119,7 +119,7 @@ namespace MajdataPlay.View
                     break;
             }
         }
-        internal async UniTask<bool> PlayAsync(double startAt)
+        internal async UniTask<bool> PlayAsync()
         {
             switch(_state)
             {
@@ -135,9 +135,8 @@ namespace MajdataPlay.View
                     await UniTask.Yield();
                 _state = ViewStatus.Busy;
                 await UniTask.SwitchToMainThread();
-                _noteManager.InitializeUpdater();
                 await UniTask.Yield();
-                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat- (float)startAt;
+                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat- (float)_audioSample!.CurrentSec;
                 _state = ViewStatus.Playing;
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample!.Play();
@@ -280,7 +279,8 @@ namespace MajdataPlay.View
                 _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
 
                 await _noteLoader.LoadNotesIntoPool(_chart);
-                if(_videoPath is null)
+                _noteManager.InitializeUpdater();
+                if (_videoPath is null)
                 {
                     _bgManager.SetBackgroundPic(_bgCover);
                 }

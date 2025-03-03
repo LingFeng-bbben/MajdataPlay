@@ -13,6 +13,7 @@ namespace MajdataPlay.View.Types
         Load,
         Play,
         Pause,
+        Resume,
         Stop,
         Status
     }

@@ -9,6 +9,7 @@ namespace MajdataPlay.View.Types
     {
         Error = 400,
         Ok = 200,
-        PlayStarted = 201
+        PlayStarted = 201,
+        PlayResumed = 202
     }
 }

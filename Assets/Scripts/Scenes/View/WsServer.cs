@@ -129,8 +129,14 @@ namespace MajdataPlay.View
                             Response();
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             Response();
-                            await _viewManager.PlayAsync(payload.StartAt);
+                            await _viewManager.PlayAsync();
                             Response(MajWsResponseType.PlayStarted);
+                        }
+                        break;
+                    case MajWsRequestType.Resume:
+                        {
+                            await _viewManager.PlayAsync();
+                            Response(MajWsResponseType.PlayResumed);
                         }
                         break;
                     case MajWsRequestType.Pause:
