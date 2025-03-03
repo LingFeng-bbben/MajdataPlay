@@ -12,13 +12,14 @@ using WebSocketSharp.Server;
 using MajdataPlay.View.Types;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using System.Net.WebSockets;
 
 #nullable enable
 namespace MajdataPlay.View
 {
     internal class WsServer: MajComponent
     {
-        WebSocketServer webSocket;
+        WebSocketServer _webSocket;
         int _httpPort = 8013;
         readonly CancellationTokenSource _cts = new();
         ViewManager _viewManager;
@@ -32,20 +33,21 @@ namespace MajdataPlay.View
         void Start()
         {
             _viewManager = Majdata<ViewManager>.Instance!;
-            webSocket = new WebSocketServer("ws://127.0.0.1:8083");
-            webSocket.AddWebSocketService<MajdataWsService>("/majdata");
-            webSocket.Start();
+            _webSocket = new WebSocketServer("ws://127.0.0.1:8083");
+            _webSocket.AddWebSocketService<MajdataWsService>("/majdata");
+            _webSocket.Start();
         }
 
         void OnDestroy()
         {
-            webSocket.Stop();
+            _webSocket.Stop();
         }
     }
-
     public class MajdataWsService : WebSocketBehavior
     {
         ViewManager _viewManager = Majdata<ViewManager>.Instance!;
+
+        readonly CancellationTokenSource _cts = new();
         readonly static JsonSerializerOptions JSON_READER_OPTIONS = new()
         {
             Converters =
@@ -53,6 +55,42 @@ namespace MajdataPlay.View
                 new JsonStringEnumConverter()
             },
         };
+        public MajdataWsService()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    _cts.Cancel();
+                    try
+                    {
+                        if (Sessions is null)
+                            continue;
+                        var stream = new MemoryStream();
+                        var rsp = new MajWsResponseBase()
+                        {
+                            responseType = MajWsResponseType.Ok,
+                            responseData = ViewManager.Summary
+                        };
+                        JsonSerializer.Serialize(stream, rsp, JSON_READER_OPTIONS);
+                        Sessions.Broadcast(stream, (int)stream.Length);
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(16);
+                    }
+                }
+
+            }, TaskCreationOptions.LongRunning);
+        }
+        ~MajdataWsService()
+        {
+            _cts.Cancel();
+        }
         protected override async void OnMessage(MessageEventArgs e)
         {
             try
@@ -147,5 +185,4 @@ namespace MajdataPlay.View
             SendAsync(stream, (int)stream.Length, null);
         }
     }
-
 }
