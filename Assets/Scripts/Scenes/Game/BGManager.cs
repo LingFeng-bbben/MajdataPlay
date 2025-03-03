@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
 using MajdataPlay.View;
 using System.Collections;
 using UnityEngine;
@@ -8,7 +9,6 @@ namespace MajdataPlay.Game
 {
     public class BGManager : MonoBehaviour
     {
-        private float playSpeed;
         private GamePlayManager _gpManager;
         private ViewManager _viewManager;
 
@@ -62,10 +62,9 @@ namespace MajdataPlay.Game
             videoPlayer.Pause();
         }
 
-        public void ContinueVideo(float speed)
+        public void PlayVideo(float speed)
         {
             videoPlayer.playbackSpeed = speed;
-            playSpeed = speed;
             videoPlayer.Play();
         }
 
@@ -83,19 +82,21 @@ namespace MajdataPlay.Game
             GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, dim);
         }
 
-        public void SetBackgroundMovie(string path, float speed = 1f)
+        public async UniTask SetBackgroundMovie(string path)
         {
             videoPlayer.url = "file://" + path;
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
-            videoPlayer.playbackSpeed = speed;
-            playSpeed = speed;
             spriteRender.sprite =
                 Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
             videoPlayer.Prepare();
-            StartCoroutine(waitFumenStart());
+            videoPlayer.timeReference = VideoTimeReference.ExternalTime;
+            while (!videoPlayer.isPrepared) await UniTask.Yield();
+            var scale = videoPlayer.height / (float)videoPlayer.width;
+            gameObject.transform.localScale = new Vector3(1f, 1f * scale);
+
         }
 
-        private IEnumerator waitFumenStart()
+        private IEnumerator waitVideoPreparedStart()
         {
 
             videoPlayer.timeReference = VideoTimeReference.ExternalTime;

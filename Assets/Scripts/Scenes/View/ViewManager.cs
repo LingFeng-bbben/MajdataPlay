@@ -140,6 +140,7 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Playing;
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample!.Play();
+                _bgManager.PlayVideo(1);
                 await UniTask.SwitchToThreadPool();
                 if (_state == ViewStatus.Paused)
                     return true;
@@ -168,6 +169,7 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Busy;
                 await UniTask.Yield();
                 _audioSample!.Pause();
+                _bgManager.PauseVideo();
                 _thisFrameSec = (float)_audioSample.CurrentSec;
                 _state = ViewStatus.Paused;
                 return true;
@@ -286,7 +288,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    _bgManager.SetBackgroundMovie(Path.Combine(CACHE_PATH, "bg.mp4"));
+                    await _bgManager.SetBackgroundMovie(Path.Combine(CACHE_PATH, "bg.mp4"));
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);

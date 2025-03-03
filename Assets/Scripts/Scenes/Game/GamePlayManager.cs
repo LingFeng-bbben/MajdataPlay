@@ -483,7 +483,8 @@ namespace MajdataPlay.Game
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
-                    BGManager.SetBackgroundMovie(videoPath, PlaybackSpeed);
+                    await BGManager.SetBackgroundMovie(videoPath);
+                    BGManager.PlayVideo(PlaybackSpeed);
                 }
                 else
                 {
