@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using MajdataPlay.View;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         GameObject eachLinePrefab;
 
-        GamePlayManager _gpManager;
+        INoteTimeProvider _noteTimeProvider;
         List<TapPoolingInfo> tapInfos = new();
         List<HoldPoolingInfo> holdInfos = new();
         List<TouchPoolingInfo> touchInfos = new();
@@ -56,13 +57,20 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _gpManager = Majdata<GamePlayManager>.Instance!;
+            if (MajEnv.Mode == RunningMode.Play)
+            {
+                _noteTimeProvider = Majdata<GamePlayManager>.Instance!;
+            }
+            else
+            {
+                _noteTimeProvider = Majdata<ViewManager>.Instance!;
+            }
         }
         internal void OnUpdate()
         {
             if (State < ComponentState.Running)
                 return;
-            var currentSec = _gpManager.AudioTime;
+            var currentSec = _noteTimeProvider.ThisFrameSec;
             tapPool.OnUpdate(currentSec);
             holdPool.OnUpdate(currentSec);
             touchPool.OnUpdate(currentSec);

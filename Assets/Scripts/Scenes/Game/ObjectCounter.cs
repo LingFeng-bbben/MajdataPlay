@@ -707,7 +707,7 @@ namespace MajdataPlay.Game
                     break;
             }
 
-            if (_gameInfo.IsDanMode)
+            if (MajEnv.Mode==RunningMode.Play && _gameInfo.IsDanMode)
             {
                 _gameInfo.OnNoteJudged(judgeResult.Grade);
                 if (_gameInfo.CurrentHP == 0 && _gameInfo.IsForceGameover)

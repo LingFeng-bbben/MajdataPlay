@@ -4,6 +4,6 @@ namespace MajdataPlay.View.Types
     {
         public double StartAt { get; init; }
         public string SimaiFumen { get; init; }
-        //TODO: speed,offset
+        public double Offset { get; init; }
     }
 }

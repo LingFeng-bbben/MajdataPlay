@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Game.Buffers;
 using MajdataPlay.Utils;
+using MajdataPlay.View;
 using System;
 #nullable enable
 namespace MajdataPlay.Game
@@ -8,14 +9,21 @@ namespace MajdataPlay.Game
     {
         SlideQueueInfo?[] _queueInfos = Array.Empty<SlideQueueInfo>();
 
-        GamePlayManager _gpManager;
+        INoteTimeProvider _noteTimeProvider;
         private void Awake()
         {
             Majdata<SlideUpdater>.Instance = this;
         }
         private void Start()
         {
-            _gpManager = Majdata<GamePlayManager>.Instance!;
+            if (MajEnv.Mode == RunningMode.Play)
+            {
+                _noteTimeProvider = Majdata<GamePlayManager>.Instance!;
+            }
+            else
+            {
+                _noteTimeProvider = Majdata<ViewManager>.Instance!;
+            }
         }
         internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
@@ -27,7 +35,7 @@ namespace MajdataPlay.Game
         internal override void OnLateUpdate() => base.OnLateUpdate();
         internal override void OnUpdate()
         {
-            var gameTime = _gpManager.AudioTime;
+            var gameTime = _noteTimeProvider.ThisFrameSec;
             for (var i = 0; i < _queueInfos.Length; i++)
             {
                 ref var info = ref _queueInfos[i];

@@ -48,10 +48,6 @@ namespace MajdataPlay.Game
             set => _firstNoteAppearTiming = value;
         }
         /// <summary>
-        /// Current audio playback time
-        /// </summary>
-        public float AudioTime => _audioTime;
-        /// <summary>
         /// Current audio Total length
         /// </summary>
         public float AudioLength { get; private set; } = 0f;
@@ -108,9 +104,6 @@ namespace MajdataPlay.Game
         [ReadOnlyField]
         [SerializeField]
         float _firstNoteAppearTiming = 0f;
-        [ReadOnlyField]
-        [SerializeField]
-        float _audioTime = -114514;
         [ReadOnlyField]
         [SerializeField]
         float _audioTimeNoOffset = -114514;
@@ -542,7 +535,6 @@ namespace MajdataPlay.Game
         {
             if (_audioSample is null)
                 return;
-            _audioTime = -5f;
 
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
@@ -651,15 +643,15 @@ namespace MajdataPlay.Game
                 return;
             if (_allNotesFinishedTiming is null)
             {
-                _allNotesFinishedTiming = _audioTime;
+                _allNotesFinishedTiming = _thisFrameSec;
                 return;
             }
             else
             {
-                if (_audioTime - (float)_allNotesFinishedTiming < 0.1)
+                if (_thisFrameSec - (float)_allNotesFinishedTiming < 0.1)
                     return;
             }
-            var remainingTime = _audioTime - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
+            var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
             _2367PressTime = 0;
             _3456PressTime = 0;
             switch (State)
@@ -740,7 +732,7 @@ namespace MajdataPlay.Game
                 return;
             else if (IsPracticeMode)
                 return;
-            else if (_audioTime < 5f)
+            else if (_thisFrameSec < 5f)
                 return;
             switch(State)
             {
@@ -801,12 +793,11 @@ namespace MajdataPlay.Game
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
 
-                    _audioTime = timeOffset - chartOffset;
-                    _thisFrameSec = _audioTime;
+                    _thisFrameSec = timeOffset - chartOffset;
                     _audioTimeNoOffset = timeOffset;
                     _errText.text = ZString.Format("Diff{0:F4}", Math.Abs(realTimeDifference));
 
-                    if (Math.Abs(realTimeDifference) > 0.01f && _audioTime > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
+                    if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
                     {
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     }
@@ -896,7 +887,7 @@ namespace MajdataPlay.Game
         }
         public float GetFrame()
         {
-            var _audioTime = AudioTime * 1000;
+            var _audioTime = ThisFrameSec * 1000;
 
             return _audioTime / 16.6667f;
         }

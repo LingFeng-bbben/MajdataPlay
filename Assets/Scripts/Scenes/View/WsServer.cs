@@ -55,7 +55,7 @@ namespace MajdataPlay.View
                 new JsonStringEnumConverter()
             },
         };
-        public MajdataWsService()
+       /* public MajdataWsService()
         {
             Task.Factory.StartNew(() =>
             {
@@ -86,7 +86,7 @@ namespace MajdataPlay.View
                 }
 
             }, TaskCreationOptions.LongRunning);
-        }
+        }*/
         ~MajdataWsService()
         {
             _cts.Cancel();
@@ -95,11 +95,10 @@ namespace MajdataPlay.View
         {
             try
             {
-                
                 if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(e.Data,out var r, JSON_READER_OPTIONS) || 
                     r is null)
                 {
-                    await ErrorAsync("Wrong Fromat");
+                    Error("Wrong Fromat");
                     return;
                 }
                 var req = (MajWsRequestBase)r; 
@@ -110,7 +109,7 @@ namespace MajdataPlay.View
                         {
                             if (!Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson,out var p) || p is null) 
                             {
-                                await ErrorAsync("Wrong Fromat");
+                                Error("Wrong Fromat");
                                 return; 
                             }
                             var payload = (MajWsRequestLoad)p;
@@ -119,70 +118,69 @@ namespace MajdataPlay.View
                             var bgbyte = await File.ReadAllBytesAsync(payload.ImagePath);
                             var videobyte = await File.ReadAllBytesAsync(payload.VideoPath);
                             await _viewManager.LoadAssests(trackbyte, bgbyte, videobyte);
-                            await ResponseAsync();
+                            Response();
                         }
                         break;
                     case MajWsRequestType.Play:
                         {
                             if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p) || p is null)
                             {
-                                await ErrorAsync("Wrong Fromat");
+                                Error("Wrong Fromat");
                                 return;
                             }
                             var payload = (MajWsRequestPlay)p;
                             //we need offset here
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             await _viewManager.PlayAsync();
-                            await ResponseAsync(MajWsResponseType.PlayStarted);
+                            Response(MajWsResponseType.PlayStarted);
                         }
                         break;
                     case MajWsRequestType.Pause:
                         {
                             await _viewManager.PauseAsync();
-                            await ResponseAsync();
+                            Response();
                         }
                         break;
                     case MajWsRequestType.Stop:
                         {
                             await _viewManager.StopAsync();
-                            await ResponseAsync();
+                            Response();
                         }
                         break;
                     //TODO: Status
                     case MajWsRequestType.Status:
                         {
-                            await ResponseAsync(MajWsResponseType.Ok, ViewManager.Summary);
+                            Response(MajWsResponseType.Ok, ViewManager.Summary);
                         }
                         break;
                     default:
-                        await ErrorAsync("Not Supported");
+                        Error("Not Supported");
                         break;
                 }
             }
             catch(Exception ex)
             {
-                await ErrorAsync(ex);
+                Error(ex);
                 MajDebug.LogException(ex);
             }
         }
-        async Task ErrorAsync<T>(T exception) where T : Exception
+        void Error<T>(T exception) where T : Exception
         {
-            await ResponseAsync(MajWsResponseType.Error, exception.ToString());
+            Response(MajWsResponseType.Error, exception.ToString());
         }
-        async Task ErrorAsync(string errMsg)
+        void Error(string errMsg)
         {
-            await ResponseAsync(MajWsResponseType.Error, errMsg);
+            Response(MajWsResponseType.Error, errMsg);
         }
-        async Task ResponseAsync(MajWsResponseType type = MajWsResponseType.Ok, object? data = null) 
+        void Response(MajWsResponseType type = MajWsResponseType.Ok, object? data = null) 
         {
-            var stream = new MemoryStream();
             var rsp = new MajWsResponseBase()
             {
                 responseType = type,
                 responseData = data
             };
-            await JsonSerializer.SerializeAsync(stream,rsp,JSON_READER_OPTIONS);
-            SendAsync(stream, (int)stream.Length, null);
+            var json = JsonSerializer.Serialize( rsp, JSON_READER_OPTIONS);
+            Send(json);
         }
     }
 }

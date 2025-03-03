@@ -44,7 +44,7 @@ namespace MajdataPlay.View
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
         public float ThisFrameSec => _thisFrameSec;
         public float ThisFixedUpdateSec => _thisFrameSec;
-        public float AudioTimeNoOffset;
+        public float AudioTimeNoOffset => _audioTimeNoOffset;
 
 
         float _timerStartAt = 0f;
@@ -52,13 +52,19 @@ namespace MajdataPlay.View
         static ViewStatus _state = ViewStatus.Idle;
         static string _errMsg = string.Empty;
         static float _thisFrameSec = 0f;
+        static float _audioTimeNoOffset = 0f;
+        static float _offset = 0f;
 
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
         string? _videoPath = null;
 
-        WsServer _httpServer;
+        //WsServer _httpServer;
+        GameSetting _setting = MajInstances.Setting;
         NoteLoader _noteLoader;
+        NoteManager _noteManager;
+        NoteAudioManager _noteAudioManager;
+        NotePoolManager _notePoolManager;
         BGManager _bgManager;
 
         SimaiChart? _chart;
@@ -82,18 +88,33 @@ namespace MajdataPlay.View
         void Start()
         {
             _bgManager = Majdata<BGManager>.Instance!;
-            _httpServer = Majdata<WsServer>.Instance!;
+            //_httpServer = Majdata<WsServer>.Instance!;
             _noteLoader = Majdata<NoteLoader>.Instance!;
+            _noteManager = Majdata<NoteManager>.Instance!;
+            _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
+            _notePoolManager = Majdata<NotePoolManager>.Instance!;
         }
         void Update()
         {
-            //Debug.Log(_timer.UnscaledElapsedSecondsAsFloat);
             switch (_state)
             {
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
-                    _thisFrameSec += elasped - _timerStartAt; // +offset?
-                    AudioTimeNoOffset = elasped - _timerStartAt;
+                    _thisFrameSec = elasped - _timerStartAt - _offset;
+                    _audioTimeNoOffset = elasped - _timerStartAt;
+                    _noteManager.OnUpdate();
+                    _notePoolManager.OnUpdate();
+                    _noteAudioManager.OnUpdate();
+                    break;
+            }
+        }
+        void LateUpdate()
+        {
+            switch (_state)
+            {
+                case ViewStatus.Playing:
+                    _noteManager.OnLateUpdate();
+                    _noteAudioManager.OnLateUpdate();
                     break;
             }
         }
@@ -112,11 +133,14 @@ namespace MajdataPlay.View
                 while (_state is ViewStatus.Busy)
                     await UniTask.Yield();
                 _state = ViewStatus.Busy;
+                await UniTask.SwitchToMainThread();
+                _noteManager.InitializeUpdater();
                 await UniTask.Yield();
                 _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat;
                 _state = ViewStatus.Playing;
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample!.Play();
+                await UniTask.SwitchToThreadPool();
                 if (_state == ViewStatus.Paused)
                     return true;
                 return true;
@@ -254,6 +278,15 @@ namespace MajdataPlay.View
                 var range = new Range<double>(startAt, double.MaxValue);
                 _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
+
+                var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
+
+                if (_setting.Game.TapSpeed < 0)
+                    _noteLoader.NoteSpeed = -((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+                else
+                    _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+                _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
+
                 await _noteLoader.LoadNotesIntoPool(_chart);
                 if(_videoPath is null)
                 {
@@ -264,6 +297,7 @@ namespace MajdataPlay.View
                     _bgManager.SetBackgroundMovie(Path.Combine(CACHE_PATH, "bg.mp4"));
                 }
                 _audioSample!.CurrentSec = startAt;
+                await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);
                 await UniTask.SwitchToThreadPool();
                 _state = ViewStatus.Ready;
             }
