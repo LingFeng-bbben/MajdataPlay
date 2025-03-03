@@ -70,7 +70,7 @@ namespace MajdataPlay.View
                             continue;
                         var rsp = new MajWsResponseBase()
                         {
-                            responseType = MajWsResponseType.Ok,
+                            responseType = MajWsResponseType.Heartbeat,
                             responseData = ViewManager.Summary
                         };
                         stream.SetLength(0);
