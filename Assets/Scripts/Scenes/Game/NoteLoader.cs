@@ -62,7 +62,7 @@ namespace MajdataPlay.Game
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
 
-        static readonly Dictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
+        public static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
             {SimaiNoteType.Tap, 2 },
             {SimaiNoteType.Hold, 3 },
@@ -70,7 +70,7 @@ namespace MajdataPlay.Game
             {SimaiNoteType.Touch, 6 },
             {SimaiNoteType.TouchHold, 6 },
         };
-        static readonly Dictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
+        public static readonly IReadOnlyDictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
         {
             {"line3", 0 },
             {"line4", 1 },
@@ -116,7 +116,7 @@ namespace MajdataPlay.Game
             {"L5", 40 },
         };
 
-        static readonly Dictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new()
+        public static readonly IReadOnlyDictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new Dictionary<SensorArea, SensorArea[]>()
         {
             { SensorArea.A1, new SensorArea[]{ SensorArea.D1, SensorArea.D2, SensorArea.E1, SensorArea.E2, SensorArea.B1 } },
             { SensorArea.A2, new SensorArea[]{ SensorArea.D2, SensorArea.D3, SensorArea.E2, SensorArea.E3, SensorArea.B2 } },
@@ -157,7 +157,7 @@ namespace MajdataPlay.Game
             { SensorArea.C, new SensorArea[]{ SensorArea.B1, SensorArea.B2, SensorArea.B3, SensorArea.B4, SensorArea.B5, SensorArea.B6, SensorArea.B7, SensorArea.B8} },
         };
 
-        public static readonly Dictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
+        public static readonly IReadOnlyDictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
         {
             {"line3", new List<int>(){ 0, 2, 8, 13 } },
             {"line4", new List<int>(){ 0, 3, 8, 12, 18 } },
@@ -218,6 +218,13 @@ namespace MajdataPlay.Game
             _poolManager = Majdata<NotePoolManager>.Instance!;
             _gpManager = Majdata<GamePlayManager>.Instance;
             _slideUpdater = Majdata<SlideUpdater>.Instance!;
+        }
+        internal void Clear()
+        {
+            _noteManager.ResetCounter();
+            _noteIndex.Clear();
+            _touchIndex.Clear();
+            _slideQueueInfos.Clear();
         }
         internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
         {

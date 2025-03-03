@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game;
+using MajdataPlay.Game.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Timer;
 using MajdataPlay.Types;
@@ -206,6 +207,9 @@ namespace MajdataPlay.View
                 await UniTask.Yield();
                 _audioSample!.Stop();
                 _thisFrameSec = 0;
+                ClearAll();
+                _bgManager.SetBackgroundPic(MajEnv.EmptySongCover);
+                _state = ViewStatus.Loaded;
                 return true;
             }
             catch(Exception ex)
@@ -214,6 +218,15 @@ namespace MajdataPlay.View
                 _state = ViewStatus.Error;
                 throw;
             }
+        }
+        void ClearAll()
+        {
+            _noteLoader.Clear();
+            _noteManager.Clear();
+            _notePoolManager.Clear();
+            _noteAudioManager.Clear();
+            Majdata<ObjectCounter>.Instance?.Clear();
+            Majdata<MultTouchHandler>.Instance?.Clear();
         }
         internal async UniTask<bool> ResetAsync()
         {

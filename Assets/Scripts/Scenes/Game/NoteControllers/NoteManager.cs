@@ -129,6 +129,21 @@ namespace MajdataPlay.Game
                 updater.Initialize();
             }
         }
+        internal void Clear()
+        {
+            foreach (var updater in _noteUpdaters)
+            {
+                updater.Clear();
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                _isBtnUsedInThisFixedUpdate[i] = false;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _isSensorUsedInThisFixedUpdate[i] = false;
+            }
+        }
         public void ResetCounter()
         {
             _noteCurrentIndex.Clear();

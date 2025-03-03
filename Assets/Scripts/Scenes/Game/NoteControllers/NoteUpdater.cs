@@ -63,6 +63,12 @@ namespace MajdataPlay.Game
             _lateUpdatableComponents = lateUpdatableComponents.ToArray();
         }
 
+        internal virtual void Clear()
+        {
+            _updatableComponents = Array.Empty<NoteInfo>();
+            _fixedUpdatableComponents = Array.Empty<NoteInfo>();
+            _lateUpdatableComponents = Array.Empty<NoteInfo>();
+        }
         internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
