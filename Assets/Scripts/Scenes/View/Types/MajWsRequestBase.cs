@@ -15,6 +15,6 @@ namespace MajdataPlay.View.Types
         Pause,
         Resume,
         Stop,
-        Status
+        State
     }
 }

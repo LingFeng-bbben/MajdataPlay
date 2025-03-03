@@ -165,7 +165,7 @@ namespace MajdataPlay.View
                         }
                         break;
                     //TODO: Status
-                    case MajWsRequestType.Status:
+                    case MajWsRequestType.State:
                         {
                             Response(MajWsResponseType.Ok, ViewManager.Summary);
                         }
