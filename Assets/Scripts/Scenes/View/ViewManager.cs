@@ -102,7 +102,7 @@ namespace MajdataPlay.View
             {
                 case ViewStatus.Playing:
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
-                    _thisFrameSec = (elasped - _timerStartAt - Offset) * _playbackSpeed;
+                    _thisFrameSec = (elasped - _timerStartAt - Offset / _playbackSpeed) * _playbackSpeed;
                     //_audioTimeNoOffset = elasped - _timerStartAt;
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
@@ -247,7 +247,7 @@ namespace MajdataPlay.View
             _state = ViewStatus.Busy;
             try
             {
-                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath);
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true);
                 if (File.Exists(bgPath))
                 {
                     var cover = await SpriteLoader.LoadAsync(bgPath);
@@ -278,7 +278,7 @@ namespace MajdataPlay.View
                 var videoCachePath = Path.Combine(CACHE_PATH, "video.majplay");
                 await File.WriteAllBytesAsync(sampleCachePath, audio);
 
-                var sample = await MajInstances.AudioManager.LoadMusicAsync(sampleCachePath);
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(sampleCachePath, true);
                 if (pv is null || pv.Length == 0)
                 {
                     var cover = await SpriteLoader.LoadAsync(bg);
