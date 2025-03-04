@@ -723,6 +723,7 @@ namespace MajdataPlay.Game
                 case GamePlayStatus.Running:
                     _noteAudioManager.OnLateUpdate();
                     _noteManager.OnLateUpdate();
+                    _objectCounter.OnLateUpdate();
                     break;
             }
         }

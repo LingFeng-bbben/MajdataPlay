@@ -14,6 +14,7 @@ namespace MajdataPlay.Game
         GameManager _gameManager;
         SpriteRenderer _renderer;
         GamePlayManager _gpManager;
+        readonly int OUTLINE_ANIM_HASH = Animator.StringToHash("play");
         void Awake()
         {
             Majdata<OutlineLoader>.Instance = this;
@@ -34,7 +35,7 @@ namespace MajdataPlay.Game
         {
             if (!_effectAvailable)
                 return;
-            _effectAnim.SetTrigger("play");
+            _effectAnim.SetTrigger(OUTLINE_ANIM_HASH);
         }
         void OnDestroy()
         {

@@ -139,6 +139,7 @@ namespace MajdataPlay.View
                 case ViewStatus.Playing:
                     _noteAudioManager.OnLateUpdate();
                     _noteManager.OnLateUpdate();
+                    Majdata<ObjectCounter>.Instance?.OnLateUpdate();
                     break;
             }
         }

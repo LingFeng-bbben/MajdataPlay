@@ -80,6 +80,10 @@ namespace MajdataPlay.Game
         long _combo = 0; // Combo
         long _pCombo = 0; // Perfect Combo
         long _cPCombo = 0; // Critical Perfect
+
+        XxlbDanceRequest _xxlbDanceRequest = new();
+        bool _isOutlinePlayRequested = false;
+
         Dictionary<JudgeGrade, int> _judgedTapCount = new()
         { 
             {JudgeGrade.TooFast, 0 },
@@ -334,10 +338,21 @@ namespace MajdataPlay.Game
         }
 
         // Update is called once per frame
-        private void Update()
+        internal void OnLateUpdate()
         {
+            CalAccRate();
             UpdateState();
             UpdateOutput();
+            if(_xxlbDanceRequest.IsRequested)
+            {
+                _xxlbController.Dance(_xxlbDanceRequest.Grade);
+                _xxlbDanceRequest = new();
+            }
+            if(_isOutlinePlayRequested)
+            {
+                _outline.Play();
+                _isOutlinePlayRequested = false;
+            }
         }
         internal void Clear()
         {
@@ -741,7 +756,6 @@ namespace MajdataPlay.Game
         }
         internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
         {
-            var noteType = GetNoteType(note);
             var result = judgeResult.Grade;
             var isBreak = judgeResult.IsBreak;
             var isSlide = false;
@@ -826,7 +840,7 @@ namespace MajdataPlay.Game
                 {
                     case TapDrop:
                     case HoldDrop:
-                        _outline.Play();
+                        _isOutlinePlayRequested = true;
                         break;
                 }
             }
@@ -884,9 +898,12 @@ namespace MajdataPlay.Game
                 }
             }
 
-            _xxlbController.Dance(result);
+            _xxlbDanceRequest = new()
+            {
+                IsRequested = true,
+                Grade = judgeResult.Grade,
+            };
             UpdateFastLate(judgeResult);
-            CalAccRate();
         }
         /// <summary>
         /// 更新Fast/Late统计信息
@@ -1195,5 +1212,10 @@ namespace MajdataPlay.Game
             TouchDrop => SimaiNoteType.Touch,
             _ => throw new InvalidOperationException()
         };
+        readonly struct XxlbDanceRequest
+        {
+            public bool IsRequested { get; init; }
+            public JudgeGrade Grade { get; init; }
+        }
     }
 }
