@@ -228,6 +228,7 @@ namespace MajdataPlay.View
                 _audioSample!.Stop();
                 _thisFrameSec = 0;
                 ClearAll();
+                _bgManager.StopVideo();
                 _bgManager.SetBackgroundPic(null);
                 _state = ViewStatus.Loaded;
                 return true;
