@@ -476,23 +476,21 @@ namespace MajdataPlay.Game
         {
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
-            var BGManager = GameObject.Find("Background").GetComponent<BGManager>();
             var dim = _setting.Game.BackgroundDim;
             if (dim < 1f)
             {
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
-                    await BGManager.SetBackgroundMovie(videoPath);
-                    BGManager.PlayVideo(0,PlaybackSpeed);
+                    await _bgManager.SetBackgroundMovie(videoPath);
                 }
                 else
                 {
-                    BGManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
+                    _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
                 }
             }
 
-            BGManager.SetBackgroundDim(_setting.Game.BackgroundDim);
+            _bgManager.SetBackgroundDim(_setting.Game.BackgroundDim);
         }
         /// <summary>
         /// Parse and load notes into NotePool
@@ -574,6 +572,7 @@ namespace MajdataPlay.Game
             _audioSample.Volume = 0;
             _audioSample.Play();
             _audioSample.CurrentSec = _audioTrackStartAt * _playbackSpeed;
+            _bgManager.PlayVideo((float)_audioSample.CurrentSec, _playbackSpeed);
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
             MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
@@ -795,7 +794,7 @@ namespace MajdataPlay.Game
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
-                    _audioTimeNoOffset = timeOffset;
+                    _audioTimeNoOffset = (float)_audioSample.CurrentSec;
                     _errText.text = ZString.Format("Diff{0:F4}", Math.Abs(realTimeDifference));
 
                     if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
