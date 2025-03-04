@@ -36,7 +36,19 @@ namespace MajdataPlay.View
             }
         }
         public float AudioLength { get; private set; } = 0f;
-        public bool IsStart { get; private set; }
+        public bool IsStart 
+        { 
+            get
+            {
+                switch(_state)
+                {
+                    case ViewStatus.Playing:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
         public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Enable;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
