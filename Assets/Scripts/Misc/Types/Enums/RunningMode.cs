@@ -9,6 +9,7 @@ namespace MajdataPlay
     internal enum RunningMode
     {
         Play,
-        View
+        View,
+        Test
     }
 }

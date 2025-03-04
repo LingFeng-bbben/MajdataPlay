@@ -78,6 +78,21 @@ namespace MajdataPlay
             _timer = MajTimeline.Timer;
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
+
+            foreach (var arg in Environment.GetCommandLineArgs())
+            {
+                if (arg == "--test-mode")
+                {
+                    MajEnv.Mode = RunningMode.Test;
+                    break;
+                }
+                if (arg == "--view-mode")
+                {
+                    MajEnv.Mode = RunningMode.View;
+                    break;
+                }
+            }
+
             ApplyScreenConfig();
 
             var availableLangs = Localization.Available;
@@ -142,25 +157,27 @@ namespace MajdataPlay
         }
         void EnterView()
         {
-            MajEnv.Mode = RunningMode.View;
             SceneManager.LoadScene("View");
         }
         void ApplyScreenConfig()
         {
-            var fullScreen = Setting.Debug.FullScreen;
-            Screen.fullScreen = fullScreen;
-
-            var resolution = Setting.Display.Resolution.ToLower();
-            if (resolution is not "auto")
+            if (MajEnv.Mode != RunningMode.View)
             {
-                var param = resolution.Split("x");
-                int width, height;
+                var fullScreen = Setting.Debug.FullScreen;
+                Screen.fullScreen = fullScreen;
 
-                if (param.Length != 2)
-                    return;
-                else if (!int.TryParse(param[0], out width) || !int.TryParse(param[1], out height))
-                    return;
-                Screen.SetResolution(width, height, fullScreen);
+                var resolution = Setting.Display.Resolution.ToLower();
+                if (resolution is not "auto")
+                {
+                    var param = resolution.Split("x");
+                    int width, height;
+
+                    if (param.Length != 2)
+                        return;
+                    else if (!int.TryParse(param[0], out width) || !int.TryParse(param[1], out height))
+                        return;
+                    Screen.SetResolution(width, height, fullScreen);
+                }
             }
             Application.targetFrameRate = Setting.Display.FPSLimit;
         }
@@ -168,24 +185,25 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
+#if UNITY_EDITOR
             if (IsEnterView)
             {
                 EnterView();
                 return;
             }
-            foreach (var arg in Environment.GetCommandLineArgs())
+#endif
+
+            if (MajEnv.Mode == RunningMode.Test)
             {
-                if (arg == "--test-mode")
-                {
-                    EnterTestMode();
-                    return;
-                }
-                if (arg == "--view-mode")
-                {
-                    EnterView();
-                    return;
-                }
+                EnterTestMode();
+                return;
             }
+            if (MajEnv.Mode == RunningMode.View)
+            {
+                EnterView();
+                return;
+            }
+
             EnterTitle();
         }
         void Update()
