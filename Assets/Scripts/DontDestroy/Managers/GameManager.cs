@@ -93,6 +93,13 @@ namespace MajdataPlay
                 }
             }
 
+#if UNITY_EDITOR
+            if (IsEnterView)
+            {
+                MajEnv.Mode = RunningMode.View;
+            }
+#endif
+
             ApplyScreenConfig();
 
             var availableLangs = Localization.Available;
@@ -185,13 +192,6 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
-#if UNITY_EDITOR
-            if (IsEnterView)
-            {
-                EnterView();
-                return;
-            }
-#endif
 
             if (MajEnv.Mode == RunningMode.Test)
             {

@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -125,7 +126,7 @@ namespace MajdataPlay.View
                     {
                         _audioTimeNoOffset = (float)_audioSample.CurrentSec * _playbackSpeed;
                         if (!_audioSample.IsPlaying)
-                            StopAsync();
+                            StopAsync().Forget();
                     }
                     break;
             }
@@ -162,12 +163,12 @@ namespace MajdataPlay.View
                 _playbackSpeed = speed;
                 await UniTask.SwitchToMainThread();
                 await UniTask.Yield();
-                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat- (float)_audioSample!.CurrentSec;
+                _timerStartAt = _timer.UnscaledElapsedSecondsAsFloat - (float)_audioSample!.CurrentSec;
                 _state = ViewStatus.Playing;
-                _thisFrameSec = (float)_audioSample!.CurrentSec;
+                _audioTimeNoOffset = (float)_audioSample!.CurrentSec;
                 _audioSample.Speed = speed;
                 _audioSample!.Play();
-                _bgManager.PlayVideo(_thisFrameSec, speed);
+                _bgManager.PlayVideo(_audioTimeNoOffset, speed);
                 await UniTask.SwitchToThreadPool();
                 return true;
             }
@@ -342,7 +343,7 @@ namespace MajdataPlay.View
             try
             {
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
-                var range = new Range<double>(startAt, double.MaxValue);
+                var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
 
