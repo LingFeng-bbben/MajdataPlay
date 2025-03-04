@@ -484,7 +484,7 @@ namespace MajdataPlay.Game
                 if (!string.IsNullOrEmpty(videoPath))
                 {
                     await BGManager.SetBackgroundMovie(videoPath);
-                    BGManager.PlayVideo(PlaybackSpeed);
+                    BGManager.PlayVideo(0,PlaybackSpeed);
                 }
                 else
                 {

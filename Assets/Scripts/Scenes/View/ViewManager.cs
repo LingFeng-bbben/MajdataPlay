@@ -114,14 +114,19 @@ namespace MajdataPlay.View
             switch (_state)
             {
                 case ViewStatus.Playing:
+                    
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
                     _thisFrameSec = (elasped - _timerStartAt - Offset / _playbackSpeed) * _playbackSpeed;
                     //_audioTimeNoOffset = elasped - _timerStartAt;
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
                     _noteAudioManager.OnUpdate();
-                    if(_audioSample != null)
+                    if (_audioSample != null)
+                    {
                         _audioTimeNoOffset = (float)_audioSample.CurrentSec * _playbackSpeed;
+                        if (!_audioSample.IsPlaying)
+                            StopAsync();
+                    }
                     break;
             }
         }
@@ -162,7 +167,7 @@ namespace MajdataPlay.View
                 _thisFrameSec = (float)_audioSample!.CurrentSec;
                 _audioSample.Speed = speed;
                 _audioSample!.Play();
-                _bgManager.PlayVideo(speed);
+                _bgManager.PlayVideo(_thisFrameSec, speed);
                 await UniTask.SwitchToThreadPool();
                 return true;
             }
@@ -220,7 +225,7 @@ namespace MajdataPlay.View
                 _audioSample!.Stop();
                 _thisFrameSec = 0;
                 ClearAll();
-                _bgManager.SetBackgroundPic(MajEnv.EmptySongCover);
+                _bgManager.SetBackgroundPic(null);
                 _state = ViewStatus.Loaded;
                 return true;
             }
@@ -273,6 +278,7 @@ namespace MajdataPlay.View
             _state = ViewStatus.Busy;
             try
             {
+                if(_audioSample is not null) _audioSample.Dispose();
                 var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true);
                 if (File.Exists(bgPath))
                 {

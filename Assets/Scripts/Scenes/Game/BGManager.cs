@@ -9,6 +9,8 @@ namespace MajdataPlay.Game
 {
     public class BGManager : MonoBehaviour
     {
+        public Sprite DefaultSprite;
+        public Vector3 DefaultScale;
         private GamePlayManager _gpManager;
         private ViewManager _viewManager;
 
@@ -27,6 +29,7 @@ namespace MajdataPlay.Game
         // Start is called before the first frame update
         private void Start()
         {
+            DefaultScale = transform.localScale;
             spriteRender = GetComponent<SpriteRenderer>();
             videoPlayer = GetComponent<VideoPlayer>();
             _gpManager = Majdata<GamePlayManager>.Instance!;
@@ -62,15 +65,28 @@ namespace MajdataPlay.Game
             videoPlayer.Pause();
         }
 
-        public void PlayVideo(float speed)
+        public void StopVideo()
+        {
+            CancelTimeRef();
+            videoPlayer.Stop();
+            videoPlayer.time = 0;
+        }
+
+        public void PlayVideo(float time,float speed)
         {
             videoPlayer.playbackSpeed = speed;
+            videoPlayer.timeReference = VideoTimeReference.ExternalTime;
             videoPlayer.Play();
+            videoPlayer.time = time;
         }
 
         public void SetBackgroundPic(Sprite sprite)
         {
-            if (sprite == null) return;
+            if (sprite == null) { 
+                spriteRender.sprite = DefaultSprite;
+                transform.localScale = DefaultScale;
+                return; 
+            }
             spriteRender.sprite = sprite;
             //todo:set correct scale
             var scale = 1080f / sprite.texture.width;
@@ -89,25 +105,10 @@ namespace MajdataPlay.Game
             spriteRender.sprite =
                 Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
             videoPlayer.Prepare();
-            videoPlayer.timeReference = VideoTimeReference.ExternalTime;
             while (!videoPlayer.isPrepared) await UniTask.Yield();
             var scale = videoPlayer.height / (float)videoPlayer.width;
             gameObject.transform.localScale = new Vector3(1f, 1f * scale);
 
-        }
-
-        private IEnumerator waitVideoPreparedStart()
-        {
-
-            videoPlayer.timeReference = VideoTimeReference.ExternalTime;
-
-            while (!videoPlayer.isPrepared) yield return new WaitForEndOfFrame();
-            videoPlayer.Play();
-
-            var scale = videoPlayer.height / (float)videoPlayer.width;
-
-
-            gameObject.transform.localScale = new Vector3(1f, 1f * scale);
         }
     }
 }
