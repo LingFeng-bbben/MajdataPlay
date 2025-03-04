@@ -1,22 +1,35 @@
 ﻿#nullable enable
+#pragma warning disable CS8500 // 这会获取托管类型的地址、获取其大小或声明指向它的指针
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace MajdataPlay.Utils
 {
-    internal static class Majdata<T>
+    internal unsafe static class Majdata<T>
     {
         /// <summary>
         /// Get or set a globally unique instance
         /// </summary>
-        public static T? Instance
+        public static ref T? Instance
         {
-            get => _instance;
-            set
-            {
-                _instance = value;
-            }
+            get => ref Unsafe.AsRef<T?>(_instancePtr);
+        }
+        public static void* InstancePointer
+        {
+            get => _instancePtr;
         }
         public static bool IsNull => _instance is null;
 
         static T? _instance = default;
+        static void* _instancePtr = default;
+        static void* _handlePtr = default;
+
+        static Majdata()
+        {
+            var handle = GCHandle.Alloc(_instance, GCHandleType.Pinned);
+            _instancePtr = Unsafe.AsPointer(ref _instance);
+            _handlePtr = (void*)GCHandle.ToIntPtr(handle);
+        }
 
         /// <summary>
         /// Release the instance
