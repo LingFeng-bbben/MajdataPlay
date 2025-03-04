@@ -14,7 +14,7 @@ namespace MajdataPlay.Utils
         {
             get => ref Unsafe.AsRef<T?>(_instancePtr);
         }
-        public static void* InstancePointer
+        public static void* Pointer
         {
             get => _instancePtr;
         }
