@@ -118,16 +118,17 @@ namespace MajdataPlay.View
                     
                     var elasped = _timer.UnscaledElapsedSecondsAsFloat;
                     _thisFrameSec = (elasped - _timerStartAt - Offset / _playbackSpeed) * _playbackSpeed;
-                    //_audioTimeNoOffset = elasped - _timerStartAt;
-                    _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
-                    _noteAudioManager.OnUpdate();
                     if (_audioSample != null)
                     {
                         _audioTimeNoOffset = (float)_audioSample.CurrentSec * _playbackSpeed;
                         if (!_audioSample.IsPlaying)
                             StopAsync().Forget();
                     }
+
+                    _noteAudioManager.OnUpdate();
+                    _noteManager.OnUpdate();
+                    _notePoolManager.OnUpdate();
+                   
                     break;
             }
         }
@@ -136,8 +137,8 @@ namespace MajdataPlay.View
             switch (_state)
             {
                 case ViewStatus.Playing:
-                    _noteManager.OnLateUpdate();
                     _noteAudioManager.OnLateUpdate();
+                    _noteManager.OnLateUpdate();
                     break;
             }
         }
