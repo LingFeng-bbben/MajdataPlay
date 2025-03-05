@@ -148,13 +148,13 @@ namespace MajdataPlay.Game
         {
             _noteCurrentIndex.Clear();
             _touchCurrentIndex.Clear();
-            //������� �ж����˹���ϵĵڼ���note��
+
             for (int i = 1; i < 9; i++)
                 _noteCurrentIndex.Add(i, 0);
             for (int i = 0; i < 33; i++)
                 _touchCurrentIndex.Add((SensorArea)i, 0);
         }
-        public bool CanJudge(in TapQueueInfo queueInfo)
+        public bool IsCurrentNoteJudgeable(in TapQueueInfo queueInfo)
         {
             if(_noteCurrentIndex.TryGetValue(queueInfo.KeyIndex,out var currentIndex))
             {
@@ -167,7 +167,7 @@ namespace MajdataPlay.Game
                 return false;
             }
         }
-        public bool CanJudge(in TouchQueueInfo queueInfo)
+        public bool IsCurrentNoteJudgeable(in TouchQueueInfo queueInfo)
         {
             if (_touchCurrentIndex.TryGetValue(queueInfo.SensorPos, out var currentIndex))
             {

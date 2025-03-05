@@ -379,7 +379,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (!_judgableRange.InRange(ThisFrameSec))
                 return;
-            else if (!_noteManager.CanJudge(QueueInfo))
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
                 return;
 
             ref var isUsed = ref args.IsUsed.Target;
