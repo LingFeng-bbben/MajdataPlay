@@ -316,6 +316,10 @@ namespace MajdataPlay.Game
         {
             await Task.Run(() =>
             {
+                if (chart.NoteTimings.Length == 0) {
+                    _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
+                    return; 
+                }
                 //Generate ClockSounds
                 var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
                 var interval = 60 / firstBpm;
