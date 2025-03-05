@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Extensions;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,14 @@ namespace MajdataPlay.Game
     {
         [SerializeField]
         Animator _anim;
+        GameObject[] _children = Array.Empty<GameObject>();
         readonly int _id = Animator.StringToHash("Triggered");
         protected override void Awake()
         {
             base.Awake();
+            _children = Transform.GetChildren()
+                                 .Select(x => x.gameObject)
+                                 .ToArray();
             SetActiveInternal(false);
         }
         public void Reset()
@@ -40,9 +45,21 @@ namespace MajdataPlay.Game
             switch (state)
             {
                 case true:
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.DEFAULT_LAYER;
+                    }
                     GameObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
+                    foreach (var child in ArrayHelper.ToEnumerable(_children))
+                    {
+                        if (child is null)
+                            continue;
+                        child.layer = MajEnv.HIDDEN_LAYER;
+                    }
                     GameObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
