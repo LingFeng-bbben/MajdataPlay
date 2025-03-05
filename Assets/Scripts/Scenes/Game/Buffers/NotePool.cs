@@ -45,7 +45,7 @@ namespace MajdataPlay.Game.Buffers
                 }
             }
             var orderedTimingPoints = noteInfos.GroupBy(x => x.AppearTiming)
-                                        .OrderBy(x => x.Key);
+                                               .OrderBy(x => x.Key);
             _timingPoints = new TimingPoint<TInfo>[orderedTimingPoints.Count()];
             var timingPoints = _timingPoints.Span;
             foreach (var (i, timingPoint) in orderedTimingPoints.WithIndex())
