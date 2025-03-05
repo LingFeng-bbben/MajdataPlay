@@ -21,8 +21,8 @@ namespace MajdataPlay.Game
         GameInfo _gameInfo;
         INoteController _noteController;
 
-        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}";
-        const string TIME_STRING = "{0}:{1:00}";
+        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}:{2:0000}";
+        const string TIME_STRING = "{0}:{1:00}:{2:0000}";
 
         void Awake()
         {
@@ -56,8 +56,8 @@ namespace MajdataPlay.Game
 
             if(_lastUpdateTime.TotalSeconds != current.TotalSeconds)
             {
-                timeText.text = ZString.Format(timeStr, current.Minutes, current.Seconds);
-                rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds);
+                timeText.text = ZString.Format(timeStr, current.Minutes, current.Seconds,current.Milliseconds);
+                rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);
                 _lastUpdateTime = current;
             }
 

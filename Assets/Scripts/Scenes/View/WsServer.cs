@@ -145,7 +145,7 @@ namespace MajdataPlay.View
                             {
                                 var payload = (MajWsRequestLoad)p;
                                 await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
-                                Response(MajWsResponseType.Ok, ViewManager.Summary);
+                                Response(MajWsResponseType.LoadOk, ViewManager.Summary);
                             }
                             /*else if(pBinary is not null)
                             {

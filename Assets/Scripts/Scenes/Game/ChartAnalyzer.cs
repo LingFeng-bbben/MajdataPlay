@@ -33,6 +33,11 @@ namespace MajdataPlay.Game
         public Text? anaText;
         readonly AsyncLock _locker = new();
 
+        private void Awake()
+        {
+            Majdata<ChartAnalyzer>.Instance = this;
+        }
+
         void Start()
         {
             _colorA = tapColor;

@@ -19,6 +19,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using WebSocketSharp;
 #nullable enable
 namespace MajdataPlay.View
 {
@@ -62,6 +63,8 @@ namespace MajdataPlay.View
         public float AudioTimeNoOffset => _audioTimeNoOffset;
         public float Offset { get; set; } = 0f;
 
+        public GameObject LoadingIndicator;
+
         float _timerStartAt = 0f;
 
         static ViewStatus _state = ViewStatus.Idle;
@@ -82,6 +85,8 @@ namespace MajdataPlay.View
         NoteAudioManager _noteAudioManager;
         NotePoolManager _notePoolManager;
         BGManager _bgManager;
+        TimeDisplayer _timeDisplayer;
+        ChartAnalyzer _chartAnalyzer;
 
         SimaiChart? _chart;
         Sprite _bgCover = MajEnv.EmptySongCover;
@@ -109,6 +114,8 @@ namespace MajdataPlay.View
             _noteManager = Majdata<NoteManager>.Instance!;
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
+            _chartAnalyzer = Majdata<ChartAnalyzer>.Instance!;
         }
         void Update()
         {
@@ -125,10 +132,10 @@ namespace MajdataPlay.View
                             StopAsync().Forget();
                     }
 
+                    _timeDisplayer.OnUpdate();
                     _noteAudioManager.OnUpdate();
                     _noteManager.OnUpdate();
                     _notePoolManager.OnUpdate();
-                   
                     break;
             }
         }
@@ -140,6 +147,21 @@ namespace MajdataPlay.View
                     _noteAudioManager.OnLateUpdate();
                     _noteManager.OnLateUpdate();
                     Majdata<ObjectCounter>.Instance?.OnLateUpdate();
+                    break;
+            }
+        }
+
+        void FixedUpdate()
+        {
+            switch (_state)
+            {
+                case ViewStatus.Busy:
+                    if(!LoadingIndicator.activeSelf)
+                        LoadingIndicator.SetActive(true);
+                    break;
+                default:
+                    if (LoadingIndicator.activeSelf)
+                        LoadingIndicator.SetActive(false);
                     break;
             }
         }
@@ -289,10 +311,8 @@ namespace MajdataPlay.View
                     var cover = await SpriteLoader.LoadAsync(bgPath);
                     _bgCover = cover;
                 }
-                if (File.Exists(pvPath))
-                    _videoPath = pvPath;
+                _videoPath = pvPath;
                 _audioSample = sample;
-
                 _state = ViewStatus.Loaded;
             }
             catch (Exception ex)
@@ -346,6 +366,8 @@ namespace MajdataPlay.View
             try
             {
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
+                AudioLength = (float)_audioSample!.Length.TotalSeconds;
+                await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
@@ -360,7 +382,7 @@ namespace MajdataPlay.View
 
                 await _noteLoader.LoadNotesIntoPool(_chart);
                 _noteManager.InitializeUpdater();
-                if (_videoPath is null)
+                if (_videoPath.IsNullOrEmpty())
                 {
                     _bgManager.SetBackgroundPic(_bgCover);
                 }

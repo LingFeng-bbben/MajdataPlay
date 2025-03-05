@@ -13,6 +13,7 @@ namespace MajdataPlay.View.Types
         PlayResumed = 202,
         Heartbeat = 203,
         PlayPaused = 204,
-        PlayStopped = 205
+        PlayStopped = 205,
+        LoadOk = 206
     }
 }
