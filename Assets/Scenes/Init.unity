@@ -5291,7 +5291,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
       propertyPath: IsEnterView
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
       propertyPath: _breakMaterial
