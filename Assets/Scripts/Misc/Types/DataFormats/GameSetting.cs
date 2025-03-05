@@ -59,9 +59,9 @@ namespace MajdataPlay.Types
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
-        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.All;
+        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Disable;
         public string Resolution { get; set; } = "1080x1920";
-        public bool Topmost { get; set; } = true;
+        public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
         public bool VSync { get; set; } = false;
     }
@@ -75,7 +75,7 @@ namespace MajdataPlay.Types
     }
     public class SFXVolume
     {
-        public float Global { get; set; } = 0.3f;
+        public float Global { get; set; } = 0.8f;
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
         public float Tap { get; set; } = 0.3f;
