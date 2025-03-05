@@ -222,6 +222,7 @@ namespace MajdataPlay.IO
         {
             MajInstances.InputManager = this;
             DontDestroyOnLoad(this);
+            Input.multiTouchEnabled = true;
             var sensorRenderers = _sensorRenderers.Span;
             foreach (var (index, child) in transform.ToEnumerable().WithIndex())
             {

@@ -21,6 +21,7 @@ namespace MajdataPlay
 #nullable enable
     public class GameManager : MonoBehaviour
     {
+        public static Camera MainCamera { get; private set; }
         public static CancellationToken GlobalCT { get; }
         public GameSetting Setting
         {
@@ -192,6 +193,7 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
+            SceneSwitcher.OnSceneChanged += OnSceneChanged;
 
             if (MajEnv.Mode == RunningMode.Test)
             {
@@ -205,6 +207,10 @@ namespace MajdataPlay
             }
 
             EnterTitle();
+        }
+        internal static void OnSceneChanged()
+        {
+            MainCamera = Camera.main;
         }
         void Update()
         {

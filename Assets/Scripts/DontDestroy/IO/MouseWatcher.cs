@@ -16,45 +16,15 @@ namespace MajdataPlay.IO
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
-            Input.multiTouchEnabled = true;
+            var mainCamera = GameManager.MainCamera;
             Span<bool> newStates = stackalloc bool[34];
             if (Input.touchCount > 0)
             {
-                MajDebug.Log(Input.touchCount);
-                
-                for (var i = 0; i < Input.touchCount; i++)
-                {
-                    var touch = Input.GetTouch(i);
-                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
-                    {
-                        continue;
-                    }
-                    Vector3 cubeRay = Camera.main.ScreenToWorldPoint(touch.position);
-                    var ray = new Ray(cubeRay, Vector3.forward);
-                    var ishit = Physics.Raycast(ray, out var hitInfo);
-                    if (ishit)
-                    {
-                        var id = hitInfo.colliderInstanceID;
-                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
-                        {
-                            newStates[index] = true;
-                        }
-                    }
-                }
+                FromTouchPanel(newStates, mainCamera);
             }
             else if (Input.GetMouseButton(0))
             {
-                Vector3 cubeRaym = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                var raym = new Ray(cubeRaym, Vector3.forward);
-                var ishitm = Physics.Raycast(raym, out var hitInfom);
-                if (ishitm)
-                {
-                    var id = hitInfom.colliderInstanceID;
-                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
-                    {
-                        newStates[index] = true;
-                    }
-                }
+                FromMouse(newStates, mainCamera);
             }
             var now = DateTime.Now;
             foreach (var (i, state) in newStates.WithIndex())
@@ -67,6 +37,66 @@ namespace MajdataPlay.IO
                 });
             }
             UpdateSensorState();
+        }
+        static void FromTouchPanel(Span<bool> newStates, Camera mainCamera)
+        {
+            MajDebug.Log(Input.touchCount);
+
+            try
+            {
+                for (var i = 0; i < Input.touchCount; i++)
+                {
+                    var touch = Input.GetTouch(i);
+                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                    {
+                        continue;
+                    }
+                    Vector3 cubeRay = mainCamera.ScreenToWorldPoint(touch.position);
+                    var ray = new Ray(cubeRay, Vector3.forward);
+                    var ishit = Physics.Raycast(ray, out var hitInfo);
+                    if (ishit)
+                    {
+                        var id = hitInfo.colliderInstanceID;
+                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                        {
+                            newStates[index] = true;
+                        }
+                    }
+                }
+            }
+            catch(NullReferenceException)
+            {
+                GameManager.OnSceneChanged();
+            }
+            catch(UnityException)
+            {
+                GameManager.OnSceneChanged();
+            }
+        }
+        static void FromMouse(Span<bool> newStates, Camera mainCamera)
+        {
+            try
+            {
+                Vector3 cubeRaym = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                var raym = new Ray(cubeRaym, Vector3.forward);
+                var ishitm = Physics.Raycast(raym, out var hitInfom);
+                if (ishitm)
+                {
+                    var id = hitInfom.colliderInstanceID;
+                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                    {
+                        newStates[index] = true;
+                    }
+                }
+            }
+            catch (NullReferenceException)
+            {
+                GameManager.OnSceneChanged();
+            }
+            catch (UnityException)
+            {
+                GameManager.OnSceneChanged();
+            }
         }
         bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;
     }

@@ -12,6 +12,9 @@ namespace MajdataPlay
 {
     public partial class SceneSwitcher : MonoBehaviour
     {
+        public delegate void SceneSwitchEventHandler();
+        public static event SceneSwitchEventHandler? OnSceneChanged;
+
         Animator animator;
         public Image SubImage;
         public Image MainImage;
@@ -71,6 +74,7 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             if(autoFadeOut)
             { 
                 animator.SetBool("In", false);
@@ -93,6 +97,7 @@ namespace MajdataPlay
                 MajDebug.LogException(taskToRun.Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, Task taskToRun)
@@ -112,6 +117,7 @@ namespace MajdataPlay
                 MajDebug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, ValueTask taskToRun)
@@ -131,6 +137,7 @@ namespace MajdataPlay
                 MajDebug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, UniTask taskToRun)
@@ -152,6 +159,7 @@ namespace MajdataPlay
                 throw taskToRun.Exception;
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
@@ -171,6 +179,7 @@ namespace MajdataPlay
                 throw taskToRun.AsTask().Exception;
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
             return taskToRun.Result;
         }
@@ -189,6 +198,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             await UniTask.Delay(SWITCH_ELAPSED);
             await SceneManager.LoadSceneAsync(sceneName);
+            OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
             switch(taskToRun.Status)
             {
