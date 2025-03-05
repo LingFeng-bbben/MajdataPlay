@@ -8,6 +8,8 @@ using MajdataPlay.References;
 using MajdataPlay.IO;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Types;
+using MajdataPlay.Extensions;
+using System;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -15,8 +17,8 @@ namespace MajdataPlay.Game
     {
         [SerializeField]
         NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
-        Dictionary<int, int> _noteCurrentIndex = new();
-        Dictionary<SensorArea, int> _touchCurrentIndex = new();
+        int[] _noteCurrentIndex = new int[8];
+        int[] _touchCurrentIndex = new int[33];
 
         [ReadOnlyField]
         [SerializeField]
@@ -146,54 +148,54 @@ namespace MajdataPlay.Game
         }
         public void ResetCounter()
         {
-            _noteCurrentIndex.Clear();
-            _touchCurrentIndex.Clear();
-
-            for (int i = 1; i < 9; i++)
-                _noteCurrentIndex.Add(i, 0);
+            for (int i = 0; i < 8; i++)
+                _noteCurrentIndex[i] = 0;
             for (int i = 0; i < 33; i++)
-                _touchCurrentIndex.Add((SensorArea)i, 0);
+                _touchCurrentIndex[i] = 0;
         }
         public bool IsCurrentNoteJudgeable(in TapQueueInfo queueInfo)
         {
-            if(_noteCurrentIndex.TryGetValue(queueInfo.KeyIndex,out var currentIndex))
-            {
-                var index = queueInfo.Index;
-
-                return index <= currentIndex;
-            }
-            else
-            {
+            var keyIndex = queueInfo.KeyIndex - 1;
+            if (!keyIndex.InRange(0, 7))
                 return false;
-            }
+
+            var currentIndex = _noteCurrentIndex[keyIndex];
+            var index = queueInfo.Index;
+
+            return index <= currentIndex;
         }
         public bool IsCurrentNoteJudgeable(in TouchQueueInfo queueInfo)
         {
-            if (_touchCurrentIndex.TryGetValue(queueInfo.SensorPos, out var currentIndex))
-            {
-                var index = queueInfo.Index;
-
-                return index <= currentIndex;
-            }
-            else
-            {
+            var sensorPos = queueInfo.SensorPos;
+            if (sensorPos > SensorArea.E8 || sensorPos < SensorArea.A1)
                 return false;
-            }
+            var pos = (int)sensorPos;
+            var index = queueInfo.Index;
+            var currentIndex = _touchCurrentIndex[pos];
+
+            return index <= currentIndex;
         }
         public void NextNote(in TapQueueInfo queueInfo) 
         {
-            var currentIndex = _noteCurrentIndex[queueInfo.KeyIndex];
+            var keyIndex = queueInfo.KeyIndex - 1;
+            if (!keyIndex.InRange(0, 7))
+                return;
+            var currentIndex = _noteCurrentIndex[keyIndex];
             if (currentIndex > queueInfo.Index)
                 return;
-            _noteCurrentIndex[queueInfo.KeyIndex]++;
+            _noteCurrentIndex[keyIndex]++;
         }
         public void NextTouch(in TouchQueueInfo queueInfo)
         {
-            var currentIndex = _touchCurrentIndex[queueInfo.SensorPos];
+            var sensorPos = queueInfo.SensorPos;
+            if (sensorPos > SensorArea.E8 || sensorPos < SensorArea.A1)
+                return;
+            var pos = (int)sensorPos;
+            var currentIndex = _touchCurrentIndex[pos];
             if (currentIndex > queueInfo.Index)
                 return;
 
-            _touchCurrentIndex[queueInfo.SensorPos]++;
+            _touchCurrentIndex[pos]++;
         }
         void OnAnyAreaTrigger(object sender, InputEventArgs args)
         {
