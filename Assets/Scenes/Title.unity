@@ -873,6 +873,7 @@ GameObject:
   - component: {fileID: 1811113591}
   - component: {fileID: 1811113593}
   - component: {fileID: 1811113592}
+  - component: {fileID: 1811113594}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -919,7 +920,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4d0e9a3638868564ca813792c014751a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 596a012afb7b6c748a22f77a19e5f91b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -937,6 +938,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1811113590}
   m_CullTransparentMesh: 1
+--- !u!114 &1811113594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1811113590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dab82e39bdde394fb0341ba795266ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  XxlbDefault: {fileID: 21300000, guid: 596a012afb7b6c748a22f77a19e5f91b, type: 3}
+  XxlbBlinks: {fileID: 21300000, guid: 94ffd367445360c428644b4317423816, type: 3}
+  image: {fileID: 1811113592}
 --- !u!1 &2077852202
 GameObject:
   m_ObjectHideFlags: 0
