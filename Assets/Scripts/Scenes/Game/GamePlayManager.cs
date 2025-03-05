@@ -511,11 +511,11 @@ namespace MajdataPlay.Game
             _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
-            var loaderTask = _noteLoader.LoadNotesIntoPool(_chart).AsTask();
+            var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart).AsTask();
 
             while (!loaderTask.IsCompleted)
             {
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Process * 100:F2}%");
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Progress * 100:F2}%");
                 await UniTask.Yield();
             }
             if(loaderTask.IsFaulted)

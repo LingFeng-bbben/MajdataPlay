@@ -21,7 +21,7 @@ namespace MajdataPlay.Game
 #nullable enable
     public class NoteLoader : MonoBehaviour
     {
-        public double Process { get; set; } = 0;
+        public double Progress { get; set; } = 0;
         public float NoteSpeed { get; set; } = 7f;
         public int ChartRotation { get; set; } = 0;
         public float TouchSpeed
@@ -29,6 +29,7 @@ namespace MajdataPlay.Game
             get => _touchSpeed;
             set => _touchSpeed = Math.Abs(value);
         }
+        public long NoteCount { get; private set; } = 0;
 
         public GameObject tapPrefab;
         public GameObject holdPrefab;
@@ -226,7 +227,7 @@ namespace MajdataPlay.Game
             _touchIndex.Clear();
             _slideQueueInfos.Clear();
         }
-        internal async UniTask LoadNotesIntoPool(SimaiChart maiChart)
+        internal async UniTask LoadNotesIntoPoolAsync(SimaiChart maiChart)
         {
             List<Task> touchTasks = new();
 
@@ -242,7 +243,7 @@ namespace MajdataPlay.Game
 
             await CountNoteSumAsync(maiChart);
 
-            var sum = _objectCounter.tapSum +
+            NoteCount = _objectCounter.tapSum +
                       _objectCounter.holdSum +
                       _objectCounter.touchSum +
                       _objectCounter.breakSum +
@@ -255,21 +256,12 @@ namespace MajdataPlay.Game
 
                 foreach (var timing in maiChart.NoteTimings)
                 {
-                    //var eachNotes = timing.Notes.FindAll(o => o.Type != SimaiNoteType.Touch &&
-                    //                                             o.Type != SimaiNoteType.TouchHold);
-                    int? num = null;
-                    touchTasks.Clear();
-                    //IDistanceProvider? provider = null;
-                    //IStatefulNote? noteA = null;
-                    //IStatefulNote? noteB = null;
                     List<NotePoolingInfo?> eachNotes = new();
-                    //NotePoolingInfo? noteA = null;
-                    //NotePoolingInfo? noteB = null;
                     List<ITouchGroupInfoProvider> members = new();
                     foreach (var (i, note) in timing.Notes.WithIndex())
                     {
                         _noteCount++;
-                        Process = (double)_noteCount / sum;
+                        Progress = (double)_noteCount / NoteCount;
                         if (_noteCount % 100 == 0)
                             await UniTask.Yield();
 
@@ -282,18 +274,6 @@ namespace MajdataPlay.Game
                                         var obj = CreateTap(note, timing);
                                         _poolManager.AddTap(obj);
                                         eachNotes.Add(obj);
-                                        //if (eachNotes.Count > 1 && i < 2)
-                                        //{
-                                        //    if (num is null)
-                                        //        num = 0;
-                                        //    else if (num != 0)
-                                        //        break;
-
-                                        //    if (noteA is null)
-                                        //        noteA = obj;
-                                        //    else
-                                        //        noteB = obj;
-                                        //}
                                     }
                                     break;
                                 case SimaiNoteType.Hold:
@@ -301,18 +281,6 @@ namespace MajdataPlay.Game
                                         var obj = CreateHold(note, timing);
                                         _poolManager.AddHold(obj);
                                         eachNotes.Add(obj);
-                                        //if (eachNotes.Count > 1 && i < 2)
-                                        //{
-                                        //    if (num is null)
-                                        //        num = 1;
-                                        //    else if (num != 1)
-                                        //        break;
-
-                                        //    if (noteA is null)
-                                        //        noteA = obj;
-                                        //    else
-                                        //        noteB = obj;
-                                        //}
                                     }
                                     break;
                                 case SimaiNoteType.TouchHold:
@@ -333,49 +301,12 @@ namespace MajdataPlay.Game
                     }
                     if (members.Count != 0)
                         touchTasks.Add(AllocTouchGroup(members));
-                    var _eachNotes = eachNotes.FindAll(x => x is not null);
-                    if (_eachNotes.Count > 1) //有多个非touchnote
+                    eachNotes = eachNotes.FindAll(x => x is not null);
+                    if (eachNotes.Count > 1) //有多个非touchnote
                     {
-                        var noteA = _eachNotes[0]!;
-                        var noteB = _eachNotes[1]!;
-
-                        var startPos = noteA.StartPos;
-                        var endPos = noteB.StartPos;
-                        endPos = endPos - startPos;
-                        if (endPos == 0)
-                            continue;
-                        var time = (float)timing.Timing;
-                        var speed = NoteSpeed * timing.HSpeed;
-                        var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-                        var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-                        var appearTiming = time + appearDiff;
-
-                        endPos = endPos < 0 ? endPos + 8 : endPos;
-                        endPos = endPos > 8 ? endPos - 8 : endPos;
-                        endPos++;
-
-                        if (endPos > 4)
-                        {
-                            startPos = noteB.StartPos;
-                            endPos = noteA.StartPos;
-                            endPos = endPos - startPos;
-                            endPos = endPos < 0 ? endPos + 8 : endPos;
-                            endPos = endPos > 8 ? endPos - 8 : endPos;
-                            endPos++;
-                        }
-
-                        var startPosition = startPos;
-                        var curvLength = endPos - 1;
-                        _poolManager.AddEachLine(new EachLinePoolingInfo()
-                        {
-                            StartPos = startPosition,
-                            Timing = time,
-                            AppearTiming = appearTiming,
-                            CurvLength = curvLength,
-                            MemberA = noteA,
-                            MemberB = noteB,
-                            Speed = speed
-                        });
+                        var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
+                        if(eachLinePoolingInfo is not null)
+                            _poolManager.AddEachLine(eachLinePoolingInfo);
                     }
                 }
 
@@ -384,11 +315,52 @@ namespace MajdataPlay.Game
                 {
                     await UniTask.Yield();
                     if (allTask.IsFaulted)
-                        throw allTask.Exception.InnerException;
+                        throw allTask.Exception.GetBaseException();
                 }
             }
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
+        }
+        EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing,NotePoolingInfo noteA, NotePoolingInfo noteB)
+        {
+            var startPos = noteA.StartPos;
+            var endPos = noteB.StartPos;
+            endPos = endPos - startPos;
+            if (endPos == 0)
+                return null;
+            var time = (float)timing.Timing;
+            var speed = NoteSpeed * timing.HSpeed;
+            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+            var appearTiming = time + appearDiff;
+
+            endPos = endPos < 0 ? endPos + 8 : endPos;
+            endPos = endPos > 8 ? endPos - 8 : endPos;
+            endPos++;
+
+            if (endPos > 4)
+            {
+                startPos = noteB.StartPos;
+                endPos = noteA.StartPos;
+                endPos = endPos - startPos;
+                endPos = endPos < 0 ? endPos + 8 : endPos;
+                endPos = endPos > 8 ? endPos - 8 : endPos;
+                endPos++;
+            }
+
+            var startPosition = startPos;
+            var curvLength = endPos - 1;
+
+            return new EachLinePoolingInfo()
+            {
+                StartPos = startPosition,
+                Timing = time,
+                AppearTiming = appearTiming,
+                CurvLength = curvLength,
+                MemberA = noteA,
+                MemberB = noteB,
+                Speed = speed
+            };
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {

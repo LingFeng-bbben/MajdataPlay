@@ -380,7 +380,7 @@ namespace MajdataPlay.View
                     _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
                 _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
 
-                await _noteLoader.LoadNotesIntoPool(_chart);
+                await _noteLoader.LoadNotesIntoPoolAsync(_chart);
                 _noteManager.InitializeUpdater();
                 if (_videoPath.IsNullOrEmpty())
                 {
