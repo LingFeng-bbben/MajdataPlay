@@ -145,13 +145,13 @@ namespace MajdataPlay.View
                             {
                                 var payload = (MajWsRequestLoad)p;
                                 await _viewManager.LoadAssests(payload.TrackPath, payload.ImagePath, payload.VideoPath);
-                                Response();
+                                Response(MajWsResponseType.Ok, ViewManager.Summary);
                             }
                             /*else if(pBinary is not null)
                             {
                                 var payload = (MajWsRequestLoadBinary)pBinary;
                                 await _viewManager.LoadAssests(payload.Track, payload.Image, payload.Video);
-                                Response();
+                                Response(MajWsResponseType.Ok, ViewManager.Summary);
                             }*/
                         }
                         break;
@@ -165,7 +165,7 @@ namespace MajdataPlay.View
                             var payload = (MajWsRequestParse)p;
                             _viewManager.Offset = (float)payload.Offset;
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
-                            Response();
+                            Response(MajWsResponseType.Ok, ViewManager.Summary);
                         }
                         break;*/
                     case MajWsRequestType.Play:
@@ -179,29 +179,25 @@ namespace MajdataPlay.View
                             _viewManager.Offset = (float)payload.Offset;
                             await _viewManager.ParseAndLoadChartAsync(payload.StartAt, payload.SimaiFumen);
                             await _viewManager.PlayAsync(payload.Speed);
-                            Send(GetSummaryJson());
-                            Response(MajWsResponseType.PlayStarted);
+                            Response(MajWsResponseType.PlayStarted, ViewManager.Summary);
                         }
                         break;
                     case MajWsRequestType.Resume:
                         {
                             await _viewManager.PlayAsync();
-                            Send(GetSummaryJson());
-                            Response(MajWsResponseType.PlayResumed);
+                            Response(MajWsResponseType.PlayResumed, ViewManager.Summary);
                         }
                         break;
                     case MajWsRequestType.Pause:
                         {
                             await _viewManager.PauseAsync();
-                            Send(GetSummaryJson());
-                            Response();
+                            Response(MajWsResponseType.PlayPaused, ViewManager.Summary);
                         }
                         break;
                     case MajWsRequestType.Stop:
                         {
                             await _viewManager.StopAsync();
-                            Send(GetSummaryJson());
-                            Response();
+                            Response(MajWsResponseType.PlayStopped, ViewManager.Summary);
                         }
                         break;
                     //TODO: Status
