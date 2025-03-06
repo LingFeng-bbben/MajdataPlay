@@ -5,15 +5,16 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 #nullable enable
 #pragma warning disable CS8500
 namespace MajdataPlay.References
 {
     public unsafe struct Ref<T> : IDisposable
     {
-        public ref T? Target
+        public ref T Target
         {
-            get => ref Unsafe.AsRef<T?>(_pointer);
+            get => ref Unsafe.AsRef<T>(_pointer);
         }
 
         void* _pointer;
@@ -35,5 +36,15 @@ namespace MajdataPlay.References
             _handle = IntPtr.Zero;
             _pointer = null;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyRef<T> AsReadOnly()
+        {
+            return new ReadOnlyRef<T>(this);
+        }
+        public void* AsPointer()
+        {
+            return _pointer;
+        }
+        public static implicit operator ReadOnlyRef<T>(Ref<T> @ref) => @ref.AsReadOnly();
     }
 }

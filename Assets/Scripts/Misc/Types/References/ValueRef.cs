@@ -24,5 +24,15 @@ namespace MajdataPlay.References
         {
             _pointer = pointer;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyValueRef<T> AsReadOnly()
+        {
+            return new ReadOnlyValueRef<T>(this);
+        }
+        public T* AsPointer()
+        {
+            return _pointer;
+        }
+        public static implicit operator ReadOnlyValueRef<T>(ValueRef<T> @ref) => @ref.AsReadOnly();
     }
 }
