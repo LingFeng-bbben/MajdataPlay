@@ -384,6 +384,7 @@ namespace MajdataPlay.View
                 _noteManager.InitializeUpdater();
                 if (_videoPath.IsNullOrEmpty())
                 {
+                    _bgManager.DisableVideo();
                     _bgManager.SetBackgroundPic(_bgCover);
                 }
                 else

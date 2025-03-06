@@ -93,6 +93,11 @@ namespace MajdataPlay.Game
             gameObject.transform.localScale = new Vector3(scale, scale, scale);
         }
 
+        public void DisableVideo()
+        {
+            videoPlayer.url = null;
+        }
+
         public void SetBackgroundDim(float dim)
         {
             GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, dim);
