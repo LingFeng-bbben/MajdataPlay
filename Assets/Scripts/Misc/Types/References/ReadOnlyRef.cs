@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.References
 {
+    /// <summary>
+    /// Read-only managed references
+    /// <para>See also <seealso cref="Ref{T}"></seealso></para>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public unsafe readonly struct ReadOnlyRef<T>: IDisposable
     {
+        /// <summary>
+        /// Reference to object instance
+        /// </summary>
         public ref readonly T Target
         {
             get => ref _ref.Target;
@@ -21,6 +29,10 @@ namespace MajdataPlay.References
         {
             _ref = new(ref obj);
         }
+        /// <summary>
+        /// Releases the handle of the object
+        /// <para>After disposal, if you try to get a reference to the object from <see cref="ReadOnlyRef{T}"/> instance, the behavior is undefined</para>
+        /// </summary>
         public void Dispose()
         {
             _ref.Dispose();

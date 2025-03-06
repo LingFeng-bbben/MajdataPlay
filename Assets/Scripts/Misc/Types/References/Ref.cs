@@ -10,8 +10,16 @@ using Unity.VisualScripting;
 #pragma warning disable CS8500
 namespace MajdataPlay.References
 {
+    /// <summary>
+    /// Managed references
+    /// <para>When allocing, always try to transfer the object to the heap and pin it</para>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public unsafe struct Ref<T> : IDisposable
     {
+        /// <summary>
+        /// Reference to object instance
+        /// </summary>
         public ref T Target
         {
             get => ref Unsafe.AsRef<T>(_pointer);
@@ -27,6 +35,10 @@ namespace MajdataPlay.References
             _pointer = Unsafe.AsPointer(ref obj);
             _handle = GCHandle.ToIntPtr(handle);
         }
+        /// <summary>
+        /// Releases the handle of the object instance
+        /// <para>After disposal, if you try to get a reference to the object from <see cref="Ref{T}"/> instance, the behavior is undefined</para>
+        /// </summary>
         public void Dispose()
         {
             if (_handle == IntPtr.Zero)
