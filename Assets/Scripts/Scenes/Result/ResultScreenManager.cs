@@ -298,37 +298,33 @@ namespace MajdataPlay.Result
                     Diff = sampleDiff,
                 };
             }
+            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
             for (var i = 0; i < points.Length; i++)
             {
                 var origin = points[i];
-                points[i] = new Point()
+                var point = new Point()
                 {
                     X = origin.X,
                     Y = origin.Y / maxSampleCount,
                     Diff = origin.Diff
                 };
-            }
-            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            for(var i = 0;i < points.Length; i++)
-            {
-                var point = points[i];
                 var x = chartWidth * point.X + CHART_PADDING_LEFT;
                 var y = chartHeight * point.Y - CHART_PADDING_TOP;
                 var isPerfect = Math.Abs(point.Diff) <= 50f;
                 var isGreat = Math.Abs(point.Diff) <= 100f;
                 var isGood = Math.Abs(point.Diff) <= 150f;
 
-                if(isPerfect)
+                if (isPerfect)
                 {
                     perfectPath.LineTo(x, y);
                 }
-                else if(isGreat)
+                else if (isGreat)
                 {
                     greatPath.LineTo(x, y);
                 }
-                else if(isGood)
+                else if (isGood)
                 {
                     goodPath.LineTo(x, y);
                 }
