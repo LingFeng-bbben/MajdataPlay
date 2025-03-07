@@ -479,20 +479,12 @@ namespace MajdataPlay.Game.Notes
             base.TooLateJudge();
             End();
         }
-        public override void End(bool forceEnd = false)
+        public override void End()
         {
             if (IsEnded)
                 return;
             State = NoteStatus.End;
-            //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-            //    _ioManager.UnbindSensor(_noteChecker, sensor);
             base.End();
-            if (forceEnd)
-            {
-                Destroy(_slideOK);
-                Destroy(gameObject);
-                return;
-            }
             
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
