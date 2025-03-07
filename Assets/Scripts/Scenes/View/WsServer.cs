@@ -54,7 +54,7 @@ namespace MajdataPlay.View
     }
     public class MajdataWsService : WebSocketBehavior, IDisposable
     {
-        ViewManager _viewManager = Majdata<ViewManager>.Instance!;
+        ViewManager? _viewManager => Majdata<ViewManager>.Instance;
 
         readonly CancellationTokenSource _cts = new();
         readonly static JsonSerializerOptions JSON_READER_OPTIONS = new()
@@ -113,6 +113,7 @@ namespace MajdataPlay.View
         }
         protected override async void OnMessage(MessageEventArgs e)
         {
+            if (_viewManager is null) return;
             try
             {
                 var json = string.Empty;
