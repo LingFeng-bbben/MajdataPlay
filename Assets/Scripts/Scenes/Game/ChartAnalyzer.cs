@@ -45,7 +45,10 @@ namespace MajdataPlay.Game
             _colorC = touchColor;
             _rawImage = GetComponent<RawImage>();
         }
-        
+        void OnDestroy()
+        {
+            Majdata<ChartAnalyzer>.Free();
+        }
         public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, CancellationToken token = default)
         {
             try

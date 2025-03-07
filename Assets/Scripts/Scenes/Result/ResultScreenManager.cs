@@ -249,22 +249,30 @@ namespace MajdataPlay.Result
                 return;
             }
         }
-        void DrawNoteJudgeDiffGraph(float[] noteJudgeDiffs)
+        void DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
         {
-            ReadOnlySpan<float> dataset = noteJudgeDiffs.OrderBy(x => x)
-                                                        .ToArray()
-                                                        .AsSpan();
-            const float SAMPLE_DIFF_STEP = 1.6666f / 2;
+            ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
+            const float SAMPLE_DIFF_STEP = 1.6667f / 2;
+            const int CHART_PADDING_LEFT = 0;
+            const int CHART_PADDING_RIGHT = 0;
+            const int CHART_PADDING_TOP = 0;
+            const int CHART_PADDING_BOTTOM = 50;
 
             var width = 1018;
             var height = 187;
+            var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
+            var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
+            
             var imageInfo = new SKImageInfo(width, height);
-            var positions = new List<Vector2>();
+            Span<Point> points = stackalloc Point[180];
             var maxSampleCount = 0;
             using var surface = SKSurface.Create(imageInfo);
             using var perfectPaint = new SKPaint();
             using var greatPaint = new SKPaint();
             using var goodPaint = new SKPaint();
+            using var perfectPath = new SKPath();
+            using var greatPath = new SKPath();
+            using var goodPath = new SKPath();
             var canvas = surface.Canvas;
             
             canvas.Clear(SKColor.Empty);
@@ -272,14 +280,75 @@ namespace MajdataPlay.Result
             greatPaint.Color = SKColors.LightPink;
             goodPaint.Color = SKColors.DarkGreen;
 
-            for (var sampleDiff = -150f; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2)
+            for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
             {
                 var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
                 var samples = dataset.FindAll(x => range.InRange(x));
                 var sampleCount = samples.Length;
                 var x = sampleDiff + 150f / 300f;
-            }
+                var y = sampleCount;
 
+                if(y > maxSampleCount)
+                    maxSampleCount = y;
+
+                points[(int)i] = new Point()
+                {
+                    X = x,
+                    Y = y,
+                    Diff = sampleDiff,
+                };
+            }
+            for (var i = 0; i < points.Length; i++)
+            {
+                var origin = points[i];
+                points[i] = new Point()
+                {
+                    X = origin.X,
+                    Y = origin.Y / maxSampleCount,
+                    Diff = origin.Diff
+                };
+            }
+            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            for(var i = 0;i < points.Length; i++)
+            {
+                var point = points[i];
+                var x = chartWidth * point.X + CHART_PADDING_LEFT;
+                var y = chartHeight * point.Y - CHART_PADDING_TOP;
+                var isPerfect = Math.Abs(point.Diff) <= 50f;
+                var isGreat = Math.Abs(point.Diff) <= 100f;
+                var isGood = Math.Abs(point.Diff) <= 150f;
+
+                if(isPerfect)
+                {
+                    perfectPath.LineTo(x, y);
+                }
+                else if(isGreat)
+                {
+                    greatPath.LineTo(x, y);
+                }
+                else if(isGood)
+                {
+                    goodPath.LineTo(x, y);
+                }
+            }
+            perfectPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            greatPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            goodPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            perfectPath.Close();
+            greatPath.Close();
+            goodPath.Close();
+
+            canvas.DrawPath(perfectPath, perfectPaint);
+            canvas.DrawPath(greatPath, greatPaint);
+            canvas.DrawPath(goodPath, goodPaint);
+        }
+        readonly struct Point
+        {
+            public float X { get; init; }
+            public float Y { get; init; }
+            public float Diff { get; init; }
         }
     }
 }
