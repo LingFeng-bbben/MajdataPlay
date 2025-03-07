@@ -54,6 +54,7 @@ namespace MajdataPlay.Result
 
         void Start()
         {
+            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(Memory<float>.Empty);
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
@@ -131,6 +132,7 @@ namespace MajdataPlay.Result
                     OnlineSaveTask = intractSender.SendScore(score);
                 }
             }
+            
         }
 
         async UniTask LoadCover(ISongDetail song)
@@ -258,7 +260,7 @@ namespace MajdataPlay.Result
             const int CHART_PADDING_LEFT = 20;
             const int CHART_PADDING_RIGHT = 20;
             const int CHART_PADDING_TOP = 0;
-            const int CHART_PADDING_BOTTOM = 50;
+            const int CHART_PADDING_BOTTOM = 30;
 
             var width = 1018;
             var height = 187;
@@ -274,12 +276,13 @@ namespace MajdataPlay.Result
             using var greatPaint = new SKPaint();
             using var goodPaint = new SKPaint();
             using var linePaint = new SKPaint();
+            using var textPaint = new SKPaint();
             using var perfectPath = new SKPath();
             using var greatPath = new SKPath();
             using var goodPath = new SKPath();
             var canvas = surface.Canvas;
             
-            canvas.Clear(SKColor.Empty);
+            canvas.Clear(SKColor.Parse("#FFFFFF"));
             perfectPaint.Color = SKColors.Gold;
             perfectPaint.IsAntialias = true;
             perfectPaint.Style = SKPaintStyle.Fill;
@@ -293,6 +296,11 @@ namespace MajdataPlay.Result
             linePaint.IsAntialias = true;
             linePaint.Style = SKPaintStyle.Fill;
             linePaint.StrokeWidth = 1f;
+            textPaint.Color = SKColors.Black;
+            textPaint.IsAntialias = true;
+            textPaint.Style = SKPaintStyle.Fill;
+            textPaint.StrokeWidth = 2.5f;
+            textFont.Size = 18;
 
             for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
             {
@@ -374,11 +382,11 @@ namespace MajdataPlay.Result
                 };
                 var textPoint = new SKPoint()
                 {
-                    X = x - 20,
-                    Y = CHART_PADDING_TOP + chartHeight + 30f
+                    X = x + 6f,
+                    Y = CHART_PADDING_TOP + chartHeight + 15f
                 };
                 canvas.DrawLine(start, end, linePaint);
-                canvas.DrawText($"{i}f", textPoint, textFont, linePaint);
+                canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
             }
             return GraphHelper.GraphSnapshot(surface);
         }
