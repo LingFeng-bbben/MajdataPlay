@@ -89,7 +89,7 @@ namespace MajdataPlay.View
         ChartAnalyzer _chartAnalyzer;
 
         SimaiChart? _chart;
-        Sprite _bgCover = MajEnv.EmptySongCover;
+        Sprite? _bgCover = null;
         AudioSampleWrap? _audioSample = null;
 
         static MajTimer _timer = MajTimeline.CreateTimer();
@@ -310,6 +310,10 @@ namespace MajdataPlay.View
                 {
                     var cover = await SpriteLoader.LoadAsync(bgPath);
                     _bgCover = cover;
+                }
+                else
+                {
+                    _bgCover = null;
                 }
                 _videoPath = pvPath;
                 _audioSample = sample;

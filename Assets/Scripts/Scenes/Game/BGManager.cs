@@ -82,7 +82,8 @@ namespace MajdataPlay.Game
 
         public void SetBackgroundPic(Sprite sprite)
         {
-            if (sprite == null) { 
+            if (sprite is null) 
+            { 
                 spriteRender.sprite = DefaultSprite;
                 transform.localScale = DefaultScale;
                 return; 
