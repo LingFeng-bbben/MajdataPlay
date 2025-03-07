@@ -46,6 +46,8 @@ namespace MajdataPlay.Result
 
         public Image coverImg;
 
+        public RawImage _noteJudgeDiffGraph;
+
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         UniTask OnlineSaveTask = UniTask.Delay(0);
@@ -249,7 +251,7 @@ namespace MajdataPlay.Result
                 return;
             }
         }
-        void DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
+        Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
         {
             ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
             const float SAMPLE_DIFF_STEP = 1.6667f / 2;
@@ -378,6 +380,7 @@ namespace MajdataPlay.Result
                 canvas.DrawLine(start, end, linePaint);
                 canvas.DrawText($"{i}f", textPoint, textFont, linePaint);
             }
+            return GraphHelper.GraphSnapshot(surface);
         }
         readonly struct Point
         {
