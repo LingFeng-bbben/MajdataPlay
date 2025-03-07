@@ -76,8 +76,11 @@ namespace MajdataPlay.View
 
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
-        string? _videoPath = null;
 
+        // Assets
+        static AudioSampleWrap? _audioSample = null;
+        static Sprite? _bgCover = null;
+        static string? _videoPath = null;
         //WsServer _httpServer;
         GameSetting _setting = MajInstances.Setting;
         NoteLoader _noteLoader;
@@ -89,8 +92,7 @@ namespace MajdataPlay.View
         ChartAnalyzer _chartAnalyzer;
 
         SimaiChart? _chart;
-        Sprite? _bgCover = null;
-        AudioSampleWrap? _audioSample = null;
+        
 
         static MajTimer _timer = MajTimeline.CreateTimer();
         
@@ -116,6 +118,16 @@ namespace MajdataPlay.View
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
             _chartAnalyzer = Majdata<ChartAnalyzer>.Instance!;
+
+            if (!string.IsNullOrEmpty(_videoPath))
+            {
+                _bgManager.SetBackgroundMovie(_videoPath).AsTask().Wait();
+            }
+            else if (_bgCover is not null)
+            {
+                _bgManager.DisableVideo();
+                _bgManager.SetBackgroundPic(_bgCover);
+            }
         }
         void Update()
         {
