@@ -10,6 +10,9 @@ using System.Linq;
 using MajdataPlay.Game.Types;
 using System;
 using SkiaSharp;
+using System.Collections.Generic;
+using MajdataPlay.Extensions;
+using Random = UnityEngine.Random;
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -251,9 +254,13 @@ namespace MajdataPlay.Result
             ReadOnlySpan<float> dataset = noteJudgeDiffs.OrderBy(x => x)
                                                         .ToArray()
                                                         .AsSpan();
+            const float SAMPLE_DIFF_STEP = 1.6666f / 2;
+
             var width = 1018;
             var height = 187;
             var imageInfo = new SKImageInfo(width, height);
+            var positions = new List<Vector2>();
+            var maxSampleCount = 0;
             using var surface = SKSurface.Create(imageInfo);
             using var perfectPaint = new SKPaint();
             using var greatPaint = new SKPaint();
@@ -264,6 +271,14 @@ namespace MajdataPlay.Result
             perfectPaint.Color = SKColors.Gold;
             greatPaint.Color = SKColors.LightPink;
             goodPaint.Color = SKColors.DarkGreen;
+
+            for (var sampleDiff = -150f; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2)
+            {
+                var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
+                var samples = dataset.FindAll(x => range.InRange(x));
+                var sampleCount = samples.Length;
+                var x = sampleDiff + 150f / 300f;
+            }
 
         }
     }
