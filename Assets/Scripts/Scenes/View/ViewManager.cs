@@ -52,9 +52,9 @@ namespace MajdataPlay.View
             }
         }
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Enable;
+        public AutoplayMode AutoplayMode => MajEnv.UserSetting.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
-        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
+        public JudgeStyleType JudgeStyle => MajEnv.UserSetting.Mod.JudgeStyle;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
