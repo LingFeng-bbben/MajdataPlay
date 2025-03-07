@@ -135,6 +135,17 @@ namespace MajdataPlay.Game
             touchHoldPool?.Destroy();
             eachLinePool?.Destroy();
 
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                var childCountInChild = child.childCount;
+                for (var ii = 0; ii < childCountInChild; ii++)
+                {
+                    var childInChild = child.GetChild(ii);
+                    Destroy(childInChild.gameObject);
+                }
+            }
+
             tapInfos.Clear();
             holdInfos.Clear();
             touchInfos.Clear();

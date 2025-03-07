@@ -8,6 +8,8 @@ using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
 using MajdataPlay.Game.Types;
+using System;
+using SkiaSharp;
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -243,6 +245,26 @@ namespace MajdataPlay.Result
                 MajInstances.SceneSwitcher.SwitchScene("List",false);
                 return;
             }
+        }
+        void DrawNoteJudgeDiffGraph(float[] noteJudgeDiffs)
+        {
+            ReadOnlySpan<float> dataset = noteJudgeDiffs.OrderBy(x => x)
+                                                        .ToArray()
+                                                        .AsSpan();
+            var width = 1018;
+            var height = 187;
+            var imageInfo = new SKImageInfo(width, height);
+            using var surface = SKSurface.Create(imageInfo);
+            using var perfectPaint = new SKPaint();
+            using var greatPaint = new SKPaint();
+            using var goodPaint = new SKPaint();
+            var canvas = surface.Canvas;
+            
+            canvas.Clear(SKColor.Empty);
+            perfectPaint.Color = SKColors.Gold;
+            greatPaint.Color = SKColors.LightPink;
+            goodPaint.Color = SKColors.DarkGreen;
+
         }
     }
 }
