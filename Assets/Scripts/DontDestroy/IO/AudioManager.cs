@@ -48,10 +48,13 @@ namespace MajdataPlay.IO
             var sampleRate = MajInstances.Setting.Audio.Samplerate;
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
 
-            //if (MajEnv.Mode == RunningMode.View) {
-            //    backend = SoundBackendType.Wasapi;
-            //    isExclusiveRequest = false; 
-            //}
+#if !UNITY_EDITOR
+            if (MajEnv.Mode == RunningMode.View)
+            {
+                backend = SoundBackendType.Wasapi;
+                isExclusiveRequest = false;
+            }
+#endif
 
             switch (backend)
             {
