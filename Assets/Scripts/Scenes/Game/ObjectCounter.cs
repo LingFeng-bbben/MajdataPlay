@@ -84,6 +84,7 @@ namespace MajdataPlay.Game
         XxlbDanceRequest _xxlbDanceRequest = new();
         bool _isOutlinePlayRequested = false;
 
+        List<float> _noteJudgeDiffList = new();
         Dictionary<JudgeGrade, int> _judgedTapCount = new()
         { 
             {JudgeGrade.TooFast, 0 },
@@ -841,6 +842,7 @@ namespace MajdataPlay.Game
                     case TapDrop:
                     case HoldDrop:
                         _isOutlinePlayRequested = true;
+                        //_noteJudgeDiffList.Add(judgeResult.Diff);
                         break;
                 }
             }
