@@ -110,6 +110,7 @@ namespace MajdataPlay.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
+            avgJudgeTime.text = $"{ result.NoteJudgeDiffs.ToArray().Average()/1000f:F3}s";
 
             LoadCover(song).Forget();
 
@@ -268,8 +269,8 @@ namespace MajdataPlay.Result
             const int CHART_PADDING_TOP = 0;
             const int CHART_PADDING_BOTTOM = 30;
 
-            var width = 1018;
-            var height = 187;
+            var width = 690;
+            var height = 139;
             var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
             var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
             
@@ -305,8 +306,8 @@ namespace MajdataPlay.Result
             textPaint.Color = SKColors.White;
             textPaint.IsAntialias = true;
             textPaint.Style = SKPaintStyle.Fill;
-            textPaint.StrokeWidth = 2.5f;
-            textFont.Size = 18;
+            textPaint.StrokeWidth = 4f;
+            textFont.Size = 20;
 
             for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
             {
@@ -403,7 +404,7 @@ namespace MajdataPlay.Result
                 var textPoint = new SKPoint()
                 {
                     X = x + 6f,
-                    Y = CHART_PADDING_TOP + chartHeight + 15f
+                    Y = CHART_PADDING_TOP + chartHeight + 18f
                 };
                 canvas.DrawLine(start, end, linePaint);
                 canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
