@@ -853,7 +853,7 @@ namespace MajdataPlay.Game
                     }
                 }
                 NoteSum = TapSum + HoldSum + TouchSum + BreakSum + SlideSum;
-                TotalNoteBaseScore = TapSum * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
+                TotalNoteBaseScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
                 TotalNoteExtraScore = BreakSum * 100;
                 _totalDXScore = NoteSum * 3;
                 _noteJudgeDiffList = new(NoteSum);
