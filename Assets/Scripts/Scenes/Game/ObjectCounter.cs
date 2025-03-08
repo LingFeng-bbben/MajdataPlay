@@ -12,7 +12,8 @@ using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
 using MajdataPlay.Game.Types;
-
+using System.Threading.Tasks;
+#nullable enable
 namespace MajdataPlay.Game
 {
     public class ObjectCounter : MonoBehaviour
@@ -30,23 +31,40 @@ namespace MajdataPlay.Game
         public Color EarlyDiffColor;
         public Color LateDiffColor;
 
-        public bool AllFinished => tapCount == tapSum &&
-            holdCount == holdSum &&
-            slideCount == slideSum &&
-            touchCount == touchSum &&
-            breakCount == breakSum;
+        public bool AllFinished
+        {
+            get
+            {
+                return TapFinishedCount == TapSum &&
+                       HoldFinishedCount == HoldSum &&
+                       SlideFinishedCount == SlideSum &&
+                       TouchFinishedCount == TouchSum &&
+                       BreakFinishedCount == BreakSum;
+            }
+        }
+        public int TapFinishedCount { get; private set; }
+        public int HoldFinishedCount { get; private set; }
+        public int SlideFinishedCount { get; private set; }
+        public int TouchFinishedCount { get; private set; }
+        public int BreakFinishedCount { get; private set; }
+        public int NoteFinishedCount
+        {
+            get
+            {
+                return TapFinishedCount + 
+                       HoldFinishedCount + 
+                       SlideFinishedCount + 
+                       TouchFinishedCount + 
+                       BreakFinishedCount;
+            }
+        }
 
-        public int tapCount;
-        public int holdCount;
-        public int slideCount;
-        public int touchCount;
-        public int breakCount;
-
-        public int tapSum;
-        public int holdSum;
-        public int slideSum;
-        public int touchSum;
-        public int breakSum;
+        public int TapSum { get; private set; }
+        public int HoldSum { get; private set; }
+        public int SlideSum { get; private set; }
+        public int TouchSum { get; private set; }
+        public int BreakSum { get; private set; }
+        public int NoteSum { get; private set; }
         private TextMeshProUGUI _rate;
 
         Text _bgInfoHeader;
@@ -68,10 +86,10 @@ namespace MajdataPlay.Game
         long _goodCount = 0;
         long _missCount = 0;
 
-        long _fast = 0;
-        long _late = 0;
+        long _fastCount = 0;
+        long _lateCount = 0;
 
-        float _diff = 0; // Note judge diff
+        float _lastJudgeDiff = 0; // Note judge diff
         float _diffTimer = 3;
 
         public long _totalDXScore = 0;
@@ -491,17 +509,17 @@ namespace MajdataPlay.Game
                 100.0000,// acc 100(-)
                 0.0000,  // acc (+)
             };
-            tapCount = 0;
-            holdCount = 0;
-            slideCount = 0;
-            touchCount = 0;
-            breakCount = 0;
+            TapFinishedCount = 0;
+            HoldFinishedCount = 0;
+            SlideFinishedCount = 0;
+            TouchFinishedCount = 0;
+            BreakFinishedCount = 0;
 
-            tapSum = 0;
-            holdSum = 0;
-            slideSum = 0;
-            touchSum = 0;
-            breakSum = 0;
+            TapSum = 0;
+            HoldSum = 0;
+            SlideSum = 0;
+            TouchSum = 0;
+            BreakSum = 0;
 
 
             _cPerfectCount = 0;
@@ -510,10 +528,10 @@ namespace MajdataPlay.Game
             _goodCount = 0;
             _missCount = 0;
 
-            _fast = 0;
-            _late = 0;
+            _fastCount = 0;
+            _lateCount = 0;
 
-            _diff = 0; // Note judge diff
+            _lastJudgeDiff = 0; // Note judge diff
             _diffTimer = 3;
 
             _totalDXScore = 0;
@@ -575,8 +593,8 @@ namespace MajdataPlay.Game
                 SongDetail = song,
                 Level = level,
                 JudgeRecord = judgeRecord,
-                Fast = _fast,
-                Late = _late,
+                Fast = _fastCount,
+                Late = _lateCount,
                 DXScore = _totalDXScore + _lostDXScore,
                 TotalDXScore = _totalDXScore,
                 ComboState = cState
@@ -746,14 +764,69 @@ namespace MajdataPlay.Game
         void CalAccRate()
         {
             var currentNoteScore = GetNoteScoreSum();
-            var totalScore = (tapSum + touchSum) * 500 + holdSum * 1000 + slideSum * 1500 + breakSum * 2500;
-            var totalExtraScore = Math.Max(breakSum * 100, 1);
+            var totalScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
+            var totalExtraScore = Math.Max(BreakSum * 100, 1);
 
             _accRate[0] = (currentNoteScore.TotalScore + currentNoteScore.TotalExtraScoreClassic) / (double)totalScore * 100;
             _accRate[1] = (totalScore + currentNoteScore.TotalExtraScoreClassic - currentNoteScore.LostScore) / (double)totalScore * 100;
             _accRate[2] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + (totalExtraScore - currentNoteScore.LostExtraScore) / (double)totalExtraScore;
             _accRate[3] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
             _accRate[4] = currentNoteScore.TotalScore / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
+        }
+        internal async ValueTask CountNoteSumAsync(SimaiChart chart)
+        {
+            await Task.Run(() =>
+            {
+                foreach (var timing in chart.NoteTimings)
+                {
+                    foreach (var note in timing.Notes)
+                    {
+                        if (!note.IsBreak)
+                        {
+                            switch(note.Type)
+                            {
+                                case SimaiNoteType.Tap:
+                                    TapSum++;
+                                    break;
+                                case SimaiNoteType.Hold:
+                                case SimaiNoteType.TouchHold:
+                                    HoldSum++;
+                                    break;
+                                case SimaiNoteType.Slide:
+                                    if (!note.IsSlideNoHead)
+                                        TapSum++;
+                                    if (note.IsSlideBreak)
+                                        BreakSum++;
+                                    else
+                                        SlideSum++;
+                                    break;
+                                case SimaiNoteType.Touch:
+                                    TouchSum++;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            if (note.Type == SimaiNoteType.Slide)
+                            {
+                                if (!note.IsSlideNoHead) 
+                                    BreakSum++;
+                                if (note.IsSlideBreak)
+                                    BreakSum++;
+                                else
+                                    SlideSum++;
+                            }
+                            else
+                            {
+                                BreakSum++;
+                            }
+                        }
+                    }
+                }
+                _totalDXScore = (TapSum + HoldSum + TouchSum + SlideSum + BreakSum) * 3;
+                NoteSum = TapSum + HoldSum + TouchSum + BreakSum + SlideSum;
+                _noteJudgeDiffList = new(NoteSum);
+            });
         }
         internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
         {
@@ -767,12 +840,12 @@ namespace MajdataPlay.Game
                     if (isBreak)
                     {
                         _judgedBreakCount[result]++;
-                        breakCount++;
+                        BreakFinishedCount++;
                     }
                     else
                     {
                         _judgedTapCount[result]++;
-                        tapCount++;
+                        TapFinishedCount++;
                     }
                     break;
                 case WifiDrop:
@@ -780,12 +853,12 @@ namespace MajdataPlay.Game
                     if (isBreak)
                     {
                         _judgedBreakCount[result]++;
-                        breakCount++;
+                        BreakFinishedCount++;
                     }
                     else
                     {
                         _judgedSlideCount[result]++;
-                        slideCount++;
+                        SlideFinishedCount++;
                     }
                     isSlide = true;
                     break;
@@ -793,36 +866,36 @@ namespace MajdataPlay.Game
                     if (isBreak)
                     {
                         _judgedBreakCount[result]++;
-                        breakCount++;
+                        BreakFinishedCount++;
                     }
                     else
                     {
                         _judgedHoldCount[result]++;
-                        holdCount++;
+                        HoldFinishedCount++;
                     }
                     break;
                 case TouchDrop:
                     if (isBreak)
                     {
                         _judgedBreakCount[result]++;
-                        breakCount++;
+                        BreakFinishedCount++;
                     }
                     else
                     {
                         _judgedTouchCount[result]++;
-                        touchCount++;
+                        TouchFinishedCount++;
                     }
                     break;
                 case TouchHoldDrop:
                     if (isBreak)
                     {
                         _judgedBreakCount[result]++;
-                        breakCount++;
+                        BreakFinishedCount++;
                     }
                     else
                     {
                         _judgedTouchHoldCount[result]++;
-                        holdCount++;
+                        HoldFinishedCount++;
                     }
                     break;
             }
@@ -830,7 +903,7 @@ namespace MajdataPlay.Game
 
             if (!isSlide && !judgeResult.IsMissOrTooFast)
             {
-                _diff = judgeResult.Diff;
+                _lastJudgeDiff = judgeResult.Diff;
                 _diffTimer = 3;
             }
 
@@ -923,17 +996,17 @@ namespace MajdataPlay.Game
                     if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
                         break;
                     else if (judgeResult.IsFast)
-                        _fast++;
+                        _fastCount++;
                     else
-                        _late++;
+                        _lateCount++;
                     break;
                 case JudgeDisplayType.BelowCP:
                     if (judgeResult.IsMissOrTooFast || judgeResult.Grade == JudgeGrade.Perfect)
                         break;
                     else if (judgeResult.IsFast)
-                        _fast++;
+                        _fastCount++;
                     else
-                        _late++;
+                        _lateCount++;
                     break;
                 //默认只统计Great、Good的Fast/Late
                 case JudgeDisplayType.BelowP:
@@ -942,9 +1015,9 @@ namespace MajdataPlay.Game
                     if (judgeResult.IsMissOrTooFast || absValue <= 2)
                         break;
                     else if (judgeResult.IsFast)
-                        _fast++;
+                        _fastCount++;
                     else
-                        _late++;
+                        _lateCount++;
                     break;
             }
         }
@@ -1021,9 +1094,9 @@ namespace MajdataPlay.Game
                     UpdateRankBoard(bgInfo);
                     break;
                 case BGInfoType.Diff:
-                    _bgInfoText.text = ZString.Format(DIFF_STRING, _diff);
+                    _bgInfoText.text = ZString.Format(DIFF_STRING, _lastJudgeDiff);
                     var oldColor = _bgInfoText.color;
-                    if (_diff < 0)
+                    if (_lastJudgeDiff < 0)
                     {
                         oldColor = EarlyDiffColor;
                         _bgInfoHeader.text = FAST_STRING;
@@ -1136,8 +1209,8 @@ namespace MajdataPlay.Game
                                                     _greatCount, 
                                                     _goodCount, 
                                                     _missCount, 
-                                                    _fast, 
-                                                    _late);
+                                                    _fastCount, 
+                                                    _lateCount);
         }
         /// <summary>
         /// 更新SubDisplay左侧的Note详情
@@ -1203,17 +1276,6 @@ namespace MajdataPlay.Game
             if (textElement.color != newColor)
                 textElement.color = newColor;
         }
-        SimaiNoteType GetNoteType(NoteDrop note) => note switch
-        {
-            TapDrop => SimaiNoteType.Tap,
-            //StarDrop => SimaiNoteType.Tap,
-            HoldDrop => SimaiNoteType.Hold,
-            SlideDrop => SimaiNoteType.Slide,
-            WifiDrop => SimaiNoteType.Slide,
-            TouchHoldDrop => SimaiNoteType.TouchHold,
-            TouchDrop => SimaiNoteType.Touch,
-            _ => throw new InvalidOperationException()
-        };
         readonly struct XxlbDanceRequest
         {
             public bool IsRequested { get; init; }
