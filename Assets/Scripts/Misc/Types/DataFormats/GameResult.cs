@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Collections;
+using System;
 
 namespace MajdataPlay.Types
 {
@@ -13,5 +14,6 @@ namespace MajdataPlay.Types
         public long DXScore { get; init; }
         public long TotalDXScore { get; init; }
         public ComboState ComboState { get; init; }
+        public ReadOnlyMemory<float> NoteJudgeDiffs { get; init; }
     }
 }

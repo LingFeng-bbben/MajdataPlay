@@ -164,11 +164,12 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        public void End(bool forceEnd = false)
+        public void End()
         {
-            State = NoteStatus.End;
-            if (!_isJudged || forceEnd)
+            if (IsEnded)
                 return;
+
+            State = NoteStatus.End;
 
             _multTouchHandler.Unregister(_sensorPos);
             var result = new JudgeResult()
@@ -181,9 +182,6 @@ namespace MajdataPlay.Game.Notes
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
             SetActive(false);
-            //_pointObject.SetActive(false);
-            //_justBorderObject.SetActive(false);
-
             
             if (_isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);

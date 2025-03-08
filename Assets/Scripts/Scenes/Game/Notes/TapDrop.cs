@@ -124,12 +124,12 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        public void End(bool forceEnd = false)
+        public void End()
         {
-            State = NoteStatus.End;
-            //UnsubscribeEvent();
-            if (!_isJudged || forceEnd) 
+            if (IsEnded)
                 return;
+
+            State = NoteStatus.End;
 
             SetActive(false);
             RendererState = RendererStatus.Off;

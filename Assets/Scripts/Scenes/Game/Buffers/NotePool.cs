@@ -15,6 +15,7 @@ namespace MajdataPlay.Game.Buffers
         public int Capacity { get; set; } = 64;
         public bool IsStatic { get; } = true;
 
+        protected readonly Transform _parent;
         protected Memory<TimingPoint<TInfo>> _timingPoints = Memory<TimingPoint<TInfo>>.Empty;
         protected Queue<IPoolableNote<TInfo, TMember>> _storage;
         protected Queue<IPoolableNote<TInfo, TMember>> _idleNotes;
@@ -24,6 +25,7 @@ namespace MajdataPlay.Game.Buffers
             Capacity = capacity;
             _storage = new(capacity);
             _idleNotes = new(capacity);
+            _parent = parent;
             for (var i = 0; i < capacity; i++)
             {
                 var obj = UnityEngine.Object.Instantiate(prefab, parent);
@@ -150,12 +152,13 @@ namespace MajdataPlay.Game.Buffers
         }
         public virtual void Destroy()
         {
-            foreach (var note in _idleNotes)
+            var childCount = _parent.childCount;
+            for (var i = 0; i < childCount; i++)
             {
                 try
                 {
-                    note.End(true);
-                    UnityEngine.Object.Destroy(note.GameObject);
+                    var child = _parent.GetChild(i);
+                    UnityEngine.Object.Destroy(child.gameObject);
                 }
                 catch (Exception e)
                 {

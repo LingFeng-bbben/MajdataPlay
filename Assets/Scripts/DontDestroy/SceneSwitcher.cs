@@ -68,7 +68,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             loadingText.text = "";
             loadingText.gameObject.SetActive(true);
             animator.SetBool("In", true);
@@ -89,7 +89,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -109,7 +109,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -129,7 +129,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
@@ -151,7 +151,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -171,7 +171,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (!taskToRun.IsCompleted)
                 await UniTask.Yield();
@@ -192,7 +192,7 @@ namespace MajdataPlay
         {
             _inputManager.ClearAllSubscriber();
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
+            //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();

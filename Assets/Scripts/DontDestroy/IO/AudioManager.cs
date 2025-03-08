@@ -48,10 +48,13 @@ namespace MajdataPlay.IO
             var sampleRate = MajInstances.Setting.Audio.Samplerate;
             var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
 
-            if (MajEnv.Mode == RunningMode.View) {
+#if !UNITY_EDITOR
+            if (MajEnv.Mode == RunningMode.View)
+            {
                 backend = SoundBackendType.Wasapi;
-                isExclusiveRequest = false; 
+                isExclusiveRequest = false;
             }
+#endif
 
             switch (backend)
             {
@@ -66,6 +69,7 @@ namespace MajdataPlay.IO
                         }
                         
                         MajDebug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        MajDebug.Log(BassAsio.LastError);
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);

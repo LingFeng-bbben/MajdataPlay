@@ -191,17 +191,12 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        public void End(bool forceEnd = false)
+        public void End()
         {
-            State = NoteStatus.End;
-            if (forceEnd)
+            if (IsEnded)
                 return;
-            //else if (!_isJudged)
-            //{
-            //    _noteManager.NextNote(QueueInfo);
-            //    return;
-            //}
-            
+            State = NoteStatus.End;
+
             if (IsClassic)
                 _judgeResult = EndJudge_Classic(_judgeResult);
             else

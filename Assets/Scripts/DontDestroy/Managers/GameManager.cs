@@ -90,6 +90,7 @@ namespace MajdataPlay
                 if (arg == "--view-mode")
                 {
                     MajEnv.Mode = RunningMode.View;
+                    Setting.Mod.AutoPlay = AutoplayMode.Enable;
                     break;
                 }
             }
@@ -98,6 +99,7 @@ namespace MajdataPlay
             if (IsEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
+                Setting.Mod.AutoPlay = AutoplayMode.Enable;
             }
 #endif
 

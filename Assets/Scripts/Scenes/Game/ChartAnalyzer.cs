@@ -1,5 +1,6 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajSimai;
@@ -45,7 +46,10 @@ namespace MajdataPlay.Game
             _colorC = touchColor;
             _rawImage = GetComponent<RawImage>();
         }
-        
+        void OnDestroy()
+        {
+            Majdata<ChartAnalyzer>.Free();
+        }
         public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, CancellationToken token = default)
         {
             try
@@ -233,13 +237,13 @@ namespace MajdataPlay.Game
                 using (var slidePaint = new SKPaint())
                 using (var touchPaint = new SKPaint())
                 {
-                    tapPaint.Color = ToSkColor(_colorA);
+                    tapPaint.Color = _colorA.ToSkColor();
                     tapPaint.IsAntialias = true;
                     tapPaint.Style = SKPaintStyle.Fill;
-                    slidePaint.Color = ToSkColor(_colorB);
+                    slidePaint.Color = _colorB.ToSkColor();
                     slidePaint.IsAntialias = true;
                     slidePaint.Style = SKPaintStyle.Fill;
-                    touchPaint.Color = ToSkColor(_colorC);
+                    touchPaint.Color = _colorC.ToSkColor();
                     touchPaint.IsAntialias = true;
                     touchPaint.Style = SKPaintStyle.Fill;
                     using (var tapPath = new SKPath())
@@ -273,34 +277,7 @@ namespace MajdataPlay.Game
                 }
             });
             await UniTask.Yield();
-            return GraphSnapshot(surface);
-        }
-        static Texture GraphSnapshot(SKSurface surface)
-        {
-            //sort it into rawimage
-            using (var image = surface.Snapshot())
-            {
-                var bitmap = SKBitmap.FromImage(image);
-                var skcolors = bitmap.Pixels.AsSpan();
-                var writer = new ArrayBufferWriter<SKColor>(bitmap.Width * bitmap.Height);
-                for (var i = bitmap.Height - 1; i >= 0; i--) writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
-                var colors = writer.WrittenSpan.ToArray().AsParallel().AsOrdered().Select(s => ToUnityColor32(s)).ToArray();
-
-                var tex0 = new Texture2D(bitmap.Width, bitmap.Height);
-                tex0.SetPixels32(colors);
-                tex0.Apply();
-
-                return tex0;
-            }
-        }
-        public static Color32 ToUnityColor32(SKColor skColor)
-        {
-            return new Color32(skColor.Red, skColor.Green, skColor.Blue, skColor.Alpha);
-        }
-
-        public static SKColor ToSkColor(Color32 color32)
-        {
-            return new SKColor(color32.r, color32.g, color32.b, color32.a);
+            return GraphHelper.GraphSnapshot(surface);
         }
     }
 }

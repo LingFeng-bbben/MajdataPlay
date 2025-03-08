@@ -337,18 +337,11 @@ namespace MajdataPlay.Game.Notes
             ConvertJudgeGrade(ref _judgeResult);
             _isJudged = true;
         }
-        /// <summary>
-        /// 销毁当前Slide
-        /// <para>当 <paramref name="onlyStar"/> 为true时，仅销毁引导Star</para>
-        /// </summary>
-        /// <param name="onlyStar"></param>
-        public virtual void End(bool forceEnd = false)
+        public virtual void End()
         {
             if (Parent is not null && !Parent.IsEnded)
-                Parent.End(false);
-            //foreach (var obj in _slideBars.AsSpan())
-            //    obj.SetActive(false);
-            //DestroyStars();
+                Parent.End();
+
             SetActive(false);
         }
         /// <summary>

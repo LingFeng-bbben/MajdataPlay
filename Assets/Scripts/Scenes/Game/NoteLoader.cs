@@ -241,13 +241,13 @@ namespace MajdataPlay.Game
                 _touchIndex.Add((SensorArea)i, 0);
 
 
-            await CountNoteSumAsync(maiChart);
+            await _objectCounter.CountNoteSumAsync(maiChart);
 
-            NoteCount = _objectCounter.tapSum +
-                      _objectCounter.holdSum +
-                      _objectCounter.touchSum +
-                      _objectCounter.breakSum +
-                      _objectCounter.slideSum;
+            NoteCount = _objectCounter.TapSum +
+                      _objectCounter.HoldSum +
+                      _objectCounter.TouchSum +
+                      _objectCounter.BreakSum +
+                      _objectCounter.SlideSum;
 
             if (maiChart.NoteTimings.Length != 0)
             {
@@ -670,45 +670,6 @@ namespace MajdataPlay.Game
                 }
                 foreach (var member in members)
                     member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
-            });
-        }
-        private async ValueTask CountNoteSumAsync(SimaiChart chart)
-        {
-            await Task.Run(() =>
-            {
-                foreach (var timing in chart.NoteTimings)
-                    foreach (var note in timing.Notes)
-                        if (!note.IsBreak)
-                        {
-                            if (note.Type == SimaiNoteType.Tap) _objectCounter.tapSum++;
-                            if (note.Type == SimaiNoteType.Hold) _objectCounter.holdSum++;
-                            if (note.Type == SimaiNoteType.TouchHold) _objectCounter.holdSum++;
-                            if (note.Type == SimaiNoteType.Touch) _objectCounter.touchSum++;
-                            if (note.Type == SimaiNoteType.Slide)
-                            {
-                                if (!note.IsSlideNoHead) _objectCounter.tapSum++;
-                                if (note.IsSlideBreak)
-                                    _objectCounter.breakSum++;
-                                else
-                                    _objectCounter.slideSum++;
-                            }
-                        }
-                        else
-                        {
-                            if (note.Type == SimaiNoteType.Slide)
-                            {
-                                if (!note.IsSlideNoHead) _objectCounter.breakSum++;
-                                if (note.IsSlideBreak)
-                                    _objectCounter.breakSum++;
-                                else
-                                    _objectCounter.slideSum++;
-                            }
-                            else
-                            {
-                                _objectCounter.breakSum++;
-                            }
-                        }
-                _objectCounter._totalDXScore = (_objectCounter.tapSum + _objectCounter.holdSum + _objectCounter.touchSum + _objectCounter.slideSum + _objectCounter.breakSum) * 3;
             });
         }
         private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note, in List<NotePoolingInfo?> eachNotes)

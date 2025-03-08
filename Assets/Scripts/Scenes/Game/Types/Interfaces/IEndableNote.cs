@@ -5,6 +5,6 @@ namespace MajdataPlay.Game.Types
 {
     public interface IEndableNote
     {
-        void End(bool forceEnd);
+        void End();
     }
 }

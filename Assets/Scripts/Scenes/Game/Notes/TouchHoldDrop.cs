@@ -212,11 +212,13 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        public void End(bool forceEnd = false)
+        public void End()
         {
-            State = NoteStatus.End;
-            if (forceEnd)
+            if (IsEnded)
                 return;
+
+            State = NoteStatus.End;
+
             _judgeResult = EndJudge(_judgeResult);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new JudgeResult()

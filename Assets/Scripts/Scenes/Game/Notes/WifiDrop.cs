@@ -424,20 +424,12 @@ namespace MajdataPlay.Game.Notes
             base.TooLateJudge();
             End();
         }
-        public override void End(bool forceEnd = false)
+        public override void End()
         {
             if (IsEnded)
                 return;
-            //foreach (var sensor in ArrayHelper.ToEnumerable(_judgeAreas))
-            //    _ioManager.UnbindSensor(_noteChecker, sensor);
             State = NoteStatus.End;
             base.End();
-            if (forceEnd)
-            {
-                Destroy(_slideOK);
-                Destroy(gameObject);
-                return;
-            }
             ConvertJudgeGrade(ref _judgeResult);
             JudgeResultCorrection(ref _judgeResult);
             var result = new JudgeResult()
@@ -454,8 +446,6 @@ namespace MajdataPlay.Game.Notes
                 _slideOK!.PlayResult(result);
             }
             PlayJudgeSFX(result);
-            //PlaySlideOK(result);
-            //Destroy(gameObject);
         }
         protected override void LoadSkin()
         {

@@ -8,6 +8,11 @@ using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
 using MajdataPlay.Game.Types;
+using System;
+using SkiaSharp;
+using System.Collections.Generic;
+using MajdataPlay.Extensions;
+using Random = UnityEngine.Random;
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -30,16 +35,23 @@ namespace MajdataPlay.Result
 
         public TextMeshProUGUI fastCount;
         public TextMeshProUGUI lateCount;
+        public TextMeshProUGUI avgJudgeTime;
 
         public TextMeshProUGUI omg;
 
         public TextMeshProUGUI subMonitor;
+
+        public Color perfectColor;
+        public Color greatColor;
+        public Color goodColor;
 
 
         public GameObject clearLogo;
         public GameObject xxlb;
 
         public Image coverImg;
+
+        public RawImage _noteJudgeDiffGraph;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
@@ -97,6 +109,9 @@ namespace MajdataPlay.Result
 
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
+            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
+            avgJudgeTime.text = $"{ result.NoteJudgeDiffs.ToArray().Average()/1000f:F3}s";
+
             LoadCover(song).Forget();
 
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
@@ -124,6 +139,7 @@ namespace MajdataPlay.Result
                     OnlineSaveTask = intractSender.SendScore(score);
                 }
             }
+            
         }
 
         async UniTask LoadCover(ISongDetail song)
@@ -243,6 +259,164 @@ namespace MajdataPlay.Result
                 MajInstances.SceneSwitcher.SwitchScene("List",false);
                 return;
             }
+        }
+        Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
+        {
+            ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
+            const float SAMPLE_DIFF_STEP = 1.6667f / 2;
+            const int CHART_PADDING_LEFT = 20;
+            const int CHART_PADDING_RIGHT = 20;
+            const int CHART_PADDING_TOP = 0;
+            const int CHART_PADDING_BOTTOM = 30;
+
+            var width = 690;
+            var height = 139;
+            var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
+            var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
+            
+            var imageInfo = new SKImageInfo(width, height);
+            Span<Point> points = stackalloc Point[180];
+            var maxSampleCount = 0;
+            var textFont = new SKFont(SKTypeface.Default);
+            using var surface = SKSurface.Create(imageInfo);
+            using var perfectPaint = new SKPaint();
+            using var greatPaint = new SKPaint();
+            using var goodPaint = new SKPaint();
+            using var linePaint = new SKPaint();
+            using var textPaint = new SKPaint();
+            using var perfectPath = new SKPath();
+            using var greatPath = new SKPath();
+            using var goodPath = new SKPath();
+            var canvas = surface.Canvas;
+            
+            canvas.Clear(SKColor.Empty);
+            perfectPaint.Color = perfectColor.ToSkColor();
+            perfectPaint.IsAntialias = true;
+            perfectPaint.Style = SKPaintStyle.Fill;
+            greatPaint.Color = greatColor.ToSkColor();
+            greatPaint.IsAntialias = true;
+            greatPaint.Style = SKPaintStyle.Fill;
+            goodPaint.Color = greatColor.ToSkColor();
+            goodPaint.IsAntialias = true;
+            goodPaint.Style = SKPaintStyle.Fill;
+            linePaint.Color = SKColors.White;
+            linePaint.IsAntialias = true;
+            linePaint.Style = SKPaintStyle.Fill;
+            linePaint.StrokeWidth = 1f;
+            textPaint.Color = SKColors.White;
+            textPaint.IsAntialias = true;
+            textPaint.Style = SKPaintStyle.Fill;
+            textPaint.StrokeWidth = 4f;
+            textFont.Size = 20;
+
+            for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
+            {
+                var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
+                var samples = dataset.FindAll(x => range.InRange(x));
+                var sampleCount = samples.Length;
+                var x = (sampleDiff + 150f) / 300f;
+                var y = sampleCount;
+
+                if (y > maxSampleCount)
+                    maxSampleCount = y;
+
+                points[(int)i] = new Point()
+                {
+                    X = x,
+                    Y = y,
+                    Diff = sampleDiff,
+                    IsEmpty = samples.IsEmpty
+                };
+            }
+            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
+            for (var i = 0; i < points.Length; i++)
+            {
+                var origin = points[i];
+                var point = new Point()
+                {
+                    X = origin.X,
+                    Y = origin.Y / maxSampleCount,
+                    Diff = origin.Diff,
+                    IsEmpty = origin.IsEmpty
+                };
+                var x = chartWidth * point.X + CHART_PADDING_LEFT;
+                var y = chartHeight * (1 - point.Y) - CHART_PADDING_TOP;
+                var isPerfect = Math.Abs(point.Diff) <= 50f;
+                var isGreat = Math.Abs(point.Diff) <= 100f;
+                var isGood = Math.Abs(point.Diff) <= 150f;
+
+                if(point.IsEmpty)
+                {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                }
+                else if (isPerfect)
+                {
+                    perfectPath.LineTo(x, y);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                }
+                else if (isGreat)
+                {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    greatPath.LineTo(x, y);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                }
+                else if (isGood)
+                {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    goodPath.LineTo(x, y);
+                }
+            }
+            perfectPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            greatPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            goodPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
+            perfectPath.Close();
+            greatPath.Close();
+            goodPath.Close();
+
+            canvas.DrawPath(perfectPath, perfectPaint);
+            canvas.DrawPath(greatPath, greatPaint);
+            canvas.DrawPath(goodPath, goodPaint);
+            canvas.DrawLine(CHART_PADDING_LEFT, 
+                            CHART_PADDING_TOP + chartHeight + 0.5f, 
+                            CHART_PADDING_LEFT + chartWidth, 
+                            CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
+            
+            for (var i = -9; i < 10; i++)
+            {
+                var index = i + 9f;
+                var x =  (chartWidth  * (index / 18)) + CHART_PADDING_LEFT;
+                var start = new SKPoint()
+                {
+                    X = x,
+                    Y = CHART_PADDING_TOP
+                };
+                var end = new SKPoint()
+                {
+                    X = x,
+                    Y = CHART_PADDING_TOP + chartHeight
+                };
+                var textPoint = new SKPoint()
+                {
+                    X = x + 6f,
+                    Y = CHART_PADDING_TOP + chartHeight + 18f
+                };
+                canvas.DrawLine(start, end, linePaint);
+                canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
+            }
+            return GraphHelper.GraphSnapshot(surface);
+        }
+        readonly struct Point
+        {
+            public float X { get; init; }
+            public float Y { get; init; }
+            public float Diff { get; init; }
+            public bool IsEmpty { get; init; }
         }
     }
 }
