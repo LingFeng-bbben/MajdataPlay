@@ -59,7 +59,6 @@ namespace MajdataPlay.Result
 
         void Start()
         {
-            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(Memory<float>.Empty);
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
@@ -109,6 +108,8 @@ namespace MajdataPlay.Result
             lateCount.text = $"{result.Late}";
 
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
+
+            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
 
             LoadCover(song).Forget();
 
@@ -312,10 +313,10 @@ namespace MajdataPlay.Result
                 var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
                 var samples = dataset.FindAll(x => range.InRange(x));
                 var sampleCount = samples.Length;
-                var x = sampleDiff + 150f / 300f;
+                var x = (sampleDiff + 150f) / 300f;
                 var y = sampleCount;
 
-                if(y > maxSampleCount)
+                if (y > maxSampleCount)
                     maxSampleCount = y;
 
                 points[(int)i] = new Point()
@@ -323,6 +324,7 @@ namespace MajdataPlay.Result
                     X = x,
                     Y = y,
                     Diff = sampleDiff,
+                    IsEmpty = samples.IsEmpty
                 };
             }
             perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
@@ -335,24 +337,37 @@ namespace MajdataPlay.Result
                 {
                     X = origin.X,
                     Y = origin.Y / maxSampleCount,
-                    Diff = origin.Diff
+                    Diff = origin.Diff,
+                    IsEmpty = origin.IsEmpty
                 };
                 var x = chartWidth * point.X + CHART_PADDING_LEFT;
-                var y = chartHeight * point.Y - CHART_PADDING_TOP;
+                var y = chartHeight * (1 - point.Y) - CHART_PADDING_TOP;
                 var isPerfect = Math.Abs(point.Diff) <= 50f;
                 var isGreat = Math.Abs(point.Diff) <= 100f;
                 var isGood = Math.Abs(point.Diff) <= 150f;
 
-                if (isPerfect)
+                if(point.IsEmpty)
+                {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                }
+                else if (isPerfect)
                 {
                     perfectPath.LineTo(x, y);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
                 }
                 else if (isGreat)
                 {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
                     greatPath.LineTo(x, y);
+                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
                 }
                 else if (isGood)
                 {
+                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
                     goodPath.LineTo(x, y);
                 }
             }
@@ -400,6 +415,7 @@ namespace MajdataPlay.Result
             public float X { get; init; }
             public float Y { get; init; }
             public float Diff { get; init; }
+            public bool IsEmpty { get; init; }
         }
     }
 }
