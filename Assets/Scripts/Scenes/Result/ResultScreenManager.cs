@@ -35,10 +35,15 @@ namespace MajdataPlay.Result
 
         public TextMeshProUGUI fastCount;
         public TextMeshProUGUI lateCount;
+        public TextMeshProUGUI avgJudgeTime;
 
         public TextMeshProUGUI omg;
 
         public TextMeshProUGUI subMonitor;
+
+        public Color perfectColor;
+        public Color greatColor;
+        public Color goodColor;
 
 
         public GameObject clearLogo;
@@ -282,21 +287,21 @@ namespace MajdataPlay.Result
             using var goodPath = new SKPath();
             var canvas = surface.Canvas;
             
-            canvas.Clear(SKColor.Parse("#FFFFFF"));
-            perfectPaint.Color = SKColors.Gold;
+            canvas.Clear(SKColor.Empty);
+            perfectPaint.Color = perfectColor.ToSkColor();
             perfectPaint.IsAntialias = true;
             perfectPaint.Style = SKPaintStyle.Fill;
-            greatPaint.Color = SKColors.LightPink;
+            greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
-            goodPaint.Color = SKColors.DarkGreen;
+            goodPaint.Color = greatColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
-            linePaint.Color = SKColors.Black;
+            linePaint.Color = SKColors.White;
             linePaint.IsAntialias = true;
             linePaint.Style = SKPaintStyle.Fill;
             linePaint.StrokeWidth = 1f;
-            textPaint.Color = SKColors.Black;
+            textPaint.Color = SKColors.White;
             textPaint.IsAntialias = true;
             textPaint.Style = SKPaintStyle.Fill;
             textPaint.StrokeWidth = 2.5f;
