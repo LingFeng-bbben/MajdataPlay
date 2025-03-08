@@ -13,7 +13,6 @@ using TMPro;
 using Cysharp.Text;
 using MajdataPlay.Game.Types;
 using System.Threading.Tasks;
-using UnityEditor.Experimental.GraphView;
 #nullable enable
 namespace MajdataPlay.Game
 {
