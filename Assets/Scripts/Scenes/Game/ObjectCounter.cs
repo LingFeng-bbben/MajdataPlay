@@ -612,7 +612,8 @@ namespace MajdataPlay.Game
                 Late = _lateCount,
                 DXScore = _totalDXScore + _lostDXScore,
                 TotalDXScore = _totalDXScore,
-                ComboState = cState
+                ComboState = cState,
+                NoteJudgeDiffs = _noteJudgeDiffList.ToArray()
             };
         }
 
@@ -723,7 +724,7 @@ namespace MajdataPlay.Game
                     case TapDrop:
                     case HoldDrop:
                         _isOutlinePlayRequested = true;
-                        //_noteJudgeDiffList.Add(judgeResult.Diff);
+                        _noteJudgeDiffList.Add(judgeResult.Diff);
                         break;
                 }
             }
