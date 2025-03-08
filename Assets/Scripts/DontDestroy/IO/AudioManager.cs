@@ -69,6 +69,7 @@ namespace MajdataPlay.IO
                         }
                         
                         MajDebug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        MajDebug.Log(BassAsio.LastError);
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
