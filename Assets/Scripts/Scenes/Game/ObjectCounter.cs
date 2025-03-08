@@ -65,13 +65,29 @@ namespace MajdataPlay.Game
         public int TouchSum { get; private set; }
         public int BreakSum { get; private set; }
         public int NoteSum { get; private set; }
-        private TextMeshProUGUI _rate;
+
+        public long TotalNoteScore => TotalNoteBaseScore + TotalNoteExtraScore;
+        public long TotalNoteBaseScore { get; private set; }
+        public long TotalNoteExtraScore { get; private set; }
+
+        public long CurrentNoteScore => CurrentNoteBaseScore + CurrentNoteExtraScore;
+        public long CurrentNoteScoreClassic => CurrentNoteBaseScore + CurrentNoteExtraScoreClassic;
+        public long CurrentNoteBaseScore { get; private set; }
+        public long CurrentNoteExtraScore { get; private set; }
+        public long CurrentNoteExtraScoreClassic { get; private set; }
+
+        public long TotalLostNoteScore => LostNoteBaseScore + LostNoteExtraScore;
+        public long TotalLostNoteScoreClassic => LostNoteBaseScore + LostNoteExtraScoreClassic;
+        public long LostNoteBaseScore { get; private set; }
+        public long LostNoteExtraScore { get; private set; }
+        public long LostNoteExtraScoreClassic { get; private set; }
 
         Text _bgInfoHeader;
         Text _bgInfoText;
-        private Text _judgeResultCount;
+        Text _judgeResultCount;
+        TextMeshProUGUI _rate;
 
-        public double[] _accRate = new double[5]
+        readonly double[] _accRate = new double[5]
         {
             0.00,    // classic acc (+)
             100.00,  // classic acc (-)
@@ -334,7 +350,7 @@ namespace MajdataPlay.Game
         {
             Majdata<ObjectCounter>.Free();
         }
-        private void Start()
+        void Start()
         {
             _outline = Majdata<OutlineLoader>.Instance!;
             _xxlbController = Majdata<XxlbAnimationController>.Instance!;
@@ -356,11 +372,9 @@ namespace MajdataPlay.Game
             }
         }
 
-        // Update is called once per frame
         internal void OnLateUpdate()
         {
-            CalAccRate();
-            UpdateState();
+            UpdateAccRate();
             UpdateOutput();
             if(_xxlbDanceRequest.IsRequested)
             {
@@ -501,7 +515,7 @@ namespace MajdataPlay.Game
                 {JudgeGrade.LateGood, 0 },
                 {JudgeGrade.Miss, 0 },
             };
-            _accRate = new double[5]
+            Span<double> newAccRate = stackalloc double[5]
             {
                 0.00,    // classic acc (+)
                 100.00,  // classic acc (-)
@@ -509,6 +523,7 @@ namespace MajdataPlay.Game
                 100.0000,// acc 100(-)
                 0.0000,  // acc (+)
             };
+            newAccRate.CopyTo(_accRate);
             TapFinishedCount = 0;
             HoldFinishedCount = 0;
             SlideFinishedCount = 0;
@@ -597,7 +612,8 @@ namespace MajdataPlay.Game
                 Late = _lateCount,
                 DXScore = _totalDXScore + _lostDXScore,
                 TotalDXScore = _totalDXScore,
-                ComboState = cState
+                ComboState = cState,
+                NoteJudgeDiffs = _noteJudgeDiffList.ToArray()
             };
         }
 
@@ -607,171 +623,29 @@ namespace MajdataPlay.Game
             UpdateJudgeResult();
             UpdateSideOutput();
         }
-        NoteScore GetNoteScoreSum()
+        void UpdateAccRate()
         {
-            Dictionary<JudgeGrade, int> collection = null;
-            long score = 0;
-            long lostScore = 0;
-            long extraScore = 0;
-            long extraScoreClassic = 0;
-            long lostExtraScore = 0;
-            long lostExtraScoreClassic = 0;
-            int baseScore = 500;
-            Span<SimaiNoteType> types = stackalloc SimaiNoteType[] { SimaiNoteType.Tap, SimaiNoteType.Slide, SimaiNoteType.Hold, SimaiNoteType.Touch, SimaiNoteType.TouchHold };
+            // classic acc (+)
+            // classic acc (-)
+            // acc 101(-)
+            // acc 100(-)
+            // acc (+)
+            //var currentNoteScore = GetNoteScoreSum();
+            //var totalScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
+            //var totalExtraScore = Math.Max(BreakSum * 100, 1);
+            Span<double> newAccRate = stackalloc double[5];
 
-            foreach (var type in types)
-            {
-                switch (type)
-                {
-                    case SimaiNoteType.Tap:
-                        collection = _judgedTapCount;
-                        baseScore = 500;
-                        break;
-                    case SimaiNoteType.Slide:
-                        collection = _judgedSlideCount;
-                        baseScore = 1500;
-                        break;
-                    case SimaiNoteType.TouchHold:
-                        collection = _judgedTouchHoldCount;
-                        baseScore = 1000;
-                        break;
-                    case SimaiNoteType.Hold:
-                        collection = _judgedHoldCount;
-                        baseScore = 1000;
-                        break;
-                    case SimaiNoteType.Touch:
-                        collection = _judgedTouchCount;
-                        baseScore = 500;
-                        break;
-                }
+            newAccRate[0] = CurrentNoteScoreClassic / (double)TotalNoteScore;
+            newAccRate[1] = (TotalNoteScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (double)TotalNoteScore;
+            newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
+            newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
+            newAccRate[4] = ((CurrentNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
 
-                foreach (var judgeResult in collection)
-                {
-                    var count = judgeResult.Value;
-                    switch (judgeResult.Key)
-                    {
-                        case JudgeGrade.LatePerfect3rd:
-                        case JudgeGrade.LatePerfect2nd:
-                        case JudgeGrade.Perfect:
-                        case JudgeGrade.FastPerfect2nd:
-                        case JudgeGrade.FastPerfect3rd:
-                            score += baseScore * 1 * count;
-                            break;
-                        case JudgeGrade.LateGreat3rd:
-                        case JudgeGrade.LateGreat2nd:
-                        case JudgeGrade.LateGreat:
-                        case JudgeGrade.FastGreat:
-                        case JudgeGrade.FastGreat2nd:
-                        case JudgeGrade.FastGreat3rd:
-                            score += (long)(baseScore * 0.8) * count;
-                            lostScore += (long)(baseScore * 0.2) * count;
-                            break;
-                        case JudgeGrade.LateGood:
-                        case JudgeGrade.FastGood:
-                            score += (long)(baseScore * 0.5) * count;
-                            lostScore += (long)(baseScore * 0.5) * count;
-                            break;
-                        case JudgeGrade.TooFast:
-                        case JudgeGrade.Miss:
-                            lostScore += baseScore * count;
-                            break;
-                    }
-                }
-            }
-            foreach (var judgeResult in _judgedBreakCount)
-            {
-                var count = judgeResult.Value;
-                switch (judgeResult.Key)
-                {
-                    case JudgeGrade.Perfect:
-                        score += 2500 * count;
-                        extraScore += 100 * count;
-                        extraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.LatePerfect2nd:
-                    case JudgeGrade.FastPerfect2nd:
-                        score += 2500 * count;
-                        extraScore += 75 * count;
-                        extraScoreClassic += 50 * count;
-                        lostExtraScore += 25 * count;
-                        lostExtraScoreClassic += 50 * count;
-                        break;
-                    case JudgeGrade.LatePerfect3rd:
-                    case JudgeGrade.FastPerfect3rd:
-                        score += 2500 * count;
-                        extraScore += 50 * count;
-                        extraScoreClassic += 0 * count;
-                        lostExtraScore += 50 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.LateGreat:
-                    case JudgeGrade.FastGreat:
-                        score += 2000 * count;
-                        extraScore += 40 * count;
-                        extraScoreClassic += 0 * count;
-                        lostScore += 500 * count;
-                        lostExtraScore += 60 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.LateGreat2nd:
-                    case JudgeGrade.FastGreat2nd:
-                        score += 1500 * count;
-                        extraScore += 40 * count;
-                        extraScoreClassic += 0 * count;
-                        lostScore += 1000 * count;
-                        lostExtraScore += 60 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.LateGreat3rd:
-                    case JudgeGrade.FastGreat3rd:
-                        score += 1250 * count;
-                        extraScore += 40 * count;
-                        extraScoreClassic += 0 * count;
-                        lostScore += 1250 * count;
-                        lostExtraScore += 60 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.LateGood:
-                    case JudgeGrade.FastGood:
-                        score += 1000 * count;
-                        extraScore += 30 * count;
-                        extraScoreClassic += 0 * count;
-                        lostScore += 1500 * count;
-                        lostExtraScore += 70 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                    case JudgeGrade.TooFast:
-                    case JudgeGrade.Miss:
-                        score += 0 * count;
-                        extraScore += 0 * count;
-                        extraScoreClassic += 0 * count;
-                        lostScore += 2500 * count;
-                        lostExtraScore += 100 * count;
-                        lostExtraScoreClassic += 100 * count;
-                        break;
-                }
-            }
-            return new NoteScore()
-            {
-                TotalScore = score,
-                TotalExtraScore = extraScore,
-                TotalExtraScoreClassic = extraScoreClassic,
-                LostScore = lostScore,
-                LostExtraScore = lostExtraScore,
-                LostExtraScoreClassic = lostExtraScoreClassic
-            };
-        }
-        void CalAccRate()
-        {
-            var currentNoteScore = GetNoteScoreSum();
-            var totalScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
-            var totalExtraScore = Math.Max(BreakSum * 100, 1);
-
-            _accRate[0] = (currentNoteScore.TotalScore + currentNoteScore.TotalExtraScoreClassic) / (double)totalScore * 100;
-            _accRate[1] = (totalScore + currentNoteScore.TotalExtraScoreClassic - currentNoteScore.LostScore) / (double)totalScore * 100;
-            _accRate[2] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + (totalExtraScore - currentNoteScore.LostExtraScore) / (double)totalExtraScore;
-            _accRate[3] = (totalScore - currentNoteScore.LostScore) / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
-            _accRate[4] = currentNoteScore.TotalScore / (double)totalScore * 100 + currentNoteScore.TotalExtraScore / (double)totalExtraScore;
+            _accRate[0] = newAccRate[0] * 100;
+            _accRate[1] = newAccRate[1] * 100;
+            _accRate[2] = newAccRate[2] * 100;
+            _accRate[3] = newAccRate[3] * 100;
+            _accRate[4] = newAccRate[4] * 100;
         }
         internal async ValueTask CountNoteSumAsync(SimaiChart chart)
         {
@@ -823,83 +697,18 @@ namespace MajdataPlay.Game
                         }
                     }
                 }
-                _totalDXScore = (TapSum + HoldSum + TouchSum + SlideSum + BreakSum) * 3;
                 NoteSum = TapSum + HoldSum + TouchSum + BreakSum + SlideSum;
+                TotalNoteBaseScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
+                TotalNoteExtraScore = BreakSum * 100;
+                _totalDXScore = NoteSum * 3;
                 _noteJudgeDiffList = new(NoteSum);
             });
         }
         internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
         {
-            var result = judgeResult.Grade;
+            var grade = judgeResult.Grade;
             var isBreak = judgeResult.IsBreak;
-            var isSlide = false;
-
-            switch (note)
-            {
-                case TapDrop:
-                    if (isBreak)
-                    {
-                        _judgedBreakCount[result]++;
-                        BreakFinishedCount++;
-                    }
-                    else
-                    {
-                        _judgedTapCount[result]++;
-                        TapFinishedCount++;
-                    }
-                    break;
-                case WifiDrop:
-                case SlideDrop:
-                    if (isBreak)
-                    {
-                        _judgedBreakCount[result]++;
-                        BreakFinishedCount++;
-                    }
-                    else
-                    {
-                        _judgedSlideCount[result]++;
-                        SlideFinishedCount++;
-                    }
-                    isSlide = true;
-                    break;
-                case HoldDrop:
-                    if (isBreak)
-                    {
-                        _judgedBreakCount[result]++;
-                        BreakFinishedCount++;
-                    }
-                    else
-                    {
-                        _judgedHoldCount[result]++;
-                        HoldFinishedCount++;
-                    }
-                    break;
-                case TouchDrop:
-                    if (isBreak)
-                    {
-                        _judgedBreakCount[result]++;
-                        BreakFinishedCount++;
-                    }
-                    else
-                    {
-                        _judgedTouchCount[result]++;
-                        TouchFinishedCount++;
-                    }
-                    break;
-                case TouchHoldDrop:
-                    if (isBreak)
-                    {
-                        _judgedBreakCount[result]++;
-                        BreakFinishedCount++;
-                    }
-                    else
-                    {
-                        _judgedTouchHoldCount[result]++;
-                        HoldFinishedCount++;
-                    }
-                    break;
-            }
-            _totalJudgedCount[result]++;
+            var isSlide = note is SlideDrop or WifiDrop;
 
             if (!isSlide && !judgeResult.IsMissOrTooFast)
             {
@@ -915,56 +724,12 @@ namespace MajdataPlay.Game
                     case TapDrop:
                     case HoldDrop:
                         _isOutlinePlayRequested = true;
-                        //_noteJudgeDiffList.Add(judgeResult.Diff);
+                        _noteJudgeDiffList.Add(judgeResult.Diff);
                         break;
                 }
             }
 
-            switch (result)
-            {
-                case JudgeGrade.TooFast:
-                case JudgeGrade.Miss:
-                    _missCount++;
-                    _combo = 0;
-                    _cPCombo = 0;
-                    _pCombo = 0;
-                    _lostDXScore -= 3;
-                    break;
-                case JudgeGrade.Perfect:
-                    _cPerfectCount++;
-                    _cPCombo++;
-                    _pCombo++;
-                    break;
-                case JudgeGrade.LatePerfect3rd:
-                case JudgeGrade.LatePerfect2nd:
-                case JudgeGrade.FastPerfect2nd:
-                case JudgeGrade.FastPerfect3rd:
-                    _cPCombo = 0;
-                    _pCombo++;
-                    _perfectCount++;
-                    _lostDXScore -= 1;
-                    break;
-                case JudgeGrade.LateGreat3rd:
-                case JudgeGrade.LateGreat2nd:
-                case JudgeGrade.LateGreat:
-                case JudgeGrade.FastGreat:
-                case JudgeGrade.FastGreat2nd:
-                case JudgeGrade.FastGreat3rd:
-                    _cPCombo = 0;
-                    _pCombo = 0;
-                    _greatCount++;
-                    _lostDXScore -= 2;
-                    break;
-                case JudgeGrade.LateGood:
-                case JudgeGrade.FastGood:
-                    _cPCombo = 0;
-                    _pCombo = 0;
-                    _goodCount++;
-                    _lostDXScore -= 3;
-                    break;
-            }
-
-            if (MajEnv.Mode==RunningMode.Play && _gameInfo.IsDanMode)
+            if (MajEnv.Mode == RunningMode.Play && _gameInfo.IsDanMode) 
             {
                 _gameInfo.OnNoteJudged(judgeResult.Grade);
                 if (_gameInfo.CurrentHP == 0 && _gameInfo.IsForceGameover)
@@ -976,50 +741,13 @@ namespace MajdataPlay.Game
             _xxlbDanceRequest = new()
             {
                 IsRequested = true,
-                Grade = judgeResult.Grade,
+                Grade = grade,
             };
-            UpdateFastLate(judgeResult);
-        }
-        /// <summary>
-        /// 更新Fast/Late统计信息
-        /// </summary>
-        /// <param name="judgeResult"></param>
-        void UpdateFastLate(in JudgeResult judgeResult)
-        {
-            var gameSetting = judgeResult.IsBreak ? MajInstances.Setting.Display.BreakFastLateType : MajInstances.Setting.Display.FastLateType;
-            var resultValue = (int)judgeResult.Grade;
-            var absValue = Math.Abs(7 - resultValue);
-
-            switch (gameSetting)
-            {
-                case JudgeDisplayType.All:
-                    if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
-                        break;
-                    else if (judgeResult.IsFast)
-                        _fastCount++;
-                    else
-                        _lateCount++;
-                    break;
-                case JudgeDisplayType.BelowCP:
-                    if (judgeResult.IsMissOrTooFast || judgeResult.Grade == JudgeGrade.Perfect)
-                        break;
-                    else if (judgeResult.IsFast)
-                        _fastCount++;
-                    else
-                        _lateCount++;
-                    break;
-                //默认只统计Great、Good的Fast/Late
-                case JudgeDisplayType.BelowP:
-                case JudgeDisplayType.BelowGR:
-                case JudgeDisplayType.Disable:
-                    if (judgeResult.IsMissOrTooFast || absValue <= 2)
-                        break;
-                    else if (judgeResult.IsFast)
-                        _fastCount++;
-                    else
-                        _lateCount++;
-                    break;
-            }
+            
+            UpdateComboCount(grade);
+            UpdateJudgeCount(note, grade, isBreak);
+            UpdateNoteScoreCount(note, judgeResult);
+            UpdateFastLateCount(judgeResult);
         }
         /// <summary>
         /// 更新Combo
@@ -1237,26 +965,8 @@ namespace MajdataPlay.Game
         /// </summary>
         public float CalculateFinalResult()
         {
-            CalAccRate();
+            UpdateAccRate();
             return (float)_accRate[2];
-        }
-        void UpdateState()
-        {
-            // Only define this when debugging (of this feature) is needed.
-            // I don't bother compiling this as Debug.
-#if COMBO_CAN_SWAP_NOW
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            var validModes = Enum.GetValues(textMode.GetType());
-            int i = 0;
-            foreach(EditorComboIndicator compareMode in validModes) {
-                if (compareMode == textMode) {
-                    ComboSetActive((EditorComboIndicator)validModes.GetValue((i + 1) % (validModes.Length - 1)));
-                    break;
-                }
-                i += 1;
-            }
-        }
-#endif
         }
         /// <summary>
         /// 根据Achievement更新BgInfoHeader的颜色
@@ -1276,6 +986,280 @@ namespace MajdataPlay.Game
             if (textElement.color != newColor)
                 textElement.color = newColor;
         }
+
+        #region Counter update
+        void UpdateJudgeCount<T>(T note, JudgeGrade grade, bool isBreak) where T : NoteDrop
+        {
+            switch (note)
+            {
+                case TapDrop:
+                    if (isBreak)
+                    {
+                        _judgedBreakCount[grade]++;
+                        BreakFinishedCount++;
+                    }
+                    else
+                    {
+                        _judgedTapCount[grade]++;
+                        TapFinishedCount++;
+                    }
+                    break;
+                case WifiDrop:
+                case SlideDrop:
+                    if (isBreak)
+                    {
+                        _judgedBreakCount[grade]++;
+                        BreakFinishedCount++;
+                    }
+                    else
+                    {
+                        _judgedSlideCount[grade]++;
+                        SlideFinishedCount++;
+                    }
+                    break;
+                case HoldDrop:
+                    if (isBreak)
+                    {
+                        _judgedBreakCount[grade]++;
+                        BreakFinishedCount++;
+                    }
+                    else
+                    {
+                        _judgedHoldCount[grade]++;
+                        HoldFinishedCount++;
+                    }
+                    break;
+                case TouchDrop:
+                    if (isBreak)
+                    {
+                        _judgedBreakCount[grade]++;
+                        BreakFinishedCount++;
+                    }
+                    else
+                    {
+                        _judgedTouchCount[grade]++;
+                        TouchFinishedCount++;
+                    }
+                    break;
+                case TouchHoldDrop:
+                    if (isBreak)
+                    {
+                        _judgedBreakCount[grade]++;
+                        BreakFinishedCount++;
+                    }
+                    else
+                    {
+                        _judgedTouchHoldCount[grade]++;
+                        HoldFinishedCount++;
+                    }
+                    break;
+            }
+            _totalJudgedCount[grade]++;
+        }
+        void UpdateComboCount(JudgeGrade grade)
+        {
+            switch (grade)
+            {
+                case JudgeGrade.Perfect:
+                    _cPerfectCount++;
+                    _cPCombo++;
+                    _pCombo++;
+                    break;
+                case JudgeGrade.LatePerfect2nd:
+                case JudgeGrade.FastPerfect2nd:
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.FastPerfect3rd:
+                    _cPCombo = 0;
+                    _pCombo++;
+                    _perfectCount++;
+                    _lostDXScore -= 1;
+                    break;
+                case JudgeGrade.LateGreat3rd:
+                case JudgeGrade.LateGreat2nd:
+                case JudgeGrade.LateGreat:
+                case JudgeGrade.FastGreat:
+                case JudgeGrade.FastGreat2nd:
+                case JudgeGrade.FastGreat3rd:
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _greatCount++;
+                    _lostDXScore -= 2;
+                    break;
+                case JudgeGrade.LateGood:
+                case JudgeGrade.FastGood:
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _goodCount++;
+                    _lostDXScore -= 3;
+                    break;
+                case JudgeGrade.TooFast:
+                case JudgeGrade.Miss:
+                    _missCount++;
+                    _combo = 0;
+                    _cPCombo = 0;
+                    _pCombo = 0;
+                    _lostDXScore -= 3;
+                    break;
+            }
+        }
+        void UpdateNoteScoreCount<T>(T note, in JudgeResult judgeResult) where T : NoteDrop
+        {
+            var baseScore = 500;
+
+            switch (note)
+            {
+                case TapDrop:
+                case TouchDrop:
+                    baseScore = 500;
+                    break;
+                case HoldDrop:
+                case TouchHoldDrop:
+                    baseScore = 1000;
+                    break;
+                case SlideDrop:
+                case WifiDrop:
+                    baseScore = 1500;
+                    break;
+            }
+            if (!judgeResult.IsBreak)
+            {
+                switch (judgeResult.Grade)
+                {
+                    case JudgeGrade.Miss:
+                    case JudgeGrade.TooFast:
+                        //CurrentNoteBaseScore += baseScore * 0;
+                        LostNoteBaseScore += baseScore;
+                        break;
+                    case JudgeGrade.LateGood:
+                    case JudgeGrade.FastGood:
+                        CurrentNoteBaseScore += (long)(baseScore * 0.5);
+                        LostNoteBaseScore += (long)(baseScore * 0.5);
+                        break;
+                    case JudgeGrade.LateGreat3rd:
+                    case JudgeGrade.LateGreat2nd:
+                    case JudgeGrade.LateGreat:
+                    case JudgeGrade.FastGreat:
+                    case JudgeGrade.FastGreat2nd:
+                    case JudgeGrade.FastGreat3rd:
+                        CurrentNoteBaseScore += (long)(baseScore * 0.8);
+                        LostNoteBaseScore += (long)(baseScore * 0.2);
+                        break;
+                    default:
+                        CurrentNoteBaseScore += baseScore;
+                        //LostNoteBaseScore += 0;
+                        break;
+                }
+            }
+            else
+            {
+
+                switch (judgeResult.Grade)
+                {
+                    case JudgeGrade.Miss:
+                    case JudgeGrade.TooFast:
+                        LostNoteBaseScore += 2500;
+                        LostNoteExtraScore += 100;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.LateGood:
+                    case JudgeGrade.FastGood:
+                        CurrentNoteBaseScore += 1000;
+                        CurrentNoteExtraScore += 30;
+                        LostNoteBaseScore += 1500;
+                        LostNoteExtraScore += 70;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.LateGreat3rd:
+                    case JudgeGrade.FastGreat3rd:
+                        CurrentNoteBaseScore += 1250;
+                        CurrentNoteExtraScore += 40;
+                        LostNoteBaseScore += 1250;
+                        LostNoteExtraScore += 60;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.FastGreat2nd:
+                    case JudgeGrade.LateGreat2nd:
+                        CurrentNoteBaseScore += 1500;
+                        CurrentNoteExtraScore += 40;
+                        LostNoteBaseScore += 1000;
+                        LostNoteExtraScore += 60;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.LateGreat:
+                    case JudgeGrade.FastGreat:
+                        CurrentNoteBaseScore += 2000;
+                        CurrentNoteExtraScore += 40;
+                        LostNoteBaseScore += 500;
+                        LostNoteExtraScore += 60;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.LatePerfect3rd:
+                    case JudgeGrade.FastPerfect3rd:
+                        CurrentNoteBaseScore += 2500;
+                        CurrentNoteExtraScore += 50;
+                        LostNoteExtraScore += 50;
+                        LostNoteExtraScoreClassic += 100;
+                        break;
+                    case JudgeGrade.LatePerfect2nd:
+                    case JudgeGrade.FastPerfect2nd:
+                        CurrentNoteBaseScore += 2500;
+                        CurrentNoteExtraScore += 75;
+                        CurrentNoteExtraScoreClassic += 50;
+                        LostNoteExtraScore += 25;
+                        LostNoteExtraScoreClassic += 50;
+                        break;
+                    case JudgeGrade.Perfect:
+                        CurrentNoteBaseScore += 2500;
+                        CurrentNoteExtraScore += 100;
+                        CurrentNoteExtraScoreClassic += 100;
+                        LostNoteExtraScore += 0;
+                        LostNoteExtraScoreClassic += 0;
+                        break;
+                }
+            }
+        }
+        /// <summary>
+        /// Update Fast/Late count
+        /// </summary>
+        /// <param name="judgeResult"></param>
+        void UpdateFastLateCount(in JudgeResult judgeResult)
+        {
+            var gameSetting = judgeResult.IsBreak ? MajInstances.Setting.Display.BreakFastLateType : MajInstances.Setting.Display.FastLateType;
+            var resultValue = (int)judgeResult.Grade;
+            var absValue = Math.Abs(7 - resultValue);
+
+            switch (gameSetting)
+            {
+                case JudgeDisplayType.All:
+                    if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
+                        break;
+                    else if (judgeResult.IsFast)
+                        _fastCount++;
+                    else
+                        _lateCount++;
+                    break;
+                case JudgeDisplayType.BelowCP:
+                    if (judgeResult.IsMissOrTooFast || judgeResult.Grade == JudgeGrade.Perfect)
+                        break;
+                    else if (judgeResult.IsFast)
+                        _fastCount++;
+                    else
+                        _lateCount++;
+                    break;
+                //默认只统计Great、Good的Fast/Late
+                case JudgeDisplayType.BelowP:
+                case JudgeDisplayType.BelowGR:
+                case JudgeDisplayType.Disable:
+                    if (judgeResult.IsMissOrTooFast || absValue <= 2)
+                        break;
+                    else if (judgeResult.IsFast)
+                        _fastCount++;
+                    else
+                        _lateCount++;
+                    break;
+            }
+        }
+        #endregion
         readonly struct XxlbDanceRequest
         {
             public bool IsRequested { get; init; }
