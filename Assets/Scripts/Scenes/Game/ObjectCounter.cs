@@ -637,9 +637,9 @@ namespace MajdataPlay.Game
 
             newAccRate[0] = CurrentNoteScoreClassic / (double)TotalNoteScore;
             newAccRate[1] = (TotalNoteScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (double)TotalNoteScore;
-            newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
-            newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
-            newAccRate[4] = ((CurrentNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)TotalNoteExtraScore * 100));
+            newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
+            newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
+            newAccRate[4] = ((CurrentNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
 
             _accRate[0] = newAccRate[0] * 100;
             _accRate[1] = newAccRate[1] * 100;
