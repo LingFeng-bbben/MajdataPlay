@@ -191,15 +191,16 @@ namespace MajdataPlay.List
             {
                 case CoverListMode.Directory:
                     songs = dirs[desiredListPos];
-                    if(songs.Type == ChartStorageType.List)
+                    switch(songs.Type)
                     {
-                        CoverBigDisplayer.SetMeta(songs.Name, "Count:"+songs.Count, "", "");
+                        case ChartStorageType.FavoriteList:
+                        case ChartStorageType.List:
+                            CoverBigDisplayer.SetMeta(songs.Name, "Count:" + songs.Count, "", "");
+                            break;
+                        case ChartStorageType.Dan:
+                            CoverBigDisplayer.SetMeta(songs.DanInfo.Name, songs.DanInfo.Description, "", ""); ;
+                            break;
                     }
-                    else
-                    {
-                        CoverBigDisplayer.SetMeta(songs.DanInfo.Name, songs.DanInfo.Description, "", "");
-                    }
-                    
                     CoverBigDisplayer.SetScore(new MaiScore());
                     SongStorage.CollectionIndex = desiredListPos;
                     break;

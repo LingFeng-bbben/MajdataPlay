@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
@@ -47,6 +48,9 @@ namespace MajdataPlay.Utils
         public static long TotalChartCount { get; private set; } = 0;
 
         static int _collectionIndex = 0;
+        static MyFavoriteSongCollection _myFavorite = new();
+        readonly static string RUNTIME_CACHE_PATH = Path.Combine(MajEnv.CachePath, "Runtime");
+        readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(RUNTIME_CACHE_PATH, "MyFavorites.json");
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
             try
@@ -126,6 +130,17 @@ namespace MajdataPlay.Utils
                     }
                 }
                 collections.Add(new SongCollection("All", allcharts.ToArray()));
+                MajDebug.Log("MyFavorite");
+                var favoriteListPath = Path.Combine(MY_FAVORITE_STORAGE_PATH);
+                if(File.Exists(favoriteListPath))
+                {
+                    var (result, hashSet) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(favoriteListPath));
+                    if (result && hashSet is not null)
+                    {
+                        var favoriteSongs = allcharts.Where(x => hashSet.Contains(x.Hash)).ToList();
+                        _myFavorite = new(favoriteSongs, hashSet);
+                    }
+                }
                 MajDebug.Log("Load Dans");
                 var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
                 foreach (var file in danFiles)
@@ -172,6 +187,7 @@ namespace MajdataPlay.Utils
                     });
                     MajDebug.Log("Loaded Dan:" + dan.Name);
                 }
+                collections.Add(_myFavorite);
                 return collections.ToArray();
             }
             catch(Exception e)
@@ -272,6 +288,11 @@ namespace MajdataPlay.Utils
                 MajDebug.LogException(e);
                 return collection;
             }
+        }
+        internal static void OnApplicationQuit()
+        {
+            var hashSet = _myFavorite.ExportHashSet();
+            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
         }
         public static void SortAndFind(string searchKey, SortType sortType)
         {

@@ -55,7 +55,23 @@ namespace MajdataPlay.Title
                 var setting = MajInstances.Setting;
                 await SongStorage.SortAndFindAsync();
                 SongStorage.CollectionIndex = setting.Misc.SelectedDir;
-                SongStorage.WorkingCollection.Index = setting.Misc.SelectedIndex;
+                var selectedCollection = SongStorage.WorkingCollection;
+                var selectedIndex = setting.Misc.SelectedIndex;
+
+                if(selectedCollection.IsEmpty)
+                {
+                    setting.Misc.SelectedIndex = 0;
+                    return;
+                }
+                else if(selectedIndex >= selectedCollection.Count)
+                {
+                    selectedCollection.Index = 0;
+                    setting.Misc.SelectedIndex = 0;
+                }
+                else
+                {
+                    selectedCollection.Index = selectedIndex;
+                }
             }
         }
 
@@ -104,7 +120,10 @@ namespace MajdataPlay.Title
                     if (songStorageTask.IsCompleted)
                     {
                         if (songStorageTask.IsFaulted)
+                        {
                             echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                            MajDebug.LogException(songStorageTask.Exception);
+                        }
                         else if (SongStorage.IsEmpty)
                         {
                             isEmpty = true;

@@ -12,7 +12,7 @@ namespace MajdataPlay.Collections
 {
     public class SongCollection : IEnumerable<ISongDetail>
     {
-        public ISongDetail Current => sorted[Index];
+        public ISongDetail Current => _sorted[Index];
         public int Index
         {
             get => _index;
@@ -20,7 +20,7 @@ namespace MajdataPlay.Collections
             {
                 if (IsEmpty)
                     throw new ArgumentOutOfRangeException("this collection is empty");
-                _index = value.Clamp(0, origin.Length - 1);
+                _index = value.Clamp(0, _origin.Length - 1);
             }
         }
         public ChartStorageLocation Location { get; init; } = ChartStorageLocation.Local;
@@ -28,23 +28,23 @@ namespace MajdataPlay.Collections
         public bool IsOnline => Location == ChartStorageLocation.Online;
         public string Name { get; private set; }
         public bool IsSorted { get; private set; } = false;
-        public int Count => sorted.Length;
-        public bool IsEmpty => sorted.Length == 0;
+        public int Count => _sorted.Length;
+        public bool IsEmpty => _sorted.Length == 0;
         public DanInfo? DanInfo { get; init; }
 
-        ISongDetail[] sorted;
-        ISongDetail[] origin;
-        public ISongDetail this[int index] => sorted[index];
+        protected ISongDetail[] _sorted;
+        protected ISongDetail[] _origin;
+        public ISongDetail this[int index] => _sorted[index];
         public SongCollection(string name, in ISongDetail[] pArray)
         {
-            sorted = pArray;
-            origin = pArray;
+            _sorted = pArray;
+            _origin = pArray;
             Name = name;
         }
         public SongCollection()
         {
-            origin = new ISongDetail[0];
-            sorted = origin;
+            _origin = new ISongDetail[0];
+            _sorted = _origin;
             Name = string.Empty;
         }
         public bool MoveNext()
@@ -62,13 +62,13 @@ namespace MajdataPlay.Collections
                 return;
             }
             IsSorted = true;
-            var filtered = Filter(origin, orderBy.Keyword);
+            var filtered = Filter(_origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
             var newIndex = sorted.FindIndex(x => x == Current);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
-            this.sorted = sorted;
+            this._sorted = sorted;
         }
         public async Task SortAndFilterAsync(SongOrder orderBy)
         {
@@ -77,9 +77,9 @@ namespace MajdataPlay.Collections
         public void Reset()
         {
             IsSorted = false;
-            if (sorted.Length != 0)
+            if (_sorted.Length != 0)
             {
-                var newIndex = origin.FindIndex(x => x == Current);
+                var newIndex = _origin.FindIndex(x => x == Current);
                 newIndex = newIndex is -1 ? 0 : newIndex;
                 _index = newIndex;
             }
@@ -87,9 +87,9 @@ namespace MajdataPlay.Collections
             {
                 _index = 0;
             }
-            sorted = origin;
+            _sorted = _origin;
         }
-        public ISongDetail[] ToArray() => origin;
+        public ISongDetail[] ToArray() => _origin;
         static ISongDetail[] Sort(ISongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())
@@ -125,10 +125,10 @@ namespace MajdataPlay.Collections
             return result.Slice(0, i).ToArray();
         }
         public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<ISongDetail>());
-        public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(sorted);
+        public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(_sorted);
 
         // Implementation for the GetEnumerator method.
-        IEnumerator IEnumerable.GetEnumerator() => origin.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         struct Enumerator : IEnumerator<ISongDetail>
         {
             ISongDetail[] songs;

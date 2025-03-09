@@ -77,8 +77,11 @@ namespace MajdataPlay.Utils
             CheckNoteSkinFolder();
 
             var netCachePath = Path.Combine(CachePath, "Net");
+            var runtimeCachePath = Path.Combine(CachePath, "Runtime");
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
+            if (!Directory.Exists(runtimeCachePath))
+                Directory.CreateDirectory(runtimeCachePath);
             if (!Directory.Exists(netCachePath))
                 Directory.CreateDirectory(netCachePath);
             if (!Directory.Exists(ChartPath))
