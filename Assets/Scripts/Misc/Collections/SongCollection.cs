@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Collections
 {
-    public class SongCollection : IEnumerable<ISongDetail>
+    public class SongCollection : IEnumerable<ISongDetail>, IReadOnlyCollection<ISongDetail>
     {
         public ISongDetail Current => _sorted[Index];
         public int Index

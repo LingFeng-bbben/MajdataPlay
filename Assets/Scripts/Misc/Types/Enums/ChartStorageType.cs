@@ -4,6 +4,7 @@
     {
         List,
         Dan,
+        PlayList,
         FavoriteList
     }
 }

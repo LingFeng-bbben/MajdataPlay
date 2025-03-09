@@ -193,8 +193,9 @@ namespace MajdataPlay.List
                     songs = dirs[desiredListPos];
                     switch(songs.Type)
                     {
-                        case ChartStorageType.FavoriteList:
                         case ChartStorageType.List:
+                        case ChartStorageType.PlayList:
+                        case ChartStorageType.FavoriteList:
                             CoverBigDisplayer.SetMeta(songs.Name, "Count:" + songs.Count, "", "");
                             break;
                         case ChartStorageType.Dan:

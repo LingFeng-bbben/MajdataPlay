@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
@@ -143,49 +144,45 @@ namespace MajdataPlay.Utils
                 }
                 MajDebug.Log("Load Dans");
                 var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
-                foreach (var file in danFiles)
+                var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
+                for (var i = 0; i < loadDanTasks.Length; i++)
                 {
-                    var json = File.ReadAllText(file.FullName);
-                    var dan = Serializer.Json.Deserialize<DanInfo>(json, new JsonSerializerOptions()
+                    if(i >= danFiles.Length)
+                    {
+                        loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
+                        continue;
+                    }
+                    var file = danFiles[i];
+                    var jsonStream = File.OpenRead(file.FullName);
+                    var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
                     {
                         PropertyNameCaseInsensitive = false
                     });
-                    if (dan is null)
+                    if (result && dan is not null)
                     {
-                        MajDebug.LogError("Failed to load dan file:" + file.FullName);
-                        continue;
+                        loadDanTasks[i] = GetDanCollection(allcharts, dan);
                     }
-                    List<ISongDetail> danSongs = new();
-                    foreach (var hash in dan.SongHashs)
+                }
+                if(loadDanTasks.Length != 0)
+                {
+                    var allTask = Task.WhenAll(loadDanTasks);
+                    while (!allTask.IsCompleted)
+                        await Task.Yield();
+                    foreach(var task in loadDanTasks)
                     {
-                        // search online first (so can upload score)
-                        var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash && x.IsOnline == true);
-                        if (songDetail == null)
-                            songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
-                        if (songDetail is not null)
-                            danSongs.Add(songDetail);
-                        else
+                        if(task.IsFaulted)
                         {
-                            MajDebug.LogError("Cannot find the song with hash:" + hash);
-                            if (dan.IsPlayList)
-                            {
-                                continue;
-                            }
-                            danSongs.Clear();
-                            break;
+                            MajDebug.LogError(task.Exception);
+                            continue;
                         }
+                        var collection = task.Result;
+                        if(collection is null)
+                        {
+                            continue;
+                        }
+                        collections.Add(collection);
+                        MajDebug.Log("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
                     }
-                    if (danSongs.Count == 0)
-                    {
-                        MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + dan.Name);
-                        continue;
-                    }
-                    collections.Add(new SongCollection(dan.Name, danSongs.ToArray())
-                    {
-                        Type = dan.IsPlayList ? ChartStorageType.List : ChartStorageType.Dan,
-                        DanInfo = dan.IsPlayList ? null : dan
-                    });
-                    MajDebug.Log("Loaded Dan:" + dan.Name);
                 }
                 collections.Add(_myFavorite);
                 return collections.ToArray();
@@ -288,6 +285,28 @@ namespace MajdataPlay.Utils
                 MajDebug.LogException(e);
                 return collection;
             }
+        }
+        static async Task<SongCollection?> GetDanCollection(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
+        {
+            return await Task.Run(() =>
+            {
+                var songHashs = danInfo.SongHashs;
+                var targetCharts = allCharts.Where(x => songHashs.Any(y => y == x.Hash))
+                                            .GroupBy(x => x.Hash)
+                                            .Select(x => x.FirstOrDefault())
+                                            .Where(x => x is not null)
+                                            .ToArray();
+                if(targetCharts.Length == 0)
+                {
+                    MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + danInfo.Name);
+                    return default;
+                }
+                return new SongCollection(danInfo.Name, targetCharts)
+                {
+                    Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
+                    DanInfo = danInfo.IsPlayList ? null : danInfo
+                };
+            });
         }
         internal static void OnApplicationQuit()
         {
