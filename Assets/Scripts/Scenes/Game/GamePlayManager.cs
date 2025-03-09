@@ -339,7 +339,7 @@ namespace MajdataPlay.Game
                 await UniTask.Delay(1000);
                 BackToList().Forget();
             }
-            catch(InvalidChartSyntaxException syntaxE)
+            catch(InvalidSimaiMarkupException syntaxE)
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Invalid syntax")}\n{syntaxE.Message}", Color.red);
                 MajDebug.LogError(syntaxE);
