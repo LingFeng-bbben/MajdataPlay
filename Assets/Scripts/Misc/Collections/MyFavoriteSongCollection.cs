@@ -65,6 +65,20 @@ namespace MajdataPlay.Collections
             _dataSet.Remove(item);
             return true;
         }
+        public bool Remove(string hashBase64Str)
+        {
+            if (!_hashSet.Remove(hashBase64Str))
+            {
+                return false;
+            }
+            var index = _dataSet.FindIndex(x => x.Hash == hashBase64Str);
+            if(index == -1)
+            {
+                throw new KeyNotFoundException();
+            }
+            _dataSet.RemoveAt(index);
+            return true;
+        }
         public HashSet<string> ExportHashSet()
         {
             return _hashSet;

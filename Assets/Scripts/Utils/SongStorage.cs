@@ -135,11 +135,12 @@ namespace MajdataPlay.Utils
                 var favoriteListPath = Path.Combine(MY_FAVORITE_STORAGE_PATH);
                 if(File.Exists(favoriteListPath))
                 {
-                    var (result, hashSet) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(favoriteListPath));
-                    if (result && hashSet is not null)
+                    var (result, favoriteInfo) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(favoriteListPath));
+                    if (result && favoriteInfo is not null)
                     {
+                        var hashSet = favoriteInfo.SongHashs;
                         var favoriteSongs = allcharts.Where(x => hashSet.Contains(x.Hash)).ToList();
-                        _myFavorite = new(favoriteSongs, hashSet);
+                        _myFavorite = new(favoriteSongs, new(hashSet));
                     }
                 }
                 MajDebug.Log("Load Dans");
@@ -292,6 +293,7 @@ namespace MajdataPlay.Utils
             {
                 var songHashs = danInfo.SongHashs;
                 var targetCharts = allCharts.Where(x => songHashs.Any(y => y == x.Hash))
+                                            .OrderByDescending(x => x.IsOnline)
                                             .GroupBy(x => x.Hash)
                                             .Select(x => x.FirstOrDefault())
                                             .Where(x => x is not null)
@@ -311,7 +313,26 @@ namespace MajdataPlay.Utils
         internal static void OnApplicationQuit()
         {
             var hashSet = _myFavorite.ExportHashSet();
-            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
+            File.WriteAllText(MY_FAVORITE_STORAGE_PATH,
+                              Serializer.Json.Serialize(new DanInfo()
+                              {
+                                  Name = "My favorites",
+                                  SongHashs = hashSet.ToArray(),
+                                  IsPlayList = true
+                              }
+                ));
+        }
+        internal static void AddToMyFavorites(ISongDetail songDetail)
+        {
+            _myFavorite.Add(songDetail);
+        }
+        internal static void RemoveFromMyFavorites(ISongDetail songDetail)
+        {
+            _myFavorite.Remove(songDetail);
+        }
+        internal static void RemoveFromMyFavorites(string hashBase64Str)
+        {
+            _myFavorite.Remove(hashBase64Str);
         }
         public static void SortAndFind(string searchKey, SortType sortType)
         {
