@@ -55,6 +55,7 @@ namespace MajdataPlay.SensorTest
             {
                 _exitFlag = true;
                 MajInstances.SceneSwitcher.SwitchScene(NextScene);
+                MajEnv.Mode = RunningMode.Play;
             }
         }
     }

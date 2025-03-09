@@ -57,14 +57,7 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            if (MajEnv.Mode == RunningMode.Play)
-            {
-                _noteTimeProvider = Majdata<GamePlayManager>.Instance!;
-            }
-            else
-            {
-                _noteTimeProvider = Majdata<ViewManager>.Instance!;
-            }
+            _noteTimeProvider = Majdata<INoteTimeProvider>.Instance!;
         }
         internal void OnUpdate()
         {
