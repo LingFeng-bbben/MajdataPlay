@@ -105,6 +105,7 @@ namespace MajdataPlay.View
             }
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
+            Majdata<INoteTimeProvider>.Instance = this;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
@@ -424,6 +425,7 @@ namespace MajdataPlay.View
         {
             Majdata<ViewManager>.Free();
             Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
         }
     }
 }

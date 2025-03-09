@@ -151,6 +151,7 @@ namespace MajdataPlay.Game
         {
             Majdata<GamePlayManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
+            Majdata<INoteTimeProvider>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
             //print(MajInstances.GameManager.SelectedIndex);
@@ -921,6 +922,7 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.EnableGC();
             Majdata<GamePlayManager>.Free();
             Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
         }
         async UniTaskVoid BackToList()
         {

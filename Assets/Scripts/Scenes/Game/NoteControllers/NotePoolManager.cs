@@ -57,7 +57,7 @@ namespace MajdataPlay.Game
         }
         void Start()
         {
-            _noteTimeProvider = Majdata<INoteTimeProvider>.Instance!;
+            _noteTimeProvider = Majdata<INoteController>.Instance!;
         }
         internal void OnUpdate()
         {

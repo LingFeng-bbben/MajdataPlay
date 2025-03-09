@@ -17,7 +17,7 @@ namespace MajdataPlay.Game
         }
         private void Start()
         {
-            _noteTimeProvider = Majdata<INoteTimeProvider>.Instance!;
+            _noteTimeProvider = Majdata<INoteController>.Instance!;
         }
         internal override void Clear()
         {
