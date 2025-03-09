@@ -29,6 +29,7 @@ namespace MajdataPlay.List
         public CoverBigDisplayer CoverBigDisplayer;
         public SubInfoDisplayer SubInfoDisplayer;
         public ChartAnalyzer chartAnalyzer;
+        public FavoriteAdder FavoriteAdder;
 
         public int desiredListPos = 0;
         public float listPosReal;
@@ -64,6 +65,8 @@ namespace MajdataPlay.List
                 Destroy(cover.gameObject);
             }
             _songCovers.Clear();
+            SubInfoDisplayer.Hide();
+            FavoriteAdder.Hide();
             Mode = CoverListMode.Directory;
             desiredListPos = SongStorage.CollectionIndex;
             foreach (var dir in dirs)
@@ -139,7 +142,7 @@ namespace MajdataPlay.List
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
                 chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
-
+                FavoriteAdder.SetSong(songinfo);
                 for (int i = 0; i < _songCovers.Count; i++)
                 {
                     var text = songs[i].Levels[selectedDifficulty];
@@ -214,6 +217,7 @@ namespace MajdataPlay.List
                     SubInfoDisplayer.RefreshContent(songinfo);
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
+                    FavoriteAdder.SetSong(songinfo);
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     PreloadSongDetail();
                     break;

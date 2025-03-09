@@ -20,7 +20,7 @@ namespace MajdataPlay.Collections
         {
             Type = ChartStorageType.FavoriteList;
         }
-        public MyFavoriteSongCollection(List<ISongDetail> dataSet, HashSet<string> hashSet) : base("MyFavorites", Array.Empty<ISongDetail>())
+        public MyFavoriteSongCollection(List<ISongDetail> dataSet, HashSet<string> hashSet) : base("MyFavorites", dataSet.ToArray())
         {
             _dataSet = dataSet;
             _hashSet = hashSet;
@@ -63,6 +63,11 @@ namespace MajdataPlay.Collections
                 return false;
             }
             _dataSet.Remove(item);
+            _origin = _dataSet.ToArray();
+            if (!IsSorted)
+            {
+                _sorted = _origin;
+            }
             return true;
         }
         public bool Remove(string hashBase64Str)
@@ -77,6 +82,11 @@ namespace MajdataPlay.Collections
                 throw new KeyNotFoundException();
             }
             _dataSet.RemoveAt(index);
+            _origin = _dataSet.ToArray();
+            if (!IsSorted)
+            {
+                _sorted = _origin;
+            }
             return true;
         }
         public HashSet<string> ExportHashSet()

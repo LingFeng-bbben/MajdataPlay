@@ -99,6 +99,9 @@ namespace MajdataPlay.List
                         MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                         XxlbAnimation.instance.PlayTouchAnimation();
                         break;
+                    case SensorArea.B2:
+                        _coverListDisplayer.FavoriteAdder.FavoratePressed();
+                        break;
                 }
             }
             else if (e.IsButton)
