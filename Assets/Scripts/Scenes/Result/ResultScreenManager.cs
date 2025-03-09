@@ -110,7 +110,14 @@ namespace MajdataPlay.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            avgJudgeTime.text = $"{ result.NoteJudgeDiffs.ToArray().Average()/1000f:F3}s";
+            if(result.NoteJudgeDiffs.IsEmpty)
+            {
+                avgJudgeTime.text = $"0.000s";
+            }
+            else
+            {
+                avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+            }
 
             LoadCover(song).Forget();
 
