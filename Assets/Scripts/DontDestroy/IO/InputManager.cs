@@ -381,7 +381,9 @@ namespace MajdataPlay.IO
                     { "PollingRateMs", touchPanelPollingRate },
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
                     { "ComPortNumber", $"COM{comPortNum}" },
-                    { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate }
+                    { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate },
+                    { "SensitivityOverride", MajInstances.Setting.Misc.InputDevice.TouchPanel.SensitivityOverride },
+                    { "Sensitivity", MajInstances.Setting.Misc.InputDevice.TouchPanel.Sensitivity }
                 };
                 var ledConnProperties = new Dictionary<string, dynamic>()
                 {
