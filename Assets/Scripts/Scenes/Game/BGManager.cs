@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View;
 using System;
@@ -165,11 +166,11 @@ namespace MajdataPlay.Game
                         {
                             throw new Exception("SB Unity");
                         }
-                        if(MajInstances.InputManager.CheckButtonStatus(MajdataPlay.Types.SensorArea.A4, MajdataPlay.Types.SensorStatus.On))
+                        if (MajInstances.InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On))
                         {
                             throw new Exception("SB Unity");
                         }
-                        if (isPrepared)
+                        if (videoPlayer.isPrepared)
                             break;
                     }
                     finally
@@ -180,15 +181,10 @@ namespace MajdataPlay.Game
                 var scale = videoPlayer.height / (float)videoPlayer.width;
                 gameObject.transform.localScale = new Vector3(1f, 1f * scale);
                 _usePictureAsBackground = false;
-                videoPlayer.enabled = true;
-                spriteRender.enabled = false;
             }
             catch(Exception e)
             {
                 Debug.LogException(e);
-                //_usePictureAsBackground = true;
-                //videoPlayer.enabled = false;
-                //spriteRender.enabled = true;
                 SetBackgroundPic(fallback);
             }
             finally
