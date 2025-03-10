@@ -40,7 +40,7 @@ namespace MajdataPlay.IO
                     EnsureTouchPanelSerialStreamIsOpen(serial);
                     IsTouchPanelConnected = true;
                     MajEnv.ExecutionQueue.Enqueue(() => OnTouchPanelConnected());
-                    using var bufferOwner = sharedMemoryPool.Rent(serial.ReadBufferSize * 2);
+                    Span<byte> buffer = stackalloc byte[serial.ReadBufferSize * 2];
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -48,7 +48,9 @@ namespace MajdataPlay.IO
                         {
                             var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
                             var bytesToRead = serial.BytesToRead;
-                            var buffer = bufferOwner.Memory.Span;
+
+                            if (bytesToRead > buffer.Length)
+                                buffer = stackalloc byte[bytesToRead];
 
                             serialStream.Read(buffer);
 
