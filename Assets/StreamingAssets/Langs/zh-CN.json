@@ -3,747 +3,598 @@
   "Author": "Majdata",
   "MappingTable": [
     {
-      "Type": "MISSING_MSVC",
       "Origin": "Missing MSVC",
       "Content": "Missing MSVC"
     },
     {
-      "Type": "MISSING_MSVC_CONTENT",
       "Origin": "Missing MSVC CONTENT",
       "Content": "找不到MSVC运行库\n点击\"OK\"下载MSVC运行库"
     },
     {
-      "Type": "SCANNING_CHART",
       "Origin": "Scanning Charts",
       "Content": "正在扫描谱面"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Scanning Charts From {0}",
       "Content": "正在从{0}拉取谱面"
     },
     {
-      "Type": "SCAN_CHART_FAILED",
       "Origin": "Scan Chart Failed",
       "Content": "扫描谱面时出现问题"
     },
     {
-      "Type": "NO_CHARTS",
       "Origin": "No Charts",
       "Content": "没有可用的谱面"
     },
     {
-      "Type": "PRESS_ANY_KEY",
       "Origin": "Press Any Key",
       "Content": "触摸继续"
     },
     {
-      "Type": "DOWNLOADING",
       "Origin": "Downloading",
       "Content": "正在下载"
     },
     {
-      "Type": "DOWNLOAD_CHART_FAILED",
       "Origin": "Failed to download chart",
       "Content": "下载失败"
     },
     {
-      "Type": "UNKNOWN_ERROR",
       "Origin": "Unknown error",
       "Content": "未知错误"
     },
     {
-      "Type": "LOAD_CHART_FAILED",
       "Origin": "Failed to load chart",
       "Content": "加载谱面时发生错误"
     },
     {
-      "Type": "DESERIALIZATION",
       "Origin": "Deserialization",
       "Content": "正在加载谱面"
     },
     {
-      "Type": "LOADING_CHART",
       "Origin": "Loading Chart",
       "Content": "正在吃绝赞"
     },
     {
-      "Type": "GAME",
       "Origin": "Game",
       "Content": "游戏设定"
     },
     {
-      "Type": "JUDGE",
       "Origin": "Judge",
       "Content": "判定设定"
     },
     {
-      "Type": "DISPLAY",
       "Origin": "Display",
       "Content": "显示设定"
     },
     {
-      "Type": "AUDIO",
       "Origin": "Audio",
       "Content": "音频设定"
     },
     {
-      "Type": "VOLUME",
       "Origin": "Volume",
       "Content": "音量设定"
     },
     {
-      "Type": "DEBUG",
       "Origin": "Debug",
       "Content": "调试"
     },
     {
-      "Type": "TAP_SPEED",
       "Origin": "TapSpeed",
       "Content": "Tap速度"
     },
     {
-      "Type": "TAP_SPEED_DESC",
       "Origin": "TapSpeed_MAJSETTING_DESC",
       "Content": "控制Tap、Hold、Star的下落速度"
     },
     {
-      "Type": "TOUCH_SPEED",
       "Origin": "TouchSpeed",
       "Content": "Touch速度"
     },
     {
-      "Type": "TOUCH_SPEED_DESC",
       "Origin": "TouchSpeed_MAJSETTING_DESC",
       "Content": "控制Touch、TouchHold的淡入速度"
     },
     {
-      "Type": "SLIDE_FADEIN_OFFSET",
       "Origin": "SlideFadeInOffset",
       "Content": "Slide淡入偏移"
     },
     {
-      "Type": "SLIDE_FADEIN_OFFSET_DESC",
       "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
       "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入；单位为秒"
     },
     {
-      "Type": "BACKGROUND_DIM",
       "Origin": "BackgroundDim",
       "Content": "背景亮度"
     },
     {
-      "Type": "BACKGROUND_DIM_DESC",
       "Origin": "BackgroundDim_MAJSETTING_DESC",
       "Content": "控制背景的明亮度\n数值越大越暗"
     },
     {
-      "Type": "LANGUAGE",
       "Origin": "Language",
       "Content": "语言"
     },
     {
-      "Type": "LANGUAGE_DESC",
       "Origin": "Language_MAJSETTING_DESC",
       "Content": "言語/LANGUAGE"
     },
     {
-      "Type": "STAR_ROTATION",
       "Origin": "StarRotation",
       "Content": "Star旋转"
     },
     {
-      "Type": "STAR_ROTATION_DESC",
       "Origin": "StarRotation_MAJSETTING_DESC",
       "Content": "开启后，Star将根据Slide的速度进行旋转"
     },
     {
-      "Type": "BGINFO",
       "Origin": "BGInfo",
       "Content": "游戏时中央信息"
     },
     {
-      "Type": "BGINFO_DESC",
       "Origin": "BGInfo_MAJSETTING_DESC",
       "Content": "调整屏幕中央显示的信息"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "TrackSkip",
       "Content": "跳过乐曲"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "TrackSkip_MAJSETTING_DESC",
       "Content": "开启后，按住2367即可强制跳过乐曲"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "FastRetry",
       "Content": "快速重开"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "FastRetry_MAJSETTING_DESC",
       "Content": "开启后，按住3456即可重新开始乐曲"
     },
     {
-      "Type": "AUDIO_OFFSET",
       "Origin": "AudioOffset",
       "Content": "音频偏移"
     },
     {
-      "Type": "AUDIO_OFFSET_DESC",
       "Origin": "AudioOffset_MAJSETTING_DESC",
       "Content": "音押，当你觉得谱面对不上音频时可以调整该项\nFast较多往左调，Late较多往右调"
     },
     {
-      "Type": "JUDGE_OFFSET",
       "Origin": "JudgeOffset",
       "Content": "判定偏移"
     },
     {
-      "Type": "JUDGE_OFFSET_DESC",
       "Origin": "JudgeOffset_MAJSETTING_DESC",
       "Content": "目押，当你觉得设备存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调"
     },
     {
-      "Type": "MODE",
       "Origin": "Mode",
       "Content": "判定模式"
     },
     {
-      "Type": "MODE_DESC",
       "Origin": "Mode_MAJSETTING_DESC",
       "Content": "此项会影响Hold、Slide的判定行为"
     },
     {
-      "Type": "NOTE_SKIN",
       "Origin": "Skin",
       "Content": "Note皮肤"
     },
     {
-      "Type": "NOTE_SKIN_DESC",
       "Origin": "Skin_MAJSETTING_DESC",
       "Content": "更换Note使用的皮肤"
     },
     {
-      "Type": "DISPLAY_CRITICAL_PERFECT",
       "Origin": "DisplayCriticalPerfect",
       "Content": "显示Critical判定"
     },
     {
-      "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
       "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
       "Content": "开启后，将会显示Critical判定"
     },
     {
-      "Type": "DISPLAY_BREAK_SCORE",
       "Origin": "DisplayBreakScore",
       "Content": "显示Break分数"
     },
     {
-      "Type": "DISPLAY_BREAK_SCORE_DESC",
       "Origin": "DisplayBreakScore_MAJSETTING_DESC",
       "Content": "开启后，会显示Break类Note的详细得分"
     },
     {
-      "Type": "FAST_LATE_TYPE",
       "Origin": "FastLateType",
       "Content": "Fast/Late显示等级"
     },
     {
-      "Type": "FAST_LATE_TYPE_DESC",
       "Origin": "FastLateType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "NOTE_JUDGE_TYPE",
       "Origin": "NoteJudgeType",
       "Content": "Note判定显示等级"
     },
     {
-      "Type": "NOTE_JUDGE_TYPE_DESC",
       "Origin": "NoteJudgeType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "TOUCH_JUDGE_TYPE",
       "Origin": "TouchJudgeType",
       "Content": "Touch判定显示等级"
     },
     {
-      "Type": "TOUCH_JUDGE_TYPE_DESC",
       "Origin": "TouchJudgeType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "SLIDE_JUDGE_TYPE",
       "Origin": "SlideJudgeType",
       "Content": "Slide判定显示等级"
     },
     {
-      "Type": "SLIDE_JUDGE_TYPE_DESC",
       "Origin": "SlideJudgeType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "BREAK_JUDGE_TYPE",
       "Origin": "BreakJudgeType",
       "Content": "Break判定显示等级"
     },
     {
-      "Type": "BREAK_JUDGE_TYPE_DESC",
       "Origin": "BreakJudgeType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "BREAK_FAST_LATE_TYPE",
       "Origin": "BreakFastLateType",
       "Content": "Break Fast/Late显示等级"
     },
     {
-      "Type": "BREAK_FAST_LATE_TYPE_DESC",
       "Origin": "BreakFastLateType_MAJSETTING_DESC",
       "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
     },
     {
-      "Type": "SLIDE_SORT_ORDER",
       "Origin": "SlideSortOrder",
       "Content": "Slide排列顺序"
     },
     {
-      "Type": "SLIDE_SORT_ORDER_DESC",
       "Origin": "SlideSortOrder_MAJSETTING_DESC",
       "Content": "Classic: 旧Slide在新Slide下方\nModern: 旧Slide在新Slide上方"
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE",
       "Origin": "InnerJudgeDistance",
       "Content": "内圈判定显示距离"
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE_DESC",
       "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
       "Content": "调整Touch判定结果的显示位置\n数值越小越靠近中心"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE",
       "Origin": "OuterJudgeDistance",
       "Content": "外圈判定显示距离"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE_DESC",
       "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
       "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "TouchFeedback",
       "Content": "触摸反馈"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "TouchFeedback_MAJSETTING_DESC",
       "Content": "设置触摸反馈的显示级别"
     },
     {
-      "Type": "RESOLUTION",
       "Origin": "Resolution",
       "Content": "分辨率"
     },
     {
-      "Type": "RESOLUTION_DESC",
       "Origin": "Resolution_MAJSETTING_DESC",
       "Content": "不可调整"
     },
     {
-      "Type": "ANSWER_VOL",
       "Origin": "Answer",
       "Content": "正解音"
     },
     {
-      "Type": "ANSWER_VOL_DESC",
       "Origin": "Answer_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "BGM_VOL",
       "Origin": "BGM",
       "Content": "背景音乐"
     },
     {
-      "Type": "BGM_VOL_DESC",
       "Origin": "BGM_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "TAP_VOL",
       "Origin": "Tap",
       "Content": "Tap/Hold判定音"
     },
     {
-      "Type": "TAP_VOL_DESC",
       "Origin": "Tap_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "SLIDE_VOL",
       "Origin": "Slide",
       "Content": "Slide判定音"
     },
     {
-      "Type": "SLIDE_VOL_DESC",
       "Origin": "Slide_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "BREAK_VOL",
       "Origin": "Break",
       "Content": "Break判定音"
     },
     {
-      "Type": "BREAK_VOL_DESC",
       "Origin": "Break_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "TOUCH_VOL",
       "Origin": "Touch",
       "Content": "Touch判定音"
     },
     {
-      "Type": "TOUCH_VOL_DESC",
       "Origin": "Touch_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "VOICE_VOL",
       "Origin": "Voice",
       "Content": "小小蓝白"
     },
     {
-      "Type": "VOICE_VOL_DESC",
       "Origin": "Voice_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "DISPLAY_SENSOR",
       "Origin": "DisplaySensor",
       "Content": "显示被触发的传感器"
     },
     {
-      "Type": "DISPLAY_SENSOR_DESC",
       "Origin": "DisplaySensor_MAJSETTING_DESC",
       "Content": "开启后，被触发的传感器会被渲染"
     },
     {
-      "Type": "DISPLAY_FPS",
       "Origin": "DisplayFPS",
       "Content": "显示帧率"
     },
     {
-      "Type": "DISPLAY_FPS_DESC",
       "Origin": "DisplayFPS_MAJSETTING_DESC",
       "Content": "开启后，会在屏幕右上角显示当前帧率"
     },
     {
-      "Type": "FULLSCREEN",
       "Origin": "FullScreen",
       "Content": "强制全屏"
     },
     {
-      "Type": "FULLSCREEN_DESC",
       "Origin": "FullScreen_MAJSETTING_DESC",
       "Content": "Nothing"
     },
     {
-      "Type": "TRY_FIX_AUDIO_SYNC",
       "Origin": "TryFixAudioSync",
       "Content": "音频卡顿时修正时间"
     },
     {
-      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
       "Origin": "TryFixAudioSync_MAJSETTING_DESC",
       "Content": "开启后，当发生音频卡顿时\n会尝试修正Note与音频的时间轴"
     },
     {
-      "Type": "NOTE_APPEAR_RATE",
       "Origin": "NoteAppearRate",
       "Content": "Note淡入偏移"
     },
     {
-      "Type": "NOTE_APPEAR_RATE_DESC",
       "Origin": "NoteAppearRate_MAJSETTING_DESC",
       "Content": "调整Tap、Hold、Star的淡入行为"
     },
     {
-      "Type": "DISABLE_GC_IN_GAMING",
       "Origin": "DisableGCInGameing",
       "Content": "在游玩时关闭GC"
     },
     {
-      "Type": "DISABLE_GC_IN_GAMING_DESC",
       "Origin": "DisableGCInGameing_MAJSETTING_DESC",
       "Content": "开启后，有可能解决音频卡顿的问题"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Outer_Only",
       "Content": "仅外部"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Inner_Only",
       "Content": "仅内部"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "All",
       "Content": "全部"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowCP",
       "Content": "Critical以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowP",
       "Content": "Perfect以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowGR",
       "Content": "Great以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "MissOnly",
       "Content": "仅Miss"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Enable",
       "Content": "启用"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Disable",
       "Content": "禁用"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "True",
       "Content": "是"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "False",
       "Content": "否"
     },
     {
-      "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "不可用"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Audio Track",
       "Content": "下载音频中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Maidata",
       "Content": "下载谱面中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Picture",
       "Content": "下载图片中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Video",
       "Content": "下载视频中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Search",
       "Content": "搜索"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "UseKeyboardHint",
       "Content": "拿出你的键盘使劲的敲啊..."
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Sort",
       "Content": "排序"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyTime",
       "Content": "添加\n时间"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDiff",
       "Content": "谱面\n难度"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDes",
       "Content": "谱面\n作者"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyTitle",
       "Content": "谱面\n标题"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "默认"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Inner",
       "Content": "内"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Outer",
       "Content": "外"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Mirror",
       "Content": "镜像"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Mirror_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Rotation",
       "Content": "旋转"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Rotation_MAJSETTING_DESC",
       "Content": "正数为顺时针旋转\n负数为逆时针旋转"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed",
       "Content": "游玩速度"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed_MAJSETTING_DESC",
       "Content": "就是变速齿轮的意思啦"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "NoteMask",
       "Content": "Note遮罩"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "NoteMask_MAJSETTING_DESC",
       "Content": "更适合中出式音游的遮罩"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllBreak",
       "Content": "全Break"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllBreak_MAJSETTING_DESC",
       "Content": "所有音符全部变成Break"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllEx",
       "Content": "全Ex"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllEx_MAJSETTING_DESC",
       "Content": "所有音符全部变成Ex"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllTouch",
       "Content": "全Touch"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllTouch_MAJSETTING_DESC",
       "Content": "所有音符全部变成Touch"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SlideNoHead",
       "Content": "无头星星"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SlideNoHead_MAJSETTING_DESC",
       "Content": "去掉所有星星头"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SlideNoTrack",
       "Content": "去掉Slide"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SlideNoTrack_MAJSETTING_DESC",
       "Content": "去掉所有星星的Slide"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AutoPlay",
       "Content": "自动游玩"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AutoPlay_MAJSETTING_DESC",
       "Content": "小小蓝白帮你打"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle",
       "Content": "判定风格"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "调整判定的松严"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PracticeCount",
       "Content": "次数"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Global",
       "Content": "全局"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
       "Content": "控制全局音量"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Empty Chart",
       "Content": "此难度为空"
     }

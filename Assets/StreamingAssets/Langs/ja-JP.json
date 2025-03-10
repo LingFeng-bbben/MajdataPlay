@@ -3,642 +3,514 @@
   "Author": "Majdata",
   "MappingTable": [
     {
-      "Type": "MISSING_MSVC",
       "Origin": "Missing MSVC",
       "Content": "Missing MSVC"
     },
     {
-      "Type": "MISSING_MSVC_CONTENT",
       "Origin": "Missing MSVC CONTENT",
       "Content": "MSVCライブラリ見つかりませんでした\nOKをクリックするとダウンロードページへ行きます"
     },
     {
-      "Type": "SCANNING_CHART",
       "Origin": "Scanning Charts",
       "Content": "Scanning Charts"
     },
     {
-      "Type": "SCAN_CHART_FAILED",
       "Origin": "Scan Chart Failed",
       "Content": "譜面スキャンエラー"
     },
     {
-      "Type": "NO_CHARTS",
       "Origin": "No Charts",
       "Content": "譜面がない"
     },
     {
-      "Type": "PRESS_ANY_KEY",
       "Origin": "Press Any Key",
       "Content": "TOUCH TO START"
     },
     {
-      "Type": "DOWNLOADING",
       "Origin": "Downloading",
       "Content": "ダウンロード中"
     },
     {
-      "Type": "DOWNLOAD_CHART_FAILED",
       "Origin": "Failed to download chart",
       "Content": "Failed to download chart"
     },
     {
-      "Type": "UNKNOWN_ERROR",
       "Origin": "Unknown error",
       "Content": "Unknown error"
     },
     {
-      "Type": "LOAD_CHART_FAILED",
       "Origin": "Failed to load chart",
       "Content": "譜面読み込みエラー"
     },
     {
-      "Type": "DESERIALIZATION",
       "Origin": "Deserialization",
       "Content": "譜面ロード中"
     },
     {
-      "Type": "LOADING_CHART",
       "Origin": "Loading Chart",
       "Content": "譜面読み込む中"
     },
     {
-      "Type": "GAME",
       "Origin": "Game",
       "Content": "ゲーム設定"
     },
     {
-      "Type": "JUDGE",
       "Origin": "Judge",
       "Content": "判定設定"
     },
     {
-      "Type": "DISPLAY",
       "Origin": "Display",
       "Content": "表示設定"
     },
     {
-      "Type": "AUDIO",
       "Origin": "Audio",
       "Content": "サウンド設定"
     },
     {
-      "Type": "VOLUME",
       "Origin": "Volume",
       "Content": "サウンド設定"
     },
     {
-      "Type": "DEBUG",
       "Origin": "Debug",
       "Content": "デバッグ"
     },
     {
-      "Type": "TAP_SPEED",
       "Origin": "TapSpeed",
       "Content": "タップスビート"
     },
     {
-      "Type": "TAP_SPEED_DESC",
       "Origin": "TapSpeed_MAJSETTING_DESC",
       "Content": "タップの速さを設定"
     },
     {
-      "Type": "TOUCH_SPEED",
       "Origin": "TouchSpeed",
       "Content": "タッチスビート"
     },
     {
-      "Type": "TOUCH_SPEED_DESC",
       "Origin": "TouchSpeed_MAJSETTING_DESC",
       "Content": "タッチの速さを設定"
     },
     {
-      "Type": "SLIDE_FADEIN_OFFSET",
       "Origin": "SlideFadeInOffset",
       "Content": "スライド表示タイミング"
     },
     {
-      "Type": "SLIDE_FADEIN_OFFSET_DESC",
       "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
       "Content": "スライド現れるタイミングを設定、右調整は遅い（秒）"
     },
     {
-      "Type": "BACKGROUND_DIM",
       "Origin": "BackgroundDim",
       "Content": "背景の明るさ"
     },
     {
-      "Type": "BACKGROUND_DIM_DESC",
       "Origin": "BackgroundDim_MAJSETTING_DESC",
       "Content": "大きいの方が暗い"
     },
     {
-      "Type": "LANGUAGE",
       "Origin": "Language",
       "Content": "言語"
     },
     {
-      "Type": "LANGUAGE_DESC",
       "Origin": "Language_MAJSETTING_DESC",
       "Content": "语言/LANGUAGE"
     },
     {
-      "Type": "STAR_ROTATION",
       "Origin": "StarRotation",
       "Content": "スライドローテーション"
     },
     {
-      "Type": "STAR_ROTATION_DESC",
       "Origin": "StarRotation_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "BGINFO",
       "Origin": "BGInfo",
       "Content": "画面中央表示"
     },
     {
-      "Type": "BGINFO_DESC",
       "Origin": "BGInfo_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "AUDIO_OFFSET",
       "Origin": "AudioOffset",
       "Content": "判定調整A（音）"
     },
     {
-      "Type": "AUDIO_OFFSET_DESC",
       "Origin": "AudioOffset_MAJSETTING_DESC",
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
-      "Type": "JUDGE_OFFSET",
       "Origin": "JudgeOffset",
       "Content": "判定調整B（視）"
     },
     {
-      "Type": "JUDGE_OFFSET_DESC",
       "Origin": "JudgeOffset_MAJSETTING_DESC",
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
-      "Type": "MODE",
       "Origin": "Mode",
       "Content": "判定モード"
     },
     {
-      "Type": "MODE_DESC",
       "Origin": "Mode_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "NOTE_SKIN",
       "Origin": "Skin",
       "Content": "スキン"
     },
     {
-      "Type": "NOTE_SKIN_DESC",
       "Origin": "Skin_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "DISPLAY_CRITICAL_PERFECT",
       "Origin": "DisplayCriticalPerfect",
       "Content": "Critical判定"
     },
     {
-      "Type": "DISPLAY_CRITICAL_PERFECT_DESC",
       "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "DISPLAY_BREAK_SCORE",
       "Origin": "DisplayBreakScore",
       "Content": "DisplayBreakScore"
     },
     {
-      "Type": "DISPLAY_BREAK_SCORE_DESC",
       "Origin": "DisplayBreakScore_MAJSETTING_DESC",
       "Content": "DisplayBreakScore_MAJSETTING_DESC"
     },
     {
-      "Type": "FAST_LATE_TYPE",
       "Origin": "FastLateType",
       "Content": "Fast/Late種類"
     },
     {
-      "Type": "FAST_LATE_TYPE_DESC",
       "Origin": "FastLateType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "NOTE_JUDGE_TYPE",
       "Origin": "NoteJudgeType",
       "Content": "Note判定ディスプレイ種類"
     },
     {
-      "Type": "NOTE_JUDGE_TYPE_DESC",
       "Origin": "NoteJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "TOUCH_JUDGE_TYPE",
       "Origin": "TouchJudgeType",
       "Content": "Touch判定ディスプレイ種類"
     },
     {
-      "Type": "TOUCH_JUDGE_TYPE_DESC",
       "Origin": "TouchJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "SLIDE_JUDGE_TYPE",
       "Origin": "SlideJudgeType",
       "Content": "Slide判定ディスプレイ種類"
     },
     {
-      "Type": "SLIDE_JUDGE_TYPE_DESC",
       "Origin": "SlideJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "BREAK_JUDGE_TYPE",
       "Origin": "BreakJudgeType",
       "Content": "Break判定ディスプレイ種類"
     },
     {
-      "Type": "BREAK_JUDGE_TYPE_DESC",
       "Origin": "BreakJudgeType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "BREAK_FAST_LATE_TYPE",
       "Origin": "BreakFastLateType",
       "Content": "Break Fast/Late ディスプレイ種類"
     },
     {
-      "Type": "BREAK_FAST_LATE_TYPE_DESC",
       "Origin": "BreakFastLateType_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "SLIDE_SORT_ORDER",
       "Origin": "SlideSortOrder",
       "Content": "スライド表示順番"
     },
     {
-      "Type": "SLIDE_SORT_ORDER_DESC",
       "Origin": "SlideSortOrder_MAJSETTING_DESC",
       "Content": "Classic: 新しいのは古いの上に\nModern: 古いのは新しいの上に"
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE",
       "Origin": "InnerJudgeDistance",
       "Content": "内側判定文字表示距離"
     },
     {
-      "Type": "INNER_JUDGE_DISTANCE_DESC",
       "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE",
       "Origin": "OuterJudgeDistance",
       "Content": "外側判定文字表示距離"
     },
     {
-      "Type": "OUTER_JUDGE_DISTANCE_DESC",
       "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "RESOLUTION",
       "Origin": "Resolution",
       "Content": "解像度"
     },
     {
-      "Type": "RESOLUTION_DESC",
       "Origin": "Resolution_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "ANSWER_VOL",
       "Origin": "Answer",
       "Content": "正解音"
     },
     {
-      "Type": "ANSWER_VOL_DESC",
       "Origin": "Answer_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "BGM_VOL",
       "Origin": "BGM",
       "Content": "音楽"
     },
     {
-      "Type": "BGM_VOL_DESC",
       "Origin": "BGM_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "TAP_VOL",
       "Origin": "Tap",
       "Content": "Tap/Hold判定音"
     },
     {
-      "Type": "TAP_VOL_DESC",
       "Origin": "Tap_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "SLIDE_VOL",
       "Origin": "Slide",
       "Content": "Slide判定音"
     },
     {
-      "Type": "SLIDE_VOL_DESC",
       "Origin": "Slide_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "BREAK_VOL",
       "Origin": "Break",
       "Content": "Break判定音"
     },
     {
-      "Type": "BREAK_VOL_DESC",
       "Origin": "Break_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "TOUCH_VOL",
       "Origin": "Touch",
       "Content": "Touch判定音"
     },
     {
-      "Type": "TOUCH_VOL_DESC",
       "Origin": "Touch_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "VOICE_VOL",
       "Origin": "Voice",
       "Content": "ボイス"
     },
     {
-      "Type": "VOICE_VOL_DESC",
       "Origin": "Voice_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "DISPLAY_SENSOR",
       "Origin": "DisplaySensor",
       "Content": "センサーディスプレイ"
     },
     {
-      "Type": "DISPLAY_SENSOR_DESC",
       "Origin": "DisplaySensor_MAJSETTING_DESC",
       "Content": "センサーの状況を表示します"
     },
     {
-      "Type": "DISPLAY_FPS",
       "Origin": "DisplayFPS",
       "Content": "FPSディスプレイ"
     },
     {
-      "Type": "DISPLAY_FPS_DESC",
       "Origin": "DisplayFPS_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "FULLSCREEN",
       "Origin": "FullScreen",
       "Content": "フルスクリーン"
     },
     {
-      "Type": "FULLSCREEN_DESC",
       "Origin": "FullScreen_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "TRY_FIX_AUDIO_SYNC",
       "Origin": "TryFixAudioSync",
       "Content": "音ラッグを直す"
     },
     {
-      "Type": "TRY_FIX_AUDIO_SYNC_DESC",
       "Origin": "TryFixAudioSync_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "NOTE_APPEAR_RATE",
       "Origin": "NoteAppearRate",
       "Content": "Noteフェードイン"
     },
     {
-      "Type": "NOTE_APPEAR_RATE_DESC",
       "Origin": "NoteAppearRate_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "DISABLE_GC_IN_GAMING",
       "Origin": "DisableGCInGameing",
       "Content": "GCをオフする"
     },
     {
-      "Type": "DISABLE_GC_IN_GAMING_DESC",
       "Origin": "DisableGCInGameing_MAJSETTING_DESC",
       "Content": ""
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "All",
       "Content": "全部"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowCP",
       "Content": "Critical以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowP",
       "Content": "Perfect以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "BelowGR",
       "Content": "Great以下"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "MissOnly",
       "Content": "Missだけ"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Enable",
       "Content": "有効"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Disable",
       "Content": "無効"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "True",
       "Content": "有効"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "False",
       "Content": "無効"
     },
     {
-      "Type": "UNAVAILABLE",
       "Origin": "Unavailable",
       "Content": "利用不可"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Audio Track",
       "Content": "トラックをダウンロード中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Maidata",
       "Content": "譜面をダウンロード中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Picture",
       "Content": "背景をダウンロード中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Downloading Video",
       "Content": "動画をダウンロード中"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Search",
       "Content": "検索"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "UseKeyboardHint",
       "Content": "鍵盤を使ってください..."
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Sort",
       "Content": "順番"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyTime",
       "Content": "時間"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDiff",
       "Content": "難易\n度順"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDes",
       "Content": "譜面\n作者"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyTitle",
       "Content": "タイ\nトル"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "SortbyDefault",
       "Content": "デフォルト"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed",
       "Content": "再生スピード"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PlaybackSpeed_MAJSETTING_DESC",
       "Content": "譜面再生のスピードを調整"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllBreak",
       "Content": "全Break"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllBreak_MAJSETTING_DESC",
       "Content": "全てのNoteがBreakになる"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllEx",
       "Content": "全Ex"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllEx_MAJSETTING_DESC",
       "Content": "全てのNoteがExになる"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllTouch",
       "Content": "全Touch"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AllTouch_MAJSETTING_DESC",
       "Content": "全てのNoteがTouchになる"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AutoPlay",
       "Content": "自動遊ぶ"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "AutoPlay_MAJSETTING_DESC",
       "Content": "オートプレイのこと"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle",
       "Content": "判定モード"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "JudgeStyle_MAJSETTING_DESC",
       "Content": "判定の厳しさを調整"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "PracticeCount",
       "Content": "回数"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Global",
       "Content": "グローバル"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Global_MAJSETTING_DESC",
       "Content": "グローバルボリュームの制御"
     },
     {
-      "Type": "OTHER_MAJTEXT",
       "Origin": "Empty Chart",
       "Content": "この難易度は存在しません"
     }
