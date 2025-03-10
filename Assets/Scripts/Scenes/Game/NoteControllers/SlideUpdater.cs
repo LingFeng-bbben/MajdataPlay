@@ -3,6 +3,7 @@ using MajdataPlay.Utils;
 using MajdataPlay.View;
 using System;
 using System.Linq;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -11,6 +12,12 @@ namespace MajdataPlay.Game
         Memory<SlideQueueInfo> _queueInfos = Memory<SlideQueueInfo>.Empty;
 
         INoteTimeProvider _noteTimeProvider;
+
+        const string UPDATER_NAME = "SlideUpdater";
+        const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
+        const string UPDATE_METHOD_NAME = UPDATER_NAME + ".Update";
+        const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
+        const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
         private void Awake()
         {
             Majdata<SlideUpdater>.Instance = this;
@@ -31,11 +38,27 @@ namespace MajdataPlay.Game
             _queueInfos = infos.OrderBy(x => x.AppearTiming)
                                .ToArray();
         }
-        internal override void OnFixedUpdate() => base.OnFixedUpdate();
-        internal override void OnLateUpdate() => base.OnLateUpdate();
-        internal override void OnUpdate() => base.OnUpdate();
+        internal override void OnFixedUpdate()
+        {
+            Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
+            base.OnFixedUpdate();
+            Profiler.EndSample();
+        }
+        internal override void OnLateUpdate()
+        {
+            Profiler.BeginSample(LATE_UPDATE_METHOD_NAME);
+            base.OnLateUpdate();
+            Profiler.EndSample();
+        }
+        internal override void OnUpdate()
+        {
+            Profiler.BeginSample(UPDATE_METHOD_NAME);
+            base.OnUpdate();
+            Profiler.EndSample();
+        }
         internal override void OnPreUpdate()
         {
+            Profiler.BeginSample(PRE_UPDATE_METHOD_NAME);
             var thisFrameSec = _noteTimeProvider.ThisFrameSec;
             if(!_queueInfos.IsEmpty)
             {
@@ -59,6 +82,7 @@ namespace MajdataPlay.Game
                 _queueInfos = _queueInfos.Slice(i);
             }
             base.OnPreUpdate();
+            Profiler.EndSample();
         }
         private void OnDestroy()
         {

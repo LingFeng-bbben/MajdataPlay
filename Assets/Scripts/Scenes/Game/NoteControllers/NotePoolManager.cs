@@ -6,6 +6,7 @@ using MajdataPlay.View;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -61,6 +62,7 @@ namespace MajdataPlay.Game
         }
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("NotePoolManager.PreUpdate");
             if (State < ComponentState.Running)
                 return;
             var currentSec = _noteTimeProvider.ThisFrameSec;
@@ -69,6 +71,7 @@ namespace MajdataPlay.Game
             touchPool.OnPreUpdate(currentSec);
             touchHoldPool.OnPreUpdate(currentSec);
             eachLinePool.OnPreUpdate(currentSec);
+            Profiler.EndSample();
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {

@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay
 {
@@ -55,6 +56,7 @@ namespace MajdataPlay
         }
         void Update()
         {
+            Profiler.BeginSample("GameUpdater.PreUpdate");
             try
             {
                 OnPreUpdate();
@@ -63,7 +65,8 @@ namespace MajdataPlay
             {
                 MajDebug.LogException(e);
             }
-            
+            Profiler.EndSample();
+            Profiler.BeginSample("GameUpdater.Update");
             try
             {
                 OnUpdate();
@@ -72,6 +75,7 @@ namespace MajdataPlay
             {
                 MajDebug.LogException(e);
             }
+            Profiler.EndSample();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
@@ -97,6 +101,7 @@ namespace MajdataPlay
         }
         void LateUpdate()
         {
+            Profiler.BeginSample("GameUpdater.LateUpdate");
             try
             {
                 switch (SceneSwitcher.CurrentScene)
@@ -111,6 +116,7 @@ namespace MajdataPlay
             {
                 MajDebug.LogException(e);
             }
+            Profiler.EndSample();
         }
     }
 }
