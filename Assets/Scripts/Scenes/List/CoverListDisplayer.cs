@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -40,14 +41,33 @@ namespace MajdataPlay.List
 
         public int selectedDifficulty = 0;
 
-        private SongCollection[] dirs = SongStorage.Collections;
-        private SongCollection songs = new SongCollection();
+        //SongCollection[] dirs = SongStorage.Collections;
 
         ListManager _listManager;
+
+        ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;
+        SongCollection _currentCollection = SongCollection.Empty("Empty");
 
         private void Awake()
         {
             Majdata<CoverListDisplayer>.Instance = this;
+            var collections = SongStorage.Collections;
+            var newCollections = new SongCollection[collections.Length];
+            for (var i = 0; i < collections.Length; i++)
+            {
+                
+                var collection = collections[i];
+                if (collection.Type == ChartStorageType.FavoriteList)
+                {
+                    newCollections[i] = collection;
+                }
+                else
+                {
+                    newCollections[i] = new SongCollection(collection.Name, collection.ToArray());
+                }  
+            }
+            _collections = newCollections;
+            _currentCollection = _collections.Span[SongStorage.CollectionIndex];
         }
         void Start()
         {
@@ -69,7 +89,7 @@ namespace MajdataPlay.List
             FavoriteAdder.Hide();
             Mode = CoverListMode.Directory;
             desiredListPos = SongStorage.CollectionIndex;
-            foreach (var dir in dirs)
+            foreach (var dir in _collections.Span)
             {
                 var prefab = DirSmallPrefab;
                 if (dir.Type == ChartStorageType.Dan)
@@ -84,15 +104,16 @@ namespace MajdataPlay.List
                 coversmall.gameObject.SetActive(false);
                 coversmall.IsOnline = dir.IsOnline;
             }
-            if (desiredListPos > _folderCovers.Count) desiredListPos = 0;
+            if (desiredListPos > _folderCovers.Count) 
+                desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
         }
 
         public void SwitchToSongList()
         {
-            if (songs.Count == 0) return;
-            if (songs.Type == ChartStorageType.Dan) return;
+            if (_currentCollection.Count == 0) return;
+            if (_currentCollection.Type == ChartStorageType.Dan) return;
             foreach (var cover in _folderCovers)
             {
                 Destroy(cover.gameObject);
@@ -100,7 +121,7 @@ namespace MajdataPlay.List
             _folderCovers.Clear();
             Mode = CoverListMode.Chart;
             desiredListPos = SongStorage.WorkingCollection.Index;
-            foreach (var song in songs)
+            foreach (var song in _currentCollection)
             {
                 var obj = Instantiate(CoverSmallPrefab, transform);
                 var coversmall = obj.GetComponent<SongCoverSmallDisplayer>();
@@ -137,7 +158,7 @@ namespace MajdataPlay.List
             CoverBigDisplayer.SetDifficulty(selectedDifficulty);
             if (IsChartList)
             {
-                var songinfo = songs[desiredListPos];
+                var songinfo = _currentCollection[desiredListPos];
                 var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
@@ -145,7 +166,7 @@ namespace MajdataPlay.List
                 FavoriteAdder.SetSong(songinfo);
                 for (int i = 0; i < _songCovers.Count; i++)
                 {
-                    var text = songs[i].Levels[selectedDifficulty];
+                    var text = _currentCollection[i].Levels[selectedDifficulty];
                     if (string.IsNullOrEmpty(text)) 
                         text = "-";
                     _songCovers[i].SetLevelText(text);
@@ -162,9 +183,10 @@ namespace MajdataPlay.List
                     desiredListPos = SongStorage.CollectionIndex;
                     break;
                 case CoverListMode.Chart:
-                    var collection = SongStorage.WorkingCollection;
+                    var collection = _currentCollection;
                     collection.Move(delta);
-                    desiredListPos = collection.Index;
+                    //desiredListPos = collection.Index;
+                    desiredListPos += delta;
                     break;
             }
             SlideListInternal(desiredListPos);
@@ -176,7 +198,7 @@ namespace MajdataPlay.List
             SlideListInternal(desiredListPos);
         }
 
-        public void SlideListInternal(int pos)
+        void SlideListInternal(int pos)
         {
             MajInstances.AudioManager.PlaySFX("tap_perfect.wav");
             var coverCount = IsDirList ? _folderCovers.Count : _songCovers.Count;
@@ -193,23 +215,24 @@ namespace MajdataPlay.List
             switch(Mode)
             {
                 case CoverListMode.Directory:
-                    songs = dirs[desiredListPos];
-                    switch(songs.Type)
+                    _currentCollection = _collections.Span[desiredListPos];
+                    SongStorage.CollectionIndex = desiredListPos;
+                    switch(_currentCollection.Type)
                     {
                         case ChartStorageType.List:
                         case ChartStorageType.PlayList:
                         case ChartStorageType.FavoriteList:
-                            CoverBigDisplayer.SetMeta(songs.Name, "Count:" + songs.Count, "", "");
+                            CoverBigDisplayer.SetMeta(_currentCollection.Name, "Count:" + _currentCollection.Count, "", "");
                             break;
                         case ChartStorageType.Dan:
-                            CoverBigDisplayer.SetMeta(songs.DanInfo.Name, songs.DanInfo.Description, "", ""); ;
+                            CoverBigDisplayer.SetMeta(_currentCollection.DanInfo.Name, _currentCollection.DanInfo.Description, "", ""); ;
                             break;
                     }
                     CoverBigDisplayer.SetScore(new MaiScore());
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = songs[desiredListPos];
+                    var songinfo = _currentCollection[desiredListPos];
                     var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetSongDetail(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
@@ -218,6 +241,7 @@ namespace MajdataPlay.List
                     GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     FavoriteAdder.SetSong(songinfo);
+                    _currentCollection.Index = desiredListPos;
                     SongStorage.WorkingCollection.Index = desiredListPos;
                     PreloadSongDetail();
                     break;
@@ -225,14 +249,14 @@ namespace MajdataPlay.List
         }
         void PreloadSongDetail()
         {
-            for (int i = 0; i < songs.Count; i++)
+            for (int i = 0; i < _currentCollection.Count; i++)
             {
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
                 {
-                    if (songs[i] is null)
+                    if (_currentCollection[i] is null)
                         continue;
-                    var preloadTask = songs[i].PreloadAsync(_listManager.CancellationToken);
+                    var preloadTask = _currentCollection[i].PreloadAsync(_listManager.CancellationToken);
                     if(!preloadTask.AsValueTask().IsCompleted)
                     {
                         ListManager.AllBackguardTasks.Add(preloadTask);
@@ -256,10 +280,10 @@ namespace MajdataPlay.List
                     CoverListUpdate(_folderCovers);
                     if(Time.frameCount % 50 == 0)
                     {
-                        if (songs.Count > 0)
+                        if (_currentCollection.Count > 0)
                         {
-                            if (coveri >= songs.Count) coveri = 0;
-                            CoverBigDisplayer.SetSongDetail(songs[coveri++]);
+                            if (coveri >= _currentCollection.Count) coveri = 0;
+                            CoverBigDisplayer.SetSongDetail(_currentCollection[coveri++]);
                         }
                         else
                         {

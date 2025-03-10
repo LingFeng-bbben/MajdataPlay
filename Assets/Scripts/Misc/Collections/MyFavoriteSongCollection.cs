@@ -22,6 +22,7 @@ namespace MajdataPlay.Collections
         }
         public MyFavoriteSongCollection(List<ISongDetail> dataSet, HashSet<string> hashSet) : base("MyFavorites", dataSet.ToArray())
         {
+            Type = ChartStorageType.FavoriteList;
             _dataSet = dataSet;
             _hashSet = hashSet;
         }
