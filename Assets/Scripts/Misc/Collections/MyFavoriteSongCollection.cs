@@ -38,6 +38,12 @@ namespace MajdataPlay.Collections
             {
                 _sorted = _origin;
             }
+            else
+            {
+                var sorted = new List<ISongDetail>(_sorted);
+                sorted.Add(item);
+                _sorted = sorted.ToArray();
+            }
         }
         public void Clear()
         {
@@ -67,6 +73,12 @@ namespace MajdataPlay.Collections
             if (!IsSorted)
             {
                 _sorted = _origin;
+            }
+            else if (_sorted.Any(x => x.Hash == item.Hash))
+            {
+                var sorted = new List<ISongDetail>(_sorted);
+                sorted.Remove(item);
+                _sorted = sorted.ToArray();
             }
             return true;
         }
