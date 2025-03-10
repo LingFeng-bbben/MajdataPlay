@@ -51,31 +51,31 @@
       "Content": "譜面読み込む中"
     },
     {
-      "Origin": "Game",
+      "Origin": "Game_MAJSETTING_SCENE_TITLE",
       "Content": "ゲーム設定"
     },
     {
-      "Origin": "Judge",
+      "Origin": "Judge_MAJSETTING_SCENE_TITLE",
       "Content": "判定設定"
     },
     {
-      "Origin": "Display",
+      "Origin": "Display_MAJSETTING_SCENE_TITLE",
       "Content": "表示設定"
     },
     {
-      "Origin": "Audio",
+      "Origin": "Audio_MAJSETTING_SCENE_TITLE",
       "Content": "サウンド設定"
     },
     {
-      "Origin": "Volume",
+      "Origin": "Volume_MAJSETTING_SCENE_TITLE",
       "Content": "サウンド設定"
     },
     {
-      "Origin": "Debug",
+      "Origin": "Debug_MAJSETTING_SCENE_TITLE",
       "Content": "デバッグ"
     },
     {
-      "Origin": "TapSpeed",
+      "Origin": "TapSpeed_MAJSETTING_TITLE",
       "Content": "タップスビート"
     },
     {
@@ -83,7 +83,7 @@
       "Content": "タップの速さを設定"
     },
     {
-      "Origin": "TouchSpeed",
+      "Origin": "TouchSpeed_MAJSETTING_TITLE",
       "Content": "タッチスビート"
     },
     {
@@ -91,7 +91,7 @@
       "Content": "タッチの速さを設定"
     },
     {
-      "Origin": "SlideFadeInOffset",
+      "Origin": "SlideFadeInOffset_MAJSETTING_TITLE",
       "Content": "スライド表示タイミング"
     },
     {
@@ -99,7 +99,7 @@
       "Content": "スライド現れるタイミングを設定、右調整は遅い（秒）"
     },
     {
-      "Origin": "BackgroundDim",
+      "Origin": "BackgroundDim_MAJSETTING_TITLE",
       "Content": "背景の明るさ"
     },
     {
@@ -107,7 +107,7 @@
       "Content": "大きいの方が暗い"
     },
     {
-      "Origin": "Language",
+      "Origin": "Language_MAJSETTING_TITLE",
       "Content": "言語"
     },
     {
@@ -115,7 +115,7 @@
       "Content": "语言/LANGUAGE"
     },
     {
-      "Origin": "StarRotation",
+      "Origin": "StarRotation_MAJSETTING_TITLE",
       "Content": "スライドローテーション"
     },
     {
@@ -123,7 +123,7 @@
       "Content": ""
     },
     {
-      "Origin": "BGInfo",
+      "Origin": "BGInfo_MAJSETTING_TITLE",
       "Content": "画面中央表示"
     },
     {
@@ -131,7 +131,7 @@
       "Content": ""
     },
     {
-      "Origin": "AudioOffset",
+      "Origin": "AudioOffset_MAJSETTING_TITLE",
       "Content": "判定調整A（音）"
     },
     {
@@ -139,7 +139,7 @@
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
-      "Origin": "JudgeOffset",
+      "Origin": "JudgeOffset_MAJSETTING_TITLE",
       "Content": "判定調整B（視）"
     },
     {
@@ -147,7 +147,7 @@
       "Content": "FAST = -\nLATE = +\n(秒)"
     },
     {
-      "Origin": "Mode",
+      "Origin": "Mode_MAJSETTING_TITLE",
       "Content": "判定モード"
     },
     {
@@ -155,7 +155,7 @@
       "Content": ""
     },
     {
-      "Origin": "Skin",
+      "Origin": "Skin_MAJSETTING_TITLE",
       "Content": "スキン"
     },
     {
@@ -163,7 +163,7 @@
       "Content": ""
     },
     {
-      "Origin": "DisplayCriticalPerfect",
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_TITLE",
       "Content": "Critical判定"
     },
     {
@@ -171,7 +171,7 @@
       "Content": ""
     },
     {
-      "Origin": "DisplayBreakScore",
+      "Origin": "DisplayBreakScore_MAJSETTING_TITLE",
       "Content": "DisplayBreakScore"
     },
     {
@@ -179,7 +179,7 @@
       "Content": "DisplayBreakScore_MAJSETTING_DESC"
     },
     {
-      "Origin": "FastLateType",
+      "Origin": "FastLateType_MAJSETTING_TITLE",
       "Content": "Fast/Late種類"
     },
     {
@@ -187,7 +187,7 @@
       "Content": ""
     },
     {
-      "Origin": "NoteJudgeType",
+      "Origin": "NoteJudgeType_MAJSETTING_TITLE",
       "Content": "Note判定ディスプレイ種類"
     },
     {
@@ -195,7 +195,7 @@
       "Content": ""
     },
     {
-      "Origin": "TouchJudgeType",
+      "Origin": "TouchJudgeType_MAJSETTING_TITLE",
       "Content": "Touch判定ディスプレイ種類"
     },
     {
@@ -203,7 +203,7 @@
       "Content": ""
     },
     {
-      "Origin": "SlideJudgeType",
+      "Origin": "SlideJudgeType_MAJSETTING_TITLE",
       "Content": "Slide判定ディスプレイ種類"
     },
     {
@@ -211,7 +211,7 @@
       "Content": ""
     },
     {
-      "Origin": "BreakJudgeType",
+      "Origin": "BreakJudgeType_MAJSETTING_TITLE",
       "Content": "Break判定ディスプレイ種類"
     },
     {
@@ -219,7 +219,7 @@
       "Content": ""
     },
     {
-      "Origin": "BreakFastLateType",
+      "Origin": "BreakFastLateType_MAJSETTING_TITLE",
       "Content": "Break Fast/Late ディスプレイ種類"
     },
     {
@@ -227,7 +227,7 @@
       "Content": ""
     },
     {
-      "Origin": "SlideSortOrder",
+      "Origin": "SlideSortOrder_MAJSETTING_TITLE",
       "Content": "スライド表示順番"
     },
     {
@@ -235,7 +235,7 @@
       "Content": "Classic: 新しいのは古いの上に\nModern: 古いのは新しいの上に"
     },
     {
-      "Origin": "InnerJudgeDistance",
+      "Origin": "InnerJudgeDistance_MAJSETTING_TITLE",
       "Content": "内側判定文字表示距離"
     },
     {
@@ -243,7 +243,7 @@
       "Content": ""
     },
     {
-      "Origin": "OuterJudgeDistance",
+      "Origin": "OuterJudgeDistance_MAJSETTING_TITLE",
       "Content": "外側判定文字表示距離"
     },
     {
@@ -251,7 +251,7 @@
       "Content": ""
     },
     {
-      "Origin": "Resolution",
+      "Origin": "Resolution_MAJSETTING_TITLE",
       "Content": "解像度"
     },
     {
@@ -259,7 +259,7 @@
       "Content": ""
     },
     {
-      "Origin": "Answer",
+      "Origin": "Answer_MAJSETTING_TITLE",
       "Content": "正解音"
     },
     {
@@ -267,7 +267,7 @@
       "Content": ""
     },
     {
-      "Origin": "BGM",
+      "Origin": "BGM_MAJSETTING_TITLE",
       "Content": "音楽"
     },
     {
@@ -275,7 +275,7 @@
       "Content": ""
     },
     {
-      "Origin": "Tap",
+      "Origin": "Tap_MAJSETTING_TITLE",
       "Content": "Tap/Hold判定音"
     },
     {
@@ -283,7 +283,7 @@
       "Content": ""
     },
     {
-      "Origin": "Slide",
+      "Origin": "Slide_MAJSETTING_TITLE",
       "Content": "Slide判定音"
     },
     {
@@ -291,7 +291,7 @@
       "Content": ""
     },
     {
-      "Origin": "Break",
+      "Origin": "Break_MAJSETTING_TITLE",
       "Content": "Break判定音"
     },
     {
@@ -299,7 +299,7 @@
       "Content": ""
     },
     {
-      "Origin": "Touch",
+      "Origin": "Touch_MAJSETTING_TITLE",
       "Content": "Touch判定音"
     },
     {
@@ -307,7 +307,7 @@
       "Content": ""
     },
     {
-      "Origin": "Voice",
+      "Origin": "Voice_MAJSETTING_TITLE",
       "Content": "ボイス"
     },
     {
@@ -315,7 +315,7 @@
       "Content": ""
     },
     {
-      "Origin": "DisplaySensor",
+      "Origin": "DisplaySensor_MAJSETTING_TITLE",
       "Content": "センサーディスプレイ"
     },
     {
@@ -323,7 +323,7 @@
       "Content": "センサーの状況を表示します"
     },
     {
-      "Origin": "DisplayFPS",
+      "Origin": "DisplayFPS_MAJSETTING_TITLE",
       "Content": "FPSディスプレイ"
     },
     {
@@ -331,7 +331,7 @@
       "Content": ""
     },
     {
-      "Origin": "FullScreen",
+      "Origin": "FullScreen_MAJSETTING_TITLE",
       "Content": "フルスクリーン"
     },
     {
@@ -339,7 +339,7 @@
       "Content": ""
     },
     {
-      "Origin": "TryFixAudioSync",
+      "Origin": "TryFixAudioSync_MAJSETTING_TITLE",
       "Content": "音ラッグを直す"
     },
     {
@@ -347,7 +347,7 @@
       "Content": ""
     },
     {
-      "Origin": "NoteAppearRate",
+      "Origin": "NoteAppearRate_MAJSETTING_TITLE",
       "Content": "Noteフェードイン"
     },
     {
@@ -355,7 +355,7 @@
       "Content": ""
     },
     {
-      "Origin": "DisableGCInGameing",
+      "Origin": "DisableGCInGameing_MAJSETTING_TITLE",
       "Content": "GCをオフする"
     },
     {
@@ -451,7 +451,7 @@
       "Content": "デフォルト"
     },
     {
-      "Origin": "PlaybackSpeed",
+      "Origin": "PlaybackSpeed_MAJSETTING_TITLE",
       "Content": "再生スピード"
     },
     {
@@ -459,7 +459,7 @@
       "Content": "譜面再生のスピードを調整"
     },
     {
-      "Origin": "AllBreak",
+      "Origin": "AllBreak_MAJSETTING_TITLE",
       "Content": "全Break"
     },
     {
@@ -467,7 +467,7 @@
       "Content": "全てのNoteがBreakになる"
     },
     {
-      "Origin": "AllEx",
+      "Origin": "AllEx_MAJSETTING_TITLE",
       "Content": "全Ex"
     },
     {
@@ -475,7 +475,7 @@
       "Content": "全てのNoteがExになる"
     },
     {
-      "Origin": "AllTouch",
+      "Origin": "AllTouch_MAJSETTING_TITLE",
       "Content": "全Touch"
     },
     {
@@ -483,7 +483,7 @@
       "Content": "全てのNoteがTouchになる"
     },
     {
-      "Origin": "AutoPlay",
+      "Origin": "AutoPlay_MAJSETTING_TITLE",
       "Content": "自動遊ぶ"
     },
     {
@@ -491,7 +491,7 @@
       "Content": "オートプレイのこと"
     },
     {
-      "Origin": "JudgeStyle",
+      "Origin": "JudgeStyle_MAJSETTING_TITLE",
       "Content": "判定モード"
     },
     {
@@ -503,7 +503,7 @@
       "Content": "回数"
     },
     {
-      "Origin": "Global",
+      "Origin": "Global_MAJSETTING_TITLE",
       "Content": "グローバル"
     },
     {

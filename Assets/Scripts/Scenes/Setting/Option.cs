@@ -50,7 +50,7 @@ namespace MajdataPlay.Setting
         void Start()
         {
             Localization.OnLanguageChanged += OnLangChanged;
-            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            nameText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_TITLE");
             //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
             descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
             InitOptions();
@@ -64,7 +64,7 @@ namespace MajdataPlay.Setting
         }
         void OnLangChanged(object? sender,Language newLanguage)
         {
-            nameText.text = Localization.GetLocalizedText(PropertyInfo.Name);
+            nameText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_TITLE");
             descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
             UpdateOption();
         }
@@ -231,7 +231,7 @@ namespace MajdataPlay.Setting
         {
             var value = PropertyInfo.GetValue(OptionObject);
             var origin = value.ToString();
-            var localizedText = string.Empty;
+            string localizedText;
             switch (PropertyInfo.Name)
             {
                 case "OuterJudgeDistance":
@@ -242,7 +242,18 @@ namespace MajdataPlay.Setting
                         localizedText = Localization.GetLocalizedText(origin);
                     break;
                 default:
-                    localizedText = Localization.GetLocalizedText(origin);
+                    if(!_isNum)
+                    {
+                        if (!$"{PropertyInfo.Name}_MAJSETTING_OPTIONS_{origin}".Tryi18n(out localizedText))
+                        {
+                            localizedText = origin.i18n();
+                        }
+                    }
+                    else
+                    {
+                        localizedText = origin;
+                    }
+                    //localizedText = Localization.GetLocalizedText(origin);
                     break;
             }
             valueText.text = localizedText;
