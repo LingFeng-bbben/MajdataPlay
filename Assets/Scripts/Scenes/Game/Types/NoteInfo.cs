@@ -27,6 +27,14 @@ namespace MajdataPlay.Game.Types
                 _component = component;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void OnPreUpdate()
+        {
+            if (_onPreUpdate is null)
+                return;
+            if (IsExecutable())
+                _onPreUpdate();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnUpdate()
         {
             if (_onUpdate is null)

@@ -145,10 +145,12 @@ namespace MajdataPlay.View
                             StopAsync().Forget();
                     }
 
-                    _timeDisplayer.OnUpdate();
-                    _noteAudioManager.OnUpdate();
+                    _timeDisplayer.OnPreUpdate();
+                    _noteAudioManager.OnPreUpdate();
+                    _noteManager.OnPreUpdate();
+                    _notePoolManager.OnPreUpdate();
+                    
                     _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
                     break;
             }
         }

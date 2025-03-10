@@ -5,5 +5,6 @@
         internal override void OnFixedUpdate() => base.OnFixedUpdate();
         internal override void OnLateUpdate() => base.OnLateUpdate();
         internal override void OnUpdate() => base.OnUpdate();
+        internal override void OnPreUpdate() => base.OnPreUpdate();
     }
 }

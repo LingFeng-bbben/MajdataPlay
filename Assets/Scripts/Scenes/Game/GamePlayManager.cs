@@ -633,12 +633,30 @@ namespace MajdataPlay.Game
             }
         }
         
-        internal void OnUpdate()
+        
+        internal void OnPreUpdate()
         {
             AudioTimeUpdate();
-            ComponentUpdate();
+            ComponentPreUpdate();
+        }
+        internal void OnUpdate()
+        {
+            NoteManagerUpdate();
             GameControlUpdate();
             FnKeyStateUpdate();
+        }
+        internal void OnLateUpdate()
+        {
+            switch (State)
+            {
+                case GamePlayStatus.WaitForEnd:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.Running:
+                    _noteAudioManager.OnLateUpdate();
+                    _noteManager.OnLateUpdate();
+                    _objectCounter.OnLateUpdate();
+                    break;
+            }
         }
         void GameControlUpdate()
         {
@@ -706,31 +724,28 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void ComponentUpdate()
+        void ComponentPreUpdate()
         {
             switch(State)
             {
                 case GamePlayStatus.WaitForEnd:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.Running:
-                    _noteAudioManager.OnUpdate();
-                    _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
+                    _noteAudioManager.OnPreUpdate();
+                    _noteManager.OnPreUpdate();
+                    _notePoolManager.OnPreUpdate();
                     break;
             }
-            _timeDisplayer.OnUpdate();
+            _timeDisplayer.OnPreUpdate();
         }
-        internal void OnLateUpdate()
+        void NoteManagerUpdate()
         {
-            
             switch (State)
             {
                 case GamePlayStatus.WaitForEnd:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.Running:
-                    _noteAudioManager.OnLateUpdate();
-                    _noteManager.OnLateUpdate();
-                    _objectCounter.OnLateUpdate();
+                    _noteManager.OnUpdate();
                     break;
             }
         }

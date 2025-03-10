@@ -159,16 +159,18 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
+        void OnPreUpdate()
+        {
+            Autoplay();
+            TooLateCheck();
+            Check();
+        }
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
-
-            Autoplay();
-            TooLateCheck();
-            Check();
 
             switch (State)
             {

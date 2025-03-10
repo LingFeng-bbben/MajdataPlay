@@ -306,13 +306,15 @@ namespace MajdataPlay.Game.Notes
             _isJudged = true;
             PlayHoldEffect();
         }
-        void OnUpdate()
+        void OnPreUpdate()
         {
-            var timing = GetTimeSpanToArriveTiming();
-
             Autoplay();
             TooLateCheck();
             BodyCheck();
+        }
+        void OnUpdate()
+        {
+            var timing = GetTimeSpanToArriveTiming();
 
             switch(State)
             {

@@ -302,11 +302,14 @@ namespace MajdataPlay.Game.Notes
 
             return _judgeQueues[index].Span[0].ArrowProgressWhenFinished;
         }
-        void OnUpdate()
+        void OnPreUpdate()
         {
             SlideBarFadeIn();
             SlideCheck();
             CheckSensor();
+        }
+        void OnUpdate()
+        {
 
             switch (State)
             {

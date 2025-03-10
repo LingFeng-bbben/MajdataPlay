@@ -283,6 +283,12 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
+        void OnPreUpdate()
+        {
+            Autoplay();
+            TooLateCheck();
+            BodyCheck();
+        }
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
@@ -293,10 +299,6 @@ namespace MajdataPlay.Game.Notes
             var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - Length;
             var holdDistance = holdTime * Speed + 4.8f;
-
-            Autoplay();
-            TooLateCheck();
-            BodyCheck();
 
             switch (State)
             {

@@ -22,6 +22,9 @@ namespace MajdataPlay.Game
 
         [ReadOnlyField]
         [SerializeField]
+        double _preUpdateElapsedMs = 0;
+        [ReadOnlyField]
+        [SerializeField]
         double _updateElapsedMs = 0;
         [ReadOnlyField]
         [SerializeField]
@@ -69,7 +72,7 @@ namespace MajdataPlay.Game
             Majdata<NoteManager>.Free();
             _inputManager.UnbindAnyArea(OnAnyAreaTrigger);
         }
-        internal void OnUpdate()
+        internal void OnPreUpdate()
         {
             for (var i = 0; i < 8; i++)
             {
@@ -79,6 +82,19 @@ namespace MajdataPlay.Game
             {
                 _isSensorUsedInThisFixedUpdate[i] = false;
             }
+            for (var i = 0; i < _noteUpdaters.Length; i++)
+            {
+                var updater = _noteUpdaters[i];
+                updater.OnPreUpdate();
+            }
+#if UNITY_EDITOR || DEBUG
+            _preUpdateElapsedMs = 0;
+            foreach (var updater in _noteUpdaters)
+                _preUpdateElapsedMs += updater.UpdateElapsedMs;
+#endif
+        }
+        internal void OnUpdate()
+        {
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
@@ -105,14 +121,6 @@ namespace MajdataPlay.Game
         }
         internal void OnFixedUpdate()
         {
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    _isBtnUsedInThisFixedUpdate[i] = false;
-            //}
-            //for (var i = 0; i < 33; i++)
-            //{
-            //    _isSensorUsedInThisFixedUpdate[i] = false;
-            //}
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];

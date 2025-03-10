@@ -290,13 +290,15 @@ namespace MajdataPlay.Game.Notes
                 GroupInfo.RegisterResult(_judgeResult);
             }
         }
-        void OnUpdate()
+        void OnPreUpdate()
         {
-            var timing = GetTimeSpanToArriveTiming();
-
             Autoplay();
             TooLateCheck();
             Check();
+        }
+        void OnUpdate()
+        {
+            var timing = GetTimeSpanToArriveTiming();
 
             switch (State)
             {

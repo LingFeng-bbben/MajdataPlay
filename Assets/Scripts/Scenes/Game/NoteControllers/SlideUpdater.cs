@@ -33,7 +33,8 @@ namespace MajdataPlay.Game
         }
         internal override void OnFixedUpdate() => base.OnFixedUpdate();
         internal override void OnLateUpdate() => base.OnLateUpdate();
-        internal override void OnUpdate()
+        internal override void OnUpdate() => base.OnUpdate();
+        internal override void OnPreUpdate()
         {
             var thisFrameSec = _noteTimeProvider.ThisFrameSec;
             if(!_queueInfos.IsEmpty)
@@ -57,7 +58,7 @@ namespace MajdataPlay.Game
                 }
                 _queueInfos = _queueInfos.Slice(i);
             }
-            base.OnUpdate();
+            base.OnPreUpdate();
         }
         private void OnDestroy()
         {

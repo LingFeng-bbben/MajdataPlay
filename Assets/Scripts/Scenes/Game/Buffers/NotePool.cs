@@ -63,7 +63,7 @@ namespace MajdataPlay.Game.Buffers
         {
 
         }
-        public virtual void OnUpdate(float currentSec)
+        public virtual void OnPreUpdate(float currentSec)
         {
             if (_timingPoints.IsEmpty)
                 return;

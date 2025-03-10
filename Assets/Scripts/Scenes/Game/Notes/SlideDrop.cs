@@ -237,11 +237,14 @@ namespace MajdataPlay.Game.Notes
                     judgeArea.IsSkippable = true;
             }
         }
-        void OnUpdate()
+        void OnPreUpdate()
         {
             SlideBarFadeIn();
             SlideCheck();
             CheckSensor();
+        }
+        void OnUpdate()
+        {
             // ConnSlide
             //var star = _stars[0];
             var starTransform = _starTransforms[0];

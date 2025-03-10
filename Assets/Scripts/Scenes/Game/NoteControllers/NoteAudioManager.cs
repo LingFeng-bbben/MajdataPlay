@@ -87,7 +87,7 @@ namespace MajdataPlay.Game
         {
             Majdata<NoteAudioManager>.Free();
         }
-        internal void OnUpdate()
+        internal void OnPreUpdate()
         {
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {

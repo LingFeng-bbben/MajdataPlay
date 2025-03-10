@@ -37,7 +37,21 @@ namespace MajdataPlay
         void OnPreUpdate()
         {
             // Time Update
-            MajTimeline.OnUpdate();
+            MajTimeline.OnPreUpdate();
+            try
+            {
+                switch (SceneSwitcher.CurrentScene)
+                {
+                    case MajScenes.Game:
+                        var gpManager = Majdata<GamePlayManager>.Instance;
+                        gpManager?.OnPreUpdate();
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
         void Update()
         {

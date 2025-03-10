@@ -93,7 +93,7 @@ namespace MajdataPlay.Utils
 
             return new MajTimer(offset);
         }
-        internal static void OnUpdate()
+        internal static void OnPreUpdate()
         {
             var deltaTime = UnscaledTime - _lastUpdateTime;
             UnscaledDeltaTime = (float)deltaTime.TotalMilliseconds;

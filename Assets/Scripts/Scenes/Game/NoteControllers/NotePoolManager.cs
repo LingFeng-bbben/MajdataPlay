@@ -59,16 +59,16 @@ namespace MajdataPlay.Game
         {
             _noteTimeProvider = Majdata<INoteController>.Instance!;
         }
-        internal void OnUpdate()
+        internal void OnPreUpdate()
         {
             if (State < ComponentState.Running)
                 return;
             var currentSec = _noteTimeProvider.ThisFrameSec;
-            tapPool.OnUpdate(currentSec);
-            holdPool.OnUpdate(currentSec);
-            touchPool.OnUpdate(currentSec);
-            touchHoldPool.OnUpdate(currentSec);
-            eachLinePool.OnUpdate(currentSec);
+            tapPool.OnPreUpdate(currentSec);
+            holdPool.OnPreUpdate(currentSec);
+            touchPool.OnPreUpdate(currentSec);
+            touchHoldPool.OnPreUpdate(currentSec);
+            eachLinePool.OnPreUpdate(currentSec);
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {

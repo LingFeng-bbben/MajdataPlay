@@ -23,10 +23,12 @@ namespace MajdataPlay.Buffers
     public abstract class ComponentInfo
     {
         public object? Component { get; init; }
+        public bool IsPreUpdatable { get; init; }
         public bool IsUpdatable { get; init; }
         public bool IsFixedUpdatable { get; init; }
         public bool IsLateUpdatable { get; init; }
 
+        protected readonly PlayerLoopEventMethod? _onPreUpdate = null;
         protected readonly PlayerLoopEventMethod? _onUpdate = null;
         protected readonly PlayerLoopEventMethod? _onFixedUpdate = null;
         protected readonly PlayerLoopEventMethod? _onLateUpdate = null;
@@ -52,6 +54,10 @@ namespace MajdataPlay.Buffers
                     continue;
                 switch(method.Name)
                 {
+                    case "OnPreUpdate":
+                        if (_onPreUpdate is null)
+                            _onPreUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        break;
                     case "OnUpdate":
                         if(_onUpdate is null)
                             _onUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
@@ -66,10 +72,13 @@ namespace MajdataPlay.Buffers
                         break;
                 }
             }
+            IsPreUpdatable = _onPreUpdate is not null;
             IsUpdatable = _onUpdate is not null;
             IsFixedUpdatable = _onFixedUpdate is not null;
             IsLateUpdatable = _onLateUpdate is not null;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public abstract void OnPreUpdate();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public abstract void OnUpdate();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
