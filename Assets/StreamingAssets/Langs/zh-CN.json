@@ -597,6 +597,18 @@
     {
       "Origin": "Empty Chart",
       "Content": "此难度为空"
+    },
+    {
+      "Origin": "Waiting for the video player...{0}",
+      "Content": "正在等待视频播放器加载完毕...{0}"
+    },
+    {
+      "Origin": "Press the 4th button to use default cover",
+      "Content": "按下4号键以跳过等待"
+    },
+    {
+      "Origin": "Video loading timeout, fall back to default cover",
+      "Content": "视频加载超时，将使用歌曲封面作为背景"
     }
   ]
 }
