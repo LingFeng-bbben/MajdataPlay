@@ -96,7 +96,7 @@ namespace MajdataPlay.Utils
         internal static void OnPreUpdate()
         {
             var deltaTime = UnscaledTime - _lastUpdateTime;
-            UnscaledDeltaTime = (float)deltaTime.TotalMilliseconds;
+            UnscaledDeltaTime = (float)deltaTime.TotalSeconds;
         }
     }
 }
