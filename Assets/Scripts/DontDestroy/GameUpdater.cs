@@ -1,9 +1,11 @@
 ﻿using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -31,18 +33,70 @@ namespace MajdataPlay
         //    noteManager?.OnFixedUpdate();
         //    _inputManager.OnFixedUpdate();
         //}
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void OnPreUpdate()
+        {
+            // Time Update
+            MajTimeline.OnUpdate();
+        }
         void Update()
         {
-            var gpManager = Majdata<GamePlayManager>.Instance;
-
-            gpManager?.OnUpdate();
-            _inputManager.OnUpdate();
+            try
+            {
+                OnPreUpdate();
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+            
+            try
+            {
+                OnUpdate();
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void OnUpdate()
+        {
+            try
+            {
+                switch (SceneSwitcher.CurrentScene)
+                {
+                    case MajScenes.Game:
+                        var gpManager = Majdata<GamePlayManager>.Instance;
+                        gpManager?.OnUpdate();
+                        break;
+                }
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+            finally
+            {
+                _inputManager.OnUpdate();
+            }
         }
         void LateUpdate()
         {
-            var gpManager = Majdata<GamePlayManager>.Instance;
-
-            gpManager?.OnLateUpdate();
+            try
+            {
+                switch (SceneSwitcher.CurrentScene)
+                {
+                    case MajScenes.Game:
+                        var gpManager = Majdata<GamePlayManager>.Instance;
+                        gpManager?.OnLateUpdate();
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
     }
 }

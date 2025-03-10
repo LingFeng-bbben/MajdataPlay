@@ -1,5 +1,7 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Collections;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Threading.Tasks;
@@ -12,6 +14,7 @@ namespace MajdataPlay
 {
     public partial class SceneSwitcher : MonoBehaviour
     {
+        public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
         public delegate void SceneSwitchEventHandler();
         public static event SceneSwitchEventHandler? OnSceneChanged;
 
@@ -22,10 +25,28 @@ namespace MajdataPlay
 
         InputManager _inputManager;
 
+        readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
+
         const int SWITCH_ELAPSED = 400;
         private void Awake()
         {
             MajInstances.SceneSwitcher = this;
+            var currentScene = SceneManager.GetActiveScene();
+            var index = Array.FindIndex(SCENE_NAMES, x => x == currentScene.name);
+            if(index != -1)
+            {
+                CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
+            }
+            OnSceneChanged += CurrentSceneUpdate;
+        }
+        void CurrentSceneUpdate()
+        {
+            var currentScene = SceneManager.GetActiveScene();
+            var index = Array.FindIndex(SCENE_NAMES, x => x == currentScene.name);
+            if (index != -1)
+            {
+                CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
+            }
         }
 
         // Start is called before the first frame update
