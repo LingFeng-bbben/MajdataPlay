@@ -15,7 +15,7 @@ namespace MajdataPlay.Game
 {
     internal class NoteManager : MonoBehaviour
     {
-        public bool IsButtonRingAsTouchPanel { get; set; } = false;
+        public bool IsUseButtonRingForTouch { get; set; } = false;
 
         [SerializeField]
         NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
@@ -212,7 +212,7 @@ namespace MajdataPlay.Game
                 {
                     var btnState = buttons[i].State;
                     _btnStatusInThisFrame[i] = btnState;
-                    if (IsButtonRingAsTouchPanel)
+                    if (IsUseButtonRingForTouch)
                     {
                         senState |= btnState;
                     }

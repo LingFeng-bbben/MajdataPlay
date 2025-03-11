@@ -228,14 +228,14 @@ namespace MajdataPlay.Game
                             _isAllEx = allEx;
                         }
                         break;
-                    case "ButtonRingSlide":
+                    case "ButtonRingForTouch":
                         if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _noteManager.IsButtonRingAsTouchPanel = v.GetBoolean();
+                            _noteManager.IsUseButtonRingForTouch = v.GetBoolean();
                         }
                         else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
                         {
-                            _noteManager.IsButtonRingAsTouchPanel = buttonRingSlide;
+                            _noteManager.IsUseButtonRingForTouch = buttonRingSlide;
                         }
                         break;
                     case "AutoPlay":
@@ -287,7 +287,7 @@ namespace MajdataPlay.Game
             AutoplayMode = modsetting.AutoPlay;
             //AutoplayParam = mod5.Value ?? 7;
             JudgeStyle = modsetting.JudgeStyle;
-            _noteManager.IsButtonRingAsTouchPanel = modsetting.ButtonRingSlide;
+            _noteManager.IsUseButtonRingForTouch = modsetting.ButtonRingForTouch;
             switch(modsetting.NoteMask)
             {
                 case "Inner":

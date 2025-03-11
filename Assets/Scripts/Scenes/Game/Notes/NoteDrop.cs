@@ -103,6 +103,10 @@ namespace MajdataPlay.Game.Notes
             get => _noteController.ThisFrameSec;
         }
 
+        protected bool IsUseButtonRingForTouch
+        {
+            get; private set;
+        }
         protected INoteController NoteController
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -210,6 +214,8 @@ namespace MajdataPlay.Game.Notes
             _isAutoplay = _noteController.IsAutoplay;
             _autoplayGrade = _noteController.AutoplayGrade;
             _autoplayMode = _noteController.AutoplayMode;
+
+            IsUseButtonRingForTouch = _noteManager.IsUseButtonRingForTouch;
         }
         void OnDestroy()
         {

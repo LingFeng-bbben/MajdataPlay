@@ -451,7 +451,8 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            var on = _ioManager.CheckAreaStatus(_sensorPos, SensorStatus.On);
+            var on = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On) ||
+                     _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
             if (on || IsAutoplay)
             {
                 if (remainingTime == 0)

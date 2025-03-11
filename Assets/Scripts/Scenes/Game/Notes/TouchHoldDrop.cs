@@ -375,7 +375,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (_isJudged || IsEnded)
                 return;
-            else if (args.IsButton)
+            else if (args.IsButton && !IsUseButtonRingForTouch)
                 return;
             else if (args.Area != _sensorPos)
                 return;
@@ -456,7 +456,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            var on = _ioManager.CheckSensorStatus(_sensorPos, SensorStatus.On);
+            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();

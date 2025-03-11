@@ -555,12 +555,12 @@
       "Content": "所有音符全部变成Touch"
     },
     {
-      "Origin": "ButtonRingSlide_MAJSETTING_TITLE",
+      "Origin": "ButtonRingForTouch_MAJSETTING_TITLE",
       "Content": "纯内屏体验"
     },
     {
-      "Origin": "ButtonRingSlide_MAJSETTING_DESC",
-      "Content": "按键也可以处理Slide"
+      "Origin": "ButtonRingForTouch_MAJSETTING_DESC",
+      "Content": "按键也可以处理Slide、Touch"
     },
     {
       "Origin": "SlideNoHead_MAJSETTING_TITLE",

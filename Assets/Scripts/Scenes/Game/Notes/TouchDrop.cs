@@ -257,7 +257,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (_isJudged || IsEnded)
                 return;
-            else if (args.IsButton)
+            else if (args.IsButton && !IsUseButtonRingForTouch)
                 return;
             else if (args.Area != _sensorPos)
                 return;
