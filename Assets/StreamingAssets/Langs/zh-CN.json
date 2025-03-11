@@ -75,6 +75,10 @@
       "Content": "音量设定"
     },
     {
+      "Origin": "Mod_MAJSETTING_SCENE_TITLE",
+      "Content": "Mod"
+    },
+    {
       "Origin": "Debug_MAJSETTING_SCENE_TITLE",
       "Content": "调试"
     },
@@ -549,6 +553,14 @@
     {
       "Origin": "AllTouch_MAJSETTING_DESC",
       "Content": "所有音符全部变成Touch"
+    },
+    {
+      "Origin": "ButtonRingSlide_MAJSETTING_TITLE",
+      "Content": "纯内屏体验"
+    },
+    {
+      "Origin": "ButtonRingSlide_MAJSETTING_DESC",
+      "Content": "按键也可以处理Slide"
     },
     {
       "Origin": "SlideNoHead_MAJSETTING_TITLE",
