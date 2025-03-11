@@ -28,15 +28,7 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if(_timeProviders.TryGetValue(Timer,out var timeProvider))
-                {
-                    return TimeSpan.FromTicks(timeProvider.Ticks);
-                }
-                else
-                {
-                    MajDebug.LogError($"Time provider not found: {Timer}");
-                    return TimeSpan.Zero;
-                }
+                return TimeSpan.FromTicks(_currentTimer.Ticks);
             }
         }
         /// <summary>
@@ -73,18 +65,30 @@ namespace MajdataPlay.Utils
             get => UnityEngine.Time.fixedUnscaledDeltaTime;
         }
         public static float TimeScale { get; set; } = 1;
-        public static TimerType Timer { get; set; } = TimerType.Winapi;
+        public static ITimeProvider TimeProvider
+        {
+            get => _currentTimer;
+            set
+            {
+                _currentTimer = value;
+            }
+        }
+        public static ReadOnlyMemory<ITimeProvider> BuiltInTimeProviders
+        {
+            get => _builtInTimeProviders;
+        }
 
+        static ITimeProvider _currentTimer;
         static TimeSpan _lastUpdateTime = TimeSpan.Zero;
-        static Dictionary<TimerType, ITimeProvider> _timeProviders = new();
+        readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = new ITimeProvider[3]
+        {
+            new UnityTimeProvider(),
+            new WinapiTimeProvider(),
+            new StopwatchTimeProvider()
+        };
         static MajTimeline()
         {
-            _timeProviders = new()
-            {
-                { TimerType.Unity , new UnityTimeProvider() },
-                { TimerType.Winapi, new WinapiTimeProvider() },
-                { TimerType.Stopwatch, new StopwatchTimeProvider() },
-            };
+            _currentTimer = _builtInTimeProviders.Span[0];
         }
         public static MajTimer CreateTimer()
         {
@@ -95,8 +99,10 @@ namespace MajdataPlay.Utils
         }
         internal static void OnPreUpdate()
         {
-            var deltaTime = UnscaledTime - _lastUpdateTime;
+            var current = UnscaledTime;
+            var deltaTime = current - _lastUpdateTime;
             UnscaledDeltaTime = (float)deltaTime.TotalSeconds;
+            _lastUpdateTime = current;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace MajdataPlay.Timer
 {
     public class UnityTimeProvider: ITimeProvider
     {
-        public TimerType Type { get; } = TimerType.Unity;
+        public BuiltInTimeProvider Type { get; } = BuiltInTimeProvider.Unity;
         public long Ticks { get; private set; } = 0;
 
         DateTime _startAt = DateTime.Now;

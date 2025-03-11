@@ -4,7 +4,7 @@ namespace MajdataPlay.Timer
 {
     internal class StopwatchTimeProvider : ITimeProvider
     {
-        public TimerType Type { get; } = TimerType.Stopwatch;
+        public BuiltInTimeProvider Type { get; } = BuiltInTimeProvider.Stopwatch;
         public long Ticks => _stopwatch.ElapsedTicks;
 
         Stopwatch _stopwatch = new();

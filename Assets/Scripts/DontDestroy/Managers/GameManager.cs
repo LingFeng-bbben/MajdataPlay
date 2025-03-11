@@ -47,7 +47,7 @@ namespace MajdataPlay
 
         readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
-        TimerType _timer = MajTimeline.Timer;
+        BuiltInTimeProvider _timer = BuiltInTimeProvider.Winapi;
         [SerializeField]
         Sprite _emptySongCover;
         [SerializeField]
@@ -57,6 +57,9 @@ namespace MajdataPlay
         [SerializeField]
         Material _defaultMaterial;
         public bool IsEnterView = false;
+
+        readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
+
         static GameManager()
         {
             _globalCTS = new();
@@ -76,7 +79,7 @@ namespace MajdataPlay
             MajDebug.Log(s);
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
             MajInstances.GameManager = this;
-            _timer = MajTimeline.Timer;
+            MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             DontDestroyOnLoad(this);
 
@@ -216,10 +219,17 @@ namespace MajdataPlay
         }
         void Update()
         {
-            if(MajTimeline.Timer != _timer)
+            ChangeTimerIfRequested();
+        }
+        [Conditional("DEBUG")]
+        void ChangeTimerIfRequested()
+        {
+            var builtInTimeProviders = _builtInTimeProviders.Span;
+            var selectedTimer = builtInTimeProviders[(int)_timer];
+            if (MajTimeline.TimeProvider != selectedTimer)
             {
-                MajDebug.LogWarning($"Time provider changed:\nOld:{MajTimeline.Timer}\nNew:{_timer}");
-                MajTimeline.Timer = _timer;
+                MajDebug.LogWarning($"Time provider changed:\nOld:{MajTimeline.TimeProvider}\nNew:{selectedTimer}");
+                MajTimeline.TimeProvider = selectedTimer;
             }
         }
         void OnApplicationQuit()

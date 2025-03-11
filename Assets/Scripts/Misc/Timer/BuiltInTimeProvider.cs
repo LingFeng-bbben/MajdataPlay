@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.Timer
 {
-    public enum TimerType
+    public enum BuiltInTimeProvider
     {
         Unity,
         Winapi,

@@ -467,10 +467,10 @@ namespace MajdataPlay.Game.Notes
             {
                 if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
                 {
-                    _releaseTime += Time.deltaTime;
+                    _releaseTime += MajTimeline.DeltaTime;
                     return;
                 }
-                _playerReleaseTime += Time.deltaTime;
+                _playerReleaseTime += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = false;
             }
