@@ -26,7 +26,7 @@ namespace MajdataPlay.IO
             {
                 FromMouse(newStates, mainCamera);
             }
-            var now = DateTime.Now;
+            var now = MajTimeline.UnscaledTime;
             foreach (var (i, state) in newStates.WithIndex())
             {
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()

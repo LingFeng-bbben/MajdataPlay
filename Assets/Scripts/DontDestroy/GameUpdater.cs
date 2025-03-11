@@ -36,25 +36,6 @@ namespace MajdataPlay
         //    noteManager?.OnFixedUpdate();
         //    _inputManager.OnFixedUpdate();
         //}
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void OnPreUpdate()
-        {
-            // Time Update
-            MajTimeline.OnPreUpdate();
-            try
-            {
-                switch (SceneSwitcher.CurrentScene)
-                {
-                    case MajScenes.Game:
-                        _gpManagerRef.Target?.OnPreUpdate();
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                MajDebug.LogException(e);
-            }
-        }
         void Update()
         {
             Profiler.BeginSample("GameUpdater.PreUpdate");
@@ -79,6 +60,29 @@ namespace MajdataPlay
             Profiler.EndSample();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void OnPreUpdate()
+        {
+            // Time Update
+            MajTimeline.OnPreUpdate();
+            try
+            {
+                switch (SceneSwitcher.CurrentScene)
+                {
+                    case MajScenes.Game:
+                        _gpManagerRef.Target?.OnPreUpdate();
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+            finally
+            {
+                _inputManager.OnPreUpdate();
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
         {
             try
@@ -93,10 +97,6 @@ namespace MajdataPlay
             catch(Exception e)
             {
                 MajDebug.LogException(e);
-            }
-            finally
-            {
-                _inputManager.OnUpdate();
             }
         }
         void LateUpdate()

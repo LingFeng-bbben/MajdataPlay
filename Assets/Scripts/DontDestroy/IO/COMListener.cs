@@ -83,7 +83,7 @@ namespace MajdataPlay.IO
         {
             if (packet.IsEmpty)
                 return;
-            var now = DateTime.Now;
+            var now = MajTimeline.UnscaledTime;
             Span<int> startIndexs = stackalloc int[packet.Length];
             int x = -1;
             for (var y = 0; y < packet.Length; y++)

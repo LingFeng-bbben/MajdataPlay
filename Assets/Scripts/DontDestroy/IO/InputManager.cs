@@ -64,7 +64,7 @@ namespace MajdataPlay.IO
             new Button(KeyCode.Service,SensorArea.Service),
             new Button(KeyCode.SelectP2,SensorArea.P2),
         };
-        readonly static Dictionary<SensorArea, DateTime> _btnLastTriggerTimes = new();
+        readonly static Dictionary<SensorArea, TimeSpan> _btnLastTriggerTimes = new();
         readonly static Memory<bool> _buttonStates = new bool[12];
 
         readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
@@ -202,7 +202,7 @@ namespace MajdataPlay.IO
                 Area = SensorArea.E8,
             },
         };
-        readonly static Dictionary<SensorArea, DateTime> _sensorLastTriggerTimes = new();
+        readonly static Dictionary<SensorArea, TimeSpan> _sensorLastTriggerTimes = new();
         readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
         readonly static Memory<bool> _sensorStates = new bool[35];
 
@@ -236,9 +236,9 @@ namespace MajdataPlay.IO
             {
                 if (((int)zone).InRange(0, 7))
                 {
-                    _btnLastTriggerTimes[zone] = DateTime.MinValue;
+                    _btnLastTriggerTimes[zone] = TimeSpan.MinValue;
                 }
-                _sensorLastTriggerTimes[zone] = DateTime.MinValue;
+                _sensorLastTriggerTimes[zone] = TimeSpan.MinValue;
             }
         }
         void Start()
@@ -273,7 +273,7 @@ namespace MajdataPlay.IO
         {
             //_updateIOListener();
         }
-        internal void OnUpdate()
+        internal void OnPreUpdate()
         {
             _updateIOListenerPtr();
             if(_isSensorRendererEnabled)
@@ -328,7 +328,7 @@ namespace MajdataPlay.IO
                     {
                         Index = GetIndexByButtonRingZone(zone),
                         State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                        Timestamp = DateTime.Now
+                        Timestamp = MajTimeline.UnscaledTime
                     });
                 };
             }
@@ -341,7 +341,7 @@ namespace MajdataPlay.IO
                     {
                         Index = (int)zone,
                         State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                        Timestamp = DateTime.Now
+                        Timestamp = MajTimeline.UnscaledTime
                     });
                 };
             }
@@ -554,9 +554,9 @@ namespace MajdataPlay.IO
         /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool JitterDetect(SensorArea zone, DateTime now, bool isBtn = false)
+        static bool JitterDetect(SensorArea zone, TimeSpan now, bool isBtn = false)
         {
-            DateTime lastTriggerTime;
+            TimeSpan lastTriggerTime;
             TimeSpan debounceTime;
             if (isBtn)
             {
@@ -583,7 +583,7 @@ namespace MajdataPlay.IO
             {
                 Index = (int)zone,
                 State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                Timestamp = DateTime.Now
+                Timestamp = MajTimeline.UnscaledTime
             });
         }
         static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
@@ -592,7 +592,7 @@ namespace MajdataPlay.IO
             {
                 Index = GetIndexByButtonRingZone(zone),
                 State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                Timestamp = DateTime.Now
+                Timestamp = MajTimeline.UnscaledTime
             });
         }
     }

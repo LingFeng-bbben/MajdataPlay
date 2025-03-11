@@ -170,7 +170,7 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.Initialized;
         }
-        void CheckSensor()
+        void SensorCheck()
         {
             if (IsAutoplay || !_isCheckable)
                 return;
@@ -306,11 +306,10 @@ namespace MajdataPlay.Game.Notes
         {
             SlideBarFadeIn();
             SlideCheck();
-            CheckSensor();
         }
         void OnUpdate()
         {
-
+            SensorCheck();
             switch (State)
             {
                 case NoteStatus.Initialized:

@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
                     token.ThrowIfCancellationRequested();
                     try
                     {
-                        var now = DateTime.Now;
+                        var now = MajTimeline.UnscaledTime;
                         var buttons = _buttons.Span;
                         for (var i = 0; i < buttons.Length; i++)
                         {

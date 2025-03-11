@@ -241,15 +241,16 @@ namespace MajdataPlay.Game.Notes
         {
             SlideBarFadeIn();
             SlideCheck();
-            CheckSensor();
         }
         void OnUpdate()
         {
             // ConnSlide
             //var star = _stars[0];
             var starTransform = _starTransforms[0];
-            
-            switch(State)
+
+            SensorCheck();
+
+            switch (State)
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
@@ -333,7 +334,7 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// 判定队列检查
         /// </summary>
-        void CheckSensor()
+        void SensorCheck()
         {
             if (IsAutoplay || !_isCheckable)
                 return;
