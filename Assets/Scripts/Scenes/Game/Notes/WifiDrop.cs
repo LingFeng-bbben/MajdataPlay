@@ -185,7 +185,7 @@ namespace MajdataPlay.Game.Notes
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    Check(ref _judgeQueues[i]);
+                    SensorCheckInternal(ref _judgeQueues[i]);
                 }
             }
             finally
@@ -193,7 +193,7 @@ namespace MajdataPlay.Game.Notes
                 _isChecking = false;
             }
         }
-        void Check(ref Memory<SlideArea> queueMemory)
+        void SensorCheckInternal(ref Memory<SlideArea> queueMemory)
         {
             if (queueMemory.IsEmpty)
                 return;
@@ -207,7 +207,7 @@ namespace MajdataPlay.Game.Notes
             var fAreas = first.IncludedAreas;
             foreach (var t in fAreas)
             {
-                var sensorState = _ioManager.CheckSensorStatus(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                var sensorState = _noteManager.CheckSensorStatusInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
                 first.Check(t, sensorState);
             }
 
@@ -219,7 +219,7 @@ namespace MajdataPlay.Game.Notes
                 var sAreas = second.IncludedAreas;
                 foreach (var t in sAreas)
                 {
-                    var sensorState = _ioManager.CheckSensorStatus(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                    var sensorState = _noteManager.CheckSensorStatusInThisFrame(t, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
                     second.Check(t, sensorState);
                 }
 

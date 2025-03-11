@@ -15,6 +15,8 @@ namespace MajdataPlay.Game
 {
     internal class NoteManager : MonoBehaviour
     {
+        public bool IsButtonRingAsTouchPanel { get; set; } = false;
+
         [SerializeField]
         NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
         int[] _noteCurrentIndex = new int[8];
@@ -37,11 +39,17 @@ namespace MajdataPlay.Game
 
         internal event IOListener? OnGameIOUpdate;
 
-        bool[] _isBtnUsedInThisFixedUpdate = new bool[8];
-        bool[] _isSensorUsedInThisFixedUpdate = new bool[33];
+        ReadOnlyMemory<Button> _buttons = ReadOnlyMemory<Button>.Empty;
+        ReadOnlyMemory<Sensor> _sensors = ReadOnlyMemory<Sensor>.Empty;
 
-        Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
-        Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
+        readonly SensorStatus[] _btnStatusInThisFrame = new SensorStatus[8];
+        readonly SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
+
+        readonly bool[] _isBtnUsedInThisFrame = new bool[8];
+        readonly bool[] _isSensorUsedInThisFrame = new bool[33];
+
+        readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
+        readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
         InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
@@ -51,16 +59,18 @@ namespace MajdataPlay.Game
         void Awake()
         {
             Majdata<NoteManager>.Instance = this;
+            _buttons = _inputManager.GetButtons();
+            _sensors = _inputManager.GetSensors();
             for (var i = 0; i < 8; i++)
             {
-                _isBtnUsedInThisFixedUpdate[i] = false;
-                ref var state = ref _isBtnUsedInThisFixedUpdate[i];
+                _isBtnUsedInThisFrame[i] = false;
+                ref var state = ref _isBtnUsedInThisFrame[i];
                 _btnUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
             for (var i = 0; i < 33; i++)
             {
-                _isSensorUsedInThisFixedUpdate[i] = false;
-                ref var state = ref _isSensorUsedInThisFixedUpdate[i];
+                _isSensorUsedInThisFrame[i] = false;
+                ref var state = ref _isSensorUsedInThisFrame[i];
                 _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
             _inputManager.BindAnyArea(OnAnyAreaTrigger);
@@ -78,11 +88,11 @@ namespace MajdataPlay.Game
         {
             for (var i = 0; i < 8; i++)
             {
-                _isBtnUsedInThisFixedUpdate[i] = false;
+                _isBtnUsedInThisFrame[i] = false;
             }
             for (var i = 0; i < 33; i++)
             {
-                _isSensorUsedInThisFixedUpdate[i] = false;
+                _isSensorUsedInThisFrame[i] = false;
             }
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
@@ -150,11 +160,11 @@ namespace MajdataPlay.Game
             }
             for (var i = 0; i < 8; i++)
             {
-                _isBtnUsedInThisFixedUpdate[i] = false;
+                _isBtnUsedInThisFrame[i] = false;
             }
             for (var i = 0; i < 33; i++)
             {
-                _isSensorUsedInThisFixedUpdate[i] = false;
+                _isSensorUsedInThisFrame[i] = false;
             }
         }
         public void ResetCounter()
@@ -192,7 +202,26 @@ namespace MajdataPlay.Game
                 if (OnGameIOUpdate is not null)
                     OnGameIOUpdate(packet);
             }
+            var buttons = _buttons.Span;
+            var sensors = _sensors.Span;
+            for (int i = 0; i < 33; i++)
+            {
+                var area = (SensorArea)i;
+                var senState = SensorStatus.Off;
+                if (i < 8)
+                {
+                    var btnState = buttons[i].State;
+                    _btnStatusInThisFrame[i] = btnState;
+                    if (IsButtonRingAsTouchPanel)
+                    {
+                        senState |= btnState;
+                    }
+                }
+                senState |= sensors[i].State;
+                _sensorStatusInThisFrame[i] = senState;
+            }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsCurrentNoteJudgeable(in TapQueueInfo queueInfo)
         {
             var keyIndex = queueInfo.KeyIndex - 1;
@@ -204,6 +233,7 @@ namespace MajdataPlay.Game
 
             return index <= currentIndex;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsCurrentNoteJudgeable(in TouchQueueInfo queueInfo)
         {
             var sensorPos = queueInfo.SensorPos;
@@ -215,6 +245,7 @@ namespace MajdataPlay.Game
 
             return index <= currentIndex;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void NextNote(in TapQueueInfo queueInfo) 
         {
             var keyIndex = queueInfo.KeyIndex - 1;
@@ -225,6 +256,7 @@ namespace MajdataPlay.Game
                 return;
             _noteCurrentIndex[keyIndex]++;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void NextTouch(in TouchQueueInfo queueInfo)
         {
             var sensorPos = queueInfo.SensorPos;
@@ -236,6 +268,22 @@ namespace MajdataPlay.Game
                 return;
 
             _touchCurrentIndex[pos]++;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CheckSensorStatusInThisFrame(SensorArea area,SensorStatus targetState)
+        {
+            if (area < SensorArea.A1 || area > SensorArea.E8)
+                throw new ArgumentOutOfRangeException();
+            
+            return _sensorStatusInThisFrame[(int)area] == targetState;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CheckButtonStatusInThisFrame(SensorArea area, SensorStatus targetState)
+        {
+            if (area < SensorArea.A1 || area > SensorArea.A8)
+                throw new ArgumentOutOfRangeException();
+
+            return _btnStatusInThisFrame[(int)area] == targetState;
         }
         void OnAnyAreaTrigger(object sender, InputEventArgs args)
         {

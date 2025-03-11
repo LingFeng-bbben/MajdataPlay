@@ -526,9 +526,20 @@ namespace MajdataPlay.IO
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor GetSensor(SensorArea target) => _sensors.Span[(int)target];
+        public ReadOnlyMemory<Button> GetButtons()
+        {
+            return _buttons;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<Sensor> GetSensors() => _sensors;
+        public Sensor GetSensor(SensorArea target)
+        {
+            return _sensors.Span[(int)target];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyMemory<Sensor> GetSensors()
+        {
+            return _sensors;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ClearAllSubscriber()
         {
