@@ -46,6 +46,8 @@ namespace MajdataPlay.Game
         InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
 
+        readonly Queue<InputEventArgs> _inputEventBuffer = new(4096);
+
         void Awake()
         {
             Majdata<NoteManager>.Instance = this;
@@ -87,6 +89,7 @@ namespace MajdataPlay.Game
                 var updater = _noteUpdaters[i];
                 updater.OnPreUpdate();
             }
+            GameIOUpdate();
 #if UNITY_EDITOR || DEBUG
             _preUpdateElapsedMs = 0;
             foreach (var updater in _noteUpdaters)
@@ -161,6 +164,35 @@ namespace MajdataPlay.Game
             for (int i = 0; i < 33; i++)
                 _touchCurrentIndex[i] = 0;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void GameIOUpdate()
+        {
+            while(_inputEventBuffer.TryDequeue(out var args))
+            {
+                var area = args.Type;
+                ref var reference = ref Unsafe.NullRef<Ref<bool>>();
+                
+                if (args.IsButton)
+                {
+                    reference = ref _btnUsageStatusRefs[(int)area];
+                }
+                else
+                {
+                    reference = ref _sensorUsageStatusRefs[(int)area];
+                }
+                var packet = new GameInputEventArgs()
+                {
+                    Area = area,
+                    OldState = args.OldStatus,
+                    State = args.Status,
+                    IsButton = args.IsButton,
+                    IsUsed = reference
+                };
+
+                if (OnGameIOUpdate is not null)
+                    OnGameIOUpdate(packet);
+            }
+        }
         public bool IsCurrentNoteJudgeable(in TapQueueInfo queueInfo)
         {
             var keyIndex = queueInfo.KeyIndex - 1;
@@ -224,25 +256,7 @@ namespace MajdataPlay.Game
                 }
             }
 
-            ref var reference = ref Unsafe.NullRef<Ref<bool>>();
-            if(args.IsButton)
-            {
-                reference = ref _btnUsageStatusRefs[(int)area];
-            }
-            else
-            {
-                reference = ref _sensorUsageStatusRefs[(int)area];
-            }
-            var packet = new GameInputEventArgs()
-            {
-                Area = area,
-                OldState = args.OldStatus,
-                State = args.Status,
-                IsButton = args.IsButton,
-                IsUsed = reference
-            };
-
-            OnGameIOUpdate(packet);
+            _inputEventBuffer.Enqueue(args);
         }
     }
 }

@@ -64,6 +64,7 @@ namespace MajdataPlay
         {
             // Time Update
             MajTimeline.OnPreUpdate();
+            _inputManager.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)
@@ -76,10 +77,6 @@ namespace MajdataPlay
             catch (Exception e)
             {
                 MajDebug.LogException(e);
-            }
-            finally
-            {
-                _inputManager.OnPreUpdate();
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
