@@ -11,6 +11,7 @@ namespace MajdataPlay.References
     {
         public ref readonly T Target
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref _ref.Target;
         }
         readonly ValueRef<T> _ref;

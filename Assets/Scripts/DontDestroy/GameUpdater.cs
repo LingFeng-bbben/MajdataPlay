@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.References;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -16,6 +17,7 @@ namespace MajdataPlay
     internal class GameUpdater : MonoBehaviour
     {
         InputManager _inputManager;
+        readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
         void Awake()
         {
             MajInstances.GameUpdater = this;
@@ -44,8 +46,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        var gpManager = Majdata<GamePlayManager>.Instance;
-                        gpManager?.OnPreUpdate();
+                        _gpManagerRef.Target?.OnPreUpdate();
                         break;
                 }
             }
@@ -85,8 +86,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        var gpManager = Majdata<GamePlayManager>.Instance;
-                        gpManager?.OnUpdate();
+                        _gpManagerRef.Target?.OnUpdate();
                         break;
                 }
             }
@@ -107,8 +107,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        var gpManager = Majdata<GamePlayManager>.Instance;
-                        gpManager?.OnLateUpdate();
+                        _gpManagerRef.Target?.OnLateUpdate();
                         break;
                 }
             }
