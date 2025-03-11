@@ -63,7 +63,12 @@ namespace MajdataPlay.List
                 }
                 else
                 {
-                    newCollections[i] = new SongCollection(collection.Name, collection.ToArray());
+                    newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
+                    {
+                        DanInfo = collection.DanInfo,
+                        Type = collection.Type,
+                        Location = collection.Location,
+                    };
                 }  
             }
             _collections = newCollections;
