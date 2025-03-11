@@ -93,6 +93,7 @@ namespace MajdataPlay.Types
         public bool AllTouch { get; set; } = false;
         //public bool SlideNoHead { get; set; } = false;
         //public bool SlideNoTrack { get; set; } = false;
+        public bool ButtonRingSlide { get; set; } = false;
         public string NoteMask { get; set; } = "Disable";
         public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
         public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
