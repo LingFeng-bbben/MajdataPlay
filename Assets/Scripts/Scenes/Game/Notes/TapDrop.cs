@@ -257,19 +257,19 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            ref bool inputDeviceUsage = ref Unsafe.NullRef<bool>();
+            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             bool isButton = false;
             if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
             {
-                inputDeviceUsage = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
             {
-                inputDeviceUsage = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
             }
 
-            if (Unsafe.IsNullRef(ref inputDeviceUsage) || !inputDeviceUsage)
+            if (Unsafe.IsNullRef(ref isDeviceUsedInThisFrame) || isDeviceUsedInThisFrame)
             {
                 return;
             }
@@ -284,7 +284,7 @@ namespace MajdataPlay.Game.Notes
 
             if (_isJudged)
             {
-                inputDeviceUsage = true;
+                isDeviceUsedInThisFrame = true;
                 _noteManager.NextNote(QueueInfo);
             }
         }
