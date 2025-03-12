@@ -151,7 +151,7 @@ namespace MajdataPlay.Title
                                 }
                             }
                             echoText.text = Localization.GetLocalizedText("Press Any Key");
-                            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                            InputManager.BindAnyArea(OnAreaDown);
 
                         }
                         break;
@@ -173,7 +173,7 @@ namespace MajdataPlay.Title
 
         void EnterTestMode()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
@@ -181,7 +181,7 @@ namespace MajdataPlay.Title
         }
         void NextScene()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
             _pressTime = 0;
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");

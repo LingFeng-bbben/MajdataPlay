@@ -185,7 +185,7 @@ namespace MajdataPlay.Game
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
-            MajInstances.InputManager.BindAnyArea(OnPauseButton);
+            InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
             if(_gameInfo.IsDanMode)
             {
@@ -343,7 +343,7 @@ namespace MajdataPlay.Game
             }
             catch(EmptyChartException)
             {
-                inputManager.ClearAllSubscriber();
+                InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
@@ -771,14 +771,14 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = _ioManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
-                    var _3456 = _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
+                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
+                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
                     if(_2367)
                     {
                         _2367PressTime += Time.deltaTime;
@@ -949,7 +949,7 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            MajInstances.InputManager.ClearAllSubscriber();
+            InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
             Majdata<GamePlayManager>.Free();

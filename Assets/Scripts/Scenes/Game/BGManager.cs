@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View;
@@ -166,7 +167,7 @@ namespace MajdataPlay.Game
                         {
                             throw new Exception("SB Unity");
                         }
-                        if (MajInstances.InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On))
+                        if (InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On))
                         {
                             throw new Exception("SB Unity");
                         }

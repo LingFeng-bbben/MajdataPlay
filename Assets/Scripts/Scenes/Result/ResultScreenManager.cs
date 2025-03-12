@@ -209,7 +209,7 @@ namespace MajdataPlay.Result
                 await UniTask.WaitForSeconds(2);
             }
             await OnlineSaveTask;
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            InputManager.BindAnyArea(OnAreaDown);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
         }
 
@@ -243,14 +243,14 @@ namespace MajdataPlay.Result
                 {
                     if (!canNextRound)
                     {
-                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.SceneSwitcher.SwitchScene("TotalResult");
                         return;
 
                     }
                     else
                     {
-                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.AudioManager.StopSFX("bgm_result.mp3");
 
                         //TODO: Add Animation to show that
@@ -261,7 +261,7 @@ namespace MajdataPlay.Result
                         return;
                     }
                 }
-                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                InputManager.UnbindAnyArea(OnAreaDown);
                 MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                 MajInstances.SceneSwitcher.SwitchScene("List",false);
                 return;

@@ -23,6 +23,26 @@ namespace MajdataPlay.IO
     internal unsafe partial class InputManager : MonoBehaviour
     {
         public bool IsTouchPanelConnected { get; private set; } = false;
+        public ReadOnlyMemory<SensorStatus> ButtonStatusInThisFrame
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _btnStatusInThisFrame;
+        }
+        public ReadOnlyMemory<SensorStatus> ButtonStatusInPreviousFrame
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _btnStatusInPreviousFrame;
+        }
+        public ReadOnlyMemory<SensorStatus> SensorStatusInThisFrame
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _sensorStatusInThisFrame;
+        }
+        public ReadOnlyMemory<SensorStatus> SensorStatusInPreviousFrame
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _sensorStatusInPreviousFrame;
+        }
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
@@ -65,7 +85,8 @@ namespace MajdataPlay.IO
             new Button(KeyCode.SelectP2,SensorArea.P2),
         };
         readonly static Dictionary<SensorArea, TimeSpan> _btnLastTriggerTimes = new();
-        readonly static Memory<bool> _buttonStates = new bool[12];
+        readonly static SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[12];
+        readonly static SensorStatus[] _btnStatusInThisFrame = new SensorStatus[12];
 
         readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
         {
@@ -205,6 +226,8 @@ namespace MajdataPlay.IO
         readonly static Dictionary<SensorArea, TimeSpan> _sensorLastTriggerTimes = new();
         readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
         readonly static Memory<bool> _sensorStates = new bool[35];
+        readonly static SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
+        readonly static SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
 
         static bool _useDummy = false;
         static bool _isBtnDebounceEnabled = false;
@@ -285,6 +308,20 @@ namespace MajdataPlay.IO
                         continue;
                     sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
                 }
+            }
+            var buttons = _buttons.Span;
+            var sensors = _sensors.Span;
+            for (var i = 0; i < 12; i++)
+            {
+                var btn = buttons[i];
+                _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
+                _btnStatusInThisFrame[i] = btn.State;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                var sen = sensors[i];
+                _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
+                _sensorStatusInThisFrame[i] = sen.State;
             }
         }
         static void DefaultIOListener()
@@ -461,8 +498,8 @@ namespace MajdataPlay.IO
                     break;
             }
         }
-        public void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
-        public void BindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
+        public static void BindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensor = GetSensor(sType);
             var button = GetButton(sType);
@@ -472,8 +509,8 @@ namespace MajdataPlay.IO
             sensor.AddSubscriber(checker);
             button.AddSubscriber(checker);
         }
-        public void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
-        public void UnbindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
+        public static void UnbindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensor = GetSensor(sType);
             var button = GetButton(sType);
@@ -484,25 +521,25 @@ namespace MajdataPlay.IO
             button.RemoveSubscriber(checker);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
+        public static bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
         {
             return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
         {
+            ThrowIfSensorIndexOutOfRange(target);
+
             var sensor = _sensors.Span[(int)target];
             if (sensor is null)
                 throw new Exception($"{target} Sensor or Button not found.");
+
             return sensor.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
         {
-            var keyRange = new Range<int>(0, 7, ContainsType.Closed);
-            var specialRange = new Range<int>(33, 36, ContainsType.Closed);
-            if (!(keyRange.InRange((int)target) || specialRange.InRange((int)target)))
-                throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
+            ThrowIfButtonIndexOutOfRange(target);
             var button = GetButton(target);
 
             if (button is null)
@@ -511,7 +548,89 @@ namespace MajdataPlay.IO
             return button.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Button? GetButton(SensorArea type)
+        public static bool CheckButtonStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        {
+            ThrowIfButtonIndexOutOfRange(target);
+            var index = GetButtonIndex(target);
+
+            return _btnStatusInThisFrame[index] == targetStatus;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckButtonStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        {
+            ThrowIfButtonIndexOutOfRange(target);
+            var index = GetButtonIndex(target);
+
+            return _btnStatusInPreviousFrame[index] == targetStatus;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SensorStatus GetButtonStatusInThisFrame(SensorArea target)
+        {
+            ThrowIfButtonIndexOutOfRange(target);
+            var index = GetButtonIndex(target);
+
+            return _btnStatusInThisFrame[index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SensorStatus GetButtonStatusInPreviousFrame(SensorArea target)
+        {
+            ThrowIfButtonIndexOutOfRange(target);
+            var index = GetButtonIndex(target);
+
+            return _btnStatusInPreviousFrame[index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame(SensorArea target)
+        {
+            ThrowIfButtonIndexOutOfRange(target);
+            var index = GetButtonIndex(target);
+
+            return _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
+                   _btnStatusInThisFrame[index] == SensorStatus.On;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckSensorStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        {
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInThisFrame[index] == targetStatus;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckSensorStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        {
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInPreviousFrame[index] == targetStatus;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SensorStatus GetSensorStatusInThisFrame(SensorArea target)
+        {
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInThisFrame[index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static SensorStatus GetSensorStatusInPreviousFrame(SensorArea target)
+        {
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInPreviousFrame[index];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame(SensorArea target)
+        {
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
+                   _sensorStatusInThisFrame[index] == SensorStatus.On;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Button? GetButton(SensorArea type)
         {
             var buttons = _buttons.Span;
             return type switch
@@ -526,22 +645,22 @@ namespace MajdataPlay.IO
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<Button> GetButtons()
+        public static ReadOnlyMemory<Button> GetButtons()
         {
             return _buttons;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Sensor GetSensor(SensorArea target)
+        public static Sensor GetSensor(SensorArea target)
         {
             return _sensors.Span[(int)target];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<Sensor> GetSensors()
+        public static ReadOnlyMemory<Sensor> GetSensors()
         {
             return _sensors;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ClearAllSubscriber()
+        public static void ClearAllSubscriber()
         {
             foreach(var sensor in _sensors.Span)
                 sensor.ClearSubscriber();
@@ -586,6 +705,43 @@ namespace MajdataPlay.IO
                 return true;
             }
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void ThrowIfButtonIndexOutOfRange(SensorArea target)
+        {
+            var keyRange = new Range<int>(0, 7, ContainsType.Closed);
+            var specialRange = new Range<int>(33, 36, ContainsType.Closed);
+            if (!(keyRange.InRange((int)target) || specialRange.InRange((int)target)))
+                throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void ThrowIfSensorIndexOutOfRange(SensorArea area)
+        {
+            if (area < SensorArea.A1 || area > SensorArea.E8)
+                throw new ArgumentOutOfRangeException();
+        }
+        static int GetButtonIndex(SensorArea area)
+        {
+            switch(area)
+            {
+                case SensorArea.A1:
+                case SensorArea.A2:
+                case SensorArea.A3:
+                case SensorArea.A4:
+                case SensorArea.A5:
+                case SensorArea.A6:
+                case SensorArea.A7:
+                case SensorArea.A8:
+                    return (int)area;
+                case SensorArea.Test:
+                case SensorArea.P1:
+                case SensorArea.Service:
+                case SensorArea.P2:
+                    return (int)area - 25;
+                default:
+                    throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
+            }
         }
 
         static void OnTouchPanelStateChanged(TouchPanelZone zone, InputState state)

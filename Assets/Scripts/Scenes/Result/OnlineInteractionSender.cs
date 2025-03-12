@@ -42,7 +42,7 @@ namespace MajdataPlay.Result
                 return false;
             }
             _onlineDetail = onlineDetail;
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            InputManager.BindAnyArea(OnAreaDown);
             //MajInstances.LightManager.SetButtonLight(Color.yellow, 2);
             return true;
         }
@@ -51,14 +51,14 @@ namespace MajdataPlay.Result
         {
             if (e.IsDown && (e.Type == SensorArea.E3 || e.Type == SensorArea.B3))
             {
-                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(_onlineDetail);
             }
         }
 
         private void OnDestroy()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
         }
 
         internal void SendInteraction(OnlineSongDetail song)
@@ -68,12 +68,12 @@ namespace MajdataPlay.Result
 
         async UniTask SendLike(OnlineSongDetail song)
         {
-            infotext.text = "ÉÔµÈ...";
+            infotext.text = "ï¿½Ôµï¿½...";
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await MajInstances.OnlineManager.SendLike(song);
-                infotext.text = "µãÔÞ³É¹¦";
+                infotext.text = "ï¿½ï¿½ï¿½Þ³É¹ï¿½";
             }
             catch (Exception ex)
             {
@@ -86,11 +86,11 @@ namespace MajdataPlay.Result
 
         public async UniTask SendScore(MaiScore score)
         {
-            uploadtext.text = "ÕýÔÚÉÏ´«³É¼¨";
+            uploadtext.text = "ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½É¼ï¿½";
             try
             {
                 await MajInstances.OnlineManager.SendScore(_onlineDetail, score);
-                uploadtext.text = "ÉÏ´«³É¼¨³É¹¦";
+                uploadtext.text = "ï¿½Ï´ï¿½ï¿½É¼ï¿½ï¿½É¹ï¿½";
             }
             catch (Exception ex)
             {

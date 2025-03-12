@@ -126,7 +126,7 @@ namespace MajdataPlay.IO
             MajDebug.Log(Bass.LastError);
 
             if (PlayDebug)
-                MajInstances.InputManager.BindAnyArea(OnAnyAreaDown);
+                InputManager.BindAnyArea(OnAnyAreaDown);
             ReadVolumeFromSettings();
         }
         void InitSFXSample(string[] fileNameList,string rootPath)

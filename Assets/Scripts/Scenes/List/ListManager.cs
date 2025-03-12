@@ -57,7 +57,7 @@ namespace MajdataPlay.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                InputManager.BindAnyArea(OnAreaDown);
             }
         }
         void OnDestroy()
@@ -127,7 +127,7 @@ namespace MajdataPlay.List
                                         return;
                                     else if (danInfo.SongLevels.Length != collection.Count)
                                         return;
-                                    MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                                    InputManager.UnbindAnyArea(OnAreaDown);
                                     MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                                     var list = new string[] { "track_start.wav", "track_start_2.wav" };
                                     MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
@@ -158,7 +158,7 @@ namespace MajdataPlay.List
                             }
                             else
                             {
-                                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                                InputManager.UnbindAnyArea(OnAreaDown);
                                 MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                                 var list = new string[] { "track_start.wav", "track_start_2.wav" };
                                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
@@ -225,7 +225,7 @@ namespace MajdataPlay.List
                             _coverListDisplayer.SlideDifficulty(1);
                             break;
                         case SensorArea.P1:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.SceneSwitcher.SwitchScene("SortFind");
                             break;
                         case SensorArea.A5:
@@ -244,12 +244,12 @@ namespace MajdataPlay.List
                             }
                             break;
                         case SensorArea.A7:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 0;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");
                             break;
                         case SensorArea.A2:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 4;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");
                             break;

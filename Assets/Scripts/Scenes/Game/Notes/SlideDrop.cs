@@ -360,7 +360,7 @@ namespace MajdataPlay.Game.Notes
 
                 foreach (var area in fAreas)
                 {
-                    var sensorState = _noteManager.CheckSensorStatusInThisFrame(area, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                    var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
                     first.Check(area, sensorState);
                 }
 
@@ -374,7 +374,7 @@ namespace MajdataPlay.Game.Notes
                     var sAreas = second.IncludedAreas;
                     foreach (var area in sAreas)
                     {
-                        var sensorState = _noteManager.CheckSensorStatusInThisFrame(area, SensorStatus.On) ? SensorStatus.On : SensorStatus.Off;
+                        var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
                         second.Check(area, sensorState);
                     }
 

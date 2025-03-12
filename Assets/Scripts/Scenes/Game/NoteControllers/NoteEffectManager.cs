@@ -35,7 +35,7 @@ namespace MajdataPlay.Game
 
             if (_setting.Display.TouchFeedback != TouchFeedbackLevel.Disable)
             {
-                _inputManager.BindAnyArea(OnAnyAreaClick);
+                InputManager.BindAnyArea(OnAnyAreaClick);
                 switch (_setting.Display.TouchFeedback)
                 {
                     case TouchFeedbackLevel.All:
@@ -60,7 +60,7 @@ namespace MajdataPlay.Game
         void OnDestroy()
         {
             Majdata<NoteEffectManager>.Free();
-            _inputManager.UnbindAnyArea(OnAnyAreaClick);
+            InputManager.UnbindAnyArea(OnAnyAreaClick);
         }
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
