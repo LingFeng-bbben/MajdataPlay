@@ -92,12 +92,12 @@ namespace MajdataPlay.Game
             {
                 _isSensorUsedInThisFrame[i] = false;
             }
+            GameIOUpdate();
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
                 updater.OnPreUpdate();
             }
-            GameIOUpdate();
 #if UNITY_EDITOR || DEBUG
             _preUpdateElapsedMs = 0;
             foreach (var updater in _noteUpdaters)
@@ -175,31 +175,31 @@ namespace MajdataPlay.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void GameIOUpdate()
         {
-            while(_inputEventBuffer.TryDequeue(out var args))
-            {
-                var area = args.Type;
-                ref var reference = ref Unsafe.NullRef<Ref<bool>>();
+            //while(_inputEventBuffer.TryDequeue(out var args))
+            //{
+            //    var area = args.Type;
+            //    ref var reference = ref Unsafe.NullRef<Ref<bool>>();
                 
-                if (args.IsButton)
-                {
-                    reference = ref _btnUsageStatusRefs[(int)area];
-                }
-                else
-                {
-                    reference = ref _sensorUsageStatusRefs[(int)area];
-                }
-                var packet = new GameInputEventArgs()
-                {
-                    Area = area,
-                    OldState = args.OldStatus,
-                    State = args.Status,
-                    IsButton = args.IsButton,
-                    IsUsed = reference
-                };
+            //    if (args.IsButton)
+            //    {
+            //        reference = ref _btnUsageStatusRefs[(int)area];
+            //    }
+            //    else
+            //    {
+            //        reference = ref _sensorUsageStatusRefs[(int)area];
+            //    }
+            //    var packet = new GameInputEventArgs()
+            //    {
+            //        Area = area,
+            //        OldState = args.OldStatus,
+            //        State = args.Status,
+            //        IsButton = args.IsButton,
+            //        IsUsed = reference
+            //    };
 
-                if (OnGameIOUpdate is not null)
-                    OnGameIOUpdate(packet);
-            }
+            //    if (OnGameIOUpdate is not null)
+            //        OnGameIOUpdate(packet);
+            //}
             var currentButtonStatus = _inputManager.ButtonStatusInThisFrame.Span;
             var currentSensorStatus = _inputManager.SensorStatusInThisFrame.Span;
 
@@ -268,6 +268,20 @@ namespace MajdataPlay.Game
                 return;
 
             _touchCurrentIndex[pos]++;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Ref<bool> GetButtonUsageInThisFrame(SensorArea area)
+        {
+            ThrowIfButtonIndexOutOfRange(area);
+
+            return _btnUsageStatusRefs[(int)area];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Ref<bool> GetSensorUsageInThisFrame(SensorArea area)
+        {
+            ThrowIfSensorIndexOutOfRange(area);
+
+            return _sensorUsageStatusRefs[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckSensorStatusInThisFrame(SensorArea area,SensorStatus targetState)
