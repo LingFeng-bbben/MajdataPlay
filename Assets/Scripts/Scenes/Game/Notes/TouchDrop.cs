@@ -290,6 +290,7 @@ namespace MajdataPlay.Game.Notes
             {
                 isDeviceUsedInThisFrame = true;
                 _noteManager.NextTouch(QueueInfo);
+                RegisterGrade();
             }
         }
         void GameIOListener(GameInputEventArgs args)
