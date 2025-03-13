@@ -565,6 +565,34 @@
     {
       "Origin": "Empty Chart",
       "Content": "This level is empty"
+    },
+    {
+      "Origin": "THUMBUP_INFO",
+      "Content": "<Give me a thumb up if it was fun!"
+    },
+    {
+      "Origin": "THUMBUP_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "THUMBUP_SENDED",
+      "Content": "Thumb up sended"
+    },
+    {
+      "Origin": "THUMBUP_ALREADY",
+      "Content": "Thumb up already given"
+    },
+    {
+      "Origin": "THUMBUP_FAILED",
+      "Content": "Failed to send thumb up"
+    },
+    {
+      "Origin": "SCORE_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "SCORE_SENDED",
+      "Content": "Score Uploaded"
     }
   ]
 }

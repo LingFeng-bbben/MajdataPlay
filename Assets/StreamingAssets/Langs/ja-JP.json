@@ -513,6 +513,34 @@
     {
       "Origin": "Empty Chart",
       "Content": "この難易度は存在しません"
+    },
+    {
+      "Origin": "THUMBUP_INFO",
+      "Content": "<面白かったらいいねしよ"
+    },
+    {
+      "Origin": "THUMBUP_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "THUMBUP_SENDED",
+      "Content": "いいねしました"
+    },
+    {
+      "Origin": "THUMBUP_ALREADY",
+      "Content": "すでにいいねしました"
+    },
+    {
+      "Origin": "THUMBUP_FAILED",
+      "Content": "いいね失敗した"
+    },
+    {
+      "Origin": "SCORE_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "SCORE_SENDED",
+      "Content": "スコアアップしました"
     }
   ]
 }

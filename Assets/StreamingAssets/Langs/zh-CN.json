@@ -701,6 +701,34 @@
     {
       "Origin": "BGInfo_MAJSETTING_OPTIONS_None",
       "Content": "无"
+    },
+    {
+      "Origin": "THUMBUP_INFO",
+      "Content": "<好玩就点个赞吧"
+    },
+    {
+      "Origin": "THUMBUP_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "THUMBUP_SENDED",
+      "Content": "点赞成功"
+    },
+    {
+      "Origin": "THUMBUP_ALREADY",
+      "Content": "你已经点过赞了"
+    },
+    {
+      "Origin": "THUMBUP_FAILED",
+      "Content": "点赞失败"
+    },
+    {
+      "Origin": "SCORE_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "SCORE_SENDED",
+      "Content": "成绩已上传"
     }
   ]
 }

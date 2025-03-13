@@ -37,13 +37,13 @@ namespace MajdataPlay.Result
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null)
             {
-                infotext.text = "";
+               
                 thumb.gameObject.SetActive(false);
                 return false;
             }
             _onlineDetail = onlineDetail;
-            InputManager.BindAnyArea(OnAreaDown);
-            //MajInstances.LightManager.SetButtonLight(Color.yellow, 2);
+            InputManager.BindAnyArea(OnAreaDown); 
+            infotext.text = Localization.GetLocalizedText("THUMBUP_INFO");
             return true;
         }
 
@@ -68,12 +68,12 @@ namespace MajdataPlay.Result
 
         async UniTask SendLike(OnlineSongDetail song)
         {
-            infotext.text = "�Ե�...";
+            infotext.text = Localization.GetLocalizedText("THUMBUP_SENDING");
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await MajInstances.OnlineManager.SendLike(song);
-                infotext.text = "���޳ɹ�";
+                infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
             }
             catch (Exception ex)
             {
@@ -86,11 +86,11 @@ namespace MajdataPlay.Result
 
         public async UniTask SendScore(MaiScore score)
         {
-            uploadtext.text = "�����ϴ��ɼ�";
+            uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
             try
             {
                 await MajInstances.OnlineManager.SendScore(_onlineDetail, score);
-                uploadtext.text = "�ϴ��ɼ��ɹ�";
+                uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
             }
             catch (Exception ex)
             {

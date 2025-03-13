@@ -110,7 +110,7 @@ namespace MajdataPlay
 
                 if (intlist.IsLiked)
                 {
-                    throw new Exception("你已经点过赞了！");
+                    throw new Exception(Localization.GetLocalizedText("THUMBUP_ALREADY"));
                 }
 
                 var formData = new MultipartFormDataContent
@@ -122,7 +122,7 @@ namespace MajdataPlay
 
                 if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    throw new Exception("点赞失败");
+                    throw new Exception(Localization.GetLocalizedText("THUMBUP_FAILED"));
                 }
             }
             catch
