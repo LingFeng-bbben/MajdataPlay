@@ -49,8 +49,8 @@ namespace MajdataPlay.List
             try
             {
                 await UniTask.Delay(100);
-                _coverListDisplayer.SwitchToDirList();
-                _coverListDisplayer.SwitchToSongList();
+                await _coverListDisplayer.SwitchToDirListAsync();
+                await _coverListDisplayer.SwitchToSongListAsync();
                 _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
                 await UniTask.Delay(100);
             }
@@ -66,7 +66,7 @@ namespace MajdataPlay.List
             MajEnv.SharedHttpClient.CancelPendingRequests();
             _cts.Cancel();
         }
-        private void OnAreaDown(object sender, InputEventArgs e)
+        private async void OnAreaDown(object sender, InputEventArgs e)
         {
             
             if (!e.IsButton&&e.IsDown)
@@ -152,7 +152,7 @@ namespace MajdataPlay.List
                                 }
                                 else
                                 {
-                                    _coverListDisplayer.SwitchToSongList();
+                                    await _coverListDisplayer.SwitchToSongListAsync();
                                     MajInstances.LightManager.SetButtonLight(Color.red, 4);
                                 }
                             }
@@ -231,7 +231,7 @@ namespace MajdataPlay.List
                         case SensorArea.A5:
                             if (_coverListDisplayer.IsChartList)
                             {
-                                _coverListDisplayer.SwitchToDirList();
+                                await _coverListDisplayer.SwitchToDirListAsync();
                                 MajInstances.LightManager.SetButtonLight(Color.white, 4);
                                 SongStorage.WorkingCollection.Index = 0;
                             }

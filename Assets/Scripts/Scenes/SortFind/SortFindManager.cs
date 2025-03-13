@@ -93,8 +93,8 @@ namespace MajdataPlay.SortFind
 
         void SortAndExit()
         {
-            var task = SongStorage.SortAndFindAsync(SearchBar.text, sortType);
-            MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("List", task).Forget();
+            //var task = SongStorage.SortAndFindAsync(SearchBar.text, sortType);
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
 }

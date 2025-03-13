@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,6 +43,7 @@ namespace MajdataPlay.List
         public int selectedDifficulty = 0;
 
         //SongCollection[] dirs = SongStorage.Collections;
+        Task _sortAndFindTask = Task.CompletedTask;
 
         ListManager _listManager;
 
@@ -51,28 +53,32 @@ namespace MajdataPlay.List
         private void Awake()
         {
             Majdata<CoverListDisplayer>.Instance = this;
-            var collections = SongStorage.Collections;
-            var newCollections = new SongCollection[collections.Length];
-            for (var i = 0; i < collections.Length; i++)
+            _sortAndFindTask = Task.Run(() =>
             {
-                
-                var collection = collections[i];
-                if (collection.Type == ChartStorageType.FavoriteList)
+                var collections = SongStorage.Collections;
+                var newCollections = new SongCollection[collections.Length];
+                for (var i = 0; i < collections.Length; i++)
                 {
-                    newCollections[i] = collection;
-                }
-                else
-                {
-                    newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
+
+                    var collection = collections[i];
+                    if (collection.Type == ChartStorageType.FavoriteList)
                     {
-                        DanInfo = collection.DanInfo,
-                        Type = collection.Type,
-                        Location = collection.Location,
-                    };
-                }  
-            }
-            _collections = newCollections;
-            _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+                        newCollections[i] = collection;
+                    }
+                    else
+                    {
+                        newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
+                        {
+                            DanInfo = collection.DanInfo,
+                            Type = collection.Type,
+                            Location = collection.Location,
+                        };
+                    }
+                    newCollections[i].SortAndFilter(SongStorage.OrderBy);
+                }
+                _collections = newCollections;
+                _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+            });
         }
         void Start()
         {
@@ -82,8 +88,19 @@ namespace MajdataPlay.List
         {
             Majdata<CoverListDisplayer>.Free();
         }
-
-        public void SwitchToDirList()
+        public async UniTask SwitchToDirListAsync()
+        {
+            while(!_sortAndFindTask.IsCompleted)
+                await UniTask.Yield();
+            SwitchToDirListInternal();
+        }
+        public async UniTask SwitchToSongListAsync()
+        {
+            while (!_sortAndFindTask.IsCompleted)
+                await UniTask.Yield();
+            SwitchToSongListInternal();
+        }
+        void SwitchToDirListInternal()
         {
             foreach (var cover in _songCovers)
             {
@@ -115,7 +132,7 @@ namespace MajdataPlay.List
             SlideListInternal(desiredListPos);
         }
 
-        public void SwitchToSongList()
+        void SwitchToSongListInternal()
         {
             if (_currentCollection.Count == 0) return;
             if (_currentCollection.Type == ChartStorageType.Dan) return;
