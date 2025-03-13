@@ -27,6 +27,8 @@ namespace MajdataPlay.IO
                     > 17 => sensors[index - 1],
                     _ => sensors[16],
                 };
+                var sensorArea = sensor.Area;
+                var sensorIndex = (int)sensorArea;
                 var timestamp = report.Timestamp;
                 if (sensor is null)
                 {
@@ -39,7 +41,7 @@ namespace MajdataPlay.IO
                 var C1 = sensorStates[16];
                 var C2 = sensorStates[17];
 
-                if (sensor.Area == SensorArea.C)
+                if (sensorArea == SensorArea.C)
                 {
                     var CSubAreaState = report.State is SensorStatus.On ? true: false;
                     switch (index)
@@ -54,7 +56,7 @@ namespace MajdataPlay.IO
                 }
                 if (_isSensorDebounceEnabled)
                 {
-                    if (JitterDetect(sensor.Area, timestamp))
+                    if (JitterDetect(sensorArea, timestamp))
                     {
                         continue;
                     }
@@ -69,7 +71,7 @@ namespace MajdataPlay.IO
                         }
                         continue;
                     }
-                    _sensorLastTriggerTimes[index] = timestamp;
+                    _sensorLastTriggerTimes[sensorIndex] = timestamp;
                 }
                 else if(oldState == newState)
                 {
