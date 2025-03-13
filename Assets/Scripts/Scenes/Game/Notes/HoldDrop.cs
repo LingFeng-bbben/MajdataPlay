@@ -112,8 +112,8 @@ namespace MajdataPlay.Game.Notes
             _endObject.layer = MajEnv.HIDDEN_LAYER;
             Active = false;
 
-            if (!IsAutoplay)
-                _noteManager.OnGameIOUpdate += GameIOListener;
+            //if (!IsAutoplay)
+            //    _noteManager.OnGameIOUpdate += GameIOListener;
             //_noteChecker = new(Check);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -287,6 +287,7 @@ namespace MajdataPlay.Game.Notes
         {
             Autoplay();
             TooLateCheck();
+            Check();
             BodyCheck();
         }
         void OnUpdate()
@@ -416,6 +417,48 @@ namespace MajdataPlay.Game.Notes
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = 150;
+                _noteManager.NextNote(QueueInfo);
+            }
+        }
+        void Check()
+        {
+            if (IsEnded || !IsInitialized || _isJudged)
+            {
+                return;
+            }
+            else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+
+            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
+            bool isButton = false;
+            if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            {
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isButton = true;
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
+            {
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+            }
+
+            if (Unsafe.IsNullRef(ref isDeviceUsedInThisFrame) || isDeviceUsedInThisFrame)
+            {
+                return;
+            }
+            if (isButton)
+            {
+                Judge(ThisFrameSec);
+            }
+            else
+            {
+                Judge(ThisFrameSec - _touchPanelOffset);
+            }
+
+            if (_isJudged)
+            {
+                isDeviceUsedInThisFrame = true;
                 _noteManager.NextNote(QueueInfo);
             }
         }

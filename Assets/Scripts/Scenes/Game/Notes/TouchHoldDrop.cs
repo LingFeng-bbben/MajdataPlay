@@ -116,8 +116,8 @@ namespace MajdataPlay.Game.Notes
             SetPointActive(false);
             Active = false;
 
-            if (!IsAutoplay)
-                _noteManager.OnGameIOUpdate += GameIOListener;
+            //if (!IsAutoplay)
+            //    _noteManager.OnGameIOUpdate += GameIOListener;
 
             RendererState = RendererStatus.Off;
         }
@@ -310,6 +310,7 @@ namespace MajdataPlay.Game.Notes
         {
             Autoplay();
             TooLateCheck();
+            Check();
             BodyCheck();
         }
         void OnUpdate()
@@ -437,6 +438,50 @@ namespace MajdataPlay.Game.Notes
                 _isJudged = true;
                 _judgeDiff = 316.667f;
                 _noteManager.NextTouch(QueueInfo);
+            }
+        }
+        void Check()
+        {
+            if (IsEnded || !IsInitialized || _isJudged)
+            {
+                return;
+            }
+            else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+
+            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
+            bool isButton = false;
+            if (IsUseButtonRingForTouch && (((int)_sensorPos).InRange(0, 7)) &&
+                _noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            {
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isButton = true;
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
+            {
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+            }
+
+            if (Unsafe.IsNullRef(ref isDeviceUsedInThisFrame) || isDeviceUsedInThisFrame)
+            {
+                return;
+            }
+            if (isButton)
+            {
+                Judge(ThisFrameSec);
+            }
+            else
+            {
+                Judge(ThisFrameSec - _touchPanelOffset);
+            }
+
+            if (_isJudged)
+            {
+                isDeviceUsedInThisFrame = true;
+                _noteManager.NextTouch(QueueInfo);
+                RegisterGrade();
             }
         }
         void BodyCheck()
