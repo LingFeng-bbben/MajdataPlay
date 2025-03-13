@@ -272,8 +272,12 @@ namespace MajdataPlay.Game.Notes
             {
                 isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
             }
+            else
+            {
+                return;
+            }
 
-            if (Unsafe.IsNullRef(ref isDeviceUsedInThisFrame) || isDeviceUsedInThisFrame)
+            if (isDeviceUsedInThisFrame)
             {
                 return;
             }
