@@ -17,9 +17,10 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
-                if (!report.Index.InRange(0, 33))
-                    continue;
                 var index = report.Index;
+                if (!index.InRange(0, 33))
+                    continue;
+                
                 var sensor = index switch
                 {
                     <= (int)SensorArea.C => sensors[index],
@@ -68,7 +69,7 @@ namespace MajdataPlay.IO
                         }
                         continue;
                     }
-                    _sensorLastTriggerTimes[sensor.Area] = timestamp;
+                    _sensorLastTriggerTimes[index] = timestamp;
                 }
                 else if(oldState == newState)
                 {
