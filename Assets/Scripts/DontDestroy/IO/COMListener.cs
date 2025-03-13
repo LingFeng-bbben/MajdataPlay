@@ -40,7 +40,6 @@ namespace MajdataPlay.IO
                     EnsureTouchPanelSerialStreamIsOpen(serial);
                     IsTouchPanelConnected = true;
                     MajEnv.ExecutionQueue.Enqueue(() => OnTouchPanelConnected());
-                    using var bufferOwner = sharedMemoryPool.Rent(serial.ReadBufferSize * 2);
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -48,12 +47,12 @@ namespace MajdataPlay.IO
                         {
                             var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
                             var bytesToRead = serial.BytesToRead;
-                            var buffer = bufferOwner.Memory.Span;
 
-                            serialStream.Read(buffer);
+                            using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
+                            var buffer = bufferOwner.Memory;
+                            serialStream.Read(buffer.Span);
 
                             TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
-                            buffer.Clear();
                         }
                         catch (Exception e)
                         {
@@ -77,16 +76,17 @@ namespace MajdataPlay.IO
             }, TaskCreationOptions.LongRunning);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void TouchPannelPacketHandle(ReadOnlySpan<byte> packet)
+        void TouchPannelPacketHandle(ReadOnlyMemory<byte> packet)
         {
             if (packet.IsEmpty)
                 return;
             var now = MajTimeline.UnscaledTime;
+            var packetSpan = packet.Span;
             Span<int> startIndexs = stackalloc int[packet.Length];
             int x = -1;
-            for (var y = 0; y < packet.Length; y++)
+            for (var y = 0; y < packetSpan.Length; y++)
             {
-                var @byte = packet[y];
+                var @byte = packetSpan[y];
                 if(@byte == '(')
                 {
                     startIndexs[++x] = y;
@@ -122,12 +122,13 @@ namespace MajdataPlay.IO
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
+        ReadOnlySpan<byte> GetPacketBody(ReadOnlyMemory<byte> packet, int start)
         {
             var endIndex = -1;
-            for (var i = start; i < packet.Length; i++)
+            var packetSpan = packet.Span;
+            for (var i = start; i < packetSpan.Length; i++)
             {
-                var @byte = packet[i];
+                var @byte = packetSpan[i];
                 if (@byte == ')')
                 {
                     endIndex = i;
@@ -138,7 +139,7 @@ namespace MajdataPlay.IO
             {
                 return ReadOnlySpan<byte>.Empty;
             }
-            return packet[(start + 1)..endIndex];
+            return packetSpan[(start + 1)..endIndex];
         }
         async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpenAsync(SerialPort serialSession)
         {
