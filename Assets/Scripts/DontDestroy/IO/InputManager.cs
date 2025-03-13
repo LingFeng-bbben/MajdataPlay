@@ -13,6 +13,7 @@ using MychIO.Event;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Collections;
 using System.Collections.Concurrent;
+using System.Security.Policy;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -84,7 +85,7 @@ namespace MajdataPlay.IO
             new Button(KeyCode.Service,SensorArea.Service),
             new Button(KeyCode.SelectP2,SensorArea.P2),
         };
-        readonly static Dictionary<SensorArea, TimeSpan> _btnLastTriggerTimes = new();
+        readonly static TimeSpan[] _btnLastTriggerTimes = new TimeSpan[8];
         readonly static SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[12];
         readonly static SensorStatus[] _btnStatusInThisFrame = new SensorStatus[12];
 
@@ -223,7 +224,7 @@ namespace MajdataPlay.IO
                 Area = SensorArea.E8,
             },
         };
-        readonly static Dictionary<SensorArea, TimeSpan> _sensorLastTriggerTimes = new();
+        readonly static TimeSpan[] _sensorLastTriggerTimes = new TimeSpan[33];
         readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
         readonly static Memory<bool> _sensorStates = new bool[35];
         readonly static SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
@@ -255,13 +256,13 @@ namespace MajdataPlay.IO
                 sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider, child.gameObject);
                 _instanceID2SensorIndexMappingTable[collider.GetInstanceID()] = index;
             }
-            foreach(SensorArea zone in Enum.GetValues(typeof(SensorArea)))
+            for (var i = 0; i < 33; i++)
             {
-                if (((int)zone).InRange(0, 7))
+                if (i.InRange(0, 7))
                 {
-                    _btnLastTriggerTimes[zone] = TimeSpan.MinValue;
+                    _btnLastTriggerTimes[i] = TimeSpan.Zero;
                 }
-                _sensorLastTriggerTimes[zone] = TimeSpan.MinValue;
+                _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
         }
         void Start()
@@ -686,16 +687,25 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool JitterDetect(SensorArea zone, TimeSpan now, bool isBtn = false)
         {
+            var index = (int)zone;
+            if(!index.InRange(0,32))
+            {
+                return false;
+            }
             TimeSpan lastTriggerTime;
             TimeSpan debounceTime;
             if (isBtn)
             {
-                _btnLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                if (index > 32 || index > 7)
+                {
+                    return false;
+                }
+                lastTriggerTime = _btnLastTriggerTimes[index];
                 debounceTime = _btnDebounceThresholdMs;
             }
             else
             {
-                _sensorLastTriggerTimes.TryGetValue(zone, out lastTriggerTime);
+                lastTriggerTime = _sensorLastTriggerTimes[index];
                 debounceTime = _sensorDebounceThresholdMs;
             }
             var diff = now - lastTriggerTime;
