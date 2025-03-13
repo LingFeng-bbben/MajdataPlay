@@ -41,6 +41,11 @@ namespace MajdataPlay.List
         public void Hide()
         {
             id_text.text = "";
+            HideInteraction();
+        }
+
+        public void HideInteraction()
+        {
             good_text.text = "";
             _cts.Cancel();
             CommentBox.SetActive(false);
@@ -76,7 +81,7 @@ namespace MajdataPlay.List
             {
                 MajDebug.LogException(ex);
                 await UniTask.SwitchToMainThread();
-                Hide();
+                HideInteraction();
             }
         }
     }
