@@ -93,7 +93,9 @@ namespace MajdataPlay.SortFind
 
         void SortAndExit()
         {
-            //var task = SongStorage.SortAndFindAsync(SearchBar.text, sortType);
+            var orderBy = SongStorage.OrderBy;
+            orderBy.Keyword = SearchBar.text;
+            orderBy.SortBy = sortType;
             MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
