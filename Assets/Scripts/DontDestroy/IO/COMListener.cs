@@ -149,7 +149,6 @@ namespace MajdataPlay.IO
                 serialSession.Open();
                 var encoding = Encoding.ASCII;
                 var serialStream = serialSession.BaseStream;
-                var isSensitivityOverride = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.SensitivityOverride;
                 var sens = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Sensitivity;
                 var index = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
                 //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
@@ -162,25 +161,22 @@ namespace MajdataPlay.IO
                 {
                     serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
                 }
-                if (isSensitivityOverride)
+                try
                 {
-                    try
+                    for (byte a = 0x41; a <= 0x62; a++)
                     {
-                        for (byte a = 0x41; a <= 0x62; a++)
-                        {
-                            var value = GetSensitivityValue(a, sens);
-                            serialSession.WriteTimeout = 3000;
-                            serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
-                        }
+                        var value = GetSensitivityValue(a, sens);
+                        serialSession.WriteTimeout = 3000;
+                        serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
                     }
-                    catch (OperationCanceledException)
-                    {
-                        MajDebug.LogWarning($"TouchPanel does not support sensitivity override: \"Write timeout\"");
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"Failed to override sensitivity: \n{e}");
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    MajDebug.LogWarning($"TouchPanel does not support sensitivity override: \"Write timeout\"");
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Failed to override sensitivity: \n{e}");
                 }
                 serialSession.WriteTimeout = -1;
                 serialStream.Write(encoding.GetBytes("{STAT}"));

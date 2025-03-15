@@ -192,7 +192,6 @@ namespace MajdataPlay.Types
         public int COMPort { get; set; } = 3;
         public int BaudRate { get; set; } = 9600;
         public bool Debounce { get; set; } = false;
-        public bool SensitivityOverride { get; set; } = true;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;

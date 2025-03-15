@@ -420,7 +420,7 @@ namespace MajdataPlay.IO
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
                     { "ComPortNumber", $"COM{comPortNum}" },
                     { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate },
-                    { "SensitivityOverride", MajInstances.Setting.Misc.InputDevice.TouchPanel.SensitivityOverride },
+                    { "SensitivityOverride", true },
                     { "Sensitivity", MajInstances.Setting.Misc.InputDevice.TouchPanel.Sensitivity }
                 };
                 var ledConnProperties = new Dictionary<string, dynamic>()
