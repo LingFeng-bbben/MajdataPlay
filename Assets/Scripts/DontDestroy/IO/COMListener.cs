@@ -31,6 +31,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 using var serial = new SerialPort(comPort, MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate);
 
+                serial.ReadTimeout = 2000;
+                serial.WriteTimeout = 2000;
                 Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
                 stopwatch.Start();
 
@@ -46,11 +48,13 @@ namespace MajdataPlay.IO
                         try
                         {
                             var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
-                            var bytesToRead = serial.BytesToRead;
+                            var read = serialStream.Read(buffer);
 
-                            serialStream.Read(buffer);
-
-                            TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
+                            TouchPannelPacketHandle(buffer.Slice(0, read));
+                        }
+                        catch(TimeoutException)
+                        {
+                            MajDebug.LogError($"From SerialPort listener: Read timeout");
                         }
                         catch (Exception e)
                         {
@@ -166,19 +170,18 @@ namespace MajdataPlay.IO
                     for (byte a = 0x41; a <= 0x62; a++)
                     {
                         var value = GetSensitivityValue(a, sens);
-                        serialSession.WriteTimeout = 3000;
+                        
                         serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
                     }
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException)
                 {
-                    MajDebug.LogWarning($"TouchPanel does not support sensitivity override: \"Write timeout\"");
+                    MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
                 }
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Failed to override sensitivity: \n{e}");
                 }
-                serialSession.WriteTimeout = -1;
                 serialStream.Write(encoding.GetBytes("{STAT}"));
                 serialSession.DiscardInBuffer();
 
