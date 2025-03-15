@@ -199,7 +199,8 @@ namespace MajdataPlay
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
             SceneSwitcher.OnSceneChanged += OnSceneChanged;
-
+            EnterTestMode();
+            return;
             if (MajEnv.Mode == RunningMode.Test)
             {
                 EnterTestMode();
