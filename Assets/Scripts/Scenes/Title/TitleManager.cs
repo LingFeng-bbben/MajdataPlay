@@ -48,6 +48,7 @@ namespace MajdataPlay.Title
                         break;
                 }
             };
+            await Task.Delay(3000);
             await SongStorage.ScanMusicAsync(progress);
 
             if (!SongStorage.IsEmpty)
