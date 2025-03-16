@@ -1,18 +1,12 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
-using MajdataPlay.Extensions;
 using MajdataPlay.Game;
-using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
-using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.List
 {
@@ -59,9 +53,6 @@ namespace MajdataPlay.List
         readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
         readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
         readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
-
-        static readonly Queue<SongDetailBinding> _allocatedSongDetailBindings = new();
-        static readonly Queue<SongCollectionBinding> _allocatedSongCollectionBindings = new();
 
         private void Awake()
         {
@@ -506,11 +497,6 @@ namespace MajdataPlay.List
         }
         SongDetailBinding GetSongDetailBinding(ISongDetail songDetail)
         {
-            if(_allocatedSongDetailBindings.TryDequeue(out var binding))
-            {
-                binding.SongDetail = songDetail;
-                return binding;
-            }
             return new SongDetailBinding()
             {
                 SongDetail = songDetail
@@ -518,11 +504,6 @@ namespace MajdataPlay.List
         }
         SongCollectionBinding GetSongCollectionBinding(SongCollection songCollection)
         {
-            if (_allocatedSongCollectionBindings.TryDequeue(out var binding))
-            {
-                binding.Collection = songCollection;
-                return binding;
-            }
             return new SongCollectionBinding()
             {
                 Collection = songCollection
