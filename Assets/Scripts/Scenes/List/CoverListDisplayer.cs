@@ -70,7 +70,6 @@ namespace MajdataPlay.List
             {
                 var collections = SongStorage.Collections;
                 var newCollections = new SongCollection[collections.Length];
-                var collectionBindings = new SongCollectionBinding[collections.Length];
 
                 for (var i = 0; i < collections.Length; i++)
                 {
@@ -79,7 +78,6 @@ namespace MajdataPlay.List
                     if (collection.Type == ChartStorageType.FavoriteList)
                     {
                         newCollections[i] = collection;
-                        collectionBindings[i] = GetSongCollectionBinding(collection);
                     }
                     else
                     {
@@ -89,13 +87,11 @@ namespace MajdataPlay.List
                             Type = collection.Type,
                             Location = collection.Location,
                         };
-                        collectionBindings[i] = GetSongCollectionBinding(newCollections[i]);
                     }
                     newCollections[i].SortAndFilter(SongStorage.OrderBy);
                 }
                 _collections = newCollections;
                 _currentCollection = _collections.Span[SongStorage.CollectionIndex];
-                _songCollectionBindings = collectionBindings;
             });
             var allocatedSongCoverDisplayer = new SongCoverSmallDisplayer[16];
             var allocatedFolderCoverDisplayer = new FolderCoverSmallDisplayer[16];
