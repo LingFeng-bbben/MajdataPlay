@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.List
 {
     public class CoverListDisplayer : MonoBehaviour
@@ -22,8 +22,6 @@ namespace MajdataPlay.List
         public bool IsChartList => Mode == CoverListMode.Chart;
         public CoverListMode Mode { get; set; } = CoverListMode.Directory;
 
-        List<FolderCoverSmallDisplayer> _folderCovers = new List<FolderCoverSmallDisplayer>();
-        List<SongCoverSmallDisplayer> _songCovers = new List<SongCoverSmallDisplayer>();
         public string soundEffectName;
         public GameObject CoverSmallPrefab;
         public GameObject DirSmallPrefab;
@@ -42,13 +40,28 @@ namespace MajdataPlay.List
 
         public int selectedDifficulty = 0;
 
+        private int coveri = 0;
         //SongCollection[] dirs = SongStorage.Collections;
         Task _sortAndFindTask = Task.CompletedTask;
 
         ListManager _listManager;
 
+        Memory<SongDetailBinding> _songDetailBindings = Memory<SongDetailBinding>.Empty;
+        Memory<SongCollectionBinding> _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
+
         ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;
         SongCollection _currentCollection = SongCollection.Empty("Empty");
+
+        ReadOnlyMemory<SongCoverSmallDisplayer> _allocatedSongCoverDisplayer = ReadOnlyMemory<SongCoverSmallDisplayer>.Empty;
+        ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedFolderCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
+        ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedDanCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
+
+        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
+
+        static readonly Queue<SongDetailBinding> _allocatedSongDetailBindings = new();
+        static readonly Queue<SongCollectionBinding> _allocatedSongCollectionBindings = new();
 
         private void Awake()
         {
@@ -57,6 +70,8 @@ namespace MajdataPlay.List
             {
                 var collections = SongStorage.Collections;
                 var newCollections = new SongCollection[collections.Length];
+                var collectionBindings = new SongCollectionBinding[collections.Length];
+
                 for (var i = 0; i < collections.Length; i++)
                 {
 
@@ -64,6 +79,7 @@ namespace MajdataPlay.List
                     if (collection.Type == ChartStorageType.FavoriteList)
                     {
                         newCollections[i] = collection;
+                        collectionBindings[i] = GetSongCollectionBinding(collection);
                     }
                     else
                     {
@@ -73,12 +89,46 @@ namespace MajdataPlay.List
                             Type = collection.Type,
                             Location = collection.Location,
                         };
+                        collectionBindings[i] = GetSongCollectionBinding(newCollections[i]);
                     }
                     newCollections[i].SortAndFilter(SongStorage.OrderBy);
                 }
                 _collections = newCollections;
                 _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+                _songCollectionBindings = collectionBindings;
             });
+            var allocatedSongCoverDisplayer = new SongCoverSmallDisplayer[16];
+            var allocatedFolderCoverDisplayer = new FolderCoverSmallDisplayer[16];
+            var allocatedDanCoverDisplayer = new FolderCoverSmallDisplayer[16];
+
+            for (var i = 0; i < 16; i++)
+            {
+                var obj = Instantiate(CoverSmallPrefab, transform);
+                obj.SetActive(false);
+                var coversmall = obj.GetComponent<SongCoverSmallDisplayer>();
+                _idleSongCoverDisplayer.Enqueue(coversmall);
+                allocatedSongCoverDisplayer[i] = coversmall;
+            }
+            for (var i = 0; i < 16; i++)
+            {
+                var obj = Instantiate(DirSmallPrefab, transform);
+                obj.SetActive(false);
+                var coversmall = obj.GetComponent<FolderCoverSmallDisplayer>();
+                _idleFolderCoverDisplayer.Enqueue(coversmall);
+                allocatedFolderCoverDisplayer[i] = coversmall;
+            }
+            for (var i = 0; i < 16; i++)
+            {
+                var obj = Instantiate(DanSmallPrefab, transform);
+                obj.SetActive(false);
+                var coversmall = obj.GetComponent<FolderCoverSmallDisplayer>();
+                _idleDanCoverDisplayer.Enqueue(coversmall);
+                allocatedDanCoverDisplayer[i] = coversmall;
+            }
+
+            _allocatedSongCoverDisplayer = allocatedSongCoverDisplayer;
+            _allocatedFolderCoverDisplayer = allocatedFolderCoverDisplayer;
+            _allocatedDanCoverDisplayer = allocatedDanCoverDisplayer;
         }
         void Start()
         {
@@ -102,31 +152,33 @@ namespace MajdataPlay.List
         }
         void SwitchToDirListInternal()
         {
-            foreach (var cover in _songCovers)
+            for (var i = 0; i < _songDetailBindings.Length; i++)
             {
-                Destroy(cover.gameObject);
+                var songDetailbindings = _songDetailBindings.Span;
+                ref var binding = ref songDetailbindings[i];
+                if (binding.Displayer is not null)
+                {
+                    _idleSongCoverDisplayer.Enqueue(binding.Displayer);
+                    binding.Displayer = null;
+                }
             }
-            _songCovers.Clear();
+            foreach (var displayer in _allocatedSongCoverDisplayer.Span)
+            {
+                displayer.gameObject.SetActive(false);
+            }
+            _songDetailBindings = Memory<SongDetailBinding>.Empty;
             SubInfoDisplayer.Hide();
             FavoriteAdder.Hide();
             Mode = CoverListMode.Directory;
             desiredListPos = SongStorage.CollectionIndex;
-            foreach (var dir in _collections.Span)
+            var bindings = new SongCollectionBinding[_collections.Length];
+            var collections = _collections.Span;
+            for (var i = 0; i < bindings.Length; i++)
             {
-                var prefab = DirSmallPrefab;
-                if (dir.Type == ChartStorageType.Dan)
-                {
-                    prefab = DanSmallPrefab;
-                }
-                var obj = Instantiate(prefab, transform);
-                var coversmall = obj.GetComponent<FolderCoverSmallDisplayer>();
-                //coversmall.SetCover(song.SongCover);
-                coversmall.SetCollection(dir);
-                _folderCovers.Add(coversmall);
-                coversmall.gameObject.SetActive(false);
-                coversmall.IsOnline = dir.IsOnline;
+                bindings[i] = GetSongCollectionBinding(collections[i]);
             }
-            if (desiredListPos > _folderCovers.Count) 
+            _songCollectionBindings = bindings;
+            if (desiredListPos > _songCollectionBindings.Length) 
                 desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
@@ -134,26 +186,50 @@ namespace MajdataPlay.List
 
         void SwitchToSongListInternal()
         {
-            if (_currentCollection.Count == 0) return;
-            if (_currentCollection.Type == ChartStorageType.Dan) return;
-            foreach (var cover in _folderCovers)
+            if (_currentCollection.Count == 0) 
+                return;
+            if (_currentCollection.Type == ChartStorageType.Dan) 
+                return;
+
+            for (var i = 0; i < _songCollectionBindings.Length; i++)
             {
-                Destroy(cover.gameObject);
+                var collectionbindings = _songCollectionBindings.Span;
+                ref var binding = ref collectionbindings[i];
+                if(binding.Displayer is not null)
+                {
+                    binding.Displayer.gameObject.SetActive(false);
+                    if (binding.Collection.Type == ChartStorageType.Dan)
+                    {
+                        _idleDanCoverDisplayer.Enqueue(binding.Displayer);
+                    }
+                    else
+                    {
+                        _idleFolderCoverDisplayer.Enqueue(binding.Displayer);
+                    }
+                    binding.Displayer = null;
+                }
             }
-            _folderCovers.Clear();
+            foreach (var displayer in _allocatedDanCoverDisplayer.Span)
+            {
+                displayer.gameObject.SetActive(false);
+            }
+            foreach (var displayer in _allocatedFolderCoverDisplayer.Span)
+            {
+                displayer.gameObject.SetActive(false);
+            }
+            _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
+
             Mode = CoverListMode.Chart;
             desiredListPos = SongStorage.WorkingCollection.Index;
-            foreach (var song in _currentCollection)
+            var bindings = new SongDetailBinding[_currentCollection.Count];
+            for (var i = 0; i < bindings.Length; i++)
             {
-                var obj = Instantiate(CoverSmallPrefab, transform);
-                var coversmall = obj.GetComponent<SongCoverSmallDisplayer>();
-                coversmall.SetOpacity(0f);
-                coversmall.SetSongDetail(song);
-                coversmall.SetLevelText(song.Levels[selectedDifficulty]);
-                _songCovers.Add(coversmall);
-                coversmall.gameObject.SetActive(false);
+                bindings[i] = GetSongDetailBinding(_currentCollection[i]);
             }
-            if (desiredListPos > _songCovers.Count) desiredListPos = 0;
+            _songDetailBindings = bindings;
+
+            if (desiredListPos > _songDetailBindings.Length) 
+                desiredListPos = 0;
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
         }
@@ -186,12 +262,10 @@ namespace MajdataPlay.List
                 CoverBigDisplayer.SetScore(songScore);
                 chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
                 FavoriteAdder.SetSong(songinfo);
-                for (int i = 0; i < _songCovers.Count; i++)
+                var allocatedSongCoverDisplayer = _allocatedSongCoverDisplayer.Span;
+                for (int i = 0; i < allocatedSongCoverDisplayer.Length; i++)
                 {
-                    var text = _currentCollection[i].Levels[selectedDifficulty];
-                    if (string.IsNullOrEmpty(text)) 
-                        text = "-";
-                    _songCovers[i].SetLevelText(text);
+                    allocatedSongCoverDisplayer[i].SetLevel(selectedDifficulty);
                 }
             }
         }
@@ -223,7 +297,7 @@ namespace MajdataPlay.List
         void SlideListInternal(int pos)
         {
             MajInstances.AudioManager.PlaySFX("tap_perfect.wav");
-            var coverCount = IsDirList ? _folderCovers.Count : _songCovers.Count;
+            var coverCount = IsDirList ? _songCollectionBindings.Length : _songDetailBindings.Length;
 
             desiredListPos = pos;
             if (desiredListPos >= coverCount)
@@ -288,6 +362,8 @@ namespace MajdataPlay.List
         }
         private void FixedUpdate()
         {
+            if (!_sortAndFindTask.IsCompleted)
+                return;
             var delta = (desiredListPos - listPosReal) * turnSpeed;
             listPosReal += Mathf.Clamp(delta, -1f, 1f);
             if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) 
@@ -296,10 +372,10 @@ namespace MajdataPlay.List
             switch(Mode)
             {
                 case CoverListMode.Chart:
-                    CoverListUpdate(_songCovers);
+                    SongCoverUpdate(_songDetailBindings);
                     break;
                 case CoverListMode.Directory:
-                    CoverListUpdate(_folderCovers);
+                    FolderCoverUpdate(_songCollectionBindings);
                     if(Time.frameCount % 50 == 0)
                     {
                         if (_currentCollection.Count > 0)
@@ -315,39 +391,168 @@ namespace MajdataPlay.List
                     break;
             }
         }
-        void CoverListUpdate<T>(List<T> covers) where T : CoverSmallDisplayer
+        void SongCoverUpdate(Memory<SongDetailBinding> bindingsMemory)
         {
-            for (int i = 0; i < covers.Count; i++)
+            var bindings = bindingsMemory.Span;
+            for (int i = 0; i < bindingsMemory.Length; i++)
             {
                 var distance = i - listPosReal;
-                var cover = covers[i];
-                if (Mathf.Abs(distance) > 5)
+                var absDistance = Mathf.Abs(distance);
+                ref var binding = ref bindings[i];
+                SongCoverSmallDisplayer cover;
+
+                if (absDistance > 5)
                 {
-                    if (cover.gameObject.activeSelf)
+                    if(binding.Displayer is not null)
+                    {
+                        cover = binding.Displayer;
+                        binding.Displayer = null;
                         cover.gameObject.SetActive(false);
+                        _idleSongCoverDisplayer.Enqueue(cover);
+                    }
                     continue;
                 }
-                if (!cover.gameObject.activeSelf)
-                    cover.gameObject.SetActive(true);
-                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
-                if(IsChartList && cover is SongCoverSmallDisplayer songCover)
+                else
                 {
-                    if (Mathf.Abs(distance) > 4)
+                    if(binding.Displayer is null)
                     {
-                        songCover.SetOpacity(-Mathf.Abs(distance) + 5);
+                        if(_idleSongCoverDisplayer.TryDequeue(out cover))
+                        {
+                            binding.Displayer = cover;
+                            cover.gameObject.SetActive(true);
+                            cover.SetSongDetail(binding.SongDetail);
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
-                        songCover.SetOpacity(1f);
+                        cover = binding.Displayer;
                     }
                 }
+
+                if (absDistance > 4)
+                {
+                    cover.SetOpacity(-Mathf.Abs(distance) + 5);
+                }
+                else
+                {
+                    cover.SetOpacity(1f);
+                }
+
+                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
             }
         }
-        private int coveri = 0;
+        void FolderCoverUpdate(Memory<SongCollectionBinding> bindingsMemory)
+        {
+            var bindings = bindingsMemory.Span;
+            for (int i = 0; i < bindingsMemory.Length; i++)
+            {
+                var distance = i - listPosReal;
+                var absDistance = Mathf.Abs(distance);
+                ref var binding = ref bindings[i];
+                FolderCoverSmallDisplayer cover;
+
+                if (absDistance > 5)
+                {
+                    if (binding.Displayer is not null)
+                    {
+                        cover = binding.Displayer;
+                        binding.Displayer = null;
+                        cover.gameObject.SetActive(false);
+                        if(binding.Collection.Type == ChartStorageType.Dan)
+                        {
+                            _idleDanCoverDisplayer.Enqueue(cover);
+                        }
+                        else
+                        {
+                            _idleFolderCoverDisplayer.Enqueue(cover);
+                        }
+                    }
+                    continue;
+                }
+                else
+                {
+                    if (binding.Displayer is null)
+                    {
+                        if (binding.Collection.Type == ChartStorageType.Dan)
+                        {
+                            if (!_idleFolderCoverDisplayer.TryDequeue(out cover))
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (!_idleFolderCoverDisplayer.TryDequeue(out cover))
+                            {
+                                continue;
+                            }
+                        }
+                        binding.Displayer = cover;
+                        cover.gameObject.SetActive(true);
+                        cover.SetCollection(binding.Collection);
+                    }
+                    else
+                    {
+                        cover = binding.Displayer;
+                    }
+                }
+                cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
+            }
+        }
 
         Vector3 GetCoverPosition(float radius, float position)
         {
             return new Vector3(radius * Mathf.Sin(position), radius * Mathf.Cos(position));
+        }
+        SongDetailBinding GetSongDetailBinding(ISongDetail songDetail)
+        {
+            if(_allocatedSongDetailBindings.TryDequeue(out var binding))
+            {
+                binding.SongDetail = songDetail;
+                return binding;
+            }
+            return new SongDetailBinding()
+            {
+                SongDetail = songDetail
+            };
+        }
+        SongCollectionBinding GetSongCollectionBinding(SongCollection songCollection)
+        {
+            if (_allocatedSongCollectionBindings.TryDequeue(out var binding))
+            {
+                binding.Collection = songCollection;
+                return binding;
+            }
+            return new SongCollectionBinding()
+            {
+                Collection = songCollection
+            };
+        }
+        struct SongDetailBinding
+        {
+            public ISongDetail SongDetail { get; set; }
+            public SongCoverSmallDisplayer? Displayer { get; set; }
+
+            public SongDetailBinding(ISongDetail songDetail, SongCoverSmallDisplayer? displayer)
+            {
+                SongDetail = songDetail;
+                Displayer = displayer;
+            }
+        }
+        struct SongCollectionBinding
+        {
+            public SongCollection Collection { get; set; }
+            public FolderCoverSmallDisplayer? Displayer {  get; set; }
+
+            public SongCollectionBinding(SongCollection collection, FolderCoverSmallDisplayer? displayer)
+            {
+                Collection = collection;
+                Displayer = displayer;
+            }
         }
     }
 }

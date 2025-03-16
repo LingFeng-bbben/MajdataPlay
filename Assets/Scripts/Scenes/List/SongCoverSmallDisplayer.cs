@@ -15,6 +15,7 @@ namespace MajdataPlay.List
 {
     internal class SongCoverSmallDisplayer : CoverSmallDisplayer
     {
+        public int SelectedDifficulty { get; set; } = 0;
         [SerializeField]
         Image _songCover;
         [SerializeField]
@@ -28,7 +29,7 @@ namespace MajdataPlay.List
 
         bool _isRefreshed = false;
         ISongDetail _boundSong;
-        CancellationToken _cancellationToken = default;
+        CancellationTokenSource _cts = new();
 
         protected override void Awake()
         {
@@ -49,13 +50,31 @@ namespace MajdataPlay.List
                 ShowCoverAsync();
             }
         }
-        public void SetLevelText(string text)
+        public void SetLevel(int selectedDifficulty)
         {
-            _levelText.text = text;
+            SelectedDifficulty = selectedDifficulty;
+            if(_boundSong is not null)
+            {
+                var text = _boundSong.Levels[SelectedDifficulty];
+                if(string.IsNullOrEmpty(text))
+                {
+                    text = "-";
+                }
+                _levelText.text = text;
+            }
         }
         public void SetSongDetail(ISongDetail detail)
         {
             _boundSong = detail;
+            var text = _boundSong.Levels[SelectedDifficulty];
+            if (string.IsNullOrEmpty(text))
+            {
+                text = "-";
+            }
+            _levelText.text = text;
+            _isRefreshed = false;
+            _cts.Cancel();
+            _cts = new();
         }
         public void ShowCoverAsync()
         {
@@ -63,16 +82,16 @@ namespace MajdataPlay.List
             {
                 if (!_isRefreshed)
                 {
-                    ListManager.AllBackguardTasks.Add(SetCoverAsync());
+                    ListManager.AllBackguardTasks.Add(SetCoverAsync(_cts.Token));
                     _isRefreshed = true;
                 }
             }
         }
-        async UniTask SetCoverAsync()
+        async UniTask SetCoverAsync(CancellationToken token = default)
         {
             _loading.SetActive(true);
-            var cover = await _boundSong.GetCoverAsync(true, _cancellationToken);
-            _cancellationToken.ThrowIfCancellationRequested();
+            var cover = await _boundSong.GetCoverAsync(true, token);
+            token.ThrowIfCancellationRequested();
             _songCover.sprite = cover;
             _loading.SetActive(false);
         }
