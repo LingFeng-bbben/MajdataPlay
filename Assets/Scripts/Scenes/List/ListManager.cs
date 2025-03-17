@@ -119,10 +119,10 @@ namespace MajdataPlay.List
                         case SensorArea.A4:
                             if (_coverListDisplayer.IsDirList)
                             {
-                                if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
+                                if (_coverListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
                                 {
-                                    var danInfo = SongStorage.WorkingCollection.DanInfo;
-                                    var collection = SongStorage.WorkingCollection;
+                                    var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
+                                    var collection = _coverListDisplayer.SelectedCollection;
                                     if (danInfo is null)
                                         return;
                                     else if (danInfo.SongLevels.Length != collection.Count)
@@ -138,16 +138,16 @@ namespace MajdataPlay.List
                                     }
                                     var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
                                     {
-                                        MaxHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        CurrentHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        HPRecover = SongStorage.WorkingCollection.DanInfo.RestoreHP,
+                                        MaxHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        CurrentHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        HPRecover = _coverListDisplayer.SelectedCollection.DanInfo.RestoreHP,
                                         DanInfo = danInfo
                                     };
                                     Majdata<GameInfo>.Instance = info;
                                     //MajInstances.GameManager.isDanMode = true;
                                     //MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
                                     //MajInstances.GameManager.DanResults.Clear();
-                                    SongStorage.WorkingCollection.Index = 0;
+                                    _coverListDisplayer.SelectedCollection.Index = 0;
                                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                                 }
                                 else
@@ -164,11 +164,11 @@ namespace MajdataPlay.List
                                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                                 var levels = new ChartLevel[]
                                 {
-                                MajInstances.GameManager.SelectedDiff
+                                    MajInstances.GameManager.SelectedDiff
                                 };
                                 var charts = new ISongDetail[]
                                 {
-                                    SongStorage.WorkingCollection.Current
+                                    _coverListDisplayer.SelectedSong
                                 };
                                 if (_pressTime > 1f)
                                 {

@@ -15,6 +15,20 @@ namespace MajdataPlay.List
         public bool IsDirList => Mode == CoverListMode.Directory;
         public bool IsChartList => Mode == CoverListMode.Chart;
         public CoverListMode Mode { get; set; } = CoverListMode.Directory;
+        public ISongDetail SelectedSong
+        {
+            get
+            {
+                return _currentCollection.Current;
+            }
+        }
+        public SongCollection SelectedCollection
+        {
+            get
+            {
+                return _currentCollection;
+            }
+        }
 
         public string soundEffectName;
         public GameObject CoverSmallPrefab;
