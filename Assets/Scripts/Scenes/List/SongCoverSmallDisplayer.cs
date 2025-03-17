@@ -71,6 +71,7 @@ namespace MajdataPlay.List
             {
                 text = "-";
             }
+            _songCover.sprite = null;
             _levelText.text = text;
             _isRefreshed = false;
             _cts.Cancel();
