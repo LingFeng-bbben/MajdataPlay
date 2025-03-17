@@ -115,12 +115,7 @@ namespace MajdataPlay.Game.Notes
             SetActive(false);
             SetStarActive(false);
             SetSlideBarAlpha(0f);
-            for (int i = 0; i < _starPositions.Count - 2; i++)
-            {
-                var a = _starPositions[i];
-                var b = _starPositions[i + 1];
-                SlideLength += (b - a).magnitude;
-            }
+            SlideLength = _slideBars.Length + 1;
 
             _starTransforms[0].position = _starPositions[0];
             _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
@@ -576,7 +571,7 @@ namespace MajdataPlay.Game.Notes
         {
             _starPositions = new();
             _starRotations = new();
-
+            if (StartPos == 0) StartPos = 1;
             _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
             for (int i = 0; i < _slideBars.Length; i++)
             {

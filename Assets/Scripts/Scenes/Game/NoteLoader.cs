@@ -1010,7 +1010,7 @@ namespace MajdataPlay.Game
         }
         void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result,float totalLen,float totalSlideLen) where T: SlideBase
         {
-            var speed = totalSlideLen / (totalLen * 1000);
+            var speed = (totalSlideLen*0.47f) / (totalLen * 1000);
             var ratio = speed / 0.0034803742562305f;
 
             if (result.StarInfo is not null)
