@@ -291,6 +291,25 @@ namespace MajdataPlay.List
             }
             SlideListInternal(desiredListPos);
         }
+
+        public void RandomSelect()
+        {
+            switch (Mode)
+            {
+                case CoverListMode.Directory:
+                    var length = SongStorage.Collections.Length;
+                    var rand = UnityEngine.Random.Range(0, length);
+                    SlideListInternal(rand);
+                    break;
+                case CoverListMode.Chart:
+                    var length1 = _currentCollection.Count;
+                    var rand1 = UnityEngine.Random.Range(0, length1);
+                    _currentCollection.Index = rand1;
+                    SlideListInternal(rand1);
+                    break;
+            }
+        }
+
         public void RefreshList()
         {
             var collection = SongStorage.WorkingCollection;
@@ -370,7 +389,7 @@ namespace MajdataPlay.List
                 return;
             var delta = (desiredListPos - listPosReal) ;
             listPosReal += Mathf.Clamp(delta* turnSpeed, -1f, 1f);
-            if (Mathf.Abs(delta) < 0.01f || DisableAnimation)
+            if (Mathf.Abs(delta) < 0.01f || DisableAnimation || Mathf.Abs(delta) >3)
                 listPosReal = desiredListPos;
             
             switch(Mode)

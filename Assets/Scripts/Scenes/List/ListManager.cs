@@ -99,6 +99,9 @@ namespace MajdataPlay.List
                     case SensorArea.A4:
                         _coverListDisplayer.SlideList(-3);
                         break;
+                    case SensorArea.C:
+                        _coverListDisplayer.RandomSelect();
+                        break;
                     // xxlb
                     case SensorArea.B7:
                     case SensorArea.B6:
