@@ -1,6 +1,6 @@
-﻿using MajdataPlay.Attributes;
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Editor;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes

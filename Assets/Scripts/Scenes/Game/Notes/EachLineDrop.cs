@@ -85,6 +85,7 @@ namespace MajdataPlay.Game.Notes
             sr.forceRenderingOff = true;
             Active = true;
         }
+        [OnLateUpdate]
         void OnLateUpdate()
         {
             if (State < NoteStatus.Initialized || IsDestroyed)

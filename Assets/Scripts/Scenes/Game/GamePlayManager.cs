@@ -3,7 +3,6 @@ using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
-using MajdataPlay.Attributes;
 using MajSimai;
 using System;
 using System.IO;
@@ -25,6 +24,7 @@ using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using System.Windows.Forms.VisualStyles;
+using MajdataPlay.Editor;
 
 namespace MajdataPlay.Game
 {

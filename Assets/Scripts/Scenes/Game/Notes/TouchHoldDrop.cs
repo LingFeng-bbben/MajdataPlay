@@ -67,7 +67,7 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _borderRenderer;
         NotePoolManager _notePoolManager;
 
-        bool? _lastHoldState = null;
+        int _lastHoldState = -2;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
         readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
@@ -148,7 +148,8 @@ namespace MajdataPlay.Game.Notes
                     IsEX = IsEX,
                     Diff = _judgeDiff
                 });
-                PlayHoldEffect();
+                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                _lastHoldState = -1;
             }
         }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
@@ -168,7 +169,7 @@ namespace MajdataPlay.Game.Notes
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
-            _lastHoldState = null;
+            _lastHoldState = -2;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
@@ -245,7 +246,7 @@ namespace MajdataPlay.Game.Notes
                 IsEX = false,
                 Diff = _judgeDiff
             });
-            _lastHoldState = false;
+            _lastHoldState = -2;
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
@@ -304,8 +305,10 @@ namespace MajdataPlay.Game.Notes
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
-            PlayHoldEffect();
+            _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+            _lastHoldState = -1;
         }
+        [OnPreUpdate]
         void OnPreUpdate()
         {
             Autoplay();
@@ -313,6 +316,7 @@ namespace MajdataPlay.Game.Notes
             Check();
             BodyCheck();
         }
+        [OnUpdate]
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
@@ -371,35 +375,6 @@ namespace MajdataPlay.Game.Notes
                     }
                     return;
             }   
-        }
-        void GameIOListener(GameInputEventArgs args)
-        {
-            if (_isJudged || IsEnded)
-                return;
-            else if (args.IsButton && !IsUseButtonRingForTouch)
-                return;
-            else if (args.Area != _sensorPos)
-                return;
-            else if (!args.IsClick)
-                return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
-                return;
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
-                return;
-
-            ref var isUsed = ref args.IsUsed.Target;
-
-            if (isUsed)
-                return;
-
-            Judge(ThisFrameSec - _touchPanelOffset);
-
-            if (_isJudged)
-            {
-                isUsed = true;
-                _noteManager.NextTouch(QueueInfo);
-                RegisterGrade();
-            }
         }
         void RegisterGrade()
         {
@@ -495,6 +470,11 @@ namespace MajdataPlay.Game.Notes
 
             var remainingTime = GetRemainingTime();
 
+            if (_lastHoldState is -1 or 1)
+            {
+                _audioEffMana.PlayTouchHoldSound();
+            }
+
             if (remainingTime == 0)
             {
                 End();
@@ -504,13 +484,12 @@ namespace MajdataPlay.Game.Notes
             {
                 return;
             }
-
             var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
                 _releaseTime = 0;
-                _lastHoldState = true;
+                _lastHoldState = 1;
             }
             else
             {
@@ -521,7 +500,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 _playerReleaseTime += MajTimeline.DeltaTime;
                 StopHoldEffect();
-                _lastHoldState = false;
+                _lastHoldState = 0;
             }
         }
         public override void SetActive(bool state)
@@ -637,22 +616,26 @@ namespace MajdataPlay.Game.Notes
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
-            _audioEffMana.PlayTouchHoldSound();
-            if (_lastHoldState is null || !(bool)_lastHoldState)
+            if (_lastHoldState != 1)
             {
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 _borderRenderer.sprite = board_On;
-                SetFansMaterial(DefaultMaterial);
+                if(_lastHoldState < 0)
+                {
+                    SetFansMaterial(DefaultMaterial);
+                }
             }
         }
         void StopHoldEffect()
         {
-            if (_lastHoldState is null || (bool)_lastHoldState)
+            if (_lastHoldState != 0)
             {
                 _effectManager.ResetHoldEffect(_sensorPos);
-                _audioEffMana.StopTouchHoldSound();
                 _borderRenderer.sprite = board_Off;
-                SetFansMaterial(DefaultMaterial);
+                if (_lastHoldState < 0)
+                {
+                    SetFansMaterial(DefaultMaterial);
+                }
             }            
         }
         Vector3 GetAngle(int index)

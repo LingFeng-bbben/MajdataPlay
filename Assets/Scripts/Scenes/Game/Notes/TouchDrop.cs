@@ -334,12 +334,14 @@ namespace MajdataPlay.Game.Notes
                 GroupInfo.RegisterResult(_judgeResult);
             }
         }
+        [OnPreUpdate]
         void OnPreUpdate()
         {
             Autoplay();
             TooLateCheck();
             Check();
         }
+        [OnUpdate]
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();

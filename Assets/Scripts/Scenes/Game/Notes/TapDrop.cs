@@ -161,12 +161,14 @@ namespace MajdataPlay.Game.Notes
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
+        [OnPreUpdate]
         void OnPreUpdate()
         {
             Autoplay();
             TooLateCheck();
             Check();
         }
+        [OnUpdate]
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();

@@ -36,8 +36,8 @@ namespace MajdataPlay.Game
             "break_tap.wav",
             "break.wav",
             "slide.wav",
-            "slide.wav",
             "slide_break_start.wav",
+            "slide_break_slide.wav",
             "touch.wav",
             "touch_Hold_riser.wav",
             "touch_hanabi.wav",
@@ -441,6 +441,7 @@ namespace MajdataPlay.Game
         public void PlayBreakSlideEndSound()
         {
             _noteSFXPlaybackRequests[BREAK_SLIDE_JUDGE] = true;
+            _noteSFXPlaybackRequests[BREAK_SFX] = true;
             //_audioManager.PlaySFX("slide_break_slide.wav");
             //_audioManager.PlaySFX("break_slide.wav");
         }
