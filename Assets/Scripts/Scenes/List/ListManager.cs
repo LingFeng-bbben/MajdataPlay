@@ -74,20 +74,28 @@ namespace MajdataPlay.List
                 switch (e.Type)
                 {
                     case SensorArea.A7:
+                    case SensorArea.E8:
                         _coverListDisplayer.SlideList(1);
                         break;
+                    case SensorArea.B8:
                     case SensorArea.A8:
                         _coverListDisplayer.SlideList(2);
                         break;
+                    case SensorArea.E1:
+                    case SensorArea.D1:
                     case SensorArea.A1:
                         _coverListDisplayer.SlideList(3);
                         break;
                     case SensorArea.A6:
+                    case SensorArea.E6:
                         _coverListDisplayer.SlideList(-1);
                         break;
                     case SensorArea.A5:
+                    case SensorArea.B5:
                         _coverListDisplayer.SlideList(-2);
                         break;
+                    case SensorArea.E5:
+                    case SensorArea.D5:
                     case SensorArea.A4:
                         _coverListDisplayer.SlideList(-3);
                         break;
@@ -267,9 +275,11 @@ namespace MajdataPlay.List
                     await UniTask.Yield();
                     continue;
                 }
+                _coverListDisplayer.DisableAnimation = true;
                 _coverListDisplayer.SlideList(_delta);
-                await UniTask.Delay(100);
+                await UniTask.Delay(150);
             }
+            _coverListDisplayer.DisableAnimation = false;
         }
         async UniTaskVoid PracticeTimer()
         {

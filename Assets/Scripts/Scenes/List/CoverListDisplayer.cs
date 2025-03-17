@@ -6,7 +6,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEditor.Searcher;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.List
@@ -46,6 +45,7 @@ namespace MajdataPlay.List
         public float radius;
         public float offset;
         public float angle;
+        public bool DisableAnimation = false;
 
         public int selectedDifficulty = 0;
 
@@ -368,9 +368,9 @@ namespace MajdataPlay.List
         {
             if (!_sortAndFindTask.IsCompleted)
                 return;
-            var delta = (desiredListPos - listPosReal) * turnSpeed;
-            listPosReal += Mathf.Clamp(delta, -1f, 1f);
-            if (Mathf.Abs(desiredListPos - listPosReal) < 0.01f) 
+            var delta = (desiredListPos - listPosReal) ;
+            listPosReal += Mathf.Clamp(delta* turnSpeed, -1f, 1f);
+            if (Mathf.Abs(delta) < 0.01f || DisableAnimation)
                 listPosReal = desiredListPos;
             
             switch(Mode)
