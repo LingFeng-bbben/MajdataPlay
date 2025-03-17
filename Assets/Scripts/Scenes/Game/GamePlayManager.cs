@@ -60,7 +60,7 @@ namespace MajdataPlay.Game
         /// </summary>
         public float AudioStartTime => _audioStartTime;
         // Control
-        public bool IsStart => _audioSample?.IsPlaying ?? false;
+        public bool IsStart { get; private set; } = false;
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
         public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Disable;
         public JudgeGrade AutoplayGrade { get; private set; } =  JudgeGrade.Perfect;
@@ -581,7 +581,7 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.DisableGC();
 
             State = GamePlayStatus.Running;
-
+            IsStart = true;
             if (!IsPracticeMode)
             {
                 while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)

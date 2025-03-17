@@ -38,7 +38,7 @@ namespace MajdataPlay.Game.Notes
             }
         }
         public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
-        public float RotateSpeed { get; set; } = 0.0000000000000000000000000000001f;
+        public float RotateSpeed { get; set; } = 0f;
         public bool IsDouble { get; set; } = false;
         public bool IsStar { get; set; } = false;
         public float Distance { get; set; } = -100;
@@ -57,6 +57,8 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _tapLineRenderer;
         NotePoolManager _notePoolManager;
 
+        bool _isStarRotation = false;
+
         Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
         Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
 
@@ -69,6 +71,7 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
+            _isStarRotation = _gameSetting.Game.StarRotation;
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
@@ -223,8 +226,8 @@ namespace MajdataPlay.Game.Notes
             }
             if(IsStar)
             {
-                if (NoteController.IsStart && _gameSetting.Game.StarRotation)
-                    Transform.Rotate(0f, 0f, RotateSpeed * Time.deltaTime);
+                if (NoteController.IsStart && _isStarRotation)
+                    Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
             }
         }
         void TooLateCheck()

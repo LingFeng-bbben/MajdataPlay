@@ -20,7 +20,7 @@ namespace MajdataPlay
     [Flags]
     internal enum LoopTiming
     {
-        PreUpdate,
+        PreUpdate = 1,
         Update,
         LateUpdate,
         FixedUpdate
