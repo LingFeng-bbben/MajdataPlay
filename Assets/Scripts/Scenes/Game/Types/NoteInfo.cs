@@ -12,9 +12,9 @@ namespace MajdataPlay.Game.Types
 {
     public sealed class NoteInfo : ComponentInfo
     {
-        public bool IsValid => _onUpdate is not null ||
-                               _onFixedUpdate is not null ||
-                               _onLateUpdate is not null;
+        public bool IsValid => _onUpdateFunctions is not null ||
+                               _onFixedUpdateFunctions is not null ||
+                               _onLateUpdateFunctions is not null;
         public NoteStatus State => _noteObj?.State ?? NoteStatus.End;
 
         IStateful<NoteStatus> _noteObj;
@@ -29,34 +29,62 @@ namespace MajdataPlay.Game.Types
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnPreUpdate()
         {
-            if (_onPreUpdate is null)
+            var funcCount = _onPreUpdateFunctions.Length;
+            if (funcCount == 0)
                 return;
             if (IsExecutable())
-                _onPreUpdate();
+            {
+                for (var i = 0; i < funcCount; i++)
+                {
+                    var func = _onPreUpdateFunctions[i];
+                    func();
+                }
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnUpdate()
         {
-            if (_onUpdate is null)
+            var funcCount = _onUpdateFunctions.Length;
+            if (funcCount == 0)
                 return;
             if (IsExecutable())
-                _onUpdate();
+            {
+                for (var i = 0; i < funcCount; i++)
+                {
+                    var func = _onUpdateFunctions[i];
+                    func();
+                }
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnLateUpdate()
         {
-            if (_onLateUpdate is null)
+            var funcCount = _onLateUpdateFunctions.Length;
+            if (funcCount == 0)
                 return;
             if (IsExecutable())
-                _onLateUpdate();
+            {
+                for (var i = 0; i < funcCount; i++)
+                {
+                    var func = _onLateUpdateFunctions[i];
+                    func();
+                }
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnFixedUpdate()
         {
-            if (_onFixedUpdate is null)
+            var funcCount = _onFixedUpdateFunctions.Length;
+            if (funcCount == 0)
                 return;
             if (IsExecutable())
-                _onFixedUpdate();
+            {
+                for (var i = 0; i < funcCount; i++)
+                {
+                    var func = _onFixedUpdateFunctions[i];
+                    func();
+                }
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExecutable()

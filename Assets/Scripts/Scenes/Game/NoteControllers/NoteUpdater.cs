@@ -1,11 +1,11 @@
 ﻿using MajdataPlay.Game.Types;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
-using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using System;
 using System.Collections.Generic;
+using MajdataPlay.Editor;
 using UnityEngine;
 
 namespace MajdataPlay.Game

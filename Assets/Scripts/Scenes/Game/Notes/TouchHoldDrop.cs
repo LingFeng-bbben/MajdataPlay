@@ -306,6 +306,7 @@ namespace MajdataPlay.Game.Notes
             _isJudged = true;
             PlayHoldEffect();
         }
+        [OnPreUpdate]
         void OnPreUpdate()
         {
             Autoplay();
@@ -313,6 +314,7 @@ namespace MajdataPlay.Game.Notes
             Check();
             BodyCheck();
         }
+        [OnUpdate]
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();

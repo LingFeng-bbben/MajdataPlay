@@ -5,7 +5,6 @@ using MajdataPlay.Game.Types;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
-using MajdataPlay.Attributes;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -13,6 +12,8 @@ using System.Linq;
 using UnityEngine;
 using Unity.VisualScripting;
 using System.Diagnostics;
+using MajdataPlay.Editor;
+
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
@@ -237,11 +238,13 @@ namespace MajdataPlay.Game.Notes
                     judgeArea.IsSkippable = true;
             }
         }
+        [OnPreUpdate]
         void OnPreUpdate()
         {
             SlideBarFadeIn();
             SlideCheck();
         }
+        [OnUpdate]
         void OnUpdate()
         {
             // ConnSlide

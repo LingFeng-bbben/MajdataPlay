@@ -9,9 +9,10 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Attributes;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Editor;
+
 #nullable enable
 namespace MajdataPlay.Game.Notes
 {
