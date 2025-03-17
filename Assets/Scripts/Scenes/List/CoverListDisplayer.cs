@@ -6,6 +6,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditor.Searcher;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.List
@@ -93,6 +94,8 @@ namespace MajdataPlay.List
                             Location = collection.Location,
                         };
                     }
+
+                    newCollections[i].Reset();
                     newCollections[i].SortAndFilter(SongStorage.OrderBy);
                 }
                 _collections = newCollections;

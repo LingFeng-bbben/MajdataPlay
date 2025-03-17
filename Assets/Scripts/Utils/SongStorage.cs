@@ -351,51 +351,5 @@ namespace MajdataPlay.Utils
         {
             _myFavorite.Remove(hashBase64Str);
         }
-        public static void SortAndFind(string searchKey, SortType sortType)
-        {
-            OrderBy.Keyword = searchKey;
-            OrderBy.SortBy = sortType;
-            SortAndFind();
-        }
-        public static void SortAndFind()
-        {
-            if (Collections.IsEmpty())
-                return;
-
-            var searchKey = OrderBy.Keyword;
-            var sortType = OrderBy.SortBy;
-            
-            if(string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
-            {
-                foreach (var collection in Collections)
-                    collection.Reset();
-                return;
-            }
-            foreach (var collection in Collections)
-                collection.SortAndFilter(OrderBy);
-        }
-        public static async Task SortAndFindAsync(string searchKey, SortType sortType)
-        {
-            OrderBy.Keyword = searchKey;
-            OrderBy.SortBy = sortType;
-            await SortAndFindAsync();
-        }
-        public static async Task SortAndFindAsync()
-        {
-            Task[] tasks = new Task[Collections.Length];
-
-            var searchKey = OrderBy.Keyword;
-            var sortType = OrderBy.SortBy;
-
-            if (string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
-            {
-                foreach (var collection in Collections)
-                    collection.Reset();
-                return;
-            }
-            foreach (var (i, collection) in Collections.WithIndex())
-                tasks[i] = collection.SortAndFilterAsync(OrderBy);
-            await Task.WhenAll(tasks);
-        }
     }    
 }
