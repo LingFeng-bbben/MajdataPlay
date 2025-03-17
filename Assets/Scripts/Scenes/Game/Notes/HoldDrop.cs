@@ -69,7 +69,11 @@ namespace MajdataPlay.Game.Notes
         Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
         Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
 
-        bool? _lastHoldState = null;
+        // -2 => Head miss or not judged yet
+        // -1 => Head judged
+        // 0  => Released
+        // 1  => Pressed
+        int _lastHoldState = -2;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
 
@@ -137,7 +141,9 @@ namespace MajdataPlay.Game.Notes
                     _ => 0
                 };
                 PlaySFX();
-                PlayHoldEffect();
+                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                _effectManager.ResetEffect(StartPos);
+                _lastHoldState = -1;
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
@@ -162,7 +168,7 @@ namespace MajdataPlay.Game.Notes
             _holdAnimStart = false;
             _playerReleaseTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
-            _lastHoldState = null;
+            _lastHoldState = -2;
             _releaseTime = 0;
 
             if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
@@ -218,6 +224,7 @@ namespace MajdataPlay.Game.Notes
                 Diff = _judgeDiff
             });
             _holdAnimStart = false;
+            _lastHoldState = -2;
             _thisRenderer.sharedMaterial = DefaultMaterial;
             SetActive(false);
             RendererState = RendererStatus.Off;
@@ -477,6 +484,11 @@ namespace MajdataPlay.Game.Notes
             var endTiming = timing - Length;
             var remainingTime = GetRemainingTime();
 
+            if(_lastHoldState is -1 or 1)
+            {
+                _effectManager.ResetEffect(StartPos);
+            }
+
             if (IsClassic)
             {
                 if (IsAutoplay && remainingTime == 0)
@@ -513,7 +525,7 @@ namespace MajdataPlay.Game.Notes
                     PlayHoldEffect();
                 }
                 _releaseTime = 0;
-                _lastHoldState = true;
+                _lastHoldState = 1;
             }
             else
             {
@@ -529,7 +541,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 _playerReleaseTime += MajTimeline.DeltaTime;
                 StopHoldEffect();
-                _lastHoldState = false;
+                _lastHoldState = 0;
             }
         }
         JudgeGrade EndJudge(in JudgeGrade result)
@@ -610,17 +622,16 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            _effectManager.ResetEffect(StartPos);
-            if(_lastHoldState is null || !(bool)_lastHoldState)
+            if(_lastHoldState != 1)
             {
                 _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-                _thisRenderer.sharedMaterial = HoldShineMaterial;
                 _thisRenderer.sprite = _holdOnSprite;
+                _thisRenderer.sharedMaterial = HoldShineMaterial;
             }
         }
         void StopHoldEffect()
         {
-            if (_lastHoldState is null || (bool)_lastHoldState)
+            if (_lastHoldState  != 0)
             {
                 _effectManager.ResetHoldEffect(StartPos);
                 _thisRenderer.sprite = _holdOffSprite;
