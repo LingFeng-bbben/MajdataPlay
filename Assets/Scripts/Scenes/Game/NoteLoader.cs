@@ -296,7 +296,7 @@ namespace MajdataPlay.Game
                                     break;
                             }
                         }
-                        catch(InvalidSimaiSyntaxException)
+                        catch (InvalidSimaiSyntaxException)
                         {
                             throw;
                         }
@@ -312,7 +312,7 @@ namespace MajdataPlay.Game
                     if (eachNotes.Count > 1) //有多个非touchnote
                     {
                         var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
-                        if(eachLinePoolingInfo is not null)
+                        if (eachLinePoolingInfo is not null)
                             _poolManager.AddEachLine(eachLinePoolingInfo);
                     }
                 }
@@ -328,7 +328,7 @@ namespace MajdataPlay.Game
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
         }
-        EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing,NotePoolingInfo noteA, NotePoolingInfo noteB)
+        EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
         {
             try
             {
@@ -371,7 +371,7 @@ namespace MajdataPlay.Game
                     Speed = speed
                 };
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MajDebug.LogException(e);
                 return null;
@@ -400,7 +400,7 @@ namespace MajdataPlay.Game
                 }
 
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-                startPos = Rotation(startPos);
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 return new()
                 {
                     StartPos = startPos,
@@ -453,7 +453,7 @@ namespace MajdataPlay.Game
                         isEach = false;
                 }
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-                startPos = Rotation(startPos);
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 return new()
                 {
                     StartPos = startPos,
@@ -524,7 +524,7 @@ namespace MajdataPlay.Game
                         }
                     }
                 }
-                startPos = Rotation(startPos);
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 if (!note.IsSlideNoHead)
                 {
                     queueInfo = new TapQueueInfo()
@@ -567,7 +567,7 @@ namespace MajdataPlay.Game
         {
             try
             {
-                note.StartPosition = Rotation(note.StartPosition);
+                note.StartPosition = NoteCreateHelper.Rotation(note.StartPosition, ChartRotation);
                 var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
                 var queueInfo = new TouchQueueInfo()
                 {
@@ -624,13 +624,13 @@ namespace MajdataPlay.Game
                                                       BuildSyntaxErrorMessage(line, column, note.RawContent));
             }
         }
-        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, 
+        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note,
                                              in SimaiTimingPoint timing,
                                              in List<ITouchGroupInfoProvider> members)
         {
             try
             {
-                note.StartPosition = Rotation(note.StartPosition);
+                note.StartPosition = NoteCreateHelper.Rotation(note.StartPosition, ChartRotation);
                 var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
                 var queueInfo = new TouchQueueInfo()
                 {
@@ -652,7 +652,7 @@ namespace MajdataPlay.Game
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
-                sensorPos = Rotation(sensorPos);
+                sensorPos = NoteCreateHelper.Rotation(sensorPos, ChartRotation);
                 var poolingInfo = new TouchHoldPoolingInfo()
                 {
                     SensorPos = sensorPos,
@@ -673,7 +673,7 @@ namespace MajdataPlay.Game
                     members.Add(poolingInfo);
                 return poolingInfo;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MajDebug.LogException(e);
                 var line = timing.RawTextPositionY;
@@ -703,17 +703,17 @@ namespace MajdataPlay.Game
                     {
                         var currentArea = groupMembers[i];
                         var nearbyArea = TOUCH_GROUPS[currentArea];
-                        for(var j = 0;j < sensorTypes.Count;j++)
+                        for (var j = 0; j < sensorTypes.Count; j++)
                         {
                             var area = sensorTypes[j];
                             if (groupMembers.Contains(area))
                                 continue;
-                            else if(nearbyArea.Contains(area))
+                            else if (nearbyArea.Contains(area))
                                 groupMembers.Add(area);
                         }
                     }
 
-                    foreach(var area in groupMembers)
+                    foreach (var area in groupMembers)
                         sensorTypes.Remove(area);
 
                     sensorGroups.Add(groupMembers);
@@ -830,7 +830,7 @@ namespace MajdataPlay.Game
                                 throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
                         }
 
-                        string slideShape = detectShapeFromText(slidePart.RawContent);
+                        string slideShape = NoteCreateHelper.DetectShapeFromText(slidePart.RawContent);
                         if (slideShape.StartsWith("-"))
                         {
                             slideShape = slideShape.Substring(1);
@@ -1007,21 +1007,21 @@ namespace MajdataPlay.Game
                 throw new InvalidSimaiSyntaxException(line,
                                                       column,
                                                       note.RawContent,
-                                                      BuildSyntaxErrorMessage(line, column,note.RawContent));
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
             }
         }
-        void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result,float totalLen,float totalSlideLen) where T: SlideBase
+        void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result, float totalLen, float totalSlideLen) where T : SlideBase
         {
-            var speed = (totalSlideLen*0.47f) / (totalLen * 1000);
+            var speed = (totalSlideLen * 0.47f) / (totalLen * 1000);
             var ratio = speed / 0.0034803742562305f;
 
             if (result.StarInfo is not null)
             {
                 var starInfo = result.StarInfo;
-                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio,-1080);
+                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio, -1080);
             }
         }
-        void AddSlideToQueue<T>(SimaiTimingPoint timing,T SliCompo) where T :SlideBase
+        void AddSlideToQueue<T>(SimaiTimingPoint timing, T SliCompo) where T : SlideBase
         {
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -1037,7 +1037,7 @@ namespace MajdataPlay.Game
         }
         private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing, SubSlideNote note, ConnSlideInfo info)
         {
-            string slideShape = detectShapeFromText(note.RawContent);
+            string slideShape = NoteCreateHelper.DetectShapeFromText(note.RawContent);
             var isMirror = false;
             var isEach = false;
             if (slideShape.StartsWith("-"))
@@ -1049,16 +1049,16 @@ namespace MajdataPlay.Game
             var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
             //var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var SliCompo = slide.GetComponent<SlideDrop>();
-            var isJustR = detectJustType(note.RawContent, out int endPos);
+            var isJustR = NoteCreateHelper.DetectJustType(note.RawContent, out int endPos);
             var startPos = note.StartPosition;
 
             //slide_star.SetActive(true);
             slide.SetActive(true);
-            startPos = Rotation(startPos);
-            endPos = Rotation(endPos);
+            startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+            endPos = NoteCreateHelper.Rotation(endPos, ChartRotation);
 
             TapPoolingInfo? starInfo = null;
-            if(!note.IsSlideNoHead)
+            if (!note.IsSlideNoHead)
             {
                 var _info = CreateStar(note, timing);
                 _poolManager.AddTap(_info);
@@ -1097,7 +1097,7 @@ namespace MajdataPlay.Game
             SliCompo.IsSlideNoHead = IsSlideNoHead;
             SliCompo.IsSlideNoTrack = IsSlideNoTrack;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
-            if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.SortOrder = _slideLayer;
@@ -1108,7 +1108,7 @@ namespace MajdataPlay.Game
                 _slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
             }
             //slideLayer += 5;
-            
+
             return new()
             {
                 SlideInstance = SliCompo,
@@ -1129,10 +1129,10 @@ namespace MajdataPlay.Game
 
             var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform.GetChild(3));
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
-            var isJustR = detectJustType(note.RawContent, out endPos);
+            var isJustR = NoteCreateHelper.DetectJustType(note.RawContent, out endPos);
 
-            startPos = Rotation(startPos);
-            endPos = Rotation(endPos);
+            startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+            endPos = NoteCreateHelper.Rotation(endPos, ChartRotation);
             slideWifi.SetActive(true);
 
             TapPoolingInfo? starInfo = null;
@@ -1150,9 +1150,9 @@ namespace MajdataPlay.Game
                 if (slides.Length > 1)
                 {
                     isEach = true;
-                    if(_gpManager is not null && _gpManager.IsClassicMode)
+                    if (_gpManager is not null && _gpManager.IsClassicMode)
                     {
-                        if(index == slides.Length && index % 2 != 0)
+                        if (index == slides.Length && index % 2 != 0)
                             isEach = false;
                     }
                 }
@@ -1196,337 +1196,10 @@ namespace MajdataPlay.Game
                 StarInfo = starInfo
             };
         }
-        /// <summary>
-        /// 判断Slide SlideOK是否需要镜像翻转
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
-        private bool detectJustType(string content, out int endPos)
-        {
-            // > < ^ V w
-            if (content.Contains('>'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('>');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
+        
 
-                if (isUpperHalf(startPos))
-                    return true;
-                return false;
-            }
 
-            if (content.Contains('<'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('<');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
-
-                if (!isUpperHalf(startPos))
-                    return true;
-                return false;
-            }
-
-            if (content.Contains('^'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('^');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
-                endPos = endPos - startPos;
-                endPos = endPos < 0 ? endPos + 8 : endPos;
-                endPos = endPos > 8 ? endPos - 8 : endPos;
-
-                if (endPos < 4)
-                {
-                    endPos = int.Parse(digits[1]);
-                    return true;
-                }
-                if (endPos > 4)
-                {
-                    endPos = int.Parse(digits[1]);
-                    return false;
-                }
-            }
-            else if (content.Contains('V'))
-            {
-                var str = content.Substring(0, 4);
-                var digits = str.Split('V');
-                endPos = int.Parse(digits[1][1].ToString());
-
-                if (isRightHalf(endPos))
-                    return true;
-                return false;
-            }
-            else if (content.Contains('w'))
-            {
-                var str = content.Substring(0, 3);
-                endPos = int.Parse(str.Substring(2, 1));
-                if (isUpperHalf(endPos))
-                    return true;
-                return false;
-            }
-            else
-            {
-                //int endPos;
-                if (content.Contains("qq") || content.Contains("pp"))
-                    endPos = int.Parse(content.Substring(3, 1));
-                else
-                    endPos = int.Parse(content.Substring(2, 1));
-                if (isRightHalf(endPos))
-                    return true;
-                return false;
-            }
-            return true;
-        }
-
-        private string detectShapeFromText(string content)
-        {
-            int getRelativeEndPos(int startPos, int endPos)
-            {
-                endPos = endPos - startPos;
-                endPos = endPos < 0 ? endPos + 8 : endPos;
-                endPos = endPos > 8 ? endPos - 8 : endPos;
-                return endPos + 1;
-            }
-
-            //print(content);
-            if (content.Contains('-'))
-            {
-                // line
-                var str = content.Substring(0, 3); //something like "8-6"
-                var digits = str.Split('-');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
-                return "line" + endPos;
-            }
-
-            if (content.Contains('>'))
-            {
-                // circle 默认顺时针
-                var str = content.Substring(0, 3);
-                var digits = str.Split('>');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (isUpperHalf(startPos))
-                {
-                    return "circle" + endPos;
-                }
-
-                endPos = MirrorKeys(endPos);
-                return "-circle" + endPos; //Mirror
-            }
-
-            if (content.Contains('<'))
-            {
-                // circle 默认顺时针
-                var str = content.Substring(0, 3);
-                var digits = str.Split('<');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (!isUpperHalf(startPos))
-                {
-                    return "circle" + endPos;
-                }
-
-                endPos = MirrorKeys(endPos);
-                return "-circle" + endPos; //Mirror
-            }
-
-            if (content.Contains('^'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('^');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-
-                if (endPos == 1 || endPos == 5)
-                {
-                    throw new Exception("^星星不合法\n^スライドエラー");
-                }
-
-                if (endPos < 5)
-                {
-                    return "circle" + endPos;
-                }
-                if (endPos > 5)
-                {
-                    return "-circle" + MirrorKeys(endPos);
-                }
-            }
-
-            if (content.Contains('v'))
-            {
-                // v
-                var str = content.Substring(0, 3);
-                var digits = str.Split('v');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
-                return "v" + endPos;
-            }
-
-            if (content.Contains("pp"))
-            {
-                // ppqq 默认为pp
-                var str = content.Substring(0, 4);
-                var digits = str.Split('p');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[2]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                return "ppqq" + endPos;
-            }
-
-            if (content.Contains("qq"))
-            {
-                // ppqq 默认为pp
-                var str = content.Substring(0, 4);
-                var digits = str.Split('q');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[2]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                endPos = MirrorKeys(endPos);
-                return "-ppqq" + endPos;
-            }
-
-            if (content.Contains('p'))
-            {
-                // pq 默认为p
-                var str = content.Substring(0, 3);
-                var digits = str.Split('p');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                return "pq" + endPos;
-            }
-
-            if (content.Contains('q'))
-            {
-                // pq 默认为p
-                var str = content.Substring(0, 3);
-                var digits = str.Split('q');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                endPos = MirrorKeys(endPos);
-                return "-pq" + endPos;
-            }
-
-            if (content.Contains('s'))
-            {
-                // s
-                var str = content.Substring(0, 3);
-                var digits = str.Split('s');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
-                return "s";
-            }
-
-            if (content.Contains('z'))
-            {
-                // s镜像
-                var str = content.Substring(0, 3);
-                var digits = str.Split('z');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
-                return "-s";
-            }
-
-            if (content.Contains('V'))
-            {
-                // L
-                var str = content.Substring(0, 4);
-                var digits = str.Split('V');
-                var startPos = int.Parse(digits[0]);
-                var turnPos = int.Parse(digits[1][0].ToString());
-                var endPos = int.Parse(digits[1][1].ToString());
-
-                turnPos = getRelativeEndPos(startPos, turnPos);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (turnPos == 7)
-                {
-                    if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                    return "L" + endPos;
-                }
-
-                if (turnPos == 3)
-                {
-                    if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                    return "-L" + MirrorKeys(endPos);
-                }
-
-                throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
-            }
-
-            if (content.Contains('w'))
-            {
-                // wifi
-                var str = content.Substring(0, 3);
-                var digits = str.Split('w');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
-                return "wifi";
-            }
-
-            return "";
-        }
-
-        private bool isUpperHalf(int key)
-        {
-            if (key == 7) return true;
-            if (key == 8) return true;
-            if (key == 1) return true;
-            if (key == 2) return true;
-
-            return false;
-        }
-
-        private bool isRightHalf(int key)
-        {
-            if (key == 1) return true;
-            if (key == 2) return true;
-            if (key == 3) return true;
-            if (key == 4) return true;
-
-            return false;
-        }
-
-        private int MirrorKeys(int key)
-        {
-            if (key == 1) return 1;
-            if (key == 2) return 8;
-            if (key == 3) return 7;
-            if (key == 4) return 6;
-
-            if (key == 5) return 5;
-            if (key == 6) return 4;
-            if (key == 7) return 3;
-            if (key == 8) return 2;
-            throw new Exception("Keys out of range: " + key);
-        }
-        int Rotation(int keyIndex)
-        {
-            if (!keyIndex.InRange(1, 8))
-                throw new ArgumentOutOfRangeException();
-            var key = (SensorArea)(keyIndex - 1);
-            var newKey = key.Diff(ChartRotation);
-            return newKey.GetIndex();
-        }
-        string BuildSyntaxErrorMessage(int line,int column,string noteContent)
+        string BuildSyntaxErrorMessage(int line, int column, string noteContent)
         {
             return $"(at L{line}:C{column}) \"{noteContent}\" is not a valid note syntax";
         }
@@ -1534,11 +1207,7 @@ namespace MajdataPlay.Game
         {
             return $"(at L{line}:C{column})";
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        SensorArea Rotation(SensorArea sensorIndex)
-        {
-            return sensorIndex.Diff(ChartRotation);
-        }
+        
         class SubSlideNote : SimaiNote
         {
             public SimaiNote Origin { get; set; } = new();
@@ -1547,6 +1216,361 @@ namespace MajdataPlay.Game
         {
             public T SlideInstance { get; init; }
             public TapPoolingInfo? StarInfo { get; init; }
+        }
+        static class NoteCreateHelper
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static SensorArea Rotation(SensorArea sensorIndex, int diff)
+            {
+                return sensorIndex.Diff(diff);
+            }
+            public static int Rotation(int keyIndex, int diff)
+            {
+                if (!keyIndex.InRange(1, 8))
+                    throw new ArgumentOutOfRangeException();
+                var key = (SensorArea)(keyIndex - 1);
+                var newKey = key.Diff(diff);
+                return newKey.GetIndex();
+            }
+            public static int MirrorKeys(int key)
+            {
+                switch(key)
+                {
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 8;
+                    case 3:
+                        return 7;
+                    case 4:
+                        return 6;
+                    case 5:
+                        return 5;
+                    case 6:
+                        return 4;
+                    case 7:
+                        return 3;
+                    case 8:
+                        return 2;
+                    default:
+                        throw new Exception("Keys out of range: " + key);
+                }
+            }
+            public static bool IsRightHalf(int key)
+            {
+                switch(key)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        return true;
+                    default:
+                        return false;
+
+                }
+            }
+            public static bool IsUpperHalf(int key)
+            {
+                switch (key)
+                {
+                    case 7:
+                    case 8:
+                    case 1:
+                    case 2:
+                        return true;
+                    default:
+                        return false;
+
+                }
+            }
+            public static string DetectShapeFromText(string content)
+            {
+                int getRelativeEndPos(int startPos, int endPos)
+                {
+                    endPos = endPos - startPos;
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+                    return endPos + 1;
+                }
+
+                //print(content);
+                if (content.Contains('-'))
+                {
+                    // line
+                    var str = content.Substring(0, 3); //something like "8-6"
+                    var digits = str.Split('-');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
+                    return "line" + endPos;
+                }
+
+                if (content.Contains('>'))
+                {
+                    // circle 默认顺时针
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('>');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (NoteCreateHelper.IsUpperHalf(startPos))
+                    {
+                        return "circle" + endPos;
+                    }
+
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-circle" + endPos; //Mirror
+                }
+
+                if (content.Contains('<'))
+                {
+                    // circle 默认顺时针
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('<');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (!NoteCreateHelper.IsUpperHalf(startPos))
+                    {
+                        return "circle" + endPos;
+                    }
+
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-circle" + endPos; //Mirror
+                }
+
+                if (content.Contains('^'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('^');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+
+                    if (endPos == 1 || endPos == 5)
+                    {
+                        throw new Exception("^星星不合法\n^スライドエラー");
+                    }
+
+                    if (endPos < 5)
+                    {
+                        return "circle" + endPos;
+                    }
+                    if (endPos > 5)
+                    {
+                        return "-circle" + NoteCreateHelper.MirrorKeys(endPos);
+                    }
+                }
+
+                if (content.Contains('v'))
+                {
+                    // v
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('v');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
+                    return "v" + endPos;
+                }
+
+                if (content.Contains("pp"))
+                {
+                    // ppqq 默认为pp
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('p');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[2]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    return "ppqq" + endPos;
+                }
+
+                if (content.Contains("qq"))
+                {
+                    // ppqq 默认为pp
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('q');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[2]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-ppqq" + endPos;
+                }
+
+                if (content.Contains('p'))
+                {
+                    // pq 默认为p
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('p');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    return "pq" + endPos;
+                }
+
+                if (content.Contains('q'))
+                {
+                    // pq 默认为p
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('q');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-pq" + endPos;
+                }
+
+                if (content.Contains('s'))
+                {
+                    // s
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('s');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
+                    return "s";
+                }
+
+                if (content.Contains('z'))
+                {
+                    // s镜像
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('z');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
+                    return "-s";
+                }
+
+                if (content.Contains('V'))
+                {
+                    // L
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('V');
+                    var startPos = int.Parse(digits[0]);
+                    var turnPos = int.Parse(digits[1][0].ToString());
+                    var endPos = int.Parse(digits[1][1].ToString());
+
+                    turnPos = getRelativeEndPos(startPos, turnPos);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (turnPos == 7)
+                    {
+                        if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                        return "L" + endPos;
+                    }
+
+                    if (turnPos == 3)
+                    {
+                        if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                        return "-L" + NoteCreateHelper.MirrorKeys(endPos);
+                    }
+
+                    throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
+                }
+
+                if (content.Contains('w'))
+                {
+                    // wifi
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('w');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
+                    return "wifi";
+                }
+
+                return "";
+            }
+            /// <summary>
+            /// 判断Slide SlideOK是否需要镜像翻转
+            /// </summary>
+            /// <param name="content"></param>
+            /// <param name="endPos"></param>
+            /// <returns></returns>
+            public static bool DetectJustType(string content, out int endPos)
+            {
+                // > < ^ V w
+                if (content.Contains('>'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('>');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+
+                    if (NoteCreateHelper.IsUpperHalf(startPos))
+                        return true;
+                    return false;
+                }
+
+                if (content.Contains('<'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('<');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+
+                    if (!NoteCreateHelper.IsUpperHalf(startPos))
+                        return true;
+                    return false;
+                }
+
+                if (content.Contains('^'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('^');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+                    endPos = endPos - startPos;
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+
+                    if (endPos < 4)
+                    {
+                        endPos = int.Parse(digits[1]);
+                        return true;
+                    }
+                    if (endPos > 4)
+                    {
+                        endPos = int.Parse(digits[1]);
+                        return false;
+                    }
+                }
+                else if (content.Contains('V'))
+                {
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('V');
+                    endPos = int.Parse(digits[1][1].ToString());
+
+                    if (NoteCreateHelper.IsRightHalf(endPos))
+                        return true;
+                    return false;
+                }
+                else if (content.Contains('w'))
+                {
+                    var str = content.Substring(0, 3);
+                    endPos = int.Parse(str.Substring(2, 1));
+                    if (NoteCreateHelper.IsUpperHalf(endPos))
+                        return true;
+                    return false;
+                }
+                else
+                {
+                    //int endPos;
+                    if (content.Contains("qq") || content.Contains("pp"))
+                        endPos = int.Parse(content.Substring(3, 1));
+                    else
+                        endPos = int.Parse(content.Substring(2, 1));
+                    if (NoteCreateHelper.IsRightHalf(endPos))
+                        return true;
+                    return false;
+                }
+                return true;
+            }
         }
     }
 }
