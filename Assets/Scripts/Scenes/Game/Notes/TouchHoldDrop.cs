@@ -67,6 +67,10 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _borderRenderer;
         NotePoolManager _notePoolManager;
 
+        // -2 => Head miss or not judged yet
+        // -1 => Head judged
+        // 0  => Released
+        // 1  => Pressed
         int _lastHoldState = -2;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
@@ -306,7 +310,14 @@ namespace MajdataPlay.Game.Notes
             _judgeResult = result;
             _isJudged = true;
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-            _lastHoldState = -1;
+            if (_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
+            {
+                _lastHoldState = -2;
+            }
+            else
+            {
+                _lastHoldState = -1;
+            }
         }
         [OnPreUpdate]
         void OnPreUpdate()

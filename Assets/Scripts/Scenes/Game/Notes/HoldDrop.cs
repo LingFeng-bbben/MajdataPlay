@@ -42,7 +42,6 @@ namespace MajdataPlay.Game.Notes
         }
         public TapQueueInfo QueueInfo { get; set; } = TapQueueInfo.Default;
         public float Distance { get; private set; } = -100;
-        bool _holdAnimStart;
 
         [SerializeField]
         GameObject _tapLinePrefab;
@@ -165,7 +164,6 @@ namespace MajdataPlay.Game.Notes
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
-            _holdAnimStart = false;
             _playerReleaseTime = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
             _lastHoldState = -2;
@@ -223,7 +221,6 @@ namespace MajdataPlay.Game.Notes
                 IsEX = false,
                 Diff = _judgeDiff
             });
-            _holdAnimStart = false;
             _lastHoldState = -2;
             _thisRenderer.sharedMaterial = DefaultMaterial;
             SetActive(false);
@@ -233,45 +230,19 @@ namespace MajdataPlay.Game.Notes
             _objectCounter.ReportResult(this, result);
             _poolManager.Collect(this);
         }
-        
-        void GameIOListener(GameInputEventArgs args)
-        {
-            if (_isJudged || IsEnded)
-                return;
-            else if (args.Area != _sensorPos)
-                return;
-            else if (!args.IsClick)
-                return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
-                return;
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
-                return;
-
-            ref var isUsed = ref args.IsUsed.Target;
-
-            if (isUsed)
-                return;
-
-            if (args.IsButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
-            {
-                Judge(ThisFrameSec - _touchPanelOffset);
-            }
-
-            if (_isJudged)
-            {
-                isUsed = true;
-                _noteManager.NextNote(QueueInfo);
-            }
-        }
         protected override void Judge(float currentSec)
         {
             base.Judge(currentSec);
             if (!_isJudged)
                 return;
+            if(_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
+            {
+                _lastHoldState = -2;
+            }
+            else
+            {
+                _lastHoldState = -1;
+            }
             PlaySFX();
             _effectManager.PlayHoldEffect(StartPos, _judgeResult);
             _effectManager.ResetEffect(StartPos);
