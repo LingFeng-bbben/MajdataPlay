@@ -30,6 +30,8 @@ namespace MajdataPlay.Game
             set => _touchSpeed = Math.Abs(value);
         }
         public long NoteCount { get; private set; } = 0;
+        public bool IsSlideNoHead { get; set; } = false;
+        public bool IsSlideNoTrack { get; set; } = false;
 
         public GameObject tapPrefab;
         public GameObject holdPrefab;
@@ -1092,6 +1094,8 @@ namespace MajdataPlay.Game
             //SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)timing.Timing;
             SliCompo.Length = (float)note.SlideTime;
+            SliCompo.IsSlideNoHead = IsSlideNoHead;
+            SliCompo.IsSlideNoTrack = IsSlideNoTrack;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
             if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
@@ -1163,6 +1167,8 @@ namespace MajdataPlay.Game
             WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)timing.Timing;
             WifiCompo.Length = (float)note.SlideTime;
+            WifiCompo.IsSlideNoHead = IsSlideNoHead;
+            WifiCompo.IsSlideNoTrack = IsSlideNoTrack;
             //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));

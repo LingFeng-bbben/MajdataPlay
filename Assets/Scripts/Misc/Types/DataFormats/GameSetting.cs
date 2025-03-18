@@ -91,8 +91,8 @@ namespace MajdataPlay.Types
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
         public bool AllTouch { get; set; } = false;
-        //public bool SlideNoHead { get; set; } = false;
-        //public bool SlideNoTrack { get; set; } = false;
+        public bool SlideNoHead { get; set; } = false;
+        public bool SlideNoTrack { get; set; } = false;
         public bool ButtonRingForTouch { get; set; } = false;
         public string NoteMask { get; set; } = "Disable";
         public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;

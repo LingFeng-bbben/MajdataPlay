@@ -272,13 +272,20 @@ namespace MajdataPlay.Game.Notes
                     if (timing > 0f)
                     {
                         _starRenderer.color = new Color(1, 1, 1, 1);
-                        starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                        if (!IsSlideNoHead)
+                        {
+                            starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                        }
                         SetStarActive(true);
 
                         State = NoteStatus.Running;
                         goto case NoteStatus.Running;
                     }
                     if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
+                    {
+                        return;
+                    }
+                    else if(IsSlideNoHead)
                     {
                         return;
                     }

@@ -5,25 +5,18 @@ using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using MajSimai;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
-using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
-using MajdataPlay.Collections;
 using MajdataPlay.Game.Types;
-using Unity.VisualScripting.Antlr3.Runtime;
 using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
-using System.Windows.Forms.VisualStyles;
 using MajdataPlay.Editor;
 
 namespace MajdataPlay.Game
@@ -115,6 +108,8 @@ namespace MajdataPlay.Game
         bool _isAllBreak = false;
         bool _isAllEx = false;
         bool _isAllTouch = false;
+        bool _isSlideNoHead = false;
+        bool _isSlideNoTrack = false;
         bool _isTrackSkipAvailable = MajEnv.UserSetting.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSetting.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
@@ -182,6 +177,7 @@ namespace MajdataPlay.Game
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
+            _noteLoader = Majdata<NoteLoader>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -238,6 +234,26 @@ namespace MajdataPlay.Game
                             _noteManager.IsUseButtonRingForTouch = buttonRingSlide;
                         }
                         break;
+                    case "IsSlideNoHead":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _noteLoader.IsSlideNoHead = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        {
+                            _noteLoader.IsSlideNoHead = buttonRingSlide;
+                        }
+                        break;
+                    case "IsSlideNoTrack":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _noteLoader.IsSlideNoTrack = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        {
+                            _noteLoader.IsSlideNoTrack = buttonRingSlide;
+                        }
+                        break;
                     case "AutoPlay":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
@@ -288,7 +304,9 @@ namespace MajdataPlay.Game
             //AutoplayParam = mod5.Value ?? 7;
             JudgeStyle = modsetting.JudgeStyle;
             _noteManager.IsUseButtonRingForTouch = modsetting.ButtonRingForTouch;
-            switch(modsetting.NoteMask)
+            _noteLoader.IsSlideNoHead = modsetting.SlideNoHead;
+            _noteLoader.IsSlideNoTrack = modsetting.SlideNoTrack;
+            switch (modsetting.NoteMask)
             {
                 case "Inner":
                     _noteMask.gameObject.SetActive(true);
@@ -518,7 +536,6 @@ namespace MajdataPlay.Game
 
             var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
 
-            _noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
             if(_setting.Game.TapSpeed < 0)
                 _noteLoader.NoteSpeed = -((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             else

@@ -338,10 +338,17 @@ namespace MajdataPlay.Game.Notes
                             var starTransform = _starTransforms[i];
 
                             _starRenderers[i].color = new Color(1, 1, 1, 1);
-                            starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            if (!IsSlideNoHead)
+                            {
+                                starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            }
                         }
                         State = NoteStatus.Running;
                         goto case NoteStatus.Running;
+                    }
+                    else if (IsSlideNoHead)
+                    {
+                        return;
                     }
                     var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 

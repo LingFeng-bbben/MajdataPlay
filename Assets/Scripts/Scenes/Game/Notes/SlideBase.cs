@@ -29,7 +29,7 @@ namespace MajdataPlay.Game.Notes
             Parent = null
         };
         /// <summary>
-        /// 如果判定队列已经完成，返回True，反之False
+        /// If all judgment areas have been completed, return True, otherwise False
         /// </summary>
         public bool IsFinished 
         {
@@ -37,7 +37,7 @@ namespace MajdataPlay.Game.Notes
             get => QueueRemaining == 0; 
         }
         /// <summary>
-        /// 如果判定队列剩余1个未完成判定区，返回True
+        /// Returns the number of unfinished judgment areas in the judgment queue
         /// </summary>
         public bool IsPendingFinish 
         {
@@ -120,6 +120,20 @@ namespace MajdataPlay.Game.Notes
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _slideLength = value;
         }
+        public bool IsSlideNoHead 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        } = false;
+        public bool IsSlideNoTrack 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        } = false;
         protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
         { 
             Memory<SlideArea>.Empty,
@@ -370,7 +384,7 @@ namespace MajdataPlay.Game.Notes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SlideBarFadeIn()
         {
-            if (IsEnded)
+            if (IsEnded || IsSlideNoTrack)
                 return;
 
             var num = Timing - 0.05f;
