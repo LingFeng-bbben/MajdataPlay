@@ -224,7 +224,7 @@ namespace MajdataPlay.Game.Notes
 
             State = NoteStatus.End;
 
-            _judgeResult = EndJudge(_judgeResult);
+            _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new JudgeResult()
             {
@@ -574,54 +574,6 @@ namespace MajdataPlay.Game.Notes
                 var pos = (0.226f + distance) * GetAngle(i);
                 _fanTransforms[i].localPosition = pos;
             }
-        }
-        JudgeGrade EndJudge(in JudgeGrade result)
-        {
-            if (!_isJudged) 
-                return result;
-            var offset = (int)result > 7 ? 0 : _judgeDiff;
-            var realityHT = (Length - 0.45f - offset / 1000f).Clamp(0, Length - 0.45f);
-            var percent = ((realityHT - _playerReleaseTime) / realityHT).Clamp(0, 1);
-
-            if (realityHT > 0)
-            {
-                if (percent >= 1f)
-                {
-                    if (result.IsMissOrTooFast())
-                        return JudgeGrade.LateGood;
-                    else if (MathF.Abs((int)result - 7) == 6)
-                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
-                    else
-                        return result;
-                }
-                else if (percent >= 0.67f)
-                {
-                    if (result.IsMissOrTooFast())
-                        return JudgeGrade.LateGood;
-                    else if (MathF.Abs((int)result - 7) == 6)
-                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
-                    else if (result == JudgeGrade.Perfect)
-                        return (int)result < 7 ? JudgeGrade.LatePerfect2nd : JudgeGrade.FastPerfect2nd;
-                }
-                else if (percent >= 0.33f)
-                {
-                    if (MathF.Abs((int)result - 7) >= 6)
-                        return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
-                    else
-                        return (int)result < 7 ? JudgeGrade.LateGreat : JudgeGrade.FastGreat;
-                }
-                else if (percent >= 0.05f)
-                    return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
-                else if (percent >= 0)
-                {
-                    if (result.IsMissOrTooFast())
-                        return JudgeGrade.Miss;
-                    else
-                        return (int)result < 7 ? JudgeGrade.LateGood : JudgeGrade.FastGood;
-                }
-            }
-            //MajDebug.Log($"TouchHold: {MathF.Round(percent * 100, 2)}%\nTotal Len : {MathF.Round(realityHT * 1000, 2)}ms");
-            return result;
         }
         void PlayHoldEffect()
         {
