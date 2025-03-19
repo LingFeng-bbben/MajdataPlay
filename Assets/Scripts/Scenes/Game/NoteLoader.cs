@@ -492,11 +492,10 @@ namespace MajdataPlay.Game
                                                       BuildSyntaxErrorMessage(line, column, note.RawContent));
             }
         }
-        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing)
+        TapPoolingInfo CreateStar(int startPos, SimaiNote note, in SimaiTimingPoint timing)
         {
             try
             {
-                var startPos = note.StartPosition;
                 var noteTiming = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
                 var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -518,7 +517,7 @@ namespace MajdataPlay.Game
                 {
                     var count = timing.Notes.FindAll(
                         o => o.Type == SimaiNoteType.Slide &&
-                             o.StartPosition == startPos).Length;
+                             o.StartPosition == note.StartPosition).Length;
                     if (count > 1)
                     {
                         isDouble = true;
@@ -533,7 +532,6 @@ namespace MajdataPlay.Game
                         }
                     }
                 }
-                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 if (!note.IsSlideNoHead)
                 {
                     queueInfo = new TapQueueInfo()
@@ -1095,7 +1093,7 @@ namespace MajdataPlay.Game
             TapPoolingInfo? starInfo = null;
             if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(note, timing);
+                var _info = CreateStar(startPos, note, timing);
                 _poolManager.AddTap(_info);
                 starInfo = _info;
             }
@@ -1174,7 +1172,7 @@ namespace MajdataPlay.Game
             TapPoolingInfo? starInfo = null;
             if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(note, timing);
+                var _info = CreateStar(startPos, note, timing);
                 _poolManager.AddTap(_info);
                 starInfo = _info;
             }
@@ -1682,7 +1680,7 @@ namespace MajdataPlay.Game
                     diff = Math.Abs(diff);
                 }
                 var newStartPos = mappingTable[startPos];
-                var newEndPos = ((SensorArea)newStartPos).Diff(diff).GetIndex();
+                var newEndPos = ((SensorArea)(newStartPos - 1)).Diff(diff).GetIndex();
 
                 return (newStartPos, newEndPos);
             }
@@ -1709,7 +1707,7 @@ namespace MajdataPlay.Game
                 }
                 var rd = new System.Random();
                 var newStartPos = rd.Next(1, 9);
-                var newEndPos = ((SensorArea)newStartPos).Diff(diff).GetIndex();
+                var newEndPos = ((SensorArea)(newStartPos - 1)).Diff(diff).GetIndex();
 
                 return (newStartPos, newEndPos);
             }
