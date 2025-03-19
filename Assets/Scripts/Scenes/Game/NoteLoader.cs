@@ -209,8 +209,7 @@ namespace MajdataPlay.Game
         readonly IReadOnlyDictionary<SensorArea, SensorArea> _touchPanelMappingTable;
         NoteLoader()
         {
-            _buttonRingMappingTable = NoteCreateHelper.GenerateButtonRingMappingTable();
-            _touchPanelMappingTable = NoteCreateHelper.GenerateTouchPanelMappingTable();
+            (_buttonRingMappingTable, _touchPanelMappingTable) = NoteCreateHelper.GenerateMappingTable();
         }
 
         void Awake()
@@ -1605,7 +1604,17 @@ namespace MajdataPlay.Game
                 }
                 return true;
             }
-            public static IReadOnlyDictionary<SensorArea,SensorArea> GenerateTouchPanelMappingTable()
+            public static (IReadOnlyDictionary<int, int> ,IReadOnlyDictionary<SensorArea, SensorArea>) GenerateMappingTable()
+            {
+                var touchPannelMappingTable = GenerateTouchPanelMappingTable();
+                var buttonRingMappingTable = GenerateButtonRingMappingTable();
+                foreach(var (k,v) in buttonRingMappingTable)
+                {
+                    touchPannelMappingTable[(SensorArea)(k - 1)] = (SensorArea)(v - 1);
+                }
+                return (buttonRingMappingTable, touchPannelMappingTable);
+            }
+            static Dictionary<SensorArea,SensorArea> GenerateTouchPanelMappingTable()
             {
                 var areas = ((SensorArea[])Enum.GetValues(typeof(SensorArea))).SkipLast(4).ToArray();
                 var newAreas = new SensorArea?[33];
@@ -1614,14 +1623,23 @@ namespace MajdataPlay.Game
 
                 for (var i = 0; i < 33; i++)
                 {
+                    var originArea = (SensorArea)i;
                     SensorArea value;
-                    do
+                    if(i < 8)
+                    {
+                        newAreas[i] = originArea;
+                        continue;
+                    }
+                    while(true)
                     {
                         value = (SensorArea)rd.Next(0, 33);
                         if (value > SensorArea.E8 || value < SensorArea.A1)
                             continue;
+                        else if (value.GetGroup() != originArea.GetGroup())
+                            continue;
+                        else if (!newAreas.Contains(value))
+                            break;
                     }
-                    while (newAreas.Contains(value));
                     newAreas[i] = value;
                 }
 
@@ -1631,7 +1649,7 @@ namespace MajdataPlay.Game
                 }
                 return dict;
             }
-            public static IReadOnlyDictionary<int, int> GenerateButtonRingMappingTable()
+            static Dictionary<int, int> GenerateButtonRingMappingTable()
             {
                 var areas = new int[8]
                 {
