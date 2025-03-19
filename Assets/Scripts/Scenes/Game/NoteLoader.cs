@@ -749,12 +749,12 @@ namespace MajdataPlay.Game
                     //sensorGroups.Add(newGroup);
                 }
                 List<TouchGroup> touchGroups = new();
-                var memberMapping = members.ToDictionary(x => x.SensorPos);
+                var memberMapping = members.GroupBy(x => x.SensorPos).ToDictionary(x => x.Key);
                 foreach (var group in sensorGroups)
                 {
                     touchGroups.Add(new TouchGroup()
                     {
-                        Members = group.Select(x => memberMapping[x]).ToArray()
+                        Members = group.SelectMany(x => memberMapping[x]).ToArray()
                     });
                 }
                 foreach (var member in members)
