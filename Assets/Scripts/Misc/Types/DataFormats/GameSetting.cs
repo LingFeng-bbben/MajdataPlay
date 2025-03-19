@@ -28,6 +28,7 @@ namespace MajdataPlay.Types
         public bool FastRetry { get; set; } = false;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
+        public RandomMode Random { get; set; } = RandomMode.Disabled;
         public string Language { get; set; } = "zh-CN - Majdata";
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
     }
