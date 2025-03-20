@@ -1,9 +1,9 @@
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Controllers
+namespace MajdataPlay.Game.Notes.Controllers
 {
     public class MultTouchHandler : MonoBehaviour
     {
@@ -19,7 +19,7 @@ namespace MajdataPlay.Game.Controllers
             for (var i = 0; i < 33; i++)
             {
                 var sensorType = (SensorArea)i;
-                var obj = Instantiate(BorderPrefab,transform);
+                var obj = Instantiate(BorderPrefab, transform);
                 var border = obj.GetComponent<TouchBorder>();
                 border.AreaPosition = sensorType;
                 borders[i] = border;
@@ -31,12 +31,12 @@ namespace MajdataPlay.Game.Controllers
         }
         internal void Clear()
         {
-            foreach(var border in borders)
+            foreach (var border in borders)
             {
                 border.Clear();
             }
         }
-        public void Register(SensorArea area,bool isEach,bool isBreak)
+        public void Register(SensorArea area, bool isEach, bool isBreak)
         {
             var border = borders[(int)area];
             border.Add(isBreak, isEach);

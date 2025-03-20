@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
 #nullable enable
     public class NoteEffectManager : MonoBehaviour
@@ -104,19 +104,19 @@ namespace MajdataPlay.Game
             var pos = (SensorArea)(position - 1);
             _lightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
-            if(!judgeResult.IsMissOrTooFast)
+            if (!judgeResult.IsMissOrTooFast)
             {
                 _lastTriggerTimes[pos] = MajTimeline.Time;
                 _effectPool.ResetFeedbackEffect(pos);
             }
             _effectPool.Play(judgeResult, position);
         }
-        public void PlayHoldEffect( int keyIndex, in JudgeGrade judgeType)
+        public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
             _lightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
-        public void PlayHoldEffect( SensorArea sensorPos, in JudgeGrade judgeType)
+        public void PlayHoldEffect(SensorArea sensorPos, in JudgeGrade judgeType)
         {
             _effectPool.PlayHoldEffect(judgeType, sensorPos);
         }
@@ -131,7 +131,7 @@ namespace MajdataPlay.Game
         }
         public void PlayTouchEffect(SensorArea sensorPos, in JudgeResult judgeResult)
         {
-            if(!judgeResult.IsMissOrTooFast)
+            if (!judgeResult.IsMissOrTooFast)
             {
                 _lastTriggerTimes[sensorPos] = MajTimeline.Time;
                 _effectPool.ResetFeedbackEffect(sensorPos);

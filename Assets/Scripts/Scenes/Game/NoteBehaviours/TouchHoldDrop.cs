@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer,IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
+    internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; } = null;
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
@@ -189,7 +189,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC, (Timing + Length) - TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(Timing + TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
@@ -264,7 +264,7 @@ namespace MajdataPlay.Game.Notes
             var skin = MajInstances.SkinManager.GetTouchHoldSkin();
 
             SetFansMaterial(DefaultMaterial);
-            if(IsBreak)
+            if (IsBreak)
             {
                 for (var i = 0; i < 4; i++)
                     _fanRenderers[i].sprite = skin.Fans_Break[i];
@@ -334,7 +334,7 @@ namespace MajdataPlay.Game.Notes
         {
             var timing = GetTimeSpanToArriveTiming();
 
-            switch(State)
+            switch (State)
             {
                 case NoteStatus.Initialized:
                     if (-timing < wholeDuration)
@@ -388,7 +388,7 @@ namespace MajdataPlay.Game.Notes
                         _borderMask.alphaCutoff = alpha;
                     }
                     return;
-            }   
+            }
         }
         void RegisterGrade()
         {
@@ -441,8 +441,8 @@ namespace MajdataPlay.Game.Notes
             }
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            bool isButton = false;
-            if (IsUseButtonRingForTouch && (((int)_sensorPos).InRange(0, 7)) &&
+            var isButton = false;
+            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
                 _noteManager.IsButtonClickedInThisFrame(_sensorPos))
             {
                 isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
@@ -586,7 +586,7 @@ namespace MajdataPlay.Game.Notes
             {
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 _borderRenderer.sprite = board_On;
-                if(_lastHoldState < 0)
+                if (_lastHoldState < 0)
                 {
                     SetFansMaterial(DefaultMaterial);
                 }
@@ -602,7 +602,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     SetFansMaterial(DefaultMaterial);
                 }
-            }            
+            }
         }
         Vector3 GetAngle(int index)
         {
@@ -611,7 +611,7 @@ namespace MajdataPlay.Game.Notes
         }
         void SetFansColor(Color color)
         {
-            foreach (var fan in _fanRenderers.AsSpan()) 
+            foreach (var fan in _fanRenderers.AsSpan())
                 fan.color = color;
         }
         void SetFansMaterial(Material material)

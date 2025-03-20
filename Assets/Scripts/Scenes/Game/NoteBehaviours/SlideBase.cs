@@ -1,7 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -12,17 +11,20 @@ using UnityEngine;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Game.Notes.Controllers;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal abstract class SlideBase : NoteLongDrop
     {
         public IConnectableSlide? Parent => ConnectInfo.Parent;
-        public ConnSlideInfo ConnectInfo 
-        { 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get; 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] set; 
+        public ConnSlideInfo ConnectInfo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set;
         } = new()
         {
             IsGroupPart = false,
@@ -31,23 +33,23 @@ namespace MajdataPlay.Game.Notes
         /// <summary>
         /// If all judgment areas have been completed, return True, otherwise False
         /// </summary>
-        public bool IsFinished 
+        public bool IsFinished
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => QueueRemaining == 0; 
+            get => QueueRemaining == 0;
         }
         /// <summary>
         /// Returns the number of unfinished judgment areas in the judgment queue
         /// </summary>
-        public bool IsPendingFinish 
+        public bool IsPendingFinish
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => QueueRemaining == 1; 
+            get => QueueRemaining == 1;
         }
         /// <summary>
         /// 返回判定队列中未完成判定区的数量
         /// </summary>
-        public int QueueRemaining 
+        public int QueueRemaining
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -120,22 +122,22 @@ namespace MajdataPlay.Game.Notes
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _slideLength = value;
         }
-        public bool IsSlideNoHead 
+        public bool IsSlideNoHead
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set; 
+            set;
         } = false;
-        public bool IsSlideNoTrack 
+        public bool IsSlideNoTrack
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set; 
+            set;
         } = false;
         protected readonly Memory<SlideArea>[] _judgeQueues = new Memory<SlideArea>[3]
-        { 
+        {
             Memory<SlideArea>.Empty,
             Memory<SlideArea>.Empty,
             Memory<SlideArea>.Empty
@@ -170,7 +172,7 @@ namespace MajdataPlay.Game.Notes
         protected SlideOK? _slideOK;
 
         protected float _lastWaitTimeSec;
-        
+
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
 
         // Flags
@@ -258,7 +260,7 @@ namespace MajdataPlay.Game.Notes
         {
             endIndex = endIndex - 1;
             endIndex = Math.Min(endIndex, _slideBars.Length - 1);
-            for (int i = 0; i <= endIndex; i++)
+            for (var i = 0; i <= endIndex; i++)
             {
                 //_slideBarRenderers[i].forceRenderingOff = true;
                 _slideBars[i].layer = 3;
@@ -268,7 +270,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (_slideOK is null)
                 return false;
-            
+
             bool canPlay;
             canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
 
@@ -285,7 +287,7 @@ namespace MajdataPlay.Game.Notes
                 {
                     sr.forceRenderingOff = true;
                 }
-                else 
+                else
                 {
                     sr.forceRenderingOff = false;
                     sr.color = new Color(1f, 1f, 1f, alpha);
@@ -302,7 +304,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                
+
                 foreach (var slideBar in _slideBars.AsSpan())
                     slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
@@ -310,7 +312,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected void SetStarActive(bool state)
         {
-            switch(state)
+            switch (state)
             {
                 case true:
                     foreach (var star in _stars.AsSpan())
@@ -332,7 +334,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected sealed override void PlaySFX()
         {
-            if(!_isSoundPlayed)
+            if (!_isSoundPlayed)
             {
                 _audioEffMana.PlaySlideSound(IsBreak);
                 _isSoundPlayed = true;
@@ -340,7 +342,7 @@ namespace MajdataPlay.Game.Notes
         }
         protected sealed override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
-            if(judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
+            if (judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
                 _audioEffMana.PlayBreakSlideEndSound();
         }
         protected virtual void TooLateJudge()
@@ -369,7 +371,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             HideAllBar();
             var emptyQueue = Memory<SlideArea>.Empty;
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
                 _judgeQueues[i] = emptyQueue;
         }
         protected void DestroyStars()
@@ -388,33 +390,33 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var num = Timing - 0.05f;
-            float interval = (num - _fadeInTiming).Clamp(0, 0.2f);
-            float fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
+            var interval = (num - _fadeInTiming).Clamp(0, 0.2f);
+            var fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
 
-            if(ThisFrameSec > num)
+            if (ThisFrameSec > num)
             {
                 SetSlideBarAlpha(1f);
                 return;
             }
-            else if(ThisFrameSec > fullFadeInTiming)
+            else if (ThisFrameSec > fullFadeInTiming)
             {
                 SetSlideBarAlpha(_maxFadeInAlpha);
                 return;
             }
-            else if(ThisFrameSec < fullFadeInTiming)
+            else if (ThisFrameSec < fullFadeInTiming)
             {
                 var diff = (fullFadeInTiming - ThisFrameSec).Clamp(0, interval);
                 float alpha = 0;
 
                 if (interval != 0)
-                    alpha = 1 - (diff / interval);
+                    alpha = 1 - diff / interval;
                 alpha *= _maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
             }
         }
         protected void JudgeResultCorrection(ref JudgeGrade result)
         {
-            switch(result)
+            switch (result)
             {
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.LatePerfect2nd:

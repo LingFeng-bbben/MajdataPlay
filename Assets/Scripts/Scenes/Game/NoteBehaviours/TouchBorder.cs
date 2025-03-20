@@ -6,7 +6,7 @@ using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     public class TouchBorder : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace MajdataPlay.Game.Notes
         void Start()
         {
             var index = AreaPosition.GetIndex();
-            char area = AreaPosition.GetGroup() switch
+            var area = AreaPosition.GetGroup() switch
             {
                 SensorGroup.A => 'A',
                 SensorGroup.B => 'B',
@@ -78,7 +78,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             }
 
-            NoteRegister first = queue[1];
+            var first = queue[1];
             NoteRegister? second = null;
             if (queue.Count > 2)
                 second = queue[2];

@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
 using MajdataPlay.Types;
 using MajSimai;
 using System;
@@ -12,6 +11,7 @@ using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Game.Notes.Behaviours;
 #nullable enable
 namespace MajdataPlay.Game
 {

@@ -18,6 +18,7 @@ using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
+using MajdataPlay.Game.Notes.Controllers;
 
 namespace MajdataPlay.Game
 {

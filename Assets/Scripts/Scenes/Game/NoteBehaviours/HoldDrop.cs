@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Game.Controllers;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using MajdataPlay.Types;
 using System;
@@ -9,10 +8,11 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
+using MajdataPlay.Game.Notes.Controllers;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider , INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo,TapQueueInfo>, IRendererContainer, IMajComponent
+    internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState
         {
@@ -83,7 +83,7 @@ namespace MajdataPlay.Game.Notes
         const int _endSortOrder = 2;
 
         readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
-        
+
 
         protected override void Awake()
         {
@@ -105,7 +105,7 @@ namespace MajdataPlay.Game.Notes
             _endObject = Transform.GetChild(1).gameObject;
             _endTransform = _endObject.transform;
             _endRenderer = _endObject.GetComponent<SpriteRenderer>();
-            
+
             Transform.localScale = new Vector3(0, 0);
 
             base.SetActive(false);
@@ -174,7 +174,7 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH_SEC, (Timing + Length) - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
@@ -234,7 +234,7 @@ namespace MajdataPlay.Game.Notes
             base.Judge(currentSec);
             if (!_isJudged)
                 return;
-            if(_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
+            if (_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
             {
                 _lastHoldState = -2;
             }
@@ -274,7 +274,7 @@ namespace MajdataPlay.Game.Notes
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
 
             var remaining = GetRemainingTimeWithoutOffset();
             var holdTime = timing - Length;
@@ -317,7 +317,7 @@ namespace MajdataPlay.Game.Notes
                     }
                     break;
                 case NoteStatus.Running:
-                    if(remaining == 0)
+                    if (remaining == 0)
                     {
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
@@ -367,7 +367,7 @@ namespace MajdataPlay.Game.Notes
                         Distance = endDistance;
                         var ratio = endDistance / 4.8f;
                         var scale = Mathf.Abs(ratio);
-                        Transform.position = _outerPos * (ratio);
+                        Transform.position = _outerPos * ratio;
                         _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
                     }
                     else
@@ -411,7 +411,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            bool isButton = false;
+            var isButton = false;
             if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
             {
                 isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
@@ -454,7 +454,7 @@ namespace MajdataPlay.Game.Notes
             var endTiming = timing - Length;
             var remainingTime = GetRemainingTime();
 
-            if(_lastHoldState is -1 or 1)
+            if (_lastHoldState is -1 or 1)
             {
                 _effectManager.ResetEffect(StartPos);
             }
@@ -477,7 +477,7 @@ namespace MajdataPlay.Game.Notes
                 End();
                 return;
             }
-            else if(!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 return;
             }
@@ -516,7 +516,7 @@ namespace MajdataPlay.Game.Notes
         }
         void PlayHoldEffect()
         {
-            if(_lastHoldState != 1)
+            if (_lastHoldState != 1)
             {
                 _effectManager.PlayHoldEffect(StartPos, _judgeResult);
                 _thisRenderer.sprite = _holdOnSprite;
@@ -525,7 +525,7 @@ namespace MajdataPlay.Game.Notes
         }
         void StopHoldEffect()
         {
-            if (_lastHoldState  != 0)
+            if (_lastHoldState != 0)
             {
                 _effectManager.ResetHoldEffect(StartPos);
                 _thisRenderer.sprite = _holdOffSprite;
@@ -564,7 +564,7 @@ namespace MajdataPlay.Game.Notes
         }
         void SetEndActive(bool state)
         {
-            switch(state)
+            switch (state)
             {
                 case true:
                     _endObject.layer = MajEnv.DEFAULT_LAYER;

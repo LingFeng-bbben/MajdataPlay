@@ -1,14 +1,15 @@
 using MajdataPlay.Buffers;
 using MajdataPlay.Game.Buffers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal class EachLineDrop : MajComponent,IPoolableNote<EachLinePoolingInfo,NoteQueueInfo>,IStateful<NoteStatus>, IRendererContainer
+    internal class EachLineDrop : MajComponent, IPoolableNote<EachLinePoolingInfo, NoteQueueInfo>, IStateful<NoteStatus>, IRendererContainer
     {
         public RendererStatus RendererState
         {
@@ -92,7 +93,7 @@ namespace MajdataPlay.Game.Notes
             var timing = _noteController.ThisFrameSec - this.timing;
             var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
             var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
             var lineScale = Mathf.Abs(distance / 4.8f);
 
             switch (State)

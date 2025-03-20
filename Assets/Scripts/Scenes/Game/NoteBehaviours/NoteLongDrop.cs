@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal abstract class NoteLongDrop : NoteDrop
     {
@@ -36,7 +36,7 @@ namespace MajdataPlay.Game.Notes
             var realityHT = (Length - ingoreTimeSec - offset / 1000f).Clamp(0, Length - 0.3f);
             var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
-            if(realityHT <= 0)
+            if (realityHT <= 0)
             {
                 return headGrade;
             }
@@ -50,11 +50,11 @@ namespace MajdataPlay.Game.Notes
                 _ => 4,       // [0, 0.05)
             };
 
-            switch(pressGrade)
+            switch (pressGrade)
             {
                 case 0:// >= 100%
                     {
-                        switch(headGrade)
+                        switch (headGrade)
                         {
                             case JudgeGrade.LatePerfect3rd:
                             case JudgeGrade.LatePerfect2nd:
@@ -84,7 +84,7 @@ namespace MajdataPlay.Game.Notes
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if(_judgeDiff >= 0)
+                                if (_judgeDiff >= 0)
                                 {
                                     return JudgeGrade.LatePerfect2nd;
                                 }
@@ -226,7 +226,7 @@ namespace MajdataPlay.Game.Notes
                 return result;
 
             var releaseTiming = ThisFrameSec - _gameSetting.Judge.JudgeOffset;
-            var diffSec = (Timing + Length) - releaseTiming;
+            var diffSec = Timing + Length - releaseTiming;
             var isFast = diffSec > 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;
 

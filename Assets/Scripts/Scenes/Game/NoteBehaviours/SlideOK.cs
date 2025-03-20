@@ -5,7 +5,7 @@ using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {
@@ -17,7 +17,7 @@ namespace MajdataPlay.Game
         int _judgeOffset = 0;
         bool _displayCP = false;
         float _elapsedTime = 0f;
-        
+
         Sprite[] _justSprites = Array.Empty<Sprite>();
         SpriteRenderer _spriteRenderer;
         Animator _animator;
@@ -82,16 +82,16 @@ namespace MajdataPlay.Game
         }
         void Play(bool isBreak)
         {
-            if(IsClassic)
+            if (IsClassic)
                 _animator.SetTrigger(CLASSIC_ANIM_HASH);
-            else if(isBreak)
+            else if (isBreak)
                 _animator.SetTrigger(BREAK_ANIM_HASH);
             else
                 _animator.SetTrigger(MODERN_ANIM_HASH);
         }
         void OnUpdate()
         {
-            if(_elapsedTime > 0.5f)
+            if (_elapsedTime > 0.5f)
             {
                 State = NoteStatus.End;
                 _spriteRenderer.sharedMaterial = _defaultMaterial;
@@ -177,7 +177,7 @@ namespace MajdataPlay.Game
         void SetActiveInternal(bool state)
         {
             base.SetActive(state);
-            switch(state)
+            switch (state)
             {
                 case true:
                     _spriteRenderer.forceRenderingOff = false;

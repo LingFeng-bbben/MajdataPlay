@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.References;
@@ -9,19 +9,19 @@ using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState
         {
             get => _rendererState;
-            set 
+            set
             {
                 if (State < NoteStatus.Initialized)
                     return;
 
-                switch(value)
+                switch (value)
                 {
                     case RendererStatus.Off:
                         _thisRenderer.forceRenderingOff = true;
@@ -50,7 +50,7 @@ namespace MajdataPlay.Game.Notes
         GameObject _tapLineObject;
         GameObject _exObject;
 
-        
+
         SpriteRenderer _thisRenderer;
         SpriteRenderer _exRenderer;
         SpriteRenderer _tapLineRenderer;
@@ -176,7 +176,7 @@ namespace MajdataPlay.Game.Notes
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - (scaleRate * 1.225f));
+            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
 
             switch (State)
             {
@@ -223,7 +223,7 @@ namespace MajdataPlay.Game.Notes
                 default:
                     return;
             }
-            if(IsStar)
+            if (IsStar)
             {
                 if (NoteController.IsStart && _isStarRotation)
                     Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
@@ -251,18 +251,18 @@ namespace MajdataPlay.Game.Notes
             {
                 return;
             }
-            else if(_isJudged)
+            else if (_isJudged)
             {
                 End();
                 return;
             }
-            else if(!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            bool isButton = false;
+            var isButton = false;
             if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
             {
                 isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
@@ -281,7 +281,7 @@ namespace MajdataPlay.Game.Notes
             {
                 return;
             }
-            if(isButton)
+            if (isButton)
             {
                 Judge(ThisFrameSec);
             }
@@ -311,7 +311,7 @@ namespace MajdataPlay.Game.Notes
             if (Active == state)
                 return;
             base.SetActive(state);
-            switch(state)
+            switch (state)
             {
                 case true:
                     _exObject.layer = MajEnv.DEFAULT_LAYER;

@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
@@ -10,13 +10,13 @@ using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo,TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
+    internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo, TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; }
         public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
-        public RendererStatus RendererState 
+        public RendererStatus RendererState
         {
             get => _rendererState;
             set
@@ -114,7 +114,7 @@ namespace MajdataPlay.Game.Notes
             SetPointActive(false);
             Active = false;
             //_noteChecker = new(Check);
-            
+
             //if(!IsAutoplay)
             //    _noteManager.OnGameIOUpdate += GameIOListener;
             RendererState = RendererStatus.Off;
@@ -156,7 +156,7 @@ namespace MajdataPlay.Game.Notes
             for (var i = 0; i < 4; i++)
                 _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
             _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
-            _justBorderRenderer.sortingOrder= SortOrder - _justBorderSortOrder;
+            _justBorderRenderer.sortingOrder = SortOrder - _justBorderSortOrder;
 
             SetActive(true);
             SetFanActive(false);
@@ -183,7 +183,7 @@ namespace MajdataPlay.Game.Notes
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
             SetActive(false);
-            
+
             if (_isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
@@ -195,7 +195,7 @@ namespace MajdataPlay.Game.Notes
         protected override void LoadSkin()
         {
             var skin = MajInstances.SkinManager.GetTouchSkin();
-            
+
             SetFansMaterial(DefaultMaterial);
             if (IsBreak)
             {
@@ -250,7 +250,7 @@ namespace MajdataPlay.Game.Notes
             {
                 return;
             }
-            else if(_isJudged)
+            else if (_isJudged)
             {
                 End();
                 return;
@@ -261,8 +261,8 @@ namespace MajdataPlay.Game.Notes
             }
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            bool isButton = false;
-            if (IsUseButtonRingForTouch && (((int)_sensorPos).InRange(0, 7)) &&
+            var isButton = false;
+            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
                 _noteManager.IsButtonClickedInThisFrame(_sensorPos))
             {
                 isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
@@ -417,10 +417,10 @@ namespace MajdataPlay.Game.Notes
         }
         void SetFanActive(bool state)
         {
-            switch(state)
+            switch (state)
             {
                 case true:
-                    foreach(var fanObj in _fans.AsSpan())
+                    foreach (var fanObj in _fans.AsSpan())
                     {
                         fanObj.layer = MajEnv.DEFAULT_LAYER;
                     }
@@ -477,7 +477,7 @@ namespace MajdataPlay.Game.Notes
         }
         void SetFansSprite(Sprite sprite)
         {
-            for (var i = 0; i < 4; i++) 
+            for (var i = 0; i < 4; i++)
                 _fanRenderers[i].sprite = sprite;
         }
         void SetFansMaterial(Material material)
@@ -504,7 +504,7 @@ namespace MajdataPlay.Game.Notes
                 _audioEffMana.PlayTapSound(judgeResult);
             else
                 _audioEffMana.PlayTouchSound();
-            if(_isFirework)
+            if (_isFirework)
                 _audioEffMana.PlayHanabiSound();
         }
         RendererStatus _rendererState = RendererStatus.Off;

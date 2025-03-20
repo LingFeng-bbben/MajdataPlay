@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using MajdataPlay.Extensions;
 using Random = UnityEngine.Random;
 using MajdataPlay.Game;
+using MajdataPlay.List;
 #nullable enable
 namespace MajdataPlay.Result
 {

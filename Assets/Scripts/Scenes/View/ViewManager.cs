@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Timer;
 using MajdataPlay.Types;

@@ -1,6 +1,4 @@
-﻿using MajdataPlay.Collections;
-using MajdataPlay.Extensions;
-using MajdataPlay.Game.Controllers;
+﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
@@ -16,14 +14,14 @@ using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Slide.Utils;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal sealed class SlideDrop : SlideBase,IConnectableSlide, IEndableNote, IMajComponent
+    internal sealed class SlideDrop : SlideBase, IConnectableSlide, IEndableNote, IMajComponent
     {
-        public bool IsMirror 
-        { 
-            get => _isMirror; 
-            set => _isMirror = value; 
+        public bool IsMirror
+        {
+            get => _isMirror;
+            set => _isMirror = value;
         }
 
         public Quaternion FinalStarAngle { get; private set; } = default;
@@ -39,7 +37,7 @@ namespace MajdataPlay.Game.Notes
             base.Awake();
             var star = Instantiate(_slideStarPrefab, _noteManager.transform.GetChild(3));
             var slideTable = SlideTables.FindTableByName(SlideType);
-            
+
             if (slideTable is null)
                 throw new MissingComponentException($"Slide table of \"{SlideType}\" is not found");
 
@@ -101,7 +99,7 @@ namespace MajdataPlay.Game.Notes
             _slideOK = slideOK.GetComponent<SlideOK>();
             _slideOK.IsClassic = IsClassic;
             _slideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType(SlideType);
-            
+
             _slideBars = new GameObject[transform.childCount - 1];
             _slideBarTransforms = new Transform[transform.childCount - 1];
             _slideBarRenderers = new SpriteRenderer[transform.childCount - 1];
@@ -142,7 +140,7 @@ namespace MajdataPlay.Game.Notes
             }
 
             var diff = Math.Abs(1 - StartPos);
-            if(diff != 0)
+            if (diff != 0)
             {
                 _table.Diff(diff);
             }
@@ -164,14 +162,14 @@ namespace MajdataPlay.Game.Notes
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
-            
+
             _starTransforms[0].position = _starPositions[0];
             _starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
             _judgeQueues[0] = _table.JudgeQueue;
 
             InitializeSlideGroup();
 
-            if(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+            if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
             {
                 Destroy(_slideOK);
                 _slideOK = null;
@@ -286,7 +284,7 @@ namespace MajdataPlay.Game.Notes
                     {
                         return;
                     }
-                    else if(IsSlideNoHead)
+                    else if (IsSlideNoHead)
                     {
                         return;
                     }
@@ -298,7 +296,7 @@ namespace MajdataPlay.Game.Notes
 
                     break;
                 case NoteStatus.Running:
-                    if(GetRemainingTimeWithoutOffset() == 0)
+                    if (GetRemainingTimeWithoutOffset() == 0)
                     {
                         starTransform.position = _starPositions[_starPositions.Count - 1];
                         ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
@@ -336,7 +334,7 @@ namespace MajdataPlay.Game.Notes
                     Autoplay();
                     break;
             }
-        }        
+        }
         /// <summary>
         /// 判定队列检查
         /// </summary>
@@ -409,7 +407,7 @@ namespace MajdataPlay.Game.Notes
                     SetParentFinish();
                     return;
                 }
-                else if(first.On)
+                else if (first.On)
                 {
                     HideBar(first.ArrowProgressWhenOn);
                     return;
@@ -424,7 +422,7 @@ namespace MajdataPlay.Game.Notes
         {
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + _length + (SLIDE_JUDGE_GOOD_AREA_MSEC / 1000) + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (!_isCheckable)
@@ -471,7 +469,7 @@ namespace MajdataPlay.Game.Notes
         {
             if (Parent is not null)
             {
-                if(_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                if (_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
                     Parent.ForceFinish();
             }
         }
@@ -491,7 +489,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             State = NoteStatus.End;
             base.End();
-            
+
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
@@ -506,11 +504,11 @@ namespace MajdataPlay.Game.Notes
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
                 _objectCounter.ReportResult(this, result);
-                if(PlaySlideOK(result))
+                if (PlaySlideOK(result))
                 {
                     _slideOK!.PlayResult(result);
                 }
-                
+
                 PlayJudgeSFX(result);
             }
         }
@@ -558,7 +556,7 @@ namespace MajdataPlay.Game.Notes
             var starTransform = _starTransforms[0];
             if (star is null)
                 return;
-            
+
             if (_isMirror)
             {
                 var halfFlip = newRotation.eulerAngles;
@@ -577,13 +575,13 @@ namespace MajdataPlay.Game.Notes
             _starRotations = new();
             if (StartPos == 0) StartPos = 1;
             _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
-            for (int i = 0; i < _slideBars.Length; i++)
+            for (var i = 0; i < _slideBars.Length; i++)
             {
                 var bar = _slideBars[i];
                 _starPositions.Add(bar.transform.position);
 
                 _starRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
-                if(i == _slideBars.Length - 1)
+                if (i == _slideBars.Length - 1)
                 {
                     var a = _slideBars[i - 1].transform.rotation.normalized.eulerAngles;
                     var b = bar.transform.rotation.normalized.eulerAngles;
@@ -595,10 +593,10 @@ namespace MajdataPlay.Game.Notes
             var endPos = NoteHelper.GetTapPosition(EndPos, 4.8f);
             _starPositions.Add(endPos);
             FinalStarAngle = _starRotations[_starRotations.Count - 1];
-            if(ConnectInfo.IsConnSlide)
+            if (ConnectInfo.IsConnSlide)
             {
                 var parent = ConnectInfo.Parent;
-                if(parent is not null)
+                if (parent is not null)
                 {
                     _starRotations[0] = parent.FinalStarAngle;
                 }
@@ -613,30 +611,30 @@ namespace MajdataPlay.Game.Notes
             var starSprite = skin.Star.Normal;
             Material? breakMaterial = null;
 
-            if(IsEach)
+            if (IsEach)
             {
                 barSprite = skin.Each;
                 starSprite = skin.Star.Each;
             }
-            if(IsBreak)
+            if (IsBreak)
             {
                 barSprite = skin.Break;
                 starSprite = skin.Star.Break;
                 breakMaterial = BreakMaterial;
             }
 
-            foreach(var bar in bars)
+            foreach (var bar in bars)
             {
                 var barRenderer = bar.GetComponent<SpriteRenderer>();
-                
+
                 barRenderer.color = new Color(1f, 1f, 1f, 0f);
                 barRenderer.sortingOrder = SortOrder--;
                 barRenderer.sortingLayerName = "Slides";
 
                 barRenderer.sprite = barSprite;
-                
 
-                if(breakMaterial is not null)
+
+                if (breakMaterial is not null)
                 {
                     barRenderer.sharedMaterial = breakMaterial;
                     //var controller = bar.AddComponent<BreakShineController>();

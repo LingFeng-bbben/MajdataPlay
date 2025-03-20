@@ -8,7 +8,7 @@ using MajdataPlay.Editor;
 using UnityEngine;
 using MajdataPlay.Game.Buffers;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
     public class NoteUpdater : MonoBehaviour
     {
@@ -35,27 +35,27 @@ namespace MajdataPlay.Game
         double _lateUpdateElapsedMs = 0;
         public void Initialize()
         {
-            Transform[] children = transform.GetChildren();
-            
+            var children = transform.GetChildren();
+
             List<NoteInfo> preUpdatableComponents = new();
             List<NoteInfo> updatableComponents = new();
             List<NoteInfo> fixedUpdatableComponents = new();
             List<NoteInfo> lateUpdatableComponents = new();
             //for (int i = 0; i < children.Length; i++)
             //    children[i] = transform.GetChild(i);
-            foreach(var child in children)
+            foreach (var child in children)
             {
                 var childComponents = child.GetComponents<IStateful<NoteStatus>>();
-                if(childComponents.Length != 0)
+                if (childComponents.Length != 0)
                 {
-                    foreach(var component in childComponents)
+                    foreach (var component in childComponents)
                     {
                         var noteInfo = new NoteInfo(component);
-                        if(noteInfo.IsValid)
+                        if (noteInfo.IsValid)
                         {
-                            if(noteInfo.IsUpdatable)
+                            if (noteInfo.IsUpdatable)
                                 updatableComponents.Add(noteInfo);
-                            if(noteInfo.IsFixedUpdatable)
+                            if (noteInfo.IsFixedUpdatable)
                                 fixedUpdatableComponents.Add(noteInfo);
                             if (noteInfo.IsLateUpdatable)
                                 lateUpdatableComponents.Add(noteInfo);

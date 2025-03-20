@@ -9,12 +9,13 @@ using MajdataPlay.Editor;
 using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.View;
+using MajdataPlay.Game.Notes.Controllers;
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal abstract class NoteDrop : MajComponent, IStatefulNote
     {
-        public int StartPos 
+        public int StartPos
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _startPos;
@@ -25,49 +26,49 @@ namespace MajdataPlay.Game.Notes
                     _startPos = value;
                 else
                     throw new ArgumentOutOfRangeException("Start position must be between 1 and 8");
-            } 
+            }
         }
-        public float Timing 
+        public float Timing
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _timing;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _timing = value; 
+            set => _timing = value;
         }
-        public int SortOrder 
+        public int SortOrder
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sortOrder;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _sortOrder = value; 
+            set => _sortOrder = value;
         }
-        public float Speed 
+        public float Speed
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _speed;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _speed = value; 
+            set => _speed = value;
         }
-        public bool IsEach 
+        public bool IsEach
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isEach;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _isEach = value; 
+            set => _isEach = value;
         }
-        public bool IsBreak 
+        public bool IsBreak
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isBreak;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _isBreak = value; 
+            set => _isBreak = value;
         }
-        public bool IsEX 
+        public bool IsEX
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isEX;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _isEX = value; 
+            set => _isEX = value;
         }
         public bool IsInitialized
         {
@@ -84,12 +85,12 @@ namespace MajdataPlay.Game.Notes
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _gameSetting.Judge.Mode == JudgeMode.Classic;
         }
-        public NoteStatus State 
+        public NoteStatus State
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _state;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            protected set => _state = value; 
+            protected set => _state = value;
         }
         public float JudgeTiming
         {
@@ -303,10 +304,10 @@ namespace MajdataPlay.Game.Notes
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
             var judgeStyle = NoteController.JudgeStyle;
-            switch(judgeStyle)
+            switch (judgeStyle)
             {
                 case JudgeStyleType.MAJI:
-                    ConvertToMAJI(ref grade); 
+                    ConvertToMAJI(ref grade);
                     break;
                 case JudgeStyleType.GACHI:
                     ConvertToGACHI(ref grade);
@@ -323,7 +324,7 @@ namespace MajdataPlay.Game.Notes
         void ConvertToMAJI(ref JudgeGrade judgeType)
         {
             var isFast = (int)judgeType > 7;
-            switch(judgeType)
+            switch (judgeType)
             {
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -362,7 +363,7 @@ namespace MajdataPlay.Game.Notes
         {
             var isFast = (int)judgeType > 7;
             switch (judgeType)
-            {                    
+            {
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
                     if (isFast)
@@ -392,7 +393,7 @@ namespace MajdataPlay.Game.Notes
         void ConvertToGORI(ref JudgeGrade judgeType)
         {
             switch (judgeType)
-            { 
+            {
                 case JudgeGrade.Perfect:
                 case JudgeGrade.Miss:
                     return;

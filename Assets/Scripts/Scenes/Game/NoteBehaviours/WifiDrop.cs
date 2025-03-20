@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Controllers;
 using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Slide.Utils;
 using MajdataPlay.Game.Utils;
@@ -17,7 +16,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Game.Notes.Behaviours
 {
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
@@ -118,7 +117,7 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[1] = wifiTable[1];
             _judgeQueues[2] = wifiTable[2];
 
-            _judgeTiming = StartTiming + (Length * (1 - wifiConst));
+            _judgeTiming = StartTiming + Length * (1 - wifiConst);
             _lastWaitTimeSec = Length * wifiConst;
 
             // 计算Slide淡入时机
@@ -184,7 +183,7 @@ namespace MajdataPlay.Game.Notes
             _isChecking = true;
             try
             {
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     SensorCheckInternal(ref _judgeQueues[i]);
                 }
@@ -250,7 +249,7 @@ namespace MajdataPlay.Game.Notes
         {
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + Length + (SLIDE_JUDGE_GOOD_AREA_MSEC / 1000) + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = StartTiming + Length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (startTiming >= -0.05f)
@@ -279,9 +278,9 @@ namespace MajdataPlay.Game.Notes
         }
         int GetIndex()
         {
-            if(_judgeQueues.IsEmpty())
+            if (_judgeQueues.IsEmpty())
                 return int.MaxValue;
-            else if(IsClassic)
+            else if (IsClassic)
             {
                 var isRemainingOne = _judgeQueues.All(x => x.Length <= 1);
                 if (isRemainingOne)
@@ -293,7 +292,7 @@ namespace MajdataPlay.Game.Notes
                     return 9;
             }
             var nums = new int[3];
-            foreach(var (i,queue) in _judgeQueues.WithIndex())
+            foreach (var (i, queue) in _judgeQueues.WithIndex())
                 nums[i] = queue.Length;
             var max = nums.Max();
             var index = nums.FindIndex(x => x == max);
@@ -450,7 +449,7 @@ namespace MajdataPlay.Game.Notes
             };
 
             _objectCounter.ReportResult(this, result);
-            if(PlaySlideOK(result))
+            if (PlaySlideOK(result))
             {
                 _slideOK!.PlayResult(result);
             }
@@ -476,7 +475,7 @@ namespace MajdataPlay.Game.Notes
                 starSprite = skin.Star.Break;
                 breakMaterial = BreakMaterial;
             }
-            foreach(var (i,bar) in bars.WithIndex())
+            foreach (var (i, bar) in bars.WithIndex())
             {
                 var barRenderer = bar.GetComponent<SpriteRenderer>();
 
@@ -492,7 +491,7 @@ namespace MajdataPlay.Game.Notes
                     //controller.Parent = this;
                 }
             }
-            foreach(var (i, star) in _stars.WithIndex())
+            foreach (var (i, star) in _stars.WithIndex())
             {
                 var starRenderer = _starRenderers[i];
                 starRenderer.sprite = starSprite;
@@ -502,7 +501,7 @@ namespace MajdataPlay.Game.Notes
                 }
                 star!.transform.rotation = Quaternion.Euler(0, 0, -22.5f * (8 + i + 2 * (StartPos - 1)));
             }
-            
+
 
             if (IsJustR)
             {
