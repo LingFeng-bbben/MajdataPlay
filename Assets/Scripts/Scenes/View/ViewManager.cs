@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Timer;
 using MajdataPlay.Types;
@@ -52,9 +52,9 @@ namespace MajdataPlay.View
             }
         }
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Enable;
+        public AutoplayMode AutoplayMode => MajEnv.UserSetting.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
-        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
+        public JudgeStyleType JudgeStyle => MajEnv.UserSetting.Mod.JudgeStyle;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
@@ -76,8 +76,11 @@ namespace MajdataPlay.View
 
         readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
-        string? _videoPath = null;
 
+        // Assets
+        static AudioSampleWrap? _audioSample = null;
+        static Sprite? _bgCover = null;
+        static string? _videoPath = null;
         //WsServer _httpServer;
         GameSetting _setting = MajInstances.Setting;
         NoteLoader _noteLoader;
@@ -89,8 +92,7 @@ namespace MajdataPlay.View
         ChartAnalyzer _chartAnalyzer;
 
         SimaiChart? _chart;
-        Sprite _bgCover = MajEnv.EmptySongCover;
-        AudioSampleWrap? _audioSample = null;
+        
 
         static MajTimer _timer = MajTimeline.CreateTimer();
         
@@ -103,6 +105,7 @@ namespace MajdataPlay.View
             }
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
+            Majdata<INoteTimeProvider>.Instance = this;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
@@ -116,6 +119,16 @@ namespace MajdataPlay.View
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
             _chartAnalyzer = Majdata<ChartAnalyzer>.Instance!;
+
+            if (!string.IsNullOrEmpty(_videoPath))
+            {
+                _bgManager.SetBackgroundMovie(_videoPath, _bgCover).AsTask().Wait();
+            }
+            else if (_bgCover is not null)
+            {
+                _bgManager.DisableVideo();
+                _bgManager.SetBackgroundPic(_bgCover);
+            }
         }
         void Update()
         {
@@ -132,10 +145,12 @@ namespace MajdataPlay.View
                             StopAsync().Forget();
                     }
 
-                    _timeDisplayer.OnUpdate();
-                    _noteAudioManager.OnUpdate();
+                    _timeDisplayer.OnPreUpdate();
+                    _noteAudioManager.OnPreUpdate();
+                    _noteManager.OnPreUpdate();
+                    _notePoolManager.OnPreUpdate();
+                    
                     _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
                     break;
             }
         }
@@ -311,6 +326,10 @@ namespace MajdataPlay.View
                     var cover = await SpriteLoader.LoadAsync(bgPath);
                     _bgCover = cover;
                 }
+                else
+                {
+                    _bgCover = null;
+                }
                 _videoPath = pvPath;
                 _audioSample = sample;
                 _state = ViewStatus.Loaded;
@@ -389,7 +408,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovie(_videoPath);
+                    await _bgManager.SetBackgroundMovie(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);
@@ -408,6 +427,7 @@ namespace MajdataPlay.View
         {
             Majdata<ViewManager>.Free();
             Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
         }
     }
 }

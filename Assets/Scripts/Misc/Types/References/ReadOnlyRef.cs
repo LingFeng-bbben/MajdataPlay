@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
@@ -18,6 +19,7 @@ namespace MajdataPlay.References
         /// </summary>
         public ref readonly T Target
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref _ref.Target;
         }
         readonly Ref<T> _ref;

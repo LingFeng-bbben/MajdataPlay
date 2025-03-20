@@ -10,7 +10,7 @@ using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
 using MajdataPlay;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game;
 
 namespace MajdataPlay.TotalResult
 {
@@ -57,14 +57,13 @@ namespace MajdataPlay.TotalResult
         async UniTaskVoid DelayBind()
         {
             await UniTask.Delay(1000);
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            InputManager.BindAnyArea(OnAreaDown);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
         }
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
             MajInstances.AudioManager.StopSFX("bgm_result.mp3");
             MajInstances.SceneSwitcher.SwitchScene("List", false);
             return;

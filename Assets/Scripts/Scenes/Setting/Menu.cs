@@ -39,7 +39,7 @@ namespace MajdataPlay.Setting
                 option.Parent = this;
                 option.Index = i;
             }
-            var localizedText = Localization.GetLocalizedText(Name);
+            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
             titleText.text = localizedText;
             BindArea();
             manager = FindObjectOfType<SettingManager>();
@@ -87,7 +87,7 @@ namespace MajdataPlay.Setting
         }
         void OnLangChanged(object? sender, Language newLanguage)
         {
-            var localizedText = Localization.GetLocalizedText(Name);
+            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
             titleText.text = localizedText;
         }
         void OnAreaDown(object sender, InputEventArgs e)

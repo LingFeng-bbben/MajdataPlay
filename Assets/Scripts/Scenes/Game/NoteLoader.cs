@@ -4,17 +4,20 @@ using System.Linq;
 using UnityEngine;
 using MajSimai;
 using MajdataPlay.Types;
-using MajdataPlay.Game.Notes;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Buffers;
+using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Game.Notes.Slide.Utils;
+using MajdataPlay.Game.Notes.Touch;
+using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Game.Notes.Controllers;
 
 namespace MajdataPlay.Game
 {
@@ -30,6 +33,8 @@ namespace MajdataPlay.Game
             set => _touchSpeed = Math.Abs(value);
         }
         public long NoteCount { get; private set; } = 0;
+        public bool IsSlideNoHead { get; set; } = false;
+        public bool IsSlideNoTrack { get; set; } = false;
 
         public GameObject tapPrefab;
         public GameObject holdPrefab;
@@ -203,6 +208,12 @@ namespace MajdataPlay.Game
             {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
             {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
         };
+        readonly IReadOnlyDictionary<int, int> _buttonRingMappingTable;
+        readonly IReadOnlyDictionary<SensorArea, SensorArea> _touchPanelMappingTable;
+        NoteLoader()
+        {
+            (_buttonRingMappingTable, _touchPanelMappingTable) = NoteCreateHelper.GenerateMappingTable();
+        }
 
         void Awake()
         {
@@ -241,13 +252,13 @@ namespace MajdataPlay.Game
                 _touchIndex.Add((SensorArea)i, 0);
 
 
-            await CountNoteSumAsync(maiChart);
+            await _objectCounter.CountNoteSumAsync(maiChart);
 
-            NoteCount = _objectCounter.tapSum +
-                      _objectCounter.holdSum +
-                      _objectCounter.touchSum +
-                      _objectCounter.breakSum +
-                      _objectCounter.slideSum;
+            NoteCount = _objectCounter.TapSum +
+                      _objectCounter.HoldSum +
+                      _objectCounter.TouchSum +
+                      _objectCounter.BreakSum +
+                      _objectCounter.SlideSum;
 
             if (maiChart.NoteTimings.Length != 0)
             {
@@ -294,9 +305,14 @@ namespace MajdataPlay.Game
                                     break;
                             }
                         }
+                        catch (InvalidSimaiSyntaxException)
+                        {
+                            throw;
+                        }
                         catch (Exception e)
                         {
-                            throw new InvalidChartSyntaxException(timing, e);
+                            MajDebug.LogException(e);
+                            throw;
                         }
                     }
                     if (members.Count != 0)
@@ -305,7 +321,7 @@ namespace MajdataPlay.Game
                     if (eachNotes.Count > 1) //有多个非touchnote
                     {
                         var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
-                        if(eachLinePoolingInfo is not null)
+                        if (eachLinePoolingInfo is not null)
                             _poolManager.AddEachLine(eachLinePoolingInfo);
                     }
                 }
@@ -321,288 +337,363 @@ namespace MajdataPlay.Game
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
             _poolManager.Initialize();
         }
-        EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing,NotePoolingInfo noteA, NotePoolingInfo noteB)
+        EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
         {
-            var startPos = noteA.StartPos;
-            var endPos = noteB.StartPos;
-            endPos = endPos - startPos;
-            if (endPos == 0)
-                return null;
-            var time = (float)timing.Timing;
-            var speed = NoteSpeed * timing.HSpeed;
-            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-            var appearTiming = time + appearDiff;
-
-            endPos = endPos < 0 ? endPos + 8 : endPos;
-            endPos = endPos > 8 ? endPos - 8 : endPos;
-            endPos++;
-
-            if (endPos > 4)
+            try
             {
-                startPos = noteB.StartPos;
-                endPos = noteA.StartPos;
+                var startPos = noteA.StartPos;
+                var endPos = noteB.StartPos;
                 endPos = endPos - startPos;
+                if (endPos == 0)
+                    return null;
+                var time = (float)timing.Timing;
+                var speed = NoteSpeed * timing.HSpeed;
+                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+                var appearTiming = time + appearDiff;
+
                 endPos = endPos < 0 ? endPos + 8 : endPos;
                 endPos = endPos > 8 ? endPos - 8 : endPos;
                 endPos++;
+
+                if (endPos > 4)
+                {
+                    startPos = noteB.StartPos;
+                    endPos = noteA.StartPos;
+                    endPos = endPos - startPos;
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+                    endPos++;
+                }
+
+                var startPosition = startPos;
+                var curvLength = endPos - 1;
+
+                return new EachLinePoolingInfo()
+                {
+                    StartPos = startPosition,
+                    Timing = time,
+                    AppearTiming = appearTiming,
+                    CurvLength = curvLength,
+                    MemberA = noteA,
+                    MemberB = noteB,
+                    Speed = speed
+                };
             }
-
-            var startPosition = startPos;
-            var curvLength = endPos - 1;
-
-            return new EachLinePoolingInfo()
+            catch (Exception e)
             {
-                StartPos = startPosition,
-                Timing = time,
-                AppearTiming = appearTiming,
-                CurvLength = curvLength,
-                MemberA = noteA,
-                MemberB = noteB,
-                Speed = speed
-            };
+                MajDebug.LogException(e);
+                return null;
+            }
         }
         TapPoolingInfo CreateTap(in SimaiNote note, in SimaiTimingPoint timing)
         {
-            var startPos = note.StartPosition;
-            var noteTiming = (float)timing.Timing;
-            var speed = NoteSpeed * timing.HSpeed;
-            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
-            var sortOrder = _noteSortOrder;
-            var isEach = timing.Notes.Length > 1;
-            if (appearTiming < -5f && _gpManager is not null)
-                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            if(isEach)
+            try
             {
-                var noteCount = timing.Notes.Length;
-                var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                if (noteCount - noHeadSlideCount == 1)
-                    isEach = false;
-            }
-
-            _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-            startPos = Rotation(startPos);
-            return new()
-            {
-                StartPos = startPos,
-                Timing = noteTiming,
-                AppearTiming = appearTiming,
-                NoteSortOrder = sortOrder,
-                Speed = speed,
-                IsEach = isEach,
-                IsBreak = note.IsBreak,
-                IsEX = note.IsEx,
-                IsStar = note.IsForceStar,
-                RotateSpeed = note.IsFakeRotate ? -440f: 0,
-                QueueInfo = new TapQueueInfo()
+                var startPos = note.StartPosition;
+                var noteTiming = (float)timing.Timing;
+                var speed = NoteSpeed * timing.HSpeed;
+                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
+                var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
+                var sortOrder = _noteSortOrder;
+                var isEach = timing.Notes.Length > 1;
+                if (appearTiming < -5f && _gpManager is not null)
+                    _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                if (isEach)
                 {
-                    Index = _noteIndex[startPos]++,
-                    KeyIndex = startPos
+                    var noteCount = timing.Notes.Length;
+                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
+                    if (noteCount - noHeadSlideCount == 1)
+                        isEach = false;
                 }
-            };
+
+                _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+                NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                return new()
+                {
+                    StartPos = startPos,
+                    Timing = noteTiming,
+                    AppearTiming = appearTiming,
+                    NoteSortOrder = sortOrder,
+                    Speed = speed,
+                    IsEach = isEach,
+                    IsBreak = note.IsBreak,
+                    IsEX = note.IsEx,
+                    IsStar = note.IsForceStar,
+                    RotateSpeed = note.IsFakeRotate ? -440f : 0,
+                    QueueInfo = new TapQueueInfo()
+                    {
+                        Index = _noteIndex[startPos]++,
+                        KeyIndex = startPos
+                    }
+                };
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
+            }
         }
         HoldPoolingInfo CreateHold(in SimaiNote note, in SimaiTimingPoint timing)
         {
-            var startPos = note.StartPosition;
-            var noteTiming = (float)timing.Timing;
-            var speed = Math.Abs(NoteSpeed * timing.HSpeed);
-            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
-            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
-            var sortOrder = _noteSortOrder;
-            var isEach = timing.Notes.Length > 1;
-            if (appearTiming < -5f && _gpManager is not null)
-                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            if (isEach)
+            try
             {
-                var noteCount = timing.Notes.Length;
-                var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                if (noteCount - noHeadSlideCount == 1)
-                    isEach = false;
-            }
-            _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-            startPos = Rotation(startPos);
-            return new()
-            {
-                StartPos = startPos,
-                Timing = noteTiming,
-                LastFor = (float)note.HoldTime,
-                AppearTiming = appearTiming,
-                NoteSortOrder = sortOrder,
-                Speed = speed,
-                IsEach = isEach,
-                IsBreak = note.IsBreak,
-                IsEX = note.IsEx,
-                QueueInfo = new TapQueueInfo()
+                var startPos = note.StartPosition;
+                var noteTiming = (float)timing.Timing;
+                var speed = Math.Abs(NoteSpeed * timing.HSpeed);
+                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
+                var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
+                var sortOrder = _noteSortOrder;
+                var isEach = timing.Notes.Length > 1;
+                if (appearTiming < -5f && _gpManager is not null)
+                    _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                if (isEach)
                 {
-                    Index = _noteIndex[startPos]++,
-                    KeyIndex = startPos
-                }
-            };
-        }
-        TapPoolingInfo CreateStar(SimaiNote note, in SimaiTimingPoint timing)
-        {
-            var startPos = note.StartPosition;
-            var noteTiming = (float)timing.Timing;
-            var speed = NoteSpeed * timing.HSpeed;
-            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.Timing;
-            var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
-            var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
-            var sortOrder = _noteSortOrder;
-            var isEach = timing.Notes.Length > 1;
-            bool isDouble = false;
-            TapQueueInfo? queueInfo = null;
-
-            appearTiming = Math.Min(appearTiming, slideFadeInTiming);
-
-            if (appearTiming < -5f && _gpManager is not null)
-                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-
-            if(isEach)
-            {
-                var count = timing.Notes.FindAll(
-                    o => o.Type == SimaiNoteType.Slide &&
-                         o.StartPosition == startPos).Length;
-                if (count > 1)
-                {
-                    isDouble = true;
-                    if (count == timing.Notes.Length)
+                    var noteCount = timing.Notes.Length;
+                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
+                    if (noteCount - noHeadSlideCount == 1)
                         isEach = false;
-                    else
-                    {
-                        var noteCount = timing.Notes.Length;
-                        var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                        if (noteCount - noHeadSlideCount == 1)
-                            isEach = false;
-                    }
                 }
-            }
-            startPos = Rotation(startPos);
-            if(!note.IsSlideNoHead)
-            {
-                queueInfo = new TapQueueInfo()
+                _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+                NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                return new()
                 {
-                    Index = _noteIndex[startPos]++,
-                    KeyIndex = startPos
+                    StartPos = startPos,
+                    Timing = noteTiming,
+                    LastFor = (float)note.HoldTime,
+                    AppearTiming = appearTiming,
+                    NoteSortOrder = sortOrder,
+                    Speed = speed,
+                    IsEach = isEach,
+                    IsBreak = note.IsBreak,
+                    IsEX = note.IsEx,
+                    QueueInfo = new TapQueueInfo()
+                    {
+                        Index = _noteIndex[startPos]++,
+                        KeyIndex = startPos
+                    }
                 };
             }
-
-            return new()
+            catch (Exception e)
             {
-                StartPos = startPos,
-                Timing = noteTiming,
-                AppearTiming = appearTiming,
-                NoteSortOrder = sortOrder,
-                Speed = speed,
-                IsEach = isEach,
-                IsBreak = note.IsBreak,
-                IsEX = note.IsEx,
-                IsStar = true,
-                IsDouble = isDouble,
-                RotateSpeed = -180 / (float)note.SlideTime,
-                QueueInfo = queueInfo ?? TapQueueInfo.Default
-            };
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
+            }
+        }
+        TapPoolingInfo CreateStar(int startPos, SimaiNote note, in SimaiTimingPoint timing)
+        {
+            try
+            {
+                var noteTiming = (float)timing.Timing;
+                var speed = NoteSpeed * timing.HSpeed;
+                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.Timing;
+                var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
+                var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
+                var sortOrder = _noteSortOrder;
+                var isEach = timing.Notes.Length > 1;
+                bool isDouble = false;
+                TapQueueInfo? queueInfo = null;
+
+                appearTiming = Math.Min(appearTiming, slideFadeInTiming);
+
+                if (appearTiming < -5f && _gpManager is not null)
+                    _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
+
+                if (isEach)
+                {
+                    var count = timing.Notes.FindAll(
+                        o => o.Type == SimaiNoteType.Slide &&
+                             o.StartPosition == note.StartPosition).Length;
+                    if (count > 1)
+                    {
+                        isDouble = true;
+                        if (count == timing.Notes.Length)
+                            isEach = false;
+                        else
+                        {
+                            var noteCount = timing.Notes.Length;
+                            var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
+                            if (noteCount - noHeadSlideCount == 1)
+                                isEach = false;
+                        }
+                    }
+                }
+                if (!note.IsSlideNoHead)
+                {
+                    queueInfo = new TapQueueInfo()
+                    {
+                        Index = _noteIndex[startPos]++,
+                        KeyIndex = startPos
+                    };
+                }
+
+                return new()
+                {
+                    StartPos = startPos,
+                    Timing = noteTiming,
+                    AppearTiming = appearTiming,
+                    NoteSortOrder = sortOrder,
+                    Speed = speed,
+                    IsEach = isEach,
+                    IsBreak = note.IsBreak,
+                    IsEX = note.IsEx,
+                    IsStar = true,
+                    IsDouble = isDouble,
+                    RotateSpeed = -180 / (float)note.SlideTime,
+                    QueueInfo = queueInfo ?? TapQueueInfo.Default
+                };
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
+            }
         }
         TouchPoolingInfo CreateTouch(in SimaiNote note,
                                      in SimaiTimingPoint timing,
                                      in List<ITouchGroupInfoProvider> members)
         {
-            note.StartPosition = Rotation(note.StartPosition);
-            var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
-            var queueInfo = new TouchQueueInfo()
+            try
             {
-                SensorPos = sensorPos,
-                Index = _touchIndex[sensorPos]++
-            };
-            var noteTiming = (float)timing.Timing;
-            var areaPosition = note.TouchArea;
-            var startPosition = note.StartPosition;
-            var isEach = timing.Notes.Length > 1;
-            var isBreak = note.IsBreak;
-            var speed = TouchSpeed * Math.Abs(timing.HSpeed);
-            var isFirework = note.IsHanabi;
-            var noteSortOrder = _touchSortOrder;
-            var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
-            if (appearTiming < -5f && _gpManager is not null)
-                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-            _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
-            if (isEach)
-            {
-                var noteCount = timing.Notes.Length;
-                var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                if (noteCount - noHeadSlideCount == 1)
-                    isEach = false;
+                note.StartPosition = NoteCreateHelper.Rotation(note.StartPosition, ChartRotation);
+                var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
+                NoteCreateHelper.SetNewPositionIfRequested(ref sensorPos, _touchPanelMappingTable);
+                var queueInfo = new TouchQueueInfo()
+                {
+                    SensorPos = sensorPos,
+                    Index = _touchIndex[sensorPos]++
+                };
+                var noteTiming = (float)timing.Timing;
+                var areaPosition = note.TouchArea;
+                var startPosition = note.StartPosition;
+                var isEach = timing.Notes.Length > 1;
+                var isBreak = note.IsBreak;
+                var speed = TouchSpeed * Math.Abs(timing.HSpeed);
+                var isFirework = note.IsHanabi;
+                var noteSortOrder = _touchSortOrder;
+                var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
+                if (appearTiming < -5f && _gpManager is not null)
+                    _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
+                if (isEach)
+                {
+                    var noteCount = timing.Notes.Length;
+                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
+                    if (noteCount - noHeadSlideCount == 1)
+                        isEach = false;
+                }
+                var poolingInfo = new TouchPoolingInfo()
+                {
+                    SensorPos = sensorPos,
+                    Timing = noteTiming,
+                    AppearTiming = appearTiming,
+                    AreaPos = areaPosition,
+                    StartPos = startPosition,
+                    Speed = speed,
+                    IsFirework = isFirework,
+                    IsEach = isEach,
+                    IsBreak = isBreak,
+                    IsEX = false,
+                    NoteSortOrder = noteSortOrder,
+                    QueueInfo = queueInfo,
+                };
+                if (isEach)
+                    members.Add(poolingInfo);
+                return poolingInfo;
             }
-            var poolingInfo = new TouchPoolingInfo()
+            catch (Exception e)
             {
-                SensorPos = sensorPos,
-                Timing = noteTiming,
-                AppearTiming = appearTiming,
-                AreaPos = areaPosition,
-                StartPos = startPosition,
-                Speed = speed,
-                IsFirework = isFirework,
-                IsEach = isEach,
-                IsBreak = isBreak,
-                IsEX = false,
-                NoteSortOrder = noteSortOrder,
-                QueueInfo = queueInfo,
-            };
-            if (isEach)
-                members.Add(poolingInfo);
-            return poolingInfo;
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
+            }
         }
-        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note, 
+        TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note,
                                              in SimaiTimingPoint timing,
                                              in List<ITouchGroupInfoProvider> members)
         {
-            note.StartPosition = Rotation(note.StartPosition);
-            var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
-            var queueInfo = new TouchQueueInfo()
+            try
             {
-                SensorPos = sensorPos,
-                Index = _touchIndex[sensorPos]++
-            };
-            var startPosition = note.StartPosition;
-            var areaPosition = note.TouchArea;
-            var noteTiming = (float)timing.Timing;
-            var lastFor = (float)note.HoldTime;
-            var speed = TouchSpeed * Math.Abs(timing.HSpeed);
-            var isFirework = note.IsHanabi;
-            var isBreak = note.IsBreak;
-            var isEach = timing.Notes.Length > 1;
-            var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
-            var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
-            var noteSortOrder = _touchSortOrder;
-            if (appearTiming < -5f && _gpManager is not null)
-                _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                note.StartPosition = NoteCreateHelper.Rotation(note.StartPosition, ChartRotation);
+                var sensorPos = NoteHelper.GetSensor(note.TouchArea, note.StartPosition);
+                NoteCreateHelper.SetNewPositionIfRequested(ref sensorPos, _touchPanelMappingTable);
+                var queueInfo = new TouchQueueInfo()
+                {
+                    SensorPos = sensorPos,
+                    Index = _touchIndex[sensorPos]++
+                };
+                var startPosition = note.StartPosition;
+                var areaPosition = note.TouchArea;
+                var noteTiming = (float)timing.Timing;
+                var lastFor = (float)note.HoldTime;
+                var speed = TouchSpeed * Math.Abs(timing.HSpeed);
+                var isFirework = note.IsHanabi;
+                var isBreak = note.IsBreak;
+                var isEach = timing.Notes.Length > 1;
+                var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
+                var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
+                var noteSortOrder = _touchSortOrder;
+                if (appearTiming < -5f && _gpManager is not null)
+                    _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
-            _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
-            sensorPos = Rotation(sensorPos);
-            var poolingInfo = new TouchHoldPoolingInfo()
+                _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
+                sensorPos = NoteCreateHelper.Rotation(sensorPos, ChartRotation);
+                var poolingInfo = new TouchHoldPoolingInfo()
+                {
+                    SensorPos = sensorPos,
+                    Timing = noteTiming,
+                    AppearTiming = appearTiming,
+                    AreaPos = areaPosition,
+                    StartPos = startPosition,
+                    Speed = speed,
+                    IsFirework = isFirework,
+                    IsEach = isEach,
+                    IsBreak = isBreak,
+                    IsEX = false,
+                    LastFor = lastFor,
+                    NoteSortOrder = noteSortOrder,
+                    QueueInfo = queueInfo,
+                };
+                if (isEach)
+                    members.Add(poolingInfo);
+                return poolingInfo;
+            }
+            catch (Exception e)
             {
-                SensorPos = sensorPos,
-                Timing = noteTiming,
-                AppearTiming = appearTiming,
-                AreaPos = areaPosition,
-                StartPos = startPosition,
-                Speed = speed,
-                IsFirework = isFirework,
-                IsEach = isEach,
-                IsBreak = isBreak,
-                IsEX = false,
-                LastFor = lastFor,
-                NoteSortOrder = noteSortOrder,
-                QueueInfo = queueInfo,
-            };
-            if (isEach)
-                members.Add(poolingInfo);
-            return poolingInfo;
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
+            }
         }
         async Task AllocTouchGroup(List<ITouchGroupInfoProvider> members)
         {
@@ -623,17 +714,17 @@ namespace MajdataPlay.Game
                     {
                         var currentArea = groupMembers[i];
                         var nearbyArea = TOUCH_GROUPS[currentArea];
-                        for(var j = 0;j < sensorTypes.Count;j++)
+                        for (var j = 0; j < sensorTypes.Count; j++)
                         {
                             var area = sensorTypes[j];
                             if (groupMembers.Contains(area))
                                 continue;
-                            else if(nearbyArea.Contains(area))
+                            else if (nearbyArea.Contains(area))
                                 groupMembers.Add(area);
                         }
                     }
 
-                    foreach(var area in groupMembers)
+                    foreach (var area in groupMembers)
                         sensorTypes.Remove(area);
 
                     sensorGroups.Add(groupMembers);
@@ -660,310 +751,289 @@ namespace MajdataPlay.Game
                     //sensorGroups.Add(newGroup);
                 }
                 List<TouchGroup> touchGroups = new();
-                var memberMapping = members.ToDictionary(x => x.SensorPos);
+                var memberMapping = members.GroupBy(x => x.SensorPos).ToDictionary(x => x.Key);
                 foreach (var group in sensorGroups)
                 {
                     touchGroups.Add(new TouchGroup()
                     {
-                        Members = group.Select(x => memberMapping[x]).ToArray()
+                        Members = group.SelectMany(x => memberMapping[x]).ToArray()
                     });
                 }
                 foreach (var member in members)
                     member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
             });
         }
-        private async ValueTask CountNoteSumAsync(SimaiChart chart)
+        private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note, in List<NotePoolingInfo?> eachNotes)
         {
-            await Task.Run(() =>
+            try
             {
-                foreach (var timing in chart.NoteTimings)
-                    foreach (var note in timing.Notes)
-                        if (!note.IsBreak)
+                int charIntParse(char c)
+                {
+                    return c - '0';
+                }
+
+                var subSlide = new List<SubSlideNote>();
+                var subBarCount = new List<int>();
+                var sumBarCount = 0;
+
+                var noteContent = note.RawContent;
+                var latestStartIndex = charIntParse(noteContent[0]); // 存储上一个Slide的结尾 也就是下一个Slide的起点
+                var ptr = 1; // 指向目前处理的字符
+
+                var specTimeFlag = 0; // 表示此组合slide是指定总时长 还是指定每一段的时长
+                                      // 0-目前还没有读取 1-读取到了一个未指定时长的段落 2-读取到了一个指定时长的段落 3-（期望）读取到了最后一个时长指定
+
+                while (ptr < noteContent.Length)
+                {
+                    if (!char.IsNumber(noteContent[ptr]))
+                    {
+                        // 读取到字符
+                        var slideTypeChar = noteContent[ptr++].ToString();
+
+                        var slidePart = new SubSlideNote();
+                        slidePart.Type = SimaiNoteType.Slide;
+                        slidePart.StartPosition = latestStartIndex;
+                        if (slideTypeChar == "V")
                         {
-                            if (note.Type == SimaiNoteType.Tap) _objectCounter.tapSum++;
-                            if (note.Type == SimaiNoteType.Hold) _objectCounter.holdSum++;
-                            if (note.Type == SimaiNoteType.TouchHold) _objectCounter.holdSum++;
-                            if (note.Type == SimaiNoteType.Touch) _objectCounter.touchSum++;
-                            if (note.Type == SimaiNoteType.Slide)
-                            {
-                                if (!note.IsSlideNoHead) _objectCounter.tapSum++;
-                                if (note.IsSlideBreak)
-                                    _objectCounter.breakSum++;
-                                else
-                                    _objectCounter.slideSum++;
-                            }
+                            // 转折星星
+                            var middlePos = noteContent[ptr++];
+                            var endPos = noteContent[ptr++];
+
+                            slidePart.RawContent = latestStartIndex + slideTypeChar + middlePos + endPos;
+                            latestStartIndex = charIntParse(endPos);
                         }
                         else
                         {
-                            if (note.Type == SimaiNoteType.Slide)
+                            // 其他普通星星
+                            // 额外检查pp和qq
+                            if (noteContent[ptr] == slideTypeChar[0]) slideTypeChar += noteContent[ptr++];
+                            var endPos = noteContent[ptr++];
+
+                            slidePart.RawContent = latestStartIndex + slideTypeChar + endPos;
+                            latestStartIndex = charIntParse(endPos);
+                        }
+
+                        if (noteContent[ptr] == '[')
+                        {
+                            // 如果指定了速度
+                            if (specTimeFlag == 0)
+                                // 之前未读取过
+                                specTimeFlag = 2;
+                            else if (specTimeFlag == 1)
+                                // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
+                                specTimeFlag = 3;
+                            else if (specTimeFlag == 3)
+                                // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
+                                throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
+
+                            while (ptr < noteContent.Length && noteContent[ptr] != ']')
+                                slidePart.RawContent += noteContent[ptr++];
+                            slidePart.RawContent += noteContent[ptr++];
+                        }
+                        else
+                        {
+                            // 没有指定速度
+                            if (specTimeFlag == 0)
+                                // 之前未读取过
+                                specTimeFlag = 1;
+                            else if (specTimeFlag == 2 || specTimeFlag == 3)
+                                // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
+                                throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
+                        }
+
+                        string slideShape = NoteCreateHelper.DetectShapeFromText(slidePart.RawContent);
+                        if (slideShape.StartsWith("-"))
+                        {
+                            slideShape = slideShape.Substring(1);
+                        }
+                        int slideIndex = SLIDE_PREFAB_MAP[slideShape];
+                        if (slideIndex < 0) slideIndex = -slideIndex;
+
+                        var barCount = slidePrefab[slideIndex].transform.childCount;
+                        subBarCount.Add(barCount);
+                        sumBarCount += barCount;
+
+                        slidePart.Origin = note;
+                        subSlide.Add(slidePart);
+                    }
+                    else
+                    {
+                        // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
+                        throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+                    }
+                }
+
+                subSlide.ForEach(o =>
+                {
+                    o.IsBreak = note.IsBreak;
+                    o.IsEx = note.IsEx;
+                    o.IsSlideBreak = note.IsSlideBreak;
+                    o.IsSlideNoHead = true;
+                });
+                subSlide[0].IsSlideNoHead = note.IsSlideNoHead;
+
+                if (specTimeFlag == 1 || specTimeFlag == 0)
+                    // 如果到结束还是1 那说明没有一个指定了时长 报错
+                    throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+                // 此时 flag为2表示每条指定语法 为3表示整体指定语法
+
+                if (specTimeFlag == 3)
+                {
+                    // 整体指定语法 使用slideTime来计算
+                    var tempBarCount = 0;
+                    for (var i = 0; i < subSlide.Count; i++)
+                    {
+                        subSlide[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
+                        subSlide[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
+                        tempBarCount += subBarCount[i];
+                    }
+                }
+                else
+                {
+                    // 每条指定语法
+
+                    // 获取时长的子函数
+                    double getTimeFromBeats(string noteText, float currentBpm)
+                    {
+                        var startIndex = noteText.IndexOf('[');
+                        var overIndex = noteText.IndexOf(']');
+                        var innerString = noteText.Substring(startIndex + 1, overIndex - startIndex - 1);
+                        var timeOneBeat = 1d / (currentBpm / 60d);
+                        if (innerString.Count(o => o == '#') == 1)
+                        {
+                            var times = innerString.Split('#');
+                            if (times[1].Contains(':'))
                             {
-                                if (!note.IsSlideNoHead) _objectCounter.breakSum++;
-                                if (note.IsSlideBreak)
-                                    _objectCounter.breakSum++;
-                                else
-                                    _objectCounter.slideSum++;
+                                innerString = times[1];
+                                timeOneBeat = 1d / (double.Parse(times[0]) / 60d);
                             }
                             else
                             {
-                                _objectCounter.breakSum++;
+                                return double.Parse(times[1]);
                             }
                         }
-                _objectCounter._totalDXScore = (_objectCounter.tapSum + _objectCounter.holdSum + _objectCounter.touchSum + _objectCounter.slideSum + _objectCounter.breakSum) * 3;
-            });
-        }
-        private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note, in List<NotePoolingInfo?> eachNotes)
-        {
-            int charIntParse(char c)
-            {
-                return c - '0';
-            }
 
-            var subSlide = new List<SubSlideNote>();
-            var subBarCount = new List<int>();
-            var sumBarCount = 0;
+                        if (innerString.Count(o => o == '#') == 2)
+                        {
+                            var times = innerString.Split('#');
+                            return double.Parse(times[2]);
+                        }
 
-            var noteContent = note.RawContent;
-            var latestStartIndex = charIntParse(noteContent[0]); // 存储上一个Slide的结尾 也就是下一个Slide的起点
-            var ptr = 1; // 指向目前处理的字符
+                        var numbers = innerString.Split(':');
+                        var divide = int.Parse(numbers[0]);
+                        var count = int.Parse(numbers[1]);
 
-            var specTimeFlag = 0; // 表示此组合slide是指定总时长 还是指定每一段的时长
-                                  // 0-目前还没有读取 1-读取到了一个未指定时长的段落 2-读取到了一个指定时长的段落 3-（期望）读取到了最后一个时长指定
 
-            while (ptr < noteContent.Length)
-            {
-                if (!char.IsNumber(noteContent[ptr]))
-                {
-                    // 读取到字符
-                    var slideTypeChar = noteContent[ptr++].ToString();
+                        return timeOneBeat * 4d / divide * count;
+                    }
 
-                    var slidePart = new SubSlideNote();
-                    slidePart.Type = SimaiNoteType.Slide;
-                    slidePart.StartPosition = latestStartIndex;
-                    if (slideTypeChar == "V")
+                    double tempSlideTime = 0;
+                    for (var i = 0; i < subSlide.Count; i++)
                     {
-                        // 转折星星
-                        var middlePos = noteContent[ptr++];
-                        var endPos = noteContent[ptr++];
+                        subSlide[i].SlideStartTime = note.SlideStartTime + tempSlideTime;
+                        subSlide[i].SlideTime = getTimeFromBeats(subSlide[i].RawContent, timing.Bpm);
+                        tempSlideTime += subSlide[i].SlideTime;
+                    }
+                }
 
-                        slidePart.RawContent = latestStartIndex + slideTypeChar + middlePos + endPos;
-                        latestStartIndex = charIntParse(endPos);
+                IConnectableSlide? parent = null;
+                List<SlideDrop> subSlides = new();
+                float totalLen = (float)subSlide.Select(x => x.SlideTime).Sum();
+                float startTiming = (float)subSlide[0].SlideStartTime;
+                float totalSlideLen = 0;
+                int? extraRotation = null;
+                CreateSlideResult<SlideDrop>? slideResult = null;
+                for (var i = 0; i <= subSlide.Count - 1; i++)
+                {
+                    bool isConn = subSlide.Count != 1;
+                    bool isGroupHead = i == 0;
+                    bool isGroupEnd = i == subSlide.Count - 1;
+                    SlideBase sliObj;
+
+                    if (note.RawContent!.Contains('w')) //wifi
+                    {
+                        if (isConn)
+                            throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
+                        var result = CreateWifi(timing, subSlide[i]);
+                        sliObj = result.SlideInstance;
+                        eachNotes.Add(result.StarInfo);
+                        AddSlideToQueue(timing, result.SlideInstance);
+                        UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 20);
+                        sliObj.Initialize();
                     }
                     else
                     {
-                        // 其他普通星星
-                        // 额外检查pp和qq
-                        if (noteContent[ptr] == slideTypeChar[0]) slideTypeChar += noteContent[ptr++];
-                        var endPos = noteContent[ptr++];
-
-                        slidePart.RawContent = latestStartIndex + slideTypeChar + endPos;
-                        latestStartIndex = charIntParse(endPos);
+                        var info = new ConnSlideInfo()
+                        {
+                            TotalLength = totalLen,
+                            IsGroupPart = isConn,
+                            IsGroupPartHead = isGroupHead,
+                            IsGroupPartEnd = isGroupEnd,
+                            Parent = parent,
+                            StartTiming = startTiming
+                        };
+                        var result = CreateSlide(timing, subSlide[i], info, ref extraRotation);
+                        parent = result.SlideInstance;
+                        sliObj = result.SlideInstance;
+                        eachNotes.Add(result.StarInfo);
+                        subSlides.Add(result.SlideInstance);
+                        if (i == 0)
+                            slideResult = result;
                     }
+                    AddSlideToQueue(timing, sliObj);
+                }
+                long judgeQueueLen = 0;
+                var slideCount = subSlides.Count;
+                foreach (var (i, s) in subSlides.WithIndex())
+                {
+                    var isFirst = i == 0;
+                    var isEnd = i == slideCount - 1;
+                    var table = SlideTables.FindTableByName(s.SlideType);
 
-                    if (noteContent[ptr] == '[')
-                    {
-                        // 如果指定了速度
-                        if (specTimeFlag == 0)
-                            // 之前未读取过
-                            specTimeFlag = 2;
-                        else if (specTimeFlag == 1)
-                            // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
-                            specTimeFlag = 3;
-                        else if (specTimeFlag == 3)
-                            // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
-                            throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
-
-                        while (ptr < noteContent.Length && noteContent[ptr] != ']')
-                            slidePart.RawContent += noteContent[ptr++];
-                        slidePart.RawContent += noteContent[ptr++];
-                    }
+                    totalSlideLen += s.SlideLength;
+                    if (isEnd)
+                        judgeQueueLen += table!.JudgeQueue.Length;
                     else
-                    {
-                        // 没有指定速度
-                        if (specTimeFlag == 0)
-                            // 之前未读取过
-                            specTimeFlag = 1;
-                        else if (specTimeFlag == 2 || specTimeFlag == 3)
-                            // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
-                            throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
-                    }
-
-                    string slideShape = detectShapeFromText(slidePart.RawContent);
-                    if (slideShape.StartsWith("-"))
-                    {
-                        slideShape = slideShape.Substring(1);
-                    }
-                    int slideIndex = SLIDE_PREFAB_MAP[slideShape];
-                    if (slideIndex < 0) slideIndex = -slideIndex;
-
-                    var barCount = slidePrefab[slideIndex].transform.childCount;
-                    subBarCount.Add(barCount);
-                    sumBarCount += barCount;
-
-                    slidePart.Origin = note;
-                    subSlide.Add(slidePart);
+                        judgeQueueLen += table!.JudgeQueue.Length - 1;
                 }
-                else
+                subSlides.ForEach(s =>
                 {
-                    // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
-                    throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+                    s.ConnectInfo.TotalSlideLen = totalSlideLen;
+                    s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
+                });
+                subSlides.ForEach(s => s.Initialize());
+                if (slideResult is not null)
+                {
+                    UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
                 }
             }
-
-            subSlide.ForEach(o =>
+            catch (UnityException)
             {
-                o.IsBreak = note.IsBreak;
-                o.IsEx = note.IsEx;
-                o.IsSlideBreak = note.IsSlideBreak;
-                o.IsSlideNoHead = true;
-            });
-            subSlide[0].IsSlideNoHead = note.IsSlideNoHead;
-
-            if (specTimeFlag == 1 || specTimeFlag == 0)
-                // 如果到结束还是1 那说明没有一个指定了时长 报错
-                throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
-            // 此时 flag为2表示每条指定语法 为3表示整体指定语法
-
-            if (specTimeFlag == 3)
-            {
-                // 整体指定语法 使用slideTime来计算
-                var tempBarCount = 0;
-                for (var i = 0; i < subSlide.Count; i++)
-                {
-                    subSlide[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
-                    subSlide[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
-                    tempBarCount += subBarCount[i];
-                }
+                throw;
             }
-            else
+            catch (Exception e)
             {
-                // 每条指定语法
-
-                // 获取时长的子函数
-                double getTimeFromBeats(string noteText, float currentBpm)
-                {
-                    var startIndex = noteText.IndexOf('[');
-                    var overIndex = noteText.IndexOf(']');
-                    var innerString = noteText.Substring(startIndex + 1, overIndex - startIndex - 1);
-                    var timeOneBeat = 1d / (currentBpm / 60d);
-                    if (innerString.Count(o => o == '#') == 1)
-                    {
-                        var times = innerString.Split('#');
-                        if (times[1].Contains(':'))
-                        {
-                            innerString = times[1];
-                            timeOneBeat = 1d / (double.Parse(times[0]) / 60d);
-                        }
-                        else
-                        {
-                            return double.Parse(times[1]);
-                        }
-                    }
-
-                    if (innerString.Count(o => o == '#') == 2)
-                    {
-                        var times = innerString.Split('#');
-                        return double.Parse(times[2]);
-                    }
-
-                    var numbers = innerString.Split(':');
-                    var divide = int.Parse(numbers[0]);
-                    var count = int.Parse(numbers[1]);
-
-
-                    return timeOneBeat * 4d / divide * count;
-                }
-
-                double tempSlideTime = 0;
-                for (var i = 0; i < subSlide.Count; i++)
-                {
-                    subSlide[i].SlideStartTime = note.SlideStartTime + tempSlideTime;
-                    subSlide[i].SlideTime = getTimeFromBeats(subSlide[i].RawContent, timing.Bpm);
-                    tempSlideTime += subSlide[i].SlideTime;
-                }
-            }
-
-            IConnectableSlide? parent = null;
-            List<SlideDrop> subSlides = new();
-            float totalLen = (float)subSlide.Select(x => x.SlideTime).Sum();
-            float startTiming = (float)subSlide[0].SlideStartTime;
-            float totalSlideLen = 0;
-            CreateSlideResult<SlideDrop>? slideResult = null;
-            for (var i = 0; i <= subSlide.Count - 1; i++)
-            {
-                bool isConn = subSlide.Count != 1;
-                bool isGroupHead = i == 0;
-                bool isGroupEnd = i == subSlide.Count - 1;
-                SlideBase sliObj;
-                
-                if (note.RawContent!.Contains('w')) //wifi
-                {
-                    if (isConn)
-                        throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
-                    var result = CreateWifi(timing, subSlide[i]);
-                    sliObj = result.SlideInstance;
-                    eachNotes.Add(result.StarInfo);
-                    AddSlideToQueue(timing, result.SlideInstance);
-                    UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 8.93760109f);
-                    sliObj.Initialize();
-                }
-                else
-                {
-                    var info = new ConnSlideInfo()
-                    {
-                        TotalLength = totalLen,
-                        IsGroupPart = isConn,
-                        IsGroupPartHead = isGroupHead,
-                        IsGroupPartEnd = isGroupEnd,
-                        Parent = parent,
-                        StartTiming = startTiming
-                    };
-                    var result = CreateSlide(timing, subSlide[i], info);
-                    parent = result.SlideInstance;
-                    sliObj = result.SlideInstance;
-                    eachNotes.Add(result.StarInfo);
-                    subSlides.Add(result.SlideInstance);
-                    if(i == 0)
-                        slideResult = result;
-                }
-                AddSlideToQueue(timing, sliObj);
-            }
-            long judgeQueueLen = 0;
-            var slideCount = subSlides.Count;
-            foreach (var (i, s) in subSlides.WithIndex())
-            {
-                var isFirst = i == 0;
-                var isEnd = i == slideCount - 1;
-                var table = SlideTables.FindTableByName(s.SlideType);
-                
-                totalSlideLen += s.SlideLength;
-                if (isEnd)
-                    judgeQueueLen += table!.JudgeQueue.Length;
-                else
-                    judgeQueueLen += table!.JudgeQueue.Length - 1;
-            }
-            subSlides.ForEach(s => 
-            {
-                s.ConnectInfo.TotalSlideLen = totalSlideLen;
-                s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
-            });
-            subSlides.ForEach(s => s.Initialize());
-            if (slideResult is not null)
-            {
-                UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
+                MajDebug.LogException(e);
+                var line = timing.RawTextPositionY;
+                var column = timing.RawTextPositionX;
+                throw new InvalidSimaiSyntaxException(line,
+                                                      column,
+                                                      note.RawContent,
+                                                      BuildSyntaxErrorMessage(line, column, note.RawContent));
             }
         }
-        void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result,float totalLen,float totalSlideLen) where T: SlideBase
+        void UpdateStarRotateSpeed<T>(CreateSlideResult<T> result, float totalLen, float totalSlideLen) where T : SlideBase
         {
-            var speed = totalSlideLen / (totalLen * 1000);
+            var speed = (totalSlideLen * 0.47f) / (totalLen * 1000);
             var ratio = speed / 0.0034803742562305f;
 
             if (result.StarInfo is not null)
             {
                 var starInfo = result.StarInfo;
-                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio,-1080);
+                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio, -1080);
             }
         }
-        void AddSlideToQueue<T>(SimaiTimingPoint timing,T SliCompo) where T :SlideBase
+        void AddSlideToQueue<T>(SimaiTimingPoint timing, T SliCompo) where T : SlideBase
         {
             var speed = NoteSpeed * timing.HSpeed;
             var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
@@ -977,9 +1047,12 @@ namespace MajdataPlay.Game
                 AppearTiming = Math.Min(appearTiming, slideFadeInTiming)
             });
         }
-        private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing, SubSlideNote note, ConnSlideInfo info)
+        private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing, 
+                                                         SubSlideNote note, 
+                                                         ConnSlideInfo info,
+                                                         ref int? extraRotation)
         {
-            string slideShape = detectShapeFromText(note.RawContent);
+            string slideShape = NoteCreateHelper.DetectShapeFromText(note.RawContent);
             var isMirror = false;
             var isEach = false;
             if (slideShape.StartsWith("-"))
@@ -991,18 +1064,38 @@ namespace MajdataPlay.Game
             var slide = Instantiate(slidePrefab[slideIndex], notes.transform.GetChild(3));
             //var slide_star = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             var SliCompo = slide.GetComponent<SlideDrop>();
-            var isJustR = detectJustType(note.RawContent, out int endPos);
+            var isJustR = NoteCreateHelper.DetectJustType(note.RawContent, out int endPos);
             var startPos = note.StartPosition;
 
             //slide_star.SetActive(true);
             slide.SetActive(true);
-            startPos = Rotation(startPos);
-            endPos = Rotation(endPos);
+            if(extraRotation is null)
+            {
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+                endPos = NoteCreateHelper.Rotation(endPos, ChartRotation);
+                var oldStartPos = startPos;
+                NoteCreateHelper.SetSlideNewPositionIfRequested(ref startPos, ref endPos, _buttonRingMappingTable);
+                var diff = oldStartPos - startPos;
+                if (diff > 0)
+                {
+                    diff = 8 - diff;
+                }
+                else if (diff < 0)
+                {
+                    diff = Math.Abs(diff);
+                }
+                extraRotation = diff;
+            }
+            else if(extraRotation is int eR)
+            {
+                startPos = NoteCreateHelper.Rotation(startPos, ChartRotation + eR);
+                endPos = NoteCreateHelper.Rotation(endPos, ChartRotation + eR);
+            }
 
             TapPoolingInfo? starInfo = null;
-            if(!note.IsSlideNoHead)
+            if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(note, timing);
+                var _info = CreateStar(startPos, note, timing);
                 _poolManager.AddTap(_info);
                 starInfo = _info;
             }
@@ -1036,8 +1129,10 @@ namespace MajdataPlay.Game
             //SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)timing.Timing;
             SliCompo.Length = (float)note.SlideTime;
+            SliCompo.IsSlideNoHead = IsSlideNoHead;
+            SliCompo.IsSlideNoTrack = IsSlideNoTrack;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
-            if(MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.SortOrder = _slideLayer;
@@ -1048,7 +1143,7 @@ namespace MajdataPlay.Game
                 _slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
             }
             //slideLayer += 5;
-            
+
             return new()
             {
                 SlideInstance = SliCompo,
@@ -1069,16 +1164,17 @@ namespace MajdataPlay.Game
 
             var slideWifi = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["wifi"]], notes.transform.GetChild(3));
             var WifiCompo = slideWifi.GetComponent<WifiDrop>();
-            var isJustR = detectJustType(note.RawContent, out endPos);
+            var isJustR = NoteCreateHelper.DetectJustType(note.RawContent, out endPos);
 
-            startPos = Rotation(startPos);
-            endPos = Rotation(endPos);
+            startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
+            endPos = NoteCreateHelper.Rotation(endPos, ChartRotation);
+            NoteCreateHelper.SetSlideNewPositionIfRequested(ref startPos, ref endPos, _buttonRingMappingTable);
             slideWifi.SetActive(true);
 
             TapPoolingInfo? starInfo = null;
             if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(note, timing);
+                var _info = CreateStar(startPos, note, timing);
                 _poolManager.AddTap(_info);
                 starInfo = _info;
             }
@@ -1090,9 +1186,9 @@ namespace MajdataPlay.Game
                 if (slides.Length > 1)
                 {
                     isEach = true;
-                    if(_gpManager is not null && _gpManager.IsClassicMode)
+                    if (_gpManager is not null && _gpManager.IsClassicMode)
                     {
-                        if(index == slides.Length && index % 2 != 0)
+                        if (index == slides.Length && index % 2 != 0)
                             isEach = false;
                     }
                 }
@@ -1107,6 +1203,8 @@ namespace MajdataPlay.Game
             WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)timing.Timing;
             WifiCompo.Length = (float)note.SlideTime;
+            WifiCompo.IsSlideNoHead = IsSlideNoHead;
+            WifiCompo.IsSlideNoTrack = IsSlideNoTrack;
             //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
@@ -1134,342 +1232,18 @@ namespace MajdataPlay.Game
                 StarInfo = starInfo
             };
         }
-        /// <summary>
-        /// 判断Slide SlideOK是否需要镜像翻转
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="endPos"></param>
-        /// <returns></returns>
-        private bool detectJustType(string content, out int endPos)
+        
+
+
+        string BuildSyntaxErrorMessage(int line, int column, string noteContent)
         {
-            // > < ^ V w
-            if (content.Contains('>'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('>');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
-
-                if (isUpperHalf(startPos))
-                    return true;
-                return false;
-            }
-
-            if (content.Contains('<'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('<');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
-
-                if (!isUpperHalf(startPos))
-                    return true;
-                return false;
-            }
-
-            if (content.Contains('^'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('^');
-                var startPos = int.Parse(digits[0]);
-                endPos = int.Parse(digits[1]);
-                endPos = endPos - startPos;
-                endPos = endPos < 0 ? endPos + 8 : endPos;
-                endPos = endPos > 8 ? endPos - 8 : endPos;
-
-                if (endPos < 4)
-                {
-                    endPos = int.Parse(digits[1]);
-                    return true;
-                }
-                if (endPos > 4)
-                {
-                    endPos = int.Parse(digits[1]);
-                    return false;
-                }
-            }
-            else if (content.Contains('V'))
-            {
-                var str = content.Substring(0, 4);
-                var digits = str.Split('V');
-                endPos = int.Parse(digits[1][1].ToString());
-
-                if (isRightHalf(endPos))
-                    return true;
-                return false;
-            }
-            else if (content.Contains('w'))
-            {
-                var str = content.Substring(0, 3);
-                endPos = int.Parse(str.Substring(2, 1));
-                if (isUpperHalf(endPos))
-                    return true;
-                return false;
-            }
-            else
-            {
-                //int endPos;
-                if (content.Contains("qq") || content.Contains("pp"))
-                    endPos = int.Parse(content.Substring(3, 1));
-                else
-                    endPos = int.Parse(content.Substring(2, 1));
-                if (isRightHalf(endPos))
-                    return true;
-                return false;
-            }
-            return true;
+            return $"(at L{line}:C{column}) \"{noteContent}\" is not a valid note syntax";
         }
-
-        private string detectShapeFromText(string content)
+        string BuildSyntaxErrorMessage(int line, int column)
         {
-            int getRelativeEndPos(int startPos, int endPos)
-            {
-                endPos = endPos - startPos;
-                endPos = endPos < 0 ? endPos + 8 : endPos;
-                endPos = endPos > 8 ? endPos - 8 : endPos;
-                return endPos + 1;
-            }
-
-            //print(content);
-            if (content.Contains('-'))
-            {
-                // line
-                var str = content.Substring(0, 3); //something like "8-6"
-                var digits = str.Split('-');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
-                return "line" + endPos;
-            }
-
-            if (content.Contains('>'))
-            {
-                // circle 默认顺时针
-                var str = content.Substring(0, 3);
-                var digits = str.Split('>');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (isUpperHalf(startPos))
-                {
-                    return "circle" + endPos;
-                }
-
-                endPos = MirrorKeys(endPos);
-                return "-circle" + endPos; //Mirror
-            }
-
-            if (content.Contains('<'))
-            {
-                // circle 默认顺时针
-                var str = content.Substring(0, 3);
-                var digits = str.Split('<');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (!isUpperHalf(startPos))
-                {
-                    return "circle" + endPos;
-                }
-
-                endPos = MirrorKeys(endPos);
-                return "-circle" + endPos; //Mirror
-            }
-
-            if (content.Contains('^'))
-            {
-                var str = content.Substring(0, 3);
-                var digits = str.Split('^');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-
-                if (endPos == 1 || endPos == 5)
-                {
-                    throw new Exception("^星星不合法\n^スライドエラー");
-                }
-
-                if (endPos < 5)
-                {
-                    return "circle" + endPos;
-                }
-                if (endPos > 5)
-                {
-                    return "-circle" + MirrorKeys(endPos);
-                }
-            }
-
-            if (content.Contains('v'))
-            {
-                // v
-                var str = content.Substring(0, 3);
-                var digits = str.Split('v');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
-                return "v" + endPos;
-            }
-
-            if (content.Contains("pp"))
-            {
-                // ppqq 默认为pp
-                var str = content.Substring(0, 4);
-                var digits = str.Split('p');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[2]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                return "ppqq" + endPos;
-            }
-
-            if (content.Contains("qq"))
-            {
-                // ppqq 默认为pp
-                var str = content.Substring(0, 4);
-                var digits = str.Split('q');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[2]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                endPos = MirrorKeys(endPos);
-                return "-ppqq" + endPos;
-            }
-
-            if (content.Contains('p'))
-            {
-                // pq 默认为p
-                var str = content.Substring(0, 3);
-                var digits = str.Split('p');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                return "pq" + endPos;
-            }
-
-            if (content.Contains('q'))
-            {
-                // pq 默认为p
-                var str = content.Substring(0, 3);
-                var digits = str.Split('q');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                endPos = MirrorKeys(endPos);
-                return "-pq" + endPos;
-            }
-
-            if (content.Contains('s'))
-            {
-                // s
-                var str = content.Substring(0, 3);
-                var digits = str.Split('s');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
-                return "s";
-            }
-
-            if (content.Contains('z'))
-            {
-                // s镜像
-                var str = content.Substring(0, 3);
-                var digits = str.Split('z');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
-                return "-s";
-            }
-
-            if (content.Contains('V'))
-            {
-                // L
-                var str = content.Substring(0, 4);
-                var digits = str.Split('V');
-                var startPos = int.Parse(digits[0]);
-                var turnPos = int.Parse(digits[1][0].ToString());
-                var endPos = int.Parse(digits[1][1].ToString());
-
-                turnPos = getRelativeEndPos(startPos, turnPos);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (turnPos == 7)
-                {
-                    if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                    return "L" + endPos;
-                }
-
-                if (turnPos == 3)
-                {
-                    if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
-                    return "-L" + MirrorKeys(endPos);
-                }
-
-                throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
-            }
-
-            if (content.Contains('w'))
-            {
-                // wifi
-                var str = content.Substring(0, 3);
-                var digits = str.Split('w');
-                var startPos = int.Parse(digits[0]);
-                var endPos = int.Parse(digits[1]);
-                endPos = getRelativeEndPos(startPos, endPos);
-                if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
-                return "wifi";
-            }
-
-            return "";
-        }
-
-        private bool isUpperHalf(int key)
-        {
-            if (key == 7) return true;
-            if (key == 8) return true;
-            if (key == 1) return true;
-            if (key == 2) return true;
-
-            return false;
-        }
-
-        private bool isRightHalf(int key)
-        {
-            if (key == 1) return true;
-            if (key == 2) return true;
-            if (key == 3) return true;
-            if (key == 4) return true;
-
-            return false;
-        }
-
-        private int MirrorKeys(int key)
-        {
-            if (key == 1) return 1;
-            if (key == 2) return 8;
-            if (key == 3) return 7;
-            if (key == 4) return 6;
-
-            if (key == 5) return 5;
-            if (key == 6) return 4;
-            if (key == 7) return 3;
-            if (key == 8) return 2;
-            throw new Exception("Keys out of range: " + key);
-        }
-        int Rotation(int keyIndex)
-        {
-            if (!keyIndex.InRange(1, 8))
-                throw new ArgumentOutOfRangeException();
-            var key = (SensorArea)(keyIndex - 1);
-            var newKey = key.Diff(ChartRotation);
-            return newKey.GetIndex();
+            return $"(at L{line}:C{column})";
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        SensorArea Rotation(SensorArea sensorIndex)
-        {
-            return sensorIndex.Diff(ChartRotation);
-        }
         class SubSlideNote : SimaiNote
         {
             public SimaiNote Origin { get; set; } = new();
@@ -1478,6 +1252,532 @@ namespace MajdataPlay.Game
         {
             public T SlideInstance { get; init; }
             public TapPoolingInfo? StarInfo { get; init; }
+        }
+        static class NoteCreateHelper
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static SensorArea Rotation(SensorArea sensorIndex, int diff)
+            {
+                return sensorIndex.Diff(diff);
+            }
+            public static int Rotation(int keyIndex, int diff)
+            {
+                if (!keyIndex.InRange(1, 8))
+                    throw new ArgumentOutOfRangeException();
+                var key = (SensorArea)(keyIndex - 1);
+                var newKey = key.Diff(diff);
+                return newKey.GetIndex();
+            }
+            public static int MirrorKeys(int key)
+            {
+                switch(key)
+                {
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 8;
+                    case 3:
+                        return 7;
+                    case 4:
+                        return 6;
+                    case 5:
+                        return 5;
+                    case 6:
+                        return 4;
+                    case 7:
+                        return 3;
+                    case 8:
+                        return 2;
+                    default:
+                        throw new Exception("Keys out of range: " + key);
+                }
+            }
+            public static bool IsRightHalf(int key)
+            {
+                switch(key)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        return true;
+                    default:
+                        return false;
+
+                }
+            }
+            public static bool IsUpperHalf(int key)
+            {
+                switch (key)
+                {
+                    case 7:
+                    case 8:
+                    case 1:
+                    case 2:
+                        return true;
+                    default:
+                        return false;
+
+                }
+            }
+            public static string DetectShapeFromText(string content)
+            {
+                int getRelativeEndPos(int startPos, int endPos)
+                {
+                    endPos = endPos - startPos;
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+                    return endPos + 1;
+                }
+
+                //print(content);
+                if (content.Contains('-'))
+                {
+                    // line
+                    var str = content.Substring(0, 3); //something like "8-6"
+                    var digits = str.Split('-');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos < 3 || endPos > 7) throw new Exception("-星星至少隔开一键\n-スライドエラー");
+                    return "line" + endPos;
+                }
+
+                if (content.Contains('>'))
+                {
+                    // circle 默认顺时针
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('>');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (NoteCreateHelper.IsUpperHalf(startPos))
+                    {
+                        return "circle" + endPos;
+                    }
+
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-circle" + endPos; //Mirror
+                }
+
+                if (content.Contains('<'))
+                {
+                    // circle 默认顺时针
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('<');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (!NoteCreateHelper.IsUpperHalf(startPos))
+                    {
+                        return "circle" + endPos;
+                    }
+
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-circle" + endPos; //Mirror
+                }
+
+                if (content.Contains('^'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('^');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+
+                    if (endPos == 1 || endPos == 5)
+                    {
+                        throw new Exception("^星星不合法\n^スライドエラー");
+                    }
+
+                    if (endPos < 5)
+                    {
+                        return "circle" + endPos;
+                    }
+                    if (endPos > 5)
+                    {
+                        return "-circle" + NoteCreateHelper.MirrorKeys(endPos);
+                    }
+                }
+
+                if (content.Contains('v'))
+                {
+                    // v
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('v');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos == 5) throw new Exception("v星星不合法\nvスライドエラー");
+                    return "v" + endPos;
+                }
+
+                if (content.Contains("pp"))
+                {
+                    // ppqq 默认为pp
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('p');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[2]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    return "ppqq" + endPos;
+                }
+
+                if (content.Contains("qq"))
+                {
+                    // ppqq 默认为pp
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('q');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[2]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-ppqq" + endPos;
+                }
+
+                if (content.Contains('p'))
+                {
+                    // pq 默认为p
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('p');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    return "pq" + endPos;
+                }
+
+                if (content.Contains('q'))
+                {
+                    // pq 默认为p
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('q');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    endPos = NoteCreateHelper.MirrorKeys(endPos);
+                    return "-pq" + endPos;
+                }
+
+                if (content.Contains('s'))
+                {
+                    // s
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('s');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("s星星尾部错误\nsスライドエラー");
+                    return "s";
+                }
+
+                if (content.Contains('z'))
+                {
+                    // s镜像
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('z');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("z星星尾部错误\nzスライドエラー");
+                    return "-s";
+                }
+
+                if (content.Contains('V'))
+                {
+                    // L
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('V');
+                    var startPos = int.Parse(digits[0]);
+                    var turnPos = int.Parse(digits[1][0].ToString());
+                    var endPos = int.Parse(digits[1][1].ToString());
+
+                    turnPos = getRelativeEndPos(startPos, turnPos);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (turnPos == 7)
+                    {
+                        if (endPos < 2 || endPos > 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                        return "L" + endPos;
+                    }
+
+                    if (turnPos == 3)
+                    {
+                        if (endPos < 5) throw new Exception("V星星终点不合法\nVスライドエラー");
+                        return "-L" + NoteCreateHelper.MirrorKeys(endPos);
+                    }
+
+                    throw new Exception("V星星拐点只能隔开一键\nVスライドエラー");
+                }
+
+                if (content.Contains('w'))
+                {
+                    // wifi
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('w');
+                    var startPos = int.Parse(digits[0]);
+                    var endPos = int.Parse(digits[1]);
+                    endPos = getRelativeEndPos(startPos, endPos);
+                    if (endPos != 5) throw new Exception("w星星尾部错误\nwスライドエラー");
+                    return "wifi";
+                }
+
+                return "";
+            }
+            /// <summary>
+            /// 判断Slide SlideOK是否需要镜像翻转
+            /// </summary>
+            /// <param name="content"></param>
+            /// <param name="endPos"></param>
+            /// <returns></returns>
+            public static bool DetectJustType(string content, out int endPos)
+            {
+                // > < ^ V w
+                if (content.Contains('>'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('>');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+
+                    if (NoteCreateHelper.IsUpperHalf(startPos))
+                        return true;
+                    return false;
+                }
+
+                if (content.Contains('<'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('<');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+
+                    if (!NoteCreateHelper.IsUpperHalf(startPos))
+                        return true;
+                    return false;
+                }
+
+                if (content.Contains('^'))
+                {
+                    var str = content.Substring(0, 3);
+                    var digits = str.Split('^');
+                    var startPos = int.Parse(digits[0]);
+                    endPos = int.Parse(digits[1]);
+                    endPos = endPos - startPos;
+                    endPos = endPos < 0 ? endPos + 8 : endPos;
+                    endPos = endPos > 8 ? endPos - 8 : endPos;
+
+                    if (endPos < 4)
+                    {
+                        endPos = int.Parse(digits[1]);
+                        return true;
+                    }
+                    if (endPos > 4)
+                    {
+                        endPos = int.Parse(digits[1]);
+                        return false;
+                    }
+                }
+                else if (content.Contains('V'))
+                {
+                    var str = content.Substring(0, 4);
+                    var digits = str.Split('V');
+                    endPos = int.Parse(digits[1][1].ToString());
+
+                    if (NoteCreateHelper.IsRightHalf(endPos))
+                        return true;
+                    return false;
+                }
+                else if (content.Contains('w'))
+                {
+                    var str = content.Substring(0, 3);
+                    endPos = int.Parse(str.Substring(2, 1));
+                    if (NoteCreateHelper.IsUpperHalf(endPos))
+                        return true;
+                    return false;
+                }
+                else
+                {
+                    //int endPos;
+                    if (content.Contains("qq") || content.Contains("pp"))
+                        endPos = int.Parse(content.Substring(3, 1));
+                    else
+                        endPos = int.Parse(content.Substring(2, 1));
+                    if (NoteCreateHelper.IsRightHalf(endPos))
+                        return true;
+                    return false;
+                }
+                return true;
+            }
+            public static (IReadOnlyDictionary<int, int> ,IReadOnlyDictionary<SensorArea, SensorArea>) GenerateMappingTable()
+            {
+                var touchPannelMappingTable = GenerateTouchPanelMappingTable();
+                var buttonRingMappingTable = GenerateButtonRingMappingTable();
+                foreach(var (k,v) in buttonRingMappingTable)
+                {
+                    touchPannelMappingTable[(SensorArea)(k - 1)] = (SensorArea)(v - 1);
+                }
+                return (buttonRingMappingTable, touchPannelMappingTable);
+            }
+            static Dictionary<SensorArea,SensorArea> GenerateTouchPanelMappingTable()
+            {
+                var areas = ((SensorArea[])Enum.GetValues(typeof(SensorArea))).SkipLast(4).ToArray();
+                var newAreas = new SensorArea?[33];
+                var rd = new System.Random();
+                var dict = new Dictionary<SensorArea, SensorArea>();
+
+                for (var i = 0; i < 33; i++)
+                {
+                    var originArea = (SensorArea)i;
+                    SensorArea value;
+                    if(i < 8)
+                    {
+                        newAreas[i] = originArea;
+                        continue;
+                    }
+                    while(true)
+                    {
+                        value = (SensorArea)rd.Next(0, 33);
+                        if (value > SensorArea.E8 || value < SensorArea.A1)
+                            continue;
+                        else if (value.GetGroup() != originArea.GetGroup())
+                            continue;
+                        else if (!newAreas.Contains(value))
+                            break;
+                    }
+                    newAreas[i] = value;
+                }
+
+                for (var i = 0; i < 33; i++)
+                {
+                    dict.Add(areas[i], (SensorArea)newAreas[i]!);
+                }
+                return dict;
+            }
+            static Dictionary<int, int> GenerateButtonRingMappingTable()
+            {
+                var areas = new int[8]
+                {
+                    1,2,3,4,5,6,7,8
+                };
+                var newAreas = new int?[8];
+                var rd = new System.Random();
+                var dict = new Dictionary<int, int>();
+
+                for (var i = 0; i < 8; i++)
+                {
+                    int value;
+                    do
+                    {
+                        value = rd.Next(1, 9);
+                        if (value > 8 || value < 1)
+                            continue;
+                    }
+                    while (newAreas.Contains(value));
+                    newAreas[i] = value;
+                }
+
+                for (var i = 0; i < 8; i++)
+                {
+                    dict.Add(areas[i], (int)newAreas[i]!);
+                }
+                return dict;
+            }
+            static int RandomTap(int originKeyIndex, IReadOnlyDictionary<int, int> mappingTable)
+            {
+                return mappingTable[originKeyIndex];
+            }
+            static SensorArea RandomTouch(SensorArea originArea, IReadOnlyDictionary<SensorArea,SensorArea> mappingTable)
+            {
+                return mappingTable[originArea];
+            }
+            static (int,int) RandomSlide(int startPos,int endPos, IReadOnlyDictionary<int, int> mappingTable)
+            {
+                var diff = startPos - endPos;
+                if (diff > 0)
+                {
+                    diff = 8 - diff;
+                }
+                else if (diff < 0)
+                {
+                    diff = Math.Abs(diff);
+                }
+                var newStartPos = mappingTable[startPos];
+                var newEndPos = ((SensorArea)(newStartPos - 1)).Diff(diff).GetIndex();
+
+                return (newStartPos, newEndPos);
+            }
+            static int RandomTap()
+            {
+                var rd = new System.Random();
+                return rd.Next(1, 9);
+            }
+            static SensorArea RandomTouch()
+            {
+                var rd = new System.Random();
+                return (SensorArea)rd.Next(0, 33);
+            }
+            static (int, int) RandomSlide(int startPos, int endPos)
+            {
+                var diff = startPos - endPos;
+                if (diff > 0)
+                {
+                    diff = 8 - diff;
+                }
+                else if (diff < 0)
+                {
+                    diff = Math.Abs(diff);
+                }
+                var rd = new System.Random();
+                var newStartPos = rd.Next(1, 9);
+                var newEndPos = ((SensorArea)(newStartPos - 1)).Diff(diff).GetIndex();
+
+                return (newStartPos, newEndPos);
+            }
+            public static void SetNewPositionIfRequested(ref int originPos, 
+                                                         IReadOnlyDictionary<int, int> mappingTable)
+            {
+                switch(MajEnv.UserSetting.Game.Random)
+                {
+                    case RandomMode.Disabled:
+                        return;
+                    case RandomMode.RANDOM:
+                        originPos = RandomTap(originPos, mappingTable);
+                        break;
+                    case RandomMode.S_RANDOM:
+                        originPos = RandomTap();
+                        break;
+                }
+            }
+            public static void SetNewPositionIfRequested(ref SensorArea originPos, 
+                                                         IReadOnlyDictionary<SensorArea, SensorArea> mappingTable)
+            {
+                switch (MajEnv.UserSetting.Game.Random)
+                {
+                    case RandomMode.Disabled:
+                        return;
+                    case RandomMode.RANDOM:
+                        originPos = RandomTouch(originPos, mappingTable);
+                        break;
+                    case RandomMode.S_RANDOM:
+                        originPos = RandomTouch();
+                        break;
+                }
+            }
+            public static void SetSlideNewPositionIfRequested(ref int originStartPos, 
+                                                              ref int originEndPos,
+                                                              IReadOnlyDictionary<int, int> mappingTable)
+            {
+                switch (MajEnv.UserSetting.Game.Random)
+                {
+                    case RandomMode.Disabled:
+                        return;
+                    case RandomMode.RANDOM:
+                        (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos, mappingTable);
+                        break;
+                    case RandomMode.S_RANDOM:
+                        (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos);
+                        break;
+                }
+            }
         }
     }
 }

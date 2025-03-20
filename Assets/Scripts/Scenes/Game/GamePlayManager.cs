@@ -3,28 +3,22 @@ using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
-using MajdataPlay.Attributes;
 using MajSimai;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
-using Debug = UnityEngine.Debug;
 using MajdataPlay.Timer;
-using MajdataPlay.Collections;
 using MajdataPlay.Game.Types;
-using Unity.VisualScripting.Antlr3.Runtime;
 using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
-using System.Windows.Forms.VisualStyles;
+using MajdataPlay.Editor;
+using MajdataPlay.Game.Notes.Controllers;
 
 namespace MajdataPlay.Game
 {
@@ -60,7 +54,7 @@ namespace MajdataPlay.Game
         /// </summary>
         public float AudioStartTime => _audioStartTime;
         // Control
-        public bool IsStart => _audioSample?.IsPlaying ?? false;
+        public bool IsStart { get; private set; } = false;
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
         public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Disable;
         public JudgeGrade AutoplayGrade { get; private set; } =  JudgeGrade.Perfect;
@@ -115,6 +109,8 @@ namespace MajdataPlay.Game
         bool _isAllBreak = false;
         bool _isAllEx = false;
         bool _isAllTouch = false;
+        bool _isSlideNoHead = false;
+        bool _isSlideNoTrack = false;
         bool _isTrackSkipAvailable = MajEnv.UserSetting.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSetting.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
@@ -151,6 +147,7 @@ namespace MajdataPlay.Game
         {
             Majdata<GamePlayManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
+            Majdata<INoteTimeProvider>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
                 throw new ArgumentNullException(nameof(_gameInfo));
             //print(MajInstances.GameManager.SelectedIndex);
@@ -181,10 +178,11 @@ namespace MajdataPlay.Game
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
+            _noteLoader = Majdata<NoteLoader>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
-            MajInstances.InputManager.BindAnyArea(OnPauseButton);
+            InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
             if(_gameInfo.IsDanMode)
             {
@@ -225,6 +223,36 @@ namespace MajdataPlay.Game
                         else if (bool.TryParse(v.ToString(), out var allEx))
                         {
                             _isAllEx = allEx;
+                        }
+                        break;
+                    case "ButtonRingForTouch":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _noteManager.IsUseButtonRingForTouch = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        {
+                            _noteManager.IsUseButtonRingForTouch = buttonRingSlide;
+                        }
+                        break;
+                    case "IsSlideNoHead":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _noteLoader.IsSlideNoHead = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        {
+                            _noteLoader.IsSlideNoHead = buttonRingSlide;
+                        }
+                        break;
+                    case "IsSlideNoTrack":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            _noteLoader.IsSlideNoTrack = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        {
+                            _noteLoader.IsSlideNoTrack = buttonRingSlide;
                         }
                         break;
                     case "AutoPlay":
@@ -276,7 +304,10 @@ namespace MajdataPlay.Game
             AutoplayMode = modsetting.AutoPlay;
             //AutoplayParam = mod5.Value ?? 7;
             JudgeStyle = modsetting.JudgeStyle;
-            switch(modsetting.NoteMask)
+            _noteManager.IsUseButtonRingForTouch = modsetting.ButtonRingForTouch;
+            _noteLoader.IsSlideNoHead = modsetting.SlideNoHead;
+            _noteLoader.IsSlideNoTrack = modsetting.SlideNoTrack;
+            switch (modsetting.NoteMask)
             {
                 case "Inner":
                     _noteMask.gameObject.SetActive(true);
@@ -303,7 +334,6 @@ namespace MajdataPlay.Game
             {
                 if(_songDetail.IsOnline)
                 {
-                    MajInstances.LightManager.SetAllLight(Color.blue);
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync().AsValueTask();
@@ -331,12 +361,18 @@ namespace MajdataPlay.Game
             }
             catch(EmptyChartException)
             {
-                inputManager.ClearAllSubscriber();
+                InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);
                 BackToList().Forget();
+            }
+            catch(InvalidSimaiMarkupException syntaxE)
+            {
+                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Invalid syntax")}\n{syntaxE.Message}", Color.red);
+                MajDebug.LogError(syntaxE);
+                return;
             }
             catch(HttpTransmitException httpEx)
             {
@@ -395,7 +431,6 @@ namespace MajdataPlay.Game
                 }
             }
             AudioLength = (float)_audioSample.Length.TotalSeconds / MajInstances.Setting.Mod.PlaybackSpeed;
-            MajInstances.LightManager.SetAllLight(Color.white);
         }
         /// <summary>
         /// Parse the chart into memory
@@ -482,7 +517,7 @@ namespace MajdataPlay.Game
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
-                    await _bgManager.SetBackgroundMovie(videoPath);
+                    await _bgManager.SetBackgroundMovie(videoPath, await _songDetail.GetCoverAsync(false));
                 }
                 else
                 {
@@ -502,7 +537,6 @@ namespace MajdataPlay.Game
 
             var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
 
-            _noteLoader = GameObject.Find("NoteLoader").GetComponent<NoteLoader>();
             if(_setting.Game.TapSpeed < 0)
                 _noteLoader.NoteSpeed = -((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             else
@@ -563,7 +597,7 @@ namespace MajdataPlay.Game
             MajInstances.GameManager.DisableGC();
 
             State = GamePlayStatus.Running;
-
+            IsStart = true;
             if (!IsPracticeMode)
             {
                 while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
@@ -626,12 +660,30 @@ namespace MajdataPlay.Game
             }
         }
         
-        internal void OnUpdate()
+        
+        internal void OnPreUpdate()
         {
             AudioTimeUpdate();
-            ComponentUpdate();
+            ComponentPreUpdate();
+        }
+        internal void OnUpdate()
+        {
+            NoteManagerUpdate();
             GameControlUpdate();
             FnKeyStateUpdate();
+        }
+        internal void OnLateUpdate()
+        {
+            switch (State)
+            {
+                case GamePlayStatus.WaitForEnd:
+                case GamePlayStatus.Blocking:
+                case GamePlayStatus.Running:
+                    _noteAudioManager.OnLateUpdate();
+                    _noteManager.OnLateUpdate();
+                    _objectCounter.OnLateUpdate();
+                    break;
+            }
         }
         void GameControlUpdate()
         {
@@ -699,31 +751,28 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void ComponentUpdate()
+        void ComponentPreUpdate()
         {
             switch(State)
             {
                 case GamePlayStatus.WaitForEnd:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.Running:
-                    _noteAudioManager.OnUpdate();
-                    _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
+                    _noteAudioManager.OnPreUpdate();
+                    _noteManager.OnPreUpdate();
+                    _notePoolManager.OnPreUpdate();
                     break;
             }
-            _timeDisplayer.OnUpdate();
+            _timeDisplayer.OnPreUpdate();
         }
-        internal void OnLateUpdate()
+        void NoteManagerUpdate()
         {
-            
             switch (State)
             {
                 case GamePlayStatus.WaitForEnd:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.Running:
-                    _noteAudioManager.OnLateUpdate();
-                    _noteManager.OnLateUpdate();
-                    _objectCounter.OnLateUpdate();
+                    _noteManager.OnUpdate();
                     break;
             }
         }
@@ -738,14 +787,14 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = _ioManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
-                    var _3456 = _ioManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
-                                _ioManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
+                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
+                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
                     if(_2367)
                     {
                         _2367PressTime += Time.deltaTime;
@@ -826,21 +875,25 @@ namespace MajdataPlay.Game
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    MajInstances.LightManager.SetAllLight(Color.yellow);
                     break;
                 case ComboState.AP:
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    MajInstances.LightManager.SetAllLight(Color.red);
                     break;
                 case ComboState.FCPlus:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    MajInstances.LightManager.SetAllLight(Color.green);
                     break;
                 case ComboState.FC:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                    MajInstances.LightManager.SetAllLight(Color.green);
                     break;
             }
         }
@@ -916,11 +969,12 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            MajInstances.InputManager.ClearAllSubscriber();
+            InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
             Majdata<GamePlayManager>.Free();
             Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
         }
         async UniTaskVoid BackToList()
         {

@@ -48,14 +48,30 @@ namespace MajdataPlay.Title
                         break;
                 }
             };
+            await Task.Delay(3000);
             await SongStorage.ScanMusicAsync(progress);
 
             if (!SongStorage.IsEmpty)
             {
                 var setting = MajInstances.Setting;
-                await SongStorage.SortAndFindAsync();
                 SongStorage.CollectionIndex = setting.Misc.SelectedDir;
-                SongStorage.WorkingCollection.Index = setting.Misc.SelectedIndex;
+                var selectedCollection = SongStorage.WorkingCollection;
+                var selectedIndex = setting.Misc.SelectedIndex;
+
+                if(selectedCollection.IsEmpty)
+                {
+                    setting.Misc.SelectedIndex = 0;
+                    return;
+                }
+                else if(selectedIndex >= selectedCollection.Count)
+                {
+                    selectedCollection.Index = 0;
+                    setting.Misc.SelectedIndex = 0;
+                }
+                else
+                {
+                    selectedCollection.Index = selectedIndex;
+                }
             }
         }
 
@@ -104,7 +120,10 @@ namespace MajdataPlay.Title
                     if (songStorageTask.IsCompleted)
                     {
                         if (songStorageTask.IsFaulted)
+                        {
                             echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                            MajDebug.LogException(songStorageTask.Exception);
+                        }
                         else if (SongStorage.IsEmpty)
                         {
                             isEmpty = true;
@@ -132,7 +151,7 @@ namespace MajdataPlay.Title
                                 }
                             }
                             echoText.text = Localization.GetLocalizedText("Press Any Key");
-                            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                            InputManager.BindAnyArea(OnAreaDown);
 
                         }
                         break;
@@ -154,7 +173,7 @@ namespace MajdataPlay.Title
 
         void EnterTestMode()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
@@ -162,7 +181,7 @@ namespace MajdataPlay.Title
         }
         void NextScene()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
             _pressTime = 0;
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");

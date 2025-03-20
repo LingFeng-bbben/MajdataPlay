@@ -26,6 +26,10 @@ namespace MajdataPlay.View
         ViewManager _viewManager;
         protected override void Awake()
         {
+            if (Majdata<WsServer>.Instance is not null) { 
+                Destroy(this.gameObject);
+                return;
+            }
             base.Awake();
             Majdata<WsServer>.Instance = this;
             DontDestroyOnLoad(GameObject);
@@ -41,13 +45,16 @@ namespace MajdataPlay.View
 
         void OnDestroy()
         {
-            _webSocket.RemoveWebSocketService("/majdata");
-            _webSocket.Stop();
+            if (_webSocket is not null)
+            {
+                _webSocket.RemoveWebSocketService("/majdata");
+                _webSocket.Stop();
+            }
         }
     }
     public class MajdataWsService : WebSocketBehavior, IDisposable
     {
-        ViewManager _viewManager = Majdata<ViewManager>.Instance!;
+        ViewManager? _viewManager => Majdata<ViewManager>.Instance;
 
         readonly CancellationTokenSource _cts = new();
         readonly static JsonSerializerOptions JSON_READER_OPTIONS = new()
@@ -106,6 +113,7 @@ namespace MajdataPlay.View
         }
         protected override async void OnMessage(MessageEventArgs e)
         {
+            if (_viewManager is null) return;
             try
             {
                 var json = string.Empty;

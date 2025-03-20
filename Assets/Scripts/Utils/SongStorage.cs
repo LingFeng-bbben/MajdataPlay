@@ -12,6 +12,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
@@ -47,6 +49,9 @@ namespace MajdataPlay.Utils
         public static long TotalChartCount { get; private set; } = 0;
 
         static int _collectionIndex = 0;
+        static MyFavoriteSongCollection _myFavorite = new();
+        readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
+        readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
             try
@@ -126,51 +131,73 @@ namespace MajdataPlay.Utils
                     }
                 }
                 collections.Add(new SongCollection("All", allcharts.ToArray()));
+                MajDebug.Log("MyFavorite");
+                var favoriteListPath = Path.Combine(MY_FAVORITE_STORAGE_PATH);
+                if(File.Exists(favoriteListPath))
+                {
+                    var (result, favoriteInfo) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(favoriteListPath));
+                    if (result && favoriteInfo is not null)
+                    {
+                        var hashSet = favoriteInfo.SongHashs;
+                        var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
+                                            .OrderByDescending(x => x.IsOnline)
+                                            .GroupBy(x => x.Hash)
+                                            .Select(x => x.FirstOrDefault())
+                                            .Where(x => x is not null)
+                                            .ToList();
+                        MajDebug.Log(favoriteSongs.Count);
+                        hashSet = favoriteSongs.Select(o => o.Hash).ToArray();
+                        _myFavorite = new(favoriteSongs, new HashSet<string>(hashSet));
+                    }
+                }
+                //The collections and _myFavorite share a same ref of original List<T>
+                collections.Add(_myFavorite);
                 MajDebug.Log("Load Dans");
                 var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
-                foreach (var file in danFiles)
+                var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
+                for (var i = 0; i < loadDanTasks.Length; i++)
                 {
-                    var json = File.ReadAllText(file.FullName);
-                    var dan = Serializer.Json.Deserialize<DanInfo>(json, new JsonSerializerOptions()
+                    if(i >= danFiles.Length)
+                    {
+                        loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
+                        continue;
+                    }
+                    var file = danFiles[i];
+                    if (file.Name == MY_FAVORITE_FILENAME)
+                    {
+                        loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
+                        continue;
+                    }
+                    var jsonStream = File.OpenRead(file.FullName);
+                    var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
                     {
                         PropertyNameCaseInsensitive = false
                     });
-                    if (dan is null)
+                    if (result && dan is not null)
                     {
-                        MajDebug.LogError("Failed to load dan file:" + file.FullName);
-                        continue;
+                        loadDanTasks[i] = GetDanCollection(allcharts, dan);
                     }
-                    List<ISongDetail> danSongs = new();
-                    foreach (var hash in dan.SongHashs)
+                }
+                if(loadDanTasks.Length != 0)
+                {
+                    var allTask = Task.WhenAll(loadDanTasks);
+                    while (!allTask.IsCompleted)
+                        await Task.Yield();
+                    foreach(var task in loadDanTasks)
                     {
-                        // search online first (so can upload score)
-                        var songDetail = allcharts.FirstOrDefault(x => x.Hash == hash && x.IsOnline == true);
-                        if (songDetail == null)
-                            songDetail = allcharts.FirstOrDefault(x => x.Hash == hash);
-                        if (songDetail is not null)
-                            danSongs.Add(songDetail);
-                        else
+                        if(task.IsFaulted)
                         {
-                            MajDebug.LogError("Cannot find the song with hash:" + hash);
-                            if (dan.IsPlayList)
-                            {
-                                continue;
-                            }
-                            danSongs.Clear();
-                            break;
+                            MajDebug.LogError(task.Exception);
+                            continue;
                         }
+                        var collection = task.Result;
+                        if(collection is null)
+                        {
+                            continue;
+                        }
+                        collections.Add(collection);
+                        MajDebug.Log("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
                     }
-                    if (danSongs.Count == 0)
-                    {
-                        MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + dan.Name);
-                        continue;
-                    }
-                    collections.Add(new SongCollection(dan.Name, danSongs.ToArray())
-                    {
-                        Type = dan.IsPlayList ? ChartStorageType.List : ChartStorageType.Dan,
-                        DanInfo = dan.IsPlayList ? null : dan
-                    });
-                    MajDebug.Log("Loaded Dan:" + dan.Name);
                 }
                 return collections.ToArray();
             }
@@ -273,51 +300,56 @@ namespace MajdataPlay.Utils
                 return collection;
             }
         }
-        public static void SortAndFind(string searchKey, SortType sortType)
+        static async Task<SongCollection?> GetDanCollection(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
         {
-            OrderBy.Keyword = searchKey;
-            OrderBy.SortBy = sortType;
-            SortAndFind();
-        }
-        public static void SortAndFind()
-        {
-            if (Collections.IsEmpty())
-                return;
-
-            var searchKey = OrderBy.Keyword;
-            var sortType = OrderBy.SortBy;
-            
-            if(string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
+            return await Task.Run(() =>
             {
-                foreach (var collection in Collections)
-                    collection.Reset();
-                return;
-            }
-            foreach (var collection in Collections)
-                collection.SortAndFilter(OrderBy);
+                var songHashs = danInfo.SongHashs;
+                var targetCharts = allCharts.Where(x => songHashs.Any(y => y == x.Hash))
+                                            .OrderByDescending(x => x.IsOnline)
+                                            .GroupBy(x => x.Hash)
+                                            .Select(x => x.FirstOrDefault())
+                                            .Where(x => x is not null)
+                                            .ToArray();
+                if(targetCharts.Length == 0)
+                {
+                    MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + danInfo.Name);
+                    return default;
+                }
+                return new SongCollection(danInfo.Name, targetCharts)
+                {
+                    Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
+                    DanInfo = danInfo.IsPlayList ? null : danInfo
+                };
+            });
         }
-        public static async Task SortAndFindAsync(string searchKey, SortType sortType)
+        internal static void OnApplicationQuit()
         {
-            OrderBy.Keyword = searchKey;
-            OrderBy.SortBy = sortType;
-            await SortAndFindAsync();
+            var hashSet = _myFavorite.ExportHashSet();
+            File.WriteAllText(MY_FAVORITE_STORAGE_PATH,
+                              Serializer.Json.Serialize(new DanInfo()
+                              {
+                                  Name = "My Favorites",
+                                  SongHashs = hashSet.ToArray(),
+                                  IsPlayList = true
+                              }
+                ));
         }
-        public static async Task SortAndFindAsync()
+        public static void AddToMyFavorites(ISongDetail songDetail)
         {
-            Task[] tasks = new Task[Collections.Length];
-
-            var searchKey = OrderBy.Keyword;
-            var sortType = OrderBy.SortBy;
-
-            if (string.IsNullOrEmpty(searchKey) && sortType == SortType.Default)
-            {
-                foreach (var collection in Collections)
-                    collection.Reset();
-                return;
-            }
-            foreach (var (i, collection) in Collections.WithIndex())
-                tasks[i] = collection.SortAndFilterAsync(OrderBy);
-            await Task.WhenAll(tasks);
+            _myFavorite.Add(songDetail);
+        }
+        public static bool IsInMyFavorites(ISongDetail songDetail)
+        {
+            return _myFavorite.Any(o=>o.Hash == songDetail.Hash);
+        }
+        public static void RemoveFromMyFavorites(ISongDetail songDetail)
+        {
+            _myFavorite.Remove(songDetail);
+        }
+        public static void RemoveFromMyFavorites(string hashBase64Str)
+        {
+            _myFavorite.Remove(hashBase64Str);
         }
     }    
 }

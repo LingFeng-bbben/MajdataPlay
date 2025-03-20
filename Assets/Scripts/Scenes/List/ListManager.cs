@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -49,15 +49,15 @@ namespace MajdataPlay.List
             try
             {
                 await UniTask.Delay(100);
-                _coverListDisplayer.SwitchToDirList();
-                _coverListDisplayer.SwitchToSongList();
+                await _coverListDisplayer.SwitchToDirListAsync();
+                await _coverListDisplayer.SwitchToSongListAsync();
                 _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
                 await UniTask.Delay(100);
             }
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                MajInstances.InputManager.BindAnyArea(OnAreaDown);
+                InputManager.BindAnyArea(OnAreaDown);
             }
         }
         void OnDestroy()
@@ -66,7 +66,7 @@ namespace MajdataPlay.List
             MajEnv.SharedHttpClient.CancelPendingRequests();
             _cts.Cancel();
         }
-        private void OnAreaDown(object sender, InputEventArgs e)
+        private async void OnAreaDown(object sender, InputEventArgs e)
         {
             
             if (!e.IsButton&&e.IsDown)
@@ -74,22 +74,33 @@ namespace MajdataPlay.List
                 switch (e.Type)
                 {
                     case SensorArea.A7:
+                    case SensorArea.E8:
                         _coverListDisplayer.SlideList(1);
                         break;
+                    case SensorArea.B8:
                     case SensorArea.A8:
                         _coverListDisplayer.SlideList(2);
                         break;
+                    case SensorArea.E1:
+                    case SensorArea.D1:
                     case SensorArea.A1:
                         _coverListDisplayer.SlideList(3);
                         break;
                     case SensorArea.A6:
+                    case SensorArea.E6:
                         _coverListDisplayer.SlideList(-1);
                         break;
                     case SensorArea.A5:
+                    case SensorArea.B5:
                         _coverListDisplayer.SlideList(-2);
                         break;
+                    case SensorArea.E5:
+                    case SensorArea.D5:
                     case SensorArea.A4:
                         _coverListDisplayer.SlideList(-3);
+                        break;
+                    case SensorArea.C:
+                        _coverListDisplayer.RandomSelect();
                         break;
                     // xxlb
                     case SensorArea.B7:
@@ -98,6 +109,9 @@ namespace MajdataPlay.List
                         var list = new string[] { "notouch.wav", "notouch_2.wav", "notouch_3.wav", "notouch_4.wav", "notouch_5.wav" };
                         MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                         XxlbAnimation.instance.PlayTouchAnimation();
+                        break;
+                    case SensorArea.B2:
+                        _coverListDisplayer.FavoriteAdder.FavoratePressed();
                         break;
                 }
             }
@@ -116,15 +130,15 @@ namespace MajdataPlay.List
                         case SensorArea.A4:
                             if (_coverListDisplayer.IsDirList)
                             {
-                                if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
+                                if (_coverListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
                                 {
-                                    var danInfo = SongStorage.WorkingCollection.DanInfo;
-                                    var collection = SongStorage.WorkingCollection;
+                                    var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
+                                    var collection = _coverListDisplayer.SelectedCollection;
                                     if (danInfo is null)
                                         return;
                                     else if (danInfo.SongLevels.Length != collection.Count)
                                         return;
-                                    MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                                    InputManager.UnbindAnyArea(OnAreaDown);
                                     MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                                     var list = new string[] { "track_start.wav", "track_start_2.wav" };
                                     MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
@@ -135,37 +149,37 @@ namespace MajdataPlay.List
                                     }
                                     var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
                                     {
-                                        MaxHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        CurrentHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        HPRecover = SongStorage.WorkingCollection.DanInfo.RestoreHP,
+                                        MaxHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        CurrentHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        HPRecover = _coverListDisplayer.SelectedCollection.DanInfo.RestoreHP,
                                         DanInfo = danInfo
                                     };
                                     Majdata<GameInfo>.Instance = info;
                                     //MajInstances.GameManager.isDanMode = true;
                                     //MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
                                     //MajInstances.GameManager.DanResults.Clear();
-                                    SongStorage.WorkingCollection.Index = 0;
+                                    _coverListDisplayer.SelectedCollection.Index = 0;
                                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                                 }
                                 else
                                 {
-                                    _coverListDisplayer.SwitchToSongList();
+                                    await _coverListDisplayer.SwitchToSongListAsync();
                                     MajInstances.LightManager.SetButtonLight(Color.red, 4);
                                 }
                             }
                             else
                             {
-                                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                                InputManager.UnbindAnyArea(OnAreaDown);
                                 MajInstances.AudioManager.StopSFX("bgm_select.mp3");
                                 var list = new string[] { "track_start.wav", "track_start_2.wav" };
                                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                                 var levels = new ChartLevel[]
                                 {
-                                MajInstances.GameManager.SelectedDiff
+                                    MajInstances.GameManager.SelectedDiff
                                 };
                                 var charts = new ISongDetail[]
                                 {
-                                    SongStorage.WorkingCollection.Current
+                                    _coverListDisplayer.SelectedSong
                                 };
                                 if (_pressTime > 1f)
                                 {
@@ -222,13 +236,13 @@ namespace MajdataPlay.List
                             _coverListDisplayer.SlideDifficulty(1);
                             break;
                         case SensorArea.P1:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.SceneSwitcher.SwitchScene("SortFind");
                             break;
                         case SensorArea.A5:
                             if (_coverListDisplayer.IsChartList)
                             {
-                                _coverListDisplayer.SwitchToDirList();
+                                await _coverListDisplayer.SwitchToDirListAsync();
                                 MajInstances.LightManager.SetButtonLight(Color.white, 4);
                                 SongStorage.WorkingCollection.Index = 0;
                             }
@@ -241,12 +255,12 @@ namespace MajdataPlay.List
                             }
                             break;
                         case SensorArea.A7:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 0;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");
                             break;
                         case SensorArea.A2:
-                            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            InputManager.UnbindAnyArea(OnAreaDown);
                             MajInstances.GameManager.LastSettingPage = 4;
                             MajInstances.SceneSwitcher.SwitchScene("Setting");
                             break;
@@ -264,9 +278,11 @@ namespace MajdataPlay.List
                     await UniTask.Yield();
                     continue;
                 }
+                _coverListDisplayer.DisableAnimation = true;
                 _coverListDisplayer.SlideList(_delta);
-                await UniTask.Delay(100);
+                await UniTask.Delay(150);
             }
+            _coverListDisplayer.DisableAnimation = false;
         }
         async UniTaskVoid PracticeTimer()
         {

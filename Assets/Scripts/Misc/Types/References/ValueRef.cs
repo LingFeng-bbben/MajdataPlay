@@ -12,6 +12,7 @@ namespace MajdataPlay.References
     {
         public ref T Target
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref *_pointer;
         }
         readonly T* _pointer;

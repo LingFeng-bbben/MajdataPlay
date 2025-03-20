@@ -1,6 +1,4 @@
-﻿
-using MajdataPlay.Attributes;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace MajdataPlay.Editor

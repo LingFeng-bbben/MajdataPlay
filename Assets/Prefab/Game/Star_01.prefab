@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3599915660479470150}
   - component: {fileID: 3599915660479470151}
-  - component: {fileID: 3599915660479470152}
   m_Layer: 0
   m_Name: Star_01
   m_TagString: Untagged
@@ -86,26 +85,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 2
   m_SpriteSortPoint: 0
---- !u!114 &3599915660479470152
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3599915660479470153}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 309cdd5d8b4098f46aab9707812f563d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _startPos: 0
-  _timing: 0
-  _speed: 7
-  _sortOrder: 0
-  _isEach: 0
-  _isBreak: 0
-  _isEX: 0
-  tapLine: {fileID: 7599635926637845735, guid: 170f7f7a95689ea479fc7270d6ebf074, type: 3}
 --- !u!1 &5847727196508993278
 GameObject:
   m_ObjectHideFlags: 0

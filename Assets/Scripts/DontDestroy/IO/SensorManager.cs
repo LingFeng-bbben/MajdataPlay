@@ -17,15 +17,18 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
-                if (!report.Index.InRange(0, 33))
-                    continue;
                 var index = report.Index;
+                if (!index.InRange(0, 33))
+                    continue;
+                
                 var sensor = index switch
                 {
                     <= (int)SensorArea.C => sensors[index],
                     > 17 => sensors[index - 1],
                     _ => sensors[16],
                 };
+                var sensorArea = sensor.Area;
+                var sensorIndex = (int)sensorArea;
                 var timestamp = report.Timestamp;
                 if (sensor is null)
                 {
@@ -38,7 +41,7 @@ namespace MajdataPlay.IO
                 var C1 = sensorStates[16];
                 var C2 = sensorStates[17];
 
-                if (sensor.Area == SensorArea.C)
+                if (sensorArea == SensorArea.C)
                 {
                     var CSubAreaState = report.State is SensorStatus.On ? true: false;
                     switch (index)
@@ -53,7 +56,7 @@ namespace MajdataPlay.IO
                 }
                 if (_isSensorDebounceEnabled)
                 {
-                    if (JitterDetect(sensor.Area, timestamp))
+                    if (JitterDetect(sensorArea, timestamp))
                     {
                         continue;
                     }
@@ -68,7 +71,7 @@ namespace MajdataPlay.IO
                         }
                         continue;
                     }
-                    _sensorLastTriggerTimes[sensor.Area] = timestamp;
+                    _sensorLastTriggerTimes[sensorIndex] = timestamp;
                 }
                 else if(oldState == newState)
                 {

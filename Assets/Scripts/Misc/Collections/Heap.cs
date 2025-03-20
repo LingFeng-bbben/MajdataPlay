@@ -6,112 +6,210 @@ using System.Runtime.InteropServices;
 #nullable enable
 namespace MajdataPlay.Collections
 {
-    public unsafe class Heap<T> : IEnumerable<T>, ICloneable, IDisposable where T : unmanaged
+    public unsafe struct Heap<T> : IEnumerable<T>, ICloneable, IDisposable
     {
-        public int Length => (int)_length;
-        public long LongLength => _length;
-        public bool IsEmpty => _length == 0;
-        public static Heap<T> Empty { get; } = new Heap<T>(0);
-        public T this[long index]
+        public long Length
         {
             get
             {
-                if (index >= LongLength || index < 0)
-                    throw new IndexOutOfRangeException();
-                return _pointer[index];
+                ThrowIfDisposed();
+                return _length;
             }
-            set => _pointer[index] = value;
-
+        }
+        public bool IsEmpty
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _length == 0;
+            }
+        }
+        public static Heap<T> Empty { get; } = new Heap<T>(0);
+        public ref T this[long index]
+        {
+            get
+            {
+                ThrowIfDisposed();
+                if (index >= Length || index < 0)
+                    throw new IndexOutOfRangeException();
+                return ref GetElement(index + _start);
+            }
         }
 
-        readonly bool _need2Free = true;
+        readonly bool _selfAllocation;
+        readonly long _start;
         readonly long _length;
-        readonly T* _pointer;
-        readonly GCHandle? _ptrHandle = null;
+        readonly void* _pointer;
+        readonly object? _object;
 
-        bool _isDisposed = false;
+        bool _isDisposed;
 
-
-        public Heap(long length)
+        Heap(bool _)
         {
-            _pointer = (T*)Marshal.AllocHGlobal(new IntPtr(length));
+            _object = null;
+            _isDisposed = false;
+            _pointer = default;
+            _length = 0;
+            _start = 0;
+            _selfAllocation = false;
+        }
+        public Heap(long length): this(true)
+        {
+            if (length == 0)
+            {
+                return;
+            }
+            else if(length < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            _pointer = (void*)Marshal.AllocHGlobal(new IntPtr(length * Unsafe.SizeOf<T>()));
             _length = length;
+            _selfAllocation = true;
+            
             for (int i = 0; i < length; i++)
-                _pointer[i] = default;
+            {
+                var ptr = Unsafe.Add<T>(_pointer, i);
+                ref var objRef = ref Unsafe.AsRef<T>(ptr);
+                objRef = default(T);
+            }
+        }
+        public Heap(void* pointer, long start, long length) : this(true)
+        {
+            if(start < 0 || length < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            if (pointer is null)
+                throw new NullReferenceException();
+            _pointer = pointer;
+            _length = length;
+            _start = start;
+        }
+        public Heap(void* pointer, long length) : this(pointer, 0, length)
+        {
+
+        }
+        public Heap(T[] array, int start, int length) : this(true)
+        {
+            if (start < 0 || length < 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            _object = array;
+            _start = start;
+            _length = length;
+        }
+        public Heap(T[] array, int length) : this(array, 0, length)
+        {
+
         }
         public Heap(T[] array) : this(array, 0, array.Length)
         {
 
         }
-        public Heap(T[] array, int start, int length)
+        public Heap<T> Slice(long start)
         {
-            //var pointer = Unsafe.AsPointer(ref MemoryMarshal.GetArrayDataReference(array));
-            var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            var pointer = handle.AddrOfPinnedObject();
-            _pointer = (T*)Unsafe.Add<T>(pointer.ToPointer(), start);
-            _length = length;
-            _need2Free = false;
+            if(start > _length || start < 0)
+                throw new ArgumentOutOfRangeException();
+
+            var array = _object as T[];
+            if(array is null)
+            {
+                return new Heap<T>(_pointer, start, _length - start);
+            }
+            else
+            {
+                if(start > int.MaxValue)
+                    throw new ArgumentOutOfRangeException();
+                return new Heap<T>(array, (int)start, (int)(_length - start));
+            }
         }
-        public Heap(T* pointer, long length)
-        {
-            if (pointer is null)
-                throw new NullReferenceException();
-            _pointer = pointer;
-            _length = length;
-        }
-        public Heap(void* pointer, long length) : this((T*)pointer, length)
+        public Heap<T> Slice(long start, long length)
         {
 
-        }
-        public Heap(IntPtr pointer, long length) : this((T*)pointer, length)
-        {
+            if (start > _length || start < 0 || _length - start < length)
+                throw new ArgumentOutOfRangeException();
 
-        }
-        ~Heap()
-        {
-            if (!_isDisposed)
-                Dispose();
+            var array = _object as T[];
+            if (array is null)
+            {
+                return new Heap<T>(_pointer, start, length);
+            }
+            else
+            {
+                if (start > int.MaxValue || length > int.MaxValue)
+                    throw new ArgumentOutOfRangeException();
+                return new Heap<T>(array, (int)start, (int)(length));
+            }
         }
         public void CopyTo(Heap<T> dest)
         {
-            if (dest.LongLength < _length)
+            if (dest.Length < _length)
                 throw new ArgumentException("destination is shorter than the source Heap");
             for (int i = 0; i < _length; i++)
-                dest[i] = _pointer[i];
+                dest[i] = this[i];
         }
         public object Clone()
         {
             if (IsEmpty)
                 return Empty;
-            var ptr = (T*)Marshal.AllocHGlobal(new IntPtr(_length));
-            var newHeap = new Heap<T>(ptr, _length);
-            for (int i = 0; i < _length; i++)
-                newHeap[i] = _pointer[i];
+            var newHeap = new Heap<T>(_length);
+            CopyTo(newHeap);
             return newHeap;
         }
         public void Dispose()
         {
-            ThrowIfDisposed(_isDisposed);
+            if (!_selfAllocation)
+                return;
+            ThrowIfDisposed();
             _isDisposed = true;
             if (!IsEmpty)
             {
-                if (_need2Free)
+                var array = _object as T[];
+                if (array is not null)
+                {
+                    return;
+                }
+                else if (_pointer != default)
+                {
                     Marshal.FreeHGlobal((IntPtr)_pointer);
-                else if (_ptrHandle is GCHandle handle)
-                    handle.Free();
+                }
             }
         }
-        void ThrowIfDisposed(bool condition)
+        void ThrowIfDisposed()
         {
-            if (condition)
+            if (_isDisposed)
                 throw new ObjectDisposedException(ToString());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ref T GetElement(long elementOffset)
+        {
+            var array = _object as T[];
+            if(array is not null)
+            {
+                return ref array[elementOffset];
+            }
+            else
+            {
+                var ptr = AddOffset(elementOffset);
+
+                return ref Unsafe.AsRef<T>(ptr);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void* AddOffset(long elementOffset)
+        {
+            var ptr = (byte*)_pointer;
+            var elementSize = Unsafe.SizeOf<T>();
+
+            return ptr + elementOffset * elementSize;
         }
         public static bool TryAlloc(long length, out Heap<T> heap)
         {
             try
             {
-                var ptr = (T*)Marshal.AllocHGlobal(new IntPtr(length));
-                heap = new Heap<T>(ptr, length);
+                heap = new Heap<T>(length);
                 return true;
             }
             catch

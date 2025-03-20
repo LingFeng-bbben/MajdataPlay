@@ -37,13 +37,13 @@ namespace MajdataPlay.Result
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null)
             {
-                infotext.text = "";
+               
                 thumb.gameObject.SetActive(false);
                 return false;
             }
             _onlineDetail = onlineDetail;
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
-            //MajInstances.LightManager.SetButtonLight(Color.yellow, 2);
+            InputManager.BindAnyArea(OnAreaDown); 
+            infotext.text = Localization.GetLocalizedText("THUMBUP_INFO");
             return true;
         }
 
@@ -51,14 +51,14 @@ namespace MajdataPlay.Result
         {
             if (e.IsDown && (e.Type == SensorArea.E3 || e.Type == SensorArea.B3))
             {
-                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(_onlineDetail);
             }
         }
 
         private void OnDestroy()
         {
-            MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaDown);
         }
 
         internal void SendInteraction(OnlineSongDetail song)
@@ -68,12 +68,12 @@ namespace MajdataPlay.Result
 
         async UniTask SendLike(OnlineSongDetail song)
         {
-            infotext.text = "稍等...";
+            infotext.text = Localization.GetLocalizedText("THUMBUP_SENDING");
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await MajInstances.OnlineManager.SendLike(song);
-                infotext.text = "点赞成功";
+                infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
             }
             catch (Exception ex)
             {
@@ -86,11 +86,11 @@ namespace MajdataPlay.Result
 
         public async UniTask SendScore(MaiScore score)
         {
-            uploadtext.text = "正在上传成绩";
+            uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
             try
             {
                 await MajInstances.OnlineManager.SendScore(_onlineDetail, score);
-                uploadtext.text = "上传成绩成功";
+                uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
             }
             catch (Exception ex)
             {

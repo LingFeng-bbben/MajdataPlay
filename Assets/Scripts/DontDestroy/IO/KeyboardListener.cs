@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
                     token.ThrowIfCancellationRequested();
                     try
                     {
-                        var now = DateTime.Now;
+                        var now = MajTimeline.UnscaledTime;
                         var buttons = _buttons.Span;
                         for (var i = 0; i < buttons.Length; i++)
                         {
@@ -67,20 +67,21 @@ namespace MajdataPlay.IO
             var buttons = _buttons.Span;
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
-                if (!report.Index.InRange(0, 11))
+                var index = report.Index;
+                if (!index.InRange(0, 11))
                     continue;
-                var button = buttons[report.Index];
+                var button = buttons[index];
                 var oldState = button.State;
                 var newState = report.State;
                 var timestamp = report.Timestamp;
 
                 if (oldState == newState)
                     continue;
-                else if (_isBtnDebounceEnabled)
+                else if (_isBtnDebounceEnabled && index.InRange(0, 7))
                 {
                     if (JitterDetect(button.Area, timestamp, true))
                         continue;
-                    _btnLastTriggerTimes[button.Area] = timestamp;
+                    _btnLastTriggerTimes[index] = timestamp;
                 }
                 button.State = newState;
                 MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");

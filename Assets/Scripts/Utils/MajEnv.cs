@@ -27,6 +27,7 @@ namespace MajdataPlay.Utils
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 4000;
+        public const int SERIAL_READ_BUFFER_SIZE = 8192;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -77,8 +78,11 @@ namespace MajdataPlay.Utils
             CheckNoteSkinFolder();
 
             var netCachePath = Path.Combine(CachePath, "Net");
+            var runtimeCachePath = Path.Combine(CachePath, "Runtime");
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
+            if (!Directory.Exists(runtimeCachePath))
+                Directory.CreateDirectory(runtimeCachePath);
             if (!Directory.Exists(netCachePath))
                 Directory.CreateDirectory(netCachePath);
             if (!Directory.Exists(ChartPath))

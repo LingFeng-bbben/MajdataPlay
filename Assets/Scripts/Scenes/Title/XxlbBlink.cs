@@ -2,28 +2,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-public class XxlbBlink : MonoBehaviour
-{
-    public Sprite XxlbDefault;
-    public Sprite XxlbBlinks;
-    public Image image;
-    // Start is called before the first frame update
-    void Start()
-    {
-        image = GetComponent<Image>();
-    }
 
-    // Update is called once per frame
-    void FixedUpdate()
+namespace MajdataPlay.Title
+{
+    public class XxlbBlink : MonoBehaviour
     {
-        var ran = Random.Range(0, 80);
-        if(ran == 1)
+        public Sprite XxlbDefault;
+        public Sprite XxlbBlinks;
+        public Image image;
+        // Start is called before the first frame update
+        void Start()
         {
-            image.sprite = XxlbBlinks;
+            image = GetComponent<Image>();
         }
-        else
+
+        // Update is called once per frame
+        void FixedUpdate()
         {
-            image.sprite = XxlbDefault;
+            var ran = Random.Range(0, 80);
+            if (ran == 1)
+            {
+                image.sprite = XxlbBlinks;
+            }
+            else
+            {
+                image.sprite = XxlbDefault;
+            }
         }
     }
 }

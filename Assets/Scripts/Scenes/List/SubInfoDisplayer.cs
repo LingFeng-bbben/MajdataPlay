@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using MajdataPlay.Utils;
 using System.Threading.Tasks;
+using System;
 #nullable enable
 namespace MajdataPlay.List
 {
@@ -19,7 +20,6 @@ namespace MajdataPlay.List
         public TMP_Text good_text;
         public TMP_Text CommentText;
         public GameObject CommentBox;
-        public GameObject llxb;
 
         CancellationTokenSource _cts = new();
 
@@ -32,42 +32,57 @@ namespace MajdataPlay.List
                 _cts.Cancel();
                 _cts = new();
                 GetOnlineInteraction(onlineDetail, _cts.Token).Forget();
-                llxb.SetActive(true);
             }
             else
             {
-                id_text.text = "";
-                good_text.text = "";
-                _cts.Cancel();
-                CommentBox.SetActive(false);
-                llxb.SetActive(false);
+                Hide();
             }
+        }
+        public void Hide()
+        {
+            id_text.text = "";
+            HideInteraction();
+        }
+
+        public void HideInteraction()
+        {
+            good_text.text = "";
+            _cts.Cancel();
+            CommentBox.SetActive(false);
         }
 
         async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
         {
-            await UniTask.SwitchToThreadPool();
-            var client = HttpTransporter.ShareClient;
-            var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
-            using var rsp = await client.GetAsync(interactUrl, token);
-            using var intjson = await rsp.Content.ReadAsStreamAsync();
-            var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
-            await UniTask.Yield(cancellationToken: token);
-            token.ThrowIfCancellationRequested();
-            good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
-
-            CommentBox.SetActive(true);
-            foreach (var comment in list.Comments)
-            {
-                var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
-                CommentText.text = text;
-                await UniTask.Delay(5000, cancellationToken: token);
+                await UniTask.SwitchToThreadPool();
+                var client = HttpTransporter.ShareClient;
+                var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
+                using var rsp = await client.GetAsync(interactUrl, token);
+                using var intjson = await rsp.Content.ReadAsStreamAsync();
+                var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await UniTask.Yield(cancellationToken: token);
                 token.ThrowIfCancellationRequested();
+                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
+
+                CommentBox.SetActive(true);
+                foreach (var comment in list.Comments)
+                {
+                    var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
+                    CommentText.text = text;
+                    await UniTask.Delay(5000, cancellationToken: token);
+                    token.ThrowIfCancellationRequested();
+                }
+                CommentBox.SetActive(false);
+            }catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+                await UniTask.SwitchToMainThread();
+                HideInteraction();
             }
-            CommentBox.SetActive(false);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Cysharp.Text;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -46,7 +45,7 @@ namespace MajdataPlay.Game
             _lastUpdateTime = TimeSpan.FromSeconds(_noteController.ThisFrameSec) - _audioTimeOffset;
         }
 
-        internal void OnUpdate()
+        internal void OnPreUpdate()
         {
             // Lock AudioTime variable for real
             var audioLen = TimeSpan.FromSeconds(_noteController.AudioLength);
