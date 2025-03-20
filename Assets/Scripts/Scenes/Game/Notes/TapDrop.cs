@@ -237,7 +237,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.15f;
+            var isTooLate = timing > TAP_JUDGE_GOOD_AREA_MSEC / 1000;
 
             if (isTooLate)
             {

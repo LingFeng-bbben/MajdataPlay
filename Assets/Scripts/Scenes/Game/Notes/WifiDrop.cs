@@ -247,13 +247,10 @@ namespace MajdataPlay.Game.Notes
         }
         void SlideCheck()
         {
-            /// time      是Slide启动的时间点
-            /// timeStart 是Slide完全显示但未启动
-            /// LastFor   是Slide的时值
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + Length + 0.6 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
-            var isTooLate = thisFrameSec - tooLateTiming >= 0;
+            var tooLateTiming = StartTiming + Length + (SLIDE_JUDGE_GOOD_AREA_MSEC / 1000) + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (startTiming >= -0.05f)
                 _isCheckable = true;
@@ -276,7 +273,7 @@ namespace MajdataPlay.Game.Notes
                 if (_lastWaitTimeSec <= 0)
                     End();
                 else
-                    _lastWaitTimeSec -= Time.deltaTime;
+                    _lastWaitTimeSec -= MajTimeline.DeltaTime;
             }
         }
         int GetIndex()
