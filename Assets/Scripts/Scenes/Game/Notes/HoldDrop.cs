@@ -164,7 +164,7 @@ namespace MajdataPlay.Game.Notes
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
-            _playerReleaseTime = 0;
+            _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
             _lastHoldState = -2;
             _releaseTime = 0;
@@ -510,7 +510,7 @@ namespace MajdataPlay.Game.Notes
                     _releaseTime += MajTimeline.DeltaTime;
                     return;
                 }
-                _playerReleaseTime += MajTimeline.DeltaTime;
+                _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
             }

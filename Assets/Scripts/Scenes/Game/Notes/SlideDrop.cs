@@ -208,7 +208,7 @@ namespace MajdataPlay.Game.Notes
             {
                 var percent = _table.Const;
                 _judgeTiming = StartTiming + Length * (1 - percent);
-                _lastWaitTime = Length * percent;
+                _lastWaitTimeSec = Length * percent;
             }
         }
         void UpdateJudgeQueue()
@@ -463,10 +463,10 @@ namespace MajdataPlay.Game.Notes
                 }
                 else
                 {
-                    if (_lastWaitTime <= 0)
+                    if (_lastWaitTimeSec <= 0)
                         End();
                     else
-                        _lastWaitTime -= Time.deltaTime;
+                        _lastWaitTimeSec -= Time.deltaTime;
                 }
             }
         }
@@ -536,7 +536,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                 _isJudged = true;
-                _lastWaitTime = 0;
+                _lastWaitTimeSec = 0;
                 _judgeDiff = _judgeResult switch
                 {
                     < JudgeGrade.Perfect => 1,

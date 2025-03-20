@@ -118,7 +118,7 @@ namespace MajdataPlay.Game.Notes
             _judgeQueues[2] = wifiTable[2];
 
             _judgeTiming = StartTiming + (Length * (1 - wifiConst));
-            _lastWaitTime = Length * wifiConst;
+            _lastWaitTimeSec = Length * wifiConst;
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
@@ -273,10 +273,10 @@ namespace MajdataPlay.Game.Notes
             }
             else
             {
-                if (_lastWaitTime <= 0)
+                if (_lastWaitTimeSec <= 0)
                     End();
                 else
-                    _lastWaitTime -= Time.deltaTime;
+                    _lastWaitTimeSec -= Time.deltaTime;
             }
         }
         int GetIndex()
@@ -408,7 +408,7 @@ namespace MajdataPlay.Game.Notes
                 else
                     _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
                 _isJudged = true;
-                _lastWaitTime = 0;
+                _lastWaitTimeSec = 0;
                 _judgeDiff = _judgeResult switch
                 {
                     < JudgeGrade.Perfect => 1,

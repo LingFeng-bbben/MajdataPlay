@@ -17,7 +17,7 @@ namespace MajdataPlay.Game.Notes
 
         [ReadOnlyField]
         [SerializeField]
-        protected float _playerReleaseTime = 0;
+        protected float _playerReleaseTimeSec = 0;
         [ReadOnlyField]
         [SerializeField]
         protected float _length = 1f;
@@ -34,7 +34,7 @@ namespace MajdataPlay.Game.Notes
 
             var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
             var realityHT = (Length - ingoreTimeSec - offset / 1000f).Clamp(0, Length - 0.3f);
-            var percent = ((realityHT - _playerReleaseTime) / realityHT).Clamp(0, 1);
+            var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
             if(realityHT <= 0)
             {

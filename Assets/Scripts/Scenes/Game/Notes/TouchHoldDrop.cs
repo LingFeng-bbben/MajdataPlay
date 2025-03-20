@@ -177,7 +177,7 @@ namespace MajdataPlay.Game.Notes
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
-            _playerReleaseTime = 0;
+            _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
@@ -403,7 +403,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
-            var isTooLate = timing > 0.316667f;
+            var isTooLate = timing > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
 
             if (!isTooLate)
             {
@@ -422,7 +422,7 @@ namespace MajdataPlay.Game.Notes
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _judgeDiff = 316.667f;
+                _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
                 _noteManager.NextTouch(QueueInfo);
             }
         }
@@ -509,7 +509,7 @@ namespace MajdataPlay.Game.Notes
                     _releaseTime += MajTimeline.DeltaTime;
                     return;
                 }
-                _playerReleaseTime += MajTimeline.DeltaTime;
+                _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
             }

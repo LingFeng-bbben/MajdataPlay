@@ -169,7 +169,7 @@ namespace MajdataPlay.Game.Notes
 
         protected SlideOK? _slideOK;
 
-        protected float _lastWaitTime;
+        protected float _lastWaitTimeSec;
         
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
 
@@ -185,7 +185,7 @@ namespace MajdataPlay.Game.Notes
                 return;
             else if (_isJudged)
                 return;
-            var stayTimeMSec = _lastWaitTime * 1000; // 停留时间
+            var stayTimeMSec = _lastWaitTimeSec * 1000; // 停留时间
 
             // By Minepig
             var diffSec = currentSec - JudgeTiming;
@@ -217,9 +217,9 @@ namespace MajdataPlay.Game.Notes
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
-                _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
+                _lastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
             else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
-                _lastWaitTime = 0.05f;
+                _lastWaitTimeSec = 0.05f;
         }
         protected void Judge_Classic(float currentSec)
         {
@@ -250,9 +250,9 @@ namespace MajdataPlay.Game.Notes
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
-                _lastWaitTime = MathF.Abs(remainingStartTime) / 2;
+                _lastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
             else if (diffSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
-                _lastWaitTime = 0.05f;
+                _lastWaitTimeSec = 0.05f;
         }
         protected void HideBar(int endIndex)
         {

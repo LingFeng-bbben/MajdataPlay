@@ -162,46 +162,49 @@ namespace MajdataPlay.Game.Notes
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
 
-        protected const float TAP_JUDGE_SEG_1ST_PERFECT_MSEC = 16.666666f;
-        protected const float TAP_JUDGE_SEG_2ND_PERFECT_MSEC = 2 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
-        protected const float TAP_JUDGE_SEG_3RD_PERFECT_MSEC = 3 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
-        protected const float TAP_JUDGE_SEG_1ST_GREAT_MSEC = 4 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
-        protected const float TAP_JUDGE_SEG_2ND_GREAT_MSEC = 5 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
-        protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
-        protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * TAP_JUDGE_SEG_1ST_PERFECT_MSEC;
+        protected const float FRAME_LENGTH_SEC = 1f / 60;
+        protected const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
 
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_1ST_PERFECT_MSEC = 66.666666f;
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_2ND_PERFECT_MSEC = 133.333333f;
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_3RD_PERFECT_MSEC = 200f;
+        protected const float TAP_JUDGE_SEG_1ST_PERFECT_MSEC = 1 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_SEG_2ND_PERFECT_MSEC = 2 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_SEG_3RD_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_SEG_1ST_GREAT_MSEC = 4 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_SEG_2ND_GREAT_MSEC = 5 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * FRAME_LENGTH_MSEC;
+        protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * FRAME_LENGTH_MSEC;
 
-        protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 150f;
-        protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 175f;
-        protected const float TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC = 200f;
-        protected const float TOUCH_JUDGE_SEG_1ST_GREAT_MSEC = 216.666666f;
-        protected const float TOUCH_JUDGE_SEG_2ND_GREAT_MSEC = 233.333333f;
-        protected const float TOUCH_JUDGE_SEG_3RD_GREAT_MSEC = 250f;
-        protected const float TOUCH_JUDGE_GOOD_AREA_MSEC = 316.666666f;
+        protected const float HOLD_CLASSIC_END_JUDGE_SEG_1ST_PERFECT_MSEC = 4 * FRAME_LENGTH_MSEC;
+        protected const float HOLD_CLASSIC_END_JUDGE_SEG_2ND_PERFECT_MSEC = 8 * FRAME_LENGTH_MSEC;
+        protected const float HOLD_CLASSIC_END_JUDGE_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC;
 
-        protected const float SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC = 366.666666f;
-        protected const float SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC = 233.333333f;
-        protected const float SLIDE_JUDGE_SEG_1ST_GREAT_MSEC = 350f;
-        protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 416.666666f;
-        protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 483.333333f;
+        protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 10.5f * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_SEG_2ND_GREAT_MSEC = 14 * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_SEG_3RD_GREAT_MSEC = 15 * FRAME_LENGTH_MSEC;
+        protected const float TOUCH_JUDGE_GOOD_AREA_MSEC = 18 * FRAME_LENGTH_MSEC;
 
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 50f;  // 3f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC = 100f; // 6f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC = 150f; // 9f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 250f;   // 15f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 350f;   // 21f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 450f;   // 27f
-        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 600f;               // 36f
+        protected const float SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC = 22 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC = 14 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_1ST_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 25 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
 
-        protected const float HOLD_HEAD_IGNORE_LENGTH_SEC = 0.1f;
-        protected const float HOLD_TAIL_IGNORE_LENGTH_SEC = 0.2f;
-        protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC = 0.25f;
-        protected const float TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC = 0.2f;
-        protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC = 0.03333333f;
-        protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC = 0.333333f;
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC; // 3f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC; // 6f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 15 * FRAME_LENGTH_MSEC;  // 15f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;  // 21f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 27 * FRAME_LENGTH_MSEC;  // 27f
+        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;              // 36f
+
+        protected const float HOLD_HEAD_IGNORE_LENGTH_SEC = 6 * FRAME_LENGTH_SEC;
+        protected const float HOLD_TAIL_IGNORE_LENGTH_SEC = 12 * FRAME_LENGTH_SEC;
+        protected const float TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC = 15 * FRAME_LENGTH_SEC;
+        protected const float TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC = 12 * FRAME_LENGTH_SEC;
+        protected const float DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC = 2 * FRAME_LENGTH_SEC;
+        protected const float CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC = 20 * FRAME_LENGTH_SEC;
         protected override void Awake()
         {
             base.Awake();
