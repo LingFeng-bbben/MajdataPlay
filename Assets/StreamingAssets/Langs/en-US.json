@@ -593,6 +593,46 @@
     {
       "Origin": "SCORE_SENDED",
       "Content": "Score Uploaded"
+    },
+    {
+      "Origin": "Random_MAJSETTING_TITLE",
+      "Content": "Random"
+    },
+    {
+      "Origin": "Random_MAJSETTING_DESC",
+      "Content": "Make notes appear randomly"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_TITLE",
+      "Content": "Render Quality"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_DESC",
+      "Content": "Adjust Render Quality"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_TITLE",
+      "Content": "Window Topmost"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_TITLE",
+      "Content": "FPS Limit"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Origin": "VSync_MAJSETTING_TITLE",
+      "Content": "VSync"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_DESC",
+      "Content": ""
     }
   ]
 }

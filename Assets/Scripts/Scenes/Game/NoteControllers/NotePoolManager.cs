@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View;
@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
-    internal class NotePoolManager: MonoBehaviour
+    internal class NotePoolManager : MonoBehaviour
     {
         public ComponentState State { get; private set; } = ComponentState.Idle;
 
@@ -49,11 +49,11 @@ namespace MajdataPlay.Game
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
             var debugOptions = MajEnv.UserSetting.Debug;
-            tapPool = new (tapPrefab, tapParent, tapInfos.ToArray(),Math.Max(debugOptions.TapPoolCapacity, 1));
-            holdPool = new (holdPrefab, holdParent, holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
-            touchPool = new (touchPrefab, touchParent, touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
-            touchHoldPool = new (touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
-            eachLinePool = new (eachLinePrefab, eachLineParent, eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
+            tapPool = new(tapPrefab, tapParent, tapInfos.ToArray(), Math.Max(debugOptions.TapPoolCapacity, 1));
+            holdPool = new(holdPrefab, holdParent, holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
+            touchPool = new(touchPrefab, touchParent, touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
+            touchHoldPool = new(touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
+            eachLinePool = new(eachLinePrefab, eachLineParent, eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
             State = ComponentState.Running;
         }
         void Start()
@@ -95,7 +95,7 @@ namespace MajdataPlay.Game
         }
         public void Collect<TNote>(TNote endNote)
         {
-            switch(endNote)
+            switch (endNote)
             {
                 case TapDrop tap:
                     tapPool.Collect(tap);

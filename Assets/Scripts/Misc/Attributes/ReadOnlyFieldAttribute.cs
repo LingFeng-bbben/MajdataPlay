@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Attributes
+namespace MajdataPlay.Editor
 {
+    [AttributeUsage(AttributeTargets.Field)]
     public class ReadOnlyFieldAttribute : PropertyAttribute
     {
     }

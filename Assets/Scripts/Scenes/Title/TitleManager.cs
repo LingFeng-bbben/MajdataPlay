@@ -54,7 +54,6 @@ namespace MajdataPlay.Title
             if (!SongStorage.IsEmpty)
             {
                 var setting = MajInstances.Setting;
-                await SongStorage.SortAndFindAsync();
                 SongStorage.CollectionIndex = setting.Misc.SelectedDir;
                 var selectedCollection = SongStorage.WorkingCollection;
                 var selectedIndex = setting.Misc.SelectedIndex;

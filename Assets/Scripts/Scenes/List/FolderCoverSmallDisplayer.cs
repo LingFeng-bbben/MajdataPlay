@@ -18,11 +18,6 @@ namespace MajdataPlay.List
 
         SongCollection _boundCollection = SongCollection.Empty("Undefined");
 
-        private void Start()
-        {
-            if (IsOnline)
-                _icon.gameObject.SetActive(true);
-        }
         internal void SetCollection(SongCollection collection)
         {
             if (collection is null)
@@ -31,6 +26,14 @@ namespace MajdataPlay.List
             }
             _boundCollection = collection;
             _folderText.text = collection.Name;
+            if(collection.IsOnline)
+            {
+                _icon.gameObject.SetActive(true);
+            }
+            else
+            {
+                _icon.gameObject.SetActive(false);
+            }
         }
     }
 }

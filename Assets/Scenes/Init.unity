@@ -3167,6 +3167,7 @@ MonoBehaviour:
   SubImage: {fileID: 1066008517}
   MainImage: {fileID: 1930814263}
   loadingText: {fileID: 1342664136}
+  LoadingLightColor: {r: 0.3647059, g: 0.3137255, b: 0.2901961, a: 1}
 --- !u!1 &1111381796
 GameObject:
   m_ObjectHideFlags: 0

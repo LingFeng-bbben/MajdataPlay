@@ -541,6 +541,46 @@
     {
       "Origin": "SCORE_SENDED",
       "Content": "スコアアップしました"
+    },
+    {
+      "Origin": "Random_MAJSETTING_TITLE",
+      "Content": "乱"
+    },
+    {
+      "Origin": "Random_MAJSETTING_DESC",
+      "Content": "ランダム"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_TITLE",
+      "Content": "レンダクオリティ"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_DESC",
+      "Content": "高くなったら質感が良くなる"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_TITLE",
+      "Content": "最前面に表示"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_DESC",
+      "Content": "ウィンドウを最前面に表示する"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_TITLE",
+      "Content": "FPS制限"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Origin": "VSync_MAJSETTING_TITLE",
+      "Content": "Vsync"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_DESC",
+      "Content": ""
     }
   ]
 }

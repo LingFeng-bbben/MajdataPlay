@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Collections;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
     internal class NoteAudioManager : MonoBehaviour
     {
@@ -23,7 +23,7 @@ namespace MajdataPlay.Game
         bool _isTouchHoldRiserPlaying = false;
 
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
-        
+
         readonly bool[] _noteSFXPlaybackRequests = new bool[14];
         readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
         readonly AudioManager _audioManager = MajInstances.AudioManager;
@@ -36,8 +36,8 @@ namespace MajdataPlay.Game
             "break_tap.wav",
             "break.wav",
             "slide.wav",
-            "slide.wav",
             "slide_break_start.wav",
+            "slide_break_slide.wav",
             "touch.wav",
             "touch_Hold_riser.wav",
             "touch_hanabi.wav",
@@ -68,7 +68,7 @@ namespace MajdataPlay.Game
             {
                 var name = SFX_NAMES.Span[i];
                 var sfx = _audioManager.GetSFX(name);
-                if(sfx.Volume == 0)
+                if (sfx.Volume == 0)
                 {
                     _noteSFXs[i] = EmptyAudioSample.Shared;
                 }
@@ -246,7 +246,7 @@ namespace MajdataPlay.Game
             var isBreak = judgeResult.IsBreak;
             var isEx = judgeResult.IsEX;
 
-            
+
             if (isBreak)
             {
                 PlayBreakTapSound(judgeResult);
@@ -312,13 +312,14 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        internal async Task GenerateAnswerSFX(SimaiChart chart,bool isPracticeMode,int clockCount = 4)
+        internal async Task GenerateAnswerSFX(SimaiChart chart, bool isPracticeMode, int clockCount = 4)
         {
             await Task.Run(() =>
             {
-                if (chart.NoteTimings.Length == 0) {
+                if (chart.NoteTimings.Length == 0)
+                {
                     _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
-                    return; 
+                    return;
                 }
                 //Generate ClockSounds
                 var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
@@ -330,7 +331,7 @@ namespace MajdataPlay.Game
                     if (chart.NoteTimings.Any(o => o.Timing < clockCount * interval))
                     {
                         //if there is something in first measure, we add clock before the bgm
-                        for (int i = 0; i < clockCount; i++)
+                        for (var i = 0; i < clockCount; i++)
                         {
                             answerTimingPoints.Add(new AnswerSoundPoint()
                             {
@@ -343,7 +344,7 @@ namespace MajdataPlay.Game
                     else
                     {
                         //if nothing there, we can add it with bgm
-                        for (int i = 0; i < clockCount; i++)
+                        for (var i = 0; i < clockCount; i++)
                         {
                             answerTimingPoints.Add(new AnswerSoundPoint()
                             {
@@ -390,7 +391,7 @@ namespace MajdataPlay.Game
         internal void Clear()
         {
             _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
-            foreach(var sfx in _noteSFXs)
+            foreach (var sfx in _noteSFXs)
             {
                 sfx.Stop();
             }
@@ -441,6 +442,7 @@ namespace MajdataPlay.Game
         public void PlayBreakSlideEndSound()
         {
             _noteSFXPlaybackRequests[BREAK_SLIDE_JUDGE] = true;
+            _noteSFXPlaybackRequests[BREAK_SFX] = true;
             //_audioManager.PlaySFX("slide_break_slide.wav");
             //_audioManager.PlaySFX("break_slide.wav");
         }

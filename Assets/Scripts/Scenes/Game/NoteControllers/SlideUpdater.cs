@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using UnityEngine.Profiling;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
     public class SlideUpdater : NoteUpdater
     {
@@ -60,7 +60,7 @@ namespace MajdataPlay.Game
         {
             Profiler.BeginSample(PRE_UPDATE_METHOD_NAME);
             var thisFrameSec = _noteTimeProvider.ThisFrameSec;
-            if(!_queueInfos.IsEmpty)
+            if (!_queueInfos.IsEmpty)
             {
                 var i = 0;
                 var queueInfos = _queueInfos.Span;

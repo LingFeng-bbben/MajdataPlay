@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -74,22 +74,33 @@ namespace MajdataPlay.List
                 switch (e.Type)
                 {
                     case SensorArea.A7:
+                    case SensorArea.E8:
                         _coverListDisplayer.SlideList(1);
                         break;
+                    case SensorArea.B8:
                     case SensorArea.A8:
                         _coverListDisplayer.SlideList(2);
                         break;
+                    case SensorArea.E1:
+                    case SensorArea.D1:
                     case SensorArea.A1:
                         _coverListDisplayer.SlideList(3);
                         break;
                     case SensorArea.A6:
+                    case SensorArea.E6:
                         _coverListDisplayer.SlideList(-1);
                         break;
                     case SensorArea.A5:
+                    case SensorArea.B5:
                         _coverListDisplayer.SlideList(-2);
                         break;
+                    case SensorArea.E5:
+                    case SensorArea.D5:
                     case SensorArea.A4:
                         _coverListDisplayer.SlideList(-3);
+                        break;
+                    case SensorArea.C:
+                        _coverListDisplayer.RandomSelect();
                         break;
                     // xxlb
                     case SensorArea.B7:
@@ -119,10 +130,10 @@ namespace MajdataPlay.List
                         case SensorArea.A4:
                             if (_coverListDisplayer.IsDirList)
                             {
-                                if (SongStorage.WorkingCollection.Type == ChartStorageType.Dan)
+                                if (_coverListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
                                 {
-                                    var danInfo = SongStorage.WorkingCollection.DanInfo;
-                                    var collection = SongStorage.WorkingCollection;
+                                    var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
+                                    var collection = _coverListDisplayer.SelectedCollection;
                                     if (danInfo is null)
                                         return;
                                     else if (danInfo.SongLevels.Length != collection.Count)
@@ -138,16 +149,16 @@ namespace MajdataPlay.List
                                     }
                                     var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
                                     {
-                                        MaxHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        CurrentHP = SongStorage.WorkingCollection.DanInfo.StartHP,
-                                        HPRecover = SongStorage.WorkingCollection.DanInfo.RestoreHP,
+                                        MaxHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        CurrentHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
+                                        HPRecover = _coverListDisplayer.SelectedCollection.DanInfo.RestoreHP,
                                         DanInfo = danInfo
                                     };
                                     Majdata<GameInfo>.Instance = info;
                                     //MajInstances.GameManager.isDanMode = true;
                                     //MajInstances.GameManager.DanHP = SongStorage.WorkingCollection.DanInfo.StartHP;
                                     //MajInstances.GameManager.DanResults.Clear();
-                                    SongStorage.WorkingCollection.Index = 0;
+                                    _coverListDisplayer.SelectedCollection.Index = 0;
                                     MajInstances.SceneSwitcher.SwitchScene("Game", false);
                                 }
                                 else
@@ -164,11 +175,11 @@ namespace MajdataPlay.List
                                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                                 var levels = new ChartLevel[]
                                 {
-                                MajInstances.GameManager.SelectedDiff
+                                    MajInstances.GameManager.SelectedDiff
                                 };
                                 var charts = new ISongDetail[]
                                 {
-                                    SongStorage.WorkingCollection.Current
+                                    _coverListDisplayer.SelectedSong
                                 };
                                 if (_pressTime > 1f)
                                 {
@@ -267,9 +278,11 @@ namespace MajdataPlay.List
                     await UniTask.Yield();
                     continue;
                 }
+                _coverListDisplayer.DisableAnimation = true;
                 _coverListDisplayer.SlideList(_delta);
-                await UniTask.Delay(100);
+                await UniTask.Delay(150);
             }
+            _coverListDisplayer.DisableAnimation = false;
         }
         async UniTaskVoid PracticeTimer()
         {

@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -148,18 +149,19 @@ namespace MajdataPlay.Game
                         var remainingTime = timeout - (MajTimeline.UnscaledTime - startAt);
                         if (remainingTime.TotalSeconds > 10)
                         {
-                            var text1 = string.Format(Localization.GetLocalizedText("Waiting for the video player...{0}"), "");
+                            var text1 = string.Format("Waiting for the video player...{0}".i18n(), "");
                             sceneSwitcher.SetLoadingText($"{text1}");
+                            continue;
                         }
                         else if (remainingTime.TotalSeconds > 0)
                         {
-                            var text1 = string.Format(Localization.GetLocalizedText("Waiting for the video player...{0}"), $"{remainingTime.TotalSeconds:F0}s");
+                            var text1 = string.Format("Waiting for the video player...{0}".i18n(), $"{remainingTime.TotalSeconds:F0}s");
                             var text2 = Localization.GetLocalizedText("Press the 4th button to use default cover");
                             sceneSwitcher.SetLoadingText($"{text1}\n{text2}");
                         }
                         else if (remainingTime.TotalSeconds > -2)
                         {
-                            var text1 = Localization.GetLocalizedText("Video loading timeout, fall back to default cover");
+                            var text1 = "Video loading timeout, fall back to default cover".i18n();
                             sceneSwitcher.SetLoadingText($"{text1}",Color.red);
                             continue;
                         }
@@ -167,7 +169,7 @@ namespace MajdataPlay.Game
                         {
                             throw new Exception("SB Unity");
                         }
-                        if (InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On))
+                        if (InputManager.IsButtonClickedInThisFrame(SensorArea.A4))
                         {
                             throw new Exception("SB Unity");
                         }

@@ -22,6 +22,7 @@ namespace MajdataPlay
         public Image SubImage;
         public Image MainImage;
         public TMP_Text loadingText;
+        public Color LoadingLightColor;
 
         InputManager _inputManager;
 
@@ -67,12 +68,14 @@ namespace MajdataPlay
         {
             animator.SetBool("In", false);
             loadingText.gameObject.SetActive(false);
+            MajInstances.LightManager.SetAllLight(Color.white);
         }
         public void FadeIn()
         {
             animator.SetBool("In", true);
             loadingText.text = string.Empty;
             loadingText.gameObject.SetActive(true);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
         }
         public void SetLoadingText(string text , Color color)
         {
@@ -94,11 +97,13 @@ namespace MajdataPlay
             loadingText.gameObject.SetActive(true);
             animator.SetBool("In", true);
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             if(autoFadeOut)
             { 
                 animator.SetBool("In", false);
+                MajInstances.LightManager.SetAllLight(Color.white);
                 loadingText.gameObject.SetActive(false);
             }
         }
@@ -117,9 +122,11 @@ namespace MajdataPlay
             if (taskToRun.IsFaulted)
                 MajDebug.LogException(taskToRun.Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
+            MajInstances.LightManager.SetAllLight(Color.white);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, Task taskToRun)
         {
@@ -137,9 +144,11 @@ namespace MajdataPlay
             if(taskToRun.IsFaulted)
                 MajDebug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
+            MajInstances.LightManager.SetAllLight(Color.white);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, ValueTask taskToRun)
         {
@@ -157,9 +166,11 @@ namespace MajdataPlay
             if (taskToRun.Status is UniTaskStatus.Faulted)
                 MajDebug.LogException(taskToRun.AsTask().Exception);
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
+            MajInstances.LightManager.SetAllLight(Color.white);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, UniTask taskToRun)
         {
@@ -179,6 +190,7 @@ namespace MajdataPlay
             if (taskToRun.IsFaulted)
                 throw taskToRun.Exception;
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             return taskToRun.Result;
@@ -199,9 +211,11 @@ namespace MajdataPlay
             if (taskToRun.IsFaulted)
                 throw taskToRun.AsTask().Exception;
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
+            MajInstances.LightManager.SetAllLight(Color.white);
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, ValueTask<T> taskToRun)
@@ -218,10 +232,12 @@ namespace MajdataPlay
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
                 await UniTask.Yield();
             await UniTask.Delay(SWITCH_ELAPSED);
+            MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
             OnSceneChanged?.Invoke();
             animator.SetBool("In", false);
-            switch(taskToRun.Status)
+            MajInstances.LightManager.SetAllLight(Color.white);
+            switch (taskToRun.Status)
             {
                 case UniTaskStatus.Succeeded:
                     return taskToRun.AsValueTask().Result;

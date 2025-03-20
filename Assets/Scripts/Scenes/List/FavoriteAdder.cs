@@ -5,44 +5,47 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FavoriteAdder : MonoBehaviour
+namespace MajdataPlay.List
 {
-    Image _image;
-    ISongDetail? _song;
-    public Sprite HeartAdd;
-    public Sprite HeartRemove;
-    void Start()
+    public class FavoriteAdder : MonoBehaviour
     {
-        _image = GetComponent<Image>();
-    }
-
-    public void SetSong(ISongDetail song)
-    {
-        var isInFav = SongStorage.IsInMyFavorites(song);
-        _song = song;
-        _image.enabled = true;
-        _image.sprite = isInFav ? HeartRemove : HeartAdd;
-    }
-
-    public void Hide()
-    {
-        _song = null;
-        _image.enabled = false ;
-    }
-
-    public void FavoratePressed()
-    {
-        if (_song is null) return;
-        var isInFav = SongStorage.IsInMyFavorites(_song);
-        if (isInFav)
+        Image _image;
+        ISongDetail _song;
+        public Sprite HeartAdd;
+        public Sprite HeartRemove;
+        void Start()
         {
-            SongStorage.RemoveFromMyFavorites(_song);
+            _image = GetComponent<Image>();
         }
-        else
+
+        public void SetSong(ISongDetail song)
         {
-            SongStorage.AddToMyFavorites(_song);
+            var isInFav = SongStorage.IsInMyFavorites(song);
+            _song = song;
+            _image.enabled = true;
+            _image.sprite = isInFav ? HeartRemove : HeartAdd;
         }
-        isInFav = SongStorage.IsInMyFavorites(_song);
-        _image.sprite = isInFav ? HeartRemove : HeartAdd;
+
+        public void Hide()
+        {
+            _song = null;
+            _image.enabled = false;
+        }
+
+        public void FavoratePressed()
+        {
+            if (_song is null) return;
+            var isInFav = SongStorage.IsInMyFavorites(_song);
+            if (isInFav)
+            {
+                SongStorage.RemoveFromMyFavorites(_song);
+            }
+            else
+            {
+                SongStorage.AddToMyFavorites(_song);
+            }
+            isInFav = SongStorage.IsInMyFavorites(_song);
+            _image.sprite = isInFav ? HeartRemove : HeartAdd;
+        }
     }
 }

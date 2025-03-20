@@ -88,7 +88,7 @@
     },
     {
       "Origin": "TapSpeed_MAJSETTING_DESC",
-      "Content": "控制Tap、Hold、Star的下落速度"
+      "Content": "控制\nTap、Hold、Star\n的下落速度"
     },
     {
       "Origin": "TouchSpeed_MAJSETTING_TITLE",
@@ -96,7 +96,7 @@
     },
     {
       "Origin": "TouchSpeed_MAJSETTING_DESC",
-      "Content": "控制Touch、TouchHold的淡入速度"
+      "Content": "控制\nTouch、TouchHold\n的淡入速度"
     },
     {
       "Origin": "SlideFadeInOffset_MAJSETTING_TITLE",
@@ -104,7 +104,7 @@
     },
     {
       "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
-      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入；单位为秒"
+      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入\n单位为秒"
     },
     {
       "Origin": "BackgroundDim_MAJSETTING_TITLE",
@@ -128,7 +128,7 @@
     },
     {
       "Origin": "StarRotation_MAJSETTING_DESC",
-      "Content": "开启后，Star将根据Slide的速度进行旋转"
+      "Content": "开启后，\nStar将根据Slide的速度进行旋转"
     },
     {
       "Origin": "BGInfo_MAJSETTING_TITLE",
@@ -144,7 +144,7 @@
     },
     {
       "Origin": "TrackSkip_MAJSETTING_DESC",
-      "Content": "开启后，按住2367即可强制跳过乐曲"
+      "Content": "开启后，\n按住2367即可强制跳过乐曲"
     },
     {
       "Origin": "FastRetry_MAJSETTING_TITLE",
@@ -152,7 +152,7 @@
     },
     {
       "Origin": "FastRetry_MAJSETTING_DESC",
-      "Content": "开启后，按住3456即可重新开始乐曲"
+      "Content": "开启后，\n按住3456即可重新开始乐曲"
     },
     {
       "Origin": "AudioOffset_MAJSETTING_TITLE",
@@ -176,7 +176,7 @@
     },
     {
       "Origin": "Mode_MAJSETTING_DESC",
-      "Content": "此项会影响Hold、Slide的判定行为"
+      "Content": "此项会影响Hold、Slide的判定行为\n(旧框/新框判定)"
     },
     {
       "Origin": "Skin_MAJSETTING_TITLE",
@@ -504,7 +504,7 @@
     },
     {
       "Origin": "Mirror_MAJSETTING_DESC",
-      "Content": ""
+      "Content": "对称称对\n大8大"
     },
     {
       "Origin": "Rotation_MAJSETTING_TITLE",
@@ -612,7 +612,7 @@
     },
     {
       "Origin": "Waiting for the video player...{0}",
-      "Content": "正在等待视频播放器加载完毕...{0}"
+      "Content": "等待视频...{0}"
     },
     {
       "Origin": "Press the 4th button to use default cover",
@@ -729,6 +729,46 @@
     {
       "Origin": "SCORE_SENDED",
       "Content": "成绩已上传"
+    },
+    {
+      "Origin": "Random_MAJSETTING_TITLE",
+      "Content": "随机"
+    },
+    {
+      "Origin": "Random_MAJSETTING_DESC",
+      "Content": "Note位置随机打乱\nRANDOM是随机重新分配轨道\nS-RANDOM是每个note随机"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_TITLE",
+      "Content": "渲染质量"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_DESC",
+      "Content": "调整游戏的渲染质量。\n越高越清晰，越低越糊。"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_TITLE",
+      "Content": "窗口置顶"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_DESC",
+      "Content": "让majplay窗口总在最前"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_TITLE",
+      "Content": "帧率限制"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_DESC",
+      "Content": "限制游戏最高FPS"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_TITLE",
+      "Content": "垂直同步"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_DESC",
+      "Content": "是否开启垂直同步"
     }
   ]
 }
