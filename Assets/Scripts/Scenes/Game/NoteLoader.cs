@@ -955,7 +955,7 @@ namespace MajdataPlay.Game
                         sliObj = result.SlideInstance;
                         eachNotes.Add(result.StarInfo);
                         AddSlideToQueue(timing, result.SlideInstance);
-                        UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 8.93760109f);
+                        UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 20);
                         sliObj.Initialize();
                     }
                     else

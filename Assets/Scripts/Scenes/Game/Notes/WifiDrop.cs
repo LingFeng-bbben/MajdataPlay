@@ -104,7 +104,7 @@ namespace MajdataPlay.Game.Notes
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
-            SlideLength = (_starStartPositions[1] - _starEndPositions[1]).magnitude;
+            SlideLength = 20;
         }
         public override void Initialize()
         {
