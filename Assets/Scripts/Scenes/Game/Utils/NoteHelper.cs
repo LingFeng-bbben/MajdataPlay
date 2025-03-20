@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;

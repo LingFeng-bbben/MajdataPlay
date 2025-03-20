@@ -7,12 +7,12 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
-using MajdataPlay.Game.Types;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using MajdataPlay.Extensions;
 using Random = UnityEngine.Random;
+using MajdataPlay.Game;
 #nullable enable
 namespace MajdataPlay.Result
 {

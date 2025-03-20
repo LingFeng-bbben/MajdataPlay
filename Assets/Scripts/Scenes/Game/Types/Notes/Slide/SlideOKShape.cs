@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Slide
 {
-    internal enum GameMode
+    public enum SlideOKShape
     {
-        Normal,
-        Dan,
-        Practice
+        Curv,
+        Str,
+        Wifi
     }
 }

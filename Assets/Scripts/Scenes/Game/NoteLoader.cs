@@ -11,10 +11,12 @@ using Unity.VisualScripting;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Buffers;
+using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Game.Notes.Slide.Utils;
+using MajdataPlay.Game.Notes.Touch;
 
 namespace MajdataPlay.Game
 {

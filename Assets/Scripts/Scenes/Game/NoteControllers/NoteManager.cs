@@ -6,7 +6,6 @@ using UnityEngine;
 using MajdataPlay.References;
 using MajdataPlay.IO;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Extensions;
 using System;
 using MajdataPlay.Editor;

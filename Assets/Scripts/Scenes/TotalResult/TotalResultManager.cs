@@ -10,7 +10,7 @@ using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
 using MajdataPlay;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game;
 
 namespace MajdataPlay.TotalResult
 {

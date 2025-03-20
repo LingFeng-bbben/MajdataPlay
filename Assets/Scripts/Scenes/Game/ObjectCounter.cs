@@ -11,7 +11,6 @@ using UnityEngine.UI;
 using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
-using MajdataPlay.Game.Types;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Game

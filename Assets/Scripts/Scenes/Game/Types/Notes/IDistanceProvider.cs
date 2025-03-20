@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes
 {
-    internal enum GameMode
+    public interface IDistanceProvider
     {
-        Normal,
-        Dan,
-        Practice
+        public float Distance { get; }
     }
 }

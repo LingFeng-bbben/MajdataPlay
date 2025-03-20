@@ -1,12 +1,12 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 #nullable enable
-namespace MajdataPlay.Game.Utils
+namespace MajdataPlay.Game.Notes.Slide.Utils
 {
     public static class SlideTables
     {
@@ -689,12 +689,12 @@ namespace MajdataPlay.Game.Utils
             obj.IsSkippable = isSkippable;
             return obj;
         }
-        static SlideArea BuildSlideArea(SensorArea type,int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
+        static SlideArea BuildSlideArea(SensorArea type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
         {
             var obj = new SlideArea(new Dictionary<SensorArea, bool>
                       {
                           { type, isLast}
-                      },progressWhenOn,progressWhenFinished);
+                      }, progressWhenOn, progressWhenFinished);
             obj.IsSkippable = isSkippable;
             return obj;
         }
@@ -708,7 +708,7 @@ namespace MajdataPlay.Game.Utils
             obj.IsSkippable = isSkippable;
             return obj;
         }
-        static SlideArea BuildSlideArea(SensorArea[] type,int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
+        static SlideArea BuildSlideArea(SensorArea[] type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
         {
             var table = new Dictionary<SensorArea, bool>();
             foreach (var sensorType in type)

@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;

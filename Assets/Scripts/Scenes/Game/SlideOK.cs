@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game.Types;
+﻿using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Interfaces;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
