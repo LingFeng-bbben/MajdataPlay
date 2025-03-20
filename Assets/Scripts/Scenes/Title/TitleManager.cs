@@ -139,7 +139,7 @@ namespace MajdataPlay.Title
                                     {
                                         if (endpoint.Username is null || endpoint.Password is null) continue;
                                         echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                        await MajInstances.OnlineManager.Login(endpoint);
+                                        await Online.Login(endpoint);
                                         await UniTask.Delay(1000);
                                     }
                                     catch (Exception ex)

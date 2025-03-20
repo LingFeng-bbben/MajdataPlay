@@ -73,13 +73,6 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<LightManager>.Instance = value;
         }
-        internal static OnlineManager OnlineManager
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<OnlineManager>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<OnlineManager>.Instance = value;
-        }
         internal static GameUpdater GameUpdater
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

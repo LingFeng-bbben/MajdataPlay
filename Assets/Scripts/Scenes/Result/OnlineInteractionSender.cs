@@ -72,7 +72,7 @@ namespace MajdataPlay.Result
             //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
             try
             {
-                await MajInstances.OnlineManager.SendLike(song);
+                await Online.SendLike(song);
                 infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
             }
             catch (Exception ex)
@@ -89,7 +89,7 @@ namespace MajdataPlay.Result
             uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
             try
             {
-                await MajInstances.OnlineManager.SendScore(_onlineDetail, score);
+                await Online.SendScore(_onlineDetail, score);
                 uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
             }
             catch (Exception ex)
