@@ -179,7 +179,7 @@ namespace MajdataPlay.Game.Notes
         protected bool _isChecking = false;
 
         public abstract void Initialize();
-        protected override void Judge(float currentSec)
+        protected sealed override void Judge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
@@ -292,7 +292,7 @@ namespace MajdataPlay.Game.Notes
                 }
             }
         }
-        public override void SetActive(bool state)
+        public sealed override void SetActive(bool state)
         {
             base.SetActive(state);
             if (state)
@@ -330,7 +330,7 @@ namespace MajdataPlay.Game.Notes
                     break;
             }
         }
-        protected override void PlaySFX()
+        protected sealed override void PlaySFX()
         {
             if(!_isSoundPlayed)
             {
@@ -338,7 +338,7 @@ namespace MajdataPlay.Game.Notes
                 _isSoundPlayed = true;
             }
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected sealed override void PlayJudgeSFX(in JudgeResult judgeResult)
         {
             if(judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
                 _audioEffMana.PlayBreakSlideEndSound();
@@ -425,11 +425,11 @@ namespace MajdataPlay.Game.Notes
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override float GetRemainingTime() => GetRemainingTimeWithoutOffset();
+        protected sealed override float GetRemainingTime() => GetRemainingTimeWithoutOffset();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override float GetRemainingTimeWithoutOffset() => MathF.Max(ArriveTiming - ThisFrameSec, 0);
+        protected sealed override float GetRemainingTimeWithoutOffset() => MathF.Max(ArriveTiming - ThisFrameSec, 0);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override float GetTimeSpanToArriveTiming() => ThisFrameSec - ArriveTiming;
+        protected sealed override float GetTimeSpanToArriveTiming() => ThisFrameSec - ArriveTiming;
         [ReadOnlyField, SerializeField]
         float _startTiming;
         [ReadOnlyField, SerializeField]

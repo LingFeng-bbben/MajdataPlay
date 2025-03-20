@@ -297,39 +297,6 @@ namespace MajdataPlay.Game.Notes
                 _noteManager.NextNote(QueueInfo);
             }
         }
-        void GameIOListener(GameInputEventArgs args)
-        {
-            if (_isJudged || IsEnded)
-                return;
-            else if (args.Area != _sensorPos)
-                return;
-            else if (!args.IsClick)
-                return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
-                return;
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
-                return;
-
-            ref var isUsed = ref args.IsUsed.Target;
-
-            if (isUsed)
-                return;
-            
-            if(args.IsButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
-            {
-                Judge(ThisFrameSec - _touchPanelOffset);
-            }
-
-            if (_isJudged)
-            {
-                isUsed = true;
-                _noteManager.NextNote(QueueInfo);
-            }
-        }
         protected override void LoadSkin()
         {
 

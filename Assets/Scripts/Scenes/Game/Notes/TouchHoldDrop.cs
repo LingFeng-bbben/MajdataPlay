@@ -66,6 +66,7 @@ namespace MajdataPlay.Game.Notes
         SpriteRenderer _pointRenderer;
         SpriteRenderer _borderRenderer;
         NotePoolManager _notePoolManager;
+        MultTouchHandler _multTouchHandler;
 
         // -2 => Head miss or not judged yet
         // -1 => Head judged
@@ -84,7 +85,8 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _notePoolManager = FindObjectOfType<NotePoolManager>();
+            _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _multTouchHandler = Majdata<MultTouchHandler>.Instance!;
 
             _fanTransforms[0] = Transform.GetChild(5);
             _fanTransforms[1] = Transform.GetChild(4);
@@ -223,7 +225,7 @@ namespace MajdataPlay.Game.Notes
                 return;
 
             State = NoteStatus.End;
-
+            _multTouchHandler.Unregister(_sensorPos);
             _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new JudgeResult()
@@ -337,6 +339,7 @@ namespace MajdataPlay.Game.Notes
                 case NoteStatus.Initialized:
                     if (-timing < wholeDuration)
                     {
+                        _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
                         SetPointActive(true);
                         SetFanActive(true);
                         RendererState = RendererStatus.On;

@@ -77,8 +77,8 @@ namespace MajdataPlay.Game.Notes
         protected override void Awake()
         {
             base.Awake();
-            _notePoolManager = FindObjectOfType<NotePoolManager>();
-            _multTouchHandler = FindObjectOfType<MultTouchHandler>();
+            _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _multTouchHandler = Majdata<MultTouchHandler>.Instance!;
 
             _fanTransforms[0] = Transform.GetChild(3);
             _fanTransforms[1] = Transform.GetChild(2);
@@ -293,34 +293,6 @@ namespace MajdataPlay.Game.Notes
             if (_isJudged)
             {
                 isDeviceUsedInThisFrame = true;
-                _noteManager.NextTouch(QueueInfo);
-                RegisterGrade();
-            }
-        }
-        void GameIOListener(GameInputEventArgs args)
-        {
-            if (_isJudged || IsEnded)
-                return;
-            else if (args.IsButton && !IsUseButtonRingForTouch)
-                return;
-            else if (args.Area != _sensorPos)
-                return;
-            else if (!args.IsClick)
-                return;
-            else if (!_judgableRange.InRange(ThisFrameSec))
-                return;
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
-                return;
-
-            ref var isUsed = ref args.IsUsed.Target;
-
-            if (isUsed)
-                return;
-            Judge(ThisFrameSec - _touchPanelOffset);
-
-            if (_isJudged)
-            {
-                isUsed = true;
                 _noteManager.NextTouch(QueueInfo);
                 RegisterGrade();
             }
