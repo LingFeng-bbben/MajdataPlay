@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Game.Notes.Behaviours;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Buffers

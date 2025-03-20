@@ -6,13 +6,12 @@ using UnityEngine;
 using MajdataPlay.References;
 using MajdataPlay.IO;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Extensions;
 using System;
 using MajdataPlay.Editor;
 
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
     internal class NoteManager : MonoBehaviour
     {
@@ -146,7 +145,7 @@ namespace MajdataPlay.Game
         }
         public void InitializeUpdater()
         {
-            foreach(var updater in _noteUpdaters)
+            foreach (var updater in _noteUpdaters)
             {
                 updater.Initialize();
             }
@@ -168,9 +167,9 @@ namespace MajdataPlay.Game
         }
         public void ResetCounter()
         {
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
                 _noteCurrentIndex[i] = 0;
-            for (int i = 0; i < 33; i++)
+            for (var i = 0; i < 33; i++)
                 _touchCurrentIndex[i] = 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -180,7 +179,7 @@ namespace MajdataPlay.Game
             //{
             //    var area = args.Type;
             //    ref var reference = ref Unsafe.NullRef<Ref<bool>>();
-                
+
             //    if (args.IsButton)
             //    {
             //        reference = ref _btnUsageStatusRefs[(int)area];
@@ -204,7 +203,7 @@ namespace MajdataPlay.Game
             var currentButtonStatus = _inputManager.ButtonStatusInThisFrame.Span;
             var currentSensorStatus = _inputManager.SensorStatusInThisFrame.Span;
 
-            for (int i = 0; i < 33; i++)
+            for (var i = 0; i < 33; i++)
             {
                 var senState = SensorStatus.Off;
                 if (i < 8)
@@ -247,7 +246,7 @@ namespace MajdataPlay.Game
             return index <= currentIndex;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void NextNote(in TapQueueInfo queueInfo) 
+        public void NextNote(in TapQueueInfo queueInfo)
         {
             var keyIndex = queueInfo.KeyIndex - 1;
             if (!keyIndex.InRange(0, 7))
@@ -285,7 +284,7 @@ namespace MajdataPlay.Game
             return _sensorUsageStatusRefs[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatusInThisFrame(SensorArea area,SensorStatus targetState)
+        public bool CheckSensorStatusInThisFrame(SensorArea area, SensorStatus targetState)
         {
             ThrowIfSensorIndexOutOfRange(area);
 
@@ -377,9 +376,9 @@ namespace MajdataPlay.Game
                 return;
             else if (OnGameIOUpdate is null)
                 return;
-            else if(_gpManager is not null)
+            else if (_gpManager is not null)
             {
-                switch(_gpManager.State)
+                switch (_gpManager.State)
                 {
                     case GamePlayStatus.Running:
                     case GamePlayStatus.Blocking:

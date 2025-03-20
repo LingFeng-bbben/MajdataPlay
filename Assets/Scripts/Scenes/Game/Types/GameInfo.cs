@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game.Types
+namespace MajdataPlay.Game
 {
     internal class GameInfo
     {
@@ -23,7 +23,7 @@ namespace MajdataPlay.Game.Types
         public int CurrentHP { get; set; } = 0;
         public int MaxHP { get; set; } = 0;
         public int HPRecover { get; set; } = 0;
-        public bool IsForceGameover => DanInfo?.IsForceGameover ?? false; 
+        public bool IsForceGameover => DanInfo?.IsForceGameover ?? false;
         public DanInfo? DanInfo { get; init; } = null;
         // TO-DO: Practice Mode
         public int PracticeCount
@@ -51,10 +51,10 @@ namespace MajdataPlay.Game.Types
         int _index = 0;
         ISongDetail[] _chartQueue;
         ChartLevel[] _levels;
-        public GameInfo(GameMode mode, ISongDetail[] chartQueue,ChartLevel[] levels, int practiceCount)
+        public GameInfo(GameMode mode, ISongDetail[] chartQueue, ChartLevel[] levels, int practiceCount)
         {
             Mode = mode;
-            if(chartQueue is null)
+            if (chartQueue is null)
             {
                 _chartQueue = Array.Empty<ISongDetail>();
                 Results = Array.Empty<GameResult>();
@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Types
                     if (chartQueue[i] is not null)
                         count++;
                 }
-                switch(mode)
+                switch (mode)
                 {
                     case GameMode.Practice:
                         _levels = new ChartLevel[1]
@@ -122,7 +122,7 @@ namespace MajdataPlay.Game.Types
             var canMoveNext = MoveNext();
             if (!canMoveNext)
                 return false;
-            switch(Mode)
+            switch (Mode)
             {
                 case GameMode.Dan:
                     CurrentHP += HPRecover;
@@ -133,7 +133,7 @@ namespace MajdataPlay.Game.Types
         }
         bool MoveNext()
         {
-            switch(Mode)
+            switch (Mode)
             {
                 case GameMode.Practice:
                     if (_index >= PracticeCount - 1)

@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;

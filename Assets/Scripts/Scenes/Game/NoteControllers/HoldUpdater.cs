@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Profiling;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Game.Notes.Controllers
 {
     public class HoldUpdater : NoteUpdater
     {
