@@ -218,14 +218,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             throw new ArgumentOutOfRangeException();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected JudgeGrade HoldEndJudgeClassic(in JudgeGrade result)
+        protected JudgeGrade HoldEndJudgeClassic(in JudgeGrade headGrade,float offset)
         {
             if (!_isJudged)
-                return result;
-            else if (result.IsMissOrTooFast())
-                return result;
+                return headGrade;
+            else if (headGrade.IsMissOrTooFast())
+                return headGrade;
 
-            var releaseTiming = ThisFrameSec - _gameSetting.Judge.JudgeOffset;
+            var releaseTiming = ThisFrameSec - USERSETTING_JUDGE_OFFSET - offset;
             var diffSec = Timing + Length - releaseTiming;
             var isFast = diffSec > 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;
@@ -238,12 +238,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            var num = Math.Abs(7 - (int)result);
+            var num = Math.Abs(7 - (int)headGrade);
             var endNum = Math.Abs(7 - (int)endResult);
             if (endNum > num) // 取最差判定
                 return endResult;
             else
-                return result;
+                return headGrade;
         }
     }
 }

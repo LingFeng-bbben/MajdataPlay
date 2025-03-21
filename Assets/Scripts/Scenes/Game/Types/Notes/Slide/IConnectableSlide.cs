@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Game.Notes.Slide
 {
-    public interface IConnectableSlide : IStatefulNote, IEndableNote
+    public interface IConnectableSlide : IStatefulNote
     {
         ConnSlideInfo ConnectInfo { get; }
         GameObject GameObject { get; }
@@ -30,5 +30,6 @@ namespace MajdataPlay.Game.Notes.Slide
         /// <para>Force finish this Slide</para>
         /// </summary>
         void ForceFinish();
+        void End();
     }
 }

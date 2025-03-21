@@ -354,7 +354,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             ConvertJudgeGrade(ref _judgeResult);
             _isJudged = true;
         }
-        public virtual void End()
+        protected virtual void End()
         {
             if (Parent is not null && !Parent.IsEnded)
                 Parent.End();

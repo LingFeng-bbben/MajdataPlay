@@ -219,7 +219,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             State = NoteStatus.Initialized;
         }
-        public void End()
+        void End()
         {
             if (IsEnded)
                 return;

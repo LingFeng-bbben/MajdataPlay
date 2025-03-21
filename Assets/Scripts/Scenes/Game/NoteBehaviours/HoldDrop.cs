@@ -194,14 +194,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             State = NoteStatus.Initialized;
         }
-        public void End()
+        void End(float endJudgeOffset = 0)
         {
             if (IsEnded)
                 return;
             State = NoteStatus.End;
 
             if (IsClassic)
-                _judgeResult = HoldEndJudgeClassic(_judgeResult);
+                _judgeResult = HoldEndJudgeClassic(_judgeResult, endJudgeOffset);
             else
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
@@ -481,10 +481,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
+            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var isPressed = isButtonPressed || isSensorPressed;
 
-            var on = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On) ||
-                     _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
-            if (on || IsAutoplay)
+            if (isPressed || IsAutoplay)
             {
                 if (remainingTime == 0)
                 {
@@ -501,7 +502,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 if (IsClassic)
                 {
-                    End();
+                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SensorStatus.On) && 
+                                           !isButtonPressed;
+                    var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET;
+                    End(offset);
                     return;
                 }
                 else if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)

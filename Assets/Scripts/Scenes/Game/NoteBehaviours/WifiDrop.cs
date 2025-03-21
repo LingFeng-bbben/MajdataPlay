@@ -432,7 +432,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             base.TooLateJudge();
             End();
         }
-        public override void End()
+        protected override void End()
         {
             if (IsEnded)
                 return;

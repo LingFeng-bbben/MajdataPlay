@@ -16,7 +16,7 @@ using MajdataPlay.Game.Notes.Slide.Utils;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
-    internal sealed class SlideDrop : SlideBase, IConnectableSlide, IEndableNote, IMajComponent
+    internal sealed class SlideDrop : SlideBase, IConnectableSlide, IMajComponent
     {
         public bool IsMirror
         {
@@ -483,7 +483,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             base.TooLateJudge();
             End();
         }
-        public override void End()
+        public new void End()
         {
             if (IsEnded)
                 return;
