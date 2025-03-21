@@ -76,7 +76,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         Range<float> _bodyCheckRange;
 
         readonly float _noteAppearRate = MajInstances.Setting?.Debug.NoteAppearRate ?? 0.265f;
-        readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
+        //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
@@ -436,7 +436,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - _touchPanelOffset);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
             }
 
             if (_isJudged)

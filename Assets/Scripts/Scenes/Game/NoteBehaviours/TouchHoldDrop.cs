@@ -75,7 +75,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         int _lastHoldState = -2;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
-        readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
+        //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _fanSpriteSortOrder = 2;
         const int _borderSortOrder = 6;
@@ -467,7 +467,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - _touchPanelOffset);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
             }
 
             if (_isJudged)

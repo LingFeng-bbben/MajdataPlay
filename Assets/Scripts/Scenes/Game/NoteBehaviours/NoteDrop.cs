@@ -83,7 +83,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public bool IsClassic
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _gameSetting.Judge.Mode == JudgeMode.Classic;
+            get => USERSETTING_SLIDE_JUDGE_MODE == JudgeMode.Classic;
         }
         public NoteStatus State
         {
@@ -95,7 +95,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public float JudgeTiming
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _judgeTiming + _gameSetting.Judge.JudgeOffset;
+            get => _judgeTiming + USERSETTING_JUDGE_OFFSET;
         }
         public float ThisFrameSec
         {
@@ -161,6 +161,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly protected InputManager _ioManager = MajInstances.InputManager;
         readonly protected GameSetting _gameSetting = MajInstances.Setting;
         protected static readonly Random _randomizer = new();
+
+        protected readonly float USERSETTING_JUDGE_OFFSET = MajInstances.Setting?.Judge.JudgeOffset ?? 0;
+        protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Setting?.Judge.Mode ?? JudgeMode.Modern;
+        protected readonly float USERSETTING_TOUCHPANEL_OFFSET = MajInstances.Setting?.Judge.TouchPanelOffset ?? 0;
 
         protected const float FRAME_LENGTH_SEC = 1f / 60;
         protected const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;

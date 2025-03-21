@@ -422,7 +422,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(_gameSetting.Judge.JudgeOffset, 0);
+            var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (!_isCheckable)
@@ -448,9 +448,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     {
                         HideAllBar();
                         if (IsClassic)
-                            Judge_Classic(thisFrameSec);
+                            Judge_Classic(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
                         else
-                            Judge(thisFrameSec);
+                            Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
                         return;
                     }
                     else if (isTooLate)
