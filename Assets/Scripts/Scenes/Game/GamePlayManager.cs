@@ -562,7 +562,7 @@ namespace MajdataPlay.Game
                 throw e;
             }
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
-            await UniTask.Delay(1000);
+            await UniTask.Yield();
         }
         async UniTask PrepareToPlay()
         {
@@ -590,7 +590,6 @@ namespace MajdataPlay.Game
                 await UniTask.Yield();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
-            await UniTask.Delay(1000);
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             MajInstances.SceneSwitcher.FadeOut();
 

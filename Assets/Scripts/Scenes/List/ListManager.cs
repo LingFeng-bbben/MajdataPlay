@@ -41,17 +41,16 @@ namespace MajdataPlay.List
         {
             try
             {
-                await UniTask.Delay(100);
+                await UniTask.Yield();
                 await _coverListDisplayer.SwitchToDirListAsync();
                 await _coverListDisplayer.SwitchToSongListAsync();
-                _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
-                await UniTask.Delay(100);
+                await UniTask.Yield();
             }
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
+                _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
                 InputManager.BindAnyArea(OnAreaDown);
-
                 MajInstances.LightManager.SetButtonLight(Color.green, 3);
                 MajInstances.LightManager.SetButtonLight(Color.red, 4);
                 MajInstances.LightManager.SetButtonLight(Color.blue, 2);
