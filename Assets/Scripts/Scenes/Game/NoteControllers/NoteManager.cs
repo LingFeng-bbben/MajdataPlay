@@ -72,7 +72,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 ref var state = ref _isSensorUsedInThisFrame[i];
                 _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
-            InputManager.BindAnyArea(OnAnyAreaTrigger);
+            //InputManager.BindAnyArea(OnAnyAreaTrigger);
         }
         void Start()
         {
