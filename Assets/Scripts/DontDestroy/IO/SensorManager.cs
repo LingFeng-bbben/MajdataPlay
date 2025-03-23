@@ -35,7 +35,7 @@ namespace MajdataPlay.IO
             newStates.Slice(18).CopyTo(newStates.Slice(17));
             newStates = newStates.Slice(0, 33);
 
-            for (var i = 0; i < 32; i++)
+            for (var i = 0; i < 33; i++)
             {
                 var sensor = sensors[i];
                 var sensorArea = sensor.Area;
