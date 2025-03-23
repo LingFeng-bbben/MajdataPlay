@@ -65,23 +65,32 @@ namespace MajdataPlay.IO
         static void UpdateButtonState()
         {
             var buttons = _buttons.Span;
+            var isBtnUpdated = 0U;
+            var now = MajTimeline.UnscaledTime;
+            Span<SensorStatus> newStates = stackalloc SensorStatus[12];
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
                 var index = report.Index;
                 if (!index.InRange(0, 11))
                     continue;
-                var button = buttons[index];
+                newStates[index] |= report.State;
+                isBtnUpdated |= 1U << index;
+            }
+            for (var i = 0; i < 11; i++)
+            {
+                if ((isBtnUpdated & (1U << i)) == 0)
+                    continue;
+                var button = buttons[i];
                 var oldState = button.State;
-                var newState = report.State;
-                var timestamp = report.Timestamp;
+                var newState = newStates[i];
 
                 if (oldState == newState)
                     continue;
-                else if (_isBtnDebounceEnabled && index.InRange(0, 7))
+                else if (_isBtnDebounceEnabled && i.InRange(0, 7))
                 {
-                    if (JitterDetect(button.Area, timestamp, true))
+                    if (JitterDetect(button.Area, now, true))
                         continue;
-                    _btnLastTriggerTimes[index] = timestamp;
+                    _btnLastTriggerTimes[i] = now;
                 }
                 button.State = newState;
                 MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
