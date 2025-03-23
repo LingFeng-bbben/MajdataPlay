@@ -88,7 +88,6 @@ namespace MajdataPlay.Utils
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-            GameProcess.PriorityClass = ProcessPriorityClass.High;
         }
         static void CheckAndLoadUserSetting()
         {
