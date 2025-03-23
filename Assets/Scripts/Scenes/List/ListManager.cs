@@ -25,13 +25,6 @@ namespace MajdataPlay.List
         {
             Majdata<ListManager>.Instance = this;
             AllBackguardTasks.Clear();
-
-            MajInstances.LightManager.SetButtonLight(Color.green, 3);
-            MajInstances.LightManager.SetButtonLight(Color.red, 4);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 2);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 5);
-            MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
-            MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
         }
         void Start()
         {
@@ -58,6 +51,13 @@ namespace MajdataPlay.List
             {
                 MajInstances.SceneSwitcher.FadeOut();
                 InputManager.BindAnyArea(OnAreaDown);
+
+                MajInstances.LightManager.SetButtonLight(Color.green, 3);
+                MajInstances.LightManager.SetButtonLight(Color.red, 4);
+                MajInstances.LightManager.SetButtonLight(Color.blue, 2);
+                MajInstances.LightManager.SetButtonLight(Color.blue, 5);
+                MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
+                MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
             }
         }
         void OnDestroy()
