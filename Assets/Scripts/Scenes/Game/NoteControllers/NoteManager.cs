@@ -332,7 +332,9 @@ namespace MajdataPlay.Game.Notes.Controllers
             ThrowIfButtonIndexOutOfRange(area);
             var i = (int)area;
 
-            return _isBtnClickedInThisFrame[i] == SensorStatus.On;
+            //return _isBtnClickedInThisFrame[i] == SensorStatus.On;
+            return _btnStatusInPreviousFrame[i] == SensorStatus.Off &&
+                   _btnStatusInThisFrame[i] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSensorClickedInThisFrame(SensorArea area)
@@ -340,7 +342,9 @@ namespace MajdataPlay.Game.Notes.Controllers
             ThrowIfSensorIndexOutOfRange(area);
             var i = (int)area;
 
-            return _isSensorClickedInThisFrame[i] == SensorStatus.On;
+            //return _isSensorClickedInThisFrame[i] == SensorStatus.On;
+            return _sensorStatusInPreviousFrame[i] == SensorStatus.Off &&
+                   _sensorStatusInThisFrame[i] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void ThrowIfButtonIndexOutOfRange(SensorArea area)
