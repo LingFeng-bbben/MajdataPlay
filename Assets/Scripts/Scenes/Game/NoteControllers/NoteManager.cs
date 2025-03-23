@@ -47,13 +47,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         readonly bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly bool[] _isSensorUsedInThisFrame = new bool[33];
 
+        readonly SensorStatus[] _isBtnClickedInThisFrame = new SensorStatus[8];
+        readonly SensorStatus[] _isSensorClickedInThisFrame = new SensorStatus[33];
+
         readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
         InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
-
-        readonly Queue<InputEventArgs> _inputEventBuffer = new(4096);
 
         void Awake()
         {
@@ -71,7 +72,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 ref var state = ref _isSensorUsedInThisFrame[i];
                 _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
             }
-            //InputManager.BindAnyArea(OnAnyAreaTrigger);
+            InputManager.BindAnyArea(OnAnyAreaTrigger);
         }
         void Start()
         {
@@ -92,6 +93,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             {
                 _isSensorUsedInThisFrame[i] = false;
             }
+
             GameIOUpdate();
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
@@ -119,6 +121,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         internal void OnLateUpdate()
         {
+            for (var i = 0; i < 8; i++)
+            {
+                _isBtnClickedInThisFrame[i] = SensorStatus.Off;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _isSensorClickedInThisFrame[i] = SensorStatus.Off;
+            }
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
@@ -175,31 +185,6 @@ namespace MajdataPlay.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void GameIOUpdate()
         {
-            //while(_inputEventBuffer.TryDequeue(out var args))
-            //{
-            //    var area = args.Type;
-            //    ref var reference = ref Unsafe.NullRef<Ref<bool>>();
-
-            //    if (args.IsButton)
-            //    {
-            //        reference = ref _btnUsageStatusRefs[(int)area];
-            //    }
-            //    else
-            //    {
-            //        reference = ref _sensorUsageStatusRefs[(int)area];
-            //    }
-            //    var packet = new GameInputEventArgs()
-            //    {
-            //        Area = area,
-            //        OldState = args.OldStatus,
-            //        State = args.Status,
-            //        IsButton = args.IsButton,
-            //        IsUsed = reference
-            //    };
-
-            //    if (OnGameIOUpdate is not null)
-            //        OnGameIOUpdate(packet);
-            //}
             var currentButtonStatus = _inputManager.ButtonStatusInThisFrame.Span;
             var currentSensorStatus = _inputManager.SensorStatusInThisFrame.Span;
 
@@ -209,6 +194,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 if (i < 8)
                 {
                     var btnState = currentButtonStatus[i];
+                    btnState |= _isBtnClickedInThisFrame[i];
                     _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                     _btnStatusInThisFrame[i] = btnState;
                     if (IsUseButtonRingForTouch)
@@ -217,6 +203,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                     }
                 }
                 senState |= currentSensorStatus[i];
+                senState |= _isSensorClickedInThisFrame[i];
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
             }
@@ -345,8 +332,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             ThrowIfButtonIndexOutOfRange(area);
             var i = (int)area;
 
-            return _btnStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _btnStatusInThisFrame[i] == SensorStatus.On;
+            return _isBtnClickedInThisFrame[i] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSensorClickedInThisFrame(SensorArea area)
@@ -354,8 +340,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             ThrowIfSensorIndexOutOfRange(area);
             var i = (int)area;
 
-            return _sensorStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _sensorStatusInThisFrame[i] == SensorStatus.On;
+            return _isSensorClickedInThisFrame[i] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void ThrowIfButtonIndexOutOfRange(SensorArea area)
@@ -371,12 +356,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         void OnAnyAreaTrigger(object sender, InputEventArgs args)
         {
-            var area = args.Type;
-            if (area > SensorArea.E8 || area < SensorArea.A1)
-                return;
-            else if (OnGameIOUpdate is null)
-                return;
-            else if (_gpManager is not null)
+            if (_gpManager is not null)
             {
                 switch (_gpManager.State)
                 {
@@ -387,8 +367,81 @@ namespace MajdataPlay.Game.Notes.Controllers
                         return;
                 }
             }
-
-            _inputEventBuffer.Enqueue(args);
+            var area = args.Type;
+            var isClick = args.IsDown;
+            var index = (int)area;
+            if (!isClick)
+                return;
+            if(args.IsButton)
+            {
+                switch(area)
+                {
+                    case SensorArea.A1:
+                    case SensorArea.A2:
+                    case SensorArea.A3:
+                    case SensorArea.A4:
+                    case SensorArea.A5:
+                    case SensorArea.A6:
+                    case SensorArea.A7:
+                    case SensorArea.A8:
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (_isBtnClickedInThisFrame[index] == SensorStatus.On)
+                {
+                    return;
+                }
+                _isBtnClickedInThisFrame[index] = SensorStatus.On;
+            }
+            else
+            {
+                switch (area)
+                {
+                    case SensorArea.A1:
+                    case SensorArea.A2:
+                    case SensorArea.A3:
+                    case SensorArea.A4:
+                    case SensorArea.A5:
+                    case SensorArea.A6:
+                    case SensorArea.A7:
+                    case SensorArea.A8:
+                    case SensorArea.B1:
+                    case SensorArea.B2:
+                    case SensorArea.B3:
+                    case SensorArea.B4:
+                    case SensorArea.B5:
+                    case SensorArea.B6:
+                    case SensorArea.B7:
+                    case SensorArea.B8:
+                    case SensorArea.C:
+                    case SensorArea.D1:
+                    case SensorArea.D2:
+                    case SensorArea.D3:
+                    case SensorArea.D4:
+                    case SensorArea.D5:
+                    case SensorArea.D6:
+                    case SensorArea.D7:
+                    case SensorArea.D8:
+                    case SensorArea.E1:
+                    case SensorArea.E2:
+                    case SensorArea.E3:
+                    case SensorArea.E4:
+                    case SensorArea.E5:
+                    case SensorArea.E6:
+                    case SensorArea.E7:
+                    case SensorArea.E8:
+                        break;
+                    default:
+                        return;
+                }
+                if (_isSensorClickedInThisFrame[index] == SensorStatus.On)
+                {
+                    return;
+                }
+                _isSensorClickedInThisFrame[index] = SensorStatus.On;
+            }
         }
     }
 }
