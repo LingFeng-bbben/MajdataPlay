@@ -41,16 +41,18 @@ namespace MajdataPlay.IO
                     EnsureTouchPanelSerialStreamIsOpen(serial);
                     IsTouchPanelConnected = true;
                     MajEnv.ExecutionQueue.Enqueue(() => OnTouchPanelConnected());
-                    Span<byte> buffer = stackalloc byte[MajEnv.SERIAL_READ_BUFFER_SIZE]; 
+                    //Span<byte> buffer = stackalloc byte[MajEnv.SERIAL_READ_BUFFER_SIZE]; 
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
-                            var read = serialStream.Read(buffer);
-
-                            TouchPannelPacketHandle(buffer.Slice(0, read));
+                            if (!EnsureTouchPanelSerialStreamIsOpen(serial)) continue;
+                            var bufferbyte = new byte[serial.BytesToRead];
+                            //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
+                            var read = serial.Read(bufferbyte, 0,serial.BytesToRead);
+                            var buffer = new Span<byte>(bufferbyte);
+                            TouchPannelPacketHandle(buffer);
                         }
                         catch(TimeoutException)
                         {
@@ -142,11 +144,11 @@ namespace MajdataPlay.IO
             }
             return packet[(start + 1)..endIndex];
         }
-        Stream EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
+        bool EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
         {
             if (serialSession.IsOpen)
             {
-                return serialSession.BaseStream;
+                return true;
             }
             else
             {
@@ -178,16 +180,18 @@ namespace MajdataPlay.IO
                 catch (TimeoutException)
                 {
                     MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                    return false;
                 }
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                    return false;
                 }
                 serialStream.Write(encoding.GetBytes("{STAT}"));
                 serialSession.DiscardInBuffer();
 
                 MajDebug.Log("TouchPannel connected");
-                return serialStream;
+                return true;
             }
         }
         byte GetSensitivityValue(byte sensor,int sens)
