@@ -52,6 +52,11 @@ namespace MajdataPlay.IO
         static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
         static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
 
+        readonly static object _sensorUpdateSyncLock = new();
+        readonly static object _btnUpdateSyncLock = new();
+
+        readonly static Memory<SensorStatus> _latestBtnStateLogger = new SensorStatus[12];
+        readonly static Memory<SensorStatus> _latestSensorStateLogger = new SensorStatus[35];
         readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
 
@@ -756,21 +761,38 @@ namespace MajdataPlay.IO
 
         static void OnTouchPanelStateChanged(TouchPanelZone zone, InputState state)
         {
+            var i = (int)zone;
+            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
+            var latestSensorStateLogger = _latestSensorStateLogger.Span;
+
             _touchPanelInputBuffer.Enqueue(new()
             {
-                Index = (int)zone,
-                State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                Index = i,
+                State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
+            lock (_sensorUpdateSyncLock)
+            {
+                latestSensorStateLogger[i] = majState;
+            }
         }
         static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
         {
+            var latestBtnStateLogger = _latestBtnStateLogger.Span;
+            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
+            var i = GetIndexByButtonRingZone(zone);
+
             _buttonRingInputBuffer.Enqueue(new()
             {
-                Index = GetIndexByButtonRingZone(zone),
-                State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
+                Index = i,
+                State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
+
+            lock (_btnUpdateSyncLock)
+            {
+                latestBtnStateLogger[i] = majState;
+            }
         }
     }
     class SensorRenderer

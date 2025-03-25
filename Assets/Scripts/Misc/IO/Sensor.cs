@@ -8,6 +8,9 @@ namespace MajdataPlay.IO
 #nullable enable
     public class Sensor : IEventPublisher<EventHandler<InputEventArgs>>
     {
+        /// <summary>
+        /// Update by InputManager.PreUpdate
+        /// </summary>
         public SensorStatus State 
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

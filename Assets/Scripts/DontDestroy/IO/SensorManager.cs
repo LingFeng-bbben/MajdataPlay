@@ -11,15 +11,21 @@ namespace MajdataPlay.IO
 {
     internal partial class InputManager : MonoBehaviour
     {
-        
         static void UpdateSensorState()
         {
-            if (_touchPanelInputBuffer.Count == 0)
-                return;
+            var latestStateLogger = _latestSensorStateLogger;
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
+            var latestSensorStateLogger = _latestSensorStateLogger.Span;
             Span<SensorStatus> newStates = stackalloc SensorStatus[34];
+            Span<SensorStatus> latestStates = stackalloc SensorStatus[35];
+            
+            lock(_sensorUpdateSyncLock)
+            {
+                latestSensorStateLogger.CopyTo(latestStates);
+            }
+
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
                 var index = report.Index;
@@ -28,20 +34,21 @@ namespace MajdataPlay.IO
 
                 newStates[index] |= report.State;
             }
-            for (var i = 0; i < 33; i++)
+            for (var i = 0; i < 34; i++)
             {
-                sensorStates[i] = newStates[i] is SensorStatus.On;
+                newStates[i] |= latestStates[i];
             }
+
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
             newStates.Slice(18).CopyTo(newStates.Slice(17));
             newStates = newStates.Slice(0, 33);
-
             for (var i = 0; i < 33; i++)
             {
                 var sensor = sensors[i];
                 var sensorArea = sensor.Area;
                 var sensorIndex = (int)sensorArea;
+                sensorStates[i] = newStates[i] is SensorStatus.On;
 
                 if (sensor is null)
                 {
