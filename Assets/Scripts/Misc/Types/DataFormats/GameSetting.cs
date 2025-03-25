@@ -196,5 +196,6 @@ namespace MajdataPlay.Types
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;
+        public float TouchSimulationRadius { get; set; } = 0.5f;
     }
 }

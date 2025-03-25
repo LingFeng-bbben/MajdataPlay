@@ -13,6 +13,7 @@ namespace MajdataPlay.IO
     internal partial class InputManager : MonoBehaviour
     {
         readonly static Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
+        private static float _radius => MajEnv.UserSetting.Misc.InputDevice.TouchPanel.TouchSimulationRadius;
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -44,22 +45,28 @@ namespace MajdataPlay.IO
 
             try
             {
-                for (var i = 0; i < Input.touchCount; i++)
+                for (var j = 0; j< Input.touchCount; j++)
                 {
-                    var touch = Input.GetTouch(i);
+                    var touch = Input.GetTouch(j);
                     if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     {
                         continue;
                     }
                     Vector3 cubeRay = mainCamera.ScreenToWorldPoint(touch.position);
-                    var ray = new Ray(cubeRay, Vector3.forward);
-                    var ishit = Physics.Raycast(ray, out var hitInfo);
-                    if (ishit)
+                    for (int i = 0; i < 9; i++)
                     {
-                        var id = hitInfo.colliderInstanceID;
-                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                        var rad = _radius;
+                        var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
+                        if (i == 8) circular = Vector3.zero;
+                        var ray = new Ray(cubeRay + circular, Vector3.forward);
+                        var ishit = Physics.Raycast(ray, out var hitInfom);
+                        if (ishit)
                         {
-                            newStates[index] = true;
+                            var id = hitInfom.colliderInstanceID;
+                            if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                            {
+                                newStates[index] = true;
+                            }
                         }
                     }
                 }
@@ -77,17 +84,24 @@ namespace MajdataPlay.IO
         {
             try
             {
-                Vector3 cubeRaym = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                var raym = new Ray(cubeRaym, Vector3.forward);
-                var ishitm = Physics.Raycast(raym, out var hitInfom);
-                if (ishitm)
+                Vector3 cubeRay = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                for(int i=0;i<9; i++)
                 {
-                    var id = hitInfom.colliderInstanceID;
-                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                    var rad = _radius;
+                    var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
+                    if (i == 8) circular = Vector3.zero;
+                    var ray = new Ray(cubeRay + circular, Vector3.forward);
+                    var ishit = Physics.Raycast(ray, out var hitInfom);
+                    if (ishit)
                     {
-                        newStates[index] = true;
+                        var id = hitInfom.colliderInstanceID;
+                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                        {
+                            newStates[index] = true;
+                        }
                     }
                 }
+                
             }
             catch (NullReferenceException)
             {
