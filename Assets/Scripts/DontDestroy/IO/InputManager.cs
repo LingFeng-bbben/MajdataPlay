@@ -56,6 +56,7 @@ namespace MajdataPlay.IO
         readonly static object _btnUpdateSyncLock = new();
 
         readonly static Memory<SensorStatus> _latestBtnStateLogger = new SensorStatus[12];
+        //The serial port will report the status of 35 zones, but there are actually only 34 zones.
         readonly static Memory<SensorStatus> _latestSensorStateLogger = new SensorStatus[35];
         readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
@@ -231,6 +232,7 @@ namespace MajdataPlay.IO
         };
         readonly static TimeSpan[] _sensorLastTriggerTimes = new TimeSpan[33];
         readonly static Memory<SensorRenderer> _sensorRenderers = new SensorRenderer[34];
+        //The serial port will report the status of 35 zones, but there are actually only 34 zones.
         readonly static Memory<bool> _sensorStates = new bool[35];
         readonly static SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
         readonly static SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
