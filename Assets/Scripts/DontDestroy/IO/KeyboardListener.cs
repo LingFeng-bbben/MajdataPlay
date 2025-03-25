@@ -64,6 +64,8 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
+            if (_buttonRingInputBuffer.Count == 0)
+                return;
             var buttons = _buttons.Span;
             var isBtnUpdated = 0U;
             var now = MajTimeline.UnscaledTime;

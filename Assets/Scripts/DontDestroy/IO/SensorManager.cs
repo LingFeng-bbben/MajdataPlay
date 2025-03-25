@@ -14,6 +14,8 @@ namespace MajdataPlay.IO
         
         static void UpdateSensorState()
         {
+            if (_touchPanelInputBuffer.Count == 0)
+                return;
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
