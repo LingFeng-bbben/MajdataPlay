@@ -21,6 +21,9 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set; 
         }
+        /// <summary>
+        /// Update by InputManager.PreUpdate
+        /// </summary>
         public SensorStatus State 
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

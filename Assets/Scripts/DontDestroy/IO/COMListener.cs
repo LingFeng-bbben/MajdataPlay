@@ -106,18 +106,24 @@ namespace MajdataPlay.IO
                     continue;
 
                 int k = 0;
-                for (int i = 0; i < 7; i++)
+                var latestSensorStateLogger = _latestSensorStateLogger.Span;
+                lock(_sensorUpdateSyncLock)
                 {
-                    for (int j = 0; j < 5; j++)
+                    for (int i = 0; i < 7; i++)
                     {
-                        var state = (packetBody[i] & 0x01 << j) > 0;
-
-                        _touchPanelInputBuffer.Enqueue(new ()
+                        for (int j = 0; j < 5; j++)
                         {
-                            Index = k++,
-                            State = state ? SensorStatus.On : SensorStatus.Off,
-                            Timestamp = now,
-                        });
+                            var rawState = packetBody[i] & 1UL << j;
+                            var state = rawState > 0 ? SensorStatus.On : SensorStatus.Off;
+
+                            latestSensorStateLogger[k] = state;
+                            _touchPanelInputBuffer.Enqueue(new()
+                            {
+                                Index = k++,
+                                State = state,
+                                Timestamp = now,
+                            });
+                        }
                     }
                 }
             }

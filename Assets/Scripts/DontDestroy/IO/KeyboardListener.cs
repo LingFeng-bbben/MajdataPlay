@@ -26,6 +26,7 @@ namespace MajdataPlay.IO
 
                 Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
                 stopwatch.Start();
+                Span<SensorStatus> buffer = stackalloc SensorStatus[12];
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
@@ -33,17 +34,26 @@ namespace MajdataPlay.IO
                     {
                         var now = MajTimeline.UnscaledTime;
                         var buttons = _buttons.Span;
+                        var latestBtnStateLogger = _latestBtnStateLogger.Span;
+                        buffer.Clear();
                         for (var i = 0; i < buttons.Length; i++)
                         {
                             var button = buttons[i];
                             var keyCode = button.BindingKey;
+                            var state = Keyboard.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
+                            var area = button.Area;
 
-                            _buttonRingInputBuffer.Enqueue(new ()
+                            buffer[i] = state;
+                            _buttonRingInputBuffer.Enqueue(new()
                             {
                                 Index = i,
-                                State = Keyboard.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off,
+                                State = state,
                                 Timestamp = now
                             });
+                        }
+                        lock (_btnUpdateSyncLock)
+                        {
+                            buffer.CopyTo(latestBtnStateLogger);
                         }
                     }
                     catch (Exception e)
@@ -64,24 +74,45 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
+            if (_buttonRingInputBuffer.Count == 0)
+                return;
             var buttons = _buttons.Span;
+            var now = MajTimeline.UnscaledTime;
+            var latestBtnStateLogger = _latestBtnStateLogger.Span;
+            
+            Span<SensorStatus> newStates = stackalloc SensorStatus[12];
+            Span<SensorStatus> latestStates = stackalloc SensorStatus[12];
+
+            lock(_btnUpdateSyncLock)
+            {
+                latestBtnStateLogger.CopyTo(latestStates);
+            }
+
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
                 var index = report.Index;
                 if (!index.InRange(0, 11))
                     continue;
-                var button = buttons[index];
+                newStates[index] |= report.State;
+            }
+            for (var i = 0; i < 12; i++)
+            {
+                newStates[i] |= latestStates[i];
+            }
+
+            for (var i = 0; i < 12; i++)
+            {
+                var button = buttons[i];
                 var oldState = button.State;
-                var newState = report.State;
-                var timestamp = report.Timestamp;
+                var newState = newStates[i];
 
                 if (oldState == newState)
                     continue;
-                else if (_isBtnDebounceEnabled && index.InRange(0, 7))
+                else if (_isBtnDebounceEnabled && i.InRange(0, 7))
                 {
-                    if (JitterDetect(button.Area, timestamp, true))
+                    if (JitterDetect(button.Area, now, true))
                         continue;
-                    _btnLastTriggerTimes[index] = timestamp;
+                    _btnLastTriggerTimes[i] = now;
                 }
                 button.State = newState;
                 MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");

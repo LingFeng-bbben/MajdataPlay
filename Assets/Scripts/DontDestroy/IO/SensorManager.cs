@@ -11,81 +11,66 @@ namespace MajdataPlay.IO
 {
     internal partial class InputManager : MonoBehaviour
     {
-        
         static void UpdateSensorState()
         {
+            var latestStateLogger = _latestSensorStateLogger;
             var sensors = _sensors.Span;
+            var now = MajTimeline.UnscaledTime;
+            var sensorStates = _sensorStates.Span;
+            var latestSensorStateLogger = _latestSensorStateLogger.Span;
+            Span<SensorStatus> newStates = stackalloc SensorStatus[34];
+            Span<SensorStatus> latestStates = stackalloc SensorStatus[35];
+            
+            lock(_sensorUpdateSyncLock)
+            {
+                latestSensorStateLogger.CopyTo(latestStates);
+            }
+
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
                 var index = report.Index;
                 if (!index.InRange(0, 33))
                     continue;
-                
-                var sensor = index switch
-                {
-                    <= (int)SensorArea.C => sensors[index],
-                    > 17 => sensors[index - 1],
-                    _ => sensors[16],
-                };
+
+                newStates[index] |= report.State;
+            }
+            for (var i = 0; i < 34; i++)
+            {
+                newStates[i] |= latestStates[i];
+            }
+
+            var C = newStates[16] | newStates[17];
+            newStates[16] = C;
+            newStates.Slice(18).CopyTo(newStates.Slice(17));
+            newStates = newStates.Slice(0, 33);
+            for (var i = 0; i < 33; i++)
+            {
+                var sensor = sensors[i];
                 var sensorArea = sensor.Area;
                 var sensorIndex = (int)sensorArea;
-                var timestamp = report.Timestamp;
+                sensorStates[i] = newStates[i] is SensorStatus.On;
+
                 if (sensor is null)
                 {
-                    MajDebug.LogError($"{index}# Sensor instance is null");
+                    MajDebug.LogError($"{i}# Sensor instance is null");
                     continue;
                 }
-                var sensorStates = _sensorStates.Span;
                 var oldState = sensor.State;
-                var newState = report.State;
-                var C1 = sensorStates[16];
-                var C2 = sensorStates[17];
+                var newState = newStates[i];
 
-                if (sensorArea == SensorArea.C)
-                {
-                    var CSubAreaState = report.State is SensorStatus.On ? true: false;
-                    switch (index)
-                    {
-                        case 16:
-                            newState = CSubAreaState || C2 ? SensorStatus.On : SensorStatus.Off;
-                            break;
-                        case 17:
-                            newState = CSubAreaState || C1 ? SensorStatus.On : SensorStatus.Off;
-                            break;
-                    }
-                }
                 if (_isSensorDebounceEnabled)
                 {
-                    if (JitterDetect(sensorArea, timestamp))
+                    if (JitterDetect(sensorArea, now))
                     {
                         continue;
                     }
-                    else if(oldState == newState)
-                    {
-                        switch (index)
-                        {
-                            case 16:
-                            case 17:
-                                sensorStates[index] = report.State is SensorStatus.On ? true : false;
-                                break;
-                        }
-                        continue;
-                    }
-                    _sensorLastTriggerTimes[sensorIndex] = timestamp;
+                    _sensorLastTriggerTimes[sensorIndex] = now;
                 }
-                else if(oldState == newState)
+                else if (oldState == newState)
                 {
-                    switch (index)
-                    {
-                        case 16:
-                        case 17:
-                            sensorStates[index] = report.State is SensorStatus.On ? true : false;
-                            break;
-                    }
                     continue;
                 }
                 MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
-                sensorStates[index] = report.State is SensorStatus.On ? true : false;
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {
