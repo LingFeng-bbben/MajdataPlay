@@ -37,6 +37,7 @@ namespace MajdataPlay.IO
             for (var i = 0; i < 34; i++)
             {
                 newStates[i] |= latestStates[i];
+                sensorStates[i] = newStates[i] is SensorStatus.On;
             }
 
             var C = newStates[16] | newStates[17];
@@ -48,7 +49,6 @@ namespace MajdataPlay.IO
                 var sensor = sensors[i];
                 var sensorArea = sensor.Area;
                 var sensorIndex = (int)sensorArea;
-                sensorStates[i] = newStates[i] is SensorStatus.On;
 
                 if (sensor is null)
                 {
