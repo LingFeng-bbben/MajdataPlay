@@ -106,8 +106,6 @@ namespace MajdataPlay.IO
                     continue;
 
                 int k = 0;
-                var latestSensorStateLogger = _latestSensorStateLogger.Span;
-                Span<SensorStatus> currentStates = stackalloc SensorStatus[35];
                 for (int i = 0; i < 7; i++)
                 {
                     for (int j = 0; j < 5; j++)
@@ -115,7 +113,6 @@ namespace MajdataPlay.IO
                         var rawState = packetBody[i] & 1UL << j;
                         var state = rawState > 0 ? SensorStatus.On : SensorStatus.Off;
 
-                        currentStates[k] = state;
                         _touchPanelInputBuffer.Enqueue(new()
                         {
                             Index = k++,
@@ -123,10 +120,6 @@ namespace MajdataPlay.IO
                             Timestamp = now,
                         });
                     }
-                }
-                lock (_sensorUpdateSyncLock)
-                {
-                    currentStates.CopyTo(latestSensorStateLogger);
                 }
             }
         }

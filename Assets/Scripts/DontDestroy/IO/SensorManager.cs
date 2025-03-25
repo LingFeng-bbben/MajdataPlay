@@ -13,18 +13,11 @@ namespace MajdataPlay.IO
     {
         static void UpdateSensorState()
         {
-            var latestStateLogger = _latestSensorStateLogger;
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
             var latestSensorStateLogger = _latestSensorStateLogger.Span;
             Span<SensorStatus> newStates = stackalloc SensorStatus[34];
-            Span<SensorStatus> latestStates = stackalloc SensorStatus[35];
-            
-            lock(_sensorUpdateSyncLock)
-            {
-                latestSensorStateLogger.CopyTo(latestStates);
-            }
 
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
@@ -33,10 +26,11 @@ namespace MajdataPlay.IO
                     continue;
 
                 newStates[index] |= report.State;
+                latestSensorStateLogger[index] = report.State;
             }
             for (var i = 0; i < 34; i++)
             {
-                newStates[i] |= latestStates[i];
+                newStates[i] |= latestSensorStateLogger[i];
                 sensorStates[i] = newStates[i] is SensorStatus.On;
             }
 

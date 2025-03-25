@@ -26,7 +26,6 @@ namespace MajdataPlay.IO
 
                 Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
                 stopwatch.Start();
-                Span<SensorStatus> buffer = stackalloc SensorStatus[12];
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
@@ -34,8 +33,7 @@ namespace MajdataPlay.IO
                     {
                         var now = MajTimeline.UnscaledTime;
                         var buttons = _buttons.Span;
-                        var latestBtnStateLogger = _latestBtnStateLogger.Span;
-                        buffer.Clear();
+
                         for (var i = 0; i < buttons.Length; i++)
                         {
                             var button = buttons[i];
@@ -43,17 +41,12 @@ namespace MajdataPlay.IO
                             var state = Keyboard.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
                             var area = button.Area;
 
-                            buffer[i] = state;
                             _buttonRingInputBuffer.Enqueue(new()
                             {
                                 Index = i,
                                 State = state,
                                 Timestamp = now
                             });
-                        }
-                        lock (_btnUpdateSyncLock)
-                        {
-                            buffer.CopyTo(latestBtnStateLogger);
                         }
                     }
                     catch (Exception e)
@@ -81,12 +74,6 @@ namespace MajdataPlay.IO
             var latestBtnStateLogger = _latestBtnStateLogger.Span;
             
             Span<SensorStatus> newStates = stackalloc SensorStatus[12];
-            Span<SensorStatus> latestStates = stackalloc SensorStatus[12];
-
-            lock(_btnUpdateSyncLock)
-            {
-                latestBtnStateLogger.CopyTo(latestStates);
-            }
 
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
@@ -94,10 +81,11 @@ namespace MajdataPlay.IO
                 if (!index.InRange(0, 11))
                     continue;
                 newStates[index] |= report.State;
+                latestBtnStateLogger[index] = report.State;
             }
             for (var i = 0; i < 12; i++)
             {
-                newStates[i] |= latestStates[i];
+                newStates[i] |= latestBtnStateLogger[i];
             }
 
             for (var i = 0; i < 12; i++)

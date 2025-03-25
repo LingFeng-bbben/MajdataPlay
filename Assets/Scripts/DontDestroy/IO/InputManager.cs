@@ -52,9 +52,6 @@ namespace MajdataPlay.IO
         static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
         static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
 
-        readonly static object _sensorUpdateSyncLock = new();
-        readonly static object _btnUpdateSyncLock = new();
-
         readonly static Memory<SensorStatus> _latestBtnStateLogger = new SensorStatus[12];
         //The serial port will report the status of 35 zones, but there are actually only 34 zones.
         readonly static Memory<SensorStatus> _latestSensorStateLogger = new SensorStatus[35];
@@ -749,7 +746,6 @@ namespace MajdataPlay.IO
         {
             var i = (int)zone;
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
-            var latestSensorStateLogger = _latestSensorStateLogger.Span;
 
             _touchPanelInputBuffer.Enqueue(new()
             {
@@ -757,14 +753,9 @@ namespace MajdataPlay.IO
                 State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
-            lock (_sensorUpdateSyncLock)
-            {
-                latestSensorStateLogger[i] = majState;
-            }
         }
         static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
         {
-            var latestBtnStateLogger = _latestBtnStateLogger.Span;
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
             var i = GetIndexByButtonRingZone(zone);
 
@@ -774,11 +765,6 @@ namespace MajdataPlay.IO
                 State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
-
-            lock (_btnUpdateSyncLock)
-            {
-                latestBtnStateLogger[i] = majState;
-            }
         }
     }
     class SensorRenderer
