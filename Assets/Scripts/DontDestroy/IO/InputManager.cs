@@ -367,28 +367,12 @@ namespace MajdataPlay.IO
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
             {
-                buttonRingCallbacks[zone] = (zone, state) =>
-                {
-                    _buttonRingInputBuffer.Enqueue(new()
-                    {
-                        Index = GetIndexByButtonRingZone(zone),
-                        State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                        Timestamp = MajTimeline.UnscaledTime
-                    });
-                };
+                buttonRingCallbacks[zone] = OnButtonRingStateChanged;
             }
 
             foreach (TouchPanelZone zone in Enum.GetValues(typeof(TouchPanelZone)))
             {
-                touchPanelCallbacks[zone] = (zone, state) =>
-                {
-                    _touchPanelInputBuffer.Enqueue(new()
-                    {
-                        Index = (int)zone,
-                        State = state == InputState.On ? SensorStatus.On : SensorStatus.Off,
-                        Timestamp = MajTimeline.UnscaledTime
-                    });
-                };
+                touchPanelCallbacks[zone] = OnTouchPanelStateChanged;
             }
 
             
