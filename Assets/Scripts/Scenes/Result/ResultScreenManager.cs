@@ -45,6 +45,8 @@ namespace MajdataPlay.Result
 
         UniTask OnlineSaveTask = UniTask.Delay(0);
 
+        private RecordHelper recordHelper = new();
+
         void Start()
         {
             rank.text = "";
@@ -124,6 +126,8 @@ namespace MajdataPlay.Result
                     OnlineSaveTask = intractSender.SendScore(score);
                 }
             }
+
+            recordHelper.StopRecord();
         }
 
         async UniTask LoadCover(ISongDetail song)

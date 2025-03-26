@@ -1,4 +1,4 @@
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -25,6 +25,7 @@ using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using System.Windows.Forms.VisualStyles;
+using WebSocketSharp;
 
 namespace MajdataPlay.Game
 {
@@ -147,6 +148,8 @@ namespace MajdataPlay.Game
 
         readonly CancellationTokenSource _cts = new();
 
+        private RecordHelper recordHelper = new();
+
         void Awake()
         {
             Majdata<GamePlayManager>.Instance = this;
@@ -191,6 +194,7 @@ namespace MajdataPlay.Game
                 LoadDanModSettings();
             }
             InitGame().Forget();
+            return;
         }
         void LoadDanModSettings()
         {
@@ -532,6 +536,8 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
+            recordHelper.StartRecord();
+
             if (_audioSample is null)
                 return;
 
