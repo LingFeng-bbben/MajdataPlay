@@ -544,10 +544,23 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 PlaySFX();
             }
-            var areaIndex = (int)(process * queueMemory.Length) - 1;
+            var areaIndex = (int)(process * queueMemory.Length);
+            var delta = (process * queueMemory.Length) - areaIndex;
             if (areaIndex < 0)
                 return;
-            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+            int barIndex;
+            if (delta > 0.8)
+            {
+                barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+            }
+            else if(delta > 0.3)
+            {
+                barIndex = queue[areaIndex].ArrowProgressWhenOn;
+            }
+            else
+            {
+                return;
+            }
             HideBar(barIndex);
         }
         void ApplyStarRotation(Quaternion newRotation)
