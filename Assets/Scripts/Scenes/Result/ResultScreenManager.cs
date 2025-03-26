@@ -126,8 +126,11 @@ namespace MajdataPlay.Result
                 }
             }
 
-            if(MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS)
-                MajInstances.RecordHelper?.StopRecord();
+            if(MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS
+               && MajInstances.RecordHelper is not null
+               && MajInstances.RecordHelper.Recording
+               && MajInstances.RecordHelper.Connected)
+                MajInstances.RecordHelper.StopRecord();
         }
 
         async UniTask LoadCover(ISongDetail song)

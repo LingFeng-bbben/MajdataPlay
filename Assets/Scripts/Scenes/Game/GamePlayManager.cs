@@ -26,7 +26,6 @@ using MajdataPlay.List;
 using System.Text.Json;
 using System.Windows.Forms.VisualStyles;
 using Assets.Scripts.Misc.Types.Enums;
-using WebSocketSharp;
 
 namespace MajdataPlay.Game
 {
@@ -535,8 +534,11 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if (_setting.Game.Record == RecordMode.OBS)
-                MajInstances.RecordHelper?.StartRecord();
+            if (_setting.Game.Record == RecordMode.OBS 
+                && MajInstances.RecordHelper is not null
+                && MajInstances.RecordHelper.Connected
+                && !MajInstances.RecordHelper.Recording)
+                MajInstances.RecordHelper.StartRecord();
 
             if (_audioSample is null)
                 return;
@@ -921,6 +923,13 @@ namespace MajdataPlay.Game
 
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
+
+            if (MajInstances.RecordHelper is not null
+                && MajInstances.RecordHelper.Connected
+                && MajInstances.RecordHelper.Recording)
+            {
+                MajInstances.RecordHelper.StopRecord();
+            }
 
             MajInstances.InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
