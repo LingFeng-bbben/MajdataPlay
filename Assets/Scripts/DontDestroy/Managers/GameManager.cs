@@ -23,7 +23,6 @@ namespace MajdataPlay
     {
         public static Camera MainCamera { get; private set; }
         public static CancellationToken GlobalCT { get; }
-        public RecordHelper? RecordHelper = null;
         public GameSetting Setting
         {
             get => MajInstances.Setting;

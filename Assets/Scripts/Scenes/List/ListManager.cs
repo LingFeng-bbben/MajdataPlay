@@ -46,11 +46,11 @@ namespace MajdataPlay.List
             }
 
             if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS &&
-                MajInstances.GameManager.RecordHelper == null)
-                MajInstances.GameManager.RecordHelper = new();
+                MajInstances.RecordHelper == null)
+                MajInstances.RecordHelper = new();
             if (MajInstances.GameManager.Setting.Game.Record == RecordMode.Disable &&
-                MajInstances.GameManager.RecordHelper != null)
-                MajInstances.GameManager.RecordHelper = null;
+                MajInstances.RecordHelper != null)
+                MajInstances.RecordHelper = null;
         }
         async UniTaskVoid InitializeCoverListAsync()
         {

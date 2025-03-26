@@ -535,8 +535,8 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if (_setting.Game.Record == RecordMode.Obs)
-                MajInstances.GameManager.RecordHelper?.StartRecord();
+            if (_setting.Game.Record == RecordMode.OBS)
+                MajInstances.RecordHelper?.StartRecord();
 
             if (_audioSample is null)
                 return;
