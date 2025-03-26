@@ -41,18 +41,14 @@ namespace MajdataPlay.IO
                     EnsureTouchPanelSerialStreamIsOpen(serial);
                     IsTouchPanelConnected = true;
                     MajEnv.ExecutionQueue.Enqueue(() => OnTouchPanelConnected());
-                    //Span<byte> buffer = stackalloc byte[MajEnv.SERIAL_READ_BUFFER_SIZE]; 
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            if (!EnsureTouchPanelSerialStreamIsOpen(serial)) continue;
-                            var bufferbyte = new byte[serial.BytesToRead];
-                            //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
-                            var read = serial.Read(bufferbyte, 0,serial.BytesToRead);
-                            var buffer = new Span<byte>(bufferbyte);
-                            TouchPannelPacketHandle(buffer);
+                            if (!EnsureTouchPanelSerialStreamIsOpen(serial)) 
+                                continue;
+                            ReadFromSerialPort(serial);
                         }
                         catch(TimeoutException)
                         {
@@ -72,12 +68,23 @@ namespace MajdataPlay.IO
                         }
                     }
                 }
-                catch (IOException)
+                catch (IOException ioE)
                 {
-                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.\n{ioE}");
                     _useDummy = true;
                 }
             }, TaskCreationOptions.LongRunning);
+        }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void ReadFromSerialPort(SerialPort serial)
+        {
+            var bytes2Read = serial.BytesToRead;
+            if (bytes2Read == 0)
+                return;
+            Span<byte> buffer = stackalloc byte[bytes2Read]; 
+            //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
+            var read = serial.Read(buffer);
+            TouchPannelPacketHandle(buffer);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void TouchPannelPacketHandle(ReadOnlySpan<byte> packet)
