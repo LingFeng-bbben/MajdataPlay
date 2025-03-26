@@ -48,7 +48,7 @@ namespace MajdataPlay.Utils
 
         public void Dispose()
         {
-
+            Disconnect();
         }
 
         public void StartRecord()

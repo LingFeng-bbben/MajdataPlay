@@ -25,6 +25,7 @@ using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using System.Windows.Forms.VisualStyles;
+using Assets.Scripts.Misc.Types.Enums;
 using WebSocketSharp;
 
 namespace MajdataPlay.Game
@@ -147,8 +148,6 @@ namespace MajdataPlay.Game
         TimeDisplayer _timeDisplayer;
 
         readonly CancellationTokenSource _cts = new();
-
-        private RecordHelper recordHelper = new();
 
         void Awake()
         {
@@ -536,7 +535,8 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            recordHelper.StartRecord();
+            if (_setting.Game.Record == RecordMode.Obs)
+                MajInstances.GameManager.RecordHelper?.StartRecord();
 
             if (_audioSample is null)
                 return;

@@ -5,6 +5,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.Threading;
+using Assets.Scripts.Misc.Types.Enums;
 using UnityEngine;
 
 namespace MajdataPlay.List
@@ -43,6 +44,13 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
+
+            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS &&
+                MajInstances.GameManager.RecordHelper == null)
+                MajInstances.GameManager.RecordHelper = new();
+            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.Disable &&
+                MajInstances.GameManager.RecordHelper != null)
+                MajInstances.GameManager.RecordHelper = null;
         }
         async UniTaskVoid InitializeCoverListAsync()
         {

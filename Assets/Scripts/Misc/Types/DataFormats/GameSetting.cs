@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Assets.Scripts.Misc.Types.Enums;
 using UnityEngine.Rendering;
 #nullable enable
 namespace MajdataPlay.Types
@@ -30,6 +31,7 @@ namespace MajdataPlay.Types
         public int Rotation { get; set; } = 0;
         public string Language { get; set; } = "zh-CN - Majdata";
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
+        public RecordMode Record { get; set; } = RecordMode.Disable;
     }
     public class JudgeOptions
     {

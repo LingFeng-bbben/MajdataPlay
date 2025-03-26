@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
+using Assets.Scripts.Misc.Types.Enums;
 using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Result
@@ -44,8 +45,6 @@ namespace MajdataPlay.Result
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         UniTask OnlineSaveTask = UniTask.Delay(0);
-
-        private RecordHelper recordHelper = new();
 
         void Start()
         {
@@ -127,7 +126,8 @@ namespace MajdataPlay.Result
                 }
             }
 
-            recordHelper.StopRecord();
+            if(MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS)
+                MajInstances.GameManager.RecordHelper?.StopRecord();
         }
 
         async UniTask LoadCover(ISongDetail song)
