@@ -6,9 +6,10 @@ namespace MajdataPlay.Utils
 {
     public class OBSRecordHelper : IRecordHelper, IDisposable
     {
-        private readonly WebSocket webSocket = new("ws://127.0.0.1:4455");
+        private WebSocket webSocket = new("ws://127.0.0.1:4455");
         public bool Connected { get; set; } = false;
         public bool Recording { get; set; } = false;
+        private bool disposed = false;
 
         private const string StartRecordMessage = @"{
                     ""op"": 6,
@@ -37,56 +38,49 @@ namespace MajdataPlay.Utils
 
         public void Init()
         {
-            try
-            {
-                webSocket.OnMessage += OnMessageReceived;
-                Connect();
-                Authenticate();
-            }
-            catch (Exception e)
-            {
-                MajDebug.LogException(e);
-            }
+            webSocket.OnMessage += OnMessageReceived;
+            Connect();
+            Authenticate();
         }
-        private void Connect()
-        {
-            webSocket.Connect();
-        }
+
+        private void Connect() => webSocket.Connect();
 
         private void Disconnect()
         {
-            try
-            {
-                webSocket.Close();
-                Connected = false;
-            }
-            catch (Exception e)
-            {
-                MajDebug.LogException(e);
-            }
+            webSocket.Close();
+            Connected = false;
         }
 
         public void Dispose()
         {
-            Disconnect();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public void StartRecord()
-        { 
-            webSocket.Send(StartRecordMessage);
-        }
-
-        public void StopRecord()
+        protected virtual void Dispose(bool disposing)
         {
-            webSocket.Send(StopRecordMessage);
+            if (disposed) return;
+            if (disposing)
+            {
+                Disconnect();
+                webSocket = null;
+            }
+
+            disposed = true;
         }
+
+        ~OBSRecordHelper() => Dispose(false);
+        public void StartRecord() => webSocket.Send(StartRecordMessage);
+        public void StopRecord() => webSocket.Send(StopRecordMessage);
+        private void Authenticate() => webSocket.Send(AuthenticateMessage);
+
 
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             try
             {
                 var message = Serializer.Json.Deserialize<ReceivedMessage>(e.Data);
-                switch (message.Op)
+                switch (message.op)
                 {
                     case 2: // Identified
                     {
@@ -95,9 +89,9 @@ namespace MajdataPlay.Utils
                     }
                     case 7: // RequestResponse
                     {
-                        if (message.D.RequestType == "StartRecord")
+                        if (message.d.RequestType == "StartRecord")
                         {
-                            if (message.D.RequestStatus.Result)
+                            if (message.d.RequestStatus.Result)
                             {
                                 Recording = true;
                             }
@@ -107,12 +101,12 @@ namespace MajdataPlay.Utils
                             }
                         }
 
-                        if (message.D.RequestType == "StopRecord")
+                        if (message.d.RequestType == "StopRecord")
                         {
-                            if (message.D.RequestStatus.Result)
+                            if (message.d.RequestStatus.Result)
                             {
                                 Recording = false;
-                                MajDebug.Log("Record Saved To " + message.D.ResponseData.OutputPath);
+                                MajDebug.Log("Record Saved To " + message.d.ResponseData.OutputPath);
                             }
                             else
                             {
@@ -133,8 +127,6 @@ namespace MajdataPlay.Utils
                 MajDebug.LogException(ex);
             }
         }
-
-        private void Authenticate() => webSocket.Send(AuthenticateMessage);
 
         #region WebSocketMessageClass
         public class RequestStatus
@@ -178,8 +170,9 @@ namespace MajdataPlay.Utils
 
         public class ReceivedMessage
         {
-            public DData D { get; set; }
-            public int Op { get; set; }
+            public DData d { get; set; }
+            public int op { get; set; }
+            public override string ToString() => Serializer.Json.Serialize(this);
         }
         #endregion
     }
