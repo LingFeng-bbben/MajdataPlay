@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Utils
+﻿namespace MajdataPlay.Types
 {
     internal interface IRecordHelper
     {

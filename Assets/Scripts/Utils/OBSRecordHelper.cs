@@ -1,4 +1,5 @@
 ﻿using System;
+using MajdataPlay.Types;
 using WebSocketSharp;
 
 namespace MajdataPlay.Utils
