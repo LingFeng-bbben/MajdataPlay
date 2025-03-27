@@ -5,7 +5,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class FPSDisplayerIcon : MonoBehaviour
+public class RecordHelperStatusDisplayer : MonoBehaviour
 {
     public List<Sprite> Sprites;
 
@@ -13,7 +13,7 @@ public class FPSDisplayerIcon : MonoBehaviour
     {
         if (Sprites == null)
         {
-            Debug.LogError("未设置精灵列表");
+            Debug.LogError("No Sprites");
 
             return;
         }
@@ -24,7 +24,7 @@ public class FPSDisplayerIcon : MonoBehaviour
         }
         else
         {
-            Debug.LogError("找不到精灵渲染器");
+            Debug.LogError("No Sprite Render");
             return;
         }
     }
