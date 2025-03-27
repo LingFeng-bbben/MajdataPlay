@@ -36,6 +36,19 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
+
+            switch (MajInstances.GameManager.Setting.Game.Record)
+            {
+                case RecordMode.Disable:
+                    MajInstances.RecordHelper?.Dispose();
+                    MajInstances.RecordHelper = null;
+                    break;
+                case RecordMode.OBS:
+                    MajInstances.RecordHelper ??= new OBSRecordHelper();
+                    break;
+                default:
+                    break;
+            }
         }
         async UniTaskVoid InitializeCoverListAsync()
         {

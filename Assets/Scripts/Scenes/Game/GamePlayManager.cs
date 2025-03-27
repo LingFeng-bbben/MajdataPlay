@@ -1,4 +1,4 @@
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -189,6 +189,7 @@ namespace MajdataPlay.Game
                 LoadDanModSettings();
             }
             InitGame().Forget();
+            return;
         }
         void LoadDanModSettings()
         {
@@ -566,6 +567,12 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
+            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS 
+                && MajInstances.RecordHelper is not null
+                && MajInstances.RecordHelper.Connected
+                && !MajInstances.RecordHelper.Recording)
+                MajInstances.RecordHelper.StartRecord();
+
             if (_audioSample is null)
                 return;
 
@@ -967,6 +974,13 @@ namespace MajdataPlay.Game
 
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
+
+            if (MajInstances.RecordHelper is not null
+                && MajInstances.RecordHelper.Connected
+                && MajInstances.RecordHelper.Recording)
+            {
+                MajInstances.RecordHelper.StopRecord();
+            }
 
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
