@@ -47,6 +47,11 @@ namespace MajdataPlay.Result
 
         void Start()
         {
+            if(MajInstances.RecordHelper is not null
+               && MajInstances.RecordHelper.Recording
+               && MajInstances.RecordHelper.Connected)
+                MajInstances.RecordHelper.StopRecord();
+
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
