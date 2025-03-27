@@ -545,15 +545,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 PlaySFX();
             }
             var areaIndex = (int)(process * queueMemory.Length);
+            var isLast = areaIndex == queueMemory.Length - 1;
             var delta = (process * queueMemory.Length) - areaIndex;
             if (areaIndex < 0)
                 return;
             int barIndex;
-            if (delta > 0.8)
+            if (delta > 0.9)
             {
                 barIndex = queue[areaIndex].ArrowProgressWhenFinished;
             }
-            else if(delta > 0.3)
+            else if(delta > 0.4 && !isLast)
             {
                 barIndex = queue[areaIndex].ArrowProgressWhenOn;
             }
