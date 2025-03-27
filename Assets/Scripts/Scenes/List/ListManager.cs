@@ -47,7 +47,7 @@ namespace MajdataPlay.List
 
             if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS &&
                 MajInstances.RecordHelper == null)
-                MajInstances.RecordHelper = new();
+                MajInstances.RecordHelper = new OBSRecordHelper();
             if (MajInstances.GameManager.Setting.Game.Record == RecordMode.Disable &&
                 MajInstances.RecordHelper != null)
                 MajInstances.RecordHelper = null;

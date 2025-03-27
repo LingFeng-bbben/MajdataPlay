@@ -3,7 +3,7 @@ using WebSocketSharp;
 
 namespace MajdataPlay.Utils
 {
-    public class RecordHelper : IRecordHelper, IDisposable
+    public class OBSRecordHelper : IRecordHelper, IDisposable
     {
         private readonly WebSocket webSocket = new("ws://127.0.0.1:4455");
         public bool Connected = false;
@@ -32,7 +32,7 @@ namespace MajdataPlay.Utils
                     }
                 }";
 
-        public RecordHelper()
+        public OBSRecordHelper()
         {
             Connect();
             Authenticate();

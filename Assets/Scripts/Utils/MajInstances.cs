@@ -88,12 +88,12 @@ namespace MajdataPlay.Utils
             set => Majdata<GameUpdater>.Instance = value;
         }
 
-        internal static RecordHelper? RecordHelper
+        internal static IRecordHelper? RecordHelper
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<RecordHelper>.Instance;
+            get => Majdata<IRecordHelper>.Instance;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<RecordHelper>.Instance = value;
+            set => Majdata<IRecordHelper>.Instance = value;
         }
     }
 }
