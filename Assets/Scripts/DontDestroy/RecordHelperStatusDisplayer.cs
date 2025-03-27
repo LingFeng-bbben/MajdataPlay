@@ -1,3 +1,4 @@
+using Cysharp.Text;
 using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +9,12 @@ using UnityEngine;
 public class RecordHelperStatusDisplayer : MonoBehaviour
 {
     public List<Sprite> Sprites;
+    float _frameTimer = 1;
+
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
 
     public void ChangeSpriteRender(int index)
     {
@@ -29,21 +36,17 @@ public class RecordHelperStatusDisplayer : MonoBehaviour
         }
     }
 
-    void OnEnable()
+    void LateUpdate()
     {
-        StartCoroutine(CheckRecordState());
-    }
-
-    IEnumerator CheckRecordState()
-    {
-        while (gameObject.activeInHierarchy)
+        var delta = Time.deltaTime;
+        if (_frameTimer <= 0 && gameObject.activeInHierarchy)
         {
             if (MajInstances.RecordHelper?.Recording ?? false)
             {
                 ChangeSpriteRender(0);
 
             }
-            else if (MajInstances.RecordHelper?.Connected??false)
+            else if (MajInstances.RecordHelper?.Connected ?? false)
             {
                 ChangeSpriteRender(1);
 
@@ -52,10 +55,10 @@ public class RecordHelperStatusDisplayer : MonoBehaviour
             {
                 ChangeSpriteRender(2);
             }
-            yield return new WaitForSeconds(0.5f);
+            _frameTimer = 1;
         }
+        else
+            _frameTimer -= delta;
     }
-    
-    // Start is called before the first frame update
     
 }

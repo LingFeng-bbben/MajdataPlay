@@ -1664,8 +1664,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1167205853}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -3211,7 +3210,7 @@ GameObject:
   - component: {fileID: 1167205855}
   - component: {fileID: 1167205854}
   m_Layer: 0
-  m_Name: FPSDisplayerIcon
+  m_Name: RecordHelperStatusDisplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3224,16 +3223,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1167205852}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 638014421}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.321, y: -0.136}
+  m_AnchoredPosition: {x: 0.6, y: 12.3}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1167205854
@@ -3249,9 +3248,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Sprites:
-  - {fileID: 21300000, guid: 75809529c29f57848ad1ab9e1bec37e3, type: 3}
-  - {fileID: 21300000, guid: ba810b011bfb4c84795adc63351bb6e7, type: 3}
-  - {fileID: 21300000, guid: 1713876749a8d96468be8869ba9a128e, type: 3}
+  - {fileID: 21300000, guid: 8f2da46e41fbeda449bafa3c168a2c31, type: 3}
+  - {fileID: 21300000, guid: b9ac2f11d19028047a89f618634e8191, type: 3}
+  - {fileID: 21300000, guid: 67f09961d85b2504295bfc4790984eb3, type: 3}
 --- !u!212 &1167205855
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3290,10 +3289,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 587624755
+  m_SortingLayer: 11
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 75809529c29f57848ad1ab9e1bec37e3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 67f09961d85b2504295bfc4790984eb3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5567,5 +5566,6 @@ SceneRoots:
   - {fileID: 1111381798}
   - {fileID: 614660270}
   - {fileID: 638014421}
+  - {fileID: 1167205853}
   - {fileID: 1066008512}
   - {fileID: 460604601}
