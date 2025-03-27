@@ -1,9 +1,6 @@
-using Cysharp.Text;
 using MajdataPlay.Utils;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class RecordHelperStatusDisplayer : MonoBehaviour
@@ -21,10 +18,9 @@ public class RecordHelperStatusDisplayer : MonoBehaviour
         if (Sprites == null)
         {
             Debug.LogError("No Sprites");
-
             return;
         }
-        if (GetComponent<SpriteRenderer>() is SpriteRenderer spriteRenderer)
+        if (GetComponent<SpriteRenderer>() is { } spriteRenderer)
         {
             spriteRenderer.sprite = Sprites.Skip(index).FirstOrDefault();
             return;
@@ -44,12 +40,10 @@ public class RecordHelperStatusDisplayer : MonoBehaviour
             if (MajInstances.RecordHelper?.Recording ?? false)
             {
                 ChangeSpriteRender(0);
-
             }
             else if (MajInstances.RecordHelper?.Connected ?? false)
             {
                 ChangeSpriteRender(1);
-
             }
             else
             {
@@ -60,5 +54,4 @@ public class RecordHelperStatusDisplayer : MonoBehaviour
         else
             _frameTimer -= delta;
     }
-    
 }
