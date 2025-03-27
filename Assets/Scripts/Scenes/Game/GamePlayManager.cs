@@ -534,7 +534,7 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if (_setting.Game.Record == RecordMode.OBS 
+            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS 
                 && MajInstances.RecordHelper is not null
                 && MajInstances.RecordHelper.Connected
                 && !MajInstances.RecordHelper.Recording)

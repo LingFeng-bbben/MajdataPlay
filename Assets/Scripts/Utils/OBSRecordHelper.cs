@@ -6,8 +6,8 @@ namespace MajdataPlay.Utils
     public class OBSRecordHelper : IRecordHelper, IDisposable
     {
         private readonly WebSocket webSocket = new("ws://127.0.0.1:4455");
-        public bool Connected = false;
-        public bool Recording = false;
+        public bool Connected { get; set; } = false;
+        public bool Recording { get; set; } = false;
 
         private const string StartRecordMessage = @"{
                     ""op"": 6,
