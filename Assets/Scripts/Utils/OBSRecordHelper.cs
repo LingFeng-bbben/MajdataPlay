@@ -4,12 +4,12 @@ using WebSocketSharp;
 
 namespace MajdataPlay.Utils
 {
-    public class OBSRecordHelper : IRecordHelper, IDisposable
+    public class OBSRecordHelper : IRecordHelper
     {
-        private WebSocket webSocket = new("ws://127.0.0.1:4455");
+        private WebSocket _webSocket = new("ws://127.0.0.1:4455");
+        private bool _disposed = false;
         public bool Connected { get; set; } = false;
         public bool Recording { get; set; } = false;
-        private bool disposed = false;
 
         private const string StartRecordMessage = @"{
                     ""op"": 6,
@@ -38,17 +38,9 @@ namespace MajdataPlay.Utils
 
         public void Init()
         {
-            webSocket.OnMessage += OnMessageReceived;
+            _webSocket.OnMessage += OnMessageReceived;
             Connect();
             Authenticate();
-        }
-
-        private void Connect() => webSocket.Connect();
-
-        private void Disconnect()
-        {
-            webSocket.Close();
-            Connected = false;
         }
 
         public void Dispose()
@@ -59,21 +51,29 @@ namespace MajdataPlay.Utils
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed) return;
+            if (_disposed) return;
             if (disposing)
             {
                 Disconnect();
-                webSocket = null;
+                _webSocket = null;
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         ~OBSRecordHelper() => Dispose(false);
-        public void StartRecord() => webSocket.Send(StartRecordMessage);
-        public void StopRecord() => webSocket.Send(StopRecordMessage);
-        private void Authenticate() => webSocket.Send(AuthenticateMessage);
 
+        private void Connect() => _webSocket.Connect();
+
+        private void Disconnect()
+        {
+            _webSocket.Close();
+            Connected = false;
+        }
+
+        public void StartRecord() => _webSocket.Send(StartRecordMessage);
+        public void StopRecord() => _webSocket.Send(StopRecordMessage);
+        private void Authenticate() => _webSocket.Send(AuthenticateMessage);
 
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
