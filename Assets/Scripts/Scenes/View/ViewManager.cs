@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game;
-using MajdataPlay.Game.Controllers;
+using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Timer;
 using MajdataPlay.Types;
@@ -105,6 +105,7 @@ namespace MajdataPlay.View
             }
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
+            Majdata<INoteTimeProvider>.Instance = this;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
@@ -121,7 +122,7 @@ namespace MajdataPlay.View
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
-                _bgManager.SetBackgroundMovie(_videoPath).AsTask().Wait();
+                _bgManager.SetBackgroundMovie(_videoPath, _bgCover).AsTask().Wait();
             }
             else if (_bgCover is not null)
             {
@@ -144,10 +145,12 @@ namespace MajdataPlay.View
                             StopAsync().Forget();
                     }
 
-                    _timeDisplayer.OnUpdate();
-                    _noteAudioManager.OnUpdate();
+                    _timeDisplayer.OnPreUpdate();
+                    _noteAudioManager.OnPreUpdate();
+                    _noteManager.OnPreUpdate();
+                    _notePoolManager.OnPreUpdate();
+                    
                     _noteManager.OnUpdate();
-                    _notePoolManager.OnUpdate();
                     break;
             }
         }
@@ -405,7 +408,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovie(_videoPath);
+                    await _bgManager.SetBackgroundMovie(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);
@@ -424,6 +427,7 @@ namespace MajdataPlay.View
         {
             Majdata<ViewManager>.Free();
             Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Types;
+using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ namespace MajdataPlay.Game.Buffers
                 _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
             }
         }
-        public override void OnUpdate(float currentSec)
+        public override void OnPreUpdate(float currentSec)
         {
             if (_timingPoints.IsEmpty)
                 return;

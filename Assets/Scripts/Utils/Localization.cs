@@ -84,23 +84,20 @@ namespace MajdataPlay.Utils
                 return;
             Current = result;
         }
-        public static string GetLocalizedText(MajText textType)
-        {
-            var table = Current.MappingTable;
-            var result = table.Find(x => x.Type == textType);
-
-            return result?.Content ?? textType.ToString();
-        }
         public static string GetLocalizedText(string origin)
+        {
+            var result = string.Empty;
+            TryGetLocalizedText(origin, out result);
+
+            return result;
+        }
+        public static bool TryGetLocalizedText(string origin,out string strOut)
         {
             var table = Current.MappingTable;
             var result = table.Find(x => x.Origin == origin);
+            strOut = result?.Content ?? origin;
 
-            return result?.Content ?? origin;
-        }
-        public static void GetLocalizedText(MajText textType, out string origin)
-        {
-            origin = GetLocalizedText(textType);
+            return result is not null;
         }
         static Language _current = Language.Default;
     }

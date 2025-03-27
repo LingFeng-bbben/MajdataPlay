@@ -77,14 +77,16 @@ namespace MajdataPlay.Utils
             CheckNoteSkinFolder();
 
             var netCachePath = Path.Combine(CachePath, "Net");
+            var runtimeCachePath = Path.Combine(CachePath, "Runtime");
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
+            if (!Directory.Exists(runtimeCachePath))
+                Directory.CreateDirectory(runtimeCachePath);
             if (!Directory.Exists(netCachePath))
                 Directory.CreateDirectory(netCachePath);
             if (!Directory.Exists(ChartPath))
                 Directory.CreateDirectory(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-            GameProcess.PriorityClass = ProcessPriorityClass.High;
         }
         static void CheckAndLoadUserSetting()
         {

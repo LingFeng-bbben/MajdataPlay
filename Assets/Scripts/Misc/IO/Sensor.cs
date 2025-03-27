@@ -1,15 +1,33 @@
 using MajdataPlay.Types;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace MajdataPlay.IO
 {
 #nullable enable
     public class Sensor : IEventPublisher<EventHandler<InputEventArgs>>
     {
-        public SensorStatus State { get; set; } = SensorStatus.Off;
-        public SensorArea Area { get; set; }
+        /// <summary>
+        /// Update by InputManager.PreUpdate
+        /// </summary>
+        public SensorStatus State 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        } = SensorStatus.Off;
+        public SensorArea Area 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        }
         public SensorGroup Group
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 var i = (int)Area;

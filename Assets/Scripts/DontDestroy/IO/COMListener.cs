@@ -29,9 +29,10 @@ namespace MajdataPlay.IO
                 var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var sharedMemoryPool = MemoryPool<byte>.Shared;
                 using var serial = new SerialPort(comPort, MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate);
 
+                serial.ReadTimeout = 2000;
+                serial.WriteTimeout = 2000;
                 Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
                 stopwatch.Start();
 
@@ -45,14 +46,13 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            var serialStream = EnsureTouchPanelSerialStreamIsOpen(serial);
-                            var bytesToRead = serial.BytesToRead;
-
-                            using var bufferOwner = sharedMemoryPool.Rent(bytesToRead);
-                            var buffer = bufferOwner.Memory;
-                            serialStream.Read(buffer.Span);
-
-                            TouchPannelPacketHandle(buffer.Slice(0, bytesToRead));
+                            if (!EnsureTouchPanelSerialStreamIsOpen(serial)) 
+                                continue;
+                            ReadFromSerialPort(serial);
+                        }
+                        catch(TimeoutException)
+                        {
+                            MajDebug.LogError($"From SerialPort listener: Read timeout");
                         }
                         catch (Exception e)
                         {
@@ -68,25 +68,35 @@ namespace MajdataPlay.IO
                         }
                     }
                 }
-                catch (IOException)
+                catch (IOException ioE)
                 {
-                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.\n{ioE}");
                     _useDummy = true;
                 }
             }, TaskCreationOptions.LongRunning);
         }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void ReadFromSerialPort(SerialPort serial)
+        {
+            var bytes2Read = serial.BytesToRead;
+            if (bytes2Read == 0)
+                return;
+            Span<byte> buffer = stackalloc byte[bytes2Read]; 
+            //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
+            var read = serial.Read(buffer);
+            TouchPannelPacketHandle(buffer);
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void TouchPannelPacketHandle(ReadOnlyMemory<byte> packet)
+        void TouchPannelPacketHandle(ReadOnlySpan<byte> packet)
         {
             if (packet.IsEmpty)
                 return;
-            var now = DateTime.Now;
-            var packetSpan = packet.Span;
+            var now = MajTimeline.UnscaledTime;
             Span<int> startIndexs = stackalloc int[packet.Length];
             int x = -1;
-            for (var y = 0; y < packetSpan.Length; y++)
+            for (var y = 0; y < packet.Length; y++)
             {
-                var @byte = packetSpan[y];
+                var @byte = packet[y];
                 if(@byte == '(')
                 {
                     startIndexs[++x] = y;
@@ -109,12 +119,13 @@ namespace MajdataPlay.IO
                 {
                     for (int j = 0; j < 5; j++)
                     {
-                        var state = (packetBody[i] & 0x01 << j) > 0;
+                        var rawState = packetBody[i] & 1UL << j;
+                        var state = rawState > 0 ? SensorStatus.On : SensorStatus.Off;
 
-                        _touchPanelInputBuffer.Enqueue(new ()
+                        _touchPanelInputBuffer.Enqueue(new()
                         {
                             Index = k++,
-                            State = state ? SensorStatus.On : SensorStatus.Off,
+                            State = state,
                             Timestamp = now,
                         });
                     }
@@ -122,13 +133,12 @@ namespace MajdataPlay.IO
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ReadOnlySpan<byte> GetPacketBody(ReadOnlyMemory<byte> packet, int start)
+        ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
         {
             var endIndex = -1;
-            var packetSpan = packet.Span;
-            for (var i = start; i < packetSpan.Length; i++)
+            for (var i = start; i < packet.Length; i++)
             {
-                var @byte = packetSpan[i];
+                var @byte = packet[i];
                 if (@byte == ')')
                 {
                     endIndex = i;
@@ -139,13 +149,13 @@ namespace MajdataPlay.IO
             {
                 return ReadOnlySpan<byte>.Empty;
             }
-            return packetSpan[(start + 1)..endIndex];
+            return packet[(start + 1)..endIndex];
         }
-        async ValueTask<Stream> EnsureTouchPanelSerialStreamIsOpenAsync(SerialPort serialSession)
+        bool EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
         {
-            if(serialSession.IsOpen)
+            if (serialSession.IsOpen)
             {
-                return serialSession.BaseStream;
+                return true;
             }
             else
             {
@@ -153,50 +163,44 @@ namespace MajdataPlay.IO
                 serialSession.Open();
                 var encoding = Encoding.ASCII;
                 var serialStream = serialSession.BaseStream;
-                var isSensitivityOverride = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.SensitivityOverride;
                 var sens = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Sensitivity;
-                var index = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R'; 
+                var index = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
                 //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
-                await serialStream.WriteAsync(encoding.GetBytes("{RSET}"));
-                await serialStream.WriteAsync(encoding.GetBytes("{HALT}"));
+                serialStream.Write(encoding.GetBytes("{RSET}"));
+                serialStream.Write(encoding.GetBytes("{HALT}"));
 
                 //send ratio
                 for (byte a = 0x41; a <= 0x62; a++)
                 {
-                    await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                    serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
                 }
-                if(isSensitivityOverride)
+                try
                 {
-                    try
+                    for (byte a = 0x41; a <= 0x62; a++)
                     {
-                        for (byte a = 0x41; a <= 0x62; a++)
-                        {
-                            using var cts = new CancellationTokenSource();
-                            cts.CancelAfter(3000);
-
-                            var value = GetSensitivityValue(a, sens);
-                            await serialStream.WriteAsync(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"), cts.Token);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        MajDebug.LogWarning($"TouchPanel does not support sensitivity override: \"Write timeout\"");
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                        var value = GetSensitivityValue(a, sens);
+                        
+                        serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
                     }
                 }
-
-                await serialStream.WriteAsync(encoding.GetBytes("{STAT}"));
+                catch (TimeoutException)
+                {
+                    MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                    return false;
+                }
+                serialStream.Write(encoding.GetBytes("{STAT}"));
                 serialSession.DiscardInBuffer();
 
                 MajDebug.Log("TouchPannel connected");
-                return serialStream;
+                return true;
             }
         }
-        Stream EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession) => EnsureTouchPanelSerialStreamIsOpenAsync(serialSession).Result;
         byte GetSensitivityValue(byte sensor,int sens)
         {
             if (sensor > 0x62 || sensor < 0x41)

@@ -7,6 +7,6 @@ namespace MajdataPlay.IO
     {
         public int Index { get; init; }
         public SensorStatus State { get; init; }
-        public DateTime Timestamp { get; init; }
+        public TimeSpan Timestamp { get; init; }
     }
 }

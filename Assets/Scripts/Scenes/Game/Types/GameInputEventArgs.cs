@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game.Types
+namespace MajdataPlay.Game
 {
     internal readonly struct GameInputEventArgs
     {

@@ -9,7 +9,7 @@ namespace MajdataPlay.Timer
 {
     public class WinapiTimeProvider : ITimeProvider
     {
-        public TimerType Type { get; } = TimerType.Winapi;
+        public BuiltInTimeProvider Type { get; } = BuiltInTimeProvider.Winapi;
         public long Ticks 
         { 
             get

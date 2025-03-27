@@ -22,6 +22,7 @@ namespace MajdataPlay.References
         /// </summary>
         public ref T Target
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => ref Unsafe.AsRef<T>(_pointer);
         }
 

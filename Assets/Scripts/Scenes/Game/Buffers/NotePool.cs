@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace MajdataPlay.Game.Buffers
         {
 
         }
-        public virtual void OnUpdate(float currentSec)
+        public virtual void OnPreUpdate(float currentSec)
         {
             if (_timingPoints.IsEmpty)
                 return;

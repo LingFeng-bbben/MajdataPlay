@@ -140,7 +140,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.1.0-alpha.4.6.2
+  bundleVersion: 0.1.0-alpha.4.6.29
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -733,6 +733,7 @@ PlayerSettings:
     PS5: 1
     QNX: 1
     Stadia: 1
+    Standalone: 0
     VisionOS: 1
     WebGL: 1
     Windows Store Apps: 1

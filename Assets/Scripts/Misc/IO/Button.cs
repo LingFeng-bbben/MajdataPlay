@@ -1,14 +1,37 @@
 ﻿#nullable enable
 using MajdataPlay.Types;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace MajdataPlay.IO
 {
     internal class Button: IEventPublisher<EventHandler<InputEventArgs>>
     {
-        public KeyCode BindingKey { get; set; }
-        public SensorArea Area { get; set; }
-        public SensorStatus State { get; set; }
+        public KeyCode BindingKey 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        }
+        public SensorArea Area 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        }
+        /// <summary>
+        /// Update by InputManager.PreUpdate
+        /// </summary>
+        public SensorStatus State 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        }
+
         event EventHandler<InputEventArgs>? OnStatusChanged;
         public Button(KeyCode bindingKey, SensorArea type)
         {

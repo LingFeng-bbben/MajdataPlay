@@ -24,7 +24,7 @@ namespace MajdataPlay.SortFind
         {
             EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
             MajInstances.LightManager.SetAllLight(Color.black);
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            InputManager.BindAnyArea(OnAreaDown);
             SearchBar.text = SongStorage.OrderBy.Keyword;
             SetActiveSort(SongStorage.OrderBy.SortBy);
         }
@@ -68,7 +68,7 @@ namespace MajdataPlay.SortFind
                         break;
 
                     case SensorArea.D5:
-                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                        InputManager.UnbindAnyArea(OnAreaDown);
                         SortAndExit();
                         break;
                 }
@@ -93,8 +93,10 @@ namespace MajdataPlay.SortFind
 
         void SortAndExit()
         {
-            var task = SongStorage.SortAndFindAsync(SearchBar.text, sortType);
-            MajInstances.SceneSwitcher.SwitchSceneAfterTaskAsync("List", task).Forget();
+            var orderBy = SongStorage.OrderBy;
+            orderBy.Keyword = SearchBar.text;
+            orderBy.SortBy = sortType;
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
 }

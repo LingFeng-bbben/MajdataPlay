@@ -2374,6 +2374,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0ddcdbd25ba0c4b855fd87e6c4b99a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -2757,6 +2758,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -3322,22 +3324,6 @@ MonoBehaviour:
   DXScoreColor: {r: 0.24705884, g: 0.6901961, b: 0.24705884, a: 1}
   EarlyDiffColor: {r: 0.19787577, g: 0.4161803, b: 0.72327036, a: 1}
   LateDiffColor: {r: 0.66666657, g: 0.20335416, b: 0.23115267, a: 1}
-  tapCount: 0
-  holdCount: 0
-  slideCount: 0
-  touchCount: 0
-  breakCount: 0
-  tapSum: 0
-  holdSum: 0
-  slideSum: 0
-  touchSum: 0
-  breakSum: 0
-  _accRate:
-  - 0
-  - 100
-  - 101
-  - 100
-  - 0
   _totalDXScore: 0
 --- !u!4 &620892875
 Transform:
@@ -5684,6 +5670,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137dc4cba530eba4285efbd65d13648e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -6726,6 +6713,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 255da11392b4bdf4982093a797a0ca6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -6982,6 +6970,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e0f6661de20eaa448a1a8f072da1aef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -7108,6 +7097,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -7751,6 +7741,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12c61ac0bf6b9e479f6395c4d5c9f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -7914,7 +7905,7 @@ MonoBehaviour:
   - {fileID: 349982270078930302, guid: d0fd46e58bee17740a889818d94c8816, type: 3}
   breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
   BreakShine: {fileID: 9100000, guid: c28f56116f6dc34408d6f0f544f1e2cc, type: 2}
-  JudgeBreakShine: {fileID: 9100000, guid: 68e114e3215572c4380cbd3b06c36ad0, type: 2}
+  JudgeBreakShine: {fileID: 0}
   HoldShine: {fileID: 9100000, guid: 3fcb4587ef8c7f141969450782191592, type: 2}
 --- !u!4 &1442909525
 Transform:
@@ -8109,6 +8100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 734078c86aaf1064aaa15cfec13cda8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0
@@ -9798,6 +9790,7 @@ MonoBehaviour:
   - {fileID: 1006855707}
   - {fileID: 531443364}
   - {fileID: 1266702673}
+  _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0
   _lateUpdateElapsedMs: 0

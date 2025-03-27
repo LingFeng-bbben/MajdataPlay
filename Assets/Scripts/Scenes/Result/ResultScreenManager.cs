@@ -7,12 +7,13 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
-using MajdataPlay.Game.Types;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using MajdataPlay.Extensions;
 using Random = UnityEngine.Random;
+using MajdataPlay.Game;
+using MajdataPlay.List;
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -53,6 +54,8 @@ namespace MajdataPlay.Result
 
         public RawImage _noteJudgeDiffGraph;
 
+        public FavoriteAdder favoriteAdder;
+
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         UniTask OnlineSaveTask = UniTask.Delay(0);
@@ -72,6 +75,7 @@ namespace MajdataPlay.Result
 
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
+            favoriteAdder.SetSong(song);
 
             if (result.Acc.DX < 70)
             {
@@ -110,7 +114,14 @@ namespace MajdataPlay.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            avgJudgeTime.text = $"{ result.NoteJudgeDiffs.ToArray().Average()/1000f:F3}s";
+            if(result.NoteJudgeDiffs.IsEmpty)
+            {
+                avgJudgeTime.text = $"0.000s";
+            }
+            else
+            {
+                avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+            }
 
             LoadCover(song).Forget();
 
@@ -202,8 +213,9 @@ namespace MajdataPlay.Result
                 await UniTask.WaitForSeconds(2);
             }
             await OnlineSaveTask;
-            MajInstances.InputManager.BindAnyArea(OnAreaDown);
+            InputManager.BindAnyArea(OnAreaDown);
             MajInstances.LightManager.SetButtonLight(Color.green, 3);
+            MajInstances.LightManager.SetButtonLight(Color.yellow, 4);
         }
 
 
@@ -229,35 +241,43 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && e.IsButton && e.Type == SensorArea.A4)
+            if (e.IsDown && e.IsButton )
             {
-                var canNextRound = _gameInfo.NextRound();
-                if (_gameInfo.IsDanMode)
+                switch (e.Type)
                 {
-                    if (!canNextRound)
-                    {
-                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                        MajInstances.SceneSwitcher.SwitchScene("TotalResult");
-                        return;
+                    case SensorArea.A4:
+                        var canNextRound = _gameInfo.NextRound();
+                        if (_gameInfo.IsDanMode)
+                        {
+                            if (!canNextRound)
+                            {
+                                InputManager.UnbindAnyArea(OnAreaDown);
+                                MajInstances.SceneSwitcher.SwitchScene("TotalResult");
+                                return;
 
-                    }
-                    else
-                    {
-                        MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
+                            }
+                            else
+                            {
+                                InputManager.UnbindAnyArea(OnAreaDown);
+                                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+
+                                //TODO: Add Animation to show that
+                                //SongStorage.WorkingCollection.Index++;
+                                //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
+
+                                MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                                return;
+                            }
+                        }
+                        InputManager.UnbindAnyArea(OnAreaDown);
                         MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-
-                        //TODO: Add Animation to show that
-                        //SongStorage.WorkingCollection.Index++;
-                        //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
-
-                        MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                        MajInstances.SceneSwitcher.SwitchScene("List", false);
                         return;
-                    }
+                    case SensorArea.A5:
+                        favoriteAdder.FavoratePressed();
+                        break;
                 }
-                MajInstances.InputManager.UnbindAnyArea(OnAreaDown);
-                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-                MajInstances.SceneSwitcher.SwitchScene("List",false);
-                return;
+                
             }
         }
         Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)

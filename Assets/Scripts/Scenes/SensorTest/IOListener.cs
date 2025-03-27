@@ -15,7 +15,6 @@ namespace MajdataPlay.SensorTest
         readonly MeshRenderer[] _meshRenderers = new MeshRenderer[35];
 
         bool _exitFlag = false;
-        InputManager _inputManager;
         protected override void Awake()
         {
             base.Awake();
@@ -28,7 +27,6 @@ namespace MajdataPlay.SensorTest
                 _meshRenderers[i].material = _materials[i];
                 _materials[i].color = Color.blue;
             }
-            _inputManager = MajInstances.InputManager;
         }
         void Update()
         {
@@ -51,10 +49,11 @@ namespace MajdataPlay.SensorTest
             }
             if (string.IsNullOrEmpty(NextScene))
                 return;
-            if(_inputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On)) 
+            if(InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On)) 
             {
                 _exitFlag = true;
                 MajInstances.SceneSwitcher.SwitchScene(NextScene);
+                MajEnv.Mode = RunningMode.Play;
             }
         }
     }

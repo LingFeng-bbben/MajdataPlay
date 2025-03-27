@@ -2,7 +2,7 @@
 {
     public enum SensorStatus
     {
-        On,
-        Off
+        Off,
+        On
     }
 }

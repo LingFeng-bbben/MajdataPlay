@@ -3,6 +3,8 @@
     public enum ChartStorageType
     {
         List,
-        Dan
+        Dan,
+        PlayList,
+        FavoriteList
     }
 }

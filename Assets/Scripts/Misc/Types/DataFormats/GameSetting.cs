@@ -28,6 +28,7 @@ namespace MajdataPlay.Types
         public bool FastRetry { get; set; } = false;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
+        public RandomMode Random { get; set; } = RandomMode.Disabled;
         public string Language { get; set; } = "zh-CN - Majdata";
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
     }
@@ -91,8 +92,9 @@ namespace MajdataPlay.Types
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
         public bool AllTouch { get; set; } = false;
-        //public bool SlideNoHead { get; set; } = false;
-        //public bool SlideNoTrack { get; set; } = false;
+        public bool SlideNoHead { get; set; } = false;
+        public bool SlideNoTrack { get; set; } = false;
+        public bool ButtonRingForTouch { get; set; } = false;
         public string NoteMask { get; set; } = "Disable";
         public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
         public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
@@ -191,9 +193,9 @@ namespace MajdataPlay.Types
         public int COMPort { get; set; } = 3;
         public int BaudRate { get; set; } = 9600;
         public bool Debounce { get; set; } = false;
-        public bool SensitivityOverride { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;
+        public float TouchSimulationRadius { get; set; } = 0.5f;
     }
 }
