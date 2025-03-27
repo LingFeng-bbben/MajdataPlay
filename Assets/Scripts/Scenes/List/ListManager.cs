@@ -5,7 +5,6 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.Threading;
-using Assets.Scripts.Misc.Types.Enums;
 using UnityEngine;
 
 namespace MajdataPlay.List

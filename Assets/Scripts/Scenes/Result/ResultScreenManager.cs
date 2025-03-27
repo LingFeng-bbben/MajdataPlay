@@ -7,7 +7,6 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
-using Assets.Scripts.Misc.Types.Enums;
 using MajdataPlay.Game.Types;
 #nullable enable
 namespace MajdataPlay.Result

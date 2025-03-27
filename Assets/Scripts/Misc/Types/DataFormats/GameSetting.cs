@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Assets.Scripts.Misc.Types.Enums;
 using UnityEngine.Rendering;
 #nullable enable
 namespace MajdataPlay.Types

@@ -25,7 +25,6 @@ using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using System.Windows.Forms.VisualStyles;
-using Assets.Scripts.Misc.Types.Enums;
 
 namespace MajdataPlay.Game
 {
