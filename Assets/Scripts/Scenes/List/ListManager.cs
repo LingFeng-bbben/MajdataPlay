@@ -45,9 +45,8 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
 
-            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS &&
-                MajInstances.RecordHelper == null)
-                MajInstances.RecordHelper = new OBSRecordHelper();
+            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS)
+                MajInstances.RecordHelper ??= new OBSRecordHelper();
             if (MajInstances.GameManager.Setting.Game.Record == RecordMode.Disable &&
                 MajInstances.RecordHelper != null)
                 MajInstances.RecordHelper = null;

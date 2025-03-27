@@ -53,16 +53,13 @@ namespace MajdataPlay.Buffers
                 switch(method.Name)
                 {
                     case "OnUpdate":
-                        if(_onUpdate is null)
-                            _onUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        _onUpdate ??= (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
                         break;
                     case "OnFixedUpdate":
-                        if (_onFixedUpdate is null)
-                            _onFixedUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        _onFixedUpdate ??= (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
                         break;
                     case "OnLateUpdate":
-                        if (_onLateUpdate is null)
-                            _onLateUpdate = (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
+                        _onLateUpdate ??= (PlayerLoopEventMethod?)method.CreateDelegate(delegateType, component);
                         break;
                 }
             }
