@@ -1,6 +1,8 @@
-﻿namespace MajdataPlay.Types
+﻿using System;
+
+namespace MajdataPlay.Types
 {
-    internal interface IRecordHelper
+    internal interface IRecordHelper : IDisposable
     {
         public void StartRecord();
         public void StopRecord();

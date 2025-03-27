@@ -80,6 +80,8 @@ namespace MajdataPlay.Utils
             try
             {
                 var message = Serializer.Json.Deserialize<ReceivedMessage>(e.Data);
+                MajDebug.Log("[OBS] Received: " + e.Data);
+                MajDebug.Log(message);
                 switch (message.op)
                 {
                     case 2: // Identified
@@ -89,28 +91,28 @@ namespace MajdataPlay.Utils
                     }
                     case 7: // RequestResponse
                     {
-                        if (message.d.RequestType == "StartRecord")
+                        if (message.d.requestType == "StartRecord")
                         {
-                            if (message.d.RequestStatus.Result)
+                            if (message.d.requestStatus.result)
                             {
                                 Recording = true;
                             }
                             else
                             {
-                                MajDebug.Log("Start Record Failed.");
+                                MajDebug.Log("[OBS] Start Record Failed.");
                             }
                         }
 
-                        if (message.d.RequestType == "StopRecord")
+                        if (message.d.requestType == "StopRecord")
                         {
-                            if (message.d.RequestStatus.Result)
+                            if (message.d.requestStatus.result)
                             {
                                 Recording = false;
-                                MajDebug.Log("Record Saved To " + message.d.ResponseData.OutputPath);
+                                MajDebug.Log("[OBS] Record Saved To " + message.d.responseData.outputPath);
                             }
                             else
                             {
-                                MajDebug.Log("Stop Record Failed.");
+                                MajDebug.Log("[OBS] Stop Record Failed.");
                             }
                         }
 
@@ -131,41 +133,41 @@ namespace MajdataPlay.Utils
         #region WebSocketMessageClass
         public class RequestStatus
         {
-            public int Code { get; set; }
-            public bool Result { get; set; }
+            public int code { get; set; }
+            public bool result { get; set; }
         }
 
         public class ResponseData
         {
-            public string OutputPath { get; set; }
+            public string outputPath { get; set; }
         }
 
         public class EventData
         {
-            public bool OutputActive { get; set; }
-            public string OutputPath { get; set; }
-            public string OutputState { get; set; }
+            public bool outputActive { get; set; }
+            public string outputPath { get; set; }
+            public string outputState { get; set; }
         }
 
         public class Event
         {
-            public EventData EventData { get; set; }
-            public int EventIntent { get; set; }
-            public string EventType { get; set; }
+            public EventData eventData { get; set; }
+            public int eventIntent { get; set; }
+            public string eventType { get; set; }
         }
 
         public class DData
         {
-            public string ObsWebSocketVersion { get; set; }
-            public int RpcVersion { get; set; }
-            public int NegotiatedRpcVersion { get; set; }
-            public string RequestId { get; set; }
-            public RequestStatus RequestStatus { get; set; }
-            public string RequestType { get; set; }
-            public EventData EventData { get; set; }
-            public string OutputPath { get; set; }
-            public Event Event { get; set; }
-            public ResponseData ResponseData { get; set; }
+            public string obsWebSocketVersion { get; set; }
+            public int rpcVersion { get; set; }
+            public int negotiatedRpcVersion { get; set; }
+            public string requestId { get; set; }
+            public RequestStatus requestStatus { get; set; }
+            public string requestType { get; set; }
+            public EventData eventData { get; set; }
+            public ResponseData responseData { get; set; }
+            public int eventIntent { get; set; }
+            public string eventType { get; set; }
         }
 
         public class ReceivedMessage

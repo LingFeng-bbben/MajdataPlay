@@ -47,6 +47,11 @@ namespace MajdataPlay.Result
 
         void Start()
         {
+            if(MajInstances.RecordHelper is not null
+               && MajInstances.RecordHelper.Recording
+               && MajInstances.RecordHelper.Connected)
+                MajInstances.RecordHelper.StopRecord();
+
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
@@ -124,12 +129,6 @@ namespace MajdataPlay.Result
                     OnlineSaveTask = intractSender.SendScore(score);
                 }
             }
-
-            if(MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS
-               && MajInstances.RecordHelper is not null
-               && MajInstances.RecordHelper.Recording
-               && MajInstances.RecordHelper.Connected)
-                MajInstances.RecordHelper.StopRecord();
         }
 
         async UniTask LoadCover(ISongDetail song)

@@ -44,11 +44,18 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
 
-            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS)
-                MajInstances.RecordHelper ??= new OBSRecordHelper();
-            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.Disable &&
-                MajInstances.RecordHelper != null)
-                MajInstances.RecordHelper = null;
+            switch (MajInstances.GameManager.Setting.Game.Record)
+            {
+                case RecordMode.Disable:
+                    MajInstances.RecordHelper?.Dispose();
+                    MajInstances.RecordHelper = null;
+                    break;
+                case RecordMode.OBS:
+                    MajInstances.RecordHelper ??= new OBSRecordHelper();
+                    break;
+                default:
+                    break;
+            }
         }
         async UniTaskVoid InitializeCoverListAsync()
         {
