@@ -318,7 +318,7 @@ namespace MajdataPlay.Setting
                 {
                     if ((Win32API.GetAsyncKeyState((int)keyCode) & 0x8000) != 0)
                     {
-                        if (MajInstances.GameManager.Setting.KeyCodes.IsKeyOccupies(keyCode))
+                        if (MajInstances.GameManager.Setting.WindowsKeyCodes.IsKeyOccupies(keyCode))
                             descriptionText.text = $"Key {keyCode} Occupied, please retry";
                         else
                         {

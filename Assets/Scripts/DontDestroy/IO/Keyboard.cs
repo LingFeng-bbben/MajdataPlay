@@ -25,18 +25,18 @@ namespace MajdataPlay.IO
         {
             return keyCode switch
             {
-                KeyCode.B1 => MajInstances.Setting.KeyCodes.B1,
-                KeyCode.B2 => MajInstances.Setting.KeyCodes.B2,
-                KeyCode.B3 => MajInstances.Setting.KeyCodes.B3,
-                KeyCode.B4 => MajInstances.Setting.KeyCodes.B4,
-                KeyCode.B5 => MajInstances.Setting.KeyCodes.B5,
-                KeyCode.B6 => MajInstances.Setting.KeyCodes.B6,
-                KeyCode.B7 => MajInstances.Setting.KeyCodes.B7,
-                KeyCode.B8 => MajInstances.Setting.KeyCodes.B8,
-                KeyCode.Test => MajInstances.Setting.KeyCodes.Test,
-                KeyCode.Service => MajInstances.Setting.KeyCodes.Service,
-                KeyCode.SelectP1 => MajInstances.Setting.KeyCodes.SelectP1,
-                KeyCode.SelectP2 => MajInstances.Setting.KeyCodes.SelectP2,
+                KeyCode.B1 => MajInstances.Setting.WindowsKeyCodes.B1,
+                KeyCode.B2 => MajInstances.Setting.WindowsKeyCodes.B2,
+                KeyCode.B3 => MajInstances.Setting.WindowsKeyCodes.B3,
+                KeyCode.B4 => MajInstances.Setting.WindowsKeyCodes.B4,
+                KeyCode.B5 => MajInstances.Setting.WindowsKeyCodes.B5,
+                KeyCode.B6 => MajInstances.Setting.WindowsKeyCodes.B6,
+                KeyCode.B7 => MajInstances.Setting.WindowsKeyCodes.B7,
+                KeyCode.B8 => MajInstances.Setting.WindowsKeyCodes.B8,
+                KeyCode.Test => MajInstances.Setting.WindowsKeyCodes.Test,
+                KeyCode.Service => MajInstances.Setting.WindowsKeyCodes.Service,
+                KeyCode.SelectP1 => MajInstances.Setting.WindowsKeyCodes.SelectP1,
+                KeyCode.SelectP2 => MajInstances.Setting.WindowsKeyCodes.SelectP2,
                 _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
             };
         }

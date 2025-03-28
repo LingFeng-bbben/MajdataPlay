@@ -10,7 +10,7 @@ namespace MajdataPlay.Types
         public JudgeOptions Judge { get; set; } = new();
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
-        public ToWinKeyCodeOptions KeyCodes { get; set; } = new();
+        public ToWinKeyCodeOptions WindowsKeyCodes { get; set; } = new();
         [JsonIgnore]
         public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
