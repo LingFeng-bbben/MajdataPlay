@@ -10,6 +10,7 @@ namespace MajdataPlay.Types
         public JudgeOptions Judge { get; set; } = new();
         public DisplayOptions Display { get; set; } = new();
         public SoundOptions Audio { get; set; } = new();
+        public ToWinKeyCodeOptions KeyCodes { get; set; } = new();
         [JsonIgnore]
         public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
@@ -197,5 +198,26 @@ namespace MajdataPlay.Types
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;
         public float TouchSimulationRadius { get; set; } = 0.5f;
+    }
+
+    public class ToWinKeyCodeOptions
+    {
+        public Win32RawKey B1 { get; set; } = Win32RawKey.W;
+        public Win32RawKey B2 { get; set; } = Win32RawKey.E;
+        public Win32RawKey B3 { get; set; } = Win32RawKey.D;
+        public Win32RawKey B4 { get; set; } = Win32RawKey.C;
+        public Win32RawKey B5 { get; set; } = Win32RawKey.X;
+        public Win32RawKey B6 { get; set; } = Win32RawKey.Z;
+        public Win32RawKey B7 { get; set; } = Win32RawKey.A;
+        public Win32RawKey B8 { get; set; } = Win32RawKey.Q;
+        public Win32RawKey Test { get; set; } = Win32RawKey.Numpad9;
+        public Win32RawKey Service { get; set; } = Win32RawKey.Numpad7;
+        public Win32RawKey SelectP1 { get; set; } = Win32RawKey.Multiply;
+        public Win32RawKey SelectP2 { get; set; } = Win32RawKey.Numpad3;
+
+        public bool IsKeyOccupies(Win32RawKey key) => B1 == key || B2 == key || B3 == key || B4 == key || B5 == key ||
+                                                      B6 == key || B7 == key || B8 == key || Test == key ||
+                                                      Service == key || SelectP1 == key || SelectP2 == key;
+
     }
 }

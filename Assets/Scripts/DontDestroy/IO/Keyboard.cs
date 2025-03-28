@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Utils;
 using System;
+using MajdataPlay.Types;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -20,22 +21,22 @@ namespace MajdataPlay.IO
         {
             return !IsKeyDown(keyCode);
         }
-        static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
+        static Win32RawKey ToWinKeyCode(KeyCode keyCode)
         {
             return keyCode switch
             {
-                KeyCode.B1 => Win32API.RawKey.W,
-                KeyCode.B2 => Win32API.RawKey.E,
-                KeyCode.B3 => Win32API.RawKey.D,
-                KeyCode.B4 => Win32API.RawKey.C,
-                KeyCode.B5 => Win32API.RawKey.X,
-                KeyCode.B6 => Win32API.RawKey.Z,
-                KeyCode.B7 => Win32API.RawKey.A,
-                KeyCode.B8 => Win32API.RawKey.Q,
-                KeyCode.Test => Win32API.RawKey.Numpad9,
-                KeyCode.SelectP1 => Win32API.RawKey.Multiply,
-                KeyCode.Service => Win32API.RawKey.Numpad7,
-                KeyCode.SelectP2 => Win32API.RawKey.Numpad3,
+                KeyCode.B1 => MajInstances.Setting.KeyCodes.B1,
+                KeyCode.B2 => MajInstances.Setting.KeyCodes.B2,
+                KeyCode.B3 => MajInstances.Setting.KeyCodes.B3,
+                KeyCode.B4 => MajInstances.Setting.KeyCodes.B4,
+                KeyCode.B5 => MajInstances.Setting.KeyCodes.B5,
+                KeyCode.B6 => MajInstances.Setting.KeyCodes.B6,
+                KeyCode.B7 => MajInstances.Setting.KeyCodes.B7,
+                KeyCode.B8 => MajInstances.Setting.KeyCodes.B8,
+                KeyCode.Test => MajInstances.Setting.KeyCodes.Test,
+                KeyCode.Service => MajInstances.Setting.KeyCodes.Service,
+                KeyCode.SelectP1 => MajInstances.Setting.KeyCodes.SelectP1,
+                KeyCode.SelectP2 => MajInstances.Setting.KeyCodes.SelectP2,
                 _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
             };
         }
