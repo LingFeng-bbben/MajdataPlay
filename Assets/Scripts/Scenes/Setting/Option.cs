@@ -83,10 +83,7 @@ namespace MajdataPlay.Setting
                 for (int i = 0; i < values.Length; i++)
                 {
                     _options[i] = values.GetValue(i);
-                    MajDebug.Log($"{i}: {values.GetValue(i).GetHashCode()}");
                 }
-                MajDebug.Log(OptionObject.GetHashCode());
-                _current = _options.FindIndex(x => x.Equals(OptionObject));
             }
             else if (type.IsEnum)
             {
