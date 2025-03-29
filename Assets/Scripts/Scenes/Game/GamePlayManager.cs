@@ -567,9 +567,7 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if (MajInstances.GameManager.Setting.Game.Record == RecordMode.OBS 
-                && MajInstances.RecordHelper is not null
-                && MajInstances.RecordHelper.Connected
+            if ((MajInstances.RecordHelper?.Connected ?? false)
                 && !MajInstances.RecordHelper.Recording)
                 MajInstances.RecordHelper.StartRecord();
 
@@ -975,8 +973,7 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            if (MajInstances.RecordHelper is not null
-                && MajInstances.RecordHelper.Connected
+            if ((MajInstances.RecordHelper?.Connected ?? false)
                 && MajInstances.RecordHelper.Recording)
             {
                 MajInstances.RecordHelper.StopRecord();

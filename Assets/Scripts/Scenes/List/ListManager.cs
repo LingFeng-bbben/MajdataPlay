@@ -44,6 +44,12 @@ namespace MajdataPlay.List
                     MajInstances.RecordHelper = null;
                     break;
                 case RecordMode.OBS:
+                    if (MajInstances.RecordHelper is not OBSRecordHelper)
+                    {
+                        MajInstances.RecordHelper?.Dispose();
+                        MajInstances.RecordHelper = null;
+                    }
+
                     MajInstances.RecordHelper ??= new OBSRecordHelper();
                     break;
                 default:
