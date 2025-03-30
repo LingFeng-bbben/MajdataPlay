@@ -769,6 +769,14 @@
     {
       "Origin": "VSync_MAJSETTING_DESC",
       "Content": "是否开启垂直同步"
+    },
+    {
+      "Origin": "Record_MAJSETTING_TITLE",
+      "Content": "录制模式"
+    },
+    {
+      "Origin": "Record_MAJSETTING_DESC",
+      "Content": "选择录制模式喵\nOBS需要打开websocket并且关闭身份验证, 详见wiki\nFFmpeg不需要任何额外设置喵"
     }
   ]
 }
