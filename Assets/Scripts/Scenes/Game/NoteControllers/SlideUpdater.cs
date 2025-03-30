@@ -7,7 +7,7 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public class SlideUpdater : NoteUpdater
+    public sealed class SlideUpdater : NoteUpdater
     {
         Memory<SlideQueueInfo> _queueInfos = Memory<SlideQueueInfo>.Empty;
 

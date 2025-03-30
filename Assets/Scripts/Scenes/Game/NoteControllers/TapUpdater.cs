@@ -2,7 +2,7 @@
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public class TapUpdater : NoteUpdater
+    public sealed class TapUpdater : NoteUpdater
     {
         const string UPDATER_NAME = "TapUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
