@@ -91,6 +91,11 @@ namespace MajdataPlay.Setting
 
         void OnAreaDown(object sender, InputEventArgs e)
         {
+            if (Option.KeyChanged)
+            {
+                Option.KeyChanged = false;
+                return;
+            }
             if (!e.IsDown)
             {
                 switch(e.Type)
