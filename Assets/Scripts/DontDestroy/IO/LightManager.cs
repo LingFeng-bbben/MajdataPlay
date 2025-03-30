@@ -254,7 +254,7 @@ namespace MajdataPlay.IO
 
                         commands[i] = command;
                     }
-                    await ioManager.WriteToDeviceAsync(DeviceClassification.LedDevice, commands);
+                    await ioManager.WriteToDevice(DeviceClassification.LedDevice, commands);
                 }
                 catch (Exception e)
                 {
