@@ -4,7 +4,6 @@ using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 using TMPro;
@@ -19,7 +18,6 @@ namespace MajdataPlay.Setting
         public Menu Parent { get; set; }
         public PropertyInfo PropertyInfo { get; set; }
         public object OptionObject { get; set; }
-        public static bool KeyChanged = false;
 
         [SerializeField]
         TextMeshPro nameText;
@@ -75,17 +73,8 @@ namespace MajdataPlay.Setting
             var type = PropertyInfo.PropertyType;
             _isFloat = type.IsFloatType();
             _isNum = type.IsIntType() || _isFloat;
-            if (type == typeof(Win32RawKey))
-            {
-                var values = Enum.GetValues(type);
-                _maxOptionIndex = values.Length - 1;
-                _options = new object[values.Length];
-                for (int i = 0; i < values.Length; i++)
-                {
-                    _options[i] = values.GetValue(i);
-                }
-            }
-            else if (type.IsEnum)
+            
+            if (type.IsEnum)
             {
                 var values = Enum.GetValues(type);
                 _maxOptionIndex = values.Length - 1;
@@ -309,40 +298,10 @@ namespace MajdataPlay.Setting
             Diff(-1);
             UpdateOption();
         }
-
-        private IEnumerator WaitForKeyInput()
-        {
-            while (true)
-            {
-                foreach (Win32RawKey keyCode in System.Enum.GetValues(typeof(Win32RawKey)))
-                {
-                    if ((Win32API.GetAsyncKeyState((int)keyCode) & 0x8000) != 0)
-                    {
-                        if (MajInstances.GameManager.Setting.WindowsKeyCodes.IsKeyOccupies(keyCode))
-                            descriptionText.text = $"Key {keyCode} Occupied, please retry";
-                        else
-                        {
-                            PropertyInfo.SetValue(OptionObject, keyCode);
-                            valueText.text = keyCode.ToString();
-                            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
-                        }
-                        yield break; // 结束协程
-                    }
-                }
-                yield return null; // 等待下一帧，防止死循环
-            }
-        }
-
         void Diff(int num)
         {
             num = num.Clamp(-1, 1);
-            if (PropertyInfo.PropertyType == typeof(Win32RawKey))
-            {
-                descriptionText.text = "Wait for Clicking";
-                KeyChanged = true;
-                StartCoroutine(WaitForKeyInput());
-            }
-            else if (_isNum) // 数值类
+            if (_isNum) // 数值类
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var valueType = valueObj.GetType();
