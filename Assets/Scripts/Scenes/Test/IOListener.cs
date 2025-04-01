@@ -4,9 +4,9 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.SensorTest
+namespace MajdataPlay.Test
 {
-    internal class IOListener: MajComponent
+    internal class IOListener : MajComponent
     {
         public static string NextScene { get; set; } = "List";
 
@@ -33,11 +33,11 @@ namespace MajdataPlay.SensorTest
             if (_exitFlag)
                 return;
             var rawData = InputManager.GetTouchPanelRawData();
-            foreach(var (i,state) in rawData.Span.WithIndex())
+            foreach (var (i, state) in rawData.Span.WithIndex())
             {
                 if (i == 34)
                     continue;
-                switch(state)
+                switch (state)
                 {
                     case true:
                         _materials[i].color = Color.red;
@@ -49,7 +49,7 @@ namespace MajdataPlay.SensorTest
             }
             if (string.IsNullOrEmpty(NextScene))
                 return;
-            if(InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On)) 
+            if (InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On))
             {
                 _exitFlag = true;
                 MajInstances.SceneSwitcher.SwitchScene(NextScene);
