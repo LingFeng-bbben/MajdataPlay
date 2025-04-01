@@ -5,9 +5,9 @@ using System;
 using TMPro;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.SensorTest
+namespace MajdataPlay.Test
 {
-    internal class IOListener: MajComponent
+    internal class IOListener : MajComponent
     {
         public static string NextScene { get; set; } = "List";
 

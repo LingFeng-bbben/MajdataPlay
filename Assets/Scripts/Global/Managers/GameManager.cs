@@ -13,7 +13,6 @@ using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
-using MajdataPlay.SensorTest;
 using System.Collections.Generic;
 using MajdataPlay.IO;
 
@@ -182,7 +181,7 @@ namespace MajdataPlay
         {
             IOListener.NextScene = "Title";
             MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
-            SceneManager.LoadScene("SensorTest");
+            SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {

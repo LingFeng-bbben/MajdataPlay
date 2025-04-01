@@ -18,6 +18,6 @@ namespace MajdataPlay.Types
         TotalResult,
         Parctice,
         View,
-        SensorTest
+        Test
     }
 }
