@@ -2,7 +2,7 @@
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public class StarUpdater : NoteUpdater
+    public sealed class StarUpdater : NoteUpdater
     {
         const string UPDATER_NAME = "StarUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";

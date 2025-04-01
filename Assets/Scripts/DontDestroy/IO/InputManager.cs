@@ -311,7 +311,11 @@ namespace MajdataPlay.IO
                 {
                     if (i == 34)
                         continue;
+#if UNITY_EDITOR
+                    sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.4f) : new Color(0, 0, 0, 0.1f);
+#else
                     sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
+#endif
                 }
             }
             var buttons = _buttons.Span;

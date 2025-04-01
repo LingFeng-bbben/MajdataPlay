@@ -147,7 +147,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             LoadSlidePath();
             LoadSkin();
-            _slideOK!.transform.SetParent(transform.parent);
+            _slideOK!.transform.SetParent(Transform.parent);
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             FadeInTiming = -3.926913f / Speed;
@@ -176,6 +176,21 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
 
             State = NoteStatus.Initialized;
+#if UNITY_EDITOR
+            var obj = Instantiate(_slideBars[0]);
+            Destroy(obj.GetComponent<SpriteRenderer>());
+            var transform = obj.transform;
+            var indexProcess = (_starPositions.Count - 1) * (1- _table.Const);
+            var index = (int)indexProcess;
+            var pos = indexProcess - index;
+
+            var a = _starPositions[index + 1];
+            var b = _starPositions[index];
+            var ba = a - b;
+            var newPos = ba * pos + b;
+
+            transform.position = newPos;
+#endif
         }
         void InitializeSlideGroup()
         {
@@ -544,10 +559,24 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 PlaySFX();
             }
-            var areaIndex = (int)(process * queueMemory.Length) - 1;
+            var areaIndex = (int)(process * queueMemory.Length);
+            var isLast = areaIndex == queueMemory.Length - 1;
+            var delta = (process * queueMemory.Length) - areaIndex;
             if (areaIndex < 0)
                 return;
-            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+            int barIndex;
+            if (delta > 0.9)
+            {
+                barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+            }
+            else if(delta > 0.4 && !isLast)
+            {
+                barIndex = queue[areaIndex].ArrowProgressWhenOn;
+            }
+            else
+            {
+                return;
+            }
             HideBar(barIndex);
         }
         void ApplyStarRotation(Quaternion newRotation)

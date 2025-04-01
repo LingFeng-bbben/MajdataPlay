@@ -89,6 +89,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else
                 _animator.SetTrigger(MODERN_ANIM_HASH);
         }
+        [OnUpdate]
         void OnUpdate()
         {
             if (_elapsedTime > 0.5f)
@@ -99,7 +100,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                _elapsedTime += Time.deltaTime;
+                _elapsedTime += MajTimeline.DeltaTime;
             }
         }
         public int SetR()
