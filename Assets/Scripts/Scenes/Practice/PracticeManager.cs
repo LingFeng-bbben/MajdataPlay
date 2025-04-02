@@ -78,7 +78,7 @@ namespace MajdataPlay.Practice
             //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
             totalTime = (float)audioTrack.Length.TotalSeconds;
             await UniTask.SwitchToMainThread();
-            await chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, level, totalTime);
+            await chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, level, totalTime, true);
             if (_gameInfo.TimeRange is not null)
             {
                 startTime = (float)_gameInfo.TimeRange.Value.Start;
