@@ -19,6 +19,7 @@ namespace MajdataPlay.IO
         Test,
         SelectP1,
         Service,
-        SelectP2
+        SelectP2,
+        Unset
     }
 }

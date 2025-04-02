@@ -5,6 +5,7 @@ using MajdataPlay.Utils;
 using System;
 using TMPro;
 using UnityEngine;
+using KeyCode = MajdataPlay.IO.KeyCode;
 #nullable enable
 namespace MajdataPlay.Test
 {
@@ -14,30 +15,66 @@ namespace MajdataPlay.Test
 
 
         bool _exitFlag = false;
+        bool _isWaitingForButtonPress = false;
         float _exitBtnPressTime = 0f;
         float _testBtnPressTime = 0f;
+        int _selectedButton = -1;
+        int _buttonMappingSubPage = 0;
         TestPages _currentPage = TestPages.Sensor;
 
+        [SerializeField]
         GameObject _sensorParent;
+        [SerializeField]
         GameObject _sensorTextParent;
+        [SerializeField]
         GameObject _btnParent;
+        [SerializeField]
         GameObject _btnStateTextParent;
+        [SerializeField]
+        GameObject _btnMappingParent;
+        [SerializeField]
+        GameObject _btnMappingTextParent;
+
+        readonly int[] _buttonMappingIndexs = new int[]
+        {
+            0,4,8
+        };
 
         readonly GameObject[] _btnObjects = new GameObject[12];
         readonly GameObject[] _btnStateObjects = new GameObject[12];
         readonly TextMeshPro[] _btnTexts = new TextMeshPro[12];
         readonly TextMeshPro[] _btnStateTexts = new TextMeshPro[12];
 
+        readonly TextMeshPro[] _btnMappingNameTexts = new TextMeshPro[4];
+        readonly TextMeshPro[] _btnMappingBindingKeyTexts = new TextMeshPro[4];
+
         readonly GameObject[] _sensorObjects = new GameObject[35];
         readonly Material[] _materials = new Material[35];
         readonly MeshRenderer[] _meshRenderers = new MeshRenderer[35];
+
+        readonly ReadOnlyMemory<string> _buttonMappingNames = new string[12]
+        {
+            "Button 1",
+            "Button 2",
+            "Button 3",
+            "Button 4",
+            "Button 5",
+            "Button 6",
+            "Button 7",
+            "Button 8",
+            "TEST",
+            "Select P1",
+            "SERVICE",
+            "Select P2",
+        };
         protected override void Awake()
         {
             base.Awake();
-            _sensorParent = transform.GetChild(0).gameObject;
-            _sensorTextParent = transform.GetChild(1).gameObject;
-            _btnParent = transform.GetChild(2).gameObject;
-            _btnStateTextParent = transform.GetChild(3).gameObject;
+            for (var i = 0; i < 4; i++)
+            {
+                _btnMappingNameTexts[i] = _btnMappingParent.transform.GetChild(i).GetComponent<TextMeshPro>();
+                _btnMappingBindingKeyTexts[i] = _btnMappingTextParent.transform.GetChild(i).GetComponent<TextMeshPro>();
+            }
             for (var i = 0; i < _sensorParent.transform.childCount; i++)
             {
                 var child = _sensorParent.transform.GetChild(i);
@@ -69,6 +106,9 @@ namespace MajdataPlay.Test
                 case TestPages.Button:
                     ButtonPageUpdate();
                     break;
+                case TestPages.ButtonMapping:
+                    ButtonMappingPageUpdate();
+                    break; 
             }
             if (string.IsNullOrEmpty(NextScene))
                 return;
@@ -83,7 +123,7 @@ namespace MajdataPlay.Test
         {
             var currentPage = _currentPage;
             var nextPage = _currentPage + 1;
-            if(nextPage > TestPages.Button)
+            if(nextPage > TestPages.ButtonMapping)
             {
                 nextPage = (TestPages)0;
             }
@@ -103,13 +143,15 @@ namespace MajdataPlay.Test
                     _btnParent.SetActive(false);
                     _btnStateTextParent.SetActive(false);
                     break;
+                case TestPages.ButtonMapping:
+                    break;
             }
             _currentPage = nextPage;
         }
         void SensorPageUpdate()
         {
-            var rawData = InputManager.GetTouchPanelRawData();
-            foreach (var (i, state) in rawData.Span.WithIndex())
+            var rawData = InputManager.TouchPanelRawData;
+            foreach (var (i, state) in rawData.WithIndex())
             {
                 if (i == 34)
                     continue;
@@ -170,10 +212,129 @@ namespace MajdataPlay.Test
                 _testBtnPressTime = 0;
             }
         }
+        void ButtonMappingPageUpdate()
+        {
+            Span<KeyCode> availableKeys = stackalloc KeyCode[12]
+            {
+                KeyCode.B1,
+                KeyCode.B2,
+                KeyCode.B3,
+                KeyCode.B4,
+                KeyCode.B5,
+                KeyCode.B6,
+                KeyCode.B7,
+                KeyCode.B8,
+                KeyCode.Test,
+                KeyCode.SelectP1,
+                KeyCode.Service,
+                KeyCode.SelectP2
+            };
+            Span<SensorArea> one = stackalloc SensorArea[2]
+            {
+                SensorArea.B1,
+                SensorArea.E2
+            };
+            Span<SensorArea> two = stackalloc SensorArea[1]
+            {
+                SensorArea.B2
+            };
+            Span<SensorArea> three = stackalloc SensorArea[1]
+            {
+                SensorArea.B3
+            };
+            Span<SensorArea> four = stackalloc SensorArea[2]
+            {
+                SensorArea.B4,
+                SensorArea.E4
+            };
+            ButtonMappingNextPage(0);
+
+            if(_isWaitingForButtonPress)
+            {
+                Span<SensorArea> sensors = _selectedButton switch
+                {
+                    0 => one,
+                    1 => two,
+                    2 => three,
+                    3 => four,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                bool isCancelRequested = false;
+                foreach(var sensor in sensors)
+                {
+                    isCancelRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On); 
+                }
+                if(isCancelRequested)
+                {
+                    _isWaitingForButtonPress = false;
+                    _selectedButton = -1;
+                    return;
+                }
+                var e = _buttonMappingIndexs[_buttonMappingSubPage];
+                _btnMappingBindingKeyTexts[_selectedButton + e].text = "<Waiting4Press>";
+                foreach(var key in availableKeys)
+                {
+                    if(Keyboard.IsKeyDown(key))
+                    {
+                        _isWaitingForButtonPress = false;
+                        var area = GetButtonAreaFromIndex(_selectedButton + e);
+                        InputManager.SetButtonNewBindingKey(area, key);
+                        _selectedButton = -1;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+
+            }
+        }
+        void ButtonMappingNextPage(int diff)
+        {
+            var newPageIndex = (_buttonMappingSubPage + diff).Clamp(0, 2);
+            var e = _buttonMappingIndexs[newPageIndex];
+            for (var i = 0; i < 4; i++)
+            {
+                _btnMappingNameTexts[i].text = _buttonMappingNames.Span[i + e];
+                var targetArea = GetButtonAreaFromIndex(i + e);
+                var currentBindingKey = InputManager.GetButtonBindingKey(targetArea);
+                if(currentBindingKey == KeyCode.Unset)
+                {
+                    _btnMappingBindingKeyTexts[i].text = "<Unset>";
+                }
+                else
+                {
+                    _btnMappingBindingKeyTexts[i].text = currentBindingKey.ToString();
+                }
+            }
+        }
+        SensorArea GetButtonAreaFromIndex(int index)
+        {
+            switch(index)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    return (SensorArea)index;
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                    return (SensorArea)(index + 25);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
         enum TestPages
         {
             Sensor,
-            Button
+            Button,
+            ButtonMapping
         }
     }
 }

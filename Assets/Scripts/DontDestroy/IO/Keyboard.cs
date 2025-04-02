@@ -9,6 +9,13 @@ namespace MajdataPlay.IO
     {
         public static bool IsKeyDown(KeyCode keyCode)
         {
+            switch(keyCode)
+            {
+                case KeyCode.Unset:
+                    return false;
+                default:
+                    break;
+            }
 #if UNITY_STANDALONE_WIN
             var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
             return (result & 0x8000) != 0;

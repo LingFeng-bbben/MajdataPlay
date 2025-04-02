@@ -24,25 +24,29 @@ namespace MajdataPlay.IO
     internal unsafe partial class InputManager : MonoBehaviour
     {
         public bool IsTouchPanelConnected { get; private set; } = false;
-        public ReadOnlyMemory<SensorStatus> ButtonStatusInThisFrame
+        public static ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _btnStatusInThisFrame;
+            get => _btnStatusInThisFrame.AsSpan();
         }
-        public ReadOnlyMemory<SensorStatus> ButtonStatusInPreviousFrame
+        public static ReadOnlySpan<SensorStatus> ButtonStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _btnStatusInPreviousFrame;
+            get => _btnStatusInPreviousFrame.AsSpan();
         }
-        public ReadOnlyMemory<SensorStatus> SensorStatusInThisFrame
+        public static ReadOnlySpan<SensorStatus> SensorStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _sensorStatusInThisFrame;
+            get => _sensorStatusInThisFrame.AsSpan();
         }
-        public ReadOnlyMemory<SensorStatus> SensorStatusInPreviousFrame
+        public static ReadOnlySpan<SensorStatus> SensorStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _sensorStatusInPreviousFrame;
+            get => _sensorStatusInPreviousFrame.AsSpan();
+        }
+        public static ReadOnlySpan<bool> TouchPanelRawData
+        {
+            get => _sensorStates.Span;
         }
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
@@ -622,8 +626,28 @@ namespace MajdataPlay.IO
             return _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
                    _sensorStatusInThisFrame[index] == SensorStatus.On;
         }
+        public static KeyCode GetButtonBindingKey(SensorArea area)
+        {
+            ThrowIfButtonIndexOutOfRange(area);
+            var button = GetButton(area);
+
+            return button.BindingKey;
+        }
+        public static void SetButtonNewBindingKey(SensorArea area,KeyCode newBindingKey)
+        {
+            ThrowIfButtonIndexOutOfRange(area);
+            var button = GetButton(area);
+            foreach(var btn in _buttons.Span)
+            {
+                if(btn.BindingKey == newBindingKey)
+                {
+                    btn.BindingKey = KeyCode.Unset;
+                }    
+            }
+            button.BindingKey = newBindingKey;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Button? GetButton(SensorArea type)
+        static Button GetButton(SensorArea type)
         {
             var buttons = _buttons.Span;
             return type switch
@@ -638,17 +662,17 @@ namespace MajdataPlay.IO
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<Button> GetButtons()
+        static ReadOnlyMemory<Button> GetButtons()
         {
             return _buttons;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Sensor GetSensor(SensorArea target)
+        static Sensor GetSensor(SensorArea target)
         {
             return _sensors.Span[(int)target];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<Sensor> GetSensors()
+        static ReadOnlyMemory<Sensor> GetSensors()
         {
             return _sensors;
         }
@@ -667,8 +691,6 @@ namespace MajdataPlay.IO
             if (OnAnyAreaTrigger is not null)
                 OnAnyAreaTrigger(null, args);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ReadOnlyMemory<bool> GetTouchPanelRawData() => _sensorStates;
         /// <summary>
         /// Used to check whether the device activation is caused by abnormal jitter
         /// </summary>
@@ -770,35 +792,35 @@ namespace MajdataPlay.IO
                 Timestamp = MajTimeline.UnscaledTime
             });
         }
-    }
-    class SensorRenderer
-    {
-        public int Index { get; init; }
-        public MeshFilter MeshFilter { get; init; }
-        public MeshRenderer MeshRenderer { get; init; }
-        public MeshCollider MeshCollider { get; init; }
-        public GameObject GameObject { get; init; }
-        public Color Color 
+        class SensorRenderer
         {
-            get => _material.color;
-            set => _material.color = value; 
-        }
-        Material _material;
-        public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider, GameObject gameObject)
-        {
-            Index = index;
-            MeshFilter = meshFilter;
-            MeshRenderer = meshRenderer;
-            MeshCollider = meshCollider;
-            _material = new Material(Shader.Find("Sprites/Default"));
-            MeshRenderer.material = _material;
-            GameObject = gameObject;
-            Color = new Color(0, 0, 0, 0f);
-        }
-        public void Destroy()
-        {
-            GameObject.Destroy(GameObject);
-            GameObject.Destroy(_material);
+            public int Index { get; init; }
+            public MeshFilter MeshFilter { get; init; }
+            public MeshRenderer MeshRenderer { get; init; }
+            public MeshCollider MeshCollider { get; init; }
+            public GameObject GameObject { get; init; }
+            public Color Color
+            {
+                get => _material.color;
+                set => _material.color = value;
+            }
+            Material _material;
+            public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider, GameObject gameObject)
+            {
+                Index = index;
+                MeshFilter = meshFilter;
+                MeshRenderer = meshRenderer;
+                MeshCollider = meshCollider;
+                _material = new Material(Shader.Find("Sprites/Default"));
+                MeshRenderer.material = _material;
+                GameObject = gameObject;
+                Color = new Color(0, 0, 0, 0f);
+            }
+            public void Destroy()
+            {
+                GameObject.Destroy(GameObject);
+                GameObject.Destroy(_material);
+            }
         }
     }
 }
