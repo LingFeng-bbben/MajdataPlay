@@ -575,7 +575,7 @@ namespace MajdataPlay.Game
                 MajInstances.RecordHelper.StartRecord();
 
             _currentRecorder = new WavRecorder("D:/test.wav", 32);
-            AudioManager.OnWasapiProcessExtraLogic += _currentRecorder.HandleData;
+            AudioManager.OnBassProcessExtraLogic += _currentRecorder.HandleData;
 
             if (_audioSample is null)
                 return;
@@ -986,7 +986,7 @@ namespace MajdataPlay.Game
             }
             if (_currentRecorder == null) return;
 
-            AudioManager.OnWasapiProcessExtraLogic -= _currentRecorder.HandleData;
+            AudioManager.OnBassProcessExtraLogic -= _currentRecorder.HandleData;
             _currentRecorder.Finish();
             _currentRecorder = null;
 
