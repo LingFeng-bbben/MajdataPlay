@@ -577,7 +577,7 @@ namespace MajdataPlay.Game
             BassWasapi.GetInfo(out var wasapiInfo);
             _currentRecorder = new WavRecorder(
                 "D:/test.wav",
-                MajInstances.Setting.Audio.Samplerate,
+                wasapiInfo.Frequency,
                 wasapiInfo.Channels,
                 32 // 使用32位浮点数格式
             );
