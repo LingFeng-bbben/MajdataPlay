@@ -47,6 +47,15 @@ namespace MajdataPlay.IO
                                 State = state,
                                 Timestamp = now
                             });
+                            switch(state)
+                            {
+                                case SensorStatus.On:
+                                    ButtonRing.OnButtonDown(keyCode);
+                                    break;
+                                case SensorStatus.Off:
+                                    ButtonRing.OnButtonUp(keyCode);
+                                    break;
+                            }
                         }
                     }
                     catch (Exception e)

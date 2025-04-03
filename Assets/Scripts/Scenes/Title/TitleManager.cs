@@ -177,7 +177,7 @@ namespace MajdataPlay.Title
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("SensorTest");
+            MajInstances.SceneSwitcher.SwitchScene("Test");
         }
         void NextScene()
         {

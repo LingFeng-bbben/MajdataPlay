@@ -791,6 +791,15 @@ namespace MajdataPlay.IO
                 State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
+            switch(state)
+            {
+                case InputState.On:
+                    ButtonRing.OnButtonDown(zone);
+                    break;
+                case InputState.Off:
+                    ButtonRing.OnButtonUp(zone);
+                    break;
+            }
         }
         class SensorRenderer
         {

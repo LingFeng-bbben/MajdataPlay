@@ -135,15 +135,29 @@ namespace MajdataPlay.Test
 
                     _btnParent.SetActive(true);
                     _btnStateTextParent.SetActive(true);
+
+                    _btnMappingParent.SetActive(false);
+                    _btnMappingTextParent.SetActive(false);
                     break;
                 case TestPages.Button:
+                    _sensorParent.SetActive(false);
+                    _sensorTextParent.SetActive(false);
+
+                    _btnParent.SetActive(false);
+                    _btnStateTextParent.SetActive(false);
+
+                    _btnMappingParent.SetActive(true);
+                    _btnMappingTextParent.SetActive(true);
+                    break;
+                case TestPages.ButtonMapping:
                     _sensorParent.SetActive(true);
                     _sensorTextParent.SetActive(true);
 
                     _btnParent.SetActive(false);
                     _btnStateTextParent.SetActive(false);
-                    break;
-                case TestPages.ButtonMapping:
+
+                    _btnMappingParent.SetActive(false);
+                    _btnMappingTextParent.SetActive(false);
                     break;
             }
             _currentPage = nextPage;
@@ -262,7 +276,7 @@ namespace MajdataPlay.Test
                 bool isCancelRequested = false;
                 foreach(var sensor in sensors)
                 {
-                    isCancelRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On); 
+                    isCancelRequested |= InputManager.IsSensorClickedInThisFrame(sensor); 
                 }
                 if(isCancelRequested)
                 {
@@ -274,7 +288,7 @@ namespace MajdataPlay.Test
                 _btnMappingBindingKeyTexts[_selectedButton + e].text = "<Waiting4Press>";
                 foreach(var key in availableKeys)
                 {
-                    if(Keyboard.IsKeyDown(key))
+                    if(ButtonRing.IsKeyDown(key))
                     {
                         _isWaitingForButtonPress = false;
                         var area = GetButtonAreaFromIndex(_selectedButton + e);
@@ -286,7 +300,66 @@ namespace MajdataPlay.Test
             }
             else
             {
-
+                for (var i = 0; i < 4; i++)
+                {
+                    var isRequested = false;
+                    switch(i)
+                    {
+                        case 0:
+                            foreach (var sensor in one)
+                            {
+                                isRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On);
+                            }
+                            break;
+                        case 1:
+                            foreach (var sensor in two)
+                            {
+                                isRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On);
+                            }
+                            break;
+                        case 2:
+                            foreach (var sensor in three)
+                            {
+                                isRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On);
+                            }
+                            break;
+                        case 3:
+                            foreach (var sensor in four)
+                            {
+                                isRequested |= InputManager.CheckSensorStatusInThisFrame(sensor, SensorStatus.On);
+                            }
+                            break;
+                    }
+                    if(isRequested)
+                    {
+                        _isWaitingForButtonPress = true;
+                        _selectedButton = i;
+                        return;
+                    }
+                }
+                var isNextSubPageRequested = InputManager.IsSensorClickedInThisFrame(SensorArea.E3) ||
+                                             InputManager.IsSensorClickedInThisFrame(SensorArea.D3) ||
+                                             InputManager.IsSensorClickedInThisFrame(SensorArea.A2) ||
+                                             InputManager.IsSensorClickedInThisFrame(SensorArea.A3);
+                var isPerviousSubPageRequested = InputManager.IsSensorClickedInThisFrame(SensorArea.E7) ||
+                                                 InputManager.IsSensorClickedInThisFrame(SensorArea.D7) ||
+                                                 InputManager.IsSensorClickedInThisFrame(SensorArea.A7) ||
+                                                 InputManager.IsSensorClickedInThisFrame(SensorArea.A6);
+                if(isNextSubPageRequested)
+                {
+                    ButtonMappingNextPage(1);
+                    return;
+                }
+                else if(isPerviousSubPageRequested)
+                {
+                    ButtonMappingNextPage(-1);
+                    return;
+                }
+                if(InputManager.IsButtonClickedInThisFrame(SensorArea.Test))
+                {
+                    NextPage();
+                    return;
+                }
             }
         }
         void ButtonMappingNextPage(int diff)
