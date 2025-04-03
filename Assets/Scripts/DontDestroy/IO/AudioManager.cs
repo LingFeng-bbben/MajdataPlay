@@ -89,14 +89,19 @@ namespace MajdataPlay.IO
 
                             return bytesRead;
                         }, IntPtr.Zero);
-
-                        if (!BassAsio.ChannelJoin(false, 1, 0)) // let channel 1 follow channel 0
-                        {
-                            MajDebug.LogError("ASIO Channel Join Failed: " + BassAsio.LastError);
-                        }
-
+                        BassAsio.GetInfo(out var asioInfo);
                         BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
-                        BassAsio.ChannelSetFormat(false, 1, AsioSampleFormat.Float);
+                        for (int i = 1; i < asioInfo.Inputs; i++)
+                        {
+                            if (!BassAsio.ChannelJoin(false, i, 0)) // let channel i follow channel 0
+                            {
+                                MajDebug.LogError($"ASIO Channel {i} Join to 0 Failed: " + BassAsio.LastError);
+                            }
+                            else
+                            {
+                                BassAsio.ChannelSetFormat(false, i, AsioSampleFormat.Float);
+                            }
+                        }
 
                         BassAsio.Start();
                     }
