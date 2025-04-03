@@ -81,12 +81,6 @@ namespace MajdataPlay.IO
                             if (BassGlobalMixer == -114514)
                                 return 0;
 
-                            if (Bass.LastError != Errors.OK)
-                            {
-                                MajDebug.LogError(Bass.LastError);
-                                return 0;
-                            }
-
                             var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
                             if (bytesRead > 0)
                             {
@@ -96,7 +90,14 @@ namespace MajdataPlay.IO
                             return bytesRead;
                         }, IntPtr.Zero);
 
-                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
+                        if (!BassAsio.ChannelJoin(false, 1, 0)) // let channel 1 follow channel 0
+                        {
+                            MajDebug.LogError("ASIO Channel Join Failed: " + BassAsio.LastError);
+                        }
+
+                        BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
+                        BassAsio.ChannelSetFormat(false, 1, AsioSampleFormat.Float);
+
                         BassAsio.Start();
                     }
                     break;
