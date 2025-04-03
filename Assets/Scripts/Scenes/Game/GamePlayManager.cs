@@ -574,13 +574,7 @@ namespace MajdataPlay.Game
                 && !MajInstances.RecordHelper.Recording)
                 MajInstances.RecordHelper.StartRecord();
 
-            BassWasapi.GetInfo(out var wasapiInfo);
-            _currentRecorder = new WavRecorder(
-                "D:/test.wav",
-                wasapiInfo.Frequency,
-                wasapiInfo.Channels,
-                32 // 使用32位浮点数格式
-            );
+            _currentRecorder = new WavRecorder("D:/test.wav", 32);
             AudioManager.OnWasapiProcessExtraLogic += _currentRecorder.HandleData;
 
             if (_audioSample is null)

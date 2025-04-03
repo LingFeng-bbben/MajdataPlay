@@ -2,7 +2,10 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using ManagedBass.Asio;
+using ManagedBass.Wasapi;
 
 namespace MajdataPlay.Assets.Scripts.Scenes.View
 {
@@ -15,10 +18,19 @@ namespace MajdataPlay.Assets.Scripts.Scenes.View
         private bool _isRecording;
         private int _dataSize;
 
-        public WavRecorder(string filePath, int sampleRate, int channels, int bitsPerSample)
+        public WavRecorder(string filePath, int bitsPerSample)
         {
-            _sampleRate = sampleRate;
-            _channels = channels;
+            if (MajInstances.GameManager.Setting.Audio.Backend == SoundBackendType.Wasapi)
+            {
+                BassWasapi.GetInfo(out var wasapiInfo);
+                _sampleRate = wasapiInfo.Frequency;
+                _channels = wasapiInfo.Channels;
+            }
+            else if (MajInstances.GameManager.Setting.Audio.Backend == SoundBackendType.Asio)
+            {
+                _channels = BassAsio.Info.Inputs;
+                _sampleRate = (int)BassAsio.Rate;
+            }
             _bitsPerSample = bitsPerSample;
 
             try
