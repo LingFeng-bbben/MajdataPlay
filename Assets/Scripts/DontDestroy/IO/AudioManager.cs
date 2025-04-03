@@ -75,8 +75,28 @@ namespace MajdataPlay.IO
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
 
+                        BassAsio.ChannelEnable(false, 0, (bool input, int channel, IntPtr buffer, int length, IntPtr user) =>
+                        {
+                            if (BassGlobalMixer == -114514)
+                                return 0;
+
+                            if (Bass.LastError != Errors.OK)
+                            {
+                                MajDebug.LogError(Bass.LastError);
+                                return 0;
+                            }
+
+                            var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+                            if (bytesRead > 0)
+                            {
+                                OnWasapiProcessExtraLogic?.Invoke(buffer, bytesRead, user);
+                            }
+
+                            return bytesRead;
+                        }, IntPtr.Zero);
+
+                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
                         BassAsio.Start();
                     }
                     break;
