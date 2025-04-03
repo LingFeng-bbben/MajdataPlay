@@ -17,8 +17,10 @@ using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
+using MajdataPlay.Assets.Scripts.Scenes.View;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
+using ManagedBass.Wasapi;
 
 namespace MajdataPlay.Game
 {
@@ -565,11 +567,21 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
             await UniTask.Yield();
         }
+        private static WavRecorder _currentRecorder;
         async UniTask PrepareToPlay()
         {
             if ((MajInstances.RecordHelper?.Connected ?? false)
                 && !MajInstances.RecordHelper.Recording)
                 MajInstances.RecordHelper.StartRecord();
+
+            BassWasapi.GetInfo(out var wasapiInfo);
+            _currentRecorder = new WavRecorder(
+                "D:/test.wav",
+                wasapiInfo.Frequency,
+                wasapiInfo.Channels,
+                32 // 使用32位浮点数格式
+            );
+            AudioManager.OnWasapiProcessExtraLogic += _currentRecorder.HandleData;
 
             if (_audioSample is null)
                 return;
@@ -978,6 +990,11 @@ namespace MajdataPlay.Game
             {
                 MajInstances.RecordHelper.StopRecord();
             }
+            if (_currentRecorder == null) return;
+
+            AudioManager.OnWasapiProcessExtraLogic -= _currentRecorder.HandleData;
+            _currentRecorder.Finish();
+            _currentRecorder = null;
 
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);

@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
         private List<AudioSampleWrap?> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
-        private int BassGlobalMixer = -114514;
+        private static int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
         private void Awake()
@@ -41,6 +41,8 @@ namespace MajdataPlay.IO
             SFXFileNames =  new DirectoryInfo(SFXFilePath).GetFiles().FindAll(o=>!o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
             VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles().FindAll(o => !o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
         }
+        public static event Action<IntPtr, int, IntPtr>? OnWasapiProcessExtraLogic;
+
         void Start()
         {
             var isExclusiveRequest = MajInstances.Setting.Audio.WasapiExclusive;
@@ -83,13 +85,18 @@ namespace MajdataPlay.IO
                         //Bass.Init(-1, sampleRate);
                         MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
-                        wasapiProcedure = (buffer, length, _) =>
+                        wasapiProcedure = (buffer, length, user) =>
                         {
                             if (BassGlobalMixer == -114514)
                                 return 0;
                             if(Bass.LastError != Errors.OK)
                                 MajDebug.LogError(Bass.LastError);
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+
+                            var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+
+                            OnWasapiProcessExtraLogic?.Invoke(buffer, length, user);
+
+                            return bytesRead;
                         };
                         bool isExclusiveSuccess = false;
                         if (isExclusiveRequest)
