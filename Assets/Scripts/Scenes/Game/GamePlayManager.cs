@@ -17,10 +17,8 @@ using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
-using MajdataPlay.Assets.Scripts.Scenes.View;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
-using ManagedBass.Wasapi;
 
 namespace MajdataPlay.Game
 {
@@ -567,15 +565,12 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
             await UniTask.Yield();
         }
-        private static WavRecorder _currentRecorder;
         async UniTask PrepareToPlay()
         {
             if ((MajInstances.RecordHelper?.Connected ?? false)
                 && !MajInstances.RecordHelper.Recording)
                 MajInstances.RecordHelper.StartRecord();
 
-            _currentRecorder = new WavRecorder("D:/test.wav", 32);
-            AudioManager.OnBassProcessExtraLogic += _currentRecorder.HandleData;
 
             if (_audioSample is null)
                 return;
@@ -984,11 +979,6 @@ namespace MajdataPlay.Game
             {
                 MajInstances.RecordHelper.StopRecord();
             }
-            if (_currentRecorder == null) return;
-
-            AudioManager.OnBassProcessExtraLogic -= _currentRecorder.HandleData;
-            _currentRecorder.Finish();
-            _currentRecorder = null;
 
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);

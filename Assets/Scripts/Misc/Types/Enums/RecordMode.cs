@@ -4,5 +4,6 @@
     {
         Disable,
         OBS,
+        FFmpeg
     }
 }
