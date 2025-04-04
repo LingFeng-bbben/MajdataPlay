@@ -37,8 +37,8 @@ namespace MajdataPlay.Utils
             wavRecorder ??= new("D:/out.wav", 32);
             screenRecorder ??= new();
 
-            screenRecorder.StartRecordingAsync("D:/out.mp4");
             wavRecorder?.Start();
+            screenRecorder.StartRecordingAsync("D:/out.mp4");
         }
 
         public void StopRecord()
@@ -179,10 +179,6 @@ namespace MajdataPlay.Utils
                 {
                     MajDebug.LogError($"Error finalizing WAV file: {e.Message}");
                 }
-                finally
-                {
-                    Dispose();
-                }
             }
 
             private void WriteShort(ushort value)
@@ -219,7 +215,7 @@ namespace MajdataPlay.Utils
             readonly AsyncLock _recodingSyncLock = new();
             readonly ConcurrentQueue<byte[]> _capturedScreenData = new();
 
-            const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -i \"{2}\" -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{4:0.0000}\" -b:a 320k -c:a aac \"{3}\"";
+            const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{3:0.0000}\" \"{2}\"";
             readonly string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
 
             public void OnLateUpdate()
@@ -266,15 +262,15 @@ namespace MajdataPlay.Utils
                     _screenWidth = width;
                     _screenHeight = height;
                     IsRecording = true;
-                    await StartFFmpegAsync(exportPath, "D:/out.wav");
+                    await StartFFmpegAsync(exportPath);
                 }
             }
-            private async UniTask StartFFmpegAsync(string exportPath, string exportedAudioPath)
+            private async UniTask StartFFmpegAsync(string exportPath)
             {
-                FramePresentAsync();
+                _ = FramePresentAsync();
                 var task = Task.Run(() =>
                 {
-                    var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportedAudioPath, exportPath, int.MaxValue);
+                    var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportPath, int.MaxValue);
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args);
                     startinfo.UseShellExecute = false;
                     startinfo.CreateNoWindow = true;
@@ -297,7 +293,6 @@ namespace MajdataPlay.Utils
                     {
                         while (_capturedScreenData.TryDequeue(out var data))
                         {
-                            MajDebug.Log("递交帧");
                             await pipeServer.WriteAsync(data);
                         }
                         if (IsRecording)
