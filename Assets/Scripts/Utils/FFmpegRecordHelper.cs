@@ -21,26 +21,26 @@ namespace MajdataPlay.Utils
         private static WavRecorder wavRecorder;
         private static ScreenRecorder screenRecorder;
         private static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
-        private static string wavPath = "D:/out.wav";
-        private static string mp4Path = "D:/out.mp4";
-        private static string outputPath = "D:/output.mp4";
+        private static string time = string.Empty;
+        private static string wavPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.wav");
+        private static string mp4Path => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.mp4");
+        private static string outputPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}output.mp4");
         public bool Recording { get; set; } = false;
         public bool Connected { get; set; } = true;
 
-        private bool _disposed = false;
-
         public async void StartRecord()
         {
+            time = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
             Recording = true;
             wavRecorder ??= new(wavPath, 32);
             if (screenRecorder == null)
             {
-                GameObject recorder = new GameObject("ScreenRecorder");
+                GameObject recorder = new("ScreenRecorder");
                 screenRecorder = recorder.AddComponent<ScreenRecorder>();
             }
 
             await screenRecorder.StartRecordingAsync(mp4Path);
-            wavRecorder?.Start();
+            wavRecorder.Start();
         }
 
         public async void StopRecord()
@@ -48,13 +48,9 @@ namespace MajdataPlay.Utils
             Recording = false;
             await screenRecorder.StopRecordingAsync();
             wavRecorder?.Stop();
-
-            if (screenRecorder != null)
-            {
-                Destroy(screenRecorder.gameObject);
-                screenRecorder = null;
-            }
-
+            Destroy(screenRecorder.gameObject);
+            screenRecorder = null;
+            wavRecorder?.Dispose();
             wavRecorder = null;
             Task.Run(async () =>
             {
@@ -69,25 +65,15 @@ namespace MajdataPlay.Utils
                 var p = new Process{StartInfo = startInfo};
                 p.Start();
                 p.WaitForExit();
+                time = string.Empty;
             });
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            StopRecord();
+            Connected = false;
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-            if (disposing)
-            {
-                StopRecord();
-                // 以后可能需要的释放资源
-            }
-
-            _disposed = true;
         }
 
         private class WavRecorder : IDisposable
@@ -255,26 +241,27 @@ namespace MajdataPlay.Utils
                         width = 128;
                     if (height < 128)
                         height = 128;
-
                     Screen.SetResolution(width, height, false);
                     _screenWidth = width;
                     _screenHeight = height;
+                    IsRecording = true;
                     StartCoroutine(CaptureScreen(mp4Path));
                 }
             }
             public async UniTask StopRecordingAsync()
             {
                 IsRecording = false;
+                MajInstances.GameManager.ApplyScreenConfig();
             }
 
             private IEnumerator CaptureScreen(string exportPath)
             {
                 byte[] data;
                 var texture = new Texture2D(0, 0);
-                using (var pipeServer = new NamedPipeServerStream("majdataRec", PipeDirection.Out))
+                using (var pipeServer = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out))
                 {
                     var args =
-                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\majdataRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{exportPath}\"";
+                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{exportPath}\"";
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args)
                     {
                         UseShellExecute = false,
@@ -284,7 +271,6 @@ namespace MajdataPlay.Utils
 
                     var p = Process.Start(startinfo);
                     pipeServer.WaitForConnection();
-                    IsRecording = true;
 
                     const double targetFrameInterval = 1.0 / 60.0;
                     var stopwatch = Stopwatch.StartNew();
@@ -319,16 +305,13 @@ namespace MajdataPlay.Utils
                             }
                             catch
                             {
-                                // 忽略单帧捕获失败
+                                // ignore single frame catching failed
                             }
                         }
                     }
-
                     p.WaitForExit();
                 }
             }
-
-
         }
     }
 }

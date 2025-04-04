@@ -571,7 +571,6 @@ namespace MajdataPlay.Game
                 && !MajInstances.RecordHelper.Recording)
                 MajInstances.RecordHelper.StartRecord();
 
-
             if (_audioSample is null)
                 return;
 

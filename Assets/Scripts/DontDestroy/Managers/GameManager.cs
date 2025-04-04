@@ -175,7 +175,7 @@ namespace MajdataPlay
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
             SceneManager.LoadScene("View");
         }
-        void ApplyScreenConfig()
+        public void ApplyScreenConfig()
         {
             if (MajEnv.Mode != RunningMode.View)
             {
