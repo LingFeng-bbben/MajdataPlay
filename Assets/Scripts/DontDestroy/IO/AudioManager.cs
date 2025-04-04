@@ -28,7 +28,7 @@ namespace MajdataPlay.IO
         readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
         string[] SFXFileNames = new string[0];
         string[] VoiceFileNames = new string [0];
-        private List<AudioSampleWrap?> SFXSamples = new();
+        private List<AudioSampleWrap> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
         private int BassGlobalMixer = -114514;
@@ -136,7 +136,7 @@ namespace MajdataPlay.IO
                 var path = Path.Combine(rootPath, filePath);
                 if (!File.Exists(path))
                 {
-                    SFXSamples.Add(null);
+                    SFXSamples.Add(EmptyAudioSample.Shared);
                     MajDebug.LogWarning(path + " dos not exists");
                     continue;
                 }
@@ -320,16 +320,15 @@ namespace MajdataPlay.IO
 
         public AudioSampleWrap GetSFX(string name)
         {
-            var psp = SFXSamples.FirstOrDefault(o=>o.Name==name);
+            var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
             if (psp is not null)
             {
                 return psp;
             }
             else
             {
-                return null;
+                return EmptyAudioSample.Shared;
             }
-            
         }
 
         public void StopSFX(string name)
