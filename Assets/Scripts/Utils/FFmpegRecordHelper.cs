@@ -16,9 +16,10 @@ using UnityEngine;
 
 namespace MajdataPlay.Utils
 {
-    public class FFmpegRecordHelper : IRecordHelper
+    public class FFmpegRecordHelper : MonoBehaviour, IRecordHelper
     {
         private static WavRecorder wavRecorder;
+        private static ScreenRecorder screenRecorder;
         public bool Recording { get; set; } = false;
         public bool Connected { get; set; } = true;
 
@@ -27,27 +28,19 @@ namespace MajdataPlay.Utils
         public void StartRecord()
         {
             Recording = true;
-            StartRecordWav();
+            wavRecorder ??= new("D:/out.wav", 32);
+            screenRecorder ??= new();
+
+            screenRecorder.StartRecordingAsync("D:/out.mp4");
+            wavRecorder?.Start();
         }
 
         public void StopRecord()
         {
             Recording = false;
-            StopRecordWav();
-        }
+            wavRecorder?.Stop();
+            screenRecorder.StopRecordingAsync();
 
-        private static void StartRecordWav()
-        {
-            wavRecorder ??= new("D:/test.wav", 32);
-            AudioManager.OnBassProcessExtraLogic += wavRecorder.HandleData;
-        }
-
-        private static void StopRecordWav()
-        {
-            if (wavRecorder == null) return;
-            AudioManager.OnBassProcessExtraLogic -= wavRecorder.HandleData;
-            wavRecorder.Finish();
-            wavRecorder.Dispose();
             wavRecorder = null;
         }
 
@@ -62,7 +55,7 @@ namespace MajdataPlay.Utils
             if (_disposed) return;
             if (disposing)
             {
-                StopRecordWav();
+                StopRecord();
                 // 以后可能需要的释放资源
             }
 
@@ -72,6 +65,7 @@ namespace MajdataPlay.Utils
         private class WavRecorder : IDisposable
         {
             private FileStream _fileStream;
+            private readonly string _filePath;
             private readonly int _sampleRate;
             private readonly int _channels;
             private readonly int _bitsPerSample;
@@ -92,12 +86,17 @@ namespace MajdataPlay.Utils
                     _sampleRate = (int)BassAsio.Rate;
                 }
                 _bitsPerSample = bitsPerSample;
+                _filePath = filePath;
+            }
 
+            public void Start() 
+            { 
                 try
                 {
-                    _fileStream = new FileStream(filePath, FileMode.Create);
+                    _fileStream = new FileStream(_filePath, FileMode.Create);
                     WriteHeader();
                     _isRecording = true;
+                    AudioManager.OnBassProcessExtraLogic += wavRecorder.HandleData;
                 }
                 catch (Exception e)
                 {
@@ -106,7 +105,12 @@ namespace MajdataPlay.Utils
                 }
             }
 
-            public void Start() { }
+            public void Stop()
+            {
+                AudioManager.OnBassProcessExtraLogic -= wavRecorder.HandleData;
+                wavRecorder.Finish();
+                Dispose();
+            }
 
             private void WriteHeader()
             {
@@ -130,7 +134,7 @@ namespace MajdataPlay.Utils
                 WriteInt(0); // Placeholder for data size
             }
 
-            public void HandleData(IntPtr buffer, int length, IntPtr user)
+            private void HandleData(IntPtr buffer, int length, IntPtr user)
             {
                 if (!_isRecording || _fileStream == null) return;
 
@@ -148,7 +152,7 @@ namespace MajdataPlay.Utils
                 }
             }
 
-            public void Finish()
+            private void Finish()
             {
                 if (!_isRecording || _fileStream == null) return;
 
@@ -197,14 +201,14 @@ namespace MajdataPlay.Utils
             }
         }
 
-        private class ScreenRecorder : MajComponent
+        internal class ScreenRecorder : MajComponent
         {
             public bool IsRecording { get; private set; }
 
             int _screenWidth = 1920;
             int _screenHeight = 1080;
 
-            Process? _ffmpegProcess = null;
+            private Process? _ffmpegProcess = null;
 
             readonly AsyncLock _recodingSyncLock = new();
             readonly ConcurrentQueue<byte[]> _capturedScreenData = new();
@@ -212,22 +216,24 @@ namespace MajdataPlay.Utils
             const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -i \"{2}\" -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{4:0.0000}\" -b:a 320k -c:a aac \"{3}\"";
             readonly string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
 
-            internal void OnLateUpdate()
+            public void LateUpdate()
             {
+                MajDebug.Log("late update 1");
                 if (!IsRecording)
                     return;
-                var currentSoultion = Screen.currentResolution;
-                var currentWidth = currentSoultion.width;
-                var currentHeight = currentSoultion.height;
+                var currentSolution = Screen.currentResolution;
+                var currentWidth = currentSolution.width;
+                var currentHeight = currentSolution.height;
 
                 if (currentHeight != _screenHeight || currentWidth != _screenWidth)
                 {
                     Screen.SetResolution(_screenWidth, _screenHeight, false);
                 }
-
+                MajDebug.Log("late update 2");
                 _capturedScreenData.Enqueue(ScreenCapture.CaptureScreenshotAsTexture().GetRawTextureData());
             }
-            internal async UniTask StartRecordingAsync(string exportPath)
+
+            public async UniTask StartRecordingAsync(string exportPath)
             {
                 var task = _recodingSyncLock.LockAsync();
                 while (!task.IsCompleted)
@@ -252,13 +258,16 @@ namespace MajdataPlay.Utils
                     Screen.SetResolution(width, height, false);
                     _screenWidth = width;
                     _screenHeight = height;
+                    IsRecording = true;
+                    await StartFFmpegAsync(exportPath, "D:/out.wav");
                 }
             }
-            async UniTask StartFFmpegAsync(string exportPath, string exportedAudioPath)
+            private async UniTask StartFFmpegAsync(string exportPath, string exportedAudioPath)
             {
+                FramePresentAsync();
                 var task = Task.Run(() =>
                 {
-                    var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportedAudioPath, int.MaxValue);
+                    var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportedAudioPath, exportPath, int.MaxValue);
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args);
                     startinfo.UseShellExecute = false;
                     startinfo.CreateNoWindow = true;
@@ -271,7 +280,7 @@ namespace MajdataPlay.Utils
                 while (!task.IsCompleted)
                     await UniTask.Yield();
             }
-            async Task FramePresentAsync()
+            private async Task FramePresentAsync()
             {
                 await Task.Run(async () =>
                 {
@@ -281,6 +290,7 @@ namespace MajdataPlay.Utils
                     {
                         while (_capturedScreenData.TryDequeue(out var data))
                         {
+                            MajDebug.Log("递交帧");
                             await pipeServer.WriteAsync(data);
                         }
                         if (IsRecording)
@@ -295,7 +305,7 @@ namespace MajdataPlay.Utils
                     MajDebug.LogWarning("FFmpeg has exited");
                 });
             }
-            internal async UniTask StopRecordingAsync()
+            public async UniTask StopRecordingAsync()
             {
                 var task = _recodingSyncLock.LockAsync();
                 while (!task.IsCompleted)
