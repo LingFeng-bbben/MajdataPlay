@@ -572,14 +572,10 @@ namespace MajdataPlay.Game
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
             float extraTime = 5f;
-            if (firstClockTiming < 0f)
-            {
-                extraTime = (-(float)firstClockTiming) + 5f;
-            }
-            if (FirstNoteAppearTiming < 0f)
-            {
-                extraTime = MathF.Min(extraTime, (-FirstNoteAppearTiming + 5f));
-            }
+            if (firstClockTiming < -5f)
+                extraTime += (-(float)firstClockTiming - 5f) + 2f;
+            if (FirstNoteAppearTiming != 0)
+                extraTime += -(FirstNoteAppearTiming + 4f);
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
