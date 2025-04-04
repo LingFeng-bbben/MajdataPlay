@@ -286,24 +286,27 @@ namespace MajdataPlay.Utils
                     pipeServer.WaitForConnection();
                     IsRecording = true;
 
-                    float targetFrameTime = 1f / 60f;
-                    float lastFrameTime = Time.realtimeSinceStartup;
+                    const double targetFrameInterval = 1.0 / 60.0;
+                    var stopwatch = Stopwatch.StartNew();
+                    double nextFrameTime = 0;
 
                     using (var bw = new BinaryWriter(pipeServer))
                     {
-                        do
+                        while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            yield return new WaitForEndOfFrame();
+                            double currentTime = stopwatch.Elapsed.TotalSeconds;
 
-                            // Throttler!!! (By time)
-                            float now = Time.realtimeSinceStartup;
-                            float elapsed = now - lastFrameTime;
-                            if (elapsed < targetFrameTime)
+                            if (currentTime < nextFrameTime)
                             {
-                                yield return new WaitForSecondsRealtime(targetFrameTime - elapsed);
-                                now = Time.realtimeSinceStartup;
+                                double sleepTime = nextFrameTime - currentTime;
+                                if (sleepTime > 0)
+                                    yield return new WaitForSecondsRealtime((float)sleepTime);
+                                continue;
                             }
-                            lastFrameTime = now;
+
+                            nextFrameTime += targetFrameInterval;
+
+                            yield return new WaitForEndOfFrame();
 
                             try
                             {
@@ -319,16 +322,12 @@ namespace MajdataPlay.Utils
                                 // 忽略单帧捕获失败
                             }
                         }
-                        while (
-                            pipeServer.IsConnected &&
-                            IsRecording &&
-                            !p.HasExited
-                        );
                     }
 
                     p.WaitForExit();
                 }
             }
+
 
         }
     }
