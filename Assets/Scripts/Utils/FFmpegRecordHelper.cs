@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace MajdataPlay.Utils
 {
@@ -24,6 +25,11 @@ namespace MajdataPlay.Utils
         public bool Connected { get; set; } = true;
 
         private bool _disposed = false;
+
+        public void LateUpdate()
+        {
+            screenRecorder?.OnLateUpdate();
+        }
 
         public void StartRecord()
         {
@@ -216,9 +222,8 @@ namespace MajdataPlay.Utils
             const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -i \"{2}\" -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{4:0.0000}\" -b:a 320k -c:a aac \"{3}\"";
             readonly string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
 
-            public void LateUpdate()
+            public void OnLateUpdate()
             {
-                MajDebug.Log("late update 1");
                 if (!IsRecording)
                     return;
                 var currentSolution = Screen.currentResolution;
@@ -229,8 +234,10 @@ namespace MajdataPlay.Utils
                 {
                     Screen.SetResolution(_screenWidth, _screenHeight, false);
                 }
-                MajDebug.Log("late update 2");
-                _capturedScreenData.Enqueue(ScreenCapture.CaptureScreenshotAsTexture().GetRawTextureData());
+                var screenTexture = ScreenCapture.CaptureScreenshotAsTexture();
+                byte[] data = screenTexture.GetRawTextureData();
+                _capturedScreenData.Enqueue(data);
+                Destroy(screenTexture);
             }
 
             public async UniTask StartRecordingAsync(string exportPath)
