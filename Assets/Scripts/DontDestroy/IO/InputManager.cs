@@ -661,6 +661,10 @@ namespace MajdataPlay.IO
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
+        void OnApplicationQuit()
+        {
+            _ioManager?.Dispose();
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void PushEvent(InputEventArgs args)
         {

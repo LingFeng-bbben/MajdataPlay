@@ -240,9 +240,8 @@ namespace MajdataPlay
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajDebug.OnApplicationQuit();
-            MajInstances.LightManager.SetAllLight(Color.black);
             SongStorage.OnApplicationQuit();
-            _globalCTS.CancelAfter(2000);
+            _globalCTS.Cancel();
         }
         public void Save()
         {
