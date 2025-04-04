@@ -1,10 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using ManagedBass.Asio;
 using ManagedBass.Wasapi;
 using NeoSmart.AsyncLock;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
@@ -26,16 +28,15 @@ namespace MajdataPlay.Utils
 
         private bool _disposed = false;
 
-        public void LateUpdate()
-        {
-            screenRecorder?.OnLateUpdate();
-        }
-
         public void StartRecord()
         {
             Recording = true;
             wavRecorder ??= new("D:/out.wav", 32);
-            screenRecorder ??= new();
+            if (screenRecorder == null)
+            {
+                GameObject recorder = new GameObject("ScreenRecorder");
+                screenRecorder = recorder.AddComponent<ScreenRecorder>();
+            }
 
             wavRecorder?.Start();
             screenRecorder.StartRecordingAsync("D:/out.mp4");
@@ -46,6 +47,12 @@ namespace MajdataPlay.Utils
             Recording = false;
             wavRecorder?.Stop();
             screenRecorder.StopRecordingAsync();
+
+            if (screenRecorder != null)
+            {
+                Destroy(screenRecorder.gameObject);
+                screenRecorder = null;
+            }
 
             wavRecorder = null;
         }
@@ -210,31 +217,10 @@ namespace MajdataPlay.Utils
             int _screenWidth = 1920;
             int _screenHeight = 1080;
 
-            private Process? _ffmpegProcess = null;
-
             readonly AsyncLock _recodingSyncLock = new();
-            readonly ConcurrentQueue<byte[]> _capturedScreenData = new();
 
             const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{3:0.0000}\" \"{2}\"";
             readonly string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
-
-            public void OnLateUpdate()
-            {
-                if (!IsRecording)
-                    return;
-                var currentSolution = Screen.currentResolution;
-                var currentWidth = currentSolution.width;
-                var currentHeight = currentSolution.height;
-
-                if (currentHeight != _screenHeight || currentWidth != _screenWidth)
-                {
-                    Screen.SetResolution(_screenWidth, _screenHeight, false);
-                }
-                var screenTexture = ScreenCapture.CaptureScreenshotAsTexture();
-                byte[] data = screenTexture.GetRawTextureData();
-                _capturedScreenData.Enqueue(data);
-                Destroy(screenTexture);
-            }
 
             public async UniTask StartRecordingAsync(string exportPath)
             {
@@ -261,71 +247,59 @@ namespace MajdataPlay.Utils
                     Screen.SetResolution(width, height, false);
                     _screenWidth = width;
                     _screenHeight = height;
-                    IsRecording = true;
-                    await StartFFmpegAsync(exportPath);
+                    StartCoroutine(CaptureScreen("D:/out.mp4"));
                 }
             }
-            private async UniTask StartFFmpegAsync(string exportPath)
+            public async UniTask StopRecordingAsync()
             {
-                _ = FramePresentAsync();
-                var task = Task.Run(() =>
+                IsRecording = false;
+            }
+
+            private IEnumerator CaptureScreen(string exportPath)
+            {
+                byte[] data;
+                var texture = new Texture2D(0, 0);
+                using (var pipeServer = new NamedPipeServerStream("majdataRec", PipeDirection.Out))
                 {
                     var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportPath, int.MaxValue);
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args);
                     startinfo.UseShellExecute = false;
                     startinfo.CreateNoWindow = true;
-                    //startinfo.WorkingDirectory = maidata_path;
+                    // startinfo.WorkingDirectory = maidata_path;
                     startinfo.EnvironmentVariables.Add("FFREPORT", "file=out.log:level=24");
+                    // print(arguments);
 
-                    _ffmpegProcess = Process.Start(startinfo);
-                });
+                    var p = Process.Start(startinfo);
+                    pipeServer.WaitForConnection();
+                    IsRecording = true;
+                    using (var bw = new BinaryWriter(pipeServer))
+                    {
+                        do
+                        {
+                            yield return new WaitForEndOfFrame();
+                            try
+                            {
+                                texture.Reinitialize(0, 0);
+                                texture = ScreenCapture.CaptureScreenshotAsTexture();
 
-                while (!task.IsCompleted)
-                    await UniTask.Yield();
-            }
-            private async Task FramePresentAsync()
-            {
-                await Task.Run(async () =>
-                {
-                    using var pipeServer = new NamedPipeServerStream("majdataRec", PipeDirection.Out);
-                    await pipeServer.WaitForConnectionAsync();
-                    do
-                    {
-                        while (_capturedScreenData.TryDequeue(out var data))
-                        {
-                            await pipeServer.WriteAsync(data);
-                        }
-                        if (IsRecording)
-                        {
-                            await Task.Yield();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    } while (!(_ffmpegProcess?.HasExited ?? true) && pipeServer.IsConnected);
-                    MajDebug.LogWarning("FFmpeg has exited");
-                });
-            }
-            public async UniTask StopRecordingAsync()
-            {
-                var task = _recodingSyncLock.LockAsync();
-                while (!task.IsCompleted)
-                {
-                    await UniTask.Yield();
-                }
-                using (task.Result)
-                {
-                    if (!IsRecording)
-                        return;
-                    IsRecording = false;
-                    if (_ffmpegProcess is not null)
-                    {
-                        while (_ffmpegProcess.HasExited)
-                        {
-                            await UniTask.Yield();
-                        }
+                                data = texture.GetRawTextureData();
+
+                                bw.Write(data, 0, data.Length);
+                                bw.Flush();
+                                MajDebug.Log("写");
+                                //Thread.Sleep(100);
+                            }
+                            catch
+                            {
+                            }
+                        } while (
+                            pipeServer.IsConnected &&
+                            IsRecording &&
+                            !p.HasExited
+                        );
                     }
+
+                    p.WaitForExit();
                 }
             }
         }
