@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using ManagedBass.Asio;
@@ -7,7 +6,6 @@ using ManagedBass.Wasapi;
 using NeoSmart.AsyncLock;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -15,7 +13,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace MajdataPlay.Utils
 {
@@ -23,30 +20,34 @@ namespace MajdataPlay.Utils
     {
         private static WavRecorder wavRecorder;
         private static ScreenRecorder screenRecorder;
+        private static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
+        private static string wavPath = "D:/out.wav";
+        private static string mp4Path = "D:/out.mp4";
+        private static string outputPath = "D:/output.mp4";
         public bool Recording { get; set; } = false;
         public bool Connected { get; set; } = true;
 
         private bool _disposed = false;
 
-        public void StartRecord()
+        public async void StartRecord()
         {
             Recording = true;
-            wavRecorder ??= new("D:/out.wav", 32);
+            wavRecorder ??= new(wavPath, 32);
             if (screenRecorder == null)
             {
                 GameObject recorder = new GameObject("ScreenRecorder");
                 screenRecorder = recorder.AddComponent<ScreenRecorder>();
             }
 
+            await screenRecorder.StartRecordingAsync(mp4Path);
             wavRecorder?.Start();
-            screenRecorder.StartRecordingAsync("D:/out.mp4");
         }
 
-        public void StopRecord()
+        public async void StopRecord()
         {
             Recording = false;
+            await screenRecorder.StopRecordingAsync();
             wavRecorder?.Stop();
-            screenRecorder.StopRecordingAsync();
 
             if (screenRecorder != null)
             {
@@ -55,6 +56,20 @@ namespace MajdataPlay.Utils
             }
 
             wavRecorder = null;
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                var args =
+                    $"-y -i {mp4Path} -i {wavPath} -c:v copy -c:a aac -strict experimental -shortest {outputPath}";
+                var startInfo = new ProcessStartInfo(FFMPEG_PATH, args)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var p = new Process{StartInfo = startInfo};
+                p.Start();
+                p.WaitForExit();
+            });
         }
 
         public void Dispose()
@@ -219,9 +234,6 @@ namespace MajdataPlay.Utils
 
             readonly AsyncLock _recodingSyncLock = new();
 
-            const string FFMPEG_ARGUMENTS = "-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{0}x{1}\" -r 60 -i \\\\.\\pipe\\majdataRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{3:0.0000}\" \"{2}\"";
-            readonly string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
-
             public async UniTask StartRecordingAsync(string exportPath)
             {
                 var task = _recodingSyncLock.LockAsync();
@@ -247,7 +259,7 @@ namespace MajdataPlay.Utils
                     Screen.SetResolution(width, height, false);
                     _screenWidth = width;
                     _screenHeight = height;
-                    StartCoroutine(CaptureScreen("D:/out.mp4"));
+                    StartCoroutine(CaptureScreen(mp4Path));
                 }
             }
             public async UniTask StopRecordingAsync()
@@ -261,38 +273,53 @@ namespace MajdataPlay.Utils
                 var texture = new Texture2D(0, 0);
                 using (var pipeServer = new NamedPipeServerStream("majdataRec", PipeDirection.Out))
                 {
-                    var args = string.Format(FFMPEG_ARGUMENTS, _screenWidth, _screenHeight, exportPath, int.MaxValue);
-                    var startinfo = new ProcessStartInfo(FFMPEG_PATH, args);
-                    startinfo.UseShellExecute = false;
-                    startinfo.CreateNoWindow = true;
-                    // startinfo.WorkingDirectory = maidata_path;
+                    var args =
+                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\majdataRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{exportPath}\"";
+                    var startinfo = new ProcessStartInfo(FFMPEG_PATH, args)
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
                     startinfo.EnvironmentVariables.Add("FFREPORT", "file=out.log:level=24");
-                    // print(arguments);
 
                     var p = Process.Start(startinfo);
                     pipeServer.WaitForConnection();
                     IsRecording = true;
+
+                    float targetFrameTime = 1f / 60f;
+                    float lastFrameTime = Time.realtimeSinceStartup;
+
                     using (var bw = new BinaryWriter(pipeServer))
                     {
                         do
                         {
                             yield return new WaitForEndOfFrame();
+
+                            // Throttler!!! (By time)
+                            float now = Time.realtimeSinceStartup;
+                            float elapsed = now - lastFrameTime;
+                            if (elapsed < targetFrameTime)
+                            {
+                                yield return new WaitForSecondsRealtime(targetFrameTime - elapsed);
+                                now = Time.realtimeSinceStartup;
+                            }
+                            lastFrameTime = now;
+
                             try
                             {
                                 texture.Reinitialize(0, 0);
                                 texture = ScreenCapture.CaptureScreenshotAsTexture();
 
                                 data = texture.GetRawTextureData();
-
                                 bw.Write(data, 0, data.Length);
                                 bw.Flush();
-                                MajDebug.Log("写");
-                                //Thread.Sleep(100);
                             }
                             catch
                             {
+                                // 忽略单帧捕获失败
                             }
-                        } while (
+                        }
+                        while (
                             pipeServer.IsConnected &&
                             IsRecording &&
                             !p.HasExited
@@ -302,6 +329,7 @@ namespace MajdataPlay.Utils
                     p.WaitForExit();
                 }
             }
+
         }
     }
 }
