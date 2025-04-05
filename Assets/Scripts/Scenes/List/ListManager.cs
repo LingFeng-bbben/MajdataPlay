@@ -52,6 +52,15 @@ namespace MajdataPlay.List
 
                     MajInstances.RecordHelper ??= new OBSRecordHelper();
                     break;
+                case RecordMode.FFmpeg:
+                    if (MajInstances.RecordHelper is not FFmpegRecordHelper)
+                    {
+                        MajInstances.RecordHelper?.Dispose();
+                        MajInstances.RecordHelper = null;
+                    }
+
+                    MajInstances.RecordHelper ??= new FFmpegRecordHelper();
+                    break;
                 default:
                     break;
             }

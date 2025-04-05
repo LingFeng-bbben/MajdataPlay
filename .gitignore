@@ -89,3 +89,6 @@ Assets/Font/GenJyuuGothicScore.asset
 /.idea/.idea.MajdataPlay/.idea
 /Cache/*
 /.vscode
+
+# FFmpeg Output Log
+out.log

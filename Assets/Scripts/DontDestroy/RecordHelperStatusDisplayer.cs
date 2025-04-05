@@ -3,55 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class RecordHelperStatusDisplayer : MonoBehaviour
+namespace MajdataPlay
 {
-    public List<Sprite> Sprites;
-    float _frameTimer = 1;
-
-    void Awake()
+    public class RecordHelperStatusDisplayer : MonoBehaviour
     {
-        DontDestroyOnLoad(gameObject);
-    }
+        public List<Sprite> Sprites;
+        float _frameTimer = 1;
 
-    public void ChangeSpriteRender(int index)
-    {
-        if (Sprites == null)
+        void Awake()
         {
-            Debug.LogError("No Sprites");
-            return;
+            DontDestroyOnLoad(gameObject);
         }
-        if (GetComponent<SpriteRenderer>() is { } spriteRenderer)
-        {
-            spriteRenderer.sprite = Sprites.Skip(index).FirstOrDefault();
-            return;
-        }
-        else
-        {
-            Debug.LogError("No Sprite Render");
-            return;
-        }
-    }
 
-    void LateUpdate()
-    {
-        var delta = Time.deltaTime;
-        if (_frameTimer <= 0 && gameObject.activeInHierarchy)
+        public void ChangeSpriteRender(int index)
         {
-            if (MajInstances.RecordHelper?.Recording ?? false)
+            if (Sprites == null)
             {
-                ChangeSpriteRender(0);
+                Debug.LogError("No Sprites");
+                return;
             }
-            else if (MajInstances.RecordHelper?.Connected ?? false)
+
+            if (GetComponent<SpriteRenderer>() is { } spriteRenderer)
             {
-                ChangeSpriteRender(1);
+                spriteRenderer.sprite = Sprites.Skip(index).FirstOrDefault();
+                return;
             }
             else
             {
-                ChangeSpriteRender(2);
+                Debug.LogError("No Sprite Render");
+                return;
             }
-            _frameTimer = 1;
         }
-        else
-            _frameTimer -= delta;
+
+        void LateUpdate()
+        {
+            var delta = Time.deltaTime;
+            if (_frameTimer <= 0 && gameObject.activeInHierarchy)
+            {
+                if (MajInstances.RecordHelper?.Recording ?? false)
+                {
+                    ChangeSpriteRender(0);
+                }
+                else if (MajInstances.RecordHelper?.Connected ?? false)
+                {
+                    ChangeSpriteRender(1);
+                }
+                else
+                {
+                    ChangeSpriteRender(2);
+                }
+
+                _frameTimer = 1;
+            }
+            else
+                _frameTimer -= delta;
+        }
     }
 }

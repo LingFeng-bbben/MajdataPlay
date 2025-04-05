@@ -31,9 +31,12 @@ namespace MajdataPlay.IO
         private List<AudioSampleWrap?> SFXSamples = new();
 
         private WasapiProcedure? wasapiProcedure;
-        private int BassGlobalMixer = -114514;
+        private AsioProcedure? asioProcedure;
+        public static event Action<IntPtr, int, IntPtr>? OnBassProcessExtraLogic;
+        private static int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
+
         private void Awake()
         {
             MajInstances.AudioManager = this;
@@ -41,6 +44,22 @@ namespace MajdataPlay.IO
             SFXFileNames =  new DirectoryInfo(SFXFilePath).GetFiles().FindAll(o=>!o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
             VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles().FindAll(o => !o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
         }
+
+        int globalProcedure(IntPtr buffer, int length, IntPtr user)
+        {
+            if (BassGlobalMixer == -114514)
+                return 0;
+            if (Bass.LastError != Errors.OK)
+                MajDebug.LogError(Bass.LastError);
+
+            var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
+
+            if (bytesRead > 0)
+                OnBassProcessExtraLogic?.Invoke(buffer, bytesRead, user);
+
+            return bytesRead;
+        }
+
         void Start()
         {
             var isExclusiveRequest = MajInstances.Setting.Audio.WasapiExclusive;
@@ -73,7 +92,21 @@ namespace MajdataPlay.IO
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
+                        asioProcedure = (input, channel, buffer, length, user) => globalProcedure(buffer, length, user);
+                        BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
+                        BassAsio.GetInfo(out var asioInfo);
+                        BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
+                        for (int i = 1; i < asioInfo.Inputs; i++)
+                        {
+                            if (!BassAsio.ChannelJoin(false, i, 0)) // let channel i follow channel 0
+                            {
+                                MajDebug.LogError($"ASIO Channel {i} Join to 0 Failed: " + BassAsio.LastError);
+                            }
+                            else
+                            {
+                                BassAsio.ChannelSetFormat(false, i, AsioSampleFormat.Float);
+                            }
+                        }
 
                         BassAsio.Start();
                     }
@@ -83,14 +116,7 @@ namespace MajdataPlay.IO
                         //Bass.Init(-1, sampleRate);
                         MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
-                        wasapiProcedure = (buffer, length, _) =>
-                        {
-                            if (BassGlobalMixer == -114514)
-                                return 0;
-                            if(Bass.LastError != Errors.OK)
-                                MajDebug.LogError(Bass.LastError);
-                            return Bass.ChannelGetData(BassGlobalMixer, buffer, length);
-                        };
+                        wasapiProcedure = (buffer, length, user) => globalProcedure(buffer, length, user);
                         bool isExclusiveSuccess = false;
                         if (isExclusiveRequest)
                         {
