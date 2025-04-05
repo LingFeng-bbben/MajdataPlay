@@ -65,7 +65,7 @@ namespace MajdataPlay.IO
             }, TaskCreationOptions.LongRunning);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void UpdateButtonState()
+        static void UpdateButtonState(bool[]? extraButtonState = null)
         {
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
@@ -84,6 +84,13 @@ namespace MajdataPlay.IO
             for (var i = 0; i < 12; i++)
             {
                 newStates[i] |= latestBtnStateLogger[i];
+            }
+            if (extraButtonState != null)
+            {
+                for (var i = 0; i < extraButtonState.Length; i++)
+                {
+                    newStates[i] |= extraButtonState[i] ? SensorStatus.On : SensorStatus.Off;
+                }
             }
 
             for (var i = 0; i < 12; i++)
