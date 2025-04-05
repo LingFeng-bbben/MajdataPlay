@@ -19,7 +19,8 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var mainCamera = GameManager.MainCamera;
             Span<bool> newStates = stackalloc bool[34];
-            Span<bool> extraButtonStates = stackalloc bool[8];
+            //button ring + extras
+            Span<bool> extraButtonStates = stackalloc bool[12];
             if (Input.touchCount > 0)
             {
                 FromTouchPanel(newStates,extraButtonStates, mainCamera);
@@ -100,6 +101,10 @@ namespace MajdataPlay.IO
             Vector3 cubeRay = mainCamera.ScreenToWorldPoint(position);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = (rayToCenter).magnitude;
+            if(radToCenter > 9.28)
+            {
+                return 9;
+            }
             if(radToCenter > 5.4f)
             {
                 // out of the screen area to the button area

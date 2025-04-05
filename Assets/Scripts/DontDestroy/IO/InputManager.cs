@@ -441,7 +441,7 @@ namespace MajdataPlay.IO
             try
             {
                 var executionQueue = MajEnv.ExecutionQueue;
-                var extraButtonFromTouch = new bool[8];
+                var extraButtonFromTouch = new bool[0];
                 if (_useDummy)
                     extraButtonFromTouch = UpdateMousePosition();
                 else
