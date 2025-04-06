@@ -202,7 +202,6 @@ namespace MajdataPlay
         {
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
-            SceneSwitcher.OnSceneChanged += OnSceneChanged;
             InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
             if (MajEnv.Mode == RunningMode.Test)
             {
@@ -216,10 +215,6 @@ namespace MajdataPlay
             }
 
             EnterTitle();
-        }
-        internal static void OnSceneChanged()
-        {
-            MainCamera = Camera.main;
         }
         void Update()
         {

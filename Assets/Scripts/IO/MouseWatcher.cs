@@ -15,7 +15,7 @@ namespace MajdataPlay.IO
         static bool[] UpdateMousePosition()
         {
             var sensors = _sensors.Span;
-            var mainCamera = GameManager.MainCamera;
+            var mainCamera = _cameraProviderRef.Target.MainCamera;
             Span<bool> newStates = stackalloc bool[34];
             //button ring + extras
             Span<bool> extraButtonStates = stackalloc bool[12];
@@ -46,29 +46,18 @@ namespace MajdataPlay.IO
         }
         static void FromTouchPanel(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
-            try
+            for (var j = 0; j < Input.touchCount; j++)
             {
-                for (var j = 0; j< Input.touchCount; j++)
+                var touch = Input.GetTouch(j);
+                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                 {
-                    var touch = Input.GetTouch(j);
-                    if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
-                    {
-                        continue;
-                    }
-                    var button = PositionToSensorState(newStates, mainCamera, touch.position);
-                    if (button != -1)
-                    {
-                        extraButton[button] = true;
-                    }
+                    continue;
                 }
-            }
-            catch(NullReferenceException)
-            {
-                GameManager.OnSceneChanged();
-            }
-            catch(UnityException)
-            {
-                GameManager.OnSceneChanged();
+                var button = PositionToSensorState(newStates, mainCamera, touch.position);
+                if (button != -1)
+                {
+                    extraButton[button] = true;
+                }
             }
         }
 
@@ -76,21 +65,7 @@ namespace MajdataPlay.IO
         //return extra button pos 0-7, if none return -1
         static int FromMouse(Span<bool> newStates, Camera mainCamera)
         {
-            try
-            {
-                return PositionToSensorState(newStates, mainCamera, Input.mousePosition);
-            }
-            catch (NullReferenceException)
-            {
-                GameManager.OnSceneChanged();
-            }
-            catch (UnityException)
-            {
-                GameManager.OnSceneChanged();
-            }
-
-            return -1;
-
+            return PositionToSensorState(newStates, mainCamera, Input.mousePosition);
         }
 
         //return extra button pos 0-7, if none return -1

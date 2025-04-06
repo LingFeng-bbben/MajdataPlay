@@ -12,11 +12,14 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay
 {
-    public partial class SceneSwitcher : MonoBehaviour
+    public partial class SceneSwitcher : MonoBehaviour, IMainCameraProvider
     {
+        public Camera MainCamera 
+        { 
+            get; 
+            private set; 
+        }
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
-        public delegate void SceneSwitchEventHandler();
-        public static event SceneSwitchEventHandler? OnSceneChanged;
 
         Animator animator;
         public Image SubImage;
@@ -24,21 +27,21 @@ namespace MajdataPlay
         public TMP_Text loadingText;
         public Color LoadingLightColor;
 
-        InputManager _inputManager;
-
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
         const int SWITCH_ELAPSED = 400;
         private void Awake()
         {
             MajInstances.SceneSwitcher = this;
+            Majdata<IMainCameraProvider>.Instance = this;
+            SceneManager.activeSceneChanged += OnUnitySceneChanged;
+            MainCamera = Camera.main;
             var currentScene = SceneManager.GetActiveScene();
             var index = Array.FindIndex(SCENE_NAMES, x => x == currentScene.name);
             if(index != -1)
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
-            OnSceneChanged += CurrentSceneUpdate;
         }
         void CurrentSceneUpdate()
         {
@@ -49,11 +52,13 @@ namespace MajdataPlay
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
         }
-
+        void OnUnitySceneChanged(Scene scene1, Scene scene2)
+        {
+            MainCamera = Camera.main;
+        }
         // Start is called before the first frame update
         void Start()
         {
-            _inputManager = MajInstances.InputManager;
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
             DontDestroyOnLoad(this);
@@ -99,7 +104,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             if(autoFadeOut)
             { 
                 animator.SetBool("In", false);
@@ -124,7 +129,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             animator.SetBool("In", false);
             MajInstances.LightManager.SetAllLight(Color.white);
         }
@@ -146,7 +151,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             animator.SetBool("In", false);
             MajInstances.LightManager.SetAllLight(Color.white);
         }
@@ -168,7 +173,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             animator.SetBool("In", false);
             MajInstances.LightManager.SetAllLight(Color.white);
         }
@@ -192,7 +197,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
@@ -213,7 +218,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             animator.SetBool("In", false);
             MajInstances.LightManager.SetAllLight(Color.white);
             return taskToRun.Result;
@@ -234,7 +239,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED);
             MajInstances.LightManager.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            OnSceneChanged?.Invoke();
+            await UniTask.DelayFrame(2);
             animator.SetBool("In", false);
             MajInstances.LightManager.SetAllLight(Color.white);
             switch (taskToRun.Status)
