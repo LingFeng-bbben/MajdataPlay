@@ -15,7 +15,7 @@ namespace MajdataPlay.IO
         static bool[] UpdateMousePosition()
         {
             var sensors = _sensors.Span;
-            var mainCamera = _cameraProviderRef.Target.MainCamera;
+            var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
             Span<bool> newStates = stackalloc bool[34];
             //button ring + extras
             Span<bool> extraButtonStates = stackalloc bool[12];
