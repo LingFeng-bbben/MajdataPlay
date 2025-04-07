@@ -24,22 +24,22 @@ namespace MajdataPlay.IO
     internal unsafe partial class InputManager : MonoBehaviour
     {
         public bool IsTouchPanelConnected { get; private set; } = false;
-        public ReadOnlyMemory<SensorStatus> ButtonStatusInThisFrame
+        public ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInThisFrame;
         }
-        public ReadOnlyMemory<SensorStatus> ButtonStatusInPreviousFrame
+        public ReadOnlySpan<SensorStatus> ButtonStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInPreviousFrame;
         }
-        public ReadOnlyMemory<SensorStatus> SensorStatusInThisFrame
+        public ReadOnlySpan<SensorStatus> SensorStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInThisFrame;
         }
-        public ReadOnlyMemory<SensorStatus> SensorStatusInPreviousFrame
+        public ReadOnlySpan<SensorStatus> SensorStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInPreviousFrame;
