@@ -42,7 +42,7 @@ namespace MajdataPlay.IO
         }
         private void Start()
         {
-            _isEnabled = MajInstances.Setting.Misc.OutputDevice.Led.Enable;
+            _isEnabled = MajInstances.Settings.Misc.OutputDevice.Led.Enable;
             for (var i = 0; i < 8; i++)
             {
                 _ledDevices[i] = new()
@@ -57,11 +57,11 @@ namespace MajdataPlay.IO
                     _ledDevices[i].SetColor(Color.black);
                 }
             }
-            var comPort = MajInstances.Setting.Misc.OutputDevice.Led.COMPort;
+            var comPort = MajInstances.Settings.Misc.OutputDevice.Led.COMPort;
             var comPortStr = $"COM{comPort}";
             try
             {
-                _serial = new SerialPort(comPortStr, MajInstances.Setting.Misc.OutputDevice.Led.BaudRate);
+                _serial = new SerialPort(comPortStr, MajInstances.Settings.Misc.OutputDevice.Led.BaudRate);
                 _serial.WriteBufferSize = 16;
                 _serial.Open();
                 _useDummy = false;
@@ -164,7 +164,7 @@ namespace MajdataPlay.IO
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                 }
             });
-            if (_useDummy || !MajInstances.Setting.Misc.OutputDevice.Led.Enable)
+            if (_useDummy || !MajInstances.Settings.Misc.OutputDevice.Led.Enable)
                 return;
 
             if (Majdata<IOManager>.Instance is null)
@@ -181,7 +181,7 @@ namespace MajdataPlay.IO
             await Task.Yield();
 
             var token = MajEnv.GlobalCT;
-            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs);
+            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs);
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
 
@@ -234,7 +234,7 @@ namespace MajdataPlay.IO
             var ioManager = Majdata<IOManager>.Instance!;
             var token = MajEnv.GlobalCT;
             var commands = new LedCommand[9];
-            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.OutputDevice.Led.RefreshRateMs);
+            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs);
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
 

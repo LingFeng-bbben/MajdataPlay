@@ -105,9 +105,9 @@ namespace MajdataPlay.Utils
                         collections.Add(task.Result);
                 }
                 //Online Charts
-                if (MajInstances.Setting.Online.Enable)
+                if (MajInstances.Settings.Online.Enable)
                 {
-                    foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
+                    foreach (var item in MajInstances.Settings.Online.ApiEndpoints)
                     {
                         if (string.IsNullOrEmpty(item.Name))
                             continue;

@@ -52,7 +52,7 @@ namespace MajdataPlay.Utils
             UseCookies = true,
             CookieContainer = new CookieContainer(),
         });
-        public static GameSetting UserSetting => MajInstances.Setting;
+        public static GameSetting UserSettings { get; }
         public static CancellationToken GlobalCT => GameManager.GlobalCT;
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
         {
@@ -73,23 +73,11 @@ namespace MajdataPlay.Utils
         static MajEnv()
         {
             ChangedSynchronizationContext();
-            CheckAndLoadUserSetting();
             CheckNoteSkinFolder();
 
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
-            if (!Directory.Exists(CachePath))
-                Directory.CreateDirectory(CachePath);
-            if (!Directory.Exists(runtimeCachePath))
-                Directory.CreateDirectory(runtimeCachePath);
-            if (!Directory.Exists(netCachePath))
-                Directory.CreateDirectory(netCachePath);
-            if (!Directory.Exists(ChartPath))
-                Directory.CreateDirectory(ChartPath);
-            SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-        }
-        static void CheckAndLoadUserSetting()
-        {
+
             if (File.Exists(SettingPath))
             {
                 var js = File.ReadAllText(SettingPath);
@@ -97,35 +85,46 @@ namespace MajdataPlay.Utils
 
                 if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
                 {
-                    MajInstances.Setting = new();
+                    UserSettings = new();
                     MajDebug.LogError("Failed to read setting from file");
                 }
                 else
                 {
-                    MajInstances.Setting = setting;
+                    UserSettings = setting;
                     //Reset Mod option after reboot
-                    MajInstances.Setting.Mod = new ModOptions();
+                    UserSettings.Mod = new ModOptions();
                 }
             }
             else
             {
-                MajInstances.Setting = new GameSetting();
+                UserSettings = new GameSetting();
 
-                var json = Serializer.Json.Serialize(UserSetting, UserJsonReaderOption);
+                var json = Serializer.Json.Serialize(UserSettings, UserJsonReaderOption);
                 File.WriteAllText(SettingPath, json);
             }
 
-            UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs);
-            UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs);
-            UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            UserSetting.Display.InnerJudgeDistance = UserSetting.Display.InnerJudgeDistance.Clamp(0, 1);
-            UserSetting.Display.OuterJudgeDistance = UserSetting.Display.OuterJudgeDistance.Clamp(0, 1);
+            UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs);
+            UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs);
+            UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            UserSettings.Display.InnerJudgeDistance = UserSettings.Display.InnerJudgeDistance.Clamp(0, 1);
+            UserSettings.Display.OuterJudgeDistance = UserSettings.Display.OuterJudgeDistance.Clamp(0, 1);
+
+            CreateDirectoryIfNotExists(CachePath);
+            CreateDirectoryIfNotExists(runtimeCachePath);
+            CreateDirectoryIfNotExists(netCachePath);
+            CreateDirectoryIfNotExists(ChartPath);
+            SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
         }
         static void CheckNoteSkinFolder()
         {
             if (!Directory.Exists(SkinPath))
                 Directory.CreateDirectory(SkinPath);
+        }
+        static void CreateDirectoryIfNotExists(string path)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace MajdataPlay.List
         {
 
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
-            selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
+            selectSound.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
             token.ThrowIfCancellationRequested();
             await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
             token.ThrowIfCancellationRequested();
@@ -42,7 +42,7 @@ namespace MajdataPlay.List
             {
                 if (previewSample is null || previewSample.IsEmpty)
                     throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
-                previewSample.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
+                previewSample.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
                 previewSample.CurrentSec = 0;
@@ -53,7 +53,7 @@ namespace MajdataPlay.List
                 for (var i = 1f; i > 0; i = i - 0.2f)
                 {
                     token.ThrowIfCancellationRequested();
-                    selectSound.Volume = i * MajInstances.Setting.Audio.Volume.BGM;
+                    selectSound.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
                     await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
                 }
                 while (true)
@@ -76,7 +76,7 @@ namespace MajdataPlay.List
         {
             _cancellationTokenSource?.Cancel();
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
-            selectSound.SetVolume(MajInstances.Setting.Audio.Volume.BGM);
+            selectSound.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
         }
 
     }

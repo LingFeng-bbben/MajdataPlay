@@ -24,7 +24,7 @@ namespace MajdataPlay.Game.Notes.Controllers
 
         readonly InputManager _inputManager = MajInstances.InputManager;
         readonly LightManager _lightManager = MajInstances.LightManager;
-        readonly GameSetting _setting = MajInstances.Setting;
+        readonly GameSetting _setting = MajInstances.Settings;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
 
         readonly static int FIREWORK_ANIM_HASH = Animator.StringToHash("Fire");

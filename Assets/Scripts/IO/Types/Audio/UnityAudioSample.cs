@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
             get => _audioSource.volume;
             set
             {
-                var volume = value.Clamp(0, 1) * MajInstances.Setting.Audio.Volume.Global.Clamp(0, 1);
+                var volume = value.Clamp(0, 1) * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
                 _audioSource.volume = volume;
             }
         }

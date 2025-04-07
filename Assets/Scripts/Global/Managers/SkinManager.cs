@@ -28,7 +28,7 @@ namespace MajdataPlay
             MajInstances.SkinManager = this;
 
             var path = MajEnv.SkinPath;
-            var selectedSkinName = MajInstances.Setting.Display.Skin;
+            var selectedSkinName = MajInstances.Settings.Display.Skin;
             var dicts = Directory.GetDirectories(path);
 
             foreach (var skinPath in dicts)

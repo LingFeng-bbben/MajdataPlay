@@ -53,7 +53,7 @@ namespace MajdataPlay.IO
             get => (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
             set
             {
-                var volume = value.Clamp(0, 2) * _gain * MajInstances.Setting.Audio.Volume.Global.Clamp(0, 1);
+                var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
                 Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
             }
         }

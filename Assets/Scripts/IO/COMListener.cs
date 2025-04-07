@@ -25,10 +25,10 @@ namespace MajdataPlay.IO
             {
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
-                var comPort = $"COM{MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort}";
+                var comPort = $"COM{MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                using var serial = new SerialPort(comPort, MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate);
+                using var serial = new SerialPort(comPort, MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate);
 
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
@@ -162,8 +162,8 @@ namespace MajdataPlay.IO
                 serialSession.Open();
                 var encoding = Encoding.ASCII;
                 var serialStream = serialSession.BaseStream;
-                var sens = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Sensitivity;
-                var index = MajEnv.UserSetting.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
+                var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
+                var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
                 //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                 serialStream.Write(encoding.GetBytes("{RSET}"));

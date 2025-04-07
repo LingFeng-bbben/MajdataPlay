@@ -52,9 +52,9 @@ namespace MajdataPlay.View
             }
         }
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode => MajEnv.UserSetting.Mod.AutoPlay;
+        public AutoplayMode AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
-        public JudgeStyleType JudgeStyle => MajEnv.UserSetting.Mod.JudgeStyle;
+        public JudgeStyleType JudgeStyle => MajEnv.UserSettings.Mod.JudgeStyle;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
@@ -82,7 +82,7 @@ namespace MajdataPlay.View
         static Sprite? _bgCover = null;
         static string? _videoPath = null;
         //WsServer _httpServer;
-        GameSetting _setting = MajInstances.Setting;
+        GameSetting _setting = MajInstances.Settings;
         NoteLoader _noteLoader;
         NoteManager _noteManager;
         NoteAudioManager _noteAudioManager;

@@ -271,9 +271,9 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
-            _isSensorRendererEnabled = MajInstances.Setting.Debug.DisplaySensor;
+            _isSensorRendererEnabled = MajInstances.Settings.Debug.DisplaySensor;
             
-            switch(MajInstances.Setting.Misc.InputDevice.ButtonRing.Type)
+            switch(MajInstances.Settings.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
                     StartInternalIOManager();
@@ -339,15 +339,15 @@ namespace MajdataPlay.IO
         }
         static void StartInternalIOManager()
         {
-            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
-            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs);
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.TouchPanel.PollingRateMs);
             //RawInput.Start();
             //RawInput.OnKeyDown += OnRawKeyDown;
             //RawInput.OnKeyUp += OnRawKeyUp;
-            _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
-            _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+            _isBtnDebounceEnabled = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
             StartUpdatingTouchPanelState();
             StartUpdatingKeyboardState();
         }
@@ -356,15 +356,15 @@ namespace MajdataPlay.IO
             if(_ioManager is null)
                 _ioManager = new();
             Majdata<IOManager>.Instance = _ioManager;
-            var useHID = MajInstances.Setting.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
+            var useHID = MajInstances.Settings.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
             var executionQueue = MajEnv.ExecutionQueue;
             var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
             var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
 
-            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            _isBtnDebounceEnabled = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
-            _isSensorDebounceEnabled = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            _isBtnDebounceEnabled = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
 
             foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
             {
@@ -384,18 +384,18 @@ namespace MajdataPlay.IO
             try
             {
                 var deviceName = useHID ? AdxHIDButtonRing.GetDeviceName() : AdxIO4ButtonRing.GetDeviceName();
-                var btnDebounce = MajInstances.Setting.Misc.InputDevice.ButtonRing.Debounce;
-                var touchPanelDebounce = MajInstances.Setting.Misc.InputDevice.TouchPanel.Debounce;
+                var btnDebounce = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
+                var touchPanelDebounce = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
 
-                var btnProductId = MajInstances.Setting.Misc.InputDevice.ButtonRing.ProductId;
-                var btnVendorId = MajInstances.Setting.Misc.InputDevice.ButtonRing.VendorId;
-                var comPortNum = MajInstances.Setting.Misc.InputDevice.TouchPanel.COMPort;
+                var btnProductId = MajInstances.Settings.Misc.InputDevice.ButtonRing.ProductId;
+                var btnVendorId = MajInstances.Settings.Misc.InputDevice.ButtonRing.VendorId;
+                var comPortNum = MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort;
 
-                var btnPollingRate = MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs;
+                var btnPollingRate = MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs;
                 //var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
                 var btnDebounceThresholdMs = 0;
 
-                var touchPanelPollingRate = MajInstances.Setting.Misc.InputDevice.TouchPanel.PollingRateMs;
+                var touchPanelPollingRate = MajInstances.Settings.Misc.InputDevice.TouchPanel.PollingRateMs;
                 //var touchPanelDebounceThresholdMs = touchPanelDebounce ? MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs : 0;
                 var touchPanelDebounceThresholdMs = 0;
 
@@ -411,14 +411,14 @@ namespace MajdataPlay.IO
                     { "PollingRateMs", touchPanelPollingRate },
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
                     { "ComPortNumber", $"COM{comPortNum}" },
-                    { "BaudRate", MajInstances.Setting.Misc.InputDevice.TouchPanel.BaudRate },
+                    { "BaudRate", MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate },
                     { "SensitivityOverride", true },
-                    { "Sensitivity", MajInstances.Setting.Misc.InputDevice.TouchPanel.Sensitivity }
+                    { "Sensitivity", MajInstances.Settings.Misc.InputDevice.TouchPanel.Sensitivity }
                 };
                 var ledConnProperties = new Dictionary<string, dynamic>()
                 {
-                    { "ComPortNumber", $"COM{MajInstances.Setting.Misc.OutputDevice.Led.COMPort}" },
-                    { "BaudRate", MajInstances.Setting.Misc.OutputDevice.Led.BaudRate }
+                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.COMPort}" },
+                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.BaudRate }
                 };
 
                 _ioManager.AddButtonRing(deviceName,

@@ -75,7 +75,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
 
-        readonly float _noteAppearRate = MajInstances.Setting?.Debug.NoteAppearRate ?? 0.265f;
+        readonly float _noteAppearRate = MajInstances.Settings?.Debug.NoteAppearRate ?? 0.265f;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _spriteSortOrder = 1;

@@ -23,12 +23,10 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<GameManager>.Instance = value;
         }
-        public static GameSetting Setting
+        public static GameSetting Settings
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<GameSetting>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<GameSetting>.Instance = value;
+            get => MajEnv.UserSettings;
         }
         public static AudioManager AudioManager
         {

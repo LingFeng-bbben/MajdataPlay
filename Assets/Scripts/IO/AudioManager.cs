@@ -42,10 +42,10 @@ namespace MajdataPlay.IO
         }
         void Start()
         {
-            var isExclusiveRequest = MajInstances.Setting.Audio.WasapiExclusive;
-            var backend = MajInstances.Setting.Audio.Backend;
-            var sampleRate = MajInstances.Setting.Audio.Samplerate;
-            var deviceIndex = MajInstances.Setting.Audio.AsioDeviceIndex;
+            var isExclusiveRequest = MajInstances.Settings.Audio.WasapiExclusive;
+            var backend = MajInstances.Settings.Audio.Backend;
+            var sampleRate = MajInstances.Settings.Audio.Samplerate;
+            var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
 
 #if !UNITY_EDITOR
             if (MajEnv.Mode == RunningMode.View)
@@ -140,7 +140,7 @@ namespace MajdataPlay.IO
                     continue;
                 }
                 AudioSampleWrap sample;
-                switch(MajInstances.Setting.Audio.Backend)
+                switch(MajInstances.Settings.Audio.Backend)
                 {
                     case SoundBackendType.Unity:
                         sample = UnityAudioSample.Create($"file://{path}", gameObject);
@@ -181,8 +181,8 @@ namespace MajdataPlay.IO
 
         private void OnDestroy()
         {
-            if(MajInstances.Setting.Audio.Backend == SoundBackendType.Wasapi
-                || MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
+            if(MajInstances.Settings.Audio.Backend == SoundBackendType.Wasapi
+                || MajInstances.Settings.Audio.Backend == SoundBackendType.Asio)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -201,7 +201,7 @@ namespace MajdataPlay.IO
 
         public void ReadVolumeFromSettings()
         {
-            var volume = MajInstances.Setting.Audio.Volume;
+            var volume = MajInstances.Settings.Audio.Volume;
             foreach(var sample in SFXSamples)
             {
                 if(sample is null || sample.IsEmpty) 
@@ -223,7 +223,7 @@ namespace MajdataPlay.IO
 
         public AudioSampleWrap LoadMusic(string path, bool speedChange = false)
         {
-            var backend = MajInstances.Setting.Audio.Backend;
+            var backend = MajInstances.Settings.Audio.Backend;
             if (File.Exists(path))
             {
                 switch (backend)
@@ -245,7 +245,7 @@ namespace MajdataPlay.IO
         }
         public AudioSampleWrap LoadMusicFromUri(Uri uri)
         {
-            var backend = MajInstances.Setting.Audio.Backend;
+            var backend = MajInstances.Settings.Audio.Backend;
             switch (backend)
             {
                 case SoundBackendType.Unity:
@@ -260,7 +260,7 @@ namespace MajdataPlay.IO
         public async UniTask<AudioSampleWrap> LoadMusicAsync(string path, bool speedChange = false)
         {
             await UniTask.SwitchToThreadPool();
-            var backend = MajInstances.Setting.Audio.Backend;
+            var backend = MajInstances.Settings.Audio.Backend;
             if (File.Exists(path))
             {
                 switch (backend)
@@ -284,7 +284,7 @@ namespace MajdataPlay.IO
         public async UniTask<AudioSampleWrap> LoadMusicFromUriAsync(Uri uri)
         {
             await UniTask.SwitchToThreadPool();
-            var backend = MajInstances.Setting.Audio.Backend;
+            var backend = MajInstances.Settings.Audio.Backend;
             switch (backend)
             {
                 case SoundBackendType.Unity:
@@ -340,7 +340,7 @@ namespace MajdataPlay.IO
         }
         public void OpenAsioPannel()
         {
-            if(MajInstances.Setting.Audio.Backend == SoundBackendType.Asio)
+            if(MajInstances.Settings.Audio.Backend == SoundBackendType.Asio)
             {
                 BassAsio.ControlPanel();
             }

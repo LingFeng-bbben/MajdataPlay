@@ -25,7 +25,7 @@ namespace MajdataPlay
         public static CancellationToken GlobalCT { get; }
         public GameSetting Setting
         {
-            get => MajInstances.Setting;
+            get => MajInstances.Settings;
         }
         /// <summary>
         /// Current difficult

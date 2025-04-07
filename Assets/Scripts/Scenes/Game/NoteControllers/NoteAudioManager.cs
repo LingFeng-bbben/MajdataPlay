@@ -44,7 +44,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             "answer.wav",
             "answer_clock.wav"
         };
-        float _userAnswerOffset = MajInstances.Setting?.Judge.AnswerOffset ?? 0;
+        float _userAnswerOffset = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
         const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
         const int TAP_GREAT = 1;

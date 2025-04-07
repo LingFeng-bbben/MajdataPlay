@@ -12,7 +12,7 @@ namespace MajdataPlay.IO
     internal partial class InputManager : MonoBehaviour
     {
         readonly static Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
-        private static float _radius => MajEnv.UserSetting.Misc.InputDevice.TouchPanel.TouchSimulationRadius;
+        private static float _radius => MajEnv.UserSettings.Misc.InputDevice.TouchPanel.TouchSimulationRadius;
         static bool[] UpdateMousePosition()
         {
             var sensors = _sensors.Span;

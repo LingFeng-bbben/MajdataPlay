@@ -27,7 +27,7 @@ namespace MajdataPlay
         {
             _textDisplayer = GetComponent<TextMeshPro>();
             DontDestroyOnLoad(this);
-            _setting = MajInstances.Setting;
+            _setting = MajInstances.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
         }
 
