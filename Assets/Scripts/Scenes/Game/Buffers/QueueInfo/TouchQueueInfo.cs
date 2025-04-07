@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.IO;
 
 namespace MajdataPlay.Game.Buffers
 {

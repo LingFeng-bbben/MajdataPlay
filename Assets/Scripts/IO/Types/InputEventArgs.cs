@@ -1,5 +1,5 @@
 ﻿#nullable enable
-using MajdataPlay.Types;
+using MajdataPlay.IO;
 
 namespace MajdataPlay.IO
 {

@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Types
+﻿namespace MajdataPlay.IO
 {
     public enum SFXSampleType
     {

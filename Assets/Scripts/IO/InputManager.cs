@@ -6,7 +6,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MychIO;
-using DeviceType = MajdataPlay.Types.DeviceType;
+using DeviceType = MajdataPlay.IO.DeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;

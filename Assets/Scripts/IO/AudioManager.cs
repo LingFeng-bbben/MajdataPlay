@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
-using MajdataPlay.Types;
 using MajdataPlay.Extensions;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;

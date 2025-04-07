@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
