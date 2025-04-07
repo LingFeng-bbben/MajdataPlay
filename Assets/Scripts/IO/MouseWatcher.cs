@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,6 @@ namespace MajdataPlay.IO
 {
     internal partial class InputManager : MonoBehaviour
     {
-        readonly static Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
-        private static float _radius => MajEnv.UserSettings.Misc.InputDevice.TouchPanel.TouchSimulationRadius;
         static bool[] UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -121,7 +120,7 @@ namespace MajdataPlay.IO
             }
             for (int i = 0; i < 9; i++)
             {
-                var rad = _radius;
+                var rad = FingerRadius;
                 var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
                 if (i == 8) circular = Vector3.zero;
                 var ray = new Ray(cubeRay + circular, Vector3.forward);

@@ -15,6 +15,7 @@ using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using MajdataPlay.SensorTest;
 using System.Collections.Generic;
+using MajdataPlay.IO;
 
 namespace MajdataPlay
 {
@@ -202,7 +203,7 @@ namespace MajdataPlay
             SelectedDiff = Setting.Misc.SelectedDiff;
             SongStorage.OrderBy = Setting.Misc.OrderBy;
             SceneSwitcher.OnSceneChanged += OnSceneChanged;
-
+            InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
             if (MajEnv.Mode == RunningMode.Test)
             {
                 EnterTestMode();

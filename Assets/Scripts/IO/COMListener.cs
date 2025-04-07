@@ -39,7 +39,6 @@ namespace MajdataPlay.IO
                 {
                     EnsureTouchPanelSerialStreamIsOpen(serial);
                     IsTouchPanelConnected = true;
-                    MajEnv.ExecutionQueue.Enqueue(() => OnTouchPanelConnected());
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();

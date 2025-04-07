@@ -184,8 +184,8 @@ namespace MajdataPlay.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void GameIOUpdate()
         {
-            var currentButtonStatus = _inputManager.ButtonStatusInThisFrame;
-            var currentSensorStatus = _inputManager.SensorStatusInThisFrame;
+            var currentButtonStatus = InputManager.ButtonStatusInThisFrame;
+            var currentSensorStatus = InputManager.SensorStatusInThisFrame;
 
             for (var i = 0; i < 33; i++)
             {
