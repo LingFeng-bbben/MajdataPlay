@@ -12,7 +12,7 @@ namespace MajdataPlay.IO
 {
     internal partial class InputManager : MonoBehaviour
     {
-        void StartUpdatingKeyboardState()
+        static void StartUpdatingKeyboardState()
         {
             if (!_buttonRingUpdateTask.IsCompleted)
                 return;
@@ -119,14 +119,14 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-        public void BindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void BindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var button = GetButton(sType);
             if (button == null)
                 throw new Exception($"{sType} Button not found.");
             button.AddSubscriber(checker);
         }
-        public void UnbindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void UnbindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var button = GetButton(sType);
             if (button == null)

@@ -157,7 +157,7 @@ namespace MajdataPlay.Game
 #if !UNITY_EDITOR
             Cursor.visible = false;
 #endif
-            if (MajInstances.InputManager.IsTouchPanelConnected)
+            if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
             }

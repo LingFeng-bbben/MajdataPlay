@@ -23,7 +23,7 @@ namespace MajdataPlay.IO
 {
     internal unsafe partial class InputManager : MonoBehaviour
     {
-        public bool IsTouchPanelConnected { get; private set; } = false;
+        public static bool IsTouchPanelConnected { get; private set; } = false;
         public ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -287,7 +287,7 @@ namespace MajdataPlay.IO
             }
 
         }
-        void OnTouchPanelConnected()
+        static void OnTouchPanelConnected()
         {
             if (!_isSensorRendererEnabled)
             {
@@ -297,11 +297,11 @@ namespace MajdataPlay.IO
                 }
             }
         }
-        internal void OnFixedUpdate()
+        internal static void OnFixedUpdate()
         {
             //_updateIOListener();
         }
-        internal void OnPreUpdate()
+        internal static void OnPreUpdate()
         {
             _updateIOListenerPtr();
             if(_isSensorRendererEnabled)
@@ -337,7 +337,7 @@ namespace MajdataPlay.IO
         {
 
         }
-        void StartInternalIOManager()
+        static void StartInternalIOManager()
         {
             _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
             _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Setting.Misc.InputDevice.ButtonRing.PollingRateMs);
@@ -351,7 +351,7 @@ namespace MajdataPlay.IO
             StartUpdatingTouchPanelState();
             StartUpdatingKeyboardState();
         }
-        public void StartExternalIOManager()
+        static void StartExternalIOManager()
         {
             if(_ioManager is null)
                 _ioManager = new();
@@ -379,7 +379,7 @@ namespace MajdataPlay.IO
             
             _ioManager.Destroy();
             _ioManager.SubscribeToAllEvents(ExternalIOEventHandler);
-            _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, 4));
+            _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, StartExternalIOManager, 4));
 
             try
             {
