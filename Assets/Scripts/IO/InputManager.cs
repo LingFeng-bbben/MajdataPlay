@@ -409,14 +409,20 @@ namespace MajdataPlay.IO
             try
             {
                 var executionQueue = MajEnv.ExecutionQueue;
-                var extraButtonFromTouch = new bool[0];
+
                 if (_useDummy)
-                    extraButtonFromTouch = UpdateMousePosition();
+                {
+                    UpdateMousePosition();
+                }
                 else
+                {
                     UpdateSensorState();
-                UpdateButtonState(extraButtonFromTouch);
+                }
+                UpdateButtonState();
                 while (executionQueue.TryDequeue(out var eventAction))
+                {
                     eventAction();
+                }
             }
             catch (Exception e)
             {

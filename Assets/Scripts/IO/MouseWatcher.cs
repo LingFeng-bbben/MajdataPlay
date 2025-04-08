@@ -12,37 +12,45 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
-        static bool[] UpdateMousePosition()
+        static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
             var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
             Span<bool> newStates = stackalloc bool[34];
-            //button ring + extras
             Span<bool> extraButtonStates = stackalloc bool[12];
+
             if (Input.touchCount > 0)
             {
-                FromTouchPanel(newStates,extraButtonStates, mainCamera);
+                FromTouchPanel(newStates, extraButtonStates, mainCamera);
             }
             else if (Input.GetMouseButton(0))
             {
-                var button = FromMouse(newStates, mainCamera);
-                if (button != -1)
-                {
-                    extraButtonStates[button] = true;
-                }
+                FromMouse(newStates, extraButtonStates, mainCamera);
             }
             var now = MajTimeline.UnscaledTime;
             foreach (var (i, state) in newStates.WithIndex())
             {
+                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                TouchPanel.OnTouchPanelStateChanged(i, _state);
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
-                    State = state ? SensorStatus.On : SensorStatus.Off,
+                    State = _state,
+                    Timestamp = now
+                });
+            }
+            foreach(var (i, state) in extraButtonStates.WithIndex())
+            {
+                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                ButtonRing.OnButtonRingStateChanged(i, _state);
+                _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
+                {
+                    Index = i,
+                    State = _state,
                     Timestamp = now
                 });
             }
             UpdateSensorState();
-            return extraButtonStates.ToArray();
         }
         static void FromTouchPanel(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
@@ -62,10 +70,13 @@ namespace MajdataPlay.IO
         }
 
 
-        //return extra button pos 0-7, if none return -1
-        static int FromMouse(Span<bool> newStates, Camera mainCamera)
+        static void FromMouse(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
-            return PositionToSensorState(newStates, mainCamera, Input.mousePosition);
+            var button = PositionToSensorState(newStates, mainCamera, Input.mousePosition);
+            if (button != -1)
+            {
+                extraButton[button] = true;
+            }
         }
 
         //return extra button pos 0-7, if none return -1
