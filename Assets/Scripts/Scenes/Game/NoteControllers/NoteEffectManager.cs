@@ -22,7 +22,6 @@ namespace MajdataPlay.Game.Notes.Controllers
 
         Dictionary<SensorArea, TimeSpan> _lastTriggerTimes = new();
 
-        readonly LightManager _lightManager = MajInstances.LightManager;
         readonly GameSetting _setting = MajInstances.Settings;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
 
@@ -101,7 +100,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
-            _lightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
+            LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -112,7 +111,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
-            _lightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
+            LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect(SensorArea sensorPos, in JudgeGrade judgeType)
@@ -121,7 +120,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void ResetHoldEffect(int keyIndex)
         {
-            _lightManager.SetButtonLight(Color.white, keyIndex - 1);
+            LightManager.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorArea sensorPos)

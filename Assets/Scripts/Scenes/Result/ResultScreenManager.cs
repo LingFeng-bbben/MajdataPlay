@@ -67,7 +67,7 @@ namespace MajdataPlay.Result
             var result = _gameInfo.GetLastResult();
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
-            MajInstances.LightManager.SetAllLight(Color.white);
+            LightManager.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
@@ -214,8 +214,8 @@ namespace MajdataPlay.Result
             }
             await OnlineSaveTask;
             InputManager.BindAnyArea(OnAreaDown);
-            MajInstances.LightManager.SetButtonLight(Color.green, 3);
-            MajInstances.LightManager.SetButtonLight(Color.yellow, 4);
+            LightManager.SetButtonLight(Color.green, 3);
+            LightManager.SetButtonLight(Color.yellow, 4);
         }
 
 

@@ -10,42 +10,57 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    internal class LightManager : MonoBehaviour
+    internal static class LightManager
     {
-        public bool IsEnabled => _isEnabled;
-        bool _useDummy = true;
-        SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();
-        SerialPort _serial;
-        LedDevice[] _ledDevices = new LedDevice[8];
-        //Coroutine[] timers = new Coroutine[8];
-        //List<byte> _templateAll = new List<byte>() { 0xE0, 0x11, 0x01, 0x08, 0x32, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        //List<byte> _templateSingle = new List<byte>() { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00 };
-        readonly byte[] _templateSingle = new byte[] { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00 };
-        readonly byte[] _templateUpdate = new byte[]
+        public static bool IsEnabled
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _isEnabled;
+            }
+        }
+        public static bool IsConnected
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            private set;
+        }
+        public static ReadOnlyMemory<Color> LedColors
+        {
+            get
+            {
+                return _ledColors;
+            }
+        }
+        
+        readonly static SerialPort _serial = new SerialPort("COM21", 9600);
+        readonly static Memory<Color> _ledColors = new Color[8];
+        readonly static ReadOnlyMemory<LedDevice> _ledDevices = Array.Empty<LedDevice>();
+        readonly static ReadOnlyMemory<byte> _templateSingle = new byte[] { 0xE0, 0x11, 0x01, 0x05, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00 };
+        readonly static ReadOnlyMemory<byte> _templateUpdate = new byte[]
         {
             0xE0, 0x11, 0x01, 0x01, 0x3C, 0x4F
         };
-        bool _isEnabled = true;
+        readonly static bool _isEnabled = true;
+        static Task _updateLoop = Task.CompletedTask;
 
-        private void Awake()
-        {
-            MajInstances.LightManager = this;
-            DontDestroyOnLoad(gameObject);
-            _dummyLights = gameObject.GetComponentsInChildren<SpriteRenderer>();
-        }
-        private void Start()
+        static LightManager()
         {
             _isEnabled = MajInstances.Settings.Misc.OutputDevice.Led.Enable;
+            var ledDevices = new LedDevice[8];
             for (var i = 0; i < 8; i++)
             {
-                _ledDevices[i] = new()
+                ledDevices[i] = new()
                 {
                     Index = i,
                 };
@@ -54,136 +69,93 @@ namespace MajdataPlay.IO
             {
                 for (var i = 0; i < 8; i++)
                 {
-                    _ledDevices[i].SetColor(Color.black);
+                    ledDevices[i].SetColor(Color.black);
                 }
             }
+            _ledDevices = ledDevices;
             var comPort = MajInstances.Settings.Misc.OutputDevice.Led.COMPort;
             var comPortStr = $"COM{comPort}";
+            var baudRate = MajInstances.Settings.Misc.OutputDevice.Led.BaudRate;
             try
             {
-                _serial = new SerialPort(comPortStr, MajInstances.Settings.Misc.OutputDevice.Led.BaudRate);
+                if(comPort != 21 || baudRate != 9600)
+                {
+                    _serial = new SerialPort(comPortStr, baudRate);
+                }
+                _serial.WriteTimeout = 2000;
                 _serial.WriteBufferSize = 16;
                 _serial.Open();
-                _useDummy = false;
-                foreach (var light in _dummyLights)
-                {
-                    light.forceRenderingOff = true;
-                }
+                IsConnected = true;
+                StartLedDeviceUpdateLoop();
             }
             catch
             {
                 MajDebug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
-                _useDummy = true;
+                IsConnected = false;
             }
-            UpdateLedDeviceAsync();
-        }
-        private void OnDestroy()
-        {
-            Majdata<LightManager>.Free();
         }
 
-        byte CalculateCheckSum(List<byte> bytes)
+        internal static void OnPreUpdate()
         {
-            byte sum = 0;
-            for (int i = 1; i < bytes.Count; i++)
+            var ledDevices = _ledDevices.Span;
+            var ledColors = _ledColors.Span;
+            for (var i = 0; i < 8; i++)
             {
-                sum += bytes[i];
+                ledColors[i] = ledDevices[i].Color;
             }
-            return sum;
         }
-        byte CalculateCheckSum(Span<byte> bytes)
-        {
-            byte sum = 0;
-            for (int i = 1; i < bytes.Length; i++)
-            {
-                sum += bytes[i];
-            }
-            return sum;
-        }
-        public void SetAllLight(Color lightColor)
+        public static void SetAllLight(Color lightColor)
         {
             if (!_isEnabled)
                 return;
-            foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
+            foreach (var device in _ledDevices.Span)
             {
                 device!.SetColor(lightColor);
             }
         }
-        public void SetButtonLight(Color lightColor, int button)
+        public static void SetButtonLight(Color lightColor, int button)
         {
             if (!_isEnabled)
                 return;
-            _ledDevices[button].SetColor(lightColor);
+            _ledDevices.Span[button].SetColor(lightColor);
         }
-        Memory<byte> BuildSetColorPacket(Memory<byte> memory, int index, Color newColor)
-        {
-            _templateSingle.CopyTo(memory);
-            var packet = memory.Span;
-            packet[5] = (byte)index;
-            packet[6] = (byte)(newColor.r * 255);
-            packet[7] = (byte)(newColor.g * 255);
-            packet[8] = (byte)(newColor.b * 255);
-            packet[9] = CalculateCheckSum(packet.Slice(0, 9));
-
-            return memory;
-        }
-        LedCommand BuildSetColorCommand(int index, Color newColor)
-        {
-            Span<byte> data = stackalloc byte[4];
-            data[0] = (byte)(LedCommand.SetColorBA1 + index);
-            data[1] = (byte)(newColor.r * 255);
-            data[2] = (byte)(newColor.g * 255);
-            data[3] = (byte)(newColor.b * 255);
-
-            return MemoryMarshal.Read<LedCommand>(data);
-        }
-        public void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
+        public static void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
             if (!_isEnabled)
                 return;
-            _ledDevices[button].SetColor(lightColor, durationMs);
+            _ledDevices.Span[button].SetColor(lightColor, durationMs);
         }
-        public void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
+        public static void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
             if (!_isEnabled)
                 return;
-            _ledDevices[button].SetColor(lightColor, duration);
+            _ledDevices.Span[button].SetColor(lightColor, duration);
         }
-        async void UpdateLedDeviceAsync()
+        static void StartLedDeviceUpdateLoop()
         {
-            UniTask.Void(async () =>
+            if(!_updateLoop.IsCompleted)
             {
-                var token = MajEnv.GlobalCT;
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
-                    {
-                        _dummyLights[device!.Index].color = device.Color;
-                    }
-                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-                }
-            });
-            if (_useDummy || !MajInstances.Settings.Misc.OutputDevice.Led.Enable)
                 return;
-
+            }
             if (Majdata<IOManager>.Instance is null)
             {
-                await UpdateInternalLedManagerAsync();
+                _updateLoop = Task.Factory.StartNew(UpdateInternalLedManager, TaskCreationOptions.LongRunning);
             }
             else
             {
-                await UpdateExternalLedManagerAsync();
+                _updateLoop = Task.Factory.StartNew(UpdateInternalLedManager, TaskCreationOptions.LongRunning);
             }
         }
-        async Task UpdateInternalLedManagerAsync()
+        static void UpdateInternalLedManager()
         {
-            await Task.Yield();
-
             var token = MajEnv.GlobalCT;
             var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs);
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
+            var ledDevices = _ledDevices.Span;
+            
+            var templateUpdate = _templateUpdate.Span;
+            Span<byte> buffer = stackalloc byte[10];
 
             stopwatch.Start();
             using (_serial)
@@ -193,24 +165,17 @@ namespace MajdataPlay.IO
                     token.ThrowIfCancellationRequested();
                     try
                     {
-                        var serialStream = await EnsureSerialStreamIsOpen(_serial);
-                        foreach (var device in ArrayHelper.ToEnumerable(_ledDevices))
+                        EnsureSerialPortIsOpen(_serial);
+                        for (var i = 0; i < 8; i++)
                         {
-                            using (var memoryOwner = MemoryPool<byte>.Shared.Rent(10))
-                            {
-                                var index = device!.Index;
-                                var color = device.Color;
-                                var packet = BuildSetColorPacket(memoryOwner.Memory, index, color);
-                                //rentedMemory.Span[5] = (byte)index;
-                                //rentedMemory.Span[6] = (byte)(color.r * 255);
-                                //rentedMemory.Span[7] = (byte)(color.g * 255);
-                                //rentedMemory.Span[8] = (byte)(color.b * 255);
-                                //rentedMemory.Span[9] = CalculateCheckSum(packet.AsSpan().Slice(0, 9));
+                            var device = ledDevices[i];
+                            var index = device!.Index;
+                            var color = device.Color;
+                            var packet = BuildSetColorPacket(buffer, index, color);
 
-                                await serialStream.WriteAsync(packet.Slice(0, 10));
-                            }
+                            _serial.Write(packet.Slice(0, 10));
                         }
-                        await serialStream.WriteAsync(_templateUpdate.AsMemory());
+                        _serial.Write(templateUpdate);
                     }
                     catch (Exception e)
                     {
@@ -222,21 +187,22 @@ namespace MajdataPlay.IO
                         var elapsed = t2 - t1;
                         t1 = t2;
                         if (elapsed < refreshRate)
-                            await Task.Delay(refreshRate - elapsed, token);
+                        {
+                            Thread.Sleep(refreshRate - elapsed);
+                        }
                     }
                 }
             }
         }
-        async Task UpdateExternalLedManagerAsync()
+        static void UpdateExternalLedManager()
         {
-            await Task.Yield();
-
             var ioManager = Majdata<IOManager>.Instance!;
             var token = MajEnv.GlobalCT;
             var commands = new LedCommand[9];
             var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs);
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
+            var ledDevices = _ledDevices.Span;
 
             stopwatch.Start();
             commands[8] = LedCommand.Update;
@@ -247,14 +213,14 @@ namespace MajdataPlay.IO
                 {
                     for (var i = 0; i < 8; i++)
                     {
-                        var device = _ledDevices[i];
+                        var device = ledDevices[i];
                         var index = device.Index;
                         var color = device.Color;
                         var command = BuildSetColorCommand(index, color);
 
                         commands[i] = command;
                     }
-                    await ioManager.WriteToDeviceAsync(DeviceClassification.LedDevice, commands);
+                    ioManager.WriteToDeviceAsync(DeviceClassification.LedDevice, commands).Wait();
                 }
                 catch (Exception e)
                 {
@@ -266,23 +232,75 @@ namespace MajdataPlay.IO
                     var elapsed = t2 - t1;
                     t1 = t2;
                     if (elapsed < refreshRate)
-                        await Task.Delay(refreshRate - elapsed, token);
+                    {
+                        Thread.Sleep(refreshRate - elapsed);
+                    }
                 }
             }
         }
-        async ValueTask<Stream> EnsureSerialStreamIsOpen(SerialPort serialSession)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Memory<byte> BuildSetColorPacket(Memory<byte> memory, int index, Color newColor)
+        {
+            _templateSingle.CopyTo(memory);
+            var packet = memory.Span;
+            packet[5] = (byte)index;
+            packet[6] = (byte)(newColor.r * 255);
+            packet[7] = (byte)(newColor.g * 255);
+            packet[8] = (byte)(newColor.b * 255);
+            packet[9] = CalculateCheckSum(packet.Slice(0, 9));
+
+            return memory;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Span<byte> BuildSetColorPacket(Span<byte> packet, int index, Color newColor)
+        {
+            _templateSingle.Span.CopyTo(packet);
+            packet[5] = (byte)index;
+            packet[6] = (byte)(newColor.r * 255);
+            packet[7] = (byte)(newColor.g * 255);
+            packet[8] = (byte)(newColor.b * 255);
+            packet[9] = CalculateCheckSum(packet.Slice(0, 9));
+
+            return packet;
+        }
+        static LedCommand BuildSetColorCommand(int index, Color newColor)
+        {
+            Span<byte> data = stackalloc byte[4];
+            data[0] = (byte)(LedCommand.SetColorBA1 + index);
+            data[1] = (byte)(newColor.r * 255);
+            data[2] = (byte)(newColor.g * 255);
+            data[3] = (byte)(newColor.b * 255);
+
+            return MemoryMarshal.Read<LedCommand>(data);
+        }
+        static byte CalculateCheckSum(List<byte> bytes)
+        {
+            byte sum = 0;
+            for (int i = 1; i < bytes.Count; i++)
+            {
+                sum += bytes[i];
+            }
+            return sum;
+        }
+        static byte CalculateCheckSum(Span<byte> bytes)
+        {
+            byte sum = 0;
+            for (int i = 1; i < bytes.Length; i++)
+            {
+                sum += bytes[i];
+            }
+            return sum;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void EnsureSerialPortIsOpen(SerialPort serialSession)
         {
             if (serialSession.IsOpen)
             {
-                return serialSession.BaseStream;
+                return;
             }
             else
             {
-                await Task.Yield();
-
                 serialSession.Open();
-
-                return serialSession.BaseStream;
             }
         }
         class LedDevice

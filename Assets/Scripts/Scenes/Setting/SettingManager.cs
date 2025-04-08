@@ -51,13 +51,13 @@ namespace MajdataPlay.Setting
                 menu.gameObject.SetActive(true);
             }
 
-            MajInstances.LightManager.SetAllLight(Color.white);
-            MajInstances.LightManager.SetButtonLight(Color.green, 3);
-            MajInstances.LightManager.SetButtonLight(Color.red, 4);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 2);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 5);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 0);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 7);
+            LightManager.SetAllLight(Color.white);
+            LightManager.SetButtonLight(Color.green, 3);
+            LightManager.SetButtonLight(Color.red, 4);
+            LightManager.SetButtonLight(Color.blue, 2);
+            LightManager.SetButtonLight(Color.blue, 5);
+            LightManager.SetButtonLight(Color.blue, 0);
+            LightManager.SetButtonLight(Color.blue, 7);
 
             InitializeAllMenu().Forget();
         }

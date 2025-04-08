@@ -18,6 +18,7 @@ namespace MajdataPlay
     {
         readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
         DummyTouchPanelRenderer _dummyTouchPanelRenderer;
+        DummyLedRenderer _dummyLedRenderer;
         protected override void Awake()
         {
             base.Awake();
@@ -26,6 +27,7 @@ namespace MajdataPlay
         void Start()
         {
             _dummyTouchPanelRenderer = Majdata<DummyTouchPanelRenderer>.Instance!;
+            _dummyLedRenderer = Majdata<DummyLedRenderer>.Instance!;
         }
 
         //void FixedUpdate()
@@ -66,7 +68,9 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
+            LightManager.OnPreUpdate();
             _dummyTouchPanelRenderer.OnPreUpdate();
+            _dummyLedRenderer.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)

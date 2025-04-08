@@ -57,13 +57,6 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<SceneSwitcher>.Instance = value;
         }
-        public static LightManager LightManager
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<LightManager>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<LightManager>.Instance = value;
-        }
         internal static GameUpdater GameUpdater
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
