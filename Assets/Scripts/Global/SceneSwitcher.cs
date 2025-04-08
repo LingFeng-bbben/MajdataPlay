@@ -45,18 +45,15 @@ namespace MajdataPlay
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
         }
-        void CurrentSceneUpdate()
+        void OnUnitySceneChanged(Scene scene1, Scene scene2)
         {
+            MainCamera = Camera.main;
             var currentScene = SceneManager.GetActiveScene();
             var index = Array.FindIndex(SCENE_NAMES, x => x == currentScene.name);
             if (index != -1)
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
-        }
-        void OnUnitySceneChanged(Scene scene1, Scene scene2)
-        {
-            MainCamera = Camera.main;
         }
 
         public void SwitchScene(string sceneName, bool autoFadeOut = true)
