@@ -37,9 +37,10 @@ namespace MajdataPlay.IO
                         {
                             var button = buttons[i];
                             var keyCode = button.BindingKey;
-                            var state = Keyboard.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
+                            var state = KeyboardHelper.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
                             var area = button.Area;
 
+                            ButtonRing.OnButtonRingStateChanged(i, state);
                             _buttonRingInputBuffer.Enqueue(new()
                             {
                                 Index = i,
@@ -68,7 +69,7 @@ namespace MajdataPlay.IO
         {
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
-            var latestBtnStateLogger = _latestBtnStateLogger.Span;
+            var latestBtnStateLogger = ButtonRing.ButtonStateLogger;
             
             Span<SensorStatus> newStates = stackalloc SensorStatus[12];
 
@@ -78,7 +79,6 @@ namespace MajdataPlay.IO
                 if (!index.InRange(0, 11))
                     continue;
                 newStates[index] |= report.State;
-                latestBtnStateLogger[index] = report.State;
             }
             for (var i = 0; i < 12; i++)
             {

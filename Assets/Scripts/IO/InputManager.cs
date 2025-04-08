@@ -67,9 +67,6 @@ namespace MajdataPlay.IO
         readonly static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
         readonly static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
 
-        readonly static Memory<SensorStatus> _latestBtnStateLogger = new SensorStatus[12];
-        //The serial port will report the status of 35 zones, but there are actually only 34 zones.
-        readonly static Memory<SensorStatus> _latestSensorStateLogger = new SensorStatus[35];
         readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
 
@@ -728,6 +725,7 @@ namespace MajdataPlay.IO
             var i = (int)zone;
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
 
+            TouchPanel.OnTouchPanelStateChanged(i, majState);
             _touchPanelInputBuffer.Enqueue(new()
             {
                 Index = i,
@@ -740,6 +738,7 @@ namespace MajdataPlay.IO
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
             var i = GetIndexByButtonRingZone(zone);
 
+            ButtonRing.OnButtonRingStateChanged(i, majState);
             _buttonRingInputBuffer.Enqueue(new()
             {
                 Index = i,
@@ -747,6 +746,153 @@ namespace MajdataPlay.IO
                 Timestamp = MajTimeline.UnscaledTime
             });
         }
+        static class KeyboardHelper
+        {
+            public static bool IsKeyDown(KeyCode keyCode)
+            {
+#if UNITY_STANDALONE_WIN
+                var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
+                return (result & 0x8000) != 0;
+#else
+            return Input.GetKey(ToUnityKeyCode(keyCode));
+#endif
+            }
+            public static bool IsKeyUp(KeyCode keyCode)
+            {
+                return !IsKeyDown(keyCode);
+            }
+            static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
+            {
+                return keyCode switch
+                {
+                    KeyCode.B1 => Win32API.RawKey.W,
+                    KeyCode.B2 => Win32API.RawKey.E,
+                    KeyCode.B3 => Win32API.RawKey.D,
+                    KeyCode.B4 => Win32API.RawKey.C,
+                    KeyCode.B5 => Win32API.RawKey.X,
+                    KeyCode.B6 => Win32API.RawKey.Z,
+                    KeyCode.B7 => Win32API.RawKey.A,
+                    KeyCode.B8 => Win32API.RawKey.Q,
+                    KeyCode.Test => Win32API.RawKey.Numpad9,
+                    KeyCode.SelectP1 => Win32API.RawKey.Multiply,
+                    KeyCode.Service => Win32API.RawKey.Numpad7,
+                    KeyCode.SelectP2 => Win32API.RawKey.Numpad3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
+                };
+            }
+            static UnityEngine.KeyCode ToUnityKeyCode(KeyCode keyCode)
+            {
+                return keyCode switch
+                {
+                    KeyCode.B1 => UnityEngine.KeyCode.W,
+                    KeyCode.B2 => UnityEngine.KeyCode.E,
+                    KeyCode.B3 => UnityEngine.KeyCode.D,
+                    KeyCode.B4 => UnityEngine.KeyCode.C,
+                    KeyCode.B5 => UnityEngine.KeyCode.X,
+                    KeyCode.B6 => UnityEngine.KeyCode.Z,
+                    KeyCode.B7 => UnityEngine.KeyCode.A,
+                    KeyCode.B8 => UnityEngine.KeyCode.Q,
+                    KeyCode.Test => UnityEngine.KeyCode.Keypad9,
+                    KeyCode.SelectP1 => UnityEngine.KeyCode.KeypadMultiply,
+                    KeyCode.Service => UnityEngine.KeyCode.Keypad7,
+                    KeyCode.SelectP2 => UnityEngine.KeyCode.Keypad3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
+                };
+            }
+        }
+        static class ButtonRing
+        {
+            public static ReadOnlySpan<SensorStatus> ButtonStateLogger
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return _buttonStates;
+                }
+            }
+            readonly static SensorStatus[] _buttonStates = new SensorStatus[12];
+
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsButtonReleased(SensorArea button)
+            {
+                var i = GetButtonIndexFromArea(button);
+                return _buttonStates[i] == SensorStatus.Off;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsButtonPressed(SensorArea button)
+            {
+                var i = GetButtonIndexFromArea(button);
+                return _buttonStates[i] == SensorStatus.On;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void OnButtonRingStateChanged(int buttonIndex, SensorStatus state)
+            {
+                if(!buttonIndex.InRange(0,11))
+                {
+                    return;
+                }
+                _buttonStates[buttonIndex] = state;
+            }
+            static int GetButtonIndexFromArea(SensorArea area)
+            {
+                switch(area)
+                {
+                    case SensorArea.A1:
+                    case SensorArea.A2:
+                    case SensorArea.A3:
+                    case SensorArea.A4:
+                    case SensorArea.A5:
+                    case SensorArea.A6:
+                    case SensorArea.A7:
+                    case SensorArea.A8:
+                        return (int)area;
+                    case SensorArea.Test:
+                        return 8;
+                    case SensorArea.P1:
+                        return 9;
+                    case SensorArea.Service:
+                        return 10;
+                    case SensorArea.P2:
+                        return 11;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(area));
+                }
+            }
+        }
+        static class TouchPanel
+        {
+            public static ReadOnlySpan<SensorStatus> SensorStateLogger
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return _sensorStates;
+                }
+            }
+            readonly static SensorStatus[] _sensorStates = new SensorStatus[34];
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsSensorRelased(SensorArea area)
+            {
+                var i = (int)area;
+                return _sensorStates[i] == SensorStatus.Off;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsSensorPressed(SensorArea area)
+            {
+                var i = (int)area;
+                return _sensorStates[i] == SensorStatus.On;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void OnTouchPanelStateChanged(int sensorIndex, SensorStatus state)
+            {
+                if (!sensorIndex.InRange(0, 33))
+                {
+                    return;
+                }
+                _sensorStates[sensorIndex] = state;
+            }
+        }
     }
-    
 }

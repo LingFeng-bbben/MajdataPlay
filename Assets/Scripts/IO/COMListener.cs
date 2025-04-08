@@ -120,6 +120,7 @@ namespace MajdataPlay.IO
                         var rawState = packetBody[i] & 1UL << j;
                         var state = rawState > 0 ? SensorStatus.On : SensorStatus.Off;
 
+                        TouchPanel.OnTouchPanelStateChanged(k, state);
                         _touchPanelInputBuffer.Enqueue(new()
                         {
                             Index = k++,

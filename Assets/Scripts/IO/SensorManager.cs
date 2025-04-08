@@ -15,7 +15,7 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
-            var latestSensorStateLogger = _latestSensorStateLogger.Span;
+            var latestSensorStateLogger = TouchPanel.SensorStateLogger;
             Span<SensorStatus> newStates = stackalloc SensorStatus[34];
 
             while (_touchPanelInputBuffer.TryDequeue(out var report))
@@ -25,7 +25,6 @@ namespace MajdataPlay.IO
                     continue;
 
                 newStates[index] |= report.State;
-                latestSensorStateLogger[index] = report.State;
             }
             for (var i = 0; i < 34; i++)
             {
