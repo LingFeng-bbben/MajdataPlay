@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace MajdataPlay
 {
-    internal sealed class DummyTouchPanelRenderer : MajSingleton<DummyTouchPanelRenderer>
+    internal sealed class DummyTouchPanelRenderer : MajSingleton
     {
         public IReadOnlyDictionary<int, int> InstanceID2SensorIndexMappingTable
         {

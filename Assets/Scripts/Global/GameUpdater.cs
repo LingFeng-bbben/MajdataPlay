@@ -17,10 +17,15 @@ namespace MajdataPlay
     internal class GameUpdater : MonoBehaviour
     {
         readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
+        DummyTouchPanelRenderer _dummyTouchPanelRenderer;
         void Awake()
         {
             MajInstances.GameUpdater = this;
             DontDestroyOnLoad(this);
+        }
+        void Start()
+        {
+            _dummyTouchPanelRenderer = Majdata<DummyTouchPanelRenderer>.Instance!;
         }
 
         //void FixedUpdate()
@@ -61,6 +66,7 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
+            _dummyTouchPanelRenderer.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)
