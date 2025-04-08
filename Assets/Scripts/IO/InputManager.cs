@@ -289,6 +289,7 @@ namespace MajdataPlay.IO
                     _updateIOListenerPtr = &UpdateExternalIOListener;
                     break;
             }
+            MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
@@ -632,9 +633,10 @@ namespace MajdataPlay.IO
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
-        internal static void OnApplicationQuit()
+        static void OnApplicationQuit()
         {
             _ioManager?.Dispose();
+            MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void PushEvent(InputEventArgs args)

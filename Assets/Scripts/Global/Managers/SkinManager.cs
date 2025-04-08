@@ -2,6 +2,7 @@
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace MajdataPlay
@@ -39,7 +40,7 @@ namespace MajdataPlay
 
             SelectedSkin = targetSkin;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JudgeTextSkin GetJudgeTextSkin()
         {
             return new()
@@ -120,6 +121,7 @@ namespace MajdataPlay
                 Late = SelectedSkin.Late
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TapSkin GetTapSkin()
         {
             return new()
@@ -138,6 +140,7 @@ namespace MajdataPlay
                 }
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StarSkin GetStarSkin()
         {
             return new()
@@ -160,6 +163,7 @@ namespace MajdataPlay
                 }
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public HoldSkin GetHoldSkin()
         {
             return new()
@@ -188,6 +192,7 @@ namespace MajdataPlay
                 }
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SlideSkin GetSlideSkin()
         {
             return new SlideSkin()
@@ -198,6 +203,7 @@ namespace MajdataPlay
                 Break = SelectedSkin.Slide_Break,
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public WifiSkin GetWifiSkin()
         {
             return new WifiSkin()
@@ -208,6 +214,7 @@ namespace MajdataPlay
                 Break = SelectedSkin.Wifi_Break,
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TouchHoldSkin GetTouchHoldSkin()
         {
             return new TouchHoldSkin()
@@ -233,6 +240,7 @@ namespace MajdataPlay
                 Off = SelectedSkin.TouchHold_Off,
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TouchSkin GetTouchSkin()
         {
             return new TouchSkin()

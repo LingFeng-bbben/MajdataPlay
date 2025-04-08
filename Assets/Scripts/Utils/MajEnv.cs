@@ -27,6 +27,8 @@ namespace MajdataPlay.Utils
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 4000;
+
+        public static event Action? OnApplicationQuit;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -125,9 +127,13 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
         }
-        internal static void OnApplicationQuit()
+        internal static void OnApplicationQuitRequested()
         {
             _globalCTS.Cancel();
+            if (OnApplicationQuit is not null)
+            {
+                OnApplicationQuit();
+            }
         }
         static void CheckNoteSkinFolder()
         {

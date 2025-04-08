@@ -227,9 +227,7 @@ namespace MajdataPlay
         {
             Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            MajDebug.OnApplicationQuit();
-            SongStorage.OnApplicationQuit();
-            MajEnv.OnApplicationQuit();
+            MajEnv.OnApplicationQuitRequested();
         }
         public void Save()
         {
