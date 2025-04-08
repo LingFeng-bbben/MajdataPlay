@@ -592,7 +592,7 @@ namespace MajdataPlay.IO
                    _sensorStatusInThisFrame[index] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Button? GetButton(SensorArea type)
+        static Button? GetButton(SensorArea type)
         {
             var buttons = _buttons.Span;
             return type switch
@@ -607,17 +607,17 @@ namespace MajdataPlay.IO
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<Button> GetButtons()
+        static ReadOnlyMemory<Button> GetButtons()
         {
             return _buttons;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Sensor GetSensor(SensorArea target)
+        static Sensor GetSensor(SensorArea target)
         {
             return _sensors.Span[(int)target];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlyMemory<Sensor> GetSensors()
+        static ReadOnlyMemory<Sensor> GetSensors()
         {
             return _sensors;
         }
@@ -893,6 +893,112 @@ namespace MajdataPlay.IO
                 }
                 _sensorStates[sensorIndex] = state;
             }
+        }
+        class Button : IEventPublisher<EventHandler<InputEventArgs>>
+        {
+            public KeyCode BindingKey
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                set;
+            }
+            public SensorArea Area
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                set;
+            }
+            /// <summary>
+            /// Update by InputManager.PreUpdate
+            /// </summary>
+            public SensorStatus State
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                set;
+            }
+
+            event EventHandler<InputEventArgs>? OnStatusChanged;
+            public Button(KeyCode bindingKey, SensorArea type)
+            {
+                BindingKey = bindingKey;
+                Area = type;
+                State = SensorStatus.Off;
+                OnStatusChanged = null;
+            }
+            public void AddSubscriber(EventHandler<InputEventArgs> handler)
+            {
+                OnStatusChanged += handler;
+            }
+            public void RemoveSubscriber(EventHandler<InputEventArgs> handler)
+            {
+                if (OnStatusChanged is not null)
+                    OnStatusChanged -= handler;
+            }
+            public void PushEvent(in InputEventArgs args)
+            {
+                if (OnStatusChanged is not null)
+                    OnStatusChanged(this, args);
+            }
+            public void ClearSubscriber() => OnStatusChanged = null;
+        }
+        class Sensor : IEventPublisher<EventHandler<InputEventArgs>>
+        {
+            /// <summary>
+            /// Update by InputManager.PreUpdate
+            /// </summary>
+            public SensorStatus State
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                set;
+            } = SensorStatus.Off;
+            public SensorArea Area
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get;
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                set;
+            }
+            public SensorGroup Group
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    var i = (int)Area;
+                    if (i <= 7)
+                        return SensorGroup.A;
+                    else if (i <= 15)
+                        return SensorGroup.B;
+                    else if (i <= 16)
+                        return SensorGroup.C;
+                    else if (i <= 24)
+                        return SensorGroup.D;
+                    else
+                        return SensorGroup.E;
+                }
+            }
+            event EventHandler<InputEventArgs>? OnStatusChanged;//oStatus nStatus
+
+            public void AddSubscriber(EventHandler<InputEventArgs> handler)
+            {
+                OnStatusChanged += handler;
+            }
+            public void RemoveSubscriber(EventHandler<InputEventArgs> handler)
+            {
+                if (OnStatusChanged is not null)
+                    OnStatusChanged -= handler;
+            }
+            public void PushEvent(in InputEventArgs args)
+            {
+                if (OnStatusChanged is not null)
+                    OnStatusChanged(this, args);
+            }
+            public void ClearSubscriber() => OnStatusChanged = null;
         }
     }
 }
