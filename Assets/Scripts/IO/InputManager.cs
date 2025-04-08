@@ -21,7 +21,7 @@ using System.Security.Policy;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    internal unsafe partial class InputManager : MonoBehaviour
+    internal static unsafe partial class InputManager
     {
         public static bool IsTouchPanelConnected { get; private set; } = false;
         public static float FingerRadius
@@ -289,13 +289,6 @@ namespace MajdataPlay.IO
                     _updateIOListenerPtr = &UpdateExternalIOListener;
                     break;
             }
-        }
-
-        void Awake()
-        {
-            MajInstances.InputManager = this;
-            DontDestroyOnLoad(this);
-            Input.multiTouchEnabled = true;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
@@ -639,7 +632,7 @@ namespace MajdataPlay.IO
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
-        void OnApplicationQuit()
+        internal static void OnApplicationQuit()
         {
             _ioManager?.Dispose();
         }

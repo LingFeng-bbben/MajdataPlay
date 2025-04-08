@@ -158,7 +158,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
         readonly protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
         readonly protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
-        readonly protected InputManager _ioManager = MajInstances.InputManager;
         readonly protected GameSetting _gameSetting = MajInstances.Settings;
         protected static readonly Random _randomizer = new();
 

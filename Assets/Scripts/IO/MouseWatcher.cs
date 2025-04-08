@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace MajdataPlay.IO
 {
-    internal partial class InputManager : MonoBehaviour
+    internal static partial class InputManager
     {
         static bool[] UpdateMousePosition()
         {
@@ -111,6 +111,5 @@ namespace MajdataPlay.IO
             }
             return -1;
         }
-        bool isInRange(in float input,in float angle,in float range = 11.25f) => Mathf.Abs(Mathf.DeltaAngle(input, angle)) < range;
     }
 }

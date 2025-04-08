@@ -52,7 +52,6 @@ namespace MajdataPlay.Game.Notes.Controllers
         readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
-        InputManager _inputManager = MajInstances.InputManager;
         GamePlayManager? _gpManager;
 
         void Awake()

@@ -125,7 +125,6 @@ namespace MajdataPlay.Game
         float _audioTrackStartAt = 0f;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
-        InputManager _ioManager = MajInstances.InputManager;
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
@@ -328,7 +327,6 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTaskVoid InitGame()
         {
-            var inputManager = MajInstances.InputManager;
             State = GamePlayStatus.Loading;
             try
             {

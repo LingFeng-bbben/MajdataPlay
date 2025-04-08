@@ -22,7 +22,6 @@ namespace MajdataPlay.Game.Notes.Controllers
 
         Dictionary<SensorArea, TimeSpan> _lastTriggerTimes = new();
 
-        readonly InputManager _inputManager = MajInstances.InputManager;
         readonly LightManager _lightManager = MajInstances.LightManager;
         readonly GameSetting _setting = MajInstances.Settings;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);

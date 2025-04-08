@@ -10,7 +10,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    internal partial class InputManager : MonoBehaviour
+    internal static partial class InputManager
     {
         static void StartUpdatingKeyboardState()
         {
