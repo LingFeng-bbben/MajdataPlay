@@ -8,7 +8,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    public class FPSDisplayer : MonoBehaviour
+    internal sealed class FPSDisplayer : MajSingleton
     {
         public static Color BgColor { get; set; } = new Color(0, 0, 0);
 
@@ -18,15 +18,13 @@ namespace MajdataPlay
         TextMeshPro _textDisplayer;
         GameSetting _setting;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             for (var i = 0; i < _data.Length; i++)
                 _data[i] = null;
-        }
-        void Start()
-        {
+
             _textDisplayer = GetComponent<TextMeshPro>();
-            DontDestroyOnLoad(this);
             _setting = MajInstances.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
         }

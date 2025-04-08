@@ -14,14 +14,14 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay
 {
-    internal class GameUpdater : MonoBehaviour
+    internal class GameUpdater : MajSingleton
     {
         readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
         DummyTouchPanelRenderer _dummyTouchPanelRenderer;
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             MajInstances.GameUpdater = this;
-            DontDestroyOnLoad(this);
         }
         void Start()
         {

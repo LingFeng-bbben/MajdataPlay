@@ -12,7 +12,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay
 {
-    public partial class SceneSwitcher : MonoBehaviour, IMainCameraProvider
+    internal sealed partial class SceneSwitcher : MajSingleton, IMainCameraProvider
     {
         public Camera MainCamera 
         { 
@@ -30,9 +30,9 @@ namespace MajdataPlay
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
         const int SWITCH_ELAPSED = 400;
-        private void Awake()
+        protected override void Awake()
         {
-            MajInstances.SceneSwitcher = this;
+            base .Awake();
             Majdata<IMainCameraProvider>.Instance = this;
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
@@ -42,6 +42,8 @@ namespace MajdataPlay
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
+            animator = GetComponent<Animator>();
+            loadingText.gameObject.SetActive(false);
         }
         void CurrentSceneUpdate()
         {
@@ -55,13 +57,6 @@ namespace MajdataPlay
         void OnUnitySceneChanged(Scene scene1, Scene scene2)
         {
             MainCamera = Camera.main;
-        }
-        // Start is called before the first frame update
-        void Start()
-        {
-            animator = GetComponent<Animator>();
-            loadingText.gameObject.SetActive(false);
-            DontDestroyOnLoad(this);
         }
 
         public void SwitchScene(string sceneName, bool autoFadeOut = true)
@@ -113,7 +108,7 @@ namespace MajdataPlay
             }
         }
     }
-    public partial class SceneSwitcher : MonoBehaviour
+    internal sealed partial class SceneSwitcher : MajSingleton
     {
         // Task
         async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)

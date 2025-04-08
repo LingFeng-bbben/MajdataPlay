@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MajdataPlay
 {
-    public class SkinManager : MonoBehaviour
+    internal sealed class SkinManager : MajSingleton
     {
         public CustomSkin SelectedSkin { get; set; }
         public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
@@ -22,10 +22,9 @@ namespace MajdataPlay
         public Sprite[] StarLines;
         public RuntimeAnimatorController JustBreak;
 
-        private void Awake()
+        protected override void Awake()
         {
-            DontDestroyOnLoad(this);
-            MajInstances.SkinManager = this;
+            base.Awake();
 
             var path = MajEnv.SkinPath;
             var selectedSkinName = MajInstances.Settings.Display.Skin;

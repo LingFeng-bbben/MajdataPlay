@@ -20,7 +20,7 @@ using MajdataPlay.IO;
 namespace MajdataPlay
 {
 #nullable enable
-    public class GameManager : MonoBehaviour
+    internal sealed class GameManager : MajSingleton
     {
         public static Camera MainCamera { get; private set; }
         public static CancellationToken GlobalCT { get; }
@@ -66,7 +66,7 @@ namespace MajdataPlay
             _globalCTS = new();
             GlobalCT = _globalCTS.Token;
         }
-        void Awake()
+        protected override void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
             var s = "\n";
@@ -79,10 +79,9 @@ namespace MajdataPlay
             s += $"################     Startup Check  End    ################";
             MajDebug.Log(s);
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
-            MajInstances.GameManager = this;
+            base.Awake();
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
-            DontDestroyOnLoad(this);
 
             foreach (var arg in Environment.GetCommandLineArgs())
             {

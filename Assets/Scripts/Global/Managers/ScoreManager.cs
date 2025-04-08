@@ -10,18 +10,14 @@ using UnityEngine;
 namespace MajdataPlay
 {
 #nullable enable
-    public class ScoreManager : MonoBehaviour
+    internal sealed class ScoreManager : MajSingleton
     {
         List<MaiScore> scores = new();
         Task? backendTask = null;
 
-        void Awake()
+        protected override void Awake()
         {
-            MajInstances.ScoreManager = this;
-        }
-        void Start()
-        {
-            DontDestroyOnLoad(this);
+            base.Awake();
             var path = MajEnv.ScoreDBPath;
             var option = new JsonSerializerOptions();
             option.Converters.Add(new JudgeDetailConverter());
@@ -36,7 +32,7 @@ namespace MajdataPlay
             var content = File.ReadAllText(path);
             List<MaiScore>? result = Serializer.Json.Deserialize<List<MaiScore>>(content, option);
             //shoud do some warning here, or all score will be lost and overwirtten
-            if (result!=null)
+            if (result != null)
             {
                 scores = result;
             }
