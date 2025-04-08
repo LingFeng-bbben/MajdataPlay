@@ -23,7 +23,6 @@ namespace MajdataPlay
     internal sealed class GameManager : MajSingleton
     {
         public static Camera MainCamera { get; private set; }
-        public static CancellationToken GlobalCT { get; }
         public GameSetting Setting
         {
             get => MajInstances.Settings;
@@ -46,7 +45,6 @@ namespace MajdataPlay
         public int LastSettingPage { get; set; } = 0;
 
 
-        readonly static CancellationTokenSource _globalCTS;
         [SerializeField]
         BuiltInTimeProvider _timer = BuiltInTimeProvider.Winapi;
         [SerializeField]
@@ -61,11 +59,6 @@ namespace MajdataPlay
 
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
-        static GameManager()
-        {
-            _globalCTS = new();
-            GlobalCT = _globalCTS.Token;
-        }
         protected override void Awake()
         {
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
@@ -236,7 +229,7 @@ namespace MajdataPlay
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajDebug.OnApplicationQuit();
             SongStorage.OnApplicationQuit();
-            _globalCTS.Cancel();
+            MajEnv.OnApplicationQuit();
         }
         public void Save()
         {

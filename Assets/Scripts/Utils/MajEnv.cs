@@ -53,7 +53,13 @@ namespace MajdataPlay.Utils
             CookieContainer = new CookieContainer(),
         });
         public static GameSetting UserSettings { get; }
-        public static CancellationToken GlobalCT => GameManager.GlobalCT;
+        public static CancellationToken GlobalCT
+        {
+            get
+            {
+                return _globalCTS.Token;
+            }
+        }
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
         {
             Converters =
@@ -63,6 +69,9 @@ namespace MajdataPlay.Utils
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+
+        readonly static CancellationTokenSource _globalCTS = new();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ChangedSynchronizationContext()
         {
@@ -115,6 +124,10 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(netCachePath);
             CreateDirectoryIfNotExists(ChartPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+        }
+        internal static void OnApplicationQuit()
+        {
+            _globalCTS.Cancel();
         }
         static void CheckNoteSkinFolder()
         {
