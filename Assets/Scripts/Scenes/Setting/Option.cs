@@ -401,10 +401,10 @@ namespace MajdataPlay.Setting
             else if (Parent.SelectedIndex != Index)
                 return;
             _isBound = true;
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B4);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.E4);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.B5);
-            MajInstances.InputManager.BindSensor(OnAreaDown, SensorArea.E6);
+            InputManager.BindSensor(OnAreaDown, SensorArea.B4);
+            InputManager.BindSensor(OnAreaDown, SensorArea.E4);
+            InputManager.BindSensor(OnAreaDown, SensorArea.B5);
+            InputManager.BindSensor(OnAreaDown, SensorArea.E6);
         }
         void UnbindArea()
         {
@@ -413,10 +413,10 @@ namespace MajdataPlay.Setting
             _isPressed = false;
             _pressTime = 0;
             _isBound = false;
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.E4);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
-            MajInstances.InputManager.UnbindSensor(OnAreaDown, SensorArea.E6);
+            InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
+            InputManager.UnbindSensor(OnAreaDown, SensorArea.E4);
+            InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
+            InputManager.UnbindSensor(OnAreaDown, SensorArea.E6);
         }
         Vector3 GetScale(int diff)
         {

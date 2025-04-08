@@ -100,7 +100,7 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-        public void BindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void BindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);
@@ -108,7 +108,7 @@ namespace MajdataPlay.IO
                 throw new Exception($"{sType} Sensor not found.");
             sensor.AddSubscriber(checker);
         }
-        public void UnbindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void UnbindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);

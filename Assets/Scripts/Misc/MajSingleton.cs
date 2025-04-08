@@ -11,6 +11,7 @@ namespace MajdataPlay
     {
         protected override void Awake()
         {
+            base.Awake();
             if(this is T instance)
             {
                 Majdata<T>.Instance = instance;
@@ -19,6 +20,7 @@ namespace MajdataPlay
             {
                 throw new TypeInitializationException(typeof(T).FullName, new InvalidOperationException("Unable to convert to target type"));
             }
+            DontDestroyOnLoad(GameObject);
             base.Awake();
         }
 
