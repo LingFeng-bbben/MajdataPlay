@@ -804,11 +804,11 @@
     },
     {
       "Origin": "Recorder_MAJSETTING_TITLE",
-      "Content": "录制"
+      "Content": "录制工具"
     },
     {
       "Origin": "Recorder_MAJSETTING_DESC",
-      "Content": "是否开启录制"
+      "Content": "选择录制工具喵\nFFmpeg不需要任何额外设置喵\nOBS需要打开websocket并且关闭身份验证, 详见wiki"
     },
     {
       "Origin": "RecordMode_MAJSETTING_TITLE",
@@ -816,7 +816,7 @@
     },
     {
       "Origin": "RecordMode_MAJSETTING_DESC",
-      "Content": "选择录制模式喵\nOBS需要打开websocket并且关闭身份验证, 详见wiki\nFFmpeg不需要任何额外设置喵"
+      "Content": "Disable: 禁用\nAlwaysOn: 持续录制直到更改录制模式或者关闭游戏\nTrackStart: 录制一整张谱的时间"
     }
   ]
 }
