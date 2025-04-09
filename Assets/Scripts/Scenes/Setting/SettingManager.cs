@@ -17,7 +17,7 @@ namespace MajdataPlay.Setting
         public bool IsPressed { get; private set; } = false;
         public float PressTime { get; private set; } = 0f;
         public int Direction { get; private set; } = 1;
-        public GameSetting Setting => MajInstances.Setting;
+        public GameSetting Setting => MajInstances.Settings;
 
         public GameObject menuPrefab;
 
@@ -51,13 +51,13 @@ namespace MajdataPlay.Setting
                 menu.gameObject.SetActive(true);
             }
 
-            MajInstances.LightManager.SetAllLight(Color.white);
-            MajInstances.LightManager.SetButtonLight(Color.green, 3);
-            MajInstances.LightManager.SetButtonLight(Color.red, 4);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 2);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 5);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 0);
-            MajInstances.LightManager.SetButtonLight(Color.blue, 7);
+            LightManager.SetAllLight(Color.white);
+            LightManager.SetButtonLight(Color.green, 3);
+            LightManager.SetButtonLight(Color.red, 4);
+            LightManager.SetButtonLight(Color.blue, 2);
+            LightManager.SetButtonLight(Color.blue, 5);
+            LightManager.SetButtonLight(Color.blue, 0);
+            LightManager.SetButtonLight(Color.blue, 7);
 
             InitializeAllMenu().Forget();
         }
@@ -190,21 +190,21 @@ namespace MajdataPlay.Setting
         }
         void BindArea()
         {
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A1);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A8);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A5);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A4);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A3);
-            MajInstances.InputManager.BindButton(OnAreaDown, SensorArea.A6);
+            InputManager.BindButton(OnAreaDown, SensorArea.A1);
+            InputManager.BindButton(OnAreaDown, SensorArea.A8);
+            InputManager.BindButton(OnAreaDown, SensorArea.A5);
+            InputManager.BindButton(OnAreaDown, SensorArea.A4);
+            InputManager.BindButton(OnAreaDown, SensorArea.A3);
+            InputManager.BindButton(OnAreaDown, SensorArea.A6);
         }
         void UnbindArea()
         {
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A1);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A8);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A5);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A4);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
-            MajInstances.InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A1);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A8);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A5);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A4);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
+            InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
         }
         private void OnDestroy()
         {

@@ -27,6 +27,7 @@ namespace MajdataPlay.Utils
                 args.SetObserved();
             };
             StartLogWritebackTask();
+            MajEnv.OnApplicationQuit += OnApplicationQuit;
 #if !(UNITY_EDITOR || DEBUG)
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
@@ -66,6 +67,7 @@ namespace MajdataPlay.Utils
                 foreach (var log in _logQueue)
                     File.AppendAllText(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
             }
+            MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
         static string GetStackTrack()
         {

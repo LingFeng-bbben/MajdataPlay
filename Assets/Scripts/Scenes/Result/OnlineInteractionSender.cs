@@ -69,7 +69,7 @@ namespace MajdataPlay.Result
         async UniTask SendLike(OnlineSongDetail song)
         {
             infotext.text = Localization.GetLocalizedText("THUMBUP_SENDING");
-            //MajInstances.LightManager.SetButtonLight(Color.blue, 4);
+            //LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await Online.SendLike(song);
@@ -79,7 +79,7 @@ namespace MajdataPlay.Result
             {
                 infotext.text = ex.Message;
                 MajDebug.LogError(ex);
-                //MajInstances.LightManager.SetButtonLight(Color.red, 4);
+                //LightManager.SetButtonLight(Color.red, 4);
                 return;
             }
         }

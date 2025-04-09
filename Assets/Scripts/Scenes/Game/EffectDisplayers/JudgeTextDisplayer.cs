@@ -41,8 +41,8 @@ namespace MajdataPlay.Game
             base.Awake();
             _animator = GetComponent<Animator>();
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            _displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
-            _displayCriticalPerfect = MajInstances.Setting.Display.DisplayCriticalPerfect;
+            _displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
+            _displayCriticalPerfect = MajInstances.Settings.Display.DisplayCriticalPerfect;
             Sprite breakSprite;
 
             if (_displayCriticalPerfect)

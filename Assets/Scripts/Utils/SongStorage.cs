@@ -52,6 +52,11 @@ namespace MajdataPlay.Utils
         static MyFavoriteSongCollection _myFavorite = new();
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
         readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
+
+        static SongStorage()
+        {
+            MajEnv.OnApplicationQuit += OnApplicationQuit;
+        }
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
         {
             try
@@ -105,9 +110,9 @@ namespace MajdataPlay.Utils
                         collections.Add(task.Result);
                 }
                 //Online Charts
-                if (MajInstances.Setting.Online.Enable)
+                if (MajInstances.Settings.Online.Enable)
                 {
-                    foreach (var item in MajInstances.Setting.Online.ApiEndpoints)
+                    foreach (var item in MajInstances.Settings.Online.ApiEndpoints)
                     {
                         if (string.IsNullOrEmpty(item.Name))
                             continue;
@@ -323,7 +328,7 @@ namespace MajdataPlay.Utils
                 };
             });
         }
-        internal static void OnApplicationQuit()
+        static void OnApplicationQuit()
         {
             var hashSet = _myFavorite.ExportHashSet();
             File.WriteAllText(MY_FAVORITE_STORAGE_PATH,
@@ -334,6 +339,7 @@ namespace MajdataPlay.Utils
                                   IsPlayList = true
                               }
                 ));
+            MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
         public static void AddToMyFavorites(ISongDetail songDetail)
         {

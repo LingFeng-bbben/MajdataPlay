@@ -23,12 +23,10 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<GameManager>.Instance = value;
         }
-        public static GameSetting Setting
+        public static GameSetting Settings
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<GameSetting>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<GameSetting>.Instance = value;
+            get => MajEnv.UserSettings;
         }
         public static AudioManager AudioManager
         {
@@ -36,13 +34,6 @@ namespace MajdataPlay.Utils
             get => Majdata<AudioManager>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<AudioManager>.Instance = value;
-        }
-        public static InputManager InputManager
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<InputManager>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<InputManager>.Instance = value;
         }
         public static ScoreManager ScoreManager
         {
@@ -65,13 +56,6 @@ namespace MajdataPlay.Utils
             get => Majdata<SceneSwitcher>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<SceneSwitcher>.Instance = value;
-        }
-        public static LightManager LightManager
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<LightManager>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<LightManager>.Instance = value;
         }
         internal static GameUpdater GameUpdater
         {
