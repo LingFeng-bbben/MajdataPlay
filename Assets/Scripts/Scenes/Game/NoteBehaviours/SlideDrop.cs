@@ -109,6 +109,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _slideBars[i] = Transform.GetChild(i).gameObject;
                 _slideBarRenderers[i] = _slideBars[i].GetComponent<SpriteRenderer>();
                 _slideBarTransforms[i] = _slideBars[i].transform;
+                _slideBarTransforms[i].localScale *= USERSETTING_SLIDE_SCALE;
             }
             LoadSlidePath();
             SetActive(false);

@@ -190,10 +190,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
-                    //else
-                    //{
-                    //    Transform.localScale = new Vector3(0, 0);
-                    //}
                     return;
                 case NoteStatus.Scaling:
                     {
@@ -202,11 +198,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         if (distance < 1.225f)
                         {
                             Distance = distance;
-                            Transform.localScale = new Vector3(destScale, destScale);
+                            Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_TAP_SCALE;
                         }
                         else
                         {
-                            Transform.localScale = new Vector3(1f, 1f);
+                            Transform.localScale = new Vector3(1f, 1f) * USERSETTING_TAP_SCALE;
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }

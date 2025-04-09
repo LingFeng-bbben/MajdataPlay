@@ -162,8 +162,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected static readonly Random _randomizer = new();
 
         protected readonly float USERSETTING_JUDGE_OFFSET = MajInstances.Settings?.Judge.JudgeOffset ?? 0;
-        protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeMode.Modern;
         protected readonly float USERSETTING_TOUCHPANEL_OFFSET = MajInstances.Settings?.Judge.TouchPanelOffset ?? 0;
+        protected readonly float USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
+        protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
+        protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
+        protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
+        protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeMode.Modern;
 
         protected const float FRAME_LENGTH_SEC = 1f / 60;
         protected const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
