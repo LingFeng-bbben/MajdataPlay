@@ -20,6 +20,14 @@ namespace MajdataPlay.Utils
                 BuiltInRecorder.OBS => new OBSRecorder(),
                 _ => null
             };
+            MajEnv.OnApplicationQuit += OnApplicationQuit;
+        }
+
+        private static void OnApplicationQuit()
+        {
+            if ((MajInstances.RecordHelper?.IsRecording ?? false)
+                && MajInstances.RecordHelper.IsConnected)
+                MajInstances.RecordHelper.StopRecord();
         }
     }
 }

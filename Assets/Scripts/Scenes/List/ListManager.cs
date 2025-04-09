@@ -38,32 +38,40 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
 
-            switch (MajInstances.GameManager.Setting.Game.Recorder)
+            if (MajInstances.GameManager.Setting.Game.RecordMode != RecordMode.Disable)
             {
-                case BuiltInRecorder.Disable:
-                    MajInstances.RecordHelper?.Dispose();
-                    MajInstances.RecordHelper = null;
-                    break;
-                case BuiltInRecorder.OBS:
-                    if (MajInstances.RecordHelper is not OBSRecorder)
-                    {
-                        MajInstances.RecordHelper?.Dispose();
-                        MajInstances.RecordHelper = null;
-                    }
+                switch (MajInstances.GameManager.Setting.Game.Recorder)
+                {
+                    case BuiltInRecorder.OBS:
+                        if (MajInstances.RecordHelper is not OBSRecorder)
+                        {
+                            MajInstances.RecordHelper?.Dispose();
+                            MajInstances.RecordHelper = null;
+                        }
 
-                    MajInstances.RecordHelper ??= new OBSRecorder();
-                    break;
-                case BuiltInRecorder.FFmpeg:
-                    if (MajInstances.RecordHelper is not FFmpegRecorder)
-                    {
-                        MajInstances.RecordHelper?.Dispose();
-                        MajInstances.RecordHelper = null;
-                    }
+                        MajInstances.RecordHelper ??= new OBSRecorder();
+                        break;
+                    case BuiltInRecorder.FFmpeg:
+                        if (MajInstances.RecordHelper is not FFmpegRecorder)
+                        {
+                            MajInstances.RecordHelper?.Dispose();
+                            MajInstances.RecordHelper = null;
+                        }
 
-                    MajInstances.RecordHelper ??= new FFmpegRecorder();
-                    break;
-                default:
-                    break;
+                        MajInstances.RecordHelper ??= new FFmpegRecorder();
+                        break;
+                }
+
+                if (MajInstances.GameManager.Setting.Game.RecordMode == RecordMode.AlwaysOn)
+                {
+                    MajInstances.RecordHelper?.StartRecord();
+                }
+            }
+            else
+            {
+                MajInstances.RecordHelper?.StopRecord();
+                MajInstances.RecordHelper?.Dispose();
+                MajInstances.RecordHelper = null;
             }
         }
         async UniTaskVoid InitializeCoverListAsync()
