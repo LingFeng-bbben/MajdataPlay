@@ -32,7 +32,8 @@ namespace MajdataPlay.Types
         public RandomMode Random { get; set; } = RandomMode.Disabled;
         public string Language { get; set; } = "zh-CN - Majdata";
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
-        public RecordMode Record { get; set; } = RecordMode.Disable;
+        public BuiltInRecorder Recorder { get; set; } = BuiltInRecorder.FFmpeg;
+        public RecordMode RecordMode { get; set; } = RecordMode.Disable;
     }
     public class JudgeOptions
     {

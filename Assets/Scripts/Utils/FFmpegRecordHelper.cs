@@ -150,7 +150,8 @@ namespace MajdataPlay.Utils
 
             private void HandleData(IntPtr buffer, int length, IntPtr user)
             {
-                if (!_isRecording || _fileStream == null) return;
+                if (!_isRecording || _fileStream == null) 
+                    return;
 
                 try
                 {

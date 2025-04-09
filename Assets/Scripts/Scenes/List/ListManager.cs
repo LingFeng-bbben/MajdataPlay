@@ -37,13 +37,13 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
 
-            switch (MajInstances.GameManager.Setting.Game.Record)
+            switch (MajInstances.GameManager.Setting.Game.Recorder)
             {
-                case RecordMode.Disable:
+                case BuiltInRecorder.Disable:
                     MajInstances.RecordHelper?.Dispose();
                     MajInstances.RecordHelper = null;
                     break;
-                case RecordMode.OBS:
+                case BuiltInRecorder.OBS:
                     if (MajInstances.RecordHelper is not OBSRecordHelper)
                     {
                         MajInstances.RecordHelper?.Dispose();
@@ -52,7 +52,7 @@ namespace MajdataPlay.List
 
                     MajInstances.RecordHelper ??= new OBSRecordHelper();
                     break;
-                case RecordMode.FFmpeg:
+                case BuiltInRecorder.FFmpeg:
                     if (MajInstances.RecordHelper is not FFmpegRecordHelper)
                     {
                         MajInstances.RecordHelper?.Dispose();
