@@ -25,7 +25,7 @@ namespace MajdataPlay.Game
         Color _color = WHITE;
 
         static readonly int MATERIAL_COLOR_ID = Shader.PropertyToID("_Color");
-        static readonly Color YELLOW = new Color(1f, 0.93f, 0.61f);
+        static readonly Color YELLOW = new Color(1f, 227f / 255f, 0f);
         static readonly Color PINK = new Color(1f, 0.70f, 0.94f);
         static readonly Color GREEN = new Color(0.56f, 1f, 0.59f);
         static readonly Color WHITE = new Color(1f, 1f, 1f);
