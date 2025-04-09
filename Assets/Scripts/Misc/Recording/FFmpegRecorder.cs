@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
+using MajdataPlay.Utils;
 using ManagedBass.Asio;
 using ManagedBass.Wasapi;
 using NeoSmart.AsyncLock;
@@ -14,9 +14,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Recording
 {
-    public class FFmpegRecordHelper : MonoBehaviour, IRecordHelper
+    public class FFmpegRecorder : MonoBehaviour, IRecorder
     {
         private static WavRecorder wavRecorder;
         private static ScreenRecorder screenRecorder;
@@ -25,13 +25,13 @@ namespace MajdataPlay.Utils
         private static string wavPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.wav");
         private static string mp4Path => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.mp4");
         private static string outputPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}output.mp4");
-        public bool Recording { get; set; } = false;
-        public bool Connected { get; set; } = true;
+        public bool IsRecording { get; set; } = false;
+        public bool IsConnected { get; set; } = true;
 
         public async void StartRecord()
         {
             time = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
-            Recording = true;
+            IsRecording = true;
             wavRecorder ??= new(wavPath, 32);
             if (screenRecorder == null)
             {
@@ -45,7 +45,7 @@ namespace MajdataPlay.Utils
 
         public async void StopRecord()
         {
-            Recording = false;
+            IsRecording = false;
             await screenRecorder.StopRecordingAsync();
             wavRecorder?.Stop();
             Destroy(screenRecorder.gameObject);
@@ -62,7 +62,7 @@ namespace MajdataPlay.Utils
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };
-                var p = new Process{StartInfo = startInfo};
+                var p = new Process { StartInfo = startInfo };
                 p.Start();
                 p.WaitForExit();
                 time = string.Empty;
@@ -72,7 +72,7 @@ namespace MajdataPlay.Utils
         public void Dispose()
         {
             StopRecord();
-            Connected = false;
+            IsConnected = false;
             GC.SuppressFinalize(this);
         }
 
@@ -103,8 +103,8 @@ namespace MajdataPlay.Utils
                 _filePath = filePath;
             }
 
-            public void Start() 
-            { 
+            public void Start()
+            {
                 try
                 {
                     _fileStream = new FileStream(_filePath, FileMode.Create);
@@ -150,12 +150,12 @@ namespace MajdataPlay.Utils
 
             private void HandleData(IntPtr buffer, int length, IntPtr user)
             {
-                if (!_isRecording || _fileStream == null) 
+                if (!_isRecording || _fileStream == null)
                     return;
 
                 try
                 {
-                    byte[] data = new byte[length];
+                    var data = new byte[length];
                     Marshal.Copy(buffer, data, 0, length);
                     _fileStream.Write(data, 0, length);
                     _dataSize += length;
@@ -281,11 +281,11 @@ namespace MajdataPlay.Utils
                     {
                         while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            double currentTime = stopwatch.Elapsed.TotalSeconds;
+                            var currentTime = stopwatch.Elapsed.TotalSeconds;
 
                             if (currentTime < nextFrameTime)
                             {
-                                double sleepTime = nextFrameTime - currentTime;
+                                var sleepTime = nextFrameTime - currentTime;
                                 if (sleepTime > 0)
                                     yield return new WaitForSecondsRealtime((float)sleepTime);
                                 continue;

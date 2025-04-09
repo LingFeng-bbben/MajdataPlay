@@ -63,8 +63,8 @@ namespace MajdataPlay.Result
         void Start()
         {
             if(MajInstances.RecordHelper is not null
-               && MajInstances.RecordHelper.Recording
-               && MajInstances.RecordHelper.Connected)
+               && MajInstances.RecordHelper.IsRecording
+               && MajInstances.RecordHelper.IsConnected)
                 MajInstances.RecordHelper.StopRecord();
 
             rank.text = "";

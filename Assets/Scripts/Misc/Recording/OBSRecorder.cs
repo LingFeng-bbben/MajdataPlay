@@ -1,15 +1,15 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Utils;
 using System;
 using WebSocketSharp;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Recording
 {
-    public class OBSRecordHelper : IRecordHelper
+    public class OBSRecorder : IRecorder
     {
         private WebSocket _webSocket = new("ws://127.0.0.1:4455");
         private bool _disposed = false;
-        public bool Connected { get; set; } = false;
-        public bool Recording { get; set; } = false;
+        public bool IsConnected { get; set; } = false;
+        public bool IsRecording { get; set; } = false;
 
         private const string StartRecordMessage = @"{
                     ""op"": 6,
@@ -34,7 +34,7 @@ namespace MajdataPlay.Utils
                     }
                 }";
 
-        public OBSRecordHelper() => Init();
+        public OBSRecorder() => Init();
 
         public void Init()
         {
@@ -61,14 +61,14 @@ namespace MajdataPlay.Utils
             _disposed = true;
         }
 
-        ~OBSRecordHelper() => Dispose(false);
+        ~OBSRecorder() => Dispose(false);
 
         private void Connect() => _webSocket.Connect();
 
         private void Disconnect()
         {
             _webSocket.Close();
-            Connected = false;
+            IsConnected = false;
         }
 
         public void StartRecord() => _webSocket.Send(StartRecordMessage);
@@ -85,43 +85,43 @@ namespace MajdataPlay.Utils
                 switch (message.op)
                 {
                     case 2: // Identified
-                    {
-                        Connected = true;
-                        break;
-                    }
+                        {
+                            IsConnected = true;
+                            break;
+                        }
                     case 7: // RequestResponse
-                    {
-                        if (message.d.requestType == "StartRecord")
                         {
-                            if (message.d.requestStatus.result)
+                            if (message.d.requestType == "StartRecord")
                             {
-                                Recording = true;
+                                if (message.d.requestStatus.result)
+                                {
+                                    IsRecording = true;
+                                }
+                                else
+                                {
+                                    MajDebug.Log("[OBS] Start Record Failed.");
+                                }
                             }
-                            else
-                            {
-                                MajDebug.Log("[OBS] Start Record Failed.");
-                            }
-                        }
 
-                        if (message.d.requestType == "StopRecord")
-                        {
-                            if (message.d.requestStatus.result)
+                            if (message.d.requestType == "StopRecord")
                             {
-                                Recording = false;
-                                MajDebug.Log("[OBS] Record Saved To " + message.d.responseData.outputPath);
+                                if (message.d.requestStatus.result)
+                                {
+                                    IsRecording = false;
+                                    MajDebug.Log("[OBS] Record Saved To " + message.d.responseData.outputPath);
+                                }
+                                else
+                                {
+                                    MajDebug.Log("[OBS] Stop Record Failed.");
+                                }
                             }
-                            else
-                            {
-                                MajDebug.Log("[OBS] Stop Record Failed.");
-                            }
-                        }
 
-                        break;
-                    }
+                            break;
+                        }
                     default:
-                    {
-                        break;
-                    }
+                        {
+                            break;
+                        }
                 }
             }
             catch (Exception ex)

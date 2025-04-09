@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Types
+﻿namespace MajdataPlay.Recording
 {
     public enum BuiltInRecorder
     {

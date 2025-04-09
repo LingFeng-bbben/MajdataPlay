@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.Recording;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
@@ -44,22 +45,22 @@ namespace MajdataPlay.List
                     MajInstances.RecordHelper = null;
                     break;
                 case BuiltInRecorder.OBS:
-                    if (MajInstances.RecordHelper is not OBSRecordHelper)
+                    if (MajInstances.RecordHelper is not OBSRecorder)
                     {
                         MajInstances.RecordHelper?.Dispose();
                         MajInstances.RecordHelper = null;
                     }
 
-                    MajInstances.RecordHelper ??= new OBSRecordHelper();
+                    MajInstances.RecordHelper ??= new OBSRecorder();
                     break;
                 case BuiltInRecorder.FFmpeg:
-                    if (MajInstances.RecordHelper is not FFmpegRecordHelper)
+                    if (MajInstances.RecordHelper is not FFmpegRecorder)
                     {
                         MajInstances.RecordHelper?.Dispose();
                         MajInstances.RecordHelper = null;
                     }
 
-                    MajInstances.RecordHelper ??= new FFmpegRecordHelper();
+                    MajInstances.RecordHelper ??= new FFmpegRecorder();
                     break;
                 default:
                     break;

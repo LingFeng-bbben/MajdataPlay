@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.IO;
+using MajdataPlay.Recording;
 using MajdataPlay.Types;
 using Semver;
 using System.Runtime.CompilerServices;
@@ -65,12 +66,12 @@ namespace MajdataPlay.Utils
             set => Majdata<GameUpdater>.Instance = value;
         }
 
-        internal static IRecordHelper? RecordHelper
+        internal static IRecorder? RecordHelper
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<IRecordHelper>.Instance;
+            get => Majdata<IRecorder>.Instance;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<IRecordHelper>.Instance = value;
+            set => Majdata<IRecorder>.Instance = value;
         }
     }
 }

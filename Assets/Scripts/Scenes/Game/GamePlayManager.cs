@@ -565,8 +565,8 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if ((MajInstances.RecordHelper?.Connected ?? false)
-                && !MajInstances.RecordHelper.Recording)
+            if ((MajInstances.RecordHelper?.IsConnected ?? false)
+                && !MajInstances.RecordHelper.IsRecording)
                 MajInstances.RecordHelper.StartRecord();
 
             if (_audioSample is null)
@@ -975,8 +975,8 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            if ((MajInstances.RecordHelper?.Connected ?? false)
-                && MajInstances.RecordHelper.Recording)
+            if ((MajInstances.RecordHelper?.IsConnected ?? false)
+                && MajInstances.RecordHelper.IsRecording)
             {
                 MajInstances.RecordHelper.StopRecord();
             }
