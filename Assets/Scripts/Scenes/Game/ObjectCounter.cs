@@ -269,7 +269,7 @@ namespace MajdataPlay.Game
             _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
             
             SetBgInfoActive(true);
-            switch (MajInstances.Setting.Game.BGInfo)
+            switch (MajInstances.Settings.Game.BGInfo)
             {
                 case BGInfoType.CPCombo:
                     _bgInfoHeader.color = CPComboColor;
@@ -769,7 +769,7 @@ namespace MajdataPlay.Game
         /// </summary>
         void UpdateMainOutput()
         {
-            var bgInfo = MajInstances.Setting.Game.BGInfo;
+            var bgInfo = MajInstances.Settings.Game.BGInfo;
             if (MajEnv.Mode != RunningMode.View &&_gameInfo.IsDanMode)
             {
                 _bgInfoText.text = _gameInfo.CurrentHP.ToString();
@@ -1223,7 +1223,7 @@ namespace MajdataPlay.Game
         /// <param name="judgeResult"></param>
         void UpdateFastLateCount(in JudgeResult judgeResult)
         {
-            var gameSetting = judgeResult.IsBreak ? MajInstances.Setting.Display.BreakFastLateType : MajInstances.Setting.Display.FastLateType;
+            var gameSetting = judgeResult.IsBreak ? MajInstances.Settings.Display.BreakFastLateType : MajInstances.Settings.Display.FastLateType;
             var resultValue = (int)judgeResult.Grade;
             var absValue = Math.Abs(7 - resultValue);
 

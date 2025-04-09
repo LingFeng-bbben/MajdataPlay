@@ -28,8 +28,8 @@ namespace MajdataPlay.Title
             DelayPlayVoice().Forget();
             songStorageTask = StartScanningChart();
             WaitForScanningTask().Forget();
-            MajInstances.LightManager.SetAllLight(Color.white);
-            if(MajInstances.InputManager.IsTouchPanelConnected)
+            LightManager.SetAllLight(Color.white);
+            if(InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
             }
@@ -53,7 +53,7 @@ namespace MajdataPlay.Title
 
             if (!SongStorage.IsEmpty)
             {
-                var setting = MajInstances.Setting;
+                var setting = MajInstances.Settings;
                 SongStorage.CollectionIndex = setting.Misc.SelectedDir;
                 var selectedCollection = SongStorage.WorkingCollection;
                 var selectedIndex = setting.Misc.SelectedIndex;
@@ -131,9 +131,9 @@ namespace MajdataPlay.Title
                         }
                         else
                         {
-                            if (MajInstances.Setting.Online.Enable)
+                            if (MajInstances.Settings.Online.Enable)
                             {
-                                foreach (var endpoint in MajInstances.Setting.Online.ApiEndpoints)
+                                foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
                                 {
                                     try
                                     {

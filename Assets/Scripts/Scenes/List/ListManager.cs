@@ -79,12 +79,12 @@ namespace MajdataPlay.List
                 MajInstances.SceneSwitcher.FadeOut();
                 _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
                 InputManager.BindAnyArea(OnAreaDown);
-                MajInstances.LightManager.SetButtonLight(Color.green, 3);
-                MajInstances.LightManager.SetButtonLight(Color.red, 4);
-                MajInstances.LightManager.SetButtonLight(Color.blue, 2);
-                MajInstances.LightManager.SetButtonLight(Color.blue, 5);
-                MajInstances.LightManager.SetButtonLight(Color.yellow, 6);
-                MajInstances.LightManager.SetButtonLight(Color.yellow, 1);
+                LightManager.SetButtonLight(Color.green, 3);
+                LightManager.SetButtonLight(Color.red, 4);
+                LightManager.SetButtonLight(Color.blue, 2);
+                LightManager.SetButtonLight(Color.blue, 5);
+                LightManager.SetButtonLight(Color.yellow, 6);
+                LightManager.SetButtonLight(Color.yellow, 1);
             }
         }
         void OnDestroy()
@@ -191,7 +191,7 @@ namespace MajdataPlay.List
                                 else
                                 {
                                     await _coverListDisplayer.SwitchToSongListAsync();
-                                    MajInstances.LightManager.SetButtonLight(Color.red, 4);
+                                    LightManager.SetButtonLight(Color.red, 4);
                                 }
                             }
                             else
@@ -270,7 +270,7 @@ namespace MajdataPlay.List
                             if (_coverListDisplayer.IsChartList)
                             {
                                 await _coverListDisplayer.SwitchToDirListAsync();
-                                MajInstances.LightManager.SetButtonLight(Color.white, 4);
+                                LightManager.SetButtonLight(Color.white, 4);
                                 SongStorage.WorkingCollection.Index = 0;
                             }
                             break;

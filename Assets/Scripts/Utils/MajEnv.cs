@@ -27,6 +27,8 @@ namespace MajdataPlay.Utils
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 4000;
+
+        public static event Action? OnApplicationQuit;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
@@ -53,8 +55,14 @@ namespace MajdataPlay.Utils
             UseCookies = true,
             CookieContainer = new CookieContainer(),
         });
-        public static GameSetting UserSetting => MajInstances.Setting;
-        public static CancellationToken GlobalCT => GameManager.GlobalCT;
+        public static GameSetting UserSettings { get; }
+        public static CancellationToken GlobalCT
+        {
+            get
+            {
+                return _globalCTS.Token;
+            }
+        }
         public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
         {
             Converters =
@@ -64,6 +72,9 @@ namespace MajdataPlay.Utils
             ReadCommentHandling = JsonCommentHandling.Skip,
             WriteIndented = true
         };
+
+        readonly static CancellationTokenSource _globalCTS = new();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ChangedSynchronizationContext()
         {
@@ -74,25 +85,11 @@ namespace MajdataPlay.Utils
         static MajEnv()
         {
             ChangedSynchronizationContext();
-            CheckAndLoadUserSetting();
             CheckNoteSkinFolder();
 
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
-            if (!Directory.Exists(CachePath))
-                Directory.CreateDirectory(CachePath);
-            if (!Directory.Exists(runtimeCachePath))
-                Directory.CreateDirectory(runtimeCachePath);
-            if (!Directory.Exists(netCachePath))
-                Directory.CreateDirectory(netCachePath);
-            if (!Directory.Exists(ChartPath))
-                Directory.CreateDirectory(ChartPath);
-            if (!Directory.Exists(RecordOutputsPath))
-                Directory.CreateDirectory(RecordOutputsPath);
-            SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-        }
-        static void CheckAndLoadUserSetting()
-        {
+
             if (File.Exists(SettingPath))
             {
                 var js = File.ReadAllText(SettingPath);
@@ -100,35 +97,55 @@ namespace MajdataPlay.Utils
 
                 if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
                 {
-                    MajInstances.Setting = new();
+                    UserSettings = new();
                     MajDebug.LogError("Failed to read setting from file");
                 }
                 else
                 {
-                    MajInstances.Setting = setting;
+                    UserSettings = setting;
                     //Reset Mod option after reboot
-                    MajInstances.Setting.Mod = new ModOptions();
+                    UserSettings.Mod = new ModOptions();
                 }
             }
             else
             {
-                MajInstances.Setting = new GameSetting();
+                UserSettings = new GameSetting();
 
-                var json = Serializer.Json.Serialize(UserSetting, UserJsonReaderOption);
+                var json = Serializer.Json.Serialize(UserSettings, UserJsonReaderOption);
                 File.WriteAllText(SettingPath, json);
             }
 
-            UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.PollingRateMs);
-            UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.PollingRateMs);
-            UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSetting.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            UserSetting.Display.InnerJudgeDistance = UserSetting.Display.InnerJudgeDistance.Clamp(0, 1);
-            UserSetting.Display.OuterJudgeDistance = UserSetting.Display.OuterJudgeDistance.Clamp(0, 1);
+            UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs);
+            UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs);
+            UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
+            UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            UserSettings.Display.InnerJudgeDistance = UserSettings.Display.InnerJudgeDistance.Clamp(0, 1);
+            UserSettings.Display.OuterJudgeDistance = UserSettings.Display.OuterJudgeDistance.Clamp(0, 1);
+
+            CreateDirectoryIfNotExists(CachePath);
+            CreateDirectoryIfNotExists(runtimeCachePath);
+            CreateDirectoryIfNotExists(netCachePath);
+            CreateDirectoryIfNotExists(ChartPath);
+            CreateDirectoryIfNotExists(RecordOutputsPath);
+            SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+        }
+        internal static void OnApplicationQuitRequested()
+        {
+            _globalCTS.Cancel();
+            if (OnApplicationQuit is not null)
+            {
+                OnApplicationQuit();
+            }
         }
         static void CheckNoteSkinFolder()
         {
             if (!Directory.Exists(SkinPath))
                 Directory.CreateDirectory(SkinPath);
+        }
+        static void CreateDirectoryIfNotExists(string path)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
         }
     }
 }

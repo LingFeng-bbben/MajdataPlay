@@ -21,5 +21,10 @@ namespace MajdataPlay.Extensions
             }
             return read;
         }
+        public static void Write(this SerialPort serial, ReadOnlySpan<byte> buffer)
+        {
+            var baseStream = serial.BaseStream;
+            baseStream.Write(buffer);
+        }
     }
 }

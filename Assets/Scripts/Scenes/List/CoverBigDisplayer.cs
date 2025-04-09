@@ -61,19 +61,19 @@ namespace MajdataPlay.List
             diff = i;
             if (i + 1 < diffColors.Length)
             {
-                MajInstances.LightManager.SetButtonLight(diffColors[i + 1], 0);
+                LightManager.SetButtonLight(diffColors[i + 1], 0);
             }
             else
             {
-                MajInstances.LightManager.SetButtonLight(diffColors.First(), 0);
+                LightManager.SetButtonLight(diffColors.First(), 0);
             }
             if (i - 1 >= 0)
             {
-                MajInstances.LightManager.SetButtonLight(diffColors[i - 1], 7);
+                LightManager.SetButtonLight(diffColors[i - 1], 7);
             }
             else
             {
-                MajInstances.LightManager.SetButtonLight(diffColors.Last(), 7);
+                LightManager.SetButtonLight(diffColors.Last(), 7);
             }
 
         }

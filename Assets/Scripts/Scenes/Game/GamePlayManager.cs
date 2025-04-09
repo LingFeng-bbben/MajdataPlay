@@ -84,7 +84,7 @@ namespace MajdataPlay.Game
         [SerializeField]
         Animator _bgInfoHeaderAnim;
         [SerializeField]
-        GameSetting _setting = MajInstances.Setting;
+        GameSetting _setting = MajInstances.Settings;
         [SerializeField]
         GameObject _skipBtn;
         [SerializeField]
@@ -111,8 +111,8 @@ namespace MajdataPlay.Game
         bool _isAllTouch = false;
         bool _isSlideNoHead = false;
         bool _isSlideNoTrack = false;
-        bool _isTrackSkipAvailable = MajEnv.UserSetting.Game.TrackSkip;
-        bool _isFastRetryAvailable = MajEnv.UserSetting.Game.FastRetry;
+        bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
+        bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
@@ -125,7 +125,6 @@ namespace MajdataPlay.Game
         float _audioTrackStartAt = 0f;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
-        InputManager _ioManager = MajInstances.InputManager;
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
@@ -157,7 +156,7 @@ namespace MajdataPlay.Game
 #if !UNITY_EDITOR
             Cursor.visible = false;
 #endif
-            if (MajInstances.InputManager.IsTouchPanelConnected)
+            if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
             }
@@ -329,7 +328,6 @@ namespace MajdataPlay.Game
         /// <returns></returns>
         async UniTaskVoid InitGame()
         {
-            var inputManager = MajInstances.InputManager;
             State = GamePlayStatus.Loading;
             try
             {
@@ -431,7 +429,7 @@ namespace MajdataPlay.Game
                     _audioTrackStartAt = (float)startAt;
                 }
             }
-            AudioLength = (float)_audioSample.Length.TotalSeconds / MajInstances.Setting.Mod.PlaybackSpeed;
+            AudioLength = (float)_audioSample.Length.TotalSeconds / MajInstances.Settings.Mod.PlaybackSpeed;
         }
         /// <summary>
         /// Parse the chart into memory
@@ -577,10 +575,14 @@ namespace MajdataPlay.Game
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
             float extraTime = 5f;
-            if (firstClockTiming < -5f)
-                extraTime += (-(float)firstClockTiming - 5f) + 2f;
-            if (FirstNoteAppearTiming != 0)
-                extraTime += -(FirstNoteAppearTiming + 4f);
+            if (firstClockTiming < 0f)
+            {
+                extraTime = (-(float)firstClockTiming) + 5f;
+            }
+            if (FirstNoteAppearTiming < 0f)
+            {
+                extraTime = MathF.Min(extraTime, (-FirstNoteAppearTiming + 5f));
+            }
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
@@ -639,7 +641,7 @@ namespace MajdataPlay.Game
         {
             if (_gameInfo.IsDanMode)
                 return;
-            switch (MajInstances.Setting.Game.BGInfo)
+            switch (MajInstances.Settings.Game.BGInfo)
             {
                 case BGInfoType.Achievement_101:
                 case BGInfoType.Achievement_100:
@@ -851,7 +853,7 @@ namespace MajdataPlay.Game
                     _audioTimeNoOffset = (float)_audioSample.CurrentSec;
                     _errText.text = ZString.Format("Diff{0:F4}", Math.Abs(realTimeDifference));
 
-                    if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Setting.Debug.TryFixAudioSync)
+                    if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Settings.Debug.TryFixAudioSync)
                     {
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     }
@@ -879,25 +881,25 @@ namespace MajdataPlay.Game
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    MajInstances.LightManager.SetAllLight(Color.yellow);
+                    LightManager.SetAllLight(Color.yellow);
                     break;
                 case ComboState.AP:
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    MajInstances.LightManager.SetAllLight(Color.red);
+                    LightManager.SetAllLight(Color.red);
                     break;
                 case ComboState.FCPlus:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    MajInstances.LightManager.SetAllLight(Color.green);
+                    LightManager.SetAllLight(Color.green);
                     break;
                 case ComboState.FC:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    MajInstances.LightManager.SetAllLight(Color.green);
+                    LightManager.SetAllLight(Color.green);
                     break;
             }
         }

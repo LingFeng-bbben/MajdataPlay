@@ -18,6 +18,7 @@ using MajdataPlay.Game.Notes.Slide.Utils;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.IO;
 
 namespace MajdataPlay.Game
 {
@@ -348,7 +349,7 @@ namespace MajdataPlay.Game
                     return null;
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                 var appearTiming = time + appearDiff;
 
@@ -393,7 +394,7 @@ namespace MajdataPlay.Game
                 var startPos = note.StartPosition;
                 var noteTiming = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -448,7 +449,7 @@ namespace MajdataPlay.Game
                 var startPos = note.StartPosition;
                 var noteTiming = (float)timing.Timing;
                 var speed = Math.Abs(NoteSpeed * timing.HSpeed);
-                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
+                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -500,8 +501,8 @@ namespace MajdataPlay.Game
             {
                 var noteTiming = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-                var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.Timing;
+                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
+                var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Settings.Game.SlideFadeInOffset + (float)timing.Timing;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -1036,8 +1037,8 @@ namespace MajdataPlay.Game
         void AddSlideToQueue<T>(SimaiTimingPoint timing, T SliCompo) where T : SlideBase
         {
             var speed = NoteSpeed * timing.HSpeed;
-            var scaleRate = MajInstances.Setting.Debug.NoteAppearRate;
-            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajInstances.Setting.Game.SlideFadeInOffset + (float)timing.Timing, -5f);
+            var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
+            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajInstances.Settings.Game.SlideFadeInOffset + (float)timing.Timing, -5f);
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = (float)timing.Timing + appearDiff;
             _slideQueueInfos.Add(new()
@@ -1132,7 +1133,7 @@ namespace MajdataPlay.Game
             SliCompo.IsSlideNoHead = IsSlideNoHead;
             SliCompo.IsSlideNoTrack = IsSlideNoTrack;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
-            if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.SortOrder = _slideLayer;
@@ -1214,7 +1215,7 @@ namespace MajdataPlay.Game
             //    centerStar,
             //    leftStar
             //};
-            if (MajInstances.Setting.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
                 WifiCompo.SortOrder = _slideLayer;
@@ -1735,7 +1736,7 @@ namespace MajdataPlay.Game
             public static void SetNewPositionIfRequested(ref int originPos, 
                                                          IReadOnlyDictionary<int, int> mappingTable)
             {
-                switch(MajEnv.UserSetting.Game.Random)
+                switch(MajEnv.UserSettings.Game.Random)
                 {
                     case RandomMode.Disabled:
                         return;
@@ -1750,7 +1751,7 @@ namespace MajdataPlay.Game
             public static void SetNewPositionIfRequested(ref SensorArea originPos, 
                                                          IReadOnlyDictionary<SensorArea, SensorArea> mappingTable)
             {
-                switch (MajEnv.UserSetting.Game.Random)
+                switch (MajEnv.UserSettings.Game.Random)
                 {
                     case RandomMode.Disabled:
                         return;
@@ -1766,7 +1767,7 @@ namespace MajdataPlay.Game
                                                               ref int originEndPos,
                                                               IReadOnlyDictionary<int, int> mappingTable)
             {
-                switch (MajEnv.UserSetting.Game.Random)
+                switch (MajEnv.UserSettings.Game.Random)
                 {
                     case RandomMode.Disabled:
                         return;

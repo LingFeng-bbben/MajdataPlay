@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Types;
+using MajdataPlay.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;

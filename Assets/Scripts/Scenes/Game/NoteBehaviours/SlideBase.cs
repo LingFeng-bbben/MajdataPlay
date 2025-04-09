@@ -272,7 +272,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 return false;
 
             bool canPlay;
-            canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.SlideJudgeType, result);
+            canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.SlideJudgeType, result);
 
             return canPlay;
         }

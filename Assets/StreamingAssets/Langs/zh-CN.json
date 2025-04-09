@@ -275,6 +275,38 @@
       "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
     },
     {
+      "Origin": "TapScale_MAJSETTING_TITLE",
+      "Content": "Tap缩放级别"
+    },
+    {
+      "Origin": "TapScale_MAJSETTING_DESC",
+      "Content": "调整Tap在游玩时的大小"
+    },
+    {
+      "Origin": "HoldScale_MAJSETTING_TITLE",
+      "Content": "Hold缩放级别"
+    },
+    {
+      "Origin": "HoldScale_MAJSETTING_DESC",
+      "Content": "调整Hold在游玩时的大小"
+    },
+    {
+      "Origin": "SlideScale_MAJSETTING_TITLE",
+      "Content": "Slide缩放级别"
+    },
+    {
+      "Origin": "SlideScale_MAJSETTING_DESC",
+      "Content": "调整Slide在游玩时的大小\n此项不影响Wifi Slide"
+    },
+    {
+      "Origin": "TouchScale_MAJSETTING_TITLE",
+      "Content": "Touch缩放级别"
+    },
+    {
+      "Origin": "TouchScale_MAJSETTING_DESC",
+      "Content": "调整Touch在游玩时的大小"
+    },
+    {
       "Origin": "TouchFeedback_MAJSETTING_TITLE",
       "Content": "触摸反馈"
     },

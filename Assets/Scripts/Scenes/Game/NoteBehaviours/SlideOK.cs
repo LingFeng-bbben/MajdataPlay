@@ -29,7 +29,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _displayCP = MajInstances.Setting.Display.DisplayCriticalPerfect;
+            _displayCP = MajInstances.Settings.Display.DisplayCriticalPerfect;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
             _defaultMaterial = _spriteRenderer.sharedMaterial;
@@ -89,6 +89,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else
                 _animator.SetTrigger(MODERN_ANIM_HASH);
         }
+        [OnUpdate]
         void OnUpdate()
         {
             if (_elapsedTime > 0.5f)
@@ -99,7 +100,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                _elapsedTime += Time.deltaTime;
+                _elapsedTime += MajTimeline.DeltaTime;
             }
         }
         public int SetR()

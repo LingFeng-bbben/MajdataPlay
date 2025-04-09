@@ -2,7 +2,7 @@
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public class TouchHoldUpdater : NoteUpdater
+    public sealed class TouchHoldUpdater : NoteUpdater
     {
         const string UPDATER_NAME = "TouchHoldUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";

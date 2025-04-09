@@ -2,6 +2,7 @@
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
+using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace MajdataPlay.Game
             fastLatePos.y = fastLateDistance;
             _fastLateDisplayerA.LocalPosition = fastLatePos;
 
-            _isEnabled = MajInstances.Setting.Display.InnerJudgeDistance != 0;
+            _isEnabled = MajInstances.Settings.Display.InnerJudgeDistance != 0;
         }
         public void Reset()
         {
@@ -102,9 +103,9 @@ namespace MajdataPlay.Game
         {
             bool canPlay;
             if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakJudgeType, judgeResult);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.TouchJudgeType, judgeResult);
             if (!canPlay)
             {
                 return false;
@@ -116,9 +117,9 @@ namespace MajdataPlay.Game
         {
             bool canPlay;
             if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.BreakFastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakFastLateType, judgeResult);
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
             if (!canPlay)
             {
                 return false;
@@ -132,14 +133,14 @@ namespace MajdataPlay.Game
                 return false;
 
             var isBreak = judgeResult.IsBreak;
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.TouchJudgeType, judgeResult);
-            canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Setting.Display.FastLateType, judgeResult);
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.TouchJudgeType, judgeResult);
+            canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
 
             if (!canPlay)
                 return canPlay;
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            var isCritical = MajInstances.Setting.Display.DisplayCriticalPerfect;
-            var displayBreakScore = MajInstances.Setting.Display.DisplayBreakScore;
+            var isCritical = MajInstances.Settings.Display.DisplayCriticalPerfect;
+            var displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
             if (isBreak)
             {
                 if (displayBreakScore)

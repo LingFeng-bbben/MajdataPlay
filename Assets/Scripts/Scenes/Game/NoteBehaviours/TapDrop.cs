@@ -61,7 +61,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
         Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
 
-        readonly float _noteAppearRate = MajInstances.Setting?.Debug.NoteAppearRate ?? 0.265f;
+        readonly float _noteAppearRate = MajInstances.Settings?.Debug.NoteAppearRate ?? 0.265f;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
         const int _spriteSortOrder = 1;
@@ -190,10 +190,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         State = NoteStatus.Scaling;
                         goto case NoteStatus.Scaling;
                     }
-                    //else
-                    //{
-                    //    Transform.localScale = new Vector3(0, 0);
-                    //}
                     return;
                 case NoteStatus.Scaling:
                     {
@@ -202,11 +198,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         if (distance < 1.225f)
                         {
                             Distance = distance;
-                            Transform.localScale = new Vector3(destScale, destScale);
+                            Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_TAP_SCALE;
                         }
                         else
                         {
-                            Transform.localScale = new Vector3(1f, 1f);
+                            Transform.localScale = new Vector3(1f, 1f) * USERSETTING_TAP_SCALE;
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }

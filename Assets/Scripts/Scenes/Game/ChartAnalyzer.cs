@@ -50,7 +50,7 @@ namespace MajdataPlay.Game
         {
             Majdata<ChartAnalyzer>.Free();
         }
-        public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, CancellationToken token = default)
+        public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, bool noCache = false, CancellationToken token = default)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace MajdataPlay.Game
                     if (maiChart.IsEmpty)
                         return;
                     var lastnoteTiming = length == -1 ? maiChart.NoteTimings.LastOrDefault()?.Timing ?? length : length;
-                    var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming);
+                    var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
 
                     token.ThrowIfCancellationRequested();
                     _rawImage.texture = result.LineGraph;
@@ -135,11 +135,11 @@ namespace MajdataPlay.Game
                 await UniTask.Yield();
             }
         }
-        internal static async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength)
+        internal static async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false)
         {
             try
             {
-                if(MajCache<SimaiChart, MaidataAnalyzeResult>.TryGetValue(data, out var cachedResult))
+                if((!noCache)&&MajCache<SimaiChart, MaidataAnalyzeResult>.TryGetValue(data, out var cachedResult))
                 {
                     return cachedResult;
                 }
