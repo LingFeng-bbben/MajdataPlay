@@ -37,8 +37,14 @@ namespace MajdataPlay.IO
         {
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
-            SFXFileNames =  new DirectoryInfo(SFXFilePath).GetFiles().FindAll(o=>!o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
-            VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles().FindAll(o => !o.Name.EndsWith(".meta")).Select(x => x.Name).ToArray();
+            SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
+                                                         .FindAll(o => !o.Name.EndsWith(".meta"))
+                                                         .Select(x => x.Name)
+                                                         .ToArray();
+            VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles()
+                                                             .FindAll(o => !o.Name.EndsWith(".meta"))
+                                                             .Select(x => x.Name)
+                                                             .ToArray();
         }
         void Start()
         {
