@@ -126,6 +126,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             //    _noteManager.OnGameIOUpdate += GameIOListener;
 
             RendererState = RendererStatus.Off;
+            Transform.localScale *= USERSETTING_TOUCH_SCALE;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()

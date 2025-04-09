@@ -145,7 +145,6 @@ namespace MajdataPlay.Setting
                     case "TapScale":
                     case "HoldScale":
                     case "TouchScale":
-                    case "TouchHoldScale":
                     case "SlideScale":
                         _maxValue = 2;
                         _minValue = 0;

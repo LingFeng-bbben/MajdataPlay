@@ -17,6 +17,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         GameObject _two, _three;
         SpriteRenderer _twoRenderer, _threeRenderer;
         Sprite[] _normal, _each, _break;
+
+        readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
         void Start()
         {
             var index = AreaPosition.GetIndex();
@@ -30,6 +32,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             };
             var pos = NoteHelper.GetTouchAreaPosition(index, area);
             transform.position = pos;
+            transform.localScale *= USERSETTING_TOUCH_SCALE;
             _two = transform.GetChild(0).gameObject;
             _three = transform.GetChild(1).gameObject;
             _twoRenderer = _two.GetComponent<SpriteRenderer>();

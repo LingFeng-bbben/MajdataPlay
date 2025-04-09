@@ -64,7 +64,6 @@ namespace MajdataPlay.Types
         public float TapScale { get; set; } = 1f;
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;
-        public float TouchHoldScale { get; set; } = 1f;
         public float SlideScale { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Disable;
         public string Resolution { get; set; } = "1080x1920";
