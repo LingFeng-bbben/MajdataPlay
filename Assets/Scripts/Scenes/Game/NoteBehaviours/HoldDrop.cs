@@ -308,10 +308,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     if (distance < 1.225f)
                     {
                         Distance = distance;
-                        Transform.localScale = new Vector3(destScale, destScale);
+                        Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_HOLD_SCALE;
                     }
                     else
                     {
+                        Transform.localScale = new Vector3(1f, 1f) * USERSETTING_HOLD_SCALE;
                         State = NoteStatus.Running;
                         goto case NoteStatus.Running;
                     }
@@ -345,7 +346,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     }
                     Distance = distance;
                     var dis = (distance - holdDistance) / 2 + holdDistance;
-                    var size = distance - holdDistance + 1.4f;
+                    var size = (distance - holdDistance + 1.4f * USERSETTING_HOLD_SCALE) / USERSETTING_HOLD_SCALE;
                     var lineScale = Mathf.Abs(distance / 4.8f);
 
                     lineScale = lineScale >= 1f ? 1f : lineScale;
@@ -355,7 +356,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     _thisRenderer.size = new Vector2(1.22f, size);
                     _exRenderer.size = new Vector2(1.22f, size);
                     _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
-                    Transform.localScale = new Vector3(1f, 1f);
+                    
                     break;
                 case NoteStatus.Arrived:
                     var endTiming = timing - Length;
