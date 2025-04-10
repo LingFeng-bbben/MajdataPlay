@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Utils
@@ -81,7 +82,7 @@ namespace MajdataPlay.Utils
         }
         private static void OnApplicationQuit()
         {
-            StopRecord();
+            _recorder.StopRecordAsync();
         }
     }
 }

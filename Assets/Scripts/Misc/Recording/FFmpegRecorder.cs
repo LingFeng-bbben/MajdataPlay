@@ -436,13 +436,17 @@ namespace MajdataPlay.Recording
 
                         while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            var now = MajTimeline.UnscaledTime;
-                            var frameInterval = now - lastPresentTime;
-                            var extraPresentFrameData = lastPresentTexture.GetRawTextureData<byte>();
-                            for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
+                            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                            if(lastPresentTexture is not null)
                             {
-                                binWriter.Write(extraPresentFrameData);
-                                binWriter.Flush();
+                                var now = MajTimeline.UnscaledTime;
+                                var frameInterval = now - lastPresentTime;
+                                var extraPresentFrameData = lastPresentTexture.GetRawTextureData<byte>();
+                                for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
+                                {
+                                    binWriter.Write(extraPresentFrameData);
+                                    binWriter.Flush();
+                                }
                             }
 
                             try
@@ -462,8 +466,13 @@ namespace MajdataPlay.Recording
                             {
                                 lastPresentTime = MajTimeline.UnscaledTime;
                             }
-                            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                            MajDebug.Log("Capturing");
                         }
+                        MajDebug.Log("FFmpeg has exited");
+                    }
+                    catch(Exception e)
+                    {
+                        MajDebug.LogException(e);
                     }
                     finally
                     {
