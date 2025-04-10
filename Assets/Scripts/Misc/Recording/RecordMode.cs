@@ -3,7 +3,6 @@
     public enum RecordMode
     {
         Disable,
-        TrackStart,
-        AlwaysOn
+        TrackStart
     }
 }

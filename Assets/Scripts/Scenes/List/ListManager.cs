@@ -37,46 +37,6 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
-
-            if (MajInstances.GameManager.Setting.Game.RecordMode != RecordMode.Disable)
-            {
-                if (MajInstances.GameManager.Setting.Game.Recorder == BuiltInRecorder.OBS)
-                {
-                    if (MajInstances.RecordHelper is not OBSRecorder)
-                    {
-                        MajInstances.RecordHelper?.Dispose();
-                        MajInstances.RecordHelper = null;
-                    }
-
-                    MajInstances.RecordHelper ??= new OBSRecorder();
-                }
-                else if (MajInstances.GameManager.Setting.Game.Recorder == BuiltInRecorder.FFmpeg)
-                {
-                    if (MajInstances.RecordHelper is not FFmpegRecorder)
-                    {
-                        MajInstances.RecordHelper?.Dispose();
-                        MajInstances.RecordHelper = null;
-                    }
-
-                    MajInstances.RecordHelper ??= new FFmpegRecorder();
-                }
-   
-
-                if (MajInstances.GameManager.Setting.Game.RecordMode == RecordMode.AlwaysOn)
-                {
-                    MajInstances.RecordHelper?.StartRecord();
-                }
-                else
-                {
-                    MajInstances.RecordHelper?.StopRecord();
-                }
-            }
-            else
-            {
-                MajInstances.RecordHelper?.StopRecord();
-                MajInstances.RecordHelper?.Dispose();
-                MajInstances.RecordHelper = null;
-            }
         }
         async UniTaskVoid InitializeCoverListAsync()
         {

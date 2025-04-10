@@ -40,11 +40,11 @@ namespace MajdataPlay
             var delta = Time.deltaTime;
             if (_frameTimer <= 0 && gameObject.activeInHierarchy)
             {
-                if (MajInstances.RecordHelper?.IsRecording ?? false)
+                if (RecordHelper.IsRecording)
                 {
                     ChangeSpriteRender(0);
                 }
-                else if (MajInstances.RecordHelper?.IsConnected ?? false)
+                else if (RecordHelper.IsConnected)
                 {
                     ChangeSpriteRender(1);
                 }

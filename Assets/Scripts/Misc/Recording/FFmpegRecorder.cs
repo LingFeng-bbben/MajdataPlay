@@ -5,57 +5,69 @@ using ManagedBass.Asio;
 using ManagedBass.Wasapi;
 using NeoSmart.AsyncLock;
 using System;
-using System.Collections;
+using System.Buffers;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay.Recording
 {
-    public class FFmpegRecorder : MonoBehaviour, IRecorder
+    public class FFmpegRecorder : IRecorder
     {
-        private static WavRecorder wavRecorder;
-        private static ScreenRecorder screenRecorder;
-        private static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
-        private static string time = string.Empty;
-        private static string wavPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.wav");
-        private static string mp4Path => Path.Combine(MajEnv.RecordOutputsPath, $"{time}out.mp4");
-        private static string outputPath => Path.Combine(MajEnv.RecordOutputsPath, $"{time}output.mp4");
-        public bool IsRecording { get; set; } = false;
-        public bool IsConnected { get; set; } = true;
+        public bool IsRecording { get; private set; } = false;
+        public bool IsConnected { get; private set; } = true;
 
-        public async void StartRecord()
+
+        bool _isDisposed = false;
+
+        string _timestamp = string.Empty;
+        string _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.wav");
+        string _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
+        string _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_defaultTimestamp}.mp4");
+
+        readonly WavRecorder _wavRecorder = new(32);
+        readonly ScreenRecorder _screenRecorder = new();
+        readonly static string _defaultTimestamp = $"{DateTime.UnixEpoch:yyyy-MM-dd_HH_mm_ss}";
+        readonly static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
+
+
+        public void StartRecord()
         {
-            time = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
-            IsRecording = true;
-            wavRecorder ??= new(wavPath, 32);
-            if (screenRecorder == null)
-            {
-                GameObject recorder = new("ScreenRecorder");
-                screenRecorder = recorder.AddComponent<ScreenRecorder>();
-            }
-
-            await screenRecorder.StartRecordingAsync(mp4Path);
-            wavRecorder.Start();
+            StopRecordAsync().Wait();
         }
-
-        public async void StopRecord()
+        public async Task StartRecordAsync()
         {
-            IsRecording = false;
-            await screenRecorder.StopRecordingAsync();
-            wavRecorder?.Stop();
-            Destroy(screenRecorder.gameObject);
-            screenRecorder = null;
-            wavRecorder?.Dispose();
-            wavRecorder = null;
-            Task.Run(() =>
+            EnsureIsOpen();
+            if (IsRecording)
             {
-                var args =
-                    $"-y -i {mp4Path} -i {wavPath} -c:v copy -c:a aac -strict experimental -shortest {outputPath}";
+                return;
+            }
+            IsRecording = true;
+            _timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
+            _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.wav");
+            _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
+            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
+
+            await _screenRecorder.StartRecordingAsync(_mp4Path);
+            _wavRecorder.Start();
+        }
+        public void StopRecord()
+        {
+            StopRecordAsync().Wait();
+        }
+        public async Task StopRecordAsync()
+        {
+            EnsureIsOpen();
+            IsRecording = false;
+            _wavRecorder.Stop();
+            await _screenRecorder.StopRecordingAsync();
+            await Task.Run(() =>
+            {
+                var args = $"-y -i {_mp4Path} -i {_wavPath} -c:v copy -c:a aac -strict experimental -shortest {_outputPath}";
                 var startInfo = new ProcessStartInfo(FFMPEG_PATH, args)
                 {
                     UseShellExecute = false,
@@ -64,67 +76,168 @@ namespace MajdataPlay.Recording
                 var p = new Process { StartInfo = startInfo };
                 p.Start();
                 p.WaitForExit();
-                time = string.Empty;
+                _timestamp = string.Empty;
             });
         }
-
+        public void OnLateUpdate()
+        {
+            EnsureIsOpen();
+            if(!IsRecording)
+            {
+                return;
+            }
+            _wavRecorder.OnLateUpdate();
+        }
         public void Dispose()
         {
-            StopRecord();
-            IsConnected = false;
-            GC.SuppressFinalize(this);
-        }
-
-        private class WavRecorder : IDisposable
-        {
-            private FileStream _fileStream;
-            private readonly string _filePath;
-            private readonly int _sampleRate;
-            private readonly int _channels;
-            private readonly int _bitsPerSample;
-            private bool _isRecording;
-            private int _dataSize;
-
-            public WavRecorder(string filePath, int bitsPerSample)
+            if(_isDisposed)
             {
-                if (MajInstances.GameManager.Setting.Audio.Backend == SoundBackendType.Wasapi)
+                return;
+            }
+            StopRecord();
+            _wavRecorder.Dispose();
+            _isDisposed = true;
+        }
+        void EnsureIsOpen()
+        {
+            if(_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(FFmpegRecorder));
+            }
+        }
+        class WavRecorder : IDisposable
+        {
+            int _dataSize = 0;
+            bool _isRecording = false;
+            bool _isDisposed = false;
+            
+            readonly int _sampleRate;
+            readonly int _channels;
+            readonly int _bitsPerSample;
+            readonly MemoryStream _stream = new(4096 * 10_0000);
+            readonly ConcurrentQueue<Sample> _cachedSamples = new();
+
+            public WavRecorder(int bitsPerSample)
+            {
+                var audioBackend = MajInstances.GameManager.Setting.Audio.Backend;
+                if (audioBackend == SoundBackendType.Wasapi)
                 {
                     BassWasapi.GetInfo(out var wasapiInfo);
                     _sampleRate = wasapiInfo.Frequency;
                     _channels = wasapiInfo.Channels;
                 }
-                else if (MajInstances.GameManager.Setting.Audio.Backend == SoundBackendType.Asio)
+                else if (audioBackend == SoundBackendType.Asio)
                 {
                     _channels = BassAsio.Info.Inputs;
                     _sampleRate = (int)BassAsio.Rate;
                 }
                 _bitsPerSample = bitsPerSample;
-                _filePath = filePath;
             }
 
             public void Start()
             {
+                EnsureIsOpen();
+                if (_isRecording)
+                {
+                    return;
+                }
                 try
                 {
-                    _fileStream = new FileStream(_filePath, FileMode.Create);
                     WriteHeader();
                     _isRecording = true;
-                    AudioManager.OnBassProcessExtraLogic += wavRecorder.HandleData;
+                    AudioManager.OnBassProcessExtraLogic += HandleData;
                 }
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Failed to create WAV file: {e.Message}");
-                    Dispose();
+                    Stop();
                 }
             }
-
             public void Stop()
             {
-                AudioManager.OnBassProcessExtraLogic -= wavRecorder.HandleData;
-                wavRecorder.Finish();
-                Dispose();
+                AudioManager.OnBassProcessExtraLogic -= HandleData;
+                EnsureIsOpen();
+                WriteSampleIntoStream();
+                Finish();
+                _dataSize = 0;
+                _stream.Position = 0;
+            }
+            public void OnLateUpdate()
+            {
+                EnsureIsOpen();
+                if (_isRecording)
+                    return;
+                WriteSampleIntoStream();
+            }
+            public void Export(Stream stream)
+            {
+                EnsureIsOpen();
+                if (_isRecording)
+                {
+                    Stop();
+                }
+                if(_dataSize == 0)
+                {
+                    return;
+                }
+                _stream.CopyTo(stream);
+            }
+            public async Task ExportAsync(Stream stream)
+            {
+                EnsureIsOpen();
+                if (_isRecording)
+                {
+                    Stop();
+                }
+                if (_dataSize == 0)
+                {
+                    return;
+                }
+                await _stream.CopyToAsync(stream);
+            }
+            public void Dispose()
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+                AudioManager.OnBassProcessExtraLogic -= HandleData;
+                if (_isRecording)
+                {
+                    Stop();
+                }
+                _isDisposed = true;
+                _stream?.Dispose();
             }
 
+
+
+            void EnsureIsOpen()
+            {
+                if(_isDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(WavRecorder));
+                }
+            }
+            void WriteSampleIntoStream()
+            {
+                lock (_cachedSamples)
+                {
+                    while (_cachedSamples.TryDequeue(out var sample))
+                    {
+                        using (sample)
+                        {
+                            var buffer = sample.Buffer;
+                            if (buffer.IsEmpty)
+                            {
+                                continue;
+                            }
+                            _stream.Write(buffer);
+                            _dataSize += buffer.Length;
+                        }
+                    }
+                }
+            }
             private void WriteHeader()
             {
                 // RIFF header
@@ -146,18 +259,14 @@ namespace MajdataPlay.Recording
                 WriteString("data");
                 WriteInt(0); // Placeholder for data size
             }
-
             private void HandleData(IntPtr buffer, int length, IntPtr user)
             {
-                if (!_isRecording || _fileStream == null)
+                if (!_isRecording || _stream == null)
                     return;
 
                 try
                 {
-                    var data = new byte[length];
-                    Marshal.Copy(buffer, data, 0, length);
-                    _fileStream.Write(data, 0, length);
-                    _dataSize += length;
+                    _cachedSamples.Enqueue(new Sample(buffer, length));
                 }
                 catch (Exception e)
                 {
@@ -165,22 +274,21 @@ namespace MajdataPlay.Recording
                     Dispose();
                 }
             }
-
             private void Finish()
             {
-                if (!_isRecording || _fileStream == null) return;
+                if (!_isRecording) 
+                    return;
 
                 try
                 {
                     _isRecording = false;
-                    _fileStream.Flush();
 
                     // Update RIFF size
-                    _fileStream.Seek(4, SeekOrigin.Begin);
+                    _stream.Seek(4, SeekOrigin.Begin);
                     WriteInt(_dataSize + 36); // 36 = total header size
 
                     // Update data chunk size
-                    _fileStream.Seek(40, SeekOrigin.Begin);
+                    _stream.Seek(40, SeekOrigin.Begin);
                     WriteInt(_dataSize);
                 }
                 catch (Exception e)
@@ -188,37 +296,73 @@ namespace MajdataPlay.Recording
                     MajDebug.LogError($"Error finalizing WAV file: {e.Message}");
                 }
             }
-
-            private void WriteShort(ushort value)
+            private unsafe void WriteShort(ushort value)
             {
-                _fileStream.Write(BitConverter.GetBytes(value), 0, 2);
-            }
+                var ptr = stackalloc byte[2];
+                *(short*)ptr = (short)value;
 
-            private void WriteInt(int value)
+                _stream.Write(new ReadOnlySpan<byte>(ptr, 2));
+            }
+            private unsafe void WriteInt(int value)
             {
-                _fileStream.Write(BitConverter.GetBytes(value), 0, 4);
-            }
+                var ptr = stackalloc byte[4];
+                *(int*)ptr = (int)value;
 
+                _stream.Write(BitConverter.GetBytes(value), 0, 4);
+            }
             private void WriteString(string value)
             {
-                _fileStream.Write(Encoding.ASCII.GetBytes(value), 0, value.Length);
+                _stream.Write(Encoding.ASCII.GetBytes(value), 0, value.Length);
             }
-
-            public void Dispose()
+            struct Sample: IDisposable
             {
-                _fileStream?.Dispose();
-                _fileStream = null;
+                public ReadOnlySpan<byte> Buffer
+                {
+                    get
+                    {
+                        if (_isDisposed)
+                        {
+                            throw new ObjectDisposedException(nameof(Sample));
+                        }
+                        var buffer = _buffer.AsSpan();
+                        return buffer.Slice(0, _length);
+                    }
+                }
+                bool _isDisposed;
+                readonly byte[] _buffer;
+                readonly int _length;
+                public unsafe Sample(IntPtr buffer, int length)
+                {
+                    var data = new ReadOnlySpan<byte>((void*)buffer, length);
+                    _length = length;
+                    var pooledBuffer = ArrayPool<byte>.Shared.Rent(length);
+                    data.CopyTo(pooledBuffer);
+                    _buffer = pooledBuffer;
+                    _isDisposed = false;
+                }
+                public void Dispose()
+                {
+                    if(_isDisposed)
+                    {
+                        return;
+                    }
+                    _isDisposed = true;
+                    ArrayPool<byte>.Shared.Return(_buffer);
+                }
             }
         }
-
-        internal class ScreenRecorder : MajComponent
+        class ScreenRecorder
         {
-            public bool IsRecording { get; private set; }
+            public bool IsRecording { get; private set; } = false;
 
             int _screenWidth = 1920;
             int _screenHeight = 1080;
 
+            string _exportPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
+            UniTask _captureScreenTask = UniTask.CompletedTask;
+
             readonly AsyncLock _recodingSyncLock = new();
+            readonly static string _defaultTimestamp = $"{DateTime.UnixEpoch:yyyy-MM-dd_HH_mm_ss}";
 
             public async UniTask StartRecordingAsync(string exportPath)
             {
@@ -245,23 +389,35 @@ namespace MajdataPlay.Recording
                     _screenWidth = width;
                     _screenHeight = height;
                     IsRecording = true;
-                    StartCoroutine(CaptureScreen(mp4Path));
+                    _exportPath = exportPath;
+                    _captureScreenTask = CaptureScreenAsync();
                 }
             }
             public async UniTask StopRecordingAsync()
             {
-                IsRecording = false;
-                MajInstances.GameManager.ApplyScreenConfig();
+                var task = _recodingSyncLock.LockAsync();
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+                using (task.Result)
+                {
+                    IsRecording = false;
+                    var task2 = _captureScreenTask.AsValueTask();
+                    while (!task2.IsCompleted)
+                    {
+                        await UniTask.Yield();
+                    }
+                    MajInstances.GameManager.ApplyScreenConfig();
+                }
             }
 
-            private IEnumerator CaptureScreen(string exportPath)
+            async UniTask CaptureScreenAsync()
             {
-                byte[] data;
-                var texture = new Texture2D(0, 0);
                 using (var pipeServer = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out))
                 {
                     var args =
-                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{exportPath}\"";
+                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{_exportPath}\"";
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args)
                     {
                         UseShellExecute = false,
@@ -270,46 +426,49 @@ namespace MajdataPlay.Recording
                     startinfo.EnvironmentVariables.Add("FFREPORT", "file=out.log:level=24");
 
                     var p = Process.Start(startinfo);
-                    pipeServer.WaitForConnection();
-
-                    const double targetFrameInterval = 1.0 / 60.0;
-                    var stopwatch = Stopwatch.StartNew();
-                    double nextFrameTime = 0;
-
-                    using (var bw = new BinaryWriter(pipeServer))
+                    await pipeServer.WaitForConnectionAsync();
+                    try
                     {
+                        using var binWriter = new BinaryWriter(pipeServer);
+                        const double FRAME_LENGTH_MSEC = 1.0 / 60.0 * 1000;
+                        var lastPresentTexture = new Texture2D(0, 0);
+                        var lastPresentTime = MajTimeline.UnscaledTime;
+
                         while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            var currentTime = stopwatch.Elapsed.TotalSeconds;
-
-                            if (currentTime < nextFrameTime)
+                            var now = MajTimeline.UnscaledTime;
+                            var frameInterval = now - lastPresentTime;
+                            var extraPresentFrameData = lastPresentTexture.GetRawTextureData<byte>();
+                            for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
                             {
-                                var sleepTime = nextFrameTime - currentTime;
-                                if (sleepTime > 0)
-                                    yield return new WaitForSecondsRealtime((float)sleepTime);
-                                continue;
+                                binWriter.Write(extraPresentFrameData);
+                                binWriter.Flush();
                             }
-
-                            nextFrameTime += targetFrameInterval;
-
-                            yield return new WaitForEndOfFrame();
 
                             try
                             {
-                                texture.Reinitialize(0, 0);
-                                texture = ScreenCapture.CaptureScreenshotAsTexture();
+                                lastPresentTexture.Reinitialize(0, 0);
+                                lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
 
-                                data = texture.GetRawTextureData();
-                                bw.Write(data, 0, data.Length);
-                                bw.Flush();
+                                var data = lastPresentTexture.GetRawTextureData<byte>();
+                                binWriter.Write(data);
+                                binWriter.Flush();
                             }
                             catch
                             {
                                 // ignore single frame catching failed
                             }
+                            finally
+                            {
+                                lastPresentTime = MajTimeline.UnscaledTime;
+                            }
+                            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                         }
                     }
-                    p.WaitForExit();
+                    finally
+                    {
+                        p.WaitForExit();
+                    }
                 }
             }
         }

@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace MajdataPlay.Recording
 {
     internal interface IRecorder : IDisposable
     {
-        public bool IsRecording { get; set; }
-        public bool IsConnected { get; set; }
-        public void StartRecord();
-        public void StopRecord();
+        bool IsRecording { get; }
+        bool IsConnected { get; }
+        void StartRecord();
+        Task StartRecordAsync();
+        void StopRecord();
+        Task StopRecordAsync();
+        void OnLateUpdate();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Utils;
 using System;
+using System.Threading.Tasks;
 using WebSocketSharp;
 
 namespace MajdataPlay.Recording
@@ -72,9 +73,20 @@ namespace MajdataPlay.Recording
         }
 
         public void StartRecord() => _webSocket.Send(StartRecordMessage);
+        public async Task StartRecordAsync()
+        {
+            await Task.Run(StartRecord);
+        }
         public void StopRecord() => _webSocket.Send(StopRecordMessage);
+        public async Task StopRecordAsync()
+        {
+            await Task.Run(StopRecord);
+        }
         private void Authenticate() => _webSocket.Send(AuthenticateMessage);
+        public void OnLateUpdate()
+        {
 
+        }
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             try

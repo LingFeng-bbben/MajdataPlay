@@ -566,11 +566,6 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if (MajInstances.Settings.Game.RecordMode == RecordMode.TrackStart
-                && (MajInstances.RecordHelper?.IsConnected ?? false)
-                && !MajInstances.RecordHelper.IsRecording)
-                MajInstances.RecordHelper.StartRecord();
-
             if (_audioSample is null)
                 return;
 
@@ -593,9 +588,15 @@ namespace MajdataPlay.Game
             while (!_generateAnswerSFXTask.IsCompleted)
                 await UniTask.Yield();
             var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
-            while(!allBackguardTasks.IsCompleted)
+            while (!allBackguardTasks.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
+                await UniTask.Yield();
+            }
+            var wait4Recorder = RecordHelper.StartRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
@@ -977,13 +978,6 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            if (MajInstances.Settings.Game.RecordMode == RecordMode.TrackStart
-                && (MajInstances.RecordHelper?.IsConnected ?? false)
-                && MajInstances.RecordHelper.IsRecording)
-            {
-                MajInstances.RecordHelper.StopRecord();
-            }
-
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
@@ -995,10 +989,17 @@ namespace MajdataPlay.Game
         {
             State = GamePlayStatus.Ended;
             ClearAllResources();
-
+            var sceneSwitcher = MajInstances.SceneSwitcher;
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            
-            MajInstances.SceneSwitcher.SwitchScene("List",false);
+            sceneSwitcher.FadeIn();
+            var wait4Recorder = RecordHelper.StopRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
+                await UniTask.Yield();
+            }
+            _sceneSwitcher.SetLoadingText(string.Empty);
+            sceneSwitcher.SwitchScene("List",false);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
