@@ -38,13 +38,10 @@ namespace MajdataPlay.List
                 MajInstances.AudioManager.PlaySFX("SelectSong.wav");
             }
 
-            switch (MajInstances.GameManager.Setting.Game.Recorder)
+            if (MajInstances.GameManager.Setting.Game.RecordMode != RecordMode.Disable)
             {
-                case BuiltInRecorder.Disable:
-                    MajInstances.RecordHelper?.Dispose();
-                    MajInstances.RecordHelper = null;
-                    break;
-                case BuiltInRecorder.OBS:
+                if (MajInstances.GameManager.Setting.Game.Recorder == BuiltInRecorder.OBS)
+                {
                     if (MajInstances.RecordHelper is not OBSRecorder)
                     {
                         MajInstances.RecordHelper?.Dispose();
@@ -52,8 +49,9 @@ namespace MajdataPlay.List
                     }
 
                     MajInstances.RecordHelper ??= new OBSRecorder();
-                    break;
-                case BuiltInRecorder.FFmpeg:
+                }
+                else if (MajInstances.GameManager.Setting.Game.Recorder == BuiltInRecorder.FFmpeg)
+                {
                     if (MajInstances.RecordHelper is not FFmpegRecorder)
                     {
                         MajInstances.RecordHelper?.Dispose();
@@ -61,9 +59,23 @@ namespace MajdataPlay.List
                     }
 
                     MajInstances.RecordHelper ??= new FFmpegRecorder();
-                    break;
-                default:
-                    break;
+                }
+   
+
+                if (MajInstances.GameManager.Setting.Game.RecordMode == RecordMode.AlwaysOn)
+                {
+                    MajInstances.RecordHelper?.StartRecord();
+                }
+                else
+                {
+                    MajInstances.RecordHelper?.StopRecord();
+                }
+            }
+            else
+            {
+                MajInstances.RecordHelper?.StopRecord();
+                MajInstances.RecordHelper?.Dispose();
+                MajInstances.RecordHelper = null;
             }
         }
         async UniTaskVoid InitializeCoverListAsync()

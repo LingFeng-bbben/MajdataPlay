@@ -19,6 +19,7 @@ using MajdataPlay.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Recording;
 
 namespace MajdataPlay.Game
 {
@@ -565,7 +566,8 @@ namespace MajdataPlay.Game
         }
         async UniTask PrepareToPlay()
         {
-            if ((MajInstances.RecordHelper?.IsConnected ?? false)
+            if (MajInstances.Settings.Game.RecordMode == RecordMode.TrackStart
+                && (MajInstances.RecordHelper?.IsConnected ?? false)
                 && !MajInstances.RecordHelper.IsRecording)
                 MajInstances.RecordHelper.StartRecord();
 
@@ -975,7 +977,8 @@ namespace MajdataPlay.Game
             if(!_bgManager.IsUnityNull())
                 _bgManager.CancelTimeRef();
 
-            if ((MajInstances.RecordHelper?.IsConnected ?? false)
+            if (MajInstances.Settings.Game.RecordMode == RecordMode.TrackStart
+                && (MajInstances.RecordHelper?.IsConnected ?? false)
                 && MajInstances.RecordHelper.IsRecording)
             {
                 MajInstances.RecordHelper.StopRecord();

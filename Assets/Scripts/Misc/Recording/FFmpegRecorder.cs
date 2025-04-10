@@ -52,9 +52,8 @@ namespace MajdataPlay.Recording
             screenRecorder = null;
             wavRecorder?.Dispose();
             wavRecorder = null;
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-                await Task.Delay(1000);
                 var args =
                     $"-y -i {mp4Path} -i {wavPath} -c:v copy -c:a aac -strict experimental -shortest {outputPath}";
                 var startInfo = new ProcessStartInfo(FFMPEG_PATH, args)
