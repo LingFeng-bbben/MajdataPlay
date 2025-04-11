@@ -39,7 +39,7 @@ namespace MajdataPlay.Recording
 
         public void StartRecord()
         {
-            StopRecordAsync().Wait();
+            StartRecordAsync().Wait();
         }
         public async Task StartRecordAsync()
         {
@@ -54,7 +54,7 @@ namespace MajdataPlay.Recording
             _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
             _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
 
-            await _screenRecorder.StartRecordingAsync(_mp4Path);
+            //await _screenRecorder.StartRecordingAsync(_mp4Path);
             _wavRecorder.Start();
         }
         public void StopRecord()
@@ -151,6 +151,7 @@ namespace MajdataPlay.Recording
                 {
                     WriteHeader();
                     _isRecording = true;
+                    _dataSize = 0;
                     AudioManager.OnBassProcessExtraLogic += HandleData;
                 }
                 catch (Exception e)
@@ -165,13 +166,12 @@ namespace MajdataPlay.Recording
                 EnsureIsOpen();
                 WriteSampleIntoStream();
                 Finish();
-                _dataSize = 0;
                 _stream.Position = 0;
             }
             public void OnLateUpdate()
             {
                 EnsureIsOpen();
-                if (_isRecording)
+                if (!_isRecording)
                     return;
                 WriteSampleIntoStream();
             }
@@ -267,7 +267,7 @@ namespace MajdataPlay.Recording
             }
             private void HandleData(IntPtr buffer, int length, IntPtr user)
             {
-                if (!_isRecording || _stream == null)
+                if (!_isRecording)
                     return;
 
                 try
