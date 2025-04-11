@@ -816,7 +816,7 @@
     },
     {
       "Origin": "RecordMode_MAJSETTING_DESC",
-      "Content": "Disable: 禁用\nAlwaysOn: 持续录制直到更改录制模式或者关闭游戏\nTrackStart: 录制一整张谱的时间"
+      "Content": "Disable: 禁用\nTrackStart: 录制一整张谱的时间"
     }
   ]
 }

@@ -126,11 +126,36 @@ namespace MajdataPlay
             QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
-
-            if(Setting.Display.Topmost)
+            DetectHWEncoder();
+            if (Setting.Display.Topmost)
             {
                 SetWindowTopmost();
             }
+        }
+        void DetectHWEncoder()
+        {
+            var deviceName = SystemInfo.graphicsDeviceName.ToLower();
+            HardwareEncoder encoder;
+            if(deviceName.Contains("nvidia"))
+            {
+                encoder = HardwareEncoder.NVENC;
+            }
+            else if(deviceName.Contains("amd"))
+            {
+                encoder = HardwareEncoder.AMF;
+            }
+            else if(deviceName.Contains("intel"))
+            {
+                encoder = HardwareEncoder.QSV;
+            }
+            else
+            {
+                encoder = HardwareEncoder.None;
+            }
+            var envType = typeof(MajEnv);
+
+            envType.GetField("<HWEncoder>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
+                   .SetValue(null, encoder);
         }
         void SetWindowTopmost()
         {

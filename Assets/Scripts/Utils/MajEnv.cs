@@ -30,6 +30,7 @@ namespace MajdataPlay.Utils
 
         public static event Action? OnApplicationQuit;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
+        internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;

@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
+using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using ManagedBass.Asio;
 using ManagedBass.Wasapi;
@@ -73,6 +74,10 @@ namespace MajdataPlay.Recording
         public void StopRecord()
         {
             EnsureIsOpen();
+            if (!IsRecording)
+            {
+                return;
+            }
             IsRecording = false;
             _screenRecorder.StopRecord();
             _wavRecorder.Stop();
@@ -529,8 +534,9 @@ namespace MajdataPlay.Recording
                 var pipeServer = _pipeStream;
                 using (pipeServer)
                 {
+                    var encodeParams = GetEncodeParams();
                     var args =
-                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r {_targetFrameRate} -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{_exportPath}\"";
+                        $"-hide_banner -y -f rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r {_targetFrameRate} -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" {encodeParams} -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{_exportPath}\"";
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args)
                     {
                         UseShellExecute = false,
@@ -605,6 +611,62 @@ namespace MajdataPlay.Recording
                 }
                 _pipeStream = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out);
                 return _pipeStream;
+            }
+            string GetEncodeParams()
+            {
+                var head = "-codec:v";
+                var postfix = "";
+                var encoder = "h264";
+                var @params = "";
+                var isHWEncoder = false;
+                switch(MajEnv.UserSettings.Game.RecordEncoder)
+                {
+                    case RecordEncoder.H264:
+                        encoder = "h264";
+                        break;
+                    case RecordEncoder.HEVC:
+                        encoder = "hevc";
+                        break;
+                    case RecordEncoder.VP9:
+                        encoder = "vp9";
+                        break;
+                    case RecordEncoder.AV1:
+                        encoder = "av1";
+                        break;
+                }
+                if(MajEnv.UserSettings.Debug.EnableHWEncoder)
+                {
+                    switch (MajEnv.HWEncoder)
+                    {
+                        case HardwareEncoder.None:
+                            break;
+                        case HardwareEncoder.NVENC:
+                            if (MajEnv.UserSettings.Game.RecordEncoder == RecordEncoder.VP9)
+                            {
+                                break;
+                            }
+                            postfix = "_nvenc";
+                            isHWEncoder = true;
+                            break;
+                        case HardwareEncoder.AMF:
+                            if (MajEnv.UserSettings.Game.RecordEncoder == RecordEncoder.VP9)
+                            {
+                                break;
+                            }
+                            postfix = "_amf";
+                            isHWEncoder = true;
+                            break;
+                        case HardwareEncoder.QSV:
+                            postfix = "_qsv";
+                            isHWEncoder = true;
+                            break;
+                    }
+                }
+                if(!isHWEncoder)
+                {
+                    @params = "-preset fast";
+                }
+                return $"{head} {encoder}{postfix} {@params}";
             }
         }
     }
