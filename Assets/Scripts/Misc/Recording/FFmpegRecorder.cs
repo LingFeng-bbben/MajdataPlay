@@ -64,6 +64,10 @@ namespace MajdataPlay.Recording
             EnsureIsOpen();
             IsRecording = false;
             _wavRecorder.Stop();
+            using (var fileStream = File.Create(_wavPath))
+            {
+                await _wavRecorder.ExportAsync(fileStream);
+            }
             await _screenRecorder.StopRecordingAsync();
             await Task.Run(() =>
             {
@@ -433,30 +437,24 @@ namespace MajdataPlay.Recording
                         const double FRAME_LENGTH_MSEC = 1.0 / 60.0 * 1000;
                         var lastPresentTexture = new Texture2D(0, 0);
                         var lastPresentTime = MajTimeline.UnscaledTime;
-
+                        var behaviour = MajInstances.GameManager;
+                        
                         while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-                            if(lastPresentTexture is not null)
+                            await UniTask.WaitForEndOfFrame(behaviour);
+                            try
                             {
                                 var now = MajTimeline.UnscaledTime;
                                 var frameInterval = now - lastPresentTime;
-                                var extraPresentFrameData = lastPresentTexture.GetRawTextureData<byte>();
-                                for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
-                                {
-                                    binWriter.Write(extraPresentFrameData);
-                                    binWriter.Flush();
-                                }
-                            }
 
-                            try
-                            {
-                                lastPresentTexture.Reinitialize(0, 0);
                                 lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
 
-                                var data = lastPresentTexture.GetRawTextureData<byte>();
-                                binWriter.Write(data);
-                                binWriter.Flush();
+                                var data = lastPresentTexture.GetRawTextureData();
+                                for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
+                                {
+                                    binWriter.Write(data);
+                                    binWriter.Flush();
+                                }
                             }
                             catch
                             {
