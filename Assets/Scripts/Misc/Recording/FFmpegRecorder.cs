@@ -6,6 +6,7 @@ using ManagedBass.Wasapi;
 using NeoSmart.AsyncLock;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
@@ -13,7 +14,8 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+using UnityEngine.Profiling;
+#nullable enable
 namespace MajdataPlay.Recording
 {
     public class FFmpegRecorder : IRecorder
@@ -363,7 +365,7 @@ namespace MajdataPlay.Recording
             int _screenHeight = 1080;
 
             string _exportPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
-            UniTask _captureScreenTask = UniTask.CompletedTask;
+            Coroutine? _captureScreenTask = null;
 
             readonly AsyncLock _recodingSyncLock = new();
             readonly static string _defaultTimestamp = $"{DateTime.UnixEpoch:yyyy-MM-dd_HH_mm_ss}";
@@ -394,7 +396,7 @@ namespace MajdataPlay.Recording
                     _screenHeight = height;
                     IsRecording = true;
                     _exportPath = exportPath;
-                    _captureScreenTask = CaptureScreenAsync();
+                    _captureScreenTask = MajInstances.GameManager.StartCoroutine(CaptureScreenAsync());
                 }
             }
             public async UniTask StopRecordingAsync()
@@ -407,17 +409,17 @@ namespace MajdataPlay.Recording
                 using (task.Result)
                 {
                     IsRecording = false;
-                    var task2 = _captureScreenTask.AsValueTask();
-                    while (!task2.IsCompleted)
+                    if(_captureScreenTask is not null)
                     {
-                        await UniTask.Yield();
+                        MajInstances.GameManager.StopCoroutine(_captureScreenTask);
                     }
                     MajInstances.GameManager.ApplyScreenConfig();
                 }
             }
 
-            async UniTask CaptureScreenAsync()
+            IEnumerator CaptureScreenAsync()
             {
+                var wait4EndOfFramePromise = new WaitForEndOfFrame();
                 using (var pipeServer = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out))
                 {
                     var args =
@@ -430,52 +432,46 @@ namespace MajdataPlay.Recording
                     startinfo.EnvironmentVariables.Add("FFREPORT", "file=out.log:level=24");
 
                     var p = Process.Start(startinfo);
-                    await pipeServer.WaitForConnectionAsync();
-                    try
+                    var task = pipeServer.WaitForConnectionAsync();
+                    while(!task.IsCompleted)
                     {
-                        using var binWriter = new BinaryWriter(pipeServer);
-                        const double FRAME_LENGTH_MSEC = 1.0 / 60.0 * 1000;
-                        var lastPresentTexture = new Texture2D(0, 0);
-                        var lastPresentTime = MajTimeline.UnscaledTime;
-                        var behaviour = MajInstances.GameManager;
-                        
-                        while (pipeServer.IsConnected && IsRecording && !p.HasExited)
+                        yield return wait4EndOfFramePromise;
+                    }                    
+                    const double FRAME_LENGTH_MSEC = 1.0 / 60.0 * 1000;
+                    var lastPresentTexture = new Texture2D(0, 0);
+                    var lastPresentTime = MajTimeline.UnscaledTime;
+                    var behaviour = MajInstances.GameManager;
+
+                    while (pipeServer.IsConnected && IsRecording && !p.HasExited)
+                    {
+                        yield return wait4EndOfFramePromise;
+                        try
                         {
-                            await UniTask.WaitForEndOfFrame(behaviour);
-                            try
-                            {
-                                var now = MajTimeline.UnscaledTime;
-                                var frameInterval = now - lastPresentTime;
+                            var now = MajTimeline.UnscaledTime;
+                            var frameInterval = now - lastPresentTime;
 
-                                lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
-
-                                var data = lastPresentTexture.GetRawTextureData();
-                                for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
-                                {
-                                    binWriter.Write(data);
-                                    binWriter.Flush();
-                                }
-                            }
-                            catch
+                            Profiler.BeginSample("Capture Screenshot");
+                            lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
+                            Profiler.EndSample();
+                            var data = lastPresentTexture.GetRawTextureData<byte>();
+                            for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
                             {
-                                // ignore single frame catching failed
+                                pipeServer.Write(data);
                             }
-                            finally
-                            {
-                                lastPresentTime = MajTimeline.UnscaledTime;
-                            }
-                            MajDebug.Log("Capturing");
+                            lastPresentTexture.Reinitialize(0, 0);
                         }
-                        MajDebug.Log("FFmpeg has exited");
+                        catch
+                        {
+                            // ignore single frame catching failed
+                        }
+                        finally
+                        {
+                            lastPresentTime = MajTimeline.UnscaledTime;
+                        }
+                        MajDebug.Log("Capturing");
                     }
-                    catch(Exception e)
-                    {
-                        MajDebug.LogException(e);
-                    }
-                    finally
-                    {
-                        p.WaitForExit();
-                    }
+                    p.WaitForExit();
+                    MajDebug.Log("FFmpeg has exited");
                 }
             }
         }
