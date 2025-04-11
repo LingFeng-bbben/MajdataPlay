@@ -582,7 +582,6 @@ namespace MajdataPlay.Recording
                                 lastPresentTime = MajTimeline.UnscaledTime;
                                 await UniTask.WaitForEndOfFrame(behaviour);
                             }
-                            MajDebug.Log("Capturing");
                         }
                     }
                     p.WaitForExit(2000);
