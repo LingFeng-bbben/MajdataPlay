@@ -71,6 +71,7 @@ namespace MajdataPlay
             s += $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
             s += $"################     Startup Check  End    ################";
             MajDebug.Log(s);
+            MajDebug.Log($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
             base.Awake();
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];

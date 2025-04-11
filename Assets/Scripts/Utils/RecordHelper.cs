@@ -82,7 +82,7 @@ namespace MajdataPlay.Utils
         }
         private static void OnApplicationQuit()
         {
-            _recorder.StopRecordAsync();
+            _recorder.StopRecord();
         }
     }
 }

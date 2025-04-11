@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -39,7 +40,19 @@ namespace MajdataPlay.Recording
 
         public void StartRecord()
         {
-            StartRecordAsync().Wait();
+            EnsureIsOpen();
+            if (IsRecording)
+            {
+                return;
+            }
+            IsRecording = true;
+            _timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
+            _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.wav");
+            _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
+            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
+
+            _screenRecorder.StartRecord(_mp4Path);
+            _wavRecorder.Start();
         }
         public async Task StartRecordAsync()
         {
@@ -54,23 +67,41 @@ namespace MajdataPlay.Recording
             _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
             _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
 
-            //await _screenRecorder.StartRecordingAsync(_mp4Path);
+            await _screenRecorder.StartRecordAsync(_mp4Path);
             _wavRecorder.Start();
         }
         public void StopRecord()
         {
-            StopRecordAsync().Wait();
+            EnsureIsOpen();
+            IsRecording = false;
+            _screenRecorder.StopRecord();
+            _wavRecorder.Stop();
+            using (var fileStream = File.Create(_wavPath))
+            {
+                _wavRecorder.Export(fileStream);
+            }
+            
+            var args = $"-y -i {_mp4Path} -i {_wavPath} -c:v copy -c:a aac -strict experimental -shortest {_outputPath}";
+            var startInfo = new ProcessStartInfo(FFMPEG_PATH, args)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var p = new Process { StartInfo = startInfo };
+            p.Start();
+            p.WaitForExit();
+            _timestamp = string.Empty;
         }
         public async Task StopRecordAsync()
         {
             EnsureIsOpen();
             IsRecording = false;
+            await _screenRecorder.StopRecordAsync();
             _wavRecorder.Stop();
             using (var fileStream = File.Create(_wavPath))
             {
                 await _wavRecorder.ExportAsync(fileStream);
             }
-            await _screenRecorder.StopRecordingAsync();
             await Task.Run(() =>
             {
                 var args = $"-y -i {_mp4Path} -i {_wavPath} -c:v copy -c:a aac -strict experimental -shortest {_outputPath}";
@@ -370,13 +401,17 @@ namespace MajdataPlay.Recording
             int _originFrameRate = 60;
 
             string _exportPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
-            Coroutine? _captureScreenTask = null;
+            UniTask _captureScreenTask = UniTask.CompletedTask;
+            Process? _ffmpegProcess = null;
+            NamedPipeServerStream? _pipeStream = null;
 
             readonly AsyncLock _recodingSyncLock = new();
             readonly static string _defaultTimestamp = $"{DateTime.UnixEpoch:yyyy-MM-dd_HH_mm_ss}";
 
-            public async UniTask StartRecordingAsync(string exportPath)
+            public async UniTask StartRecordAsync(string exportPath)
             {
+                if (IsRecording)
+                    return;
                 var task = _recodingSyncLock.LockAsync();
                 while (!task.IsCompleted)
                 {
@@ -385,38 +420,22 @@ namespace MajdataPlay.Recording
 
                 using (task.Result)
                 {
-                    var resolution = Screen.currentResolution;
-                    _originScreenWidth = Screen.width;
-                    _originScreenHeight = Screen.height;
-                    _screenWidth = _originScreenWidth;
-                    _screenHeight = _originScreenHeight;
-                    _originFrameRate = MajEnv.UserSettings.Display.FPSLimit; 
-                    var isForceFullScreen = Screen.fullScreen;
-                    if (_screenWidth % 2 != 0)
-                        _screenWidth++;
-                    if (_screenHeight % 2 != 0)
-                        _screenHeight++;
-                    if (_screenWidth < 128)
-                        _screenWidth = 128;
-                    if (_screenHeight < 128)
-                        _screenHeight = 128;
-                    if(_originFrameRate <= 0)
-                    {
-                        _targetFrameRate = 60;
-                    }
-                    else
-                    {
-                        _targetFrameRate = _originFrameRate;
-                    }
-                    Application.targetFrameRate = _targetFrameRate;
-                    Screen.SetResolution(_screenWidth, _screenHeight, isForceFullScreen);
-                    IsRecording = true;
-                    _exportPath = exportPath;
-                    _captureScreenTask = MajInstances.GameManager.StartCoroutine(CaptureScreenAsync());
+                    StartRecordInternal(exportPath);
                 }
             }
-            public async UniTask StopRecordingAsync()
+            public void StartRecord(string exportPath)
             {
+                if (IsRecording)
+                    return;
+                using (_recodingSyncLock.Lock())
+                {
+                    StartRecordInternal(exportPath);
+                }
+            }
+            public async UniTask StopRecordAsync()
+            {
+                if (!IsRecording)
+                    return;
                 var task = _recodingSyncLock.LockAsync();
                 while (!task.IsCompleted)
                 {
@@ -424,81 +443,168 @@ namespace MajdataPlay.Recording
                 }
                 using (task.Result)
                 {
-                    IsRecording = false;
-                    if(_captureScreenTask is not null)
-                    {
-                        MajInstances.GameManager.StopCoroutine(_captureScreenTask);
-                    }
-                    Application.targetFrameRate = _originFrameRate;
-                    Screen.SetResolution(_originScreenWidth, _originScreenHeight, Screen.fullScreen);
+                    StopRecordInternal();
+                    await WaitFFmpegExitAsync();
                 }
             }
-
-            IEnumerator CaptureScreenAsync()
+            public void StopRecord()
             {
-                var wait4EndOfFramePromise = new WaitForEndOfFrame();
-                using (var pipeServer = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out))
+                if (!IsRecording)
+                    return;
+                using (_recodingSyncLock.LockAsync())
+                {
+                    StopRecordInternal();
+                    WaitFFmpegExit();
+                }
+            }
+            void StartRecordInternal(string exportPath)
+            {
+                _originScreenWidth = Screen.width;
+                _originScreenHeight = Screen.height;
+                _screenWidth = _originScreenWidth;
+                _screenHeight = _originScreenHeight;
+                _originFrameRate = MajEnv.UserSettings.Display.FPSLimit;
+                var isForceFullScreen = Screen.fullScreen;
+                if (_screenWidth % 2 != 0)
+                    _screenWidth++;
+                if (_screenHeight % 2 != 0)
+                    _screenHeight++;
+                if (_screenWidth < 128)
+                    _screenWidth = 128;
+                if (_screenHeight < 128)
+                    _screenHeight = 128;
+                if (_originFrameRate <= 0)
+                {
+                    _targetFrameRate = 60;
+                }
+                else
+                {
+                    _targetFrameRate = _originFrameRate;
+                }
+                Application.targetFrameRate = _targetFrameRate;
+                Screen.SetResolution(_screenWidth, _screenHeight, isForceFullScreen);
+                IsRecording = true;
+                _exportPath = exportPath;
+                _captureScreenTask = CaptureScreenAsync();
+            }
+            void StopRecordInternal()
+            {
+                IsRecording = false;
+                _pipeStream = CreatePipeStream();
+                Application.targetFrameRate = _originFrameRate;
+                Screen.SetResolution(_originScreenWidth, _originScreenHeight, Screen.fullScreen);
+            }
+            async Task WaitFFmpegExitAsync()
+            {
+                if (_ffmpegProcess is null || _ffmpegProcess.HasExited)
+                    return;
+                var p = _ffmpegProcess;
+                await Task.Run(() =>
+                {
+                    p.WaitForExit(2000);
+                });
+                if(!p.HasExited)
+                {
+                    p.Kill();
+                }
+            }
+            void WaitFFmpegExit()
+            {
+                if (_ffmpegProcess is null || _ffmpegProcess.HasExited)
+                    return;
+                var p = _ffmpegProcess;
+                p.WaitForExit(2000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                }
+            }
+            async UniTask CaptureScreenAsync()
+            {
+                //var wait4EndOfFramePromise = new WaitForEndOfFrame();
+                if(_pipeStream is null)
+                {
+                    _pipeStream = CreatePipeStream();
+                }
+                var pipeServer = _pipeStream;
+                using (pipeServer)
                 {
                     var args =
-                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r 60 -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{_exportPath}\"";
+                        $"-hide_banner -y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s \"{_screenWidth}x{_screenHeight}\" -r {_targetFrameRate} -i \\\\.\\pipe\\MajdataPlayRec -vf \"vflip\" -c:v libx264 -preset fast -pix_fmt yuv420p -t \"{int.MaxValue:0.0000}\" \"{_exportPath}\"";
                     var startinfo = new ProcessStartInfo(FFMPEG_PATH, args)
                     {
                         UseShellExecute = false,
                         CreateNoWindow = true
                     };
+                    var behaviour = MajInstances.GameManager;
                     startinfo.EnvironmentVariables.Add("FFREPORT", "file=out.log:level=24");
 
-                    var p = Process.Start(startinfo);
+                    _ffmpegProcess = Process.Start(startinfo);
+                    var p = _ffmpegProcess;
                     var task = pipeServer.WaitForConnectionAsync();
                     while(!task.IsCompleted)
                     {
-                        yield return wait4EndOfFramePromise;
+                        await UniTask.WaitForEndOfFrame(behaviour);
                     }                    
-                    var frameLengthMSec = 1.0 / _targetFrameRate * 1000;
-                    var lastPresentTexture = new Texture2D(0, 0);
+                    Texture2D lastPresentTexture;
                     var lastPresentTime = MajTimeline.UnscaledTime;
-                    var behaviour = MajInstances.GameManager;
                     var buffer = Array.Empty<byte>();
-                    while (pipeServer.IsConnected && IsRecording && !p.HasExited)
+                    await UniTask.WaitForEndOfFrame(behaviour);
+                    using (pipeServer)
                     {
-                        yield return wait4EndOfFramePromise;
-                        try
+                        while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                         {
-                            var now = MajTimeline.UnscaledTime;
-                            var frameInterval = now - lastPresentTime;
-                            var read = 0;
-
-                            Profiler.BeginSample("Capture Screenshot");
-                            lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
-                            Profiler.EndSample();
-                            var data = lastPresentTexture.GetRawTextureData<byte>()
-                                                         .AsReadOnlySpan();
-                            if(data.Length > buffer.Length)
+                            try
                             {
-                                buffer = new byte[data.Length];
+                                var now = MajTimeline.UnscaledTime;
+                                var frameInterval = now - lastPresentTime;
+                                var read = 0;
+
+                                Profiler.BeginSample("Capture Screenshot");
+                                lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
+                                Profiler.EndSample();
+                                read = ReadDataIntoBuffer(lastPresentTexture.GetRawTextureData<byte>(), ref buffer);
+                                pipeServer.Write(buffer, 0, read);
+                                lastPresentTexture.Reinitialize(0, 0);
                             }
-                            data.CopyTo(buffer);
-                            read = data.Length;
-                            //for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
-                            //{
-                            //    pipeServer.Write(data);
-                            //}
-                            pipeServer.Write(buffer, 0, 0);
-                            lastPresentTexture.Reinitialize(0, 0);
+                            catch
+                            {
+                                // ignore single frame catching failed
+                            }
+                            finally
+                            {
+                                lastPresentTime = MajTimeline.UnscaledTime;
+                                await UniTask.WaitForEndOfFrame(behaviour);
+                            }
+                            MajDebug.Log("Capturing");
                         }
-                        catch
-                        {
-                            // ignore single frame catching failed
-                        }
-                        finally
-                        {
-                            lastPresentTime = MajTimeline.UnscaledTime;
-                        }
-                        MajDebug.Log("Capturing");
                     }
-                    p.WaitForExit();
+                    p.WaitForExit(2000);
+                    if(!p.HasExited)
+                    {
+                        p.Kill();
+                    }
                     MajDebug.Log("FFmpeg has exited");
                 }
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int ReadDataIntoBuffer(ReadOnlySpan<byte> data, ref byte[] buffer)
+            {
+                if (data.Length > buffer.Length)
+                {
+                    buffer = new byte[data.Length];
+                }
+                data.CopyTo(buffer);
+                return data.Length;
+            }
+            NamedPipeServerStream CreatePipeStream()
+            {
+                if(_pipeStream is not null)
+                {
+                    _pipeStream.Dispose();
+                }
+                _pipeStream = new NamedPipeServerStream("MajdataPlayRec", PipeDirection.Out);
+                return _pipeStream;
             }
         }
     }
