@@ -363,6 +363,11 @@ namespace MajdataPlay.Recording
 
             int _screenWidth = 1920;
             int _screenHeight = 1080;
+            int _targetFrameRate = 60;
+
+            int _originScreenWidth = 1920;
+            int _originScreenHeight = 1080;
+            int _originFrameRate = 60;
 
             string _exportPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
             Coroutine? _captureScreenTask = null;
@@ -381,19 +386,30 @@ namespace MajdataPlay.Recording
                 using (task.Result)
                 {
                     var resolution = Screen.currentResolution;
-                    var width = resolution.width;
-                    var height = resolution.height;
-                    if (width % 2 != 0)
-                        width++;
-                    if (height % 2 != 0)
-                        height++;
-                    if (width < 128)
-                        width = 128;
-                    if (height < 128)
-                        height = 128;
-                    Screen.SetResolution(width, height, false);
-                    _screenWidth = width;
-                    _screenHeight = height;
+                    _originScreenWidth = Screen.width;
+                    _originScreenHeight = Screen.height;
+                    _screenWidth = _originScreenWidth;
+                    _screenHeight = _originScreenHeight;
+                    _originFrameRate = MajEnv.UserSettings.Display.FPSLimit; 
+                    var isForceFullScreen = Screen.fullScreen;
+                    if (_screenWidth % 2 != 0)
+                        _screenWidth++;
+                    if (_screenHeight % 2 != 0)
+                        _screenHeight++;
+                    if (_screenWidth < 128)
+                        _screenWidth = 128;
+                    if (_screenHeight < 128)
+                        _screenHeight = 128;
+                    if(_originFrameRate <= 0)
+                    {
+                        _targetFrameRate = 60;
+                    }
+                    else
+                    {
+                        _targetFrameRate = _originFrameRate;
+                    }
+                    Application.targetFrameRate = _targetFrameRate;
+                    Screen.SetResolution(_screenWidth, _screenHeight, isForceFullScreen);
                     IsRecording = true;
                     _exportPath = exportPath;
                     _captureScreenTask = MajInstances.GameManager.StartCoroutine(CaptureScreenAsync());
@@ -413,7 +429,8 @@ namespace MajdataPlay.Recording
                     {
                         MajInstances.GameManager.StopCoroutine(_captureScreenTask);
                     }
-                    MajInstances.GameManager.ApplyScreenConfig();
+                    Application.targetFrameRate = _originFrameRate;
+                    Screen.SetResolution(_originScreenWidth, _originScreenHeight, Screen.fullScreen);
                 }
             }
 
@@ -437,7 +454,7 @@ namespace MajdataPlay.Recording
                     {
                         yield return wait4EndOfFramePromise;
                     }                    
-                    const double FRAME_LENGTH_MSEC = 1.0 / 60.0 * 1000;
+                    var frameLengthMSec = 1.0 / _targetFrameRate * 1000;
                     var lastPresentTexture = new Texture2D(0, 0);
                     var lastPresentTime = MajTimeline.UnscaledTime;
                     var behaviour = MajInstances.GameManager;
