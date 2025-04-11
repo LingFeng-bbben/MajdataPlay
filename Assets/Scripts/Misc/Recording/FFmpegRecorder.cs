@@ -441,7 +441,7 @@ namespace MajdataPlay.Recording
                     var lastPresentTexture = new Texture2D(0, 0);
                     var lastPresentTime = MajTimeline.UnscaledTime;
                     var behaviour = MajInstances.GameManager;
-
+                    var buffer = Array.Empty<byte>();
                     while (pipeServer.IsConnected && IsRecording && !p.HasExited)
                     {
                         yield return wait4EndOfFramePromise;
@@ -449,15 +449,24 @@ namespace MajdataPlay.Recording
                         {
                             var now = MajTimeline.UnscaledTime;
                             var frameInterval = now - lastPresentTime;
+                            var read = 0;
 
                             Profiler.BeginSample("Capture Screenshot");
                             lastPresentTexture = ScreenCapture.CaptureScreenshotAsTexture();
                             Profiler.EndSample();
-                            var data = lastPresentTexture.GetRawTextureData<byte>();
-                            for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
+                            var data = lastPresentTexture.GetRawTextureData<byte>()
+                                                         .AsReadOnlySpan();
+                            if(data.Length > buffer.Length)
                             {
-                                pipeServer.Write(data);
+                                buffer = new byte[data.Length];
                             }
+                            data.CopyTo(buffer);
+                            read = data.Length;
+                            //for (var i = 0; i < frameInterval.TotalMilliseconds % FRAME_LENGTH_MSEC; i++)
+                            //{
+                            //    pipeServer.Write(data);
+                            //}
+                            pipeServer.Write(buffer, 0, 0);
                             lastPresentTexture.Reinitialize(0, 0);
                         }
                         catch
