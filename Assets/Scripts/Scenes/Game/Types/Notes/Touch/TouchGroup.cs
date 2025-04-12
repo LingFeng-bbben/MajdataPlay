@@ -29,6 +29,7 @@ namespace MajdataPlay.Game.Notes.Touch
         }
         public float JudgeDiff { get; set; } = 0;
         public object[] Members { get; set; } = Array.Empty<IStatefulNote>();
+        public Guid? Hand { get; set; } = null;
         List<JudgeGrade> results = new();
 
         public void RegisterResult(in JudgeGrade result)

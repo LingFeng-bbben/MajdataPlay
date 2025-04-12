@@ -121,28 +121,67 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
         {
-            if (_isJudged || !IsAutoplay)
-                return;
-            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+            switch (AutoplayMode)
             {
-                var autoplayGrade = AutoplayGrade;
-                if (((int)autoplayGrade).InRange(0, 14))
-                    _judgeResult = autoplayGrade;
-                else
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                ConvertJudgeGrade(ref _judgeResult);
-                _isJudged = true;
-                _judgeDiff = _judgeResult switch
-                {
-                    < JudgeGrade.Perfect => 1,
-                    > JudgeGrade.Perfect => -1,
-                    _ => 0
-                };
-                PlaySFX();
-                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-                _effectManager.ResetEffect(StartPos);
-                _lastHoldState = -1;
+                case AutoplayMode.Enable:
+                    if (_isJudged || !IsAutoplay)
+                        return;
+                    if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+                    {
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                            _judgeResult = autoplayGrade;
+                        else
+                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        ConvertJudgeGrade(ref _judgeResult);
+                        _isJudged = true;
+                        _judgeDiff = _judgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        PlaySFX();
+                        _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                        _effectManager.ResetEffect(StartPos);
+                        _lastHoldState = -1;
+                    }
+                    break;
+                case AutoplayMode.DJAuto:
+                    DJAuto();
+                    break;
             }
+        }
+        void DJAuto()
+        {
+            if (!IsAutoplay || IsEnded)
+            {
+                return;
+            }
+            else if (_isJudged)
+            {
+                _guid = _guid ?? _noteManager.RentHand();
+                if (_guid is null)
+                {
+                    return;
+                }
+                _noteManager.SimulationPressSensor(_sensorPos);
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            {
+                return;
+            }
+            _guid = _guid ?? _noteManager.RentHand();
+            if (_guid is null)
+            {
+                return;
+            }
+            _noteManager.SimulationPressSensor(_sensorPos);
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
@@ -197,7 +236,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End(float endJudgeOffset = 0)
         {
             if (IsEnded)
+            {
                 return;
+            }
+            else if (_guid is not null)
+            {
+                _noteManager.Return((Guid)_guid);
+            }
             State = NoteStatus.End;
 
             if (IsClassic)

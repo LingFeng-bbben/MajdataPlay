@@ -169,7 +169,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End()
         {
             if (IsEnded)
+            {
                 return;
+            }
 
             State = NoteStatus.End;
 
@@ -297,6 +299,35 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _noteManager.NextTouch(QueueInfo);
                 RegisterGrade();
             }
+        }
+        protected override void Autoplay()
+        {
+            switch (AutoplayMode)
+            {
+                case AutoplayMode.Enable:
+                    base.Autoplay();
+                    break;
+                case AutoplayMode.DJAuto:
+                    DJAuto();
+                    break;
+            }
+        }
+        void DJAuto()
+        {
+            if (_isJudged || !IsAutoplay)
+            {
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            {
+                return;
+            }
+
+            _noteManager.SimulationPressSensor(_sensorPos);
         }
         void RegisterGrade()
         {
