@@ -486,6 +486,10 @@ namespace MajdataPlay.Recording
                 {
                     _targetFrameRate = _originFrameRate;
                 }
+                if(MajEnv.UserSettings.Display.VSync)
+                {
+                    _targetFrameRate = (int)Screen.currentResolution.refreshRateRatio.value;
+                }
                 Application.targetFrameRate = _targetFrameRate;
                 Screen.SetResolution(_screenWidth, _screenHeight, isForceFullScreen);
                 IsRecording = true;
@@ -553,7 +557,6 @@ namespace MajdataPlay.Recording
                         await UniTask.WaitForEndOfFrame(behaviour);
                     }                    
                     Texture2D lastPresentTexture;
-                    var lastPresentTime = MajTimeline.UnscaledTime;
                     var buffer = Array.Empty<byte>();
                     await UniTask.WaitForEndOfFrame(behaviour);
                     using (pipeServer)
@@ -562,8 +565,6 @@ namespace MajdataPlay.Recording
                         {
                             try
                             {
-                                var now = MajTimeline.UnscaledTime;
-                                var frameInterval = now - lastPresentTime;
                                 var read = 0;
 
                                 Profiler.BeginSample("Capture Screenshot");
@@ -579,7 +580,6 @@ namespace MajdataPlay.Recording
                             }
                             finally
                             {
-                                lastPresentTime = MajTimeline.UnscaledTime;
                                 await UniTask.WaitForEndOfFrame(behaviour);
                             }
                         }
