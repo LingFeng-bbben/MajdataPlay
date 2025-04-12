@@ -140,6 +140,7 @@ namespace MajdataPlay.Game
         NotePoolManager _notePoolManager;
         ObjectCounter _objectCounter;
         TimeDisplayer _timeDisplayer;
+        RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
 
@@ -179,6 +180,7 @@ namespace MajdataPlay.Game
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
             _noteLoader = Majdata<NoteLoader>.Instance!;
+            _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -693,6 +695,7 @@ namespace MajdataPlay.Game
                     _objectCounter.OnLateUpdate();
                     break;
             }
+            _recorderStateDisplayer.OnLateUpdate();
         }
         void GameControlUpdate()
         {
