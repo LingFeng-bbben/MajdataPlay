@@ -100,6 +100,10 @@ namespace MajdataPlay.Recording
         public async Task StopRecordAsync()
         {
             EnsureIsOpen();
+            if (!IsRecording)
+            {
+                return;
+            }
             IsRecording = false;
             await _screenRecorder.StopRecordAsync();
             _wavRecorder.Stop();
