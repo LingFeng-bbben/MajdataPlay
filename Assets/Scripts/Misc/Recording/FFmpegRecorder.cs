@@ -36,7 +36,7 @@ namespace MajdataPlay.Recording
         readonly WavRecorder _wavRecorder = new(32);
         readonly ScreenRecorder _screenRecorder = new();
         readonly static string _defaultTimestamp = $"{DateTime.UnixEpoch:yyyy-MM-dd_HH_mm_ss}";
-        readonly static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "ffmpeg.exe");
+        readonly static string FFMPEG_PATH = Path.Combine(MajEnv.AssetsPath, "Libraries", "ffmpeg.exe");
 
 
         public void StartRecord()
