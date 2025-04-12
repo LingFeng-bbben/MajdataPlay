@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.IO;
+using MajdataPlay.Recording;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using UnityEngine.Rendering;
@@ -32,6 +33,9 @@ namespace MajdataPlay.Types
         public RandomMode Random { get; set; } = RandomMode.Disabled;
         public string Language { get; set; } = "zh-CN - Majdata";
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
+        public BuiltInRecorder Recorder { get; set; } = BuiltInRecorder.FFmpeg;
+        public RecordMode RecordMode { get; set; } = RecordMode.Disable;
+        public RecordEncoder RecordEncoder { get; set; } = RecordEncoder.H264;
     }
     public class JudgeOptions
     {
@@ -151,6 +155,7 @@ namespace MajdataPlay.Types
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = false;
+        public bool EnableHWEncoder { get; set; } = true;
         public int MaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;
         public int HoldPoolCapacity { get; set; } = 48;

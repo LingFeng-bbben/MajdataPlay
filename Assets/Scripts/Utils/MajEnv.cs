@@ -30,6 +30,7 @@ namespace MajdataPlay.Utils
 
         public static event Action? OnApplicationQuit;
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
+        internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
@@ -41,6 +42,7 @@ namespace MajdataPlay.Utils
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static string RecordOutputsPath { get; } = Path.Combine(RootPath, "RecordOutputs");
         public static Sprite EmptySongCover { get; }
         public static Material BreakMaterial { get; }
         public static Material DefaultMaterial { get; }
@@ -125,6 +127,7 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(runtimeCachePath);
             CreateDirectoryIfNotExists(netCachePath);
             CreateDirectoryIfNotExists(ChartPath);
+            CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
         }
         internal static void OnApplicationQuitRequested()

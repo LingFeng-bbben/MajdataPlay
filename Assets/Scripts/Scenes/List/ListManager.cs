@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
+using MajdataPlay.Recording;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;

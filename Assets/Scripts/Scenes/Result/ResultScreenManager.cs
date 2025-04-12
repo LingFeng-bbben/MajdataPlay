@@ -213,6 +213,7 @@ namespace MajdataPlay.Result
                 await UniTask.WaitForSeconds(2);
             }
             await OnlineSaveTask;
+            await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);
             LightManager.SetButtonLight(Color.green, 3);
             LightManager.SetButtonLight(Color.yellow, 4);

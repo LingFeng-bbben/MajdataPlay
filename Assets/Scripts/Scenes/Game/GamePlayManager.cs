@@ -1,4 +1,4 @@
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -19,6 +19,7 @@ using MajdataPlay.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Recording;
 
 namespace MajdataPlay.Game
 {
@@ -139,6 +140,7 @@ namespace MajdataPlay.Game
         NotePoolManager _notePoolManager;
         ObjectCounter _objectCounter;
         TimeDisplayer _timeDisplayer;
+        RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
 
@@ -178,6 +180,7 @@ namespace MajdataPlay.Game
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
             _noteLoader = Majdata<NoteLoader>.Instance!;
+            _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
@@ -188,6 +191,7 @@ namespace MajdataPlay.Game
                 LoadDanModSettings();
             }
             InitGame().Forget();
+            return;
         }
         void LoadDanModSettings()
         {
@@ -586,9 +590,15 @@ namespace MajdataPlay.Game
             while (!_generateAnswerSFXTask.IsCompleted)
                 await UniTask.Yield();
             var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
-            while(!allBackguardTasks.IsCompleted)
+            while (!allBackguardTasks.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
+                await UniTask.Yield();
+            }
+            var wait4Recorder = RecordHelper.StartRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
@@ -685,6 +695,7 @@ namespace MajdataPlay.Game
                     _objectCounter.OnLateUpdate();
                     break;
             }
+            _recorderStateDisplayer.OnLateUpdate();
         }
         void GameControlUpdate()
         {
@@ -981,10 +992,17 @@ namespace MajdataPlay.Game
         {
             State = GamePlayStatus.Ended;
             ClearAllResources();
-
+            var sceneSwitcher = MajInstances.SceneSwitcher;
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            
-            MajInstances.SceneSwitcher.SwitchScene("List",false);
+            sceneSwitcher.FadeIn();
+            var wait4Recorder = RecordHelper.StopRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
+                await UniTask.Yield();
+            }
+            _sceneSwitcher.SetLoadingText(string.Empty);
+            sceneSwitcher.SwitchScene("List",false);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
