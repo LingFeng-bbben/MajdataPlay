@@ -121,27 +121,75 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
         {
-            if (_isJudged || !IsAutoplay)
-                return;
-            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+            switch (AutoplayMode)
             {
-                var autoplayGrade = AutoplayGrade;
-                if (((int)autoplayGrade).InRange(0, 14))
-                    _judgeResult = autoplayGrade;
-                else
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                ConvertJudgeGrade(ref _judgeResult);
-                _isJudged = true;
-                _judgeDiff = _judgeResult switch
+                case AutoplayMode.Enable:
+                    if (_isJudged || !IsAutoplay)
+                        return;
+                    if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+                    {
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                            _judgeResult = autoplayGrade;
+                        else
+                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        ConvertJudgeGrade(ref _judgeResult);
+                        _isJudged = true;
+                        _judgeDiff = _judgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        PlaySFX();
+                        _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                        _effectManager.ResetEffect(StartPos);
+                        _lastHoldState = -1;
+                    }
+                    break;
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
+            }
+        }
+        void DJAutoplay()
+        {
+            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+            if (!IsAutoplay || IsEnded)
+            {
+                return;
+            }
+            else if (_isJudged)
+            {
+                if(isBtnFirst)
                 {
-                    < JudgeGrade.Perfect => 1,
-                    > JudgeGrade.Perfect => -1,
-                    _ => 0
-                };
-                PlaySFX();
-                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-                _effectManager.ResetEffect(StartPos);
-                _lastHoldState = -1;
+                    _noteManager.SimulateButtonPress(_sensorPos);
+                }
+                else
+                {
+                    _noteManager.SimulateSensorPress(_sensorPos);
+                }
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToArriveTiming() < (-FRAME_LENGTH_SEC * 2 + FRAME_LENGTH_SEC / 2))
+            {
+                return;
+            }
+
+            if (isBtnFirst)
+            {
+                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                    _noteManager.SimulateSensorClick(_sensorPos);
+            }
+            else
+            {
+                _ = _noteManager.SimulateSensorClick(_sensorPos) ||
+                    _noteManager.SimulateButtonClick(_sensorPos);
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
@@ -197,7 +245,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End(float endJudgeOffset = 0)
         {
             if (IsEnded)
+            {
                 return;
+            }
+
             State = NoteStatus.End;
 
             if (IsClassic)
@@ -263,10 +314,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
             BodyCheck();
+            Autoplay();
         }
         [OnUpdate]
         void OnUpdate()
@@ -386,7 +437,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
@@ -462,7 +513,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (IsClassic)
             {
-                if (IsAutoplay && remainingTime == 0)
+                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
                 {
                     End();
                     return;
@@ -486,7 +537,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
-            if (isPressed || IsAutoplay)
+            if (isPressed || AutoplayMode == AutoplayMode.Enable)
             {
                 if (remainingTime == 0)
                 {

@@ -169,7 +169,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End()
         {
             if (IsEnded)
+            {
                 return;
+            }
 
             State = NoteStatus.End;
 
@@ -220,7 +222,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
                 return;
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -298,6 +300,36 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 RegisterGrade();
             }
         }
+        protected override void Autoplay()
+        {
+            switch (AutoplayMode)
+            {
+                case AutoplayMode.Enable:
+                    base.Autoplay();
+                    break;
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
+            }
+        }
+        void DJAutoplay()
+        {
+            if (_isJudged)
+            {
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToArriveTiming() < -FRAME_LENGTH_SEC)
+            {
+                return;
+            }
+
+            _noteManager.SimulateSensorClick(_sensorPos);
+        }
         void RegisterGrade()
         {
             if (GroupInfo is not null && !_judgeResult.IsMissOrTooFast())
@@ -310,9 +342,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
+            Autoplay();
         }
         [OnUpdate]
         void OnUpdate()

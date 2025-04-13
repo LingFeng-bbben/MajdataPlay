@@ -10,6 +10,7 @@ namespace MajdataPlay.Types
     {
         Disable,
         Enable,
-        DJAuto
+        DJAuto_ButtonRing_First,
+        DJAuto_TouchPanel_First,
     }
 }

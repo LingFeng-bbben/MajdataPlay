@@ -131,33 +131,64 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
         {
-            if (_isJudged || !IsAutoplay)
-                return;
-            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+            switch (AutoplayMode)
             {
-                var autoplayGrade = AutoplayGrade;
-                if (((int)autoplayGrade).InRange(0, 14))
-                    _judgeResult = autoplayGrade;
-                else
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                ConvertJudgeGrade(ref _judgeResult);
-                _isJudged = true;
-                _judgeDiff = _judgeResult switch
-                {
-                    < JudgeGrade.Perfect => 1,
-                    > JudgeGrade.Perfect => -1,
-                    _ => 0
-                };
-                PlayJudgeSFX(new JudgeResult()
-                {
-                    Grade = _judgeResult,
-                    IsBreak = IsBreak,
-                    IsEX = IsEX,
-                    Diff = _judgeDiff
-                });
-                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-                _lastHoldState = -1;
+                case AutoplayMode.Enable:
+                    if (_isJudged || !IsAutoplay)
+                        return;
+                    if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+                    {
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                            _judgeResult = autoplayGrade;
+                        else
+                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        ConvertJudgeGrade(ref _judgeResult);
+                        _isJudged = true;
+                        _judgeDiff = _judgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        PlayJudgeSFX(new JudgeResult()
+                        {
+                            Grade = _judgeResult,
+                            IsBreak = IsBreak,
+                            IsEX = IsEX,
+                            Diff = _judgeDiff
+                        });
+                        _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                        _lastHoldState = -1;
+                    }
+                    break;
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
             }
+            
+        }
+        void DJAutoplay()
+        {
+            if (!IsAutoplay || IsEnded)
+            {
+                return;
+            }
+            else if (_isJudged)
+            {
+                _noteManager.SimulateSensorPress(_sensorPos);
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToArriveTiming() < -FRAME_LENGTH_SEC)
+            {
+                return;
+            }
+            _noteManager.SimulateSensorClick(_sensorPos);
         }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
@@ -223,7 +254,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End()
         {
             if (IsEnded)
+            {
                 return;
+            }
 
             State = NoteStatus.End;
             _multTouchHandler.Unregister(_sensorPos);
@@ -325,10 +358,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
             BodyCheck();
+            Autoplay();
         }
         [OnUpdate]
         void OnUpdate()
@@ -432,7 +465,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged)
+            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayMode.Enable)
             {
                 return;
             }

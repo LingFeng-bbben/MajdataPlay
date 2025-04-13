@@ -817,6 +817,18 @@
     {
       "Origin": "RecordMode_MAJSETTING_DESC",
       "Content": "Disable: 禁用\nTrackStart: 录制一整张谱的时间"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_Enable",
+      "Content": "开启"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_DJAuto_ButtonRing_First",
+      "Content": "DJAuto (按键优先)"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_DJAuto_TouchPanel_First",
+      "Content": "DJAuto (内屏优先)"
     }
   ]
 }

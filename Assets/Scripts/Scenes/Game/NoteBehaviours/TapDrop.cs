@@ -131,8 +131,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void End()
         {
             if (IsEnded)
+            {
                 return;
-
+            }
             State = NoteStatus.End;
 
             SetActive(false);
@@ -166,9 +167,49 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
+            Autoplay();
+        }
+        protected override void Autoplay()
+        {
+            switch(AutoplayMode)
+            {
+                case AutoplayMode.Enable:
+                    base.Autoplay();
+                    break;
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
+            }
+        }
+        void DJAutoplay()
+        {
+            if (_isJudged || !IsAutoplay)
+            {
+                return;
+            }
+            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToArriveTiming() < (-FRAME_LENGTH_SEC * 2 + FRAME_LENGTH_SEC / 2))
+            {
+                return;
+            }
+            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+
+            if(isBtnFirst)
+            {
+                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                    _noteManager.SimulateSensorClick(_sensorPos);
+            }
+            else
+            {
+                _ = _noteManager.SimulateSensorClick(_sensorPos) ||
+                    _noteManager.SimulateButtonClick(_sensorPos);
+            }
         }
         [OnUpdate]
         void OnUpdate()
@@ -228,7 +269,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (_isJudged || IsEnded)
+            if (_isJudged || IsEnded || AutoplayMode == AutoplayMode.Enable)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();
