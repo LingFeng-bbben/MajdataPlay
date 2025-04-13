@@ -606,7 +606,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 pos.z = -10;
                 for (int i = 0; i < 9; i++)
                 {
-                    const float rad = 0.25f;
+                    const float rad = 0.3f;
                     var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
                     if (i == 8) 
                         circular = Vector3.zero;
