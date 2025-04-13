@@ -308,11 +308,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     base.Autoplay();
                     break;
                 case AutoplayMode.DJAuto:
-                    DJAuto();
+                    DJAutoplay();
                     break;
             }
         }
-        void DJAuto()
+        void DJAutoplay()
         {
             if (_isJudged || !IsAutoplay)
             {

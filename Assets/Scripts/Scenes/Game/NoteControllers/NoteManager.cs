@@ -49,12 +49,6 @@ namespace MajdataPlay.Game.Notes.Controllers
         readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
-        readonly Guid?[] _hands = new Guid?[2]
-        {
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-        };
-
         GamePlayManager? _gpManager;
 
         void Awake()
@@ -337,32 +331,6 @@ namespace MajdataPlay.Game.Notes.Controllers
                    _sensorStatusInThisFrame[i] == SensorStatus.On;
         }
 
-        public Guid? RentHand()
-        {
-            Guid? guid;
-            if (_hands[0] is null)
-            {
-                guid = _hands[1];
-                _hands[1] = null;
-            }
-            else
-            {
-                guid = _hands[0];
-                _hands[0] = null;
-            }
-            return guid;
-        }
-        public void Return(in Guid guid)
-        {
-            if (_hands[0] is null)
-            {
-                _hands[0] = guid;
-            }
-            else if (_hands[1] is null)
-            {
-                _hands[1] = guid;
-            }
-        }
         public void SimulationPressSensor(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.E8)

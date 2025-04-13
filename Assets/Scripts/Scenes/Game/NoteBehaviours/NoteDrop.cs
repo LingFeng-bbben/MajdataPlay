@@ -153,7 +153,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected JudgeGrade _judgeResult = JudgeGrade.Miss;
 
         protected SensorArea _sensorPos;
-        protected Guid? _guid = null;
 
         readonly protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
         readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;

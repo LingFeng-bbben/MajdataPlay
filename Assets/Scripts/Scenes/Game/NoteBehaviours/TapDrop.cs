@@ -134,10 +134,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if(_guid is not null)
-            {
-                _noteManager.Return((Guid)_guid);
-            }
             State = NoteStatus.End;
 
             SetActive(false);
@@ -183,11 +179,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     base.Autoplay();
                     break;
                 case AutoplayMode.DJAuto:
-                    DJAuto();
+                    DJAutoplay();
                     break;
             }
         }
-        void DJAuto()
+        void DJAutoplay()
         {
             if (_isJudged || !IsAutoplay)
             {
@@ -198,11 +194,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 return;
             }
             else if (GetTimeSpanToJudgeTiming() < -0.016667f)
-            {
-                return;
-            }
-            _guid = _guid ?? _noteManager.RentHand();
-            if (_guid is null)
             {
                 return;
             }
