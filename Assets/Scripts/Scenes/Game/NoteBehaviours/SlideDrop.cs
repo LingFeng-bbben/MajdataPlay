@@ -28,7 +28,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
         SpriteRenderer _starRenderer;
         SlideTable _table;
-
+        float _djAutoplayRatio = 1;
         protected override void Awake()
         {
             base.Awake();
@@ -174,21 +174,22 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
 
             State = NoteStatus.Initialized;
-#if UNITY_EDITOR
-            var obj = Instantiate(_slideBars[0]);
-            Destroy(obj.GetComponent<SpriteRenderer>());
-            var transform = obj.transform;
-            var indexProcess = (_starPositions.Count - 1) * (1- _table.Const);
-            var index = (int)indexProcess;
-            var pos = indexProcess - index;
+            _djAutoplayRatio = SlideLength / 14;
+//#if UNITY_EDITOR
+//            var obj = Instantiate(_slideBars[0]);
+//            Destroy(obj.GetComponent<SpriteRenderer>());
+//            var transform = obj.transform;
+//            var indexProcess = (_starPositions.Count - 1) * (1- _table.Const);
+//            var index = (int)indexProcess;
+//            var pos = indexProcess - index;
 
-            var a = _starPositions[index + 1];
-            var b = _starPositions[index];
-            var ba = a - b;
-            var newPos = ba * pos + b;
+//            var a = _starPositions[index + 1];
+//            var b = _starPositions[index];
+//            var ba = a - b;
+//            var newPos = ba * pos + b;
 
-            transform.position = newPos;
-#endif
+//            transform.position = newPos;
+//#endif
         }
         void InitializeSlideGroup()
         {
@@ -594,13 +595,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void DJAutoplay()
         {
-            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            if(currentProgress == _djAutoplayProgress)
+            if (IsFinished)
             {
                 return;
             }
-            var step = (currentProgress - _djAutoplayProgress) / 4;
-            for(; _djAutoplayProgress < currentProgress; _djAutoplayProgress += step)
+            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            var step = (currentProgress - _djAutoplayProgress) / (8 * _djAutoplayRatio);
+            var delta = 0f;
+            for(; ; )
             {
                 var pos = GetPositionFromProgress(_djAutoplayProgress);
                 pos.z = -10;
@@ -619,6 +621,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _noteManager.SimulateSensorPress(area);
                     }
                 }
+                if(delta > 0.2f || 
+                   delta + step > 0.2f ||
+                   _djAutoplayProgress >= currentProgress)
+                {
+                    break;
+                }
+                delta += step;
+                _djAutoplayProgress += step;
             }
             _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
         }

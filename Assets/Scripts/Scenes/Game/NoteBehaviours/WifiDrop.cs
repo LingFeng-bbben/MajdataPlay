@@ -435,17 +435,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void DJAutoplay()
         {
-            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            if (currentProgress == _djAutoplayProgress)
+            if (IsFinished)
             {
                 return;
             }
-            var sensorPos = (SensorArea)(EndPos - 1);
-            var rIndex = ((SensorArea)(sensorPos.Diff(-1).GetIndex() + 17)).GetIndex();
-            var lIndex = ((SensorArea)(sensorPos.GetIndex() + 17)).GetIndex();
+            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
             var startPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             var step = (currentProgress - _djAutoplayProgress) / 4;
-            for (; _djAutoplayProgress < currentProgress; _djAutoplayProgress += step)
+            for (; ; _djAutoplayProgress += step)
             {
                 for (var j = 0; j < 3; j++)
                 {
@@ -458,7 +455,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     {
                         rad = 0.15f;
                     }
-                    var pos = (_starEndPositions[j] - startPos) * _djAutoplayProgress + startPos;
+                    var pos = (_starEndPositions[j] - startPos) * _djAutoplayProgress.Clamp(0, 1) + startPos;
                     pos.z = -10;
                     for (int i = 0; i < 9; i++)
                     {
@@ -475,6 +472,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
                             _noteManager.SimulateSensorPress(area);
                         }
                     }
+                }
+                if(_djAutoplayProgress >= currentProgress)
+                {
+                    break;
                 }
             }
             _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
