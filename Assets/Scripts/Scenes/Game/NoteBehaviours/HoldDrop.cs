@@ -164,11 +164,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 if(isBtnFirst)
                 {
-                    _noteManager.SimulationPressButton(_sensorPos);
+                    _noteManager.SimulateButtonPress(_sensorPos);
                 }
                 else
                 {
-                    _noteManager.SimulationPressSensor(_sensorPos);
+                    _noteManager.SimulateSensorPress(_sensorPos);
                 }
                 return;
             }
@@ -183,13 +183,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (isBtnFirst)
             {
-                _ = _noteManager.SimulationPressButton(_sensorPos) ||
-                    _noteManager.SimulationPressSensor(_sensorPos);
+                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                    _noteManager.SimulateSensorClick(_sensorPos);
             }
             else
             {
-                _ = _noteManager.SimulationPressSensor(_sensorPos) ||
-                    _noteManager.SimulationPressButton(_sensorPos);
+                _ = _noteManager.SimulateSensorClick(_sensorPos) ||
+                    _noteManager.SimulateButtonClick(_sensorPos);
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)

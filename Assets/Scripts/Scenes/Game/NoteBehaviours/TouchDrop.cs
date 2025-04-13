@@ -328,7 +328,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 return;
             }
 
-            _noteManager.SimulationPressSensor(_sensorPos);
+            _noteManager.SimulateSensorClick(_sensorPos);
         }
         void RegisterGrade()
         {

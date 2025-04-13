@@ -331,7 +331,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                    _sensorStatusInThisFrame[i] == SensorStatus.On;
         }
 
-        public bool SimulationPressSensor(SensorArea area)
+        public bool SimulateSensorPress(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.E8)
                 return false;
@@ -341,7 +341,7 @@ namespace MajdataPlay.Game.Notes.Controllers
 
             return raw == SensorStatus.Off;
         }
-        public bool SimulationPressButton(SensorArea area)
+        public bool SimulateButtonPress(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.A8)
                 return false;
@@ -351,6 +351,29 @@ namespace MajdataPlay.Game.Notes.Controllers
             _btnStatusInThisFrame[i] = SensorStatus.On;
 
             return raw == SensorStatus.Off;
+        }
+        public bool SimulateSensorClick(SensorArea area)
+        {
+            if (area < SensorArea.A1 || area > SensorArea.E8)
+                return false;
+            var i = (int)area;
+            var raw = _sensorStatusInThisFrame[i] == SensorStatus.Off &&
+                      _sensorStatusInPreviousFrame[i] == SensorStatus.Off;
+            _sensorStatusInThisFrame[i] = SensorStatus.On;
+
+            return raw;
+        }
+        public bool SimulateButtonClick(SensorArea area)
+        {
+            if (area < SensorArea.A1 || area > SensorArea.A8)
+                return false;
+
+            var i = (int)area;
+            var raw = _btnStatusInThisFrame[i] == SensorStatus.Off && 
+                      _btnStatusInPreviousFrame[i] == SensorStatus.Off;
+            _btnStatusInThisFrame[i] = SensorStatus.On;
+
+            return raw;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

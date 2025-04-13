@@ -616,7 +616,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     {
                         var id = hitInfom.colliderInstanceID;
                         var area = InputManager.GetSensorAreaFromInstanceID(id);
-                        _noteManager.SimulationPressSensor(area);
+                        _noteManager.SimulateSensorPress(area);
                     }
                 }
             }

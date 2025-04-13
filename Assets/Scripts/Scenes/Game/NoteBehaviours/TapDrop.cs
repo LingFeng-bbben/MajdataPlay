@@ -202,13 +202,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if(isBtnFirst)
             {
-                _ = _noteManager.SimulationPressButton(_sensorPos) ||
-                    _noteManager.SimulationPressSensor(_sensorPos);
+                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                    _noteManager.SimulateSensorClick(_sensorPos);
             }
             else
             {
-                _ = _noteManager.SimulationPressSensor(_sensorPos) ||
-                    _noteManager.SimulationPressButton(_sensorPos);
+                _ = _noteManager.SimulateSensorClick(_sensorPos) ||
+                    _noteManager.SimulateButtonClick(_sensorPos);
             }
         }
         [OnUpdate]

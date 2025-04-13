@@ -177,7 +177,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else if (_isJudged)
             {
-                _noteManager.SimulationPressSensor(_sensorPos);
+                _noteManager.SimulateSensorPress(_sensorPos);
                 return;
             }
             else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
@@ -188,7 +188,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            _noteManager.SimulationPressSensor(_sensorPos);
+            _noteManager.SimulateSensorClick(_sensorPos);
         }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
