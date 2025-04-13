@@ -358,10 +358,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
             BodyCheck();
+            Autoplay();
         }
         [OnUpdate]
         void OnUpdate()

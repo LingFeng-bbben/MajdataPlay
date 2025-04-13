@@ -167,9 +167,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
+            Autoplay();
         }
         protected override void Autoplay()
         {
@@ -194,7 +194,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToArriveTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f * 2)
             {
                 return;
             }

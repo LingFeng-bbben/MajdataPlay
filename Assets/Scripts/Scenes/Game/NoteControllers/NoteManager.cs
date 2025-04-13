@@ -38,11 +38,15 @@ namespace MajdataPlay.Game.Notes.Controllers
 
         internal event IOListener? OnGameIOUpdate;
 
+        //DJAuto
+        readonly SensorStatus[] _btnStatusInNextFrame = new SensorStatus[8];
         readonly SensorStatus[] _btnStatusInThisFrame = new SensorStatus[8];
         readonly SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[8];
+        //DJAuto
+        readonly SensorStatus[] _sensorStatusInNextFrame = new SensorStatus[33];
         readonly SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
         readonly SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
-
+        
         readonly bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly bool[] _isSensorUsedInThisFrame = new bool[33];
 
@@ -180,6 +184,8 @@ namespace MajdataPlay.Game.Notes.Controllers
                 if (i < 8)
                 {
                     var btnState = currentButtonStatus[i];
+                    btnState |= _btnStatusInNextFrame[i];
+                    _btnStatusInNextFrame[i] = SensorStatus.Off;
                     _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                     _btnStatusInThisFrame[i] = btnState;
                     if (IsUseButtonRingForTouch)
@@ -188,6 +194,8 @@ namespace MajdataPlay.Game.Notes.Controllers
                     }
                 }
                 senState |= currentSensorStatus[i];
+                senState |= _sensorStatusInNextFrame[i];
+                _sensorStatusInNextFrame[i] = SensorStatus.Off;
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
             }
@@ -336,8 +344,8 @@ namespace MajdataPlay.Game.Notes.Controllers
             if (area < SensorArea.A1 || area > SensorArea.E8)
                 return false;
             var i = (int)area;
-            var raw = _sensorStatusInThisFrame[i];
-            _sensorStatusInThisFrame[i] = SensorStatus.On;
+            var raw = _sensorStatusInNextFrame[i];
+            _sensorStatusInNextFrame[i] = SensorStatus.On;
 
             return raw == SensorStatus.Off;
         }
@@ -347,8 +355,8 @@ namespace MajdataPlay.Game.Notes.Controllers
                 return false;
 
             var i = (int)area;
-            var raw = _btnStatusInThisFrame[i];
-            _btnStatusInThisFrame[i] = SensorStatus.On;
+            var raw = _btnStatusInNextFrame[i];
+            _btnStatusInNextFrame[i] = SensorStatus.On;
 
             return raw == SensorStatus.Off;
         }
@@ -358,8 +366,8 @@ namespace MajdataPlay.Game.Notes.Controllers
                 return false;
             var i = (int)area;
             var raw = _sensorStatusInThisFrame[i] == SensorStatus.Off &&
-                      _sensorStatusInPreviousFrame[i] == SensorStatus.Off;
-            _sensorStatusInThisFrame[i] = SensorStatus.On;
+                      _sensorStatusInNextFrame[i] == SensorStatus.Off;
+            _sensorStatusInNextFrame[i] = SensorStatus.On;
 
             return raw;
         }
@@ -369,9 +377,9 @@ namespace MajdataPlay.Game.Notes.Controllers
                 return false;
 
             var i = (int)area;
-            var raw = _btnStatusInThisFrame[i] == SensorStatus.Off && 
-                      _btnStatusInPreviousFrame[i] == SensorStatus.Off;
-            _btnStatusInThisFrame[i] = SensorStatus.On;
+            var raw = _btnStatusInThisFrame[i] == SensorStatus.Off &&
+                      _btnStatusInNextFrame[i] == SensorStatus.Off;
+            _btnStatusInNextFrame[i] = SensorStatus.On;
 
             return raw;
         }

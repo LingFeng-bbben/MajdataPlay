@@ -176,7 +176,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToArriveTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f * 2)
             {
                 return;
             }
@@ -314,10 +314,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Autoplay();
             TooLateCheck();
             Check();
             BodyCheck();
+            Autoplay();
         }
         [OnUpdate]
         void OnUpdate()
