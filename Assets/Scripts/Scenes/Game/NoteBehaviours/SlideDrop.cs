@@ -588,6 +588,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     }
                     HideBar(barIndex);
                     break;
+                case AutoplayMode.DJAuto_TouchPanel_First:
                 case AutoplayMode.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
