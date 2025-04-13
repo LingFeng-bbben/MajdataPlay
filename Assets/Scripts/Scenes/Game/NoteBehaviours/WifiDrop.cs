@@ -3,16 +3,11 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Slide.Utils;
 using MajdataPlay.Game.Utils;
-using MajdataPlay.Interfaces;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Forms;
-using Unity.VisualScripting;
 using UnityEngine;
 
 #nullable enable
@@ -172,7 +167,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void SensorCheck()
         {
-            if (IsAutoplay || !_isCheckable)
+            if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
                 return;
             else if (IsEnded || !IsInitialized)
                 return;
@@ -308,6 +303,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
+            Autoplay();
             SensorCheck();
             switch (State)
             {
@@ -380,10 +376,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
                         starTransform.position = newPos; //TODO add some runhua
                     }
-                    Autoplay();
                     break;
                 case NoteStatus.Arrived:
-                    Autoplay();
                     break;
             }
         }
@@ -391,36 +385,99 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             if (!IsAutoplay)
                 return;
-            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            var queueMemory = _judgeQueues[0];
-            var queue = queueMemory.Span;
-            if (queueMemory.IsEmpty)
-                return;
-            else if (process >= 1)
+            switch(State)
             {
-                HideAllBar();
-                var autoplayGrade = AutoplayGrade;
-                if (((int)autoplayGrade).InRange(0, 14))
-                    _judgeResult = autoplayGrade;
-                else
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                _isJudged = true;
-                _lastWaitTimeSec = 0;
-                _judgeDiff = _judgeResult switch
-                {
-                    < JudgeGrade.Perfect => 1,
-                    > JudgeGrade.Perfect => -1,
-                    _ => 0
-                };
+                case NoteStatus.Running:
+                case NoteStatus.Arrived:
+                    break;
+                default:
+                    return;
+            }
+            switch(AutoplayMode)
+            {
+                case AutoplayMode.Enable:
+                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                    var queueMemory = _judgeQueues[0];
+                    var queue = queueMemory.Span;
+                    if (queueMemory.IsEmpty)
+                        return;
+                    else if (process >= 1)
+                    {
+                        HideAllBar();
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                            _judgeResult = autoplayGrade;
+                        else
+                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        _isJudged = true;
+                        _lastWaitTimeSec = 0;
+                        _judgeDiff = _judgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        return;
+                    }
+                    else if (process > 0)
+                        PlaySFX();
+                    var areaIndex = (int)(process * queueMemory.Length) - 1;
+                    if (areaIndex < 0)
+                        return;
+                    var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+                    HideBar(barIndex);
+                    break;
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                    DJAutoplay();
+                    break;
+            }
+        }
+        void DJAutoplay()
+        {
+            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            if (currentProgress == _djAutoplayProgress)
+            {
                 return;
             }
-            else if (process > 0)
-                PlaySFX();
-            var areaIndex = (int)(process * queueMemory.Length) - 1;
-            if (areaIndex < 0)
-                return;
-            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-            HideBar(barIndex);
+            var sensorPos = (SensorArea)(EndPos - 1);
+            var rIndex = ((SensorArea)(sensorPos.Diff(-1).GetIndex() + 17)).GetIndex();
+            var lIndex = ((SensorArea)(sensorPos.GetIndex() + 17)).GetIndex();
+            var startPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
+            var step = (currentProgress - _djAutoplayProgress) / 4;
+            for (; _djAutoplayProgress < currentProgress; _djAutoplayProgress += step)
+            {
+                for (var j = 0; j < 3; j++)
+                {
+                    float rad;
+                    if(j == 1)
+                    {
+                        rad = 0.8f;
+                    }
+                    else
+                    {
+                        rad = 0.15f;
+                    }
+                    var pos = (_starEndPositions[j] - startPos) * _djAutoplayProgress + startPos;
+                    pos.z = -10;
+                    for (int i = 0; i < 9; i++)
+                    {
+                        
+                        var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
+                        if (i == 8)
+                            circular = Vector3.zero;
+                        var ray = new Ray(pos + circular, Vector3.forward);
+                        var ishit = Physics.Raycast(ray, out var hitInfom);
+                        if (ishit)
+                        {
+                            var id = hitInfom.colliderInstanceID;
+                            var area = InputManager.GetSensorAreaFromInstanceID(id);
+                            _noteManager.SimulateSensorPress(area);
+                        }
+                    }
+                }
+            }
+            _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
         }
         protected override void TooLateJudge()
         {
