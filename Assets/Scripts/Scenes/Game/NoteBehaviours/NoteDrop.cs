@@ -269,7 +269,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             if (_isJudged || !IsAutoplay)
                 return;
-            if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+            if (GetTimeSpanToArriveTiming() >= -0.016667f)
             {
                 var autoplayGrade = NoteController.AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))

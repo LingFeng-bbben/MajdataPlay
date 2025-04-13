@@ -162,7 +162,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto:
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
@@ -183,7 +184,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f)
             {
                 return;
             }

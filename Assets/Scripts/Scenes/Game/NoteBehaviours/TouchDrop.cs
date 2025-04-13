@@ -307,14 +307,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 case AutoplayMode.Enable:
                     base.Autoplay();
                     break;
-                case AutoplayMode.DJAuto:
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
         }
         void DJAutoplay()
         {
-            if (_isJudged || !IsAutoplay)
+            if (_isJudged)
             {
                 return;
             }
@@ -322,7 +323,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f)
             {
                 return;
             }

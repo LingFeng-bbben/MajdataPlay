@@ -174,7 +174,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected float _lastWaitTimeSec;
 
         protected float _maxFadeInAlpha = 0.5f; // 淡入时最大不透明度
-
+        protected float _djAutoplayProgress = 0;
         // Flags
         protected bool _isCheckable = false;
         protected bool _isSoundPlayed = false;

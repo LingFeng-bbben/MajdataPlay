@@ -147,32 +147,50 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto:
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
         }
         void DJAutoplay()
         {
+            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
             if (!IsAutoplay || IsEnded)
             {
                 return;
             }
             else if (_isJudged)
             {
-                _noteManager.SimulationPressSensor(_sensorPos);
+                if(isBtnFirst)
+                {
+                    _noteManager.SimulationPressButton(_sensorPos);
+                }
+                else
+                {
+                    _noteManager.SimulationPressSensor(_sensorPos);
+                }
                 return;
             }
             else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
-            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f)
             {
                 return;
             }
 
-            _noteManager.SimulationPressSensor(_sensorPos);
+            if (isBtnFirst)
+            {
+                _ = _noteManager.SimulationPressButton(_sensorPos) ||
+                    _noteManager.SimulationPressSensor(_sensorPos);
+            }
+            else
+            {
+                _ = _noteManager.SimulationPressSensor(_sensorPos) ||
+                    _noteManager.SimulationPressButton(_sensorPos);
+            }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
@@ -495,7 +513,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (IsClassic)
             {
-                if (IsAutoplay && remainingTime == 0)
+                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
                 {
                     End();
                     return;
@@ -519,7 +537,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
-            if (isPressed || IsAutoplay)
+            if (isPressed || AutoplayMode == AutoplayMode.Enable)
             {
                 if (remainingTime == 0)
                 {

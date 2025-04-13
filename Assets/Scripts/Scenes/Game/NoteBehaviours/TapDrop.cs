@@ -178,7 +178,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 case AutoplayMode.Enable:
                     base.Autoplay();
                     break;
-                case AutoplayMode.DJAuto:
+                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayMode.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
@@ -193,11 +194,22 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToJudgeTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -0.016667f)
             {
                 return;
             }
-            _noteManager.SimulationPressSensor(_sensorPos);
+            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+
+            if(isBtnFirst)
+            {
+                _ = _noteManager.SimulationPressButton(_sensorPos) ||
+                    _noteManager.SimulationPressSensor(_sensorPos);
+            }
+            else
+            {
+                _ = _noteManager.SimulationPressSensor(_sensorPos) ||
+                    _noteManager.SimulationPressButton(_sensorPos);
+            }
         }
         [OnUpdate]
         void OnUpdate()

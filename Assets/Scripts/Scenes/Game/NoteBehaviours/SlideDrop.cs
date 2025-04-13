@@ -1,17 +1,14 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Utils;
-using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Unity.VisualScripting;
-using System.Diagnostics;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Slide.Utils;
+using MajdataPlay.IO;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
@@ -261,6 +258,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             //var star = _stars[0];
             var starTransform = _starTransforms[0];
 
+            Autoplay();
             SensorCheck();
 
             switch (State)
@@ -344,10 +342,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                                         Mathf.MoveTowardsAngle(_b, _a, dAngle));
                         ApplyStarRotation(newRotation);
                     }
-                    Autoplay();
                     break;
                 case NoteStatus.Arrived:
-                    Autoplay();
                     break;
             }
         }
@@ -356,7 +352,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         /// </summary>
         void SensorCheck()
         {
-            if (IsAutoplay || !_isCheckable)
+            if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
                 return;
             else if (IsEnded || !IsInitialized)
                 return;
@@ -532,53 +528,117 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             if (!IsAutoplay)
                 return;
-            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            var queueMemory = _judgeQueues[0];
-            var queue = queueMemory.Span;
-            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-            if (queueMemory.IsEmpty)
-                return;
-            else if (process >= 1)
+            switch (State)
             {
-                HideAllBar();
-                var autoplayGrade = AutoplayGrade;
-                if (((int)autoplayGrade).InRange(0, 14))
-                    _judgeResult = autoplayGrade;
-                else
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                _isJudged = true;
-                _lastWaitTimeSec = 0;
-                _judgeDiff = _judgeResult switch
+                case NoteStatus.Running:
+                case NoteStatus.Arrived:
+                    break;
+                default:
+                    return;
+            }
+            switch(AutoplayMode)
+            {
+                case AutoplayMode.Enable:
+                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                    var queueMemory = _judgeQueues[0];
+                    var queue = queueMemory.Span;
+                    var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
+                    if (queueMemory.IsEmpty)
+                        return;
+                    else if (process >= 1)
+                    {
+                        HideAllBar();
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                            _judgeResult = autoplayGrade;
+                        else
+                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        _isJudged = true;
+                        _lastWaitTimeSec = 0;
+                        _judgeDiff = _judgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        return;
+                    }
+                    else if (process > 0 && canPlaySFX)
+                    {
+                        PlaySFX();
+                    }
+                    var areaIndex = (int)(process * queueMemory.Length);
+                    var isLast = areaIndex == queueMemory.Length - 1;
+                    var delta = (process * queueMemory.Length) - areaIndex;
+                    if (areaIndex < 0)
+                        return;
+                    int barIndex;
+                    if (delta > 0.9)
+                    {
+                        barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+                    }
+                    else if (delta > 0.4 && !isLast)
+                    {
+                        barIndex = queue[areaIndex].ArrowProgressWhenOn;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    HideBar(barIndex);
+                    break;
+                case AutoplayMode.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
+            }
+        }
+        void DJAutoplay()
+        {
+            var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            if(currentProgress == _djAutoplayProgress)
+            {
+                return;
+            }
+            var step = (currentProgress - _djAutoplayProgress) / 4;
+            for(; _djAutoplayProgress < currentProgress; _djAutoplayProgress += step)
+            {
+                var pos = GetPositionFromProgress(_djAutoplayProgress);
+                pos.z = -10;
+                for (int i = 0; i < 9; i++)
                 {
-                    < JudgeGrade.Perfect => 1,
-                    > JudgeGrade.Perfect => -1,
-                    _ => 0
-                };
-                return;
+                    const float rad = 0.25f;
+                    var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
+                    if (i == 8) 
+                        circular = Vector3.zero;
+                    var ray = new Ray(pos + circular, Vector3.forward);
+                    var ishit = Physics.Raycast(ray, out var hitInfom);
+                    if (ishit)
+                    {
+                        var id = hitInfom.colliderInstanceID;
+                        var area = InputManager.GetSensorAreaFromInstanceID(id);
+                        _noteManager.SimulationPressSensor(area);
+                    }
+                }
             }
-            else if (process > 0 && canPlaySFX)
+            _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
+        }
+        Vector3 GetPositionFromProgress(float progress)
+        {
+            progress = progress.Clamp(0, 1);
+            if(progress == 1)
             {
-                PlaySFX();
+                return _starPositions[_starPositions.Count - 1];
             }
-            var areaIndex = (int)(process * queueMemory.Length);
-            var isLast = areaIndex == queueMemory.Length - 1;
-            var delta = (process * queueMemory.Length) - areaIndex;
-            if (areaIndex < 0)
-                return;
-            int barIndex;
-            if (delta > 0.9)
-            {
-                barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-            }
-            else if(delta > 0.4 && !isLast)
-            {
-                barIndex = queue[areaIndex].ArrowProgressWhenOn;
-            }
-            else
-            {
-                return;
-            }
-            HideBar(barIndex);
+            var indexProcess = (_starPositions.Count - 1) * progress;
+            var index = (int)indexProcess;
+            var pos = indexProcess - index;
+
+            var a = _starPositions[index + 1];
+            var b = _starPositions[index];
+            var ba = a - b;
+            var newPos = ba * pos + b;
+
+            return newPos;
         }
         void ApplyStarRotation(Quaternion newRotation)
         {

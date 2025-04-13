@@ -331,17 +331,26 @@ namespace MajdataPlay.Game.Notes.Controllers
                    _sensorStatusInThisFrame[i] == SensorStatus.On;
         }
 
-        public void SimulationPressSensor(SensorArea area)
+        public bool SimulationPressSensor(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.E8)
-                return;
-            _sensorStatusInThisFrame[(int)area] = SensorStatus.On;
+                return false;
+            var i = (int)area;
+            var raw = _sensorStatusInThisFrame[i];
+            _sensorStatusInThisFrame[i] = SensorStatus.On;
+
+            return raw == SensorStatus.Off;
         }
-        public void SimulationPressButton(SensorArea area)
+        public bool SimulationPressButton(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.A8)
-                return;
-            _btnStatusInThisFrame[(int)area] = SensorStatus.On;
+                return false;
+
+            var i = (int)area;
+            var raw = _btnStatusInThisFrame[i];
+            _btnStatusInThisFrame[i] = SensorStatus.On;
+
+            return raw == SensorStatus.Off;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
