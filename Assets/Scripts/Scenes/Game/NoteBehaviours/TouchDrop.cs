@@ -323,7 +323,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (GetTimeSpanToArriveTiming() < -0.016667f)
+            else if (GetTimeSpanToArriveTiming() < -FRAME_LENGTH_SEC)
             {
                 return;
             }
