@@ -222,7 +222,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
                 return;
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;

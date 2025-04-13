@@ -269,7 +269,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (_isJudged || IsEnded)
+            if (_isJudged || IsEnded || AutoplayMode == AutoplayMode.Enable)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();

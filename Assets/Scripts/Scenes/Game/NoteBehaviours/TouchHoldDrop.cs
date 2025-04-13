@@ -465,7 +465,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged)
+            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayMode.Enable)
             {
                 return;
             }
