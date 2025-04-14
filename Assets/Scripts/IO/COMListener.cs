@@ -32,7 +32,7 @@ namespace MajdataPlay.IO
 
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.BelowNormal;
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
 
                 try
