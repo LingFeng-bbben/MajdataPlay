@@ -200,15 +200,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
 
-            if(isBtnFirst)
+            if (isBtnFirst)
             {
                 _ = _noteManager.SimulateButtonClick(_sensorPos) ||
-                    _noteManager.SimulateSensorClick(_sensorPos);
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    _noteManager.SimulateButtonClick(_sensorPos);
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateButtonClick(_sensorPos));
             }
         }
         [OnUpdate]

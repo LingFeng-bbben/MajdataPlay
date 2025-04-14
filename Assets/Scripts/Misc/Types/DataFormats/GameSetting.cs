@@ -156,6 +156,7 @@ namespace MajdataPlay.Types
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = false;
         public bool EnableHWEncoder { get; set; } = true;
+        public DJAutoPolicy DJAutoPolicy { get; set; } = DJAutoPolicy.Strict;
         public int MaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;
         public int HoldPoolCapacity { get; set; } = 48;

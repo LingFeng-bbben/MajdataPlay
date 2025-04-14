@@ -168,6 +168,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
         protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
         protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeMode.Modern;
+        protected readonly DJAutoPolicy USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicy.Strict;
 
         protected const float FRAME_LENGTH_SEC = 1f / 60;
         protected const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;

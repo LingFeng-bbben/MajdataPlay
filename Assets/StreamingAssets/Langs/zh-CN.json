@@ -819,6 +819,18 @@
       "Content": "Disable: 禁用\nTrackStart: 录制一整张谱的时间"
     },
     {
+      "Origin": "DJAutoPolicy_MAJSETTING_TITLE",
+      "Content": "DJAuto策略"
+    },
+    {
+      "Origin": "DJAutoPolicy_MAJSETTING_OPTIONS_Strict",
+      "Content": "严格"
+    },
+    {
+      "Origin": "DJAutoPolicy_MAJSETTING_OPTIONS_Permissive",
+      "Content": "宽容"
+    },
+    {
       "Origin": "AutoPlay_MAJSETTING_OPTIONS_Enable",
       "Content": "开启"
     },
