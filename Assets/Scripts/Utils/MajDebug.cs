@@ -77,6 +77,7 @@ namespace MajdataPlay.Utils
         {
             Task.Factory.StartNew(() =>
             {
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Lowest;
                 var token = MajEnv.GlobalCT;
                 var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
                 if (!Directory.Exists(MajEnv.LogsPath))
