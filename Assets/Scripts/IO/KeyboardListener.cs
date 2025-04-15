@@ -24,7 +24,7 @@ namespace MajdataPlay.IO
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
 
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.RealTime;
                 stopwatch.Start();
                 while (true)
                 {

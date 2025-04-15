@@ -181,17 +181,17 @@ namespace MajdataPlay
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.RealTime;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.Normal;
             SceneManager.LoadScene("SensorTest");
         }
         void EnterTitle()
         {
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.RealTime;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.Normal;
             SceneManager.LoadScene("Title");
         }
         void EnterView()
         {
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.BelowNormal;
             SceneManager.LoadScene("View");
         }
         public void ApplyScreenConfig()
