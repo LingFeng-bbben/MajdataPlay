@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using MajdataPlay.Collections;
 using System.Collections.Concurrent;
 using System.Security.Policy;
+using Cysharp.Text;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -302,11 +303,13 @@ namespace MajdataPlay.IO
             _updateIOListenerPtr();
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
+            const string LOG_FORMAT = "Button state debug:\nIndex: {0}\nCurrent Frame: {1}\nPrevious Frame: {2}";
             for (var i = 0; i < 12; i++)
             {
                 var btn = buttons[i];
                 _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                 _btnStatusInThisFrame[i] = btn.State;
+                MajDebug.Log(ZString.Format(LOG_FORMAT, i, btn.State, _btnStatusInPreviousFrame[i]));
             }
             for (var i = 0; i < 33; i++)
             {
