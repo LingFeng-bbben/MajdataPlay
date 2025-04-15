@@ -60,6 +60,12 @@ namespace MajdataPlay
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
         };
+        readonly ReadOnlyMemory<Color> _starExEffects = new Color[3]
+        {
+            new Color(1f,1f,1f), // Pink
+            new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+            new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+        };
 
         protected override void Awake()
         {
@@ -188,7 +194,7 @@ namespace MajdataPlay
                 ExDouble = SelectedSkin.Star_Ex_Double,
 
                 GuideLines = _starLines,
-                ExEffects = _tapAndHoldExEffects.Span
+                ExEffects = _starExEffects.Span
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
