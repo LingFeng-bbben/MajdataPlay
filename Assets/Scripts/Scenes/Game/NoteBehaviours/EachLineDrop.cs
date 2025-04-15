@@ -21,10 +21,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        sr.forceRenderingOff = true;
+                        _sr.forceRenderingOff = true;
                         break;
                     case RendererStatus.On:
-                        sr.forceRenderingOff = false;
+                        _sr.forceRenderingOff = false;
                         break;
                 }
             }
@@ -42,11 +42,27 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public int curvLength = 1;
         public float speed = 1;
         float _noteAppearRate = 0.265f;
-        public Sprite[] curvSprites;
-        private SpriteRenderer sr;
-        GameSetting gameSetting = new();
+        readonly Sprite[] _curvSprites = new Sprite[4];
+        SpriteRenderer _sr;
+        GameSetting _gameSetting = new();
         INoteController _noteController;
-        NotePoolManager poolManager;
+        NotePoolManager _poolManager;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            _noteController = Majdata<INoteController>.Instance!;
+            _poolManager = FindObjectOfType<NotePoolManager>();
+            _gameSetting = MajInstances.Settings;
+            _noteAppearRate = _gameSetting.Debug.NoteAppearRate;
+            _sr = gameObject.GetComponent<SpriteRenderer>();
+            _sr.sprite = _curvSprites[curvLength - 1];
+            RendererState = RendererStatus.Off;
+            _sr.forceRenderingOff = true;
+            Active = true;
+            var skin = MajInstances.SkinManager.GetEachLineSkin();
+            skin.EachGuideLines.CopyTo(_curvSprites);
+        }
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.End)
@@ -55,7 +71,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             timing = poolingInfo.Timing;
             speed = poolingInfo.Speed;
             curvLength = poolingInfo.CurvLength;
-            sr.sprite = curvSprites[curvLength - 1];
+            _sr.sprite = _curvSprites[curvLength - 1];
             Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
             Transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
             State = NoteStatus.Initialized;
@@ -70,20 +86,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             NoteA = null;
             NoteB = null;
             DistanceProvider = null;
-            poolManager.Collect(this);
-        }
-        protected override void Awake()
-        {
-            base.Awake();
-            _noteController = Majdata<INoteController>.Instance!;
-            poolManager = FindObjectOfType<NotePoolManager>();
-            gameSetting = MajInstances.Settings;
-            _noteAppearRate = gameSetting.Debug.NoteAppearRate;
-            sr = gameObject.GetComponent<SpriteRenderer>();
-            sr.sprite = curvSprites[curvLength - 1];
-            RendererState = RendererStatus.Off;
-            sr.forceRenderingOff = true;
-            Active = true;
+            _poolManager.Collect(this);
         }
         [OnLateUpdate]
         void OnLateUpdate()

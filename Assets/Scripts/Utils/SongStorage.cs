@@ -112,16 +112,19 @@ namespace MajdataPlay.Utils
                 //Online Charts
                 if (MajInstances.Settings.Online.Enable)
                 {
-                    foreach (var item in MajInstances.Settings.Online.ApiEndpoints)
+                    foreach (var item in MajInstances.Settings.Online.ApiEndpoints.GroupBy(x => x.Url))
                     {
-                        if (string.IsNullOrEmpty(item.Name))
+                        var api = item.FirstOrDefault();
+                        if (api is null)
+                            continue;
+                        if (string.IsNullOrEmpty(api.Name))
                             continue;
                         progressReporter.Report(new ChartScanProgress()
                         {
                             StorageType = ChartStorageLocation.Online,
-                            Message = item.Name
+                            Message = api.Name
                         });
-                        var result = await GetOnlineCollection(item);
+                        var result = await GetOnlineCollection(api);
                         if (!result.IsEmpty)
                             collections.Add(result);
                     }
@@ -273,7 +276,7 @@ namespace MajdataPlay.Utils
             MajDebug.Log("Loading Online Charts from:" + listurl);
             try
             {
-                var client = HttpTransporter.ShareClient;
+                var client = MajEnv.SharedHttpClient;
                 var rspStream = await client.GetStreamAsync(listurl);
                 var list = await JsonSerializer.DeserializeAsync<MajnetSongDetail[]>(rspStream, new JsonSerializerOptions
                 {
@@ -298,6 +301,17 @@ namespace MajdataPlay.Utils
                 {
                     Location = ChartStorageLocation.Online
                 };
+            }
+            catch(OperationCanceledException)
+            {
+                var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
+                if (!Directory.Exists(cachePath))
+                {
+                    return collection;
+                }
+                var c = await GetCollection(cachePath);
+                MajDebug.Log("Loaded Cached Online Charts List:" + c.Count);
+                return c;
             }
             catch (Exception e)
             {

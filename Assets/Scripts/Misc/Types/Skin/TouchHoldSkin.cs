@@ -9,8 +9,8 @@ namespace MajdataPlay.Types
 {
     public readonly ref struct TouchHoldSkin
     {
-        public Sprite[] Fans { get; init; }
-        public Sprite[] Fans_Break { get; init; }
+        public ReadOnlySpan<Sprite> Fans { get; init; }
+        public ReadOnlySpan<Sprite> Fans_Break { get; init; }
         public Sprite Boader { get; init; }
         public Sprite Boader_Break { get; init; }
         public Sprite Point { get; init; }

@@ -15,9 +15,9 @@ namespace MajdataPlay.Types
         public Sprite Point_Normal { get; init; }
         public Sprite Point_Each { get; init; }
         public Sprite Point_Break { get; init; }
-        public Sprite[] Border_Normal { get; init; }
-        public Sprite[] Border_Each { get; init; }
-        public Sprite[] Border_Break { get; init; }
+        public ReadOnlySpan<Sprite> Border_Normal { get; init; }
+        public ReadOnlySpan<Sprite> Border_Each { get; init; }
+        public ReadOnlySpan<Sprite> Border_Break { get; init; }
 
         public Sprite JustBorder { get; init; }
     }
