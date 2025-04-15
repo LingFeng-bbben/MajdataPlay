@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -9,19 +10,56 @@ namespace MajdataPlay
 {
     internal sealed class SkinManager : MajSingleton
     {
-        public CustomSkin SelectedSkin { get; set; }
+        public CustomSkin SelectedSkin
+        {
+            get
+            {
+                return _selectedSkin;
+            }
+            set
+            {
+                _tapLines[0] = value.TapLine_Normal;
+                _tapLines[1] = value.TapLine_Each;
+                _tapLines[2] = value.TapLine_Break;
+
+                _starLines[0] = value.TapLine_Slide;
+                _starLines[1] = value.TapLine_Each;
+                _starLines[2] = value.TapLine_Break;
+
+                _holdEnds[0] = value.HoldEndPoint_Normal;
+                _holdEnds[1] = value.HoldEndPoint_Each;
+                _holdEnds[2] = value.HoldEndPoint_Break;
+
+                _touchHoldFans[0] = value.TouchHold[0];
+                _touchHoldFans[1] = value.TouchHold[1];
+                _touchHoldFans[2] = value.TouchHold[2];
+                _touchHoldFans[3] = value.TouchHold[3];
+
+                _touchHoldBreakFans[0] = value.TouchHold_Break[0];
+                _touchHoldBreakFans[1] = value.TouchHold_Break[1];
+                _touchHoldBreakFans[2] = value.TouchHold_Break[2];
+                _touchHoldBreakFans[3] = value.TouchHold_Break[3];
+                _selectedSkin = value;
+            }
+        }
         public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
         List<CustomSkin> loadedSkins = new();
 
-        public Sprite HoldEnd;
-        public Sprite HoldEachEnd;
-        public Sprite HoldBreakEnd;
-
+        CustomSkin _selectedSkin;
         public Texture2D test;
 
-        public Sprite[] TapLines;
-        public Sprite[] StarLines;
-        public RuntimeAnimatorController JustBreak;
+        readonly Sprite[] _tapLines = new Sprite[3];
+        readonly Sprite[] _starLines = new Sprite[3];
+        readonly Sprite[] _holdEnds = new Sprite[3];
+        readonly Sprite[] _touchHoldFans = new Sprite[4];
+        readonly Sprite[] _touchHoldBreakFans = new Sprite[4];
+
+        readonly ReadOnlyMemory<Color> _tapAndHoldExEffects = new Color[3]
+        {
+            new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
+            new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+            new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
+        };
 
         protected override void Awake()
         {
@@ -131,13 +169,8 @@ namespace MajdataPlay
                 Break = SelectedSkin.Tap_Break,
                 Ex = SelectedSkin.Tap_Ex,
 
-                NoteLines = TapLines,
-                ExEffects = new Color[]
-                {
-                    new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                }
+                GuideLines = _tapLines,
+                ExEffects = _tapAndHoldExEffects.Span
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,13 +187,8 @@ namespace MajdataPlay
                 Ex = SelectedSkin.Star_Ex,
                 ExDouble = SelectedSkin.Star_Ex_Double,
 
-                NoteLines = StarLines,
-                ExEffects = new Color[]
-                {
-                    new Color(1,1,1), //White
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                }
+                GuideLines = _starLines,
+                ExEffects = _tapAndHoldExEffects.Span
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,19 +205,9 @@ namespace MajdataPlay
                 Break_On = SelectedSkin.Hold_Break_On,
                 Ex = SelectedSkin.Hold_Ex,
 
-                NoteLines = TapLines,
-                Ends = new Sprite[3]
-                {
-                    HoldEnd,
-                    HoldEachEnd,
-                    HoldBreakEnd
-                },
-                ExEffects = new Color[]
-                {
-                    new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                    new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
-                }
+                GuideLines = _tapLines,
+                Ends = _holdEnds,
+                ExEffects = _tapAndHoldExEffects.Span
             };
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -219,20 +237,8 @@ namespace MajdataPlay
         {
             return new TouchHoldSkin()
             {
-                Fans = new Sprite[4]
-                {
-                    SelectedSkin.TouchHold[0],
-                    SelectedSkin.TouchHold[1],
-                    SelectedSkin.TouchHold[2],
-                    SelectedSkin.TouchHold[3],
-                },
-                Fans_Break = new Sprite[4]
-                {
-                    SelectedSkin.TouchHold_Break[0],
-                    SelectedSkin.TouchHold_Break[1],
-                    SelectedSkin.TouchHold_Break[2],
-                    SelectedSkin.TouchHold_Break[3],
-                },
+                Fans = _touchHoldFans,
+                Fans_Break = _touchHoldBreakFans,
                 Boader = SelectedSkin.TouchHold[4],
                 Boader_Break = SelectedSkin.TouchHold_Break[4],
                 Point = SelectedSkin.TouchPoint,
@@ -255,6 +261,14 @@ namespace MajdataPlay
                 Border_Normal = SelectedSkin.TouchBorder,
                 Border_Break = SelectedSkin.TouchBorder_Break,
                 JustBorder = SelectedSkin.TouchJust
+            };
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public EachLineSkin GetEachLineSkin()
+        {
+            return new EachLineSkin()
+            {
+                EachGuideLines = SelectedSkin.EachLines
             };
         }
     }

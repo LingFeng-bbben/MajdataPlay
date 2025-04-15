@@ -18,9 +18,9 @@ namespace MajdataPlay.Types
         public Sprite Break_On { get; init; }
         public Sprite Ex { get; init; }
 
-        public Sprite[] Ends { get; init; } 
+        public ReadOnlySpan<Sprite> Ends { get; init; } 
 
-        public Sprite[] NoteLines { get; init; }
-        public Color[] ExEffects { get; init; }
+        public ReadOnlySpan<Sprite> GuideLines { get; init; }
+        public ReadOnlySpan<Color> ExEffects { get; init; }
     }
 }

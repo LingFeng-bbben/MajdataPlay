@@ -112,6 +112,16 @@ namespace MajdataPlay.Types
         public Sprite LoadingSplash { get; private set; }
 
         public Sprite Outline { get; private set; }
+
+        public Sprite TapLine_Normal { get; private set; }
+        public Sprite TapLine_Each { get; private set; }
+        public Sprite TapLine_Slide { get; private set; }
+        public Sprite TapLine_Break { get; private set; }
+
+        public Sprite[] EachLines { get; private set; } = new Sprite[4];
+        public Sprite HoldEndPoint_Normal { get; private set; }
+        public Sprite HoldEndPoint_Each { get; private set; }
+        public Sprite HoldEndPoint_Break { get; private set; }
         public CustomSkin(string skinCollectionPath)
         {
             if (!Directory.Exists(skinCollectionPath))
@@ -350,6 +360,20 @@ namespace MajdataPlay.Types
             TouchHold_Off = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_off.png");
 
             LoadingSplash = SpriteLoader.Load(skinCollectionPath + "/now_loading.png");
+
+            TapLine_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Normal.png");
+            TapLine_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Each.png");
+            TapLine_Slide = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Slide.png");
+            TapLine_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Break.png");
+
+            EachLines[0] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
+            EachLines[1] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
+            EachLines[2] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine3.png");
+            EachLines[3] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine4.png");
+
+            HoldEndPoint_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
+            HoldEndPoint_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
+            HoldEndPoint_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
         }
     }
 }

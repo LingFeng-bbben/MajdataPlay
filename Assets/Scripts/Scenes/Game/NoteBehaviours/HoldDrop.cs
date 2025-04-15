@@ -645,14 +645,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _exRenderer.color = skin.ExEffects[0];
             _endRenderer.sprite = skin.Ends[0];
             _thisRenderer.sharedMaterial = DefaultMaterial;
-            _tapLineRenderer.sprite = skin.NoteLines[0];
+            _tapLineRenderer.sprite = skin.GuideLines[0];
 
             if (IsEach)
             {
                 _holdSprite = skin.Each;
                 _holdOnSprite = skin.Each_On;
                 _endRenderer.sprite = skin.Ends[1];
-                _tapLineRenderer.sprite = skin.NoteLines[1];
+                _tapLineRenderer.sprite = skin.GuideLines[1];
                 _exRenderer.color = skin.ExEffects[1];
             }
 
@@ -662,7 +662,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _holdOnSprite = skin.Break_On;
                 _endRenderer.sprite = skin.Ends[2];
                 _thisRenderer.sharedMaterial = BreakMaterial;
-                _tapLineRenderer.sprite = skin.NoteLines[2];
+                _tapLineRenderer.sprite = skin.GuideLines[2];
                 _exRenderer.color = skin.ExEffects[2];
             }
 

@@ -159,7 +159,7 @@ SpriteRenderer:
   m_SortingLayerID: 1842247769
   m_SortingLayer: 7
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: c332bf4a60bcd5e4cb1bac9a38696049, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -182,9 +182,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c57176cc05c23a743af16831f7ec76ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _state: 0
-  _breakMaterial: {fileID: 2100000, guid: 236ca777eb286d94099e0750c7df85fe, type: 2}
-  _defaultMaterial: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   _startPos: 0
   _timing: 0
   _speed: 7
@@ -192,4 +189,8 @@ MonoBehaviour:
   _isEach: 0
   _isBreak: 0
   _isEX: 0
+  _isAutoplay: 0
+  _autoplayGrade: 7
+  _autoplayMode: 0
+  _state: 0
   _tapLinePrefab: {fileID: 8134463029818261665, guid: 50d2a71ffa59d7c468196d8fa195953c, type: 3}

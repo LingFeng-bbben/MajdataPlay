@@ -10,8 +10,8 @@ namespace MajdataPlay.Types
     public readonly ref struct WifiSkin
     {
         public StarSkin Star { get; init; }
-        public Sprite[] Normal { get; init; }
-        public Sprite[] Each { get; init; }
-        public Sprite[] Break { get; init; }
+        public ReadOnlySpan<Sprite> Normal { get; init; }
+        public ReadOnlySpan<Sprite> Each { get; init; }
+        public ReadOnlySpan<Sprite> Break { get; init; }
     }
 }

@@ -16,7 +16,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
         GameObject _two, _three;
         SpriteRenderer _twoRenderer, _threeRenderer;
-        Sprite[] _normal, _each, _break;
+        Sprite[] _normal = new Sprite[2];
+        Sprite[] _each = new Sprite[2];
+        Sprite[] _break = new Sprite[2];
 
         readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
         void Start()
@@ -38,9 +40,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _twoRenderer = _two.GetComponent<SpriteRenderer>();
             _threeRenderer = _three.GetComponent<SpriteRenderer>();
             var skin = MajInstances.SkinManager.GetTouchSkin();
-            _normal = skin.Border_Normal;
-            _each = skin.Border_Each;
-            _break = skin.Border_Break;
+            skin.Border_Normal.CopyTo(_normal);
+            skin.Border_Each.CopyTo(_each);
+            skin.Border_Break.CopyTo(_break);
 
             _twoRenderer.sprite = _normal[0];
             _threeRenderer.sprite = _normal[1];
