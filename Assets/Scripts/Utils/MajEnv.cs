@@ -55,7 +55,10 @@ namespace MajdataPlay.Utils
             UseProxy = true,
             UseCookies = true,
             CookieContainer = new CookieContainer(),
-        });
+        })
+        {
+            Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS)
+        };
         public static GameSetting UserSettings { get; }
         public static CancellationToken GlobalCT
         {
