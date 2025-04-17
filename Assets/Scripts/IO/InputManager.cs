@@ -1025,6 +1025,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var buttons = _buttons.Span;
 
+                currentThread.Name = "MajdataPlay IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
@@ -1082,6 +1083,7 @@ namespace MajdataPlay.IO
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
                 var devices = DeviceList.Local.GetHidDevices();
 
+                currentThread.Name = "MajdataPlay IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 HidDevice? device = null;
@@ -1490,6 +1492,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 using var serial = new SerialPort(comPort, MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate);
 
+                currentThread.Name = "MajdataPlay IO/T Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 serial.ReadTimeout = 2000;
