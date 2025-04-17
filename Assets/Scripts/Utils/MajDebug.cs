@@ -77,7 +77,7 @@ namespace MajdataPlay.Utils
         {
             Task.Factory.StartNew(() =>
             {
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Lowest;
+                var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
                 if (!Directory.Exists(MajEnv.LogsPath))
@@ -87,6 +87,8 @@ namespace MajdataPlay.Utils
                 if (File.Exists(MajEnv.LogPath))
                     File.Delete(MajEnv.LogPath);
 
+                currentThread.Priority = System.Threading.ThreadPriority.Lowest;
+                currentThread.IsBackground = true;
                 while (true)
                 {
                     if (token.IsCancellationRequested)
