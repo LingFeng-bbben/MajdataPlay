@@ -20,6 +20,7 @@ using HidSharp;
 using System.IO.Ports;
 using System.Text;
 using System.IO;
+using HidSharp.Platform.Windows;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;

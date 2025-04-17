@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using HidSharp.Platform.Windows;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
@@ -140,6 +141,7 @@ namespace MajdataPlay.Utils
             {
                 OnApplicationQuit();
             }
+            WinHidManager.QuitThisBs();
         }
         static void CheckNoteSkinFolder()
         {
