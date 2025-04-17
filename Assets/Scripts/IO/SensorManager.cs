@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using Cysharp.Text;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System;
@@ -63,7 +64,7 @@ namespace MajdataPlay.IO
                 {
                     continue;
                 }
-                MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
+                MajDebug.Log(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {

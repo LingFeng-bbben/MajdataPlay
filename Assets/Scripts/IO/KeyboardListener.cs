@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Extensions;
+﻿using Cysharp.Text;
+using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using MychIO.Device;
 using System;
@@ -49,7 +50,7 @@ namespace MajdataPlay.IO
                     _btnLastTriggerTimes[i] = now;
                 }
                 button.State = newState;
-                MajDebug.Log($"Key \"{button.BindingKey}\": {newState}");
+                MajDebug.Log(ZString.Format("Key \"{0}\": {1}", button.BindingKey, newState));
                 var msg = new InputEventArgs()
                 {
                     Type = button.Area,
