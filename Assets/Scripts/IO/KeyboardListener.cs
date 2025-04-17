@@ -12,65 +12,11 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
-        static void StartUpdatingKeyboardState()
-        {
-            if (!_buttonRingUpdateTask.IsCompleted)
-                return;
-            _buttonRingUpdateTask = Task.Factory.StartNew(() =>
-            {
-                var token = MajEnv.GlobalCT;
-                var pollingRate = _btnPollingRateMs;
-                var stopwatch = new Stopwatch();
-                var t1 = stopwatch.Elapsed;
-
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
-                stopwatch.Start();
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    try
-                    {
-                        var now = MajTimeline.UnscaledTime;
-                        var buttons = _buttons.Span;
-
-                        for (var i = 0; i < buttons.Length; i++)
-                        {
-                            var button = buttons[i];
-                            var keyCode = button.BindingKey;
-                            var state = KeyboardHelper.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
-                            var area = button.Area;
-
-                            //ButtonRing.OnButtonRingStateChanged(i, state);
-                            _buttonRingInputBuffer.Enqueue(new()
-                            {
-                                Index = i,
-                                State = state,
-                                Timestamp = now
-                            });
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"From KeyBoard listener: \n{e}");
-                    }
-                    finally
-                    {
-                        var t2 = stopwatch.Elapsed;
-                        var elapsed = t2 - t1;
-                        t1 = t2;
-                        if (elapsed < pollingRate)
-                            Thread.Sleep(pollingRate - elapsed);
-                    }
-                }
-            }, TaskCreationOptions.LongRunning);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
-            var latestBtnStateLogger = ButtonRing.ButtonStateLogger;
             
             Span<SensorStatus> newStates = stackalloc SensorStatus[12];
 
@@ -81,9 +27,12 @@ namespace MajdataPlay.IO
                     continue;
                 newStates[index] |= report.State;
             }
+
             for (var i = 0; i < 12; i++)
             {
-                newStates[i] |= latestBtnStateLogger[i];
+                var area = (SensorArea)i;
+                var state = (ButtonRing.IsOn(area) || ButtonRing.IsHadOn(area)) ? SensorStatus.On : SensorStatus.Off;
+                newStates[i] = state;
             }
 
             for (var i = 0; i < 12; i++)

@@ -17,6 +17,9 @@ using System.Security.Policy;
 using System.Threading;
 using System.Diagnostics;
 using HidSharp;
+using System.IO.Ports;
+using System.Text;
+using System.IO;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -280,14 +283,16 @@ namespace MajdataPlay.IO
             switch (MajInstances.Settings.Misc.InputDevice.ButtonRing.Type)
             {
                 case DeviceType.Keyboard:
+                case DeviceType.IO4:
+                case DeviceType.HID:
                     StartInternalIOManager();
                     _updateIOListenerPtr = &UpdateInternalIOListener;
                     break;
-                case DeviceType.IO4:
-                case DeviceType.HID:
-                    StartExternalIOManager();
-                    _updateIOListenerPtr = &UpdateExternalIOListener;
-                    break;
+                //case DeviceType.IO4:
+                //case DeviceType.HID:
+                //    StartExternalIOManager();
+                //    _updateIOListenerPtr = &UpdateExternalIOListener;
+                //    break;
             }
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
@@ -324,8 +329,8 @@ namespace MajdataPlay.IO
         }
         static void StartInternalIOManager()
         {
-            StartUpdatingTouchPanelState();
-            StartUpdatingKeyboardState();
+            ButtonRing.Init();
+            TouchPanel.Init();
         }
         static void StartExternalIOManager()
         {
@@ -412,7 +417,8 @@ namespace MajdataPlay.IO
             try
             {
                 var executionQueue = MajEnv.ExecutionQueue;
-
+                ButtonRing.OnPreUpdate();
+                TouchPanel.OnPreUpdate();
                 if (_useDummy)
                 {
                     UpdateMousePosition();
@@ -783,7 +789,6 @@ namespace MajdataPlay.IO
             var i = (int)zone;
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
 
-            TouchPanel.OnTouchPanelStateChanged(i, majState);
             _touchPanelInputBuffer.Enqueue(new()
             {
                 Index = i,
@@ -872,7 +877,7 @@ namespace MajdataPlay.IO
             #region Public Methods
             public static void Init()
             {
-                if (!_buttonRingUpdateTask.IsCompleted)
+                if (!_buttonRingUpdateLoop.IsCompleted)
                     return;
                 switch(MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
                 {
@@ -885,6 +890,7 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
                 var buttonStates = _buttonStates.AsSpan();
@@ -907,6 +913,7 @@ namespace MajdataPlay.IO
                     }
                 }
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(SensorArea area)
             {
                 if (area > SensorArea.A8 || area < SensorArea.A1)
@@ -914,6 +921,7 @@ namespace MajdataPlay.IO
 
                 return _isBtnHadOn[(int)area];
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(SensorArea area)
             {
                 if (area > SensorArea.A8 || area < SensorArea.A1)
@@ -921,6 +929,7 @@ namespace MajdataPlay.IO
 
                 return _buttonStates[(int)area];
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(SensorArea area)
             {
                 if (area > SensorArea.A8 || area < SensorArea.A1)
@@ -928,10 +937,12 @@ namespace MajdataPlay.IO
 
                 return _isBtnHadOff[(int)area];
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(SensorArea area)
             {
                 return !IsOn(area);
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(SensorArea area)
             {
                 if (area > SensorArea.A8 || area < SensorArea.A1)
@@ -939,6 +950,7 @@ namespace MajdataPlay.IO
 
                 return _buttonRealTimeStates[(int)area];
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(SensorArea area)
             {
                 return !IsCurrentlyOn(area);
@@ -952,7 +964,6 @@ namespace MajdataPlay.IO
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var buttons = _buttons.Span;
-                Span<bool> buffer = stackalloc bool[12];
 
                 Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
@@ -968,18 +979,15 @@ namespace MajdataPlay.IO
                             var button = buttons[i];
                             var keyCode = button.BindingKey;
                             var state = KeyboardHelper.IsKeyDown(keyCode);
-                            buffer[i] = state;
+                            _buttonRealTimeStates[i] = state;
                         }
                         lock(_buttonRingUpdateLoop)
                         {
                             for (var i = 0; i < 12; i++)
                             {
-                                var state = buffer[i];
-                                _buttonRealTimeStates[i] = state;
+                                var state = _buttonRealTimeStates[i];
                                 _isBtnHadOnInternal[i] |= state;
                                 _isBtnHadOffInternal[i] |= !state;
-
-                                buffer[i] = default;
                             }
                         }
                     }
@@ -1035,8 +1043,7 @@ namespace MajdataPlay.IO
 
                 using (hidStream)
                 {
-                    Span<byte> readBuffer = stackalloc byte[device.GetMaxInputReportLength()];
-                    Span<bool> buffer = stackalloc bool[12];
+                    Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
 
                     Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                     stopwatch.Start();
@@ -1046,14 +1053,14 @@ namespace MajdataPlay.IO
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
-                            hidStream.Read(readBuffer);
+                            hidStream.Read(buffer);
                             switch(deviceType)
                             {
                                 case DeviceType.HID:
-                                    AdxHIDDevice.Parse(readBuffer, buffer);
+                                    AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
                                 case DeviceType.IO4:
-                                    AdxIO4Device.Parse(readBuffer, buffer);
+                                    AdxIO4Device.Parse(buffer, _buttonRealTimeStates);
                                     break;
                                 default:
                                     continue;
@@ -1062,12 +1069,9 @@ namespace MajdataPlay.IO
                             {
                                 for (var i = 0; i < 12; i++)
                                 {
-                                    var state = buffer[i];
-                                    _buttonRealTimeStates[i] = state;
+                                    var state = _buttonRealTimeStates[i];
                                     _isBtnHadOnInternal[i] |= state;
                                     _isBtnHadOffInternal[i] |= !state;
-
-                                    buffer[i] = default;
                                 }
                             }
                         }
@@ -1077,7 +1081,7 @@ namespace MajdataPlay.IO
                         }
                         finally
                         {
-                            readBuffer.Clear();
+                            buffer.Clear();
                             if (pollingRate.TotalMilliseconds > 0)
                             {
                                 var t2 = stopwatch.Elapsed;
@@ -1246,36 +1250,352 @@ namespace MajdataPlay.IO
         }
         static class TouchPanel
         {
-            public static ReadOnlySpan<SensorStatus> SensorStateLogger
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get
-                {
-                    return _sensorStates;
-                }
-            }
-            readonly static SensorStatus[] _sensorStates = new SensorStatus[34];
+            static Task _touchPanelUpdateLoop = Task.CompletedTask;
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsSensorRelased(SensorArea area)
+            readonly static bool[] _sensorStates = new bool[35];
+            readonly static bool[] _sensorRealTimeStates = new bool[35];
+            readonly static bool[] _isSensorHadOn = new bool[35];
+            readonly static bool[] _isSensorHadOff = new bool[35];
+
+            readonly static bool[] _isSensorHadOnInternal = new bool[35];
+            readonly static bool[] _isSensorHadOffInternal = new bool[35];
+            #region Public Methods
+            public static void Init()
             {
-                var i = (int)area;
-                return _sensorStates[i] == SensorStatus.Off;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsSensorPressed(SensorArea area)
-            {
-                var i = (int)area;
-                return _sensorStates[i] == SensorStatus.On;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void OnTouchPanelStateChanged(int sensorIndex, SensorStatus state)
-            {
-                if (!sensorIndex.InRange(0, 33))
-                {
+                if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
+                _touchPanelUpdateLoop = Task.Factory.StartNew(TouchPanelUpdateLoop, TaskCreationOptions.LongRunning);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void OnPreUpdate()
+            {
+                var buttonStates = _sensorStates.AsSpan();
+                var isBtnHadOn = _isSensorHadOn.AsSpan();
+                var isBtnHadOff = _isSensorHadOff.AsSpan();
+                var isBtnHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                var isBtnHadOffInternal = _isSensorHadOffInternal.AsSpan();
+                var buttonRealTimeStates = _sensorRealTimeStates.AsSpan();
+
+                lock (_touchPanelUpdateLoop)
+                {
+                    for (var i = 0; i < 35; i++)
+                    {
+                        isBtnHadOn[i] = isBtnHadOnInternal[i];
+                        isBtnHadOff[i] = isBtnHadOffInternal[i];
+                        buttonStates[i] = buttonRealTimeStates[i];
+
+                        isBtnHadOnInternal[i] = default;
+                        isBtnHadOffInternal[i] = default;
+                    }
                 }
-                _sensorStates[sensorIndex] = state;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOn(SensorArea area)
+            {
+                if(area < SensorArea.C)
+                {
+                    return _isSensorHadOn[(int)area];
+                }
+                else if(area == SensorArea.C)
+                {
+                    return _isSensorHadOn[16] || _isSensorHadOn[17];
+                }
+                else if(area < SensorArea.Test)
+                {
+                    return _isSensorHadOn[(int)area + 1];
+                }
+                return false;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOn(SensorArea area)
+            {
+                if (area < SensorArea.C)
+                {
+                    return _sensorStates[(int)area];
+                }
+                else if (area == SensorArea.C)
+                {
+                    return _sensorStates[16] || _sensorStates[17];
+                }
+                else if (area < SensorArea.Test)
+                {
+                    return _sensorStates[(int)area + 1];
+                }
+                return false;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOff(SensorArea area)
+            {
+                if (area < SensorArea.C)
+                {
+                    return _isSensorHadOff[(int)area];
+                }
+                else if (area == SensorArea.C)
+                {
+                    return _isSensorHadOff[16] && _isSensorHadOff[17];
+                }
+                else if (area < SensorArea.Test)
+                {
+                    return _isSensorHadOff[(int)area + 1];
+                }
+                return false;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOff(SensorArea area)
+            {
+                return !IsOn(area);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOn(SensorArea area)
+            {
+                if (area < SensorArea.C)
+                {
+                    return _sensorRealTimeStates[(int)area];
+                }
+                else if (area == SensorArea.C)
+                {
+                    return _sensorRealTimeStates[16] || _sensorRealTimeStates[17];
+                }
+                else if (area < SensorArea.Test)
+                {
+                    return _sensorRealTimeStates[(int)area + 1];
+                }
+                return false;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOff(SensorArea area)
+            {
+                return !IsCurrentlyOn(area);
+            }
+            #endregion
+
+            static void TouchPanelUpdateLoop()
+            {
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _sensorPollingRateMs;
+                var comPort = $"COM{MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort}";
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                using var serial = new SerialPort(comPort, MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate);
+
+                serial.ReadTimeout = 2000;
+                serial.WriteTimeout = 2000;
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                stopwatch.Start();
+
+                try
+                {
+                    EnsureTouchPanelSerialStreamIsOpen(serial);
+                    IsTouchPanelConnected = true;
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            if (!EnsureTouchPanelSerialStreamIsOpen(serial))
+                                continue;
+                            ReadFromSerialPort(serial);
+                        }
+                        catch (TimeoutException)
+                        {
+                            MajDebug.LogError($"From SerialPort listener: Read timeout");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"From SerialPort listener: \n{e}");
+                        }
+                        finally
+                        {
+                            if(pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                    Thread.Sleep(pollingRate - elapsed);
+                            }
+                        }
+                    }
+                }
+                catch (IOException ioE)
+                {
+                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.\n{ioE}");
+                    _useDummy = true;
+                }
+            }
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static void ReadFromSerialPort(SerialPort serial)
+            {
+                var bytes2Read = serial.BytesToRead;
+                if (bytes2Read == 0)
+                    return;
+                Span<byte> buffer = stackalloc byte[bytes2Read];
+                //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
+                var read = serial.Read(buffer);
+                TouchPannelPacketHandle(buffer);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void TouchPannelPacketHandle(ReadOnlySpan<byte> packet)
+            {
+                if (packet.IsEmpty)
+                    return;
+                var now = MajTimeline.UnscaledTime;
+                Span<int> startIndexs = stackalloc int[packet.Length];
+                int x = -1;
+                for (var y = 0; y < packet.Length; y++)
+                {
+                    var @byte = packet[y];
+                    if (@byte == '(')
+                    {
+                        startIndexs[++x] = y;
+                    }
+                }
+                if (x == -1)
+                    return;
+                Span<bool> states = stackalloc bool[35];
+                Span<bool> hadOnBuffer = stackalloc bool[35];
+                Span<bool> hadOffBuffer = stackalloc bool[35];
+                startIndexs = startIndexs.Slice(0, x + 1);
+                foreach (var startIndex in startIndexs)
+                {
+                    var packetBody = GetPacketBody(packet, startIndex);
+
+                    if (packetBody.IsEmpty)
+                        continue;
+                    else if (packetBody.Length != 7)
+                        continue;
+
+                    int k = 0;
+                    for (int i = 0; i < 7; i++)
+                    {
+                        for (int j = 0; j < 5; j++)
+                        {
+                            var rawState = packetBody[i] & 1UL << j;
+                            var state = rawState > 0;
+                            states[k] |= state;
+                            hadOnBuffer[k] |= state;
+                            hadOffBuffer[k] |= !state;
+                            k++;
+                        }
+                    }
+                }
+                lock(_touchPanelUpdateLoop)
+                {
+                    for (var i = 0; i < 35; i++)
+                    {
+                        _sensorRealTimeStates[i] = states[i];
+                        _isSensorHadOnInternal[i] = hadOnBuffer[i];
+                        _isSensorHadOffInternal[i] = hadOffBuffer[i];
+                    }
+                }
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
+            {
+                var endIndex = -1;
+                for (var i = start; i < packet.Length; i++)
+                {
+                    var @byte = packet[i];
+                    if (@byte == ')')
+                    {
+                        endIndex = i;
+                        break;
+                    }
+                }
+                if (endIndex == -1)
+                {
+                    return ReadOnlySpan<byte>.Empty;
+                }
+                return packet[(start + 1)..endIndex];
+            }
+            static bool EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
+            {
+                if (serialSession.IsOpen)
+                {
+                    return true;
+                }
+                else
+                {
+                    MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                    serialSession.Open();
+                    var encoding = Encoding.ASCII;
+                    var serialStream = serialSession.BaseStream;
+                    var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
+                    var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
+                    //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+
+                    serialStream.Write(encoding.GetBytes("{RSET}"));
+                    serialStream.Write(encoding.GetBytes("{HALT}"));
+
+                    //send ratio
+                    for (byte a = 0x41; a <= 0x62; a++)
+                    {
+                        serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                    }
+                    try
+                    {
+                        for (byte a = 0x41; a <= 0x62; a++)
+                        {
+                            var value = GetSensitivityValue(a, sens);
+
+                            serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                        }
+                    }
+                    catch (TimeoutException)
+                    {
+                        MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                        return false;
+                    }
+                    serialStream.Write(encoding.GetBytes("{STAT}"));
+                    serialSession.DiscardInBuffer();
+
+                    MajDebug.Log("TouchPannel connected");
+                    return true;
+                }
+            }
+            static byte GetSensitivityValue(byte sensor, int sens)
+            {
+                if (sensor > 0x62 || sensor < 0x41)
+                    return 0x28;
+                if (sensor < 0x49)
+                {
+                    return sens switch
+                    {
+                        -5 => 0x5A,
+                        -4 => 0x50,
+                        -3 => 0x46,
+                        -2 => 0x3C,
+                        -1 => 0x32,
+                        1 => 0x1E,
+                        2 => 0x1A,
+                        3 => 0x17,
+                        4 => 0x14,
+                        5 => 0x0A,
+                        _ => 0x28
+                    };
+                }
+                else
+                {
+                    return sens switch
+                    {
+                        -5 => 0x46,
+                        -4 => 0x3C,
+                        -3 => 0x32,
+                        -2 => 0x28,
+                        -1 => 0x1E,
+                        1 => 0x14,
+                        2 => 0x0F,
+                        3 => 0x0A,
+                        4 => 0x05,
+                        5 => 0x01,
+                        _ => 0x01
+                    };
+                }
             }
         }
         class Button : IEventPublisher<EventHandler<InputEventArgs>>
