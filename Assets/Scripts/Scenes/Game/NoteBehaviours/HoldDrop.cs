@@ -252,7 +252,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
 
             if (IsClassic)
-                _judgeResult = HoldEndJudgeClassic(_judgeResult, endJudgeOffset);
+                _judgeResult = HoldClassicEndJudge(_judgeResult, endJudgeOffset);
             else
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
