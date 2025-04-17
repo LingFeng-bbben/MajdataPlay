@@ -1439,6 +1439,49 @@ namespace MajdataPlay.IO
             {
                 return !IsCurrentlyOn(area);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOn(int index)
+            {
+                if (!index.InRange(0, 33))
+                    return false;
+
+                return _isSensorHadOn[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOn(int index)
+            {
+                if (!index.InRange(0, 33))
+                    return false;
+
+                return _sensorStates[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOff(int index)
+            {
+                if (!index.InRange(0, 33))
+                    return false;
+
+                return _isSensorHadOff[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOff(int index)
+            {
+                return !IsOn(index);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOn(int index)
+            {
+                if (!index.InRange(0, 33))
+                    return false;
+
+                return _sensorRealTimeStates[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOff(int index)
+            {
+                return !IsCurrentlyOn(index);
+            }
             #endregion
 
             static void TouchPanelUpdateLoop()

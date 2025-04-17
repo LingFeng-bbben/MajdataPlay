@@ -25,19 +25,17 @@ namespace MajdataPlay.IO
 
                 newStates[index] |= report.State;
             }
-            var C = newStates[16] | newStates[17];
-            newStates[16] = C;
-            newStates.Slice(18).CopyTo(newStates.Slice(17));
-            newStates = newStates.Slice(0, 33);
-
-            for (var i = 0; i < 33; i++)
+            for (var i = 0; i < 34; i++)
             {
-                var area = (SensorArea)i;
-                var state = TouchPanel.IsOn(area) || TouchPanel.IsHadOn(area);
+                var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
 
                 newStates[i] |= state ? SensorStatus.On : SensorStatus.Off;
                 sensorStates[i] = newStates[i] is SensorStatus.On;
             }
+            var C = newStates[16] | newStates[17];
+            newStates[16] = C;
+            newStates.Slice(18).CopyTo(newStates.Slice(17));
+            newStates = newStates.Slice(0, 33);
 
             for (var i = 0; i < 33; i++)
             {
