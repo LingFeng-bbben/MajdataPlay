@@ -14,6 +14,9 @@ using System.Runtime.CompilerServices;
 using MajdataPlay.Collections;
 using System.Collections.Concurrent;
 using System.Security.Policy;
+using System.Threading;
+using System.Diagnostics;
+using HidSharp;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -793,7 +796,7 @@ namespace MajdataPlay.IO
             var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
             var i = GetIndexByButtonRingZone(zone);
 
-            ButtonRing.OnButtonRingStateChanged(i, majState);
+            //ButtonRing.OnButtonRingStateChanged(i, majState);
             _buttonRingInputBuffer.Enqueue(new()
             {
                 Index = i,
@@ -857,63 +860,389 @@ namespace MajdataPlay.IO
         }
         static class ButtonRing
         {
-            public static ReadOnlySpan<SensorStatus> ButtonStateLogger
+            static Task _buttonRingUpdateLoop = Task.CompletedTask;
+
+            readonly static bool[] _buttonStates = new bool[12];
+            readonly static bool[] _buttonRealTimeStates = new bool[12];
+            readonly static bool[] _isBtnHadOn = new bool[12];
+            readonly static bool[] _isBtnHadOff = new bool[12];
+
+            readonly static bool[] _isBtnHadOnInternal = new bool[12];
+            readonly static bool[] _isBtnHadOffInternal = new bool[12];
+            #region Public Methods
+            public static void Init()
             {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get
+                if (!_buttonRingUpdateTask.IsCompleted)
+                    return;
+                switch(MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
                 {
-                    return _buttonStates;
+                    case DeviceType.Keyboard:
+                        _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
+                    case DeviceType.HID:
+                    case DeviceType.IO4:
+                        _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
                 }
             }
-            readonly static SensorStatus[] _buttonStates = new SensorStatus[12];
+            public static void OnPreUpdate()
+            {
+                var buttonStates = _buttonStates.AsSpan();
+                var isBtnHadOn = _isBtnHadOn.AsSpan();
+                var isBtnHadOff = _isBtnHadOff.AsSpan();
+                var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
+                var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
+                var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
 
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsButtonReleased(SensorArea button)
-            {
-                var i = GetButtonIndexFromArea(button);
-                return _buttonStates[i] == SensorStatus.Off;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsButtonPressed(SensorArea button)
-            {
-                var i = GetButtonIndexFromArea(button);
-                return _buttonStates[i] == SensorStatus.On;
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void OnButtonRingStateChanged(int buttonIndex, SensorStatus state)
-            {
-                if(!buttonIndex.InRange(0,11))
+                lock (_buttonRingUpdateLoop)
                 {
+                    for (var i = 0; i < 12; i++)
+                    {
+                        isBtnHadOn[i] = isBtnHadOnInternal[i];
+                        isBtnHadOff[i] = isBtnHadOffInternal[i];
+                        buttonStates[i] = buttonRealTimeStates[i];
+
+                        isBtnHadOnInternal[i] = default;
+                        isBtnHadOffInternal[i] = default;
+                    }
+                }
+            }
+            public static bool IsHadOn(SensorArea area)
+            {
+                if (area > SensorArea.A8 || area < SensorArea.A1)
+                    return false;
+
+                return _isBtnHadOn[(int)area];
+            }
+            public static bool IsOn(SensorArea area)
+            {
+                if (area > SensorArea.A8 || area < SensorArea.A1)
+                    return false;
+
+                return _buttonStates[(int)area];
+            }
+            public static bool IsHadOff(SensorArea area)
+            {
+                if (area > SensorArea.A8 || area < SensorArea.A1)
+                    return true;
+
+                return _isBtnHadOff[(int)area];
+            }
+            public static bool IsOff(SensorArea area)
+            {
+                return !IsOn(area);
+            }
+            public static bool IsCurrentlyOn(SensorArea area)
+            {
+                if (area > SensorArea.A8 || area < SensorArea.A1)
+                    return false;
+
+                return _buttonRealTimeStates[(int)area];
+            }
+            public static bool IsCurrentlyOff(SensorArea area)
+            {
+                return !IsCurrentlyOn(area);
+            }
+            #endregion
+
+            static void KeyboardUpdateLoop()
+            {
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var buttons = _buttons.Span;
+                Span<bool> buffer = stackalloc bool[12];
+
+                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                stopwatch.Start();
+                while (true)
+                {
+                    token.ThrowIfCancellationRequested();
+                    try
+                    {
+                        var now = MajTimeline.UnscaledTime;
+
+                        for (var i = 0; i < buttons.Length; i++)
+                        {
+                            var button = buttons[i];
+                            var keyCode = button.BindingKey;
+                            var state = KeyboardHelper.IsKeyDown(keyCode);
+                            buffer[i] = state;
+                        }
+                        lock(_buttonRingUpdateLoop)
+                        {
+                            for (var i = 0; i < 12; i++)
+                            {
+                                var state = buffer[i];
+                                _buttonRealTimeStates[i] = state;
+                                _isBtnHadOnInternal[i] |= state;
+                                _isBtnHadOffInternal[i] |= !state;
+
+                                buffer[i] = default;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"From KeyBoard listener: \n{e}");
+                    }
+                    finally
+                    {
+                        if(pollingRate.TotalMilliseconds > 0)
+                        {
+                            var t2 = stopwatch.Elapsed;
+                            var elapsed = t2 - t1;
+                            t1 = t2;
+                            if (elapsed < pollingRate)
+                                Thread.Sleep(pollingRate - elapsed);
+                        }
+                    }
+                }
+            }
+            static void HIDUpdateLoop()
+            {
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var buttons = _buttons.Span;
+                var pid = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.ProductId;
+                var vid = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.VendorId;
+                var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
+                var devices = DeviceList.Local.GetHidDevices();
+                HidDevice? device = null;
+                HidStream? hidStream = null;
+
+                foreach(var d in devices)
+                {
+                    if (d.ProductID == pid && d.VendorID == vid)
+                    {
+                        device = d;
+                        break;
+                    }
+                }
+                if(device is null)
+                {
+                    MajDebug.LogWarning("Hid device not found");
                     return;
                 }
-                _buttonStates[buttonIndex] = state;
-            }
-            static int GetButtonIndexFromArea(SensorArea area)
-            {
-                switch(area)
+                else if(!device.TryOpen(out hidStream))
                 {
-                    case SensorArea.A1:
-                    case SensorArea.A2:
-                    case SensorArea.A3:
-                    case SensorArea.A4:
-                    case SensorArea.A5:
-                    case SensorArea.A6:
-                    case SensorArea.A7:
-                    case SensorArea.A8:
-                        return (int)area;
-                    case SensorArea.Test:
-                        return 8;
-                    case SensorArea.P1:
-                        return 9;
-                    case SensorArea.Service:
-                        return 10;
-                    case SensorArea.P2:
-                        return 11;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(area));
+                    MajDebug.LogError($"cannot open hid device:\n{device}");
+                    return;
+                }
+
+                using (hidStream)
+                {
+                    Span<byte> readBuffer = stackalloc byte[device.GetMaxInputReportLength()];
+                    Span<bool> buffer = stackalloc bool[12];
+
+                    Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                    stopwatch.Start();
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
+                            hidStream.Read(readBuffer);
+                            switch(deviceType)
+                            {
+                                case DeviceType.HID:
+                                    AdxHIDDevice.Parse(readBuffer, buffer);
+                                    break;
+                                case DeviceType.IO4:
+                                    AdxIO4Device.Parse(readBuffer, buffer);
+                                    break;
+                                default:
+                                    continue;
+                            }
+                            lock (_buttonRingUpdateLoop)
+                            {
+                                for (var i = 0; i < 12; i++)
+                                {
+                                    var state = buffer[i];
+                                    _buttonRealTimeStates[i] = state;
+                                    _isBtnHadOnInternal[i] |= state;
+                                    _isBtnHadOffInternal[i] |= !state;
+
+                                    buffer[i] = default;
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"From HID listener: \n{e}");
+                        }
+                        finally
+                        {
+                            readBuffer.Clear();
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                    Thread.Sleep(pollingRate - elapsed);
+                            }
+                        }
+                    }
                 }
             }
+
+            static class AdxHIDDevice
+            {
+                const int HID_BA1_INDEX = 4;
+                const int HID_BA2_INDEX = 3;
+                const int HID_BA3_INDEX = 2;
+                const int HID_BA4_INDEX = 1;
+                const int HID_BA5_INDEX = 8;
+                const int HID_BA6_INDEX = 7;
+                const int HID_BA7_INDEX = 6;
+                const int HID_BA8_INDEX = 5;
+                const int HID_TEST_INDEX = 10;
+                const int HID_SELECT_P1_INDEX = 9;
+                const int HID_SERVICE_INDEX = 12;
+                const int HID_SELECT_P2_INDEX = 11;
+                public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
+                {
+                    reportData = reportData.Slice(1); // skip report id
+                    for (var i = 1; i < 13; i++)
+                    {
+                        switch(i)
+                        {
+                            case HID_BA1_INDEX:
+                                buffer[0] = reportData[i] == 1;
+                                break;
+                            case HID_BA2_INDEX:
+                                buffer[1] = reportData[i] == 1;
+                                break;
+                            case HID_BA3_INDEX:
+                                buffer[2] = reportData[i] == 1;
+                                break;
+                            case HID_BA4_INDEX:
+                                buffer[3] = reportData[i] == 1;
+                                break;
+                            case HID_BA5_INDEX:
+                                buffer[4] = reportData[i] == 1;
+                                break;
+                            case HID_BA6_INDEX:
+                                buffer[5] = reportData[i] == 1;
+                                break;
+                            case HID_BA7_INDEX:
+                                buffer[6] = reportData[i] == 1;
+                                break;
+                            case HID_BA8_INDEX:
+                                buffer[7] = reportData[i] == 1;
+                                break;
+                            case HID_TEST_INDEX:
+                                buffer[8] = reportData[i] == 1;
+                                break;
+                            case HID_SELECT_P1_INDEX:
+                                buffer[9] = reportData[i] == 1;
+                                break;
+                            case HID_SERVICE_INDEX:
+                                buffer[10] = reportData[i] == 1;
+                                break;
+                            case HID_SELECT_P2_INDEX:
+                                buffer[11] = reportData[i] == 1;
+                                break;
+                        }
+                    }
+                }
+            }
+            static class AdxIO4Device
+            {
+                const int IO4_BA1_OFFSET = 0b00000100;
+                const int IO4_BA2_OFFSET = 0b00001000;
+                const int IO4_BA3_OFFSET = 0b00000001;
+                const int IO4_BA4_OFFSET = 0b10000000;
+                const int IO4_BA5_OFFSET = 0b01000000;
+                const int IO4_BA6_OFFSET = 0b00100000;
+                const int IO4_BA7_OFFSET = 0b00010000;
+                const int IO4_BA8_OFFSET = 0b00001000;
+                const int IO4_TEST_OFFSET = 0b00000010;
+                const int IO4_SELECT_P1_OFFSET = 0b00000010;
+                const int IO4_SERVICE_OFFSET = 0b00000001;
+                const int IO4_SELECT_P2_OFFSET = 0b01000000;
+
+                const int IO4_BA1_INDEX = 28;
+                const int IO4_BA2_INDEX = 28;
+                const int IO4_BA3_INDEX = 28;
+                const int IO4_BA4_INDEX = 29;
+                const int IO4_BA5_INDEX = 29;
+                const int IO4_BA6_INDEX = 29;
+                const int IO4_BA7_INDEX = 29;
+                const int IO4_BA8_INDEX = 29;
+                const int IO4_TEST_INDEX = 29;
+                const int IO4_SELECT_P1_INDEX = 28;
+                const int IO4_SERVICE_INDEX = 25;
+                const int IO4_SELECT_P2_INDEX = 28;
+                public static void Parse(ReadOnlySpan<byte> reportData,Span<bool> buffer)
+                {
+                    reportData = reportData.Slice(1); // skip report id
+                    buffer[0] = (~reportData[IO4_BA1_INDEX] & IO4_BA1_OFFSET) != 0;
+                    buffer[1] = (~reportData[IO4_BA2_INDEX] & IO4_BA2_OFFSET) != 0;
+                    buffer[2] = (~reportData[IO4_BA3_INDEX] & IO4_BA3_OFFSET) != 0;
+                    buffer[3] = (~reportData[IO4_BA4_INDEX] & IO4_BA4_OFFSET) != 0;
+                    buffer[4] = (~reportData[IO4_BA5_INDEX] & IO4_BA5_OFFSET) != 0;
+                    buffer[5] = (~reportData[IO4_BA6_INDEX] & IO4_BA6_OFFSET) != 0;
+                    buffer[6] = (~reportData[IO4_BA7_INDEX] & IO4_BA7_OFFSET) != 0;
+                    buffer[7] = (~reportData[IO4_BA8_INDEX] & IO4_BA8_OFFSET) != 0;
+                    buffer[8] = (~reportData[IO4_TEST_INDEX] & IO4_TEST_OFFSET) != 0;
+                    buffer[9] = (~reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
+                    buffer[10] = (~reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;
+                    buffer[11] = (~reportData[IO4_SELECT_P2_INDEX] & IO4_SELECT_P2_OFFSET) != 0;
+                }
+            }
+
+            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+            //public static bool IsButtonReleased(SensorArea button)
+            //{
+            //    var i = GetButtonIndexFromArea(button);
+            //    return _buttonRealTimeStates[i] == SensorStatus.Off;
+            //}
+            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+            //public static bool IsButtonPressed(SensorArea button)
+            //{
+            //    var i = GetButtonIndexFromArea(button);
+            //    return _buttonRealTimeStates[i] == SensorStatus.On;
+            //}
+            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+            //public static void OnButtonRingStateChanged(int buttonIndex, SensorStatus state)
+            //{
+            //    if(!buttonIndex.InRange(0,11))
+            //    {
+            //        return;
+            //    }
+            //    _buttonRealTimeStates[buttonIndex] = state;
+            //}
+            //static int GetButtonIndexFromArea(SensorArea area)
+            //{
+            //    switch(area)
+            //    {
+            //        case SensorArea.A1:
+            //        case SensorArea.A2:
+            //        case SensorArea.A3:
+            //        case SensorArea.A4:
+            //        case SensorArea.A5:
+            //        case SensorArea.A6:
+            //        case SensorArea.A7:
+            //        case SensorArea.A8:
+            //            return (int)area;
+            //        case SensorArea.Test:
+            //            return 8;
+            //        case SensorArea.P1:
+            //            return 9;
+            //        case SensorArea.Service:
+            //            return 10;
+            //        case SensorArea.P2:
+            //            return 11;
+            //        default:
+            //            throw new ArgumentOutOfRangeException(nameof(area));
+            //    }
+            //}
         }
         static class TouchPanel
         {

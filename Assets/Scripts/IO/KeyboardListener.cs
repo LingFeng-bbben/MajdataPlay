@@ -40,7 +40,7 @@ namespace MajdataPlay.IO
                             var state = KeyboardHelper.IsKeyDown(keyCode) ? SensorStatus.On : SensorStatus.Off;
                             var area = button.Area;
 
-                            ButtonRing.OnButtonRingStateChanged(i, state);
+                            //ButtonRing.OnButtonRingStateChanged(i, state);
                             _buttonRingInputBuffer.Enqueue(new()
                             {
                                 Index = i,
