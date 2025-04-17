@@ -1261,15 +1261,10 @@ namespace MajdataPlay.IO
                     buffer[5] = (~reportData[IO4_BA6_INDEX] & IO4_BA6_OFFSET) != 0;
                     buffer[6] = (~reportData[IO4_BA7_INDEX] & IO4_BA7_OFFSET) != 0;
                     buffer[7] = (~reportData[IO4_BA8_INDEX] & IO4_BA8_OFFSET) != 0;
-                    buffer[8] = (~reportData[IO4_TEST_INDEX] & IO4_TEST_OFFSET) != 0;
-                    buffer[9] = (~reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
-                    buffer[10] = (~reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;
-                    buffer[11] = (~reportData[IO4_SELECT_P2_INDEX] & IO4_SELECT_P2_OFFSET) != 0;
-                    var debug = buffer[0] || buffer[1] || buffer[2] || buffer[3] || buffer[4] || buffer[5] || buffer[6] || buffer[7];
-                    if(!debug)
-                    {
-
-                    }
+                    buffer[8] = (reportData[IO4_TEST_INDEX] & IO4_TEST_OFFSET) != 0;
+                    buffer[9] = (reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
+                    buffer[10] = (reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;
+                    buffer[11] = (reportData[IO4_SELECT_P2_INDEX] & IO4_SELECT_P2_OFFSET) != 0;
                 }
             }
 
