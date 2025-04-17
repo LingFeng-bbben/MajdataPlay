@@ -1,5 +1,4 @@
-﻿using Cysharp.Text;
-using MajdataPlay.Extensions;
+﻿using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using MychIO.Device;
 using System;
@@ -77,12 +76,10 @@ namespace MajdataPlay.IO
 
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
-                const string LOG_FORMAT = "From ButtonRing event:\nIndex: {0}\nState: {1}";
                 var index = report.Index;
                 if (!index.InRange(0, 11))
                     continue;
                 newStates[index] |= report.State;
-                MajDebug.Log(ZString.Format(LOG_FORMAT, index, report.State));
             }
             for (var i = 0; i < 12; i++)
             {

@@ -280,7 +280,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _noteManager.NextNote(QueueInfo);
-                MajDebug.LogWarning("TAP MISS!!!");
             }
         }
         void Check()
