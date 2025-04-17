@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
             for (var i = 0; i < 12; i++)
             {
                 var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SensorStatus.On : SensorStatus.Off;
-                newStates[i] = state;
+                newStates[i] |= state;
             }
 
             for (var i = 0; i < 12; i++)
