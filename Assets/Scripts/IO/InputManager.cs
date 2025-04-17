@@ -1017,13 +1017,15 @@ namespace MajdataPlay.IO
             }
             static void KeyboardUpdateLoop()
             {
+                var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var buttons = _buttons.Span;
 
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                currentThread.IsBackground = true;
+                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
                 while (true)
                 {
@@ -1068,6 +1070,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
+                var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
@@ -1077,6 +1080,9 @@ namespace MajdataPlay.IO
                 var vid = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.VendorId;
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
                 var devices = DeviceList.Local.GetHidDevices();
+
+                currentThread.IsBackground = true;
+                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
@@ -1103,7 +1109,6 @@ namespace MajdataPlay.IO
                 {
                     Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
 
-                    Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                     stopwatch.Start();
                     while (true)
                     {
@@ -1438,6 +1443,7 @@ namespace MajdataPlay.IO
 
             static void TouchPanelUpdateLoop()
             {
+                var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
                 var comPort = $"COM{MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort}";
@@ -1445,9 +1451,10 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 using var serial = new SerialPort(comPort, MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate);
 
+                currentThread.IsBackground = true;
+                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
-                Thread.CurrentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
 
                 try
