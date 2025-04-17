@@ -914,49 +914,107 @@ namespace MajdataPlay.IO
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsHadOn(SensorArea area)
+            public static bool IsHadOn(int index)
             {
-                if (area > SensorArea.A8 || area < SensorArea.A1)
+                if (!index.InRange(0, 11))
                     return false;
 
-                return _isBtnHadOn[(int)area];
+                return _isBtnHadOn[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOn(int index)
+            {
+                if (!index.InRange(0, 11))
+                    return false;
+
+                return _buttonStates[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOff(int index)
+            {
+                if (!index.InRange(0, 11))
+                    return false;
+
+                return _isBtnHadOff[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsOff(int index)
+            {
+                return !IsOn(index);
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOn(int index)
+            {
+                if (!index.InRange(0, 11))
+                    return false;
+
+                return _buttonRealTimeStates[index];
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsCurrentlyOff(int index)
+            {
+                return !IsCurrentlyOn(index);
+            }
+
+
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsHadOn(SensorArea area)
+            {
+                return IsHadOn(GetIndexFromArea(area));
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(SensorArea area)
             {
-                if (area > SensorArea.A8 || area < SensorArea.A1)
-                    return false;
-
-                return _buttonStates[(int)area];
+                return IsOn(GetIndexFromArea(area));
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(SensorArea area)
             {
-                if (area > SensorArea.A8 || area < SensorArea.A1)
-                    return true;
-
-                return _isBtnHadOff[(int)area];
+                return IsHadOff(GetIndexFromArea(area));
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(SensorArea area)
             {
-                return !IsOn(area);
+                return IsOff(GetIndexFromArea(area));
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(SensorArea area)
             {
-                if (area > SensorArea.A8 || area < SensorArea.A1)
-                    return false;
-
-                return _buttonRealTimeStates[(int)area];
+                return IsCurrentlyOn(GetIndexFromArea(area));
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(SensorArea area)
             {
-                return !IsCurrentlyOn(area);
+                return IsCurrentlyOff(GetIndexFromArea(area));
             }
             #endregion
 
+            static int GetIndexFromArea(SensorArea area)
+            {
+                switch (area)
+                {
+                    case SensorArea.A1:
+                    case SensorArea.A2:
+                    case SensorArea.A3:
+                    case SensorArea.A4:
+                    case SensorArea.A5:
+                    case SensorArea.A6:
+                    case SensorArea.A7:
+                    case SensorArea.A8:
+                        return (int)area;
+                    case SensorArea.Test:
+                        return 8;
+                    case SensorArea.P1:
+                        return 9;
+                    case SensorArea.Service:
+                        return 10;
+                    case SensorArea.P2:
+                        return 11;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
             static void KeyboardUpdateLoop()
             {
                 var token = MajEnv.GlobalCT;
@@ -1074,6 +1132,10 @@ namespace MajdataPlay.IO
                                     _isBtnHadOffInternal[i] |= !state;
                                 }
                             }
+                        }
+                        catch(OperationCanceledException)
+                        {
+                            break;
                         }
                         catch (Exception e)
                         {
@@ -1198,6 +1260,11 @@ namespace MajdataPlay.IO
                     buffer[9] = (~reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
                     buffer[10] = (~reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;
                     buffer[11] = (~reportData[IO4_SELECT_P2_INDEX] & IO4_SELECT_P2_OFFSET) != 0;
+                    var debug = buffer[0] || buffer[1] || buffer[2] || buffer[3] || buffer[4] || buffer[5] || buffer[6] || buffer[7];
+                    if(!debug)
+                    {
+
+                    }
                 }
             }
 
