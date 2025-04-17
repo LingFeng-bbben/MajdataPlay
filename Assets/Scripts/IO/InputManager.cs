@@ -1339,23 +1339,23 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var buttonStates = _sensorStates.AsSpan();
-                var isBtnHadOn = _isSensorHadOn.AsSpan();
-                var isBtnHadOff = _isSensorHadOff.AsSpan();
-                var isBtnHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                var isBtnHadOffInternal = _isSensorHadOffInternal.AsSpan();
-                var buttonRealTimeStates = _sensorRealTimeStates.AsSpan();
+                var sensorStates = _sensorStates.AsSpan();
+                var isSensorHadOn = _isSensorHadOn.AsSpan();
+                var isSensorHadOff = _isSensorHadOff.AsSpan();
+                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
 
                 lock (_touchPanelUpdateLoop)
                 {
                     for (var i = 0; i < 35; i++)
                     {
-                        isBtnHadOn[i] = isBtnHadOnInternal[i];
-                        isBtnHadOff[i] = isBtnHadOffInternal[i];
-                        buttonStates[i] = buttonRealTimeStates[i];
+                        isSensorHadOn[i] = isSensorHadOnInternal[i];
+                        isSensorHadOff[i] = isSensorHadOffInternal[i];
+                        sensorStates[i] = sensorRealTimeStates[i];
 
-                        isBtnHadOnInternal[i] = default;
-                        isBtnHadOffInternal[i] = default;
+                        isSensorHadOnInternal[i] = default;
+                        isSensorHadOffInternal[i] = default;
                     }
                 }
             }
