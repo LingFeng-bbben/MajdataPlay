@@ -30,7 +30,20 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
-        public static bool IsTouchPanelConnected { get; private set; } = false;
+        public static bool IsTouchPanelConnected
+        {
+            get
+            {
+                return TouchPanel.IsConnected;
+            }
+        }
+        public static bool IsButtonRingConnected
+        {
+            get
+            {
+                return ButtonRing.IsConnected;
+            }
+        }
         public static float FingerRadius
         {
             get
@@ -866,6 +879,8 @@ namespace MajdataPlay.IO
         }
         static class ButtonRing
         {
+            public static bool IsConnected { get; private set; } = false;
+
             static Task _buttonRingUpdateLoop = Task.CompletedTask;
 
             readonly static bool[] _buttonStates = new bool[12];
@@ -1029,45 +1044,54 @@ namespace MajdataPlay.IO
                 currentThread.IsBackground = true;
                 currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
                 stopwatch.Start();
-                while (true)
+                try
                 {
-                    token.ThrowIfCancellationRequested();
-                    try
+                    while (true)
                     {
-                        var now = MajTimeline.UnscaledTime;
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
 
-                        for (var i = 0; i < buttons.Length; i++)
-                        {
-                            var button = buttons[i];
-                            var keyCode = button.BindingKey;
-                            var state = KeyboardHelper.IsKeyDown(keyCode);
-                            _buttonRealTimeStates[i] = state;
-                        }
-                        lock(_buttonRingUpdateLoop)
-                        {
-                            for (var i = 0; i < 12; i++)
+                            for (var i = 0; i < buttons.Length; i++)
                             {
-                                var state = _buttonRealTimeStates[i];
-                                _isBtnHadOnInternal[i] |= state;
-                                _isBtnHadOffInternal[i] |= !state;
+                                var button = buttons[i];
+                                var keyCode = button.BindingKey;
+                                var state = KeyboardHelper.IsKeyDown(keyCode);
+                                _buttonRealTimeStates[i] = state;
+                            }
+                            IsConnected = true;
+                            lock (_buttonRingUpdateLoop)
+                            {
+                                for (var i = 0; i < 12; i++)
+                                {
+                                    var state = _buttonRealTimeStates[i];
+                                    _isBtnHadOnInternal[i] |= state;
+                                    _isBtnHadOffInternal[i] |= !state;
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"From KeyBoard listener: \n{e}");
+                        }
+                        finally
+                        {
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                    Thread.Sleep(pollingRate - elapsed);
                             }
                         }
                     }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"From KeyBoard listener: \n{e}");
-                    }
-                    finally
-                    {
-                        if(pollingRate.TotalMilliseconds > 0)
-                        {
-                            var t2 = stopwatch.Elapsed;
-                            var elapsed = t2 - t1;
-                            t1 = t2;
-                            if (elapsed < pollingRate)
-                                Thread.Sleep(pollingRate - elapsed);
-                        }
-                    }
+                }
+                finally
+                {
+                    IsConnected = false;
                 }
             }
             static void HIDUpdateLoop()
@@ -1108,10 +1132,10 @@ namespace MajdataPlay.IO
                     return;
                 }
 
-                using (hidStream)
+                try
                 {
                     Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
-
+                    IsConnected = true;
                     stopwatch.Start();
                     while (true)
                     {
@@ -1120,7 +1144,7 @@ namespace MajdataPlay.IO
                         {
                             var now = MajTimeline.UnscaledTime;
                             hidStream.Read(buffer);
-                            switch(deviceType)
+                            switch (deviceType)
                             {
                                 case DeviceType.HID:
                                     AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
@@ -1131,6 +1155,7 @@ namespace MajdataPlay.IO
                                 default:
                                     continue;
                             }
+                            IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
                                 for (var i = 0; i < 12; i++)
@@ -1141,9 +1166,14 @@ namespace MajdataPlay.IO
                                 }
                             }
                         }
-                        catch(OperationCanceledException)
+                        catch (OperationCanceledException)
                         {
                             break;
+                        }
+                        catch(IOException ioE)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"From HID listener: \n{ioE}");
                         }
                         catch (Exception e)
                         {
@@ -1162,6 +1192,11 @@ namespace MajdataPlay.IO
                             }
                         }
                     }
+                }
+                finally
+                {
+                    hidStream.Dispose();
+                    IsConnected = false;
                 }
             }
 
@@ -1320,6 +1355,7 @@ namespace MajdataPlay.IO
         }
         static class TouchPanel
         {
+            public static bool IsConnected { get; private set; } = false;
             static Task _touchPanelUpdateLoop = Task.CompletedTask;
 
             readonly static bool[] _sensorStates = new bool[35];
@@ -1502,22 +1538,28 @@ namespace MajdataPlay.IO
                 try
                 {
                     EnsureTouchPanelSerialStreamIsOpen(serial);
-                    IsTouchPanelConnected = true;
+                    IsConnected = true;
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
                         try
                         {
                             if (!EnsureTouchPanelSerialStreamIsOpen(serial))
+                            {
+                                IsConnected = false;
                                 continue;
+                            }
                             ReadFromSerialPort(serial);
+                            IsConnected = true;
                         }
                         catch (TimeoutException)
                         {
+                            IsConnected = false;
                             MajDebug.LogError($"From SerialPort listener: Read timeout");
                         }
                         catch (Exception e)
                         {
+                            IsConnected = false;
                             MajDebug.LogError($"From SerialPort listener: \n{e}");
                         }
                         finally
@@ -1537,6 +1579,10 @@ namespace MajdataPlay.IO
                 {
                     MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.\n{ioE}");
                     _useDummy = true;
+                }
+                finally
+                {
+                    IsConnected = false;
                 }
             }
             [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1626,52 +1672,60 @@ namespace MajdataPlay.IO
             }
             static bool EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
             {
-                if (serialSession.IsOpen)
+                try
                 {
-                    return true;
-                }
-                else
-                {
-                    MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
-                    serialSession.Open();
-                    var encoding = Encoding.ASCII;
-                    var serialStream = serialSession.BaseStream;
-                    var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
-                    var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
-                    //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
-
-                    serialStream.Write(encoding.GetBytes("{RSET}"));
-                    serialStream.Write(encoding.GetBytes("{HALT}"));
-
-                    //send ratio
-                    for (byte a = 0x41; a <= 0x62; a++)
+                    if (serialSession.IsOpen)
                     {
-                        serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                        return true;
                     }
-                    try
+                    else
                     {
+                        MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                        serialSession.Open();
+                        var encoding = Encoding.ASCII;
+                        var serialStream = serialSession.BaseStream;
+                        var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
+                        var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
+                        //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+
+                        serialStream.Write(encoding.GetBytes("{RSET}"));
+                        serialStream.Write(encoding.GetBytes("{HALT}"));
+
+                        //send ratio
                         for (byte a = 0x41; a <= 0x62; a++)
                         {
-                            var value = GetSensitivityValue(a, sens);
-
-                            serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                            serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
                         }
-                    }
-                    catch (TimeoutException)
-                    {
-                        MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
-                        return false;
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"Failed to override sensitivity: \n{e}");
-                        return false;
-                    }
-                    serialStream.Write(encoding.GetBytes("{STAT}"));
-                    serialSession.DiscardInBuffer();
+                        try
+                        {
+                            for (byte a = 0x41; a <= 0x62; a++)
+                            {
+                                var value = GetSensitivityValue(a, sens);
 
-                    MajDebug.Log("TouchPannel connected");
-                    return true;
+                                serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                            }
+                        }
+                        catch (TimeoutException)
+                        {
+                            MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                            return false;
+                        }
+                        serialStream.Write(encoding.GetBytes("{STAT}"));
+                        serialSession.DiscardInBuffer();
+
+                        MajDebug.Log("TouchPannel connected");
+                        return true;
+                    }
+                }
+                catch(Exception e)
+                {
+                    MajDebug.LogException(e);
+                    return false;
                 }
             }
             static byte GetSensitivityValue(byte sensor, int sens)
