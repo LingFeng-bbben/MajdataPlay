@@ -270,9 +270,6 @@ namespace MajdataPlay.IO
         readonly static bool _isSensorDebounceEnabled = false;
         readonly static bool _isSensorRendererEnabled = false;
 
-        static Task _serialPortUpdateTask = Task.CompletedTask;
-        static Task _buttonRingUpdateTask = Task.CompletedTask;
-
         static IOManager? _ioManager = null;
 
         static delegate*<void> _updateIOListenerPtr = &DefaultIOListener;
