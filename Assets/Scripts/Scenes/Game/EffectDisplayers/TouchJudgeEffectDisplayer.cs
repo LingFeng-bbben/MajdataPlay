@@ -34,10 +34,6 @@ namespace MajdataPlay.Game
         }
         public void PlayEffect(in JudgeResult judgeResult)
         {
-            if (judgeResult.IsBreak)
-            {
-                return;
-            }
             var grade = judgeResult.Grade;
             switch (grade)
             {
