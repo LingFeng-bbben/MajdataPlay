@@ -1,6 +1,7 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading;
 using UnityEngine.Rendering;
@@ -164,6 +165,7 @@ namespace MajdataPlay.Types
         public int TouchPoolCapacity { get; set; } = 64;
         public int TouchHoldPoolCapacity { get; set; } = 16;
         public int EachLinePoolCapacity { get; set; } = 64;
+        public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.Normal;
         public ThreadPriority MainThreadPriority { get; set; } = ThreadPriority.Normal;
         public ThreadPriority IOThreadPriority { get; set; } = ThreadPriority.AboveNormal;
     }
