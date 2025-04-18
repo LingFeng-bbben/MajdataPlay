@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -903,6 +903,9 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
+            /// <summary>
+            /// Update the button ring state of the this frame
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
@@ -926,6 +929,16 @@ namespace MajdataPlay.IO
                     }
                 }
             }
+            /// <summary>
+            /// Determines whether the button at the given index was ever ON
+            /// during the interval between the two most recent OnPreUpdate calls.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button was ON at any point during that interval; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(int index)
             {
@@ -934,6 +947,15 @@ namespace MajdataPlay.IO
 
                 return _isBtnHadOn[index];
             }
+            /// <summary>
+            /// Determines whether the button at the given index is ON in the this frame.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button state is ON in this frame; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(int index)
             {
@@ -942,6 +964,16 @@ namespace MajdataPlay.IO
 
                 return _buttonStates[index];
             }
+            /// <summary>
+            /// Determines whether the button at the given index was ever OFF
+            /// during the interval between the two most recent OnPreUpdate calls.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button was OFF at any point during that interval; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(int index)
             {
@@ -950,11 +982,30 @@ namespace MajdataPlay.IO
 
                 return _isBtnHadOff[index];
             }
+            /// <summary>
+            /// Determines whether the button at the given index is OFF in the this frame.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button state is OFF in this frame; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(int index)
             {
                 return !IsOn(index);
             }
+            /// <summary>
+            /// Retrieves the real‑time state of the button at the given index
+            /// as read from the IO thread, indicating whether it is currently ON.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button is ON according to the latest IO thread reading; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(int index)
             {
@@ -963,6 +1014,16 @@ namespace MajdataPlay.IO
 
                 return _buttonRealTimeStates[index];
             }
+            /// <summary>
+            /// Retrieves the real‑time state of the button at the given index
+            /// as read from the IO thread, indicating whether it is currently OFF.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based button index (valid range 0–11).
+            /// </param>
+            /// <returns>
+            /// True if the button is OFF according to the latest IO thread reading; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(int index)
             {
@@ -970,32 +1031,61 @@ namespace MajdataPlay.IO
             }
 
 
-
+            /// <summary>
+            /// See also <seealso cref="IsHadOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(SensorArea area)
             {
                 return IsHadOn(GetIndexFromArea(area));
             }
+            /// <summary>
+            /// See also <seealso cref="IsOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(SensorArea area)
             {
                 return IsOn(GetIndexFromArea(area));
             }
+            /// <summary>
+            /// See also <seealso cref="IsHadOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(SensorArea area)
             {
                 return IsHadOff(GetIndexFromArea(area));
             }
+            /// <summary>
+            /// See also <seealso cref="IsOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(SensorArea area)
             {
                 return IsOff(GetIndexFromArea(area));
             }
+            /// <summary>
+            /// See also <seealso cref="IsCurrentlyOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(SensorArea area)
             {
                 return IsCurrentlyOn(GetIndexFromArea(area));
             }
+            /// <summary>
+            /// See also <seealso cref="IsCurrentlyOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(SensorArea area)
             {
@@ -1369,6 +1459,9 @@ namespace MajdataPlay.IO
                     return;
                 _touchPanelUpdateLoop = Task.Factory.StartNew(TouchPanelUpdateLoop, TaskCreationOptions.LongRunning);
             }
+            /// <summary>
+            /// Update the touchpanel state of the this frame
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
@@ -1392,6 +1485,11 @@ namespace MajdataPlay.IO
                     }
                 }
             }
+            /// <summary>
+            /// See also <seealso cref="IsHadOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(SensorArea area)
             {
@@ -1409,6 +1507,11 @@ namespace MajdataPlay.IO
                 }
                 return false;
             }
+            /// <summary>
+            /// See also <seealso cref="IsOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(SensorArea area)
             {
@@ -1426,6 +1529,11 @@ namespace MajdataPlay.IO
                 }
                 return false;
             }
+            /// <summary>
+            /// See also <seealso cref="IsHadOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(SensorArea area)
             {
@@ -1443,11 +1551,21 @@ namespace MajdataPlay.IO
                 }
                 return false;
             }
+            /// <summary>
+            /// See also <seealso cref="IsOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(SensorArea area)
             {
                 return !IsOn(area);
             }
+            /// <summary>
+            /// See also <seealso cref="IsCurrentlyOn(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(SensorArea area)
             {
@@ -1465,12 +1583,29 @@ namespace MajdataPlay.IO
                 }
                 return false;
             }
+            /// <summary>
+            /// See also <seealso cref="IsCurrentlyOff(int)"/>
+            /// </summary>
+            /// <param name="area"></param>
+            /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(SensorArea area)
             {
                 return !IsCurrentlyOn(area);
             }
 
+
+
+            /// <summary>
+            /// Determines whether the sensor at the given index was ever ON
+            /// during the interval between the two most recent OnPreUpdate calls.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor was ON at any point during that interval; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(int index)
             {
@@ -1479,6 +1614,15 @@ namespace MajdataPlay.IO
 
                 return _isSensorHadOn[index];
             }
+            /// <summary>
+            /// Determines whether the sensor at the given index is ON in the this frame.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor state is ON in this frame; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOn(int index)
             {
@@ -1487,6 +1631,16 @@ namespace MajdataPlay.IO
 
                 return _sensorStates[index];
             }
+            /// <summary>
+            /// Determines whether the sensor at the given index was ever OFF
+            /// during the interval between the two most recent OnPreUpdate calls.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor was OFF at any point during that interval; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOff(int index)
             {
@@ -1495,11 +1649,30 @@ namespace MajdataPlay.IO
 
                 return _isSensorHadOff[index];
             }
+            /// <summary>
+            /// Determines whether the sensor at the given index is OFF in the this frame.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor state is OFF in this frame; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsOff(int index)
             {
                 return !IsOn(index);
             }
+            /// <summary>
+            /// Retrieves the real‑time state of the sensor at the given index
+            /// as read from the IO thread, indicating whether it is currently ON.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor is ON according to the latest IO thread reading; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOn(int index)
             {
@@ -1508,6 +1681,16 @@ namespace MajdataPlay.IO
 
                 return _sensorRealTimeStates[index];
             }
+            /// <summary>
+            /// Retrieves the real‑time state of the sensor at the given index
+            /// as read from the IO thread, indicating whether it is currently OFF.
+            /// </summary>
+            /// <param name="index">
+            /// Zero‑based sensor index (valid range 0-33).
+            /// </param>
+            /// <returns>
+            /// True if the sensor is OFF according to the latest IO thread reading; otherwise, false.
+            /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsCurrentlyOff(int index)
             {
