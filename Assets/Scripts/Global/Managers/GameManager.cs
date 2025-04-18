@@ -200,6 +200,7 @@ namespace MajdataPlay
             {
                 var fullScreen = Setting.Debug.FullScreen;
                 Screen.fullScreen = fullScreen;
+                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
 
                 var resolution = Setting.Display.Resolution.ToLower();
                 if (resolution is not "auto")
