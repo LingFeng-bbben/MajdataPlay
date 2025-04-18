@@ -62,7 +62,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 22975960712440635, guid: ce8dca9ef711fc640a1b90ad7fb49838, type: 3}
       propertyPath: m_CullingMode
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 514727551097214747, guid: ce8dca9ef711fc640a1b90ad7fb49838, type: 3}
       propertyPath: m_SortingLayer
@@ -211,7 +211,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8374905674659227887, guid: f80d4fc74654fb341bc3f4b74da6e4bd, type: 3}
       propertyPath: m_CullingMode
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -308,7 +308,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8374905674659227887, guid: f80d4fc74654fb341bc3f4b74da6e4bd, type: 3}
       propertyPath: m_CullingMode
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -389,7 +389,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5001827038414356516, guid: e863ee95f9b63c044a47510ad82daf33, type: 3}
       propertyPath: m_CullingMode
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5123323238899579474, guid: e863ee95f9b63c044a47510ad82daf33, type: 3}
       propertyPath: m_LocalPosition.y
