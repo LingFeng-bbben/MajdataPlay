@@ -133,6 +133,7 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            MainThread.Priority = UserSettings.Debug.MainThreadPriority;
         }
         internal static void OnApplicationQuitRequested()
         {

@@ -1196,7 +1196,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
@@ -1710,7 +1710,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
                 stopwatch.Start();
