@@ -19,16 +19,23 @@ namespace MajdataPlay.Game
         static readonly int BREAK_GREAT_ANIM_HASH = Animator.StringToHash("bGreat");
         static readonly int BREAK_PERFECT_ANIM_HASH = Animator.StringToHash("break");
         static readonly int TAP_PERFECT_ANIM_HASH = Animator.StringToHash("tap");
+        const float ANIM_LENGTH_SEC = 1 / 60f * 48 / 0.9f;
+
+        float _animRemainingTime = ANIM_LENGTH_SEC;
         protected override void Awake()
         {
             base.Awake();
 
             _animator = GameObject.GetComponent<Animator>();
+            _animator.enabled = false;
             _children = Transform.GetChildren()
                                  .Select(x => x.gameObject)
                                  .ToArray();
-            _animator.speed = 0.9f;
             SetActiveInternal(false);
+        }
+        internal void OnLateUpdate()
+        {
+
         }
         public void Reset()
         {

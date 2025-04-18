@@ -63,6 +63,13 @@ namespace MajdataPlay.Game
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
         }
+        internal void OnLateUpdate()
+        {
+            _judgeEffectDisplayer.OnLateUpdate();
+            _judgeTextDisplayer.OnLateUpdate();
+            _fastLateDisplayerA.OnLateUpdate();
+            _fastLateDisplayerB.OnLateUpdate();
+        }
         public void Play(in JudgeResult judgeResult)
         {
             _judgeTextDisplayer.Reset();

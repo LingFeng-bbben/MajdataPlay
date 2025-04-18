@@ -18,9 +18,10 @@ namespace MajdataPlay.Game
             set => Transform.localPosition = value;
         }
 
-        ParticleSystemRenderer _psRenderer;
         Material _material;
-
+        ParticleSystem _particleSystem;
+        ParticleSystemRenderer _psRenderer;
+        
         bool _isPlaying = false;
         Color _color = WHITE;
 
@@ -32,6 +33,7 @@ namespace MajdataPlay.Game
         protected override void Awake()
         {
             base.Awake();
+            _particleSystem = GetComponent<ParticleSystem>();
             _psRenderer = GetComponent<ParticleSystemRenderer>();
             _material = _psRenderer.material;
             SetActiveInternal(false);

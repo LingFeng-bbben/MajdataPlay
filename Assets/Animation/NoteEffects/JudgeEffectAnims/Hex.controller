@@ -176,7 +176,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: tapEffect
-  m_Speed: 1.3
+  m_Speed: 0.9
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -2842029520447951016}
@@ -203,7 +203,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: breakGrEffect
-  m_Speed: 1.3
+  m_Speed: 0.9
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4247197570138450997}
@@ -453,7 +453,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: breakGdEffect
-  m_Speed: 1.3
+  m_Speed: 0.9
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -8744978298989199813}
@@ -480,7 +480,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: breakEffect
-  m_Speed: 1.3
+  m_Speed: 0.9
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -3164693645901657398}

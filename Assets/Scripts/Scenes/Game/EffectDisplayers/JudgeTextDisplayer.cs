@@ -36,6 +36,9 @@ namespace MajdataPlay.Game
         static readonly int PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
         static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
 
+        const float ANIM_LENGTH_SEC = 1 / 60f * 21;
+
+        float _animRemainingTime = ANIM_LENGTH_SEC;
         protected override void Awake()
         {
             base.Awake();
@@ -43,6 +46,7 @@ namespace MajdataPlay.Game
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
             _displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
             _displayCriticalPerfect = MajInstances.Settings.Display.DisplayCriticalPerfect;
+            _animator.enabled = false;
             Sprite breakSprite;
 
             if (_displayCriticalPerfect)
@@ -64,6 +68,16 @@ namespace MajdataPlay.Game
                                  .Select(x => x.gameObject)
                                  .ToArray();
             SetActiveInternal(false);
+        }
+        internal void OnLateUpdate()
+        {
+            if (!Active || _animRemainingTime >= ANIM_LENGTH_SEC)
+            {
+                return;
+            }
+            var deltaTime = MajTimeline.DeltaTime;
+            _animator.Update(deltaTime);
+            _animRemainingTime += deltaTime;
         }
         public void Reset()
         {
