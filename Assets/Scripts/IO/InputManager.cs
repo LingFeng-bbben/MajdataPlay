@@ -21,6 +21,7 @@ using System.IO.Ports;
 using System.Text;
 using System.IO;
 using HidSharp.Platform.Windows;
+using static UnityEditor.PlayerSettings;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -1717,7 +1718,11 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    EnsureTouchPanelSerialStreamIsOpen(serial);
+                    if(!EnsureTouchPanelSerialStreamIsOpen(serial))
+                    {
+                        MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
+                        return;
+                    }
                     IsConnected = true;
                     while (true)
                     {
@@ -1755,13 +1760,9 @@ namespace MajdataPlay.IO
                         }
                     }
                 }
-                catch (IOException ioE)
-                {
-                    MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.\n{ioE}");
-                    _useDummy = true;
-                }
                 finally
                 {
+                    _useDummy = true;
                     IsConnected = false;
                 }
             }
