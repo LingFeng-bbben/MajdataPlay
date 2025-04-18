@@ -285,14 +285,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             base.Judge(currentSec);
             if (!_isJudged)
                 return;
-            if (_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
-            {
-                _lastHoldState = -2;
-            }
-            else
-            {
-                _lastHoldState = -1;
-            }
+            _lastHoldState = -1;
             PlaySFX();
             _effectManager.PlayHoldEffect(StartPos, _judgeResult);
             _effectManager.ResetEffect(StartPos);
@@ -448,6 +441,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = 150;
+                _lastHoldState = -2;
                 _noteManager.NextNote(QueueInfo);
             }
         }

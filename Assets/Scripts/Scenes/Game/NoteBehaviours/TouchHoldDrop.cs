@@ -338,22 +338,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 <= TOUCH_JUDGE_SEG_1ST_GREAT_MSEC => JudgeGrade.LateGreat,
                 <= TOUCH_JUDGE_SEG_2ND_GREAT_MSEC => JudgeGrade.LateGreat2nd,
                 <= TOUCH_JUDGE_SEG_3RD_GREAT_MSEC => JudgeGrade.LateGreat3rd,
-                <= TOUCH_JUDGE_GOOD_AREA_MSEC => JudgeGrade.LateGood,
-                _ => isFast ? JudgeGrade.TooFast : JudgeGrade.Miss
+                _ => JudgeGrade.LateGood
             };
 
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
             _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-            if (_judgeResult is JudgeGrade.Miss or JudgeGrade.TooFast)
-            {
-                _lastHoldState = -2;
-            }
-            else
-            {
-                _lastHoldState = -1;
-            }
+            _lastHoldState = -1;
         }
         [OnPreUpdate]
         void OnPreUpdate()
@@ -460,6 +452,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
+                _lastHoldState = -2;
                 _noteManager.NextTouch(QueueInfo);
             }
         }
