@@ -120,11 +120,24 @@ namespace MajdataPlay.Game.Buffers
         {
             var noteA = info.MemberA?.Instance;
             var noteB = info.MemberB?.Instance;
+            IDistanceProvider? distanceProvider;
 
             if (noteA is null && noteB is null)
                 return false;
+            if (noteA is TapDrop a && noteB is HoldDrop)
+            {
+                distanceProvider = a;
+            }
+            else if (noteA is HoldDrop && noteB is TapDrop aa)
+            {
+                distanceProvider = aa;
+            }
+            else
+            {
+                distanceProvider = (noteA as IDistanceProvider ?? noteB as IDistanceProvider);
+            }
 
-            eachLine.DistanceProvider = (noteA as IDistanceProvider ?? noteB as IDistanceProvider);
+            eachLine.DistanceProvider = distanceProvider;
             eachLine.NoteA = noteA;
             eachLine.NoteB = noteB;
             eachLine.Initialize(info);
