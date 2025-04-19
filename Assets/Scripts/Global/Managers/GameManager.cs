@@ -15,6 +15,7 @@ using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using MajdataPlay.IO;
+using MajdataPlay.Test;
 
 namespace MajdataPlay
 {
