@@ -429,8 +429,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 <= TOUCH_JUDGE_SEG_1ST_GREAT_MSEC => JudgeGrade.LateGreat,
                 <= TOUCH_JUDGE_SEG_2ND_GREAT_MSEC => JudgeGrade.LateGreat2nd,
                 <= TOUCH_JUDGE_SEG_3RD_GREAT_MSEC => JudgeGrade.LateGreat3rd,
-                <= TOUCH_JUDGE_GOOD_AREA_MSEC => JudgeGrade.LateGood,
-                _ => isFast ? JudgeGrade.TooFast : JudgeGrade.Miss
+                _ => JudgeGrade.LateGood
             };
 
             ConvertJudgeGrade(ref result);

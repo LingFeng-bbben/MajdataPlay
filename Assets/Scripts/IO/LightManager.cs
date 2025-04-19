@@ -153,9 +153,53 @@ namespace MajdataPlay.IO
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
             var ledDevices = _ledDevices.Span;
-            
             var templateUpdate = _templateUpdate.Span;
+            var needUpdate = false;
+
             Span<byte> buffer = stackalloc byte[10];
+            Span<LedReport> latestReports = stackalloc LedReport[8]
+            {
+                new LedReport()
+                {
+                    Index = 0,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 1,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 2,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 3,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 4,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 5,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 6,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 7,
+                    Color = Color.white,
+                }
+            };
 
             stopwatch.Start();
             using (_serial)
@@ -165,17 +209,30 @@ namespace MajdataPlay.IO
                     token.ThrowIfCancellationRequested();
                     try
                     {
+                        needUpdate = false;
                         EnsureSerialPortIsOpen(_serial);
                         for (var i = 0; i < 8; i++)
                         {
                             var device = ledDevices[i];
-                            var index = device!.Index;
                             var color = device.Color;
-                            var packet = BuildSetColorPacket(buffer, index, color);
-
+                            ref var latestReport = ref latestReports[i];
+                            if(latestReport.Color == color)
+                            {
+                                continue;
+                            }
+                            var packet = BuildSetColorPacket(buffer, i, color);
+                            latestReport = new()
+                            {
+                                Index = i,
+                                Color = color,
+                            };
+                            needUpdate = true;
                             _serial.Write(packet.Slice(0, 10));
                         }
-                        _serial.Write(templateUpdate);
+                        if(needUpdate)
+                        {
+                            _serial.Write(templateUpdate);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -203,6 +260,51 @@ namespace MajdataPlay.IO
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
             var ledDevices = _ledDevices.Span;
+            var needUpdate = false;
+
+            Span<LedReport> latestReports = stackalloc LedReport[8]
+            {
+                new LedReport()
+                {
+                    Index = 0,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 1,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 2,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 3,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 4,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 5,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 6,
+                    Color = Color.white,
+                },
+                new LedReport()
+                {
+                    Index = 7,
+                    Color = Color.white,
+                }
+            };
 
             stopwatch.Start();
             commands[8] = LedCommand.Update;
@@ -211,16 +313,28 @@ namespace MajdataPlay.IO
                 token.ThrowIfCancellationRequested();
                 try
                 {
+                    needUpdate = false;
                     for (var i = 0; i < 8; i++)
                     {
                         var device = ledDevices[i];
-                        var index = device.Index;
                         var color = device.Color;
-                        var command = BuildSetColorCommand(index, color);
-
+                        ref var latestReport = ref latestReports[i];
+                        if (latestReport.Color != color)
+                        {
+                            needUpdate = true;
+                        }
+                        var command = BuildSetColorCommand(i, color);
+                        latestReport = new()
+                        {
+                            Index = i,
+                            Color = color,
+                        };
                         commands[i] = command;
                     }
-                    ioManager.WriteToDeviceAsync(DeviceClassification.LedDevice, commands).Wait();
+                    if(needUpdate)
+                    {
+                        ioManager.WriteToDeviceAsync(DeviceClassification.LedDevice, commands).Wait();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -342,6 +456,11 @@ namespace MajdataPlay.IO
                 _immediateColor = newColor;
                 _expTime = exp;
             }
+        }
+        readonly struct LedReport
+        {
+            public int Index { get; init; }
+            public Color Color { get; init; }
         }
     }
 }

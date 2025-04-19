@@ -218,7 +218,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             throw new ArgumentOutOfRangeException();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected JudgeGrade HoldEndJudgeClassic(in JudgeGrade headGrade,float offset)
+        protected JudgeGrade HoldClassicEndJudge(in JudgeGrade headGrade,float offset)
         {
             if (!_isJudged)
                 return headGrade;

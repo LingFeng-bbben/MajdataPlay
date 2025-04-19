@@ -252,14 +252,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 <= TAP_JUDGE_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
                 <= TAP_JUDGE_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
                 <= TAP_JUDGE_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
-                <= TAP_JUDGE_GOOD_AREA_MSEC => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood,
-                _ => isFast ? JudgeGrade.TooFast : JudgeGrade.Miss
+                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            if (result is JudgeGrade.TooFast)
-                return;
-            else if (result != JudgeGrade.Miss && IsEX)
+            if (IsEX)
+            {
                 result = JudgeGrade.Perfect;
+            }
 
             ConvertJudgeGrade(ref result);
             _judgeResult = result;

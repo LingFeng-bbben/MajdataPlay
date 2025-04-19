@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using HidSharp.Platform.Windows;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
@@ -132,6 +133,7 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            MainThread.Priority = UserSettings.Debug.MainThreadPriority;
         }
         internal static void OnApplicationQuitRequested()
         {
@@ -140,6 +142,7 @@ namespace MajdataPlay.Utils
             {
                 OnApplicationQuit();
             }
+            WinHidManager.QuitThisBs();
         }
         static void CheckNoteSkinFolder()
         {

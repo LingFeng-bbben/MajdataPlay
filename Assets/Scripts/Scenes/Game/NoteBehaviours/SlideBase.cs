@@ -212,7 +212,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
+            //MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
@@ -223,7 +223,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
                 _lastWaitTimeSec = 0.05f;
         }
-        protected void Judge_Classic(float currentSec)
+        protected void ClassicJudge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
                 return;
@@ -246,7 +246,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
-            MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
+            //MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             _judgeResult = judge;
             _isJudged = true;
 

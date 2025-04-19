@@ -33,10 +33,14 @@ namespace MajdataPlay.Game
 
         static readonly int PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
         static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
+        const float ANIM_LENGTH_SEC = 1 / 60f * 21;
+
+        float _animRemainingTime = 0;
         protected override void Awake()
         {
             base.Awake();
             _animator = GameObject.GetComponent<Animator>();
+            _animator.enabled = false;
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
             fastSprite = skin.Fast;
             lateSprite = skin.Late;
@@ -44,6 +48,16 @@ namespace MajdataPlay.Game
                                  .Select(x => x.gameObject)
                                  .ToArray();
             SetActiveInternal(false);
+        }
+        internal void OnLateUpdate()
+        {
+            if (!Active || _animRemainingTime < 0)
+            {
+                return;
+            }
+            var deltaTime = MajTimeline.DeltaTime;
+            _animator.Update(deltaTime);
+            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
         }
         public void Reset()
         {
@@ -65,6 +79,7 @@ namespace MajdataPlay.Game
                 _animator.SetTrigger(BREAK_ANIM_HASH);
             else
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
+            _animRemainingTime = ANIM_LENGTH_SEC;
         }
         public override void SetActive(bool state)
         {

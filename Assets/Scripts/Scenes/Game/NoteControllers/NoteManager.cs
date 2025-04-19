@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using MajdataPlay.Extensions;
 using System;
 using MajdataPlay.Editor;
+using MajdataPlay.Types;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers
@@ -55,6 +56,8 @@ namespace MajdataPlay.Game.Notes.Controllers
 
         GamePlayManager? _gpManager;
 
+        readonly bool USERSETTING_IS_AUTOPLAY = (MajEnv.UserSettings?.Mod.AutoPlay ?? AutoplayMode.Disable) != AutoplayMode.Disable;
+
         void Awake()
         {
             Majdata<NoteManager>.Instance = this;
@@ -92,7 +95,14 @@ namespace MajdataPlay.Game.Notes.Controllers
                 _isSensorUsedInThisFrame[i] = false;
             }
 
-            GameIOUpdate();
+            if(USERSETTING_IS_AUTOPLAY)
+            {
+                AutoplayIOUpdate();
+            }
+            else
+            {
+                GameIOUpdate();
+            }
             for (var i = 0; i < _noteUpdaters.Length; i++)
             {
                 var updater = _noteUpdaters[i];
@@ -175,29 +185,46 @@ namespace MajdataPlay.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void GameIOUpdate()
         {
+            var previousButtonStatus = InputManager.ButtonStatusInPreviousFrame;
             var currentButtonStatus = InputManager.ButtonStatusInThisFrame;
+            var previousSensorStatus = InputManager.SensorStatusInPreviousFrame;
             var currentSensorStatus = InputManager.SensorStatusInThisFrame;
 
+            for (var i = 0; i < 8; i++)
+            {
+                _btnStatusInPreviousFrame[i] = previousButtonStatus[i];
+                _btnStatusInThisFrame[i] = currentButtonStatus[i];
+            }
             for (var i = 0; i < 33; i++)
             {
-                var senState = SensorStatus.Off;
-                if (i < 8)
+                _sensorStatusInPreviousFrame[i] = previousSensorStatus[i];
+                _sensorStatusInThisFrame[i] = currentSensorStatus[i];
+                if (IsUseButtonRingForTouch && i < 8)
                 {
-                    var btnState = currentButtonStatus[i];
-                    btnState |= _btnStatusInNextFrame[i];
-                    _btnStatusInNextFrame[i] = SensorStatus.Off;
-                    _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
-                    _btnStatusInThisFrame[i] = btnState;
-                    if (IsUseButtonRingForTouch)
-                    {
-                        senState |= btnState;
-                    }
+                    _sensorStatusInThisFrame[i] |= _btnStatusInThisFrame[i];
                 }
-                senState |= currentSensorStatus[i];
-                senState |= _sensorStatusInNextFrame[i];
-                _sensorStatusInNextFrame[i] = SensorStatus.Off;
+            }
+        }
+        void AutoplayIOUpdate()
+        {
+            for (var i = 0; i < 8; i++)
+            {
+                var btnState = _btnStatusInNextFrame[i];
+                
+                _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
+                _btnStatusInThisFrame[i] = btnState;
+                _btnStatusInNextFrame[i] = SensorStatus.Off;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                var senState = _sensorStatusInNextFrame[i];
+                if(IsUseButtonRingForTouch && i < 8)
+                {
+                    senState |= _btnStatusInThisFrame[i];
+                }
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
+                _sensorStatusInNextFrame[i] = SensorStatus.Off;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

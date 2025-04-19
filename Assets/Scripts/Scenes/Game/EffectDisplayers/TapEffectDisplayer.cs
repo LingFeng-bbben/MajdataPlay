@@ -87,6 +87,15 @@ namespace MajdataPlay.Game
             _fastLateDisplayerB.LocalPosition = textPosition;
             _isEnabled = MajInstances.Settings.Display.OuterJudgeDistance != 0 && DistanceRatio != 0;
         }
+        internal void OnLateUpdate()
+        {
+            _perfectDisplayer.OnLateUpdate();
+            _greatDisplayer.OnLateUpdate();
+            _goodDisplayer.OnLateUpdate();
+            _judgeTextDisplayer.OnLateUpdate();
+            _fastLateDisplayerA.OnLateUpdate();
+            _fastLateDisplayerB.OnLateUpdate();
+        }
         public void Reset()
         {
             _perfectDisplayer.Reset();

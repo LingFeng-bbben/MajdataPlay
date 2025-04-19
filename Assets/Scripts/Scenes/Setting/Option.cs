@@ -44,6 +44,7 @@ namespace MajdataPlay.Setting
         float? _maxValue = null;
         float? _minValue = null;
 
+        float _iterationThrottle = 0;
         int _lastIndex = 0;
 
         AudioManager _audioManager = MajInstances.AudioManager;
@@ -209,13 +210,23 @@ namespace MajdataPlay.Setting
         {
             if (_pressTime >= 0.4f)
             {
-                if (_isUp)
-                    Up();
+                if(_iterationThrottle <= 1 / 60f)
+                {
+                    _iterationThrottle += MajTimeline.DeltaTime;
+                }
                 else
-                    Down();
+                {
+                    if (_isUp)
+                        Up();
+                    else
+                        Down();
+                    _iterationThrottle = 0;
+                }
             }
             else if (_isPressed)
-                _pressTime += Time.deltaTime;
+            {
+                _pressTime += MajTimeline.DeltaTime;
+            }
             var currentIndex = Parent.SelectedIndex;
             if (_lastIndex == currentIndex)
                 return;

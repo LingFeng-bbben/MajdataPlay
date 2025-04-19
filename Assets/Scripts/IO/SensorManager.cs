@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using Cysharp.Text;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System;
@@ -15,7 +16,6 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
-            var latestSensorStateLogger = TouchPanel.SensorStateLogger;
             Span<SensorStatus> newStates = stackalloc SensorStatus[34];
 
             while (_touchPanelInputBuffer.TryDequeue(out var report))
@@ -28,14 +28,16 @@ namespace MajdataPlay.IO
             }
             for (var i = 0; i < 34; i++)
             {
-                newStates[i] |= latestSensorStateLogger[i];
+                var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
+
+                newStates[i] |= state ? SensorStatus.On : SensorStatus.Off;
                 sensorStates[i] = newStates[i] is SensorStatus.On;
             }
-
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
             newStates.Slice(18).CopyTo(newStates.Slice(17));
             newStates = newStates.Slice(0, 33);
+
             for (var i = 0; i < 33; i++)
             {
                 var sensor = sensors[i];
@@ -62,7 +64,7 @@ namespace MajdataPlay.IO
                 {
                     continue;
                 }
-                MajDebug.Log($"Sensor \"{sensor.Area}\": {newState}");
+                MajDebug.Log(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {

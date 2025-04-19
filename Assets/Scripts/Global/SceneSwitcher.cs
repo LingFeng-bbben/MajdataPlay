@@ -21,6 +21,7 @@ namespace MajdataPlay
         }
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
 
+        Canvas _canvas;
         Animator animator;
         public Image SubImage;
         public Image MainImage;
@@ -32,7 +33,7 @@ namespace MajdataPlay
         const int SWITCH_ELAPSED = 400;
         protected override void Awake()
         {
-            base .Awake();
+            base.Awake();
             Majdata<IMainCameraProvider>.Instance = this;
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
@@ -42,6 +43,7 @@ namespace MajdataPlay
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
+            _canvas = GetComponent<Canvas>();
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
         }
@@ -54,6 +56,7 @@ namespace MajdataPlay
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
+            _canvas.worldCamera = MainCamera;
         }
 
         public void SwitchScene(string sceneName, bool autoFadeOut = true)

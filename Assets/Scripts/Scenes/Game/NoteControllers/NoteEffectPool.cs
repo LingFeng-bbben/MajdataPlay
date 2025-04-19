@@ -10,6 +10,8 @@ namespace MajdataPlay.Game.Notes.Controllers
 {
     public sealed class NoteEffectPool : MonoBehaviour
     {
+        bool _isInitialized = false;
+
         [SerializeField]
         GameObject tapEffectPrefab;
         [SerializeField]
@@ -149,6 +151,23 @@ namespace MajdataPlay.Game.Notes.Controllers
                 displayer.Reset();
                 obj.transform.localScale = new Vector3(0.5f, 0.5f, 1);
                 _touchFeedbackEffects[i] = displayer;
+            }
+            _isInitialized = true;
+        }
+        internal void OnLateUpdate()
+        {
+            if (!_isInitialized)
+            {
+                return;
+            }
+            for (var i = 0; i < 33; i++)
+            {
+                _touchJudgeEffects[i].OnLateUpdate();
+                _touchHoldJudgeEffects[i].OnLateUpdate();
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                _tapJudgeEffects[i].OnLateUpdate();
             }
         }
         /// <summary>
