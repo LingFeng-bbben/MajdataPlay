@@ -19,16 +19,29 @@ namespace MajdataPlay.Game
         static readonly int BREAK_GREAT_ANIM_HASH = Animator.StringToHash("bGreat");
         static readonly int BREAK_PERFECT_ANIM_HASH = Animator.StringToHash("break");
         static readonly int TAP_PERFECT_ANIM_HASH = Animator.StringToHash("tap");
+        const float ANIM_LENGTH_SEC = 1 / 60f * 48;
+
+        float _animRemainingTime = 0;
         protected override void Awake()
         {
             base.Awake();
 
             _animator = GameObject.GetComponent<Animator>();
+            _animator.enabled = false;
             _children = Transform.GetChildren()
                                  .Select(x => x.gameObject)
                                  .ToArray();
-            _animator.speed = 0.9f;
             SetActiveInternal(false);
+        }
+        internal void OnLateUpdate()
+        {
+            if (!Active || _animRemainingTime < 0)
+            {
+                return;
+            }
+            var deltaTime = MajTimeline.DeltaTime;
+            _animator.Update(deltaTime);
+            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
         }
         public void Reset()
         {
@@ -57,6 +70,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.Perfect:
                     SetActive(true);
                     _animator.SetTrigger(TAP_PERFECT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
             }
         }
@@ -69,6 +83,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGood:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GOOD_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -78,6 +93,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GREAT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
@@ -86,6 +102,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.Perfect:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_PERFECT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 default:
                     break;
