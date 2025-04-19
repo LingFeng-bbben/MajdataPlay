@@ -53,6 +53,9 @@ TagManager:
   - name: Outline
     uniqueID: 4059542081
     locked: 0
+  - name: TopInfo
+    uniqueID: 3939236403
+    locked: 0
   - name: Slides
     uniqueID: 3147299915
     locked: 0

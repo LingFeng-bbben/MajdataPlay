@@ -841,6 +841,26 @@
     {
       "Origin": "AutoPlay_MAJSETTING_OPTIONS_DJAuto_TouchPanel_First",
       "Content": "DJAuto (内屏优先)"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_TITLE",
+      "Content": "外框显示"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_DESC",
+      "Content": "就是1号和8号键中间的小条子啦"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Judge",
+      "Content": "判定结果"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Timing",
+      "Content": "Fast/Late"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
+      "Content": "不显示"
     }
   ]
 }

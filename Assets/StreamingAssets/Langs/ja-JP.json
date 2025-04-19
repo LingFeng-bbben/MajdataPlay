@@ -581,6 +581,26 @@
     {
       "Origin": "VSync_MAJSETTING_DESC",
       "Content": ""
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_TITLE",
+      "Content": "フレーム表示"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_DESC",
+      "Content": "1番と8番ボタンの真ん中のやつ"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Judge",
+      "Content": "判定結果"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Timing",
+      "Content": "Fast/Late"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
+      "Content": "無効"
     }
   ]
 }
