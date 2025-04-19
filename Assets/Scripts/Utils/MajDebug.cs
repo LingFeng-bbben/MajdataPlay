@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace MajdataPlay.Utils
         readonly static object _lockObject = new();
         readonly static ConcurrentQueue<GameLog> _logQueue = new();
         readonly static ILogger _unityLogger;
+        static StreamWriter? _fileStream;
 
         static MajDebug()
         {
@@ -62,12 +64,25 @@ namespace MajdataPlay.Utils
         public static void LogWarning<T>(T obj) => Log(obj, LogType.Warning);
         public static void OnApplicationQuit()
         {
-            lock(_lockObject)
+            try
             {
-                foreach (var log in _logQueue)
-                    File.AppendAllText(MajEnv.LogPath, $"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
+                lock (_lockObject)
+                {
+                    if (_fileStream is null)
+                        return;
+                    using (_fileStream)
+                    {
+                        foreach (var log in _logQueue)
+                        {
+                            _fileStream.WriteLine($"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
+                        }
+                    }
+                }
             }
-            MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            finally
+            {
+                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            }
         }
         static string GetStackTrack()
         {
@@ -77,6 +92,7 @@ namespace MajdataPlay.Utils
         {
             Task.Factory.StartNew(() =>
             {
+                var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
                 if (!Directory.Exists(MajEnv.LogsPath))
@@ -86,24 +102,30 @@ namespace MajdataPlay.Utils
                 if (File.Exists(MajEnv.LogPath))
                     File.Delete(MajEnv.LogPath);
 
-                while (true)
+                currentThread.Priority = System.Threading.ThreadPriority.Lowest;
+                currentThread.IsBackground = true;
+                _fileStream = new StreamWriter(MajEnv.LogPath, append: true, encoding: Encoding.UTF8);
+                using (_fileStream)
                 {
-                    if (token.IsCancellationRequested)
-                        return;
-                    try
+                    while (true)
                     {
-                        lock(_lockObject)
+                        try
                         {
-                            while (_logQueue.TryDequeue(out var log))
+                            lock (_lockObject)
                             {
-                                var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
-                                File.AppendAllText(MajEnv.LogPath, msg);
+                                if (token.IsCancellationRequested)
+                                    return;
+                                while (_logQueue.TryDequeue(out var log))
+                                {
+                                    var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
+                                    _fileStream.WriteLine(msg);
+                                }
                             }
                         }
-                    }
-                    finally
-                    {
-                        Thread.Sleep(100);
+                        finally
+                        {
+                            Thread.Sleep(100);
+                        }
                     }
                 }
             }, TaskCreationOptions.LongRunning);

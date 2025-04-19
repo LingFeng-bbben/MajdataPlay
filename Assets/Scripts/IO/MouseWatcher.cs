@@ -31,7 +31,6 @@ namespace MajdataPlay.IO
             foreach (var (i, state) in newStates.WithIndex())
             {
                 var _state = state ? SensorStatus.On : SensorStatus.Off;
-                TouchPanel.OnTouchPanelStateChanged(i, _state);
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -42,7 +41,6 @@ namespace MajdataPlay.IO
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
                 var _state = state ? SensorStatus.On : SensorStatus.Off;
-                ButtonRing.OnButtonRingStateChanged(i, _state);
                 _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,

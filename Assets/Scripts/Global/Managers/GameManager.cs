@@ -181,17 +181,17 @@ namespace MajdataPlay
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.RealTime;
+            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
             SceneManager.LoadScene("SensorTest");
         }
         void EnterTitle()
         {
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.RealTime;
+            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
             SceneManager.LoadScene("Title");
         }
         void EnterView()
         {
-            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.BelowNormal;
             SceneManager.LoadScene("View");
         }
         public void ApplyScreenConfig()
@@ -200,6 +200,7 @@ namespace MajdataPlay
             {
                 var fullScreen = Setting.Debug.FullScreen;
                 Screen.fullScreen = fullScreen;
+                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
 
                 var resolution = Setting.Display.Resolution.ToLower();
                 if (resolution is not "auto")

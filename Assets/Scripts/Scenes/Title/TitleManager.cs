@@ -29,7 +29,7 @@ namespace MajdataPlay.Title
             songStorageTask = StartScanningChart();
             WaitForScanningTask().Forget();
             LightManager.SetAllLight(Color.white);
-            if(InputManager.IsTouchPanelConnected)
+            if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
             }

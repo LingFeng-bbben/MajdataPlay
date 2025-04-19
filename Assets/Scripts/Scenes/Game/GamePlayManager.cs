@@ -138,6 +138,7 @@ namespace MajdataPlay.Game
         NoteManager _noteManager;
         NoteAudioManager _noteAudioManager;
         NotePoolManager _notePoolManager;
+        NoteEffectPool _noteEffectPool;
         ObjectCounter _objectCounter;
         TimeDisplayer _timeDisplayer;
         RecorderStatusDisplayer _recorderStateDisplayer;
@@ -178,6 +179,7 @@ namespace MajdataPlay.Game
             _objectCounter = Majdata<ObjectCounter>.Instance!;
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _noteEffectPool = Majdata<NoteEffectPool>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
             _noteLoader = Majdata<NoteLoader>.Instance!;
             _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
@@ -695,6 +697,7 @@ namespace MajdataPlay.Game
                     _objectCounter.OnLateUpdate();
                     break;
             }
+            _noteEffectPool.OnLateUpdate();
             _recorderStateDisplayer.OnLateUpdate();
         }
         void GameControlUpdate()
