@@ -1,6 +1,7 @@
 ﻿using HidSharp;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
@@ -166,7 +167,7 @@ namespace MajdataPlay.Types
         public int TouchPoolCapacity { get; set; } = 64;
         public int TouchHoldPoolCapacity { get; set; } = 16;
         public int EachLinePoolCapacity { get; set; } = 64;
-        public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.Normal;
+        public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.AboveNormal;
         public ThreadPriority MainThreadPriority { get; set; } = ThreadPriority.Normal;
         public ThreadPriority IOThreadPriority { get; set; } = ThreadPriority.AboveNormal;
     }
@@ -193,13 +194,13 @@ namespace MajdataPlay.Types
         public bool Enable { get; set; } = true;
         public int COMPort { get; set; } = 21;
         public int BaudRate { get; set; } = 115200;
-        public int RefreshRateMs { get; set; } = 16;
+        public int RefreshRateMs { get; set; } = 100;
     }
     public class ButtonRingOptions
     {
         public DeviceType Type { get; set; } = DeviceType.Keyboard;
         public bool Debounce { get; set; } = false;
-        public int PollingRateMs { get; set; } = 1;
+        public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 16;
         public HidOptions HidOptions { get; set; } = new();
     }
@@ -208,7 +209,7 @@ namespace MajdataPlay.Types
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
         public bool Exclusice { get; set; } = true;
-        public OpenPriority OpenPriority { get; set; } = OpenPriority.Normal;
+        public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
     }
     public class TouchPanelOptions
     {
@@ -217,7 +218,7 @@ namespace MajdataPlay.Types
         public int BaudRate { get; set; } = 9600;
         public bool Debounce { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
-        public int PollingRateMs { get; set; } = 1;
+        public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 16;
         public float TouchSimulationRadius { get; set; } = 0.5f;
     }

@@ -72,6 +72,11 @@ namespace MajdataPlay.IO
                     ledDevices[i].SetColor(Color.black);
                 }
             }
+
+            if (MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs <= 100) {
+                MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs = 100;
+            }
+
             _ledDevices = ledDevices;
             var comPort = MajInstances.Settings.Misc.OutputDevice.Led.COMPort;
             var comPortStr = $"COM{comPort}";
