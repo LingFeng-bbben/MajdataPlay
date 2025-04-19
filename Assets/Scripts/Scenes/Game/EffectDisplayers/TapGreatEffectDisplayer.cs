@@ -16,10 +16,14 @@ namespace MajdataPlay.Game
         GameObject[] _children = Array.Empty<GameObject>();
 
         static readonly int TAP_GREAT_ANIM_HASH = Animator.StringToHash("great");
+        const float ANIM_LENGTH_SEC = 1 / 60f * 26;
+
+        float _animRemainingTime = 0;
         protected override void Awake()
         {
             base.Awake();
             _animator = GameObject.GetComponent<Animator>();
+            _animator.enabled = false;
             _children = Transform.GetChildren()
                                  .Select(x => x.gameObject)
                                  .ToArray();
@@ -28,6 +32,16 @@ namespace MajdataPlay.Game
         public void Reset()
         {
             SetActive(false);
+        }
+        internal void OnLateUpdate()
+        {
+            if (!Active || _animRemainingTime >= ANIM_LENGTH_SEC)
+            {
+                return;
+            }
+            var deltaTime = MajTimeline.DeltaTime;
+            _animator.Update(deltaTime);
+            _animRemainingTime -= deltaTime;
         }
         public void PlayEffect(in JudgeResult judgeResult)
         {
@@ -46,6 +60,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat:
                     SetActive(true);
                     _animator.SetTrigger(TAP_GREAT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
             }
         }

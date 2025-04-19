@@ -89,7 +89,9 @@ namespace MajdataPlay.Game
         }
         internal void OnLateUpdate()
         {
-            
+            _perfectDisplayer.OnLateUpdate();
+            _greatDisplayer.OnLateUpdate();
+            _goodDisplayer.OnLateUpdate();
             _judgeTextDisplayer.OnLateUpdate();
             _fastLateDisplayerA.OnLateUpdate();
             _fastLateDisplayerB.OnLateUpdate();

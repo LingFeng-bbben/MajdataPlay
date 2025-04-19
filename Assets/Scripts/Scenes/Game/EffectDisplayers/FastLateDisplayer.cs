@@ -35,7 +35,7 @@ namespace MajdataPlay.Game
         static readonly int BREAK_ANIM_HASH = Animator.StringToHash("break");
         const float ANIM_LENGTH_SEC = 1 / 60f * 21;
 
-        float _animRemainingTime = ANIM_LENGTH_SEC;
+        float _animRemainingTime = 0;
         protected override void Awake()
         {
             base.Awake();
@@ -57,7 +57,7 @@ namespace MajdataPlay.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime += deltaTime;
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -79,6 +79,7 @@ namespace MajdataPlay.Game
                 _animator.SetTrigger(BREAK_ANIM_HASH);
             else
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
+            _animRemainingTime = ANIM_LENGTH_SEC;
         }
         public override void SetActive(bool state)
         {

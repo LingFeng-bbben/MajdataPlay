@@ -41,7 +41,7 @@ namespace MajdataPlay.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime += deltaTime;
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -56,7 +56,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGood:
                     SetActive(true);
                     _animator.SetTrigger(TOUCH_GOOD_ANIM_HASH);
-                    _animRemainingTime = 0;
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -66,7 +66,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat:
                     SetActive(true);
                     _animator.SetTrigger(TOUCH_GREAT_ANIM_HASH);
-                    _animRemainingTime = 0;
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
@@ -75,7 +75,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.Perfect:
                     SetActive(true);
                     _animator.SetTrigger(TOUCH_PERFECT_ANIM_HASH);
-                    _animRemainingTime = 0;
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
             }
         }

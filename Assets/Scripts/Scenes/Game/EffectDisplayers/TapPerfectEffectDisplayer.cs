@@ -21,7 +21,7 @@ namespace MajdataPlay.Game
         static readonly int TAP_PERFECT_ANIM_HASH = Animator.StringToHash("tap");
         const float ANIM_LENGTH_SEC = 1 / 60f * 48 / 0.9f;
 
-        float _animRemainingTime = ANIM_LENGTH_SEC;
+        float _animRemainingTime = 0;
         protected override void Awake()
         {
             base.Awake();
@@ -35,7 +35,13 @@ namespace MajdataPlay.Game
         }
         internal void OnLateUpdate()
         {
-
+            if (!Active || _animRemainingTime >= ANIM_LENGTH_SEC)
+            {
+                return;
+            }
+            var deltaTime = MajTimeline.DeltaTime;
+            _animator.Update(deltaTime);
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -64,6 +70,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.Perfect:
                     SetActive(true);
                     _animator.SetTrigger(TAP_PERFECT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
             }
         }
@@ -76,6 +83,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGood:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GOOD_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -85,6 +93,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.FastGreat:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GREAT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
@@ -93,6 +102,7 @@ namespace MajdataPlay.Game
                 case JudgeGrade.Perfect:
                     SetActive(true);
                     _animator.SetTrigger(BREAK_PERFECT_ANIM_HASH);
+                    _animRemainingTime = ANIM_LENGTH_SEC;
                     break;
                 default:
                     break;

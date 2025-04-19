@@ -29,6 +29,7 @@ namespace MajdataPlay.Game
         static readonly int TOUCH_PERFECT_ANIM_HASH = Animator.StringToHash("perfect");
         static readonly int TOUCH_GREAT_ANIM_HASH = Animator.StringToHash("great");
         static readonly int TOUCH_GOOD_ANIM_HASH = Animator.StringToHash("good");
+        
         void Start()
         {
             var distance = NoteHelper.GetTouchAreaDistance(SensorPos.GetGroup());
@@ -52,6 +53,7 @@ namespace MajdataPlay.Game
 
             _isEnabled = MajInstances.Settings.Display.InnerJudgeDistance != 0;
         }
+
         public void Reset()
         {
             _judgeEffectDisplayer.SetActive(false);
