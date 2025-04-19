@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using HidSharp;
+using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -197,11 +198,17 @@ namespace MajdataPlay.Types
     public class ButtonRingOptions
     {
         public DeviceType Type { get; set; } = DeviceType.Keyboard;
-        public int ProductId { get; set; } = 0x0021;
-        public int VendorId { get; set; } = 0x0CA3;
         public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 1;
         public int DebounceThresholdMs { get; set; } = 16;
+        public HidOptions HidOptions { get; set; } = new();
+    }
+    public class HidOptions
+    {
+        public int ProductId { get; set; } = 0x0021;
+        public int VendorId { get; set; } = 0x0CA3;
+        public bool Exclusice { get; set; } = true;
+        public OpenPriority OpenPriority { get; set; } = OpenPriority.Normal;
     }
     public class TouchPanelOptions
     {

@@ -374,8 +374,8 @@ namespace MajdataPlay.IO
                 var btnDebounce = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
                 var touchPanelDebounce = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
 
-                var btnProductId = MajInstances.Settings.Misc.InputDevice.ButtonRing.ProductId;
-                var btnVendorId = MajInstances.Settings.Misc.InputDevice.ButtonRing.VendorId;
+                var btnProductId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.ProductId;
+                var btnVendorId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.VendorId;
                 var comPortNum = MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort;
 
                 var btnPollingRate = MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs;
@@ -1183,17 +1183,21 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
+                var hidOptions = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.HidOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var buttons = _buttons.Span;
-                var pid = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.ProductId;
-                var vid = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.VendorId;
+                var pid = hidOptions.ProductId;
+                var vid = hidOptions.VendorId;
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
                 var devices = DeviceList.Local.GetHidDevices();
+                var hidConfig = new OpenConfiguration();
 
+                hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
+                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
@@ -1213,7 +1217,7 @@ namespace MajdataPlay.IO
                     MajDebug.LogWarning("Hid device not found");
                     return;
                 }
-                else if(!device.TryOpen(out hidStream))
+                else if(!device.TryOpen(hidConfig, out hidStream))
                 {
                     MajDebug.LogError($"cannot open hid device:\n{device}");
                     return;
