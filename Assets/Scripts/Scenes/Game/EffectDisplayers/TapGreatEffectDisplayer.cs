@@ -35,13 +35,13 @@ namespace MajdataPlay.Game
         }
         internal void OnLateUpdate()
         {
-            if (!Active || _animRemainingTime >= ANIM_LENGTH_SEC)
+            if (!Active || _animRemainingTime < 0)
             {
                 return;
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime;
+            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
         }
         public void PlayEffect(in JudgeResult judgeResult)
         {

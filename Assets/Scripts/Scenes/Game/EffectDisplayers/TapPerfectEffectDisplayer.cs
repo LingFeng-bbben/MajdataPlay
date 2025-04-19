@@ -19,7 +19,7 @@ namespace MajdataPlay.Game
         static readonly int BREAK_GREAT_ANIM_HASH = Animator.StringToHash("bGreat");
         static readonly int BREAK_PERFECT_ANIM_HASH = Animator.StringToHash("break");
         static readonly int TAP_PERFECT_ANIM_HASH = Animator.StringToHash("tap");
-        const float ANIM_LENGTH_SEC = 1 / 60f * 48 / 0.9f;
+        const float ANIM_LENGTH_SEC = 1 / 60f * 48;
 
         float _animRemainingTime = 0;
         protected override void Awake()
@@ -35,13 +35,13 @@ namespace MajdataPlay.Game
         }
         internal void OnLateUpdate()
         {
-            if (!Active || _animRemainingTime >= ANIM_LENGTH_SEC)
+            if (!Active || _animRemainingTime < 0)
             {
                 return;
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime;
+            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
         }
         public void Reset()
         {
