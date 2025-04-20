@@ -52,6 +52,8 @@ namespace MajdataPlay.IO
                 var oldState = sensor.State;
                 var newState = newStates[i];
 
+                if (oldState == newState)
+                    continue;              
                 if (_isSensorDebounceEnabled)
                 {
                     if (JitterDetect(sensorArea, now))
@@ -60,10 +62,7 @@ namespace MajdataPlay.IO
                     }
                     _sensorLastTriggerTimes[sensorIndex] = now;
                 }
-                else if (oldState == newState)
-                {
-                    continue;
-                }
+
                 MajDebug.Log(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
                 sensor.State = newState;
                 var msg = new InputEventArgs()
