@@ -601,10 +601,10 @@ namespace MajdataPlay.IO
                         var bit = 1 << i;
                         buffer[i] = (btnData & bit) != 0;
                     }
-                    buffer[8] = (sideBtnData & (1 << 3)) != 0;  // TEST
-                    buffer[9] = (sideBtnData & (1 << 7)) != 0;  // SELECT P1
-                    buffer[10] = (sideBtnData & (1 << 0)) != 0; // SERVICE
+                    buffer[9] = (sideBtnData & (1 << 3)) != 0;  // SELECT P1
+                    buffer[8] = (sideBtnData & (1 << 2)) != 0;  // TEST
                     buffer[11] = (sideBtnData & (1 << 1)) != 0; // SELECT P2
+                    buffer[10] = (sideBtnData & (1 << 0)) != 0; // SERVICE
                 }
             }
         }
