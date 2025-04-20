@@ -17,6 +17,8 @@ namespace MajdataPlay.Game
 {
     public class ObjectCounter : MonoBehaviour
     {
+        #region UIconsts
+
         public Color AchievementDudColor; // = new Color32(63, 127, 176, 255);
         public Color AchievementBronzeColor; // = new Color32(127, 48, 32, 255);
         public Color AchievementSilverColor; // = new Color32(160, 160, 160, 255);
@@ -30,6 +32,19 @@ namespace MajdataPlay.Game
         public Color EarlyDiffColor;
         public Color LateDiffColor;
 
+        const string DX_ACC_RATE_STRING = "{0:F4}%";
+        const string CLASSIC_ACC_RATE_STRING = "{0:F2}%";
+        const string COMBO_OR_DXSCORE_STRING = "{0}";
+        const string DIFF_STRING = "{0:F2}";
+        const string DXSCORE_RANK_HEADER_STRING = "✧{0}";
+        const string DXSCORE_RANK_BODY_STRING = "+{0}";
+        const string LATE_STRING = "LATE";
+        const string FAST_STRING = "FAST";
+        const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
+
+        #endregion
+
+        #region count&scores
         public bool AllFinished
         {
             get
@@ -81,19 +96,14 @@ namespace MajdataPlay.Game
         public long LostNoteExtraScore { get; private set; }
         public long LostNoteExtraScoreClassic { get; private set; }
 
-        Text _bgInfoHeader;
-        Text _bgInfoText;
-        Text _judgeResultCount;
-        TextMeshProUGUI _rate;
-
         readonly double[] _accRate = new double[5]
-        {
+{
             0.00,    // classic acc (+)
             100.00,  // classic acc (-)
             101.0000,// acc 101(-)
             100.0000,// acc 100(-)
             0.0000,  // acc (+)
-        };
+};
 
         long _cPerfectCount = 0;
         long _perfectCount = 0;
@@ -114,12 +124,9 @@ namespace MajdataPlay.Game
         long _pCombo = 0; // Perfect Combo
         long _cPCombo = 0; // Critical Perfect
 
-        XxlbDanceRequest _xxlbDanceRequest = new();
-        bool _isOutlinePlayRequested = false;
-
         List<float> _noteJudgeDiffList = new();
         Dictionary<JudgeGrade, int> _judgedTapCount = new()
-        { 
+        {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },
             {JudgeGrade.FastGreat3rd, 0 },
@@ -245,20 +252,43 @@ namespace MajdataPlay.Game
             {JudgeGrade.Miss, 0 },
         };
 
+        #endregion
+
+        #region UIrefs
+        Text _bgInfoHeader;
+        Text _bgInfoText;
+        Text _judgeResultCount;
+        TextMeshProUGUI _rate;
+
+        [SerializeField]
+        GameObject _topInfoJudgeParent;
+        [SerializeField]
+        Text _topInfoPerfect;
+        [SerializeField]
+        Text _topInfoGreat;
+        [SerializeField]
+        Text _topInfoGood;
+        [SerializeField]
+        Text _topInfoMiss;
+
+        [SerializeField]
+        GameObject _topInfoTimingParent;
+        [SerializeField]
+        Text _topInfoFast;
+        [SerializeField]
+        Text _topInfoLate;
+
+        #endregion
+
+        XxlbDanceRequest _xxlbDanceRequest = new();
+        bool _isOutlinePlayRequested = false;
+
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
 
-        const string DX_ACC_RATE_STRING = "{0:F4}%";
-        const string CLASSIC_ACC_RATE_STRING = "{0:F2}%";
-        const string COMBO_OR_DXSCORE_STRING = "{0}";
-        const string DIFF_STRING = "{0:F2}";
-        const string DXSCORE_RANK_HEADER_STRING = "✧{0}";
-        const string DXSCORE_RANK_BODY_STRING = "+{0}";
-        const string LATE_STRING = "LATE";
-        const string FAST_STRING = "FAST";
-        const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
+
         void Awake()
         {
             Majdata<ObjectCounter>.Instance = this;
@@ -267,7 +297,24 @@ namespace MajdataPlay.Game
 
             _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
             _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
-            
+
+            switch (MajInstances.Settings.Game.TopInfo)
+            {
+                case TopInfoDisplayType.Judge:
+                    _topInfoJudgeParent.SetActive(true);
+                    _topInfoTimingParent.SetActive(false);
+                    break;
+                case TopInfoDisplayType.Timing:
+                    _topInfoJudgeParent.SetActive(false);
+                    _topInfoTimingParent.SetActive(true);
+                    break;
+                case TopInfoDisplayType.None:
+                default:
+                    _topInfoJudgeParent.SetActive(false);
+                    _topInfoTimingParent.SetActive(false);
+                    break;
+            }
+
             SetBgInfoActive(true);
             switch (MajInstances.Settings.Game.BGInfo)
             {
@@ -620,7 +667,7 @@ namespace MajdataPlay.Game
         {
             UpdateMainOutput();
             UpdateJudgeResult();
-            UpdateSideOutput();
+            UpdateTopAcc();
         }
         void UpdateAccRate()
         {
@@ -923,13 +970,6 @@ namespace MajdataPlay.Game
         /// </summary>
         void UpdateJudgeResult()
         {
-            //var fast = totalJudgedCount.Where(x => x.Key > JudgeType.Perfect && x.Key != JudgeType.Miss)
-            //                           .Select(x => x.Value)
-            //                           .Sum();
-            //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
-            //                           .Select(x => x.Value)
-            //                           .Sum();
-            //_judgeResultCount.text = $"{_cPerfectCount}\n{_perfectCount}\n{_greatCount}\n{_goodCount}\n{_missCount}\n\n{_fast}\n{_late}";
             _judgeResultCount.text = ZString.Format(JUDGE_RESULT_STRING, 
                                                     _cPerfectCount, 
                                                     _perfectCount, 
@@ -938,22 +978,29 @@ namespace MajdataPlay.Game
                                                     _missCount, 
                                                     _fastCount, 
                                                     _lateCount);
+            switch (MajInstances.Settings.Game.TopInfo)
+            {
+                case TopInfoDisplayType.Judge:
+                    var p = _cPerfectCount + _perfectCount;
+                    _topInfoPerfect.text = p == 0 ? "" : p.ToString();
+                    _topInfoGreat.text = _greatCount == 0 ? "" : _greatCount.ToString();
+                    _topInfoGood.text = _goodCount == 0 ? "" : _goodCount.ToString();
+                    _topInfoMiss.text = _missCount == 0 ? "" : _missCount.ToString();
+                    break;
+                case TopInfoDisplayType.Timing:
+                    _topInfoFast.text = _fastCount == 0 ? "" : _fastCount.ToString();
+                    _topInfoLate.text = _lateCount == 0 ? "" : _lateCount.ToString();
+                    break;
+                case TopInfoDisplayType.None:
+                default:
+                    break;
+            }
         }
         /// <summary>
-        /// 更新SubDisplay左侧的Note详情
+        /// 更新顶部的总达成率
         /// </summary>
-        void UpdateSideOutput()
+        void UpdateTopAcc()
         {
-//            var comboN = tapCount + holdCount + slideCount + touchCount + breakCount;
-
-//            table.text = $@"TAP: {tapCount} / {tapSum}
-//HOD: {holdCount} / {holdSum}
-//SLD: {slideCount} / {slideSum}
-//TOH: {touchCount} / {touchSum}
-//BRK: {breakCount} / {breakSum}
-//ALL: {comboN} / {tapSum + holdSum + slideSum + touchSum + breakSum}";
-
-
             var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
             var formatStr = isClassic ? CLASSIC_ACC_RATE_STRING : DX_ACC_RATE_STRING;
             var value = isClassic ? _accRate[0] : _accRate[4];

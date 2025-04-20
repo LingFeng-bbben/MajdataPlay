@@ -633,6 +633,26 @@
     {
       "Origin": "VSync_MAJSETTING_DESC",
       "Content": ""
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_TITLE",
+      "Content": "Frame Display"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_DESC",
+      "Content": "The thing between button 1 and 8"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Judge",
+      "Content": "Judge Result"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Timing",
+      "Content": "Fast/Late"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
+      "Content": "None"
     }
   ]
 }
