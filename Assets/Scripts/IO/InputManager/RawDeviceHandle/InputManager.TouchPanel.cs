@@ -7,6 +7,10 @@ using System.Threading;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using HidSharp;
+using MychIO.Device;
+using System.IO;
+using UnityEngine;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -33,7 +37,7 @@ namespace MajdataPlay.IO
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                _touchPanelUpdateLoop = Task.Factory.StartNew(TouchPanelUpdateLoop, TaskCreationOptions.LongRunning);
+                _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
             }
             /// <summary>
             /// Update the touchpanel state of the this frame
@@ -274,15 +278,16 @@ namespace MajdataPlay.IO
             }
             #endregion
 
-            static void TouchPanelUpdateLoop()
+            static void SerialPortUpdateLoop()
             {
+                var serialPortOptions = MajInstances.Settings.Misc.InputDevice.TouchPanel.SerialPortOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
-                var comPort = $"COM{MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort}";
+                var comPort = $"COM{serialPortOptions.Port}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                using var serial = new SerialPort(comPort, MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate);
+                using var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
@@ -293,7 +298,7 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    if(!EnsureTouchPanelSerialStreamIsOpen(serial))
+                    if(!EnsureSerialStreamIsOpen(serial))
                     {
                         MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
                         return;
@@ -304,13 +309,22 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            if (!EnsureTouchPanelSerialStreamIsOpen(serial))
+                            if (!EnsureSerialStreamIsOpen(serial))
                             {
                                 IsConnected = false;
                                 continue;
                             }
-                            ReadFromSerialPort(serial);
+                            ReadFromSerialPort(serial, _sensorRealTimeStates);
                             IsConnected = true;
+                            lock (_touchPanelUpdateLoop)
+                            {
+                                for (var i = 0; i < 35; i++)
+                                {
+                                    var state = _sensorRealTimeStates[i];
+                                    _isSensorHadOnInternal[i] |= state;
+                                    _isSensorHadOffInternal[i] |= !state;
+                                }
+                            }
                         }
                         catch (TimeoutException)
                         {
@@ -341,92 +355,152 @@ namespace MajdataPlay.IO
                     IsConnected = false;
                 }
             }
+            static void HIDUpdateLoop()
+            {
+                var hidOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.HidOptions;
+                var currentThread = Thread.CurrentThread;
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _sensorPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var pid = hidOptions.ProductId;
+                var vid = hidOptions.VendorId;
+                var manufacturer = hidOptions.Manufacturer;
+                var devices = DeviceList.Local.GetHidDevices();
+                var deviceType = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type;
+                var deviceName = GetHIDDeviceName(deviceType, manufacturer);
+                var hidConfig = new OpenConfiguration();
+
+                hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
+                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+                currentThread.Name = "IO/T Thread";
+                currentThread.IsBackground = true;
+                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                HidDevice? device = null;
+                HidStream? hidStream = null;
+
+                foreach (var d in devices)
+                {
+                    if (d.ProductID == pid && d.VendorID == vid)
+                    {
+                        var isMatch = false;
+                        if (!string.IsNullOrEmpty(deviceName))
+                        {
+                            if ($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
+                            {
+                                isMatch = true;
+                            }
+                        }
+                        else
+                        {
+                            isMatch = true;
+                        }
+                        if (isMatch)
+                        {
+                            device = d;
+                            break;
+                        }
+                    }
+                }
+                if (device is null)
+                {
+                    MajDebug.LogWarning("Hid device not found");
+                    return;
+                }
+                else if (!device.TryOpen(hidConfig, out hidStream))
+                {
+                    MajDebug.LogError($"cannot open hid device:\n{device}");
+                    return;
+                }
+
+                try
+                {
+                    Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
+                    IsConnected = true;
+                    stopwatch.Start();
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
+                            hidStream.Read(buffer);
+                            DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                            IsConnected = true;
+                            lock (_touchPanelUpdateLoop)
+                            {
+                                for (var i = 0; i < 35; i++)
+                                {
+                                    var state = _sensorRealTimeStates[i];
+                                    _isSensorHadOnInternal[i] |= state;
+                                    _isSensorHadOffInternal[i] |= !state;
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch (IOException ioE)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"From HID listener: \n{ioE}");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"From HID listener: \n{e}");
+                        }
+                        finally
+                        {
+                            buffer.Clear();
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                    Thread.Sleep(pollingRate - elapsed);
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    hidStream.Dispose();
+                    IsConnected = false;
+                }
+            }
+            static string GetHIDDeviceName(DeviceType deviceType, DeviceManufacturer manufacturer)
+            {
+                switch (deviceType)
+                {
+                    case DeviceType.HID:
+                        if (manufacturer == DeviceManufacturer.Dao)
+                        {
+                            return "SkyStar Sky Star";
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
+                        }
+                    case DeviceType.IO4:
+                        throw new NotSupportedException();
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(deviceType));
+                }
+            }
             [MethodImpl(MethodImplOptions.NoInlining)]
-            static void ReadFromSerialPort(SerialPort serial)
+            static void ReadFromSerialPort(SerialPort serial, Span<bool> buffer)
             {
                 var bytes2Read = serial.BytesToRead;
                 if (bytes2Read == 0)
                     return;
-                Span<byte> buffer = stackalloc byte[bytes2Read];
+                Span<byte> dataBuffer = stackalloc byte[bytes2Read];
                 //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
-                var read = serial.Read(buffer);
-                TouchPannelPacketHandle(buffer);
+                var read = serial.Read(dataBuffer);
+                GeneralSerialTouchPanel.Parse(dataBuffer, buffer);
             }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void TouchPannelPacketHandle(ReadOnlySpan<byte> packet)
-            {
-                if (packet.IsEmpty)
-                    return;
-                var now = MajTimeline.UnscaledTime;
-                Span<int> startIndexs = stackalloc int[packet.Length];
-                int x = -1;
-                for (var y = 0; y < packet.Length; y++)
-                {
-                    var @byte = packet[y];
-                    if (@byte == '(')
-                    {
-                        startIndexs[++x] = y;
-                    }
-                }
-                if (x == -1)
-                    return;
-                Span<bool> states = stackalloc bool[35];
-                Span<bool> hadOnBuffer = stackalloc bool[35];
-                Span<bool> hadOffBuffer = stackalloc bool[35];
-                startIndexs = startIndexs.Slice(0, x + 1);
-                foreach (var startIndex in startIndexs)
-                {
-                    var packetBody = GetPacketBody(packet, startIndex);
-
-                    if (packetBody.IsEmpty)
-                        continue;
-                    else if (packetBody.Length != 7)
-                        continue;
-
-                    int k = 0;
-                    for (int i = 0; i < 7; i++)
-                    {
-                        for (int j = 0; j < 5; j++)
-                        {
-                            var rawState = packetBody[i] & 1UL << j;
-                            var state = rawState > 0;
-                            states[k] |= state;
-                            hadOnBuffer[k] |= state;
-                            hadOffBuffer[k] |= !state;
-                            k++;
-                        }
-                    }
-                }
-                lock(_touchPanelUpdateLoop)
-                {
-                    for (var i = 0; i < 35; i++)
-                    {
-                        _sensorRealTimeStates[i] = states[i];
-                        _isSensorHadOnInternal[i] = hadOnBuffer[i];
-                        _isSensorHadOffInternal[i] = hadOffBuffer[i];
-                    }
-                }
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
-            {
-                var endIndex = -1;
-                for (var i = start; i < packet.Length; i++)
-                {
-                    var @byte = packet[i];
-                    if (@byte == ')')
-                    {
-                        endIndex = i;
-                        break;
-                    }
-                }
-                if (endIndex == -1)
-                {
-                    return ReadOnlySpan<byte>.Empty;
-                }
-                return packet[(start + 1)..endIndex];
-            }
-            static bool EnsureTouchPanelSerialStreamIsOpen(SerialPort serialSession)
+            static bool EnsureSerialStreamIsOpen(SerialPort serialSession)
             {
                 try
                 {
@@ -478,7 +552,7 @@ namespace MajdataPlay.IO
                         return true;
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MajDebug.LogException(e);
                     return false;
@@ -521,6 +595,95 @@ namespace MajdataPlay.IO
                         5 => 0x01,
                         _ => 0x01
                     };
+                }
+            }
+            static class GeneralSerialTouchPanel
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public static void Parse(ReadOnlySpan<byte> packet, Span<bool> buffer)
+                {
+                    if (packet.IsEmpty)
+                        return;
+                    var now = MajTimeline.UnscaledTime;
+                    Span<int> startIndexs = stackalloc int[packet.Length];
+                    int x = -1;
+                    for (var y = 0; y < packet.Length; y++)
+                    {
+                        var @byte = packet[y];
+                        if (@byte == '(')
+                        {
+                            startIndexs[++x] = y;
+                        }
+                    }
+                    if (x == -1)
+                        return;
+
+                    startIndexs = startIndexs.Slice(0, x + 1);
+                    foreach (var startIndex in startIndexs)
+                    {
+                        var packetBody = GetPacketBody(packet, startIndex);
+
+                        if (packetBody.IsEmpty)
+                            continue;
+                        else if (packetBody.Length != 7)
+                            continue;
+
+                        int k = 0;
+                        for (int i = 0; i < 7; i++)
+                        {
+                            for (int j = 0; j < 5; j++)
+                            {
+                                var rawState = packetBody[i] & 1UL << j;
+                                var state = rawState > 0;
+                                buffer[k] |= state;
+                                k++;
+                            }
+                        }
+                    }
+                }
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                static ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
+                {
+                    var endIndex = -1;
+                    for (var i = start; i < packet.Length; i++)
+                    {
+                        var @byte = packet[i];
+                        if (@byte == ')')
+                        {
+                            endIndex = i;
+                            break;
+                        }
+                    }
+                    if (endIndex == -1)
+                    {
+                        return ReadOnlySpan<byte>.Empty;
+                    }
+                    return packet[(start + 1)..endIndex];
+                }
+                
+            }
+            static class DaoHIDTouchPanel
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
+                {
+                    reportData = reportData.Slice(1); //skip report id
+                    var A = reportData[3];
+                    var B = reportData[4];
+                    var C = reportData[5];
+                    var D = reportData[6];
+                    var E = reportData[7];
+
+                    for (var i = 0; i < 8; i++)
+                    {
+                        var bit = 1 << i;
+                        buffer[i] = (A & bit) != 0;
+                        buffer[i + 8] = (B & bit) != 0;
+                        buffer[i + 18] = (D & bit) != 0;
+                        buffer[i + 26] = (E & bit) != 0;
+                    }
+                    buffer[16] = (C & (1 << 0)) != 0; //C1
+                    buffer[17] = (C & (1 << 1)) != 0; //C2
                 }
             }
         }

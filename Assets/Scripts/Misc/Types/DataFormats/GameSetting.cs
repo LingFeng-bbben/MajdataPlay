@@ -207,6 +207,7 @@ namespace MajdataPlay.Types
     }
     public class HidOptions
     {
+        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.Adx;
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
         public bool Exclusice { get; set; } = true;
@@ -215,12 +216,18 @@ namespace MajdataPlay.Types
     public class TouchPanelOptions
     {
         public int Index { get; set; } = 1;
-        public int COMPort { get; set; } = 3;
-        public int BaudRate { get; set; } = 9600;
+        public DeviceType Type { get; set; } = DeviceType.SerialPort;
         public bool Debounce { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 16;
         public float TouchSimulationRadius { get; set; } = 0.5f;
+        public SerialPortOptions SerialPortOptions { get; set; } = new();
+        public HidOptions HidOptions { get; set; } = new();
+    }
+    public class SerialPortOptions
+    {
+        public int Port { get; set; } = 3;
+        public int BaudRate { get; set; } = 9600;
     }
 }

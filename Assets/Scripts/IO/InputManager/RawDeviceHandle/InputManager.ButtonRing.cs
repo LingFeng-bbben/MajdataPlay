@@ -271,7 +271,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = System.Threading.ThreadPriority.AboveNormal;
+                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
                 stopwatch.Start();
                 try
                 {
@@ -331,11 +331,12 @@ namespace MajdataPlay.IO
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var buttons = _buttons.Span;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
+                var manufacturer = hidOptions.Manufacturer;
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
                 var devices = DeviceList.Local.GetHidDevices();
+                var deviceName = GetHIDDeviceName(deviceType, manufacturer);
                 var hidConfig = new OpenConfiguration();
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
@@ -350,8 +351,23 @@ namespace MajdataPlay.IO
                 {
                     if (d.ProductID == pid && d.VendorID == vid)
                     {
-                        device = d;
-                        break;
+                        var isMatch = false;
+                        if(!string.IsNullOrEmpty(deviceName))
+                        {
+                            if($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
+                            {
+                                isMatch = true;
+                            }
+                        }
+                        else
+                        {
+                            isMatch = true;
+                        }
+                        if(isMatch)
+                        {
+                            device = d;
+                            break;
+                        }
                     }
                 }
                 if(device is null)
@@ -380,7 +396,14 @@ namespace MajdataPlay.IO
                             switch (deviceType)
                             {
                                 case DeviceType.HID:
-                                    AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                    if (manufacturer == DeviceManufacturer.Adx)
+                                    {
+                                        AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                    }
+                                    else
+                                    {
+                                        DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                    }
                                     break;
                                 case DeviceType.IO4:
                                     AdxIO4Device.Parse(buffer, _buttonRealTimeStates);
@@ -433,6 +456,29 @@ namespace MajdataPlay.IO
                 }
             }
 
+            static string GetHIDDeviceName(DeviceType deviceType, DeviceManufacturer manufacturer)
+            {
+                switch(deviceType)
+                {
+                    case DeviceType.HID:
+                        if(manufacturer == DeviceManufacturer.Adx)
+                        {
+                            return "MusicGame Composite USB";
+                        }
+                        else if(manufacturer == DeviceManufacturer.Dao)
+                        {
+                            return "SkyStar SkyStar";
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
+                        }
+                    case DeviceType.IO4:
+                        return string.Empty;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(deviceType));
+                }
+            }
             static class AdxHIDDevice
             {
                 const int HID_BA1_INDEX = 4;
@@ -538,53 +584,29 @@ namespace MajdataPlay.IO
                     buffer[11] = (reportData[IO4_SELECT_P2_INDEX] & IO4_SELECT_P2_OFFSET) != 0;
                 }
             }
+            static class DaoHIDDevice
+            {
+                public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
+                {
+                    const int BUTTON_INDEX = 5;
+                    const int SIDE_BUTTON_INDEX = 6;
 
-            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-            //public static bool IsButtonReleased(SensorArea button)
-            //{
-            //    var i = GetButtonIndexFromArea(button);
-            //    return _buttonRealTimeStates[i] == SensorStatus.Off;
-            //}
-            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-            //public static bool IsButtonPressed(SensorArea button)
-            //{
-            //    var i = GetButtonIndexFromArea(button);
-            //    return _buttonRealTimeStates[i] == SensorStatus.On;
-            //}
-            //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-            //public static void OnButtonRingStateChanged(int buttonIndex, SensorStatus state)
-            //{
-            //    if(!buttonIndex.InRange(0,11))
-            //    {
-            //        return;
-            //    }
-            //    _buttonRealTimeStates[buttonIndex] = state;
-            //}
-            //static int GetButtonIndexFromArea(SensorArea area)
-            //{
-            //    switch(area)
-            //    {
-            //        case SensorArea.A1:
-            //        case SensorArea.A2:
-            //        case SensorArea.A3:
-            //        case SensorArea.A4:
-            //        case SensorArea.A5:
-            //        case SensorArea.A6:
-            //        case SensorArea.A7:
-            //        case SensorArea.A8:
-            //            return (int)area;
-            //        case SensorArea.Test:
-            //            return 8;
-            //        case SensorArea.P1:
-            //            return 9;
-            //        case SensorArea.Service:
-            //            return 10;
-            //        case SensorArea.P2:
-            //            return 11;
-            //        default:
-            //            throw new ArgumentOutOfRangeException(nameof(area));
-            //    }
-            //}
+                    reportData = reportData.Slice(1);// skip report id
+
+                    var btnData = reportData[BUTTON_INDEX];
+                    var sideBtnData = reportData[SIDE_BUTTON_INDEX];
+
+                    for (var i = 0; i < 8; i++)
+                    {
+                        var bit = 1 << i;
+                        buffer[i] = (btnData & bit) != 0;
+                    }
+                    buffer[8] = (sideBtnData & (1 << 3)) != 0;  // TEST
+                    buffer[9] = (sideBtnData & (1 << 7)) != 0;  // SELECT P1
+                    buffer[10] = (sideBtnData & (1 << 0)) != 0; // SERVICE
+                    buffer[11] = (sideBtnData & (1 << 1)) != 0; // SELECT P2
+                }
+            }
         }
     }
 }
