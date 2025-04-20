@@ -1,22 +1,12 @@
 ﻿using MajdataPlay.Collections;
+using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay.Json
 {
-    public class JudgeDetailConverter : JsonConverter<JudgeDetail>
-    {
-        public override JudgeDetail Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            var dict = JsonSerializer.Deserialize<Dictionary<ScoreNoteType, JudgeInfo>>(ref reader, options);
-
-            return new JudgeDetail(dict);
-        }
-
-        public override void Write(Utf8JsonWriter writer, JudgeDetail value, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, value, options);
-    }
     public class JudgeInfoConverter : JsonConverter<JudgeInfo>
     {
         public override JudgeInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -26,14 +16,14 @@ namespace MajdataPlay.Types
             var type = typeof(JudgeGrade);
             foreach (JudgeGrade judgeResult in Enum.GetValues(type))
             {
-                if (!data.TryGetValue(Enum.GetName(type, judgeResult), out int i))
+                if (!data.TryGetValue(Enum.GetName(type, judgeResult), out var i))
                     dict[judgeResult] = 0;
-                else 
+                else
                     dict[judgeResult] = i;
             }
             foreach (var (k, v) in data)
             {
-                switch(k)
+                switch (k)
                 {
                     case "FastGreat1":
                         dict[JudgeGrade.FastGreat2nd] = v;
