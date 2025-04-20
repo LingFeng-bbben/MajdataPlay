@@ -722,15 +722,11 @@ namespace MajdataPlay.IO
         static bool JitterDetect(SensorArea zone, TimeSpan now, bool isBtn = false)
         {
             var index = (int)zone;
-            if(!index.InRange(0,32))
-            {
-                return false;
-            }
             TimeSpan lastTriggerTime;
             TimeSpan debounceTime;
             if (isBtn)
             {
-                if (index > 32 || index > 7)
+                if (index.InRange(0, _btnLastTriggerTimes.Length - 1))
                 {
                     return false;
                 }
@@ -739,6 +735,10 @@ namespace MajdataPlay.IO
             }
             else
             {
+                if (index.InRange(0, _sensorLastTriggerTimes.Length - 1))
+                {
+                    return false;
+                }
                 lastTriggerTime = _sensorLastTriggerTimes[index];
                 debounceTime = _sensorDebounceThresholdMs;
             }
