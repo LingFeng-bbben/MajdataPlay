@@ -290,6 +290,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _effectManager.PlayHoldEffect(StartPos, _judgeResult);
             _effectManager.ResetEffect(StartPos);
         }
+        protected override void MineJudge(float currentSec)
+        {
+            base.MineJudge(currentSec);
+            if (!_isJudged)
+                return;
+            _lastHoldState = -2;
+        }
         protected override void PlaySFX()
         {
             PlayJudgeSFX(new JudgeResult()
@@ -430,6 +437,17 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
+            if(IsMine)
+            {
+                MineTooLateCheck();
+            }
+            else
+            {
+                HoldTooLateCheck();
+            }
+        }
+        void HoldTooLateCheck()
+        {
             if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
                 return;
 
@@ -441,6 +459,23 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = 150;
+                _lastHoldState = -2;
+                _noteManager.NextNote(QueueInfo);
+            }
+        }
+        void MineTooLateCheck()
+        {
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Perfect;
+                _isJudged = true;
+                _judgeDiff = 0;
                 _lastHoldState = -2;
                 _noteManager.NextNote(QueueInfo);
             }
@@ -476,13 +511,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            if (isButton)
+            var currentSec = isButton ? ThisFrameSec : ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET;
+
+            if(IsMine)
             {
-                Judge(ThisFrameSec);
+                MineJudge(currentSec);
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(currentSec);
             }
 
             if (_isJudged)

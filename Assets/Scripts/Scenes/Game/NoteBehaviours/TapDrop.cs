@@ -266,9 +266,22 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void TooLateCheck()
         {
             // Too late check
+            if(IsMine)
+            {
+                MineTooLateCheck();
+            }
+            else
+            {
+                TapTooLateCheck();
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void TapTooLateCheck()
+        {
             if (_isJudged || IsEnded || AutoplayMode == AutoplayMode.Enable)
                 return;
 
@@ -282,6 +295,23 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _noteManager.NextNote(QueueInfo);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void MineTooLateCheck()
+        {
+            if (_isJudged || IsEnded || AutoplayMode == AutoplayMode.Enable)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var isTooLate = timing > 0;
+
+            if (isTooLate)
+            {
+                _judgeResult = JudgeGrade.Perfect;
+                _isJudged = true;
+                _noteManager.NextNote(QueueInfo);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void Check()
         {
             if (IsEnded || !IsInitialized)
@@ -318,13 +348,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            if (isButton)
+            var currentSec = isButton ? ThisFrameSec : ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET;
+
+            if(IsMine)
             {
-                Judge(ThisFrameSec);
+                MineJudge(currentSec);
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(currentSec);
             }
 
             if (_isJudged)

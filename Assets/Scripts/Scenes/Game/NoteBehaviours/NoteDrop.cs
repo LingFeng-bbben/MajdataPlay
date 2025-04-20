@@ -49,6 +49,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _speed = value;
         }
+        public bool IsMine
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _isMine;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _isMine = value;
+        }
         public bool IsEach
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -264,6 +271,33 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _judgeResult = result;
             _isJudged = true;
         }
+        protected virtual void MineJudge(float currentSec)
+        {
+            if (_isJudged)
+                return;
+
+            var diffSec = currentSec - JudgeTiming;
+            var isFast = diffSec < 0;
+            _judgeDiff = diffSec * 1000;
+            var diffMSec = MathF.Abs(diffSec * 1000);
+            var result = diffMSec switch
+            {
+                <= TAP_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= TAP_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= TAP_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= TAP_JUDGE_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
+                <= TAP_JUDGE_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
+                <= TAP_JUDGE_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
+                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
+            };
+            if(result > JudgeGrade.FastGreat3rd)
+            {
+                return;
+            }
+
+            _judgeResult = result;
+            _isJudged = true;
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void Autoplay()
         {
@@ -420,6 +454,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         float _speed = 7;
         [ReadOnlyField, SerializeField]
         int _sortOrder;
+        [ReadOnlyField, SerializeField]
+        bool _isMine = false;
         [ReadOnlyField, SerializeField]
         bool _isEach = false;
         [ReadOnlyField, SerializeField]
