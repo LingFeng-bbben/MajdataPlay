@@ -37,7 +37,15 @@ namespace MajdataPlay.IO
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
+                switch(MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type)
+                {
+                    case DeviceType.SerialPort:
+                        _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
+                    case DeviceType.HID:
+                        _touchPanelUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
+                }
             }
             /// <summary>
             /// Update the touchpanel state of the this frame
@@ -404,12 +412,12 @@ namespace MajdataPlay.IO
                 }
                 if (device is null)
                 {
-                    MajDebug.LogWarning("Hid device not found");
+                    MajDebug.LogWarning("TouchPanel: hid device not found");
                     return;
                 }
                 else if (!device.TryOpen(hidConfig, out hidStream))
                 {
-                    MajDebug.LogError($"cannot open hid device:\n{device}");
+                    MajDebug.LogError($"TouchPanel: cannot open hid device:\n{device}");
                     return;
                 }
 
@@ -417,6 +425,7 @@ namespace MajdataPlay.IO
                 {
                     Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
                     IsConnected = true;
+                    MajDebug.Log($"TouchPanel connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -444,11 +453,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From HID listener: \n{ioE}");
+                            MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"From HID listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
                         }
                         finally
                         {

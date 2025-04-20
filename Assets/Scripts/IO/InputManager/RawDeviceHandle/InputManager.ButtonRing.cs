@@ -372,12 +372,12 @@ namespace MajdataPlay.IO
                 }
                 if(device is null)
                 {
-                    MajDebug.LogWarning("Hid device not found");
+                    MajDebug.LogWarning("ButtonRing: hid device not found");
                     return;
                 }
                 else if(!device.TryOpen(hidConfig, out hidStream))
                 {
-                    MajDebug.LogError($"cannot open hid device:\n{device}");
+                    MajDebug.LogError($"ButtonRing: cannot open hid device:\n{device}");
                     return;
                 }
 
@@ -385,6 +385,7 @@ namespace MajdataPlay.IO
                 {
                     Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
                     IsConnected = true;
+                    MajDebug.Log($"ButtonRing connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -429,11 +430,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From HID listener: \n{ioE}");
+                            MajDebug.LogError($"ButtonRing: from HID listener: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"From HID listener: \n{e}");
+                            MajDebug.LogError($"ButtonRing: from HID listener: \n{e}");
                         }
                         finally
                         {
