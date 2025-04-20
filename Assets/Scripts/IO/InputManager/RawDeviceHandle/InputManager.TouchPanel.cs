@@ -644,7 +644,7 @@ namespace MajdataPlay.IO
                             {
                                 var rawState = packetBody[i] & 1UL << j;
                                 var state = rawState > 0;
-                                buffer[k] |= state;
+                                buffer[k] = state;
                                 k++;
                             }
                         }
