@@ -369,7 +369,7 @@ namespace MajdataPlay.IO
 
                 var btnProductId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.ProductId;
                 var btnVendorId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.VendorId;
-                var comPortNum = MajInstances.Settings.Misc.InputDevice.TouchPanel.COMPort;
+                var comPortNum = MajInstances.Settings.Misc.InputDevice.TouchPanel.SerialPortOptions.Port;
 
                 var btnPollingRate = MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs;
                 //var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
@@ -391,7 +391,7 @@ namespace MajdataPlay.IO
                     { "PollingRateMs", touchPanelPollingRate },
                     { "DebounceTimeMs", touchPanelDebounceThresholdMs },
                     { "ComPortNumber", $"COM{comPortNum}" },
-                    { "BaudRate", MajInstances.Settings.Misc.InputDevice.TouchPanel.BaudRate },
+                    { "BaudRate", MajInstances.Settings.Misc.InputDevice.TouchPanel.SerialPortOptions.BaudRate },
                     { "SensitivityOverride", true },
                     { "Sensitivity", MajInstances.Settings.Misc.InputDevice.TouchPanel.Sensitivity }
                 };
