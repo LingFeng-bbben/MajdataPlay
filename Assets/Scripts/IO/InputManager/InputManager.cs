@@ -726,19 +726,11 @@ namespace MajdataPlay.IO
             TimeSpan debounceTime;
             if (isBtn)
             {
-                if (index.InRange(0, _btnLastTriggerTimes.Length - 1))
-                {
-                    return false;
-                }
                 lastTriggerTime = _btnLastTriggerTimes[index];
                 debounceTime = _btnDebounceThresholdMs;
             }
             else
             {
-                if (index.InRange(0, _sensorLastTriggerTimes.Length - 1))
-                {
-                    return false;
-                }
                 lastTriggerTime = _sensorLastTriggerTimes[index];
                 debounceTime = _sensorDebounceThresholdMs;
             }

@@ -46,7 +46,9 @@ namespace MajdataPlay.IO
                 if (_isBtnDebounceEnabled && i.InRange(0, 7))
                 {
                     if (JitterDetect(button.Area, now, true))
+                    {
                         continue;
+                    }
                     _btnLastTriggerTimes[i] = now;
                 }
                 button.State = newState;

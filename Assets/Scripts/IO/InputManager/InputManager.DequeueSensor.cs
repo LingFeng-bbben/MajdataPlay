@@ -42,7 +42,6 @@ namespace MajdataPlay.IO
             {
                 var sensor = sensors[i];
                 var sensorArea = sensor.Area;
-                var sensorIndex = (int)sensorArea;
 
                 if (sensor is null)
                 {
@@ -54,13 +53,13 @@ namespace MajdataPlay.IO
 
                 if (oldState == newState)
                     continue;              
-                if (_isSensorDebounceEnabled)
+                if (_isSensorDebounceEnabled && i.InRange(0, 32))
                 {
                     if (JitterDetect(sensorArea, now))
                     {
                         continue;
                     }
-                    _sensorLastTriggerTimes[sensorIndex] = now;
+                    _sensorLastTriggerTimes[i] = now;
                 }
 
                 MajDebug.Log(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
