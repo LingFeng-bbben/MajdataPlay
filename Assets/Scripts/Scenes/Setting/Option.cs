@@ -210,7 +210,7 @@ namespace MajdataPlay.Setting
         {
             if (_pressTime >= 0.4f)
             {
-                if(_iterationThrottle <= 1 / 60f)
+                if(_iterationThrottle <= 1 / 15f)
                 {
                     _iterationThrottle += MajTimeline.DeltaTime;
                 }
