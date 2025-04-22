@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Utils;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
@@ -9,6 +10,8 @@ namespace MajdataPlay.Recording
     {
         private WebSocket _webSocket = new("ws://127.0.0.1:4455");
         private bool _disposed = false;
+        string _name = "";
+        string _obsOutPath = "";
         public bool IsConnected { get; set; } = false;
         public bool IsRecording { get; set; } = false;
 
@@ -87,13 +90,17 @@ namespace MajdataPlay.Recording
         {
 
         }
+
+        public void SetOutputName(string name)
+        {
+            _name = name;
+        }
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             try
             {
                 var message = Serializer.Json.Deserialize<ReceivedMessage>(e.Data);
                 MajDebug.Log("[OBS] Received: " + e.Data);
-                MajDebug.Log(message);
                 switch (message.op)
                 {
                     case 2: // Identified
@@ -120,12 +127,25 @@ namespace MajdataPlay.Recording
                                 if (message.d.requestStatus.result)
                                 {
                                     IsRecording = false;
+                                    _obsOutPath = message.d.responseData.outputPath;
                                     MajDebug.Log("[OBS] Record Saved To " + message.d.responseData.outputPath);
                                 }
                                 else
                                 {
                                     MajDebug.Log("[OBS] Stop Record Failed.");
                                 }
+                            }
+                            break;
+                        }
+                    case 5:
+                        {
+                            //we move the file after record finishs
+                            if (message.d.eventType == "RecordStateChanged" && message.d.eventData.outputState == "OBS_WEBSOCKET_OUTPUT_STOPPED")
+                            {
+                                MajDebug.Log("[OBS] Moving video to game dir");
+                                var timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
+                                var outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_name}_{timestamp}.mp4");
+                                File.Move(_obsOutPath, outputPath);
                             }
 
                             break;

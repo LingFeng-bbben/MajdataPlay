@@ -12,5 +12,6 @@ namespace MajdataPlay.Recording
         void StopRecord();
         Task StopRecordAsync();
         void OnLateUpdate();
+        void SetOutputName(string name);
     }
 }

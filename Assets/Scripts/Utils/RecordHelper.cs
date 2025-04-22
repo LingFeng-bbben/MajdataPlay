@@ -44,20 +44,22 @@ namespace MajdataPlay.Utils
             };
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
-        public static void StartRecord()
+        public static void StartRecord(string filename)
         {
             if(!IsEnabled)
             {
                 return;
             }
+            _recorder.SetOutputName(filename);
             _recorder.StartRecord();
         }
-        public static async Task StartRecordAsync()
+        public static async Task StartRecordAsync(string filename)
         {
             if (!IsEnabled)
             {
                 return;
             }
+            _recorder.SetOutputName(filename);
             await _recorder.StartRecordAsync();
         }
         public static void StopRecord()

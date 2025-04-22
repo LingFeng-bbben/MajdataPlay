@@ -597,15 +597,17 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();
             }
-            var wait4Recorder = RecordHelper.StartRecordAsync();
+            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            MajInstances.SceneSwitcher.FadeOut();
+            await UniTask.Delay(100); //wait the animation
+
+            var wait4Recorder = RecordHelper.StartRecordAsync($"{_songDetail.Title}_{_songDetail.Designers[(int)_gameInfo.CurrentLevel]}");
             while (!wait4Recorder.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
-            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            MajInstances.SceneSwitcher.FadeOut();
 
             MajInstances.GameManager.DisableGC();
 
@@ -949,6 +951,12 @@ namespace MajdataPlay.Game
             if (State == GamePlayStatus.Ended)
                 return;
             State = GamePlayStatus.Ended;
+            var wait4Recorder = RecordHelper.StopRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
+                await UniTask.Yield();
+            }
             MajInstances.SceneSwitcher.FadeIn();
             await UniTask.Delay(400);
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
@@ -1033,7 +1041,7 @@ namespace MajdataPlay.Game
             try
             {
                 MajDebug.Log("GPManagerDestroy");
-
+                //we dont StopRecordAsync at here because we want the result screen as well
                 DisposeAudioTrack();
                 ClearAllResources();
             }

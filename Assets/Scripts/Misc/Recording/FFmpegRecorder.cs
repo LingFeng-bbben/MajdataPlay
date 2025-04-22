@@ -27,11 +27,11 @@ namespace MajdataPlay.Recording
 
 
         bool _isDisposed = false;
-
+        string _name = "";
         string _timestamp = string.Empty;
         string _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.wav");
         string _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}out.mp4");
-        string _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_defaultTimestamp}.mp4");
+        string _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_defaultTimestamp}.mp4");
 
         readonly WavRecorder _wavRecorder = new(32);
         readonly ScreenRecorder _screenRecorder = new();
@@ -50,7 +50,7 @@ namespace MajdataPlay.Recording
             _timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
             _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.wav");
             _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
-            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
+            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_name}_{_timestamp}.mp4");
 
             _screenRecorder.StartRecord(_mp4Path);
             _wavRecorder.Start();
@@ -66,7 +66,7 @@ namespace MajdataPlay.Recording
             _timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
             _wavPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.wav");
             _mp4Path = Path.Combine(MajEnv.RecordOutputsPath, $"{_timestamp}out.mp4");
-            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"MajdataPlay_gameplay_{_timestamp}.mp4");
+            _outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_name}_{_timestamp}.mp4");
 
             await _screenRecorder.StartRecordAsync(_mp4Path);
             _wavRecorder.Start();
@@ -95,6 +95,8 @@ namespace MajdataPlay.Recording
             var p = new Process { StartInfo = startInfo };
             p.Start();
             p.WaitForExit();
+            File.Delete(_mp4Path);
+            File.Delete(_wavPath);
             _timestamp = string.Empty;
         }
         public async Task StopRecordAsync()
@@ -122,8 +124,15 @@ namespace MajdataPlay.Recording
                 var p = new Process { StartInfo = startInfo };
                 p.Start();
                 p.WaitForExit();
+                File.Delete(_mp4Path);
+                File.Delete(_wavPath);
                 _timestamp = string.Empty;
             });
+        }
+
+        public void SetOutputName(string name)
+        {
+            _name = name;
         }
         public void OnLateUpdate()
         {
