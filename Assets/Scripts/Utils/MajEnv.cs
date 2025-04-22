@@ -104,6 +104,16 @@ namespace MajdataPlay.Utils
                 {
                     UserSettings = new();
                     MajDebug.LogError("Failed to read setting from file");
+                    var bakFileName = $"{SettingPath}.bak";
+                    while(File.Exists(bakFileName))
+                    {
+                        bakFileName = $"{bakFileName}.bak";
+                    }
+                    try
+                    {
+                        File.Copy(SettingPath, bakFileName, true);
+                    }
+                    catch { }
                 }
                 else
                 {
