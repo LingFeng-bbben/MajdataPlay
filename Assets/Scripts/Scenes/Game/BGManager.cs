@@ -126,7 +126,6 @@ namespace MajdataPlay.Game
             var sceneSwitcher = MajInstances.SceneSwitcher;
             try
             {
-                Application.logMessageReceivedThreaded += Application_logMessageReceived;
                 var isPrepared = false;
                 videoPlayer.url = "file://" + path;
                 videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
@@ -176,7 +175,6 @@ namespace MajdataPlay.Game
                         await UniTask.Yield();
                     }
                 }
-                Application.logMessageReceived -= Application_logMessageReceived;
                 var scale = videoPlayer.height / (float)videoPlayer.width;
                 gameObject.transform.localScale = new Vector3(1f, 1f * scale);
                 _usePictureAsBackground = false;
@@ -191,11 +189,6 @@ namespace MajdataPlay.Game
                 sceneSwitcher.SetLoadingText("", Color.white);
             }
 
-        }
-
-        private void Application_logMessageReceived(string message, string stackTrace, LogType type)
-        {
-            Debug.Log($"[VideoPlayer] {message}");
         }
     }
 }
