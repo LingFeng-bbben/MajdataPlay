@@ -3,6 +3,8 @@ using System;
 using LibVLCSharp;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using UnityEngine.Video;
 
 ///This is a basic implementation of a media player using VLC for Unity using LibVLCSharp
 ///It exposes some basic playback controls, you may wish to add more of these
@@ -21,11 +23,12 @@ public class VLCPlayerExample : MonoBehaviour
 
 	//Screens
 	public Renderer screen; //Assign a mesh to render on a 3d object
-	public RawImage canvasScreen; //Assign a Canvas RawImage to render on a GUI object
+	public SpriteRenderer renderer2; //Assign a Canvas RawImage to render on a GUI object
 
 	Texture2D _vlcTexture = null; //This is the texture libVLC writes to directly. It's private.
 	public RenderTexture texture = null; //We copy it into this texture which we actually use in unity.
 
+	Vector3 originalScale;
 
 	public string path = "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_1080p_stereo.avi"; //Can be a web path or a local path
 
@@ -44,18 +47,14 @@ public class VLCPlayerExample : MonoBehaviour
 		if (libVLC == null)
 			CreateLibVLC();
 
-		//Setup Screen
-		if (screen == null)
-			screen = GetComponent<Renderer>();
-		if (canvasScreen == null)
-			canvasScreen = GetComponent<RawImage>();
-
 		//Setup Media Player
 		CreateMediaPlayer();
 
 		//Play On Start
 		if (playOnAwake)
-			Open();
+			Open().Forget();
+
+		originalScale = screen.gameObject.transform.localScale;
 	}
 
 	void OnDestroy()
@@ -71,8 +70,28 @@ public class VLCPlayerExample : MonoBehaviour
 		uint width = 0;
 		mediaPlayer.Size(0, ref width, ref height);
 
-		//Automatically resize output textures if size changes
-		if (_vlcTexture == null || _vlcTexture.width != width || _vlcTexture.height != height)
+
+		if (!mediaPlayer.IsPlaying){
+			if(Input.GetKeyDown(KeyCode.Space))
+            {
+                Play();
+			}
+			else
+			{
+                return;
+            }
+			
+        }
+
+		//to seconds
+		//print(mediaPlayer.Time/1000d);
+		var currentVideoTime = mediaPlayer.Time / 1000d;
+		var currentFrameTime = UnityEngine.Time.timeAsDouble - startTime;
+        print("VideoTime: " + (mediaPlayer.Time));
+        print("Time Delta: " + (currentVideoTime - currentFrameTime));
+
+        //Automatically resize output textures if size changes
+        if (_vlcTexture == null || _vlcTexture.width != width || _vlcTexture.height != height)
 		{
 			ResizeOutputTextures(width, height);
 		}
@@ -100,10 +119,10 @@ public class VLCPlayerExample : MonoBehaviour
 	{
 		Log("VLCPlayerExample Open " + path);
 		this.path = path;
-		Open();
+		Open().Forget();
 	}
-
-	public void Open()
+	double startTime = 0;
+	public async UniTask Open()
 	{
 		Log("VLCPlayerExample Open");
 		if (mediaPlayer.Media != null)
@@ -111,15 +130,35 @@ public class VLCPlayerExample : MonoBehaviour
 
 		var trimmedPath = path.Trim(new char[]{'"'});//Windows likes to copy paths with quotes but Uri does not like to open them
 		mediaPlayer.Media = new Media(new Uri(trimmedPath));
+        //mediaPlayer.SetRate(999f); //Set the playback speed 1 = normal
+        print("BeginParse");
+        var ret = await mediaPlayer.Media.ParseAsync(libVLC);
+		print(ret);
+		await UniTask.WaitForSeconds(0.2f); //cooldown before play
+        print("Requested Play"); 
 		Play();
-	}
+        startTime = UnityEngine.Time.timeAsDouble;
+        while (mediaPlayer.Time==0)
+		{
+            //Wait for the media to start playing
+            print("Waiting for media to start playing");
+            await UniTask.Yield();
+        }
+        startTime = UnityEngine.Time.timeAsDouble;
+        //maybe like pause here first? then we can start playing whenever we want <-this will cause delay
+        uint videoHeight = 0;
+        uint videoWidth = 0;
+
+        mediaPlayer.Size(0, ref videoWidth, ref videoHeight);
+		print("Video Size: " + videoWidth + "x" + videoHeight);
+    }
 
 	public void Play()
 	{
 		Log("VLCPlayerExample Play");
 
 		mediaPlayer.Play();
-	}
+    }
 
 	public void Pause()
 	{
@@ -309,9 +348,14 @@ public class VLCPlayerExample : MonoBehaviour
 
 			if (screen != null)
 				screen.material.mainTexture = texture;
-			if (canvasScreen != null)
-				canvasScreen.texture = texture;
-		}
+
+
+            var scale = (float)py / (float)px;
+            screen.gameObject.transform.localScale = new Vector3(8f, 8f * scale,1f);
+            //sprite's maintexture is read only so this does not seem to work: so we need a 3d plane (Mesh)
+            if (renderer2 != null)
+				renderer2.material.mainTexture = texture;
+        }
 	}
 
 	//Converts MediaTrackList objects to Unity-friendly generic lists. Might not be worth the trouble.
