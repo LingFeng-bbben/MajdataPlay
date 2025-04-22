@@ -62,7 +62,7 @@ namespace MajdataPlay.Utils
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
             DefaultRequestHeaders = 
             {
-                UserAgent = { new ProductInfoHeaderValue("MajPlay", "Alpha") },
+                UserAgent = { new ProductInfoHeaderValue("MajPlay", MajInstances.GameVersion.ToString()) },
             }
         };
         public static GameSetting UserSettings { get; }
