@@ -58,8 +58,20 @@ namespace MajdataPlay.Utils
             byte[] bytes = Array.Empty<byte>();
             if (!File.Exists(cachefile))
             {
-                var client = new HttpClient(new HttpClientHandler() { Proxy = WebRequest.GetSystemWebProxy(), UseProxy = true });
-                bytes = await client.GetByteArrayAsync(uri);
+                var client = MajEnv.SharedHttpClient;
+                for (int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+                    try
+                    {
+                        bytes = await client.GetByteArrayAsync(uri);
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        await Task.Delay(500);
+                    }
+                }
+
                 await File.WriteAllBytesAsync(cachefile, bytes, ct);
             }
             else

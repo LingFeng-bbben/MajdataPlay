@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -58,7 +59,11 @@ namespace MajdataPlay.Utils
             CookieContainer = new CookieContainer(),
         })
         {
-            Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS)
+            Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
+            DefaultRequestHeaders = 
+            {
+                UserAgent = { new ProductInfoHeaderValue("MajPlay", "Alpha") },
+            }
         };
         public static GameSetting UserSettings { get; }
         public static CancellationToken GlobalCT

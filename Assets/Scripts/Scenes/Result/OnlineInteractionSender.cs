@@ -87,17 +87,30 @@ namespace MajdataPlay.Result
         public async UniTask SendScore(MaiScore score)
         {
             uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
-            try
+            for(int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
-                await Online.SendScore(_onlineDetail, score);
-                uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
+                try
+                {
+                    await Online.SendScore(_onlineDetail, score);
+                    uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if(ex is TaskCanceledException)
+                    {
+                        uploadtext.text = "Retry in 1s..." + ex.Message;
+                        MajDebug.LogError(ex);
+                        await UniTask.Delay(1000);
+                    }
+                    else{
+                        uploadtext.text = ex.Message;
+                        MajDebug.LogError(ex);
+                        return;
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                uploadtext.text = ex.Message;
-                MajDebug.LogError(ex);
-                return;
-            }
+            
         }
     }
 }
