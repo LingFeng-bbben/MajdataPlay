@@ -43,7 +43,7 @@ namespace MajdataPlay.Utils
         public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
-        public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime_{DateTime.Now:yyyy-MM-dd_HH_mm_ss}.log");
+        public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime.log");
         public static string RecordOutputsPath { get; } = Path.Combine(RootPath, "RecordOutputs");
         public static Sprite EmptySongCover { get; }
         public static Material BreakMaterial { get; }

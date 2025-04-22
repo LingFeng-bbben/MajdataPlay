@@ -94,13 +94,13 @@ namespace MajdataPlay.Utils
             {
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
-                var oldLogPath = Path.Combine(MajEnv.RootPath, "MajPlayRuntime.log");
+                var oldLogPath = MajEnv.LogPath+ ".old";
                 if (!Directory.Exists(MajEnv.LogsPath))
                     Directory.CreateDirectory(MajEnv.LogsPath);
                 if (File.Exists(oldLogPath))
                     File.Delete(oldLogPath);
                 if (File.Exists(MajEnv.LogPath))
-                    File.Delete(MajEnv.LogPath);
+                    File.Move(MajEnv.LogPath, oldLogPath);
 
                 currentThread.Priority = System.Threading.ThreadPriority.Lowest;
                 currentThread.IsBackground = true;
