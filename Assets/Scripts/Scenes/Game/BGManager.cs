@@ -126,18 +126,14 @@ namespace MajdataPlay.Game
             var sceneSwitcher = MajInstances.SceneSwitcher;
             try
             {
-                //var isErrorThrown = false;
+                Application.logMessageReceivedThreaded += Application_logMessageReceived;
                 var isPrepared = false;
                 videoPlayer.url = "file://" + path;
                 videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
                 spriteRender.sprite =
                     Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
-                //videoPlayer.errorReceived += (s,m) =>
-                //{
-                //    isErrorThrown = true;
-                //    MajDebug.LogError(m);
-                //};
                 videoPlayer.prepareCompleted += (s) => isPrepared = true;
+                
                 videoPlayer.Prepare();
                 var startAt = MajTimeline.UnscaledTime;
                 var timeout = TimeSpan.FromSeconds(12);
@@ -156,7 +152,7 @@ namespace MajdataPlay.Game
                         {
                             var text1 = string.Format("Waiting for the video player...{0}".i18n(), $"{remainingTime.TotalSeconds:F0}s");
                             var text2 = Localization.GetLocalizedText("Press the 4th button to use default cover");
-                            sceneSwitcher.SetLoadingText($"{text1}\n{text2}");
+                            sceneSwitcher.SetLoadingText($"{text1}\n{text2}\nMaybe you need Windows HEVC Extension");
                         }
                         else if (remainingTime.TotalSeconds > -2)
                         {
@@ -180,6 +176,7 @@ namespace MajdataPlay.Game
                         await UniTask.Yield();
                     }
                 }
+                Application.logMessageReceived -= Application_logMessageReceived;
                 var scale = videoPlayer.height / (float)videoPlayer.width;
                 gameObject.transform.localScale = new Vector3(1f, 1f * scale);
                 _usePictureAsBackground = false;
@@ -194,6 +191,11 @@ namespace MajdataPlay.Game
                 sceneSwitcher.SetLoadingText("", Color.white);
             }
 
+        }
+
+        private void Application_logMessageReceived(string message, string stackTrace, LogType type)
+        {
+            Debug.Log($"[VideoPlayer] {message}");
         }
     }
 }
