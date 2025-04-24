@@ -336,12 +336,12 @@ namespace MajdataPlay.Game
             State = GamePlayStatus.Loading;
             try
             {
-                if(_songDetail.IsOnline)
+                if (_songDetail.IsOnline)
                 {
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync().AsValueTask();
-                    while(!task1.IsCompleted)
+                    while (!task1.IsCompleted)
                         await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync().AsValueTask();
@@ -357,16 +357,26 @@ namespace MajdataPlay.Game
                         await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
+
                 await LoadAudioTrack();
                 await InitBackground();
                 await ParseChart();
                 await LoadNotes();
                 await PrepareToPlay();
             }
-            catch(EmptyChartException)
+            catch (EmptyChartException)
             {
                 InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
+                //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
+                MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
+                await UniTask.Delay(1000);
+                BackToList().Forget();
+            }
+            catch (OBSRecorderException)
+            {
+                InputManager.ClearAllSubscriber();
+                var s = Localization.GetLocalizedText("OBSError");
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);

@@ -861,6 +861,10 @@
     {
       "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
       "Content": "不显示"
+    },
+    {
+      "Origin": "OBSError",
+      "Content": "你OBS炸了！！！"
     }
   ]
 }
