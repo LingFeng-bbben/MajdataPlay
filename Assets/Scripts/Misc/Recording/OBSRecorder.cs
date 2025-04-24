@@ -44,8 +44,15 @@ namespace MajdataPlay.Recording
         public void Init()
         {
             _webSocket.OnMessage += OnMessageReceived;
-            if (Connect())
+            Connect();
+            try
+            {
                 Authenticate();
+            }
+            catch
+            {
+                IsConnected = false;
+            }
         }
 
         public void Dispose()
@@ -68,18 +75,7 @@ namespace MajdataPlay.Recording
 
         ~OBSRecorder() => Dispose(false);
 
-        private bool Connect()
-        {
-            try
-            {
-                _webSocket.Connect();
-                return true;
-            } catch (Exception e)
-            {
-                MajDebug.LogError($"[Record] Error when initializing OBS Recorder. {e}");
-                return false;
-            }
-        }
+        private void Connect() => _webSocket.Connect();
 
         private void Disconnect()
         {
@@ -90,21 +86,31 @@ namespace MajdataPlay.Recording
         public void StartRecord() => _webSocket.Send(StartRecordMessage);
         public async Task StartRecordAsync()
         {
+            bool shouldThrow = false;
             while (!IsConnected)
             {
-                if (Connect())
+                try
                 {
                     Authenticate();
                     await Task.Delay(1000);
                 }
-                else
-                    throw new OBSRecorderException();
+                catch
+                {
+                    shouldThrow = true;
+                    break;
+                }
+            }
+
+            if (shouldThrow)
+            {
+                throw new OBSRecorderException();
             }
             await Task.Run(StartRecord);
         }
         public void StopRecord() => _webSocket.Send(StopRecordMessage);
         public async Task StopRecordAsync()
         {
+            if (!IsConnected || !IsRecording) return;
             await Task.Run(StopRecord);
         }
         private void Authenticate() => _webSocket.Send(AuthenticateMessage);

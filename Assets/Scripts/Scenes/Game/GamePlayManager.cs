@@ -619,6 +619,8 @@ namespace MajdataPlay.Game
                 await UniTask.Yield();
             }
 
+            await wait4Recorder;
+
             MajInstances.GameManager.DisableGC();
 
             State = GamePlayStatus.Running;
