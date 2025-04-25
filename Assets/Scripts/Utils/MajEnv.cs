@@ -159,7 +159,7 @@ namespace MajdataPlay.Utils
                 libVLC.Dispose();
                 libVLC = null;
             }
-            Core.Initialize(Application.dataPath); //Load VLC dlls
+            Core.Initialize(Path.Combine(Application.dataPath, "Plugins")); //Load VLC dlls
             libVLC = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
 #if UNITY_EDITOR
             libVLC.Log += (s, e) =>
