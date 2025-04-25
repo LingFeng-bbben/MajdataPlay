@@ -303,7 +303,6 @@ namespace MajdataPlay.View
                 _thisFrameSec = 0;
                 if (_audioSample is not null)
                     _audioSample.Dispose();
-                _bgManager.CancelTimeRef();
                 await SceneManager.LoadSceneAsync("View");
                 return true;
             }

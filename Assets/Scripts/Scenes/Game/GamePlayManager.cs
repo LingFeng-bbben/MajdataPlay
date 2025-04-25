@@ -624,15 +624,27 @@ namespace MajdataPlay.Game
 
             State = GamePlayStatus.Running;
             IsStart = true;
+            var startSec = _audioTrackStartAt * _playbackSpeed;
             if (!IsPracticeMode)
             {
+                var isVideoStarted = false;
                 while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
+                {
+                    if (_timer.ElapsedSecondsAsFloat - AudioStartTime > -0.1f && !isVideoStarted ) {
+                        _bgManager.PlayVideo(startSec, _playbackSpeed);
+                        isVideoStarted = true;
+                    }
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                }
             }
-            _audioSample.Volume = 0;
+            else
+            {
+                _bgManager.PlayVideo(startSec+0.25f, _playbackSpeed);
+            }
             _audioSample.Play();
-            _audioSample.CurrentSec = _audioTrackStartAt * _playbackSpeed;
-            _bgManager.PlayVideo((float)_audioSample.CurrentSec, _playbackSpeed);
+            _audioSample.Volume = 0;
+            _audioSample.CurrentSec = startSec;
+
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
             MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
@@ -870,15 +882,16 @@ namespace MajdataPlay.Game
                     var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
+                    var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
                     _audioTimeNoOffset = (float)_audioSample.CurrentSec;
-                    _errText.text = ZString.Format("Diff{0:F4}", Math.Abs(realTimeDifference));
+                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));
 
                     if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Settings.Debug.TryFixAudioSync)
                     {
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    }
+                    }                  
                     break;
             }
         }
@@ -999,9 +1012,6 @@ namespace MajdataPlay.Game
             StopAllCoroutines();
 
             _cts.Cancel();
-
-            if(!_bgManager.IsUnityNull())
-                _bgManager.CancelTimeRef();
 
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);

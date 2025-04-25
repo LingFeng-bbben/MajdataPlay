@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using HidSharp.Platform.Windows;
+using LibVLCSharp;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Types;
 using MajdataPlay.Types;
@@ -34,6 +35,8 @@ namespace MajdataPlay.Utils
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
+
+        public static LibVLC libVLC;
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
@@ -149,9 +152,37 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = UserSettings.Debug.MainThreadPriority;
+
+            MajDebug.Log("[VLC] init");
+            if (libVLC != null)
+            {
+                libVLC.Dispose();
+                libVLC = null;
+            }
+            Core.Initialize(Application.dataPath); //Load VLC dlls
+            libVLC = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
+#if UNITY_EDITOR
+            libVLC.Log += (s, e) =>
+            {
+                //Always use try/catch in LibVLC events.
+                //LibVLC can freeze Unity if an exception goes unhandled inside an event handler.
+                try
+                {
+
+                    //MajDebug.Log("[VLC] " + e.FormattedLog);
+
+                }
+                catch (Exception ex)
+                {
+                    MajDebug.Log("Exception caught in libVLC.Log: \n" + ex.ToString());
+                }
+
+            };
+#endif
         }
         internal static void OnApplicationQuitRequested()
         {
+            libVLC.Dispose();
             _globalCTS.Cancel();
             if (OnApplicationQuit is not null)
             {

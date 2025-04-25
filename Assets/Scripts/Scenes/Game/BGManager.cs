@@ -8,7 +8,10 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Video;
+using LibVLCSharp;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace MajdataPlay.Game
 {
@@ -16,19 +19,36 @@ namespace MajdataPlay.Game
     {
         public Sprite DefaultSprite;
         public Vector3 DefaultScale;
-        private GamePlayManager _gpManager;
-        private ViewManager _viewManager;
+        private INoteController _gpManager;
 
-        private SpriteRenderer spriteRender;
+        public RawImage videoRenderer;
+        private SpriteRenderer picture;
+        private MediaPlayer mediaPlayer;
 
-        private VideoPlayer videoPlayer;
-        bool _usePictureAsBackground = true;
+        Texture2D _vlcTexture = null; //This is the texture libVLC writes to directly. It's private.
+        public RenderTexture texture = null; //We copy it into this texture which we actually use in unity.
+        // when copying native Texture2D textures to Unity RenderTextures, the orientation mapping is incorrect on Android, so we flip it over.
+        public bool flipTextureX = true;
+        public bool flipTextureY = true;
+
+        public float CurrentSec => mediaPlayer.Time / 1000f;
+
+        bool _usePictureAsBackground = false;
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
+            if (mediaPlayer != null)
+            {
+                DestroyMediaPlayer();
+            }
+            mediaPlayer = new MediaPlayer(MajEnv.libVLC) { 
+                FileCaching = 0,
+                NetworkCaching = 0,
+            };
         }
         void OnDestroy()
         {
+            DestroyMediaPlayer();
             Majdata<BGManager>.Free();
         }
 
@@ -36,76 +56,81 @@ namespace MajdataPlay.Game
         private void Start()
         {
             DefaultScale = transform.localScale;
-            spriteRender = GetComponent<SpriteRenderer>();
-            videoPlayer = GetComponent<VideoPlayer>();
-            _gpManager = Majdata<GamePlayManager>.Instance!;
-            _viewManager = Majdata<ViewManager>.Instance!;
+            picture = GetComponent<SpriteRenderer>();
+            _gpManager = Majdata<INoteController>.Instance!;
         }
 
         private void Update()
         {
             if (_usePictureAsBackground)
                 return;
-            if (videoPlayer.isPlaying)
+
+            //print("VideoTime: " + (mediaPlayer.Time));
+
+            //Get size every frame
+            uint height = 0;
+            uint width = 0;
+            mediaPlayer.Size(0, ref width, ref height);
+
+            if (_vlcTexture == null || _vlcTexture.width != width || _vlcTexture.height != height)
             {
-                if (MajEnv.Mode == RunningMode.Play)
-                    videoPlayer.externalReferenceTime = _gpManager.AudioTimeNoOffset;
-                else if (MajEnv.Mode == RunningMode.View)
-                    videoPlayer.externalReferenceTime = _viewManager.AudioTimeNoOffset;
+                ResizeOutputTextures(width, height);
             }
-            /*var delta = (float)videoPlayer.clockTime - gamePlayManager.AudioTimeNoOffset;
 
-            if (delta < -0.01f)
-                videoPlayer.playbackSpeed = playSpeed + 0.2f;
-            else if (delta > 0.01f)
-                videoPlayer.playbackSpeed = playSpeed - 0.2f;
-            else
-                videoPlayer.playbackSpeed = playSpeed;*/
-        }
+            if (_vlcTexture != null)
+            {
+                //Update the vlc texture (tex)
+                var texptr = mediaPlayer.GetTexture(width, height, out bool updated);
+                if (updated)
+                {
+                    _vlcTexture.UpdateExternalTexture(texptr);
 
-        public void CancelTimeRef()
-        {
-            videoPlayer.timeReference = VideoTimeReference.Freerun;
+                    //Copy the vlc texture into the output texture, automatically flipped over
+                    var flip = new Vector2(flipTextureX ? -1 : 1, flipTextureY ? -1 : 1);
+                    Graphics.Blit(_vlcTexture, texture, flip, Vector2.zero); //If you wanted to do post processing outside of VLC you could use a shader here.
+                }
+            }
         }
 
         public void PauseVideo()
         {
             if (_usePictureAsBackground)
                 return;
-            videoPlayer.Pause();
+            mediaPlayer.Pause();
         }
 
         public void StopVideo()
         {
             if (_usePictureAsBackground)
                 return;
-            CancelTimeRef();
-            videoPlayer.Stop();
-            videoPlayer.time = 0;
+            mediaPlayer.Stop();
         }
 
         public void PlayVideo(float time,float speed)
         {
             if (_usePictureAsBackground)
                 return;
-            videoPlayer.playbackSpeed = speed;
-            videoPlayer.timeReference = VideoTimeReference.ExternalTime;
-            videoPlayer.Play();
-            videoPlayer.time = time;
+            mediaPlayer.SetRate(speed);
+            mediaPlayer.SeekTo(TimeSpan.FromSeconds(time));
+            mediaPlayer.Play();
+        }
+
+        public void SetVideoSpeed(float speed)
+        {
+            if(speed != mediaPlayer.Rate)
+                mediaPlayer.SetRate(speed);
         }
 
         public void SetBackgroundPic(Sprite? sprite)
         {
-            _usePictureAsBackground = true;
-            videoPlayer.enabled = false;
-            spriteRender.enabled = true;
+            DisableVideo();
             if (sprite is null) 
             { 
-                spriteRender.sprite = DefaultSprite;
+                picture.sprite = DefaultSprite;
                 transform.localScale = DefaultScale;
                 return; 
             }
-            spriteRender.sprite = sprite;
+            picture.sprite = sprite;
             //todo:set correct scale
             var scale = 1080f / sprite.texture.width;
             gameObject.transform.localScale = new Vector3(scale, scale, scale);
@@ -113,7 +138,8 @@ namespace MajdataPlay.Game
 
         public void DisableVideo()
         {
-            videoPlayer.url = null;
+            mediaPlayer.Media = null;
+            _usePictureAsBackground = true;
         }
 
         public void SetBackgroundDim(float dim)
@@ -123,72 +149,80 @@ namespace MajdataPlay.Game
 
         public async UniTask SetBackgroundMovie(string path,Sprite? fallback)
         {
-            var sceneSwitcher = MajInstances.SceneSwitcher;
             try
             {
-                var isPrepared = false;
-                videoPlayer.url = "file://" + path;
-                videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
-                spriteRender.sprite =
-                    Sprite.Create(new Texture2D(1080, 1080), new Rect(0, 0, 1080, 1080), new Vector2(0.5f, 0.5f));
-                videoPlayer.prepareCompleted += (s) => isPrepared = true;
-                
-                videoPlayer.Prepare();
-                var startAt = MajTimeline.UnscaledTime;
-                var timeout = TimeSpan.FromSeconds(12);
-                while (true)
-                {
-                    try
-                    {
-                        var remainingTime = timeout - (MajTimeline.UnscaledTime - startAt);
-                        if (remainingTime.TotalSeconds > 10)
-                        {
-                            var text1 = string.Format("Waiting for the video player...{0}".i18n(), "");
-                            sceneSwitcher.SetLoadingText($"{text1}");
-                            continue;
-                        }
-                        else if (remainingTime.TotalSeconds > 0)
-                        {
-                            var text1 = string.Format("Waiting for the video player...{0}".i18n(), $"{remainingTime.TotalSeconds:F0}s");
-                            var text2 = Localization.GetLocalizedText("Press the 4th button to use default cover");
-                            sceneSwitcher.SetLoadingText($"{text1}\n{text2}\nMaybe you need Windows HEVC Extension");
-                        }
-                        else if (remainingTime.TotalSeconds > -2)
-                        {
-                            var text1 = "Video loading timeout, fall back to default cover".i18n();
-                            sceneSwitcher.SetLoadingText($"{text1}",Color.red);
-                            continue;
-                        }
-                        else
-                        {
-                            throw new Exception("SB Unity");
-                        }
-                        if (InputManager.IsButtonClickedInThisFrame(SensorArea.A4))
-                        {
-                            throw new Exception("SB Unity");
-                        }
-                        if (videoPlayer.isPrepared)
-                            break;
-                    }
-                    finally
-                    {
-                        await UniTask.Yield();
-                    }
-                }
-                var scale = videoPlayer.height / (float)videoPlayer.width;
-                gameObject.transform.localScale = new Vector3(1f, 1f * scale);
+                MajDebug.Log("[VLC] LoadMedia");
+                if (mediaPlayer.Media != null)
+                    mediaPlayer.Media.Dispose();
+
+                var trimmedPath = path.Trim(new char[] { '"' });//Windows likes to copy paths with quotes but Uri does not like to open them
+                var uri = new Uri(trimmedPath);
+                MajDebug.Log("[VLC] Uri: " + uri.ToString());
+                var media = new Media(uri);
+                //media.AddOption(":start-paused");
+                mediaPlayer.Media = media;
+
+
+                MajDebug.Log("[VLC] BeginParse");
+                var ret = await mediaPlayer.Media.ParseAsync(MajEnv.libVLC);
+                MajDebug.Log("[VLC] " + ret);
+                picture.forceRenderingOff = true;
                 _usePictureAsBackground = false;
+                mediaPlayer.Play();
+                await UniTask.Delay(200);
+                mediaPlayer.Pause();
+                mediaPlayer.SeekTo(TimeSpan.Zero);
             }
             catch(Exception e)
             {
                 Debug.LogException(e);
                 SetBackgroundPic(fallback);
             }
-            finally
-            {
-                sceneSwitcher.SetLoadingText("", Color.white);
-            }
 
+        }
+        void DestroyMediaPlayer()
+        {
+            MajDebug.Log("[VLC] DestroyMediaPlayer");
+            mediaPlayer?.Stop();
+            mediaPlayer?.Dispose();
+            mediaPlayer = null;
+        }
+
+        void ResizeOutputTextures(uint px, uint py)
+        {
+            var texptr = mediaPlayer.GetTexture(px, py, out bool updated);
+            if (px != 0 && py != 0 && updated && texptr != IntPtr.Zero)
+            {
+                //If the currently playing video uses the Bottom Right orientation, we have to do this to avoid stretching it.
+                if (GetVideoOrientation() == VideoOrientation.BottomRight)
+                {
+                    uint swap = px;
+                    px = py;
+                    py = swap;
+                }
+
+                _vlcTexture = Texture2D.CreateExternalTexture((int)px, (int)py, TextureFormat.RGBA32, false, true, texptr); //Make a texture of the proper size for the video to output to
+                texture = new RenderTexture(_vlcTexture.width, _vlcTexture.height, 0, RenderTextureFormat.ARGB32); //Make a renderTexture the same size as vlctex
+
+                if (videoRenderer != null)
+                    videoRenderer.texture = texture;
+
+
+                var scale = (float)py / (float)px;
+                videoRenderer.gameObject.transform.localScale = new Vector3(1f, scale, 1f);
+            }
+        }
+
+        public VideoOrientation? GetVideoOrientation()
+        {
+            var tracks = mediaPlayer?.Tracks(TrackType.Video);
+
+            if (tracks == null || tracks.Count == 0)
+                return null;
+
+            var orientation = tracks[0]?.Data.Video.Orientation; //At the moment we're assuming the track we're playing is the first track
+
+            return orientation;
         }
     }
 }
