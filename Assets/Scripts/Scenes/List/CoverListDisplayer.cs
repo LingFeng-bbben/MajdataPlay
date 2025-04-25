@@ -378,7 +378,7 @@ namespace MajdataPlay.List
                     var preloadTask = _currentCollection[i].PreloadAsync(_listManager.CancellationToken);
                     if(!preloadTask.AsValueTask().IsCompleted)
                     {
-                        ListManager.AllBackguardTasks.Add(preloadTask);
+                        ListManager.AllBackgroundTasks.Add(preloadTask);
                     }
                 }
             }
