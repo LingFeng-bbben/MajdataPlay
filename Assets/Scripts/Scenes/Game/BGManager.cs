@@ -41,7 +41,7 @@ namespace MajdataPlay.Game
             {
                 DestroyMediaPlayer();
             }
-            mediaPlayer = new MediaPlayer(MajEnv.libVLC) { 
+            mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary) { 
                 FileCaching = 0,
                 NetworkCaching = 0,
             };
@@ -164,7 +164,7 @@ namespace MajdataPlay.Game
 
 
                 MajDebug.Log("[VLC] BeginParse");
-                var ret = await mediaPlayer.Media.ParseAsync(MajEnv.libVLC);
+                var ret = await mediaPlayer.Media.ParseAsync(MajEnv.VLCLibrary);
                 MajDebug.Log("[VLC] " + ret);
                 picture.forceRenderingOff = true;
                 _usePictureAsBackground = false;
