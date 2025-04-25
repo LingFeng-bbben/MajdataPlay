@@ -377,7 +377,6 @@ namespace MajdataPlay.Game
             {
                 InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("OBSError");
-                //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);
                 BackToList().Forget();
@@ -502,8 +501,7 @@ namespace MajdataPlay.Game
                 }
 
                 GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
-                var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
-                                                  .FirstOrDefault();
+                var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
                 var countnum = 4;
                 if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
                 {
@@ -601,8 +599,8 @@ namespace MajdataPlay.Game
             _noteManager.InitializeUpdater();
             while (!_generateAnswerSFXTask.IsCompleted)
                 await UniTask.Yield();
-            var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
-            while (!allBackguardTasks.IsCompleted)
+            var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
+            while (!allBackgroundTasks.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();

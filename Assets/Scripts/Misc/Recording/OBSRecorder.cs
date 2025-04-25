@@ -86,25 +86,19 @@ namespace MajdataPlay.Recording
         public void StartRecord() => _webSocket.Send(StartRecordMessage);
         public async Task StartRecordAsync()
         {
-            bool shouldThrow = false;
-            while (!IsConnected)
+            try
             {
-                try
+                while (!IsConnected)
                 {
                     Authenticate();
                     await Task.Delay(1000);
                 }
-                catch
-                {
-                    shouldThrow = true;
-                    break;
-                }
             }
-
-            if (shouldThrow)
+            catch
             {
                 throw new OBSRecorderException();
             }
+
             await Task.Run(StartRecord);
         }
         public void StopRecord() => _webSocket.Send(StopRecordMessage);

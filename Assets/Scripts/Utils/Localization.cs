@@ -84,10 +84,13 @@ namespace MajdataPlay.Utils
                 return;
             Current = result;
         }
+
+        /// <summary>
+        /// Method <c>GetLocalizedText</c> returns the translated text of the parameter or the parameter itself.
+        /// </summary>
         public static string GetLocalizedText(string origin)
         {
-            var result = string.Empty;
-            TryGetLocalizedText(origin, out result);
+            TryGetLocalizedText(origin, out var result);
 
             return result;
         }
