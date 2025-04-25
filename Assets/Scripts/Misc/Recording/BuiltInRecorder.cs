@@ -2,7 +2,7 @@
 {
     public enum BuiltInRecorder
     {
-        FFmpeg,
+        //FFmpeg,
         OBS,
     }
 }

@@ -28,20 +28,14 @@ namespace MajdataPlay.Utils
         {
             get
             {
-                return MajEnv.UserSettings.Game.RecordMode == RecordMode.TrackStart;
+                return MajEnv.UserSettings.Game.RecordMode == RecordMode.OBSTrigger;
             }
         }
 
         static IRecorder _recorder;
         static RecordHelper()
         {
-            var recorderType = MajEnv.UserSettings.Game.Recorder;
-            _recorder = recorderType switch
-            {
-                BuiltInRecorder.FFmpeg => new FFmpegRecorder(),
-                BuiltInRecorder.OBS => new OBSRecorder(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            _recorder = new OBSRecorder();
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         public static void StartRecord(string filename)

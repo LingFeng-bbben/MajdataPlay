@@ -3,6 +3,6 @@
     public enum RecordMode
     {
         Disable,
-        TrackStart
+        OBSTrigger
     }
 }

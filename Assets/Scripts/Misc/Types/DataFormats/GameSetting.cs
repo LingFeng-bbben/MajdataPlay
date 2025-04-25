@@ -36,11 +36,7 @@ namespace MajdataPlay.Types
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
         public RandomMode Random { get; set; } = RandomMode.Disabled;
-        public string Language { get; set; } = "zh-CN - Majdata";
-        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
-        public BuiltInRecorder Recorder { get; set; } = BuiltInRecorder.FFmpeg;
         public RecordMode RecordMode { get; set; } = RecordMode.Disable;
-        public RecordEncoder RecordEncoder { get; set; } = RecordEncoder.H264;
     }
     public class JudgeOptions
     {
@@ -52,6 +48,7 @@ namespace MajdataPlay.Types
     }
     public class DisplayOptions
     {
+        public string Language { get; set; } = "zh-CN - Majdata";
         public string Skin { get; set; } = "default";
         public bool DisplayCriticalPerfect { get; set; } = false;
         public bool DisplayBreakScore { get; set; } = true;
@@ -76,6 +73,7 @@ namespace MajdataPlay.Types
         public float SlideScale { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Disable;
         public string Resolution { get; set; } = "1080x1920";
+        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
         public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
         public bool VSync { get; set; } = false;
@@ -160,7 +158,6 @@ namespace MajdataPlay.Types
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGameing { get; set; } = false;
-        public bool EnableHWEncoder { get; set; } = true;
         public DJAutoPolicy DJAutoPolicy { get; set; } = DJAutoPolicy.Strict;
         public int MaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;

@@ -105,11 +105,11 @@ namespace MajdataPlay
             var availableLangs = Localization.Available;
             if (availableLangs.IsEmpty())
                 return;
-            var lang = availableLangs.Find(x => x.ToString() == Setting.Game.Language);
+            var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
             if (lang is null)
             {
                 lang = availableLangs.First();
-                Setting.Game.Language = lang.ToString();
+                Setting.Display.Language = lang.ToString();
             }
             Localization.Current = lang;
 
@@ -123,7 +123,7 @@ namespace MajdataPlay
                    .SetValue(null, _defaultMaterial);
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, _holdShineMaterial);
-            QualitySettings.SetQualityLevel((int)Setting.Game.RenderQuality, true);
+            QualitySettings.SetQualityLevel((int)Setting.Display.RenderQuality, true);
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
             DetectHWEncoder();
