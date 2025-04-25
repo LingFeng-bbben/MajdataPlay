@@ -167,42 +167,42 @@ namespace MajdataPlay.IO
                 new LedReport()
                 {
                     Index = 0,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 1,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 2,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 3,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 4,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 5,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 6,
-                    Color = Color.white,
+                    Color = Color.black,
                 },
                 new LedReport()
                 {
                     Index = 7,
-                    Color = Color.white,
+                    Color = Color.black,
                 }
             };
 

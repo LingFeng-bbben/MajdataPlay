@@ -101,6 +101,8 @@ namespace MajdataPlay.Types
     public class ModOptions
     {
         public float PlaybackSpeed { get; set; } = 1f;
+        public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
+        public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
         public bool AllTouch { get; set; } = false;
@@ -108,8 +110,6 @@ namespace MajdataPlay.Types
         public bool SlideNoTrack { get; set; } = false;
         public bool ButtonRingForTouch { get; set; } = false;
         public string NoteMask { get; set; } = "Disable";
-        public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
-        public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
 
         public bool IsAnyModActive()
         {
