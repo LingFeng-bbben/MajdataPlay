@@ -13,7 +13,7 @@ namespace MajdataPlay.List
     public class ListManager : MonoBehaviour
     {
         public CancellationToken CancellationToken => _cts.Token;
-        public static List<UniTask> AllBackguardTasks { get; } = new(8192);
+        public static List<UniTask> AllBackgroundTasks { get; } = new(8192);
 
         int _delta = 0;
         float _pressTime = 0;
@@ -25,7 +25,7 @@ namespace MajdataPlay.List
         void Awake()
         {
             Majdata<ListManager>.Instance = this;
-            AllBackguardTasks.Clear();
+            AllBackgroundTasks.Clear();
         }
         void Start()
         {
@@ -299,12 +299,12 @@ namespace MajdataPlay.List
         }
         public static async UniTask WaitForBackgroundTasksSuspendAsync()
         {
-            if (AllBackguardTasks.Count == 0)
+            if (AllBackgroundTasks.Count == 0)
             {
                 return;
             }
-            await UniTask.WhenAll(AllBackguardTasks);
-            AllBackguardTasks.Clear();
+            await UniTask.WhenAll(AllBackgroundTasks);
+            AllBackgroundTasks.Clear();
         }
     }
 }

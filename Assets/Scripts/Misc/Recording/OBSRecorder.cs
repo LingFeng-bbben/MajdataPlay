@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Game.Types;
+using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -44,7 +45,14 @@ namespace MajdataPlay.Recording
         {
             _webSocket.OnMessage += OnMessageReceived;
             Connect();
-            Authenticate();
+            try
+            {
+                Authenticate();
+            }
+            catch
+            {
+                IsConnected = false;
+            }
         }
 
         public void Dispose()
@@ -78,11 +86,25 @@ namespace MajdataPlay.Recording
         public void StartRecord() => _webSocket.Send(StartRecordMessage);
         public async Task StartRecordAsync()
         {
+            try
+            {
+                while (!IsConnected)
+                {
+                    Authenticate();
+                    await Task.Delay(1000);
+                }
+            }
+            catch
+            {
+                throw new OBSRecorderException();
+            }
+
             await Task.Run(StartRecord);
         }
         public void StopRecord() => _webSocket.Send(StopRecordMessage);
         public async Task StopRecordAsync()
         {
+            if (!IsConnected || !IsRecording) return;
             await Task.Run(StopRecord);
         }
         private void Authenticate() => _webSocket.Send(AuthenticateMessage);

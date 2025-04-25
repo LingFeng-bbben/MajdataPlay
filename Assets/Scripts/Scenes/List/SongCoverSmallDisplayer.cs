@@ -83,7 +83,7 @@ namespace MajdataPlay.List
             {
                 if (!_isRefreshed)
                 {
-                    ListManager.AllBackguardTasks.Add(SetCoverAsync(_cts.Token));
+                    ListManager.AllBackgroundTasks.Add(SetCoverAsync(_cts.Token));
                     _isRefreshed = true;
                 }
             }

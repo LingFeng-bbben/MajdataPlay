@@ -336,12 +336,12 @@ namespace MajdataPlay.Game
             State = GamePlayStatus.Loading;
             try
             {
-                if(_songDetail.IsOnline)
+                if (_songDetail.IsOnline)
                 {
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync().AsValueTask();
-                    while(!task1.IsCompleted)
+                    while (!task1.IsCompleted)
                         await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync().AsValueTask();
@@ -357,17 +357,26 @@ namespace MajdataPlay.Game
                         await UniTask.Yield();
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
+
                 await LoadAudioTrack();
                 await InitBackground();
                 await ParseChart();
                 await LoadNotes();
                 await PrepareToPlay();
             }
-            catch(EmptyChartException)
+            catch (EmptyChartException)
             {
                 InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
+                MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
+                await UniTask.Delay(1000);
+                BackToList().Forget();
+            }
+            catch (OBSRecorderException)
+            {
+                InputManager.ClearAllSubscriber();
+                var s = Localization.GetLocalizedText("OBSError");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);
                 BackToList().Forget();
@@ -492,8 +501,7 @@ namespace MajdataPlay.Game
                 }
 
                 GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
-                var simaiCmd = _simaiFile.Commands.Where(x => x.Prefix == "clock_count")
-                                                  .FirstOrDefault();
+                var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
                 var countnum = 4;
                 if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
                 {
@@ -591,16 +599,14 @@ namespace MajdataPlay.Game
             _noteManager.InitializeUpdater();
             while (!_generateAnswerSFXTask.IsCompleted)
                 await UniTask.Yield();
-            var allBackguardTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
-            while (!allBackguardTasks.IsCompleted)
+            var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
+            while (!allBackgroundTasks.IsCompleted)
             {
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            MajInstances.SceneSwitcher.FadeOut();
-            await UniTask.Delay(100); //wait the animation
 
             var wait4Recorder = RecordHelper.StartRecordAsync($"{_songDetail.Title}_{_songDetail.Designers[(int)_gameInfo.CurrentLevel]}");
             while (!wait4Recorder.IsCompleted)
@@ -608,6 +614,11 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
+
+            await wait4Recorder;
+
+            MajInstances.SceneSwitcher.FadeOut();
+            await UniTask.Delay(100); //wait the animation
 
             MajInstances.GameManager.DisableGC();
 

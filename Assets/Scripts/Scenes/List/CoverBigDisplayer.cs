@@ -82,7 +82,7 @@ namespace MajdataPlay.List
             if(_cts is not null)
                 _cts.Cancel();
             _cts = new();
-            ListManager.AllBackguardTasks.Add(SetCoverAsync(detail, _cts.Token));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
             _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: _cts.Token).Forget();
         }
         public void SetNoCover()
