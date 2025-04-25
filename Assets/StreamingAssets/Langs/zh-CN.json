@@ -7,10 +7,6 @@
       "Content": "Missing MSVC"
     },
     {
-      "Origin": "Missing MSVC CONTENT",
-      "Content": "找不到MSVC运行库\n点击\"OK\"下载MSVC运行库"
-    },
-    {
       "Origin": "Scanning Charts",
       "Content": "正在扫描谱面"
     },
@@ -132,7 +128,7 @@
     },
     {
       "Origin": "BGInfo_MAJSETTING_TITLE",
-      "Content": "游戏时中央信息"
+      "Content": "中央显示"
     },
     {
       "Origin": "BGInfo_MAJSETTING_DESC",
@@ -803,20 +799,12 @@
       "Content": "是否开启垂直同步"
     },
     {
-      "Origin": "Recorder_MAJSETTING_TITLE",
-      "Content": "录制工具"
-    },
-    {
-      "Origin": "Recorder_MAJSETTING_DESC",
-      "Content": "选择录制工具喵\nFFmpeg不需要任何额外设置喵\nOBS需要打开websocket并且关闭身份验证, 详见wiki"
-    },
-    {
       "Origin": "RecordMode_MAJSETTING_TITLE",
       "Content": "录制模式"
     },
     {
       "Origin": "RecordMode_MAJSETTING_DESC",
-      "Content": "Disable: 禁用\nTrackStart: 录制一整张谱的时间"
+      "Content": "Disable: 禁用\nOBS:使用OBS-Websocket服务器\n帮你按开始和停止录制\nOBS->工具->WS服务器->\n开启服务且关闭身份验证"
     },
     {
       "Origin": "DJAutoPolicy_MAJSETTING_TITLE",
@@ -864,7 +852,7 @@
     },
     {
       "Origin": "OBSError",
-      "Content": "你OBS炸了！！！"
+      "Content": "无法连接到OBS WebSocket"
     }
   ]
 }
