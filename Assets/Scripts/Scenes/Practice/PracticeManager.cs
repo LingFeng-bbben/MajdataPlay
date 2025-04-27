@@ -3,10 +3,12 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Triggers;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game;
+using MajdataPlay.Game.Types;
 using MajdataPlay.IO;
 using MajdataPlay.References;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
+using MajSimai;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -59,7 +61,7 @@ namespace MajdataPlay.Practice
         float _direction = 1;
 
         GameInfo _gameInfo;
-
+        SimaiFile _simaiFile;
         private void Start()
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
@@ -78,7 +80,20 @@ namespace MajdataPlay.Practice
             //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
             totalTime = (float)audioTrack.Length.TotalSeconds;
             await UniTask.SwitchToMainThread();
-            await chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, level, totalTime, true);
+
+            _simaiFile = await songinfo.GetMaidataAsync(true);
+            var levelIndex = (int)_gameInfo.CurrentLevel;
+            var maidata = _simaiFile.RawCharts[levelIndex];
+
+            if (string.IsNullOrEmpty(maidata))
+            {
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+            }
+
+            var simaiParser = SimaiParser.Shared;
+            var chart = await simaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
+
+            await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart,totalTime);
             if (_gameInfo.TimeRange is not null)
             {
                 startTime = (float)_gameInfo.TimeRange.Value.Start;
@@ -87,8 +102,10 @@ namespace MajdataPlay.Practice
             }
             else
             {
+                startTime = _simaiFile.Offset;
                 endTime = totalTime;
             }
+
             audioTrack.Play();
             audioTrack.CurrentSec = startTime;
             audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
@@ -201,11 +218,11 @@ namespace MajdataPlay.Practice
 
                 var ratio = _pressTime switch
                 {
-                    > 4 => 64,
-                    > 3 => 32,
-                    > 2 => 16,
-                    > 1 => 8,
-                    > 0.5f => 4,
+                    > 4 => 128,
+                    > 3 => 64,
+                    > 2 => 32,
+                    > 1 => 16,
+                    > 0.5f => 8,
                     _ => 0
                 };
                 var oldValue = valueRef.Target;
@@ -251,10 +268,10 @@ namespace MajdataPlay.Practice
         }
         void UpdateSBTextMeshProUGUI()
         {
-            var start = TimeSpan.FromSeconds(startTime);
-            var end = TimeSpan.FromSeconds(endTime);
+            var start = TimeSpan.FromSeconds(startTime - _simaiFile.Offset);
+            var end = TimeSpan.FromSeconds(endTime - _simaiFile.Offset);
             var anarect = chartAnalyzer.GetComponent<RectTransform>().rect;
-            var x = startTime / totalTime * anarect.width;
+            var x = (startTime - _simaiFile.Offset) / totalTime * anarect.width;
             var width = (endTime - startTime) / totalTime * anarect.width;
 
             startTimeText.text = ZString.Format(TIME_STRING, start.Minutes, start.Seconds, start.Milliseconds);
@@ -263,7 +280,7 @@ namespace MajdataPlay.Practice
             selectionBox.anchoredPosition = new Vector2((float)x, 0);
 
             var audioLen = audioTrack.Length;
-            var current = TimeSpan.FromSeconds(audioTrack.CurrentSec);
+            var current = TimeSpan.FromSeconds(audioTrack.CurrentSec - _simaiFile.Offset);
             var remaining = audioLen - current;
             timeText.text = ZString.Format(TIME_STRING, current.Minutes, current.Seconds, current.Milliseconds);
             rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);

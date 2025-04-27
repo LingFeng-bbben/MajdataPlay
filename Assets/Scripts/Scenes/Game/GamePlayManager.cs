@@ -473,7 +473,8 @@ namespace MajdataPlay.Game
                 {
                     if (_gameInfo.TimeRange is Range<double> timeRange)
                     {
-                        _chart.Clamp(timeRange);
+                        var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
+                        _chart.Clamp(range);
                     }
                     else if (_gameInfo.ComboRange is Range<long> comboRange)
                     {
