@@ -601,6 +601,10 @@
     {
       "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
       "Content": "無効"
+    },
+    {
+      "Origin": "Input_Hint",
+      "Content": "SelectP1/セカンドスクリーンをタッチで曲を検索・並べ替え。 曲のジャケットをタッチしてランダム選曲。 \n4番キーを長押しして練習モードを開始。 Alt+Enterでフルスクリーンモードに切り替え。 Alt+F4でゲームを終了。"
     }
   ]
 }

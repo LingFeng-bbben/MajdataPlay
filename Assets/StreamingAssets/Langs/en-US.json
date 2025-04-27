@@ -653,6 +653,10 @@
     {
       "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
       "Content": "None"
+    },
+    {
+      "Origin": "Input_Hint",
+      "Content": "Press Select P1 (or touch secondary screen) to search and sort songs. Touch the song cover for random selection. \nLong press the 4 key to start practice mode. Press Alt+Enter to toggle full-screen mode. Press Alt+F4 to exit the game."
     }
   ]
 }

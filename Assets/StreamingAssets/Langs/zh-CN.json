@@ -853,6 +853,10 @@
     {
       "Origin": "OBSError",
       "Content": "无法连接到OBS WebSocket"
+    },
+    {
+      "Origin": "Input_Hint",
+      "Content": "按Select(或触摸副屏)搜索和排序歌曲。触摸歌曲封面随机选曲。长按4号键开启练习模式。\n按Alt+Enter切换全屏模式。按Alt+F4退出游戏。"
     }
   ]
 }

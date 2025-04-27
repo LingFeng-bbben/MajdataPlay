@@ -2644,23 +2644,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 853059333}
   m_Mesh: {fileID: -7746497135072881621, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
---- !u!1 &920131774 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6668288901966947443, guid: f478e476b4242be469f8f68911de608a, type: 3}
-  m_PrefabInstance: {fileID: 2464441449641457472}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &920131777
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 920131774}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79b28cd4eea5e7548b4a50dad61fecd2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &969494141
 GameObject:
   m_ObjectHideFlags: 0
@@ -5391,10 +5374,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6668288901966947443, guid: f478e476b4242be469f8f68911de608a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 920131777}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f478e476b4242be469f8f68911de608a, type: 3}
 --- !u!1001 &6734037517041552572
 PrefabInstance:
