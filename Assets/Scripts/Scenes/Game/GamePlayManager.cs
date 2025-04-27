@@ -145,6 +145,8 @@ namespace MajdataPlay.Game
 
         readonly CancellationTokenSource _cts = new();
 
+        #region GameLoading
+
         void Awake()
         {
             Majdata<GamePlayManager>.Instance = this;
@@ -452,6 +454,13 @@ namespace MajdataPlay.Game
         /// <exception cref="TaskCanceledException"></exception>
         async UniTask ParseChart()
         {
+            void ChartMirror(ref string chartContent)
+            {
+                var mirrorType = _setting.Game.Mirror;
+                if (mirrorType is MirrorType.Off)
+                    return;
+                chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
+            }
             try
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
@@ -698,8 +707,10 @@ namespace MajdataPlay.Game
                     return;
             }
         }
-        
-        
+
+        #endregion
+
+        #region GameUpdate
         internal void OnPreUpdate()
         {
             AudioTimeUpdate();
@@ -857,11 +868,11 @@ namespace MajdataPlay.Game
                     _2367PressTime = 0;
                     return;
             }
-            if(_2367PressTime >= 1f && _isTrackSkipAvailable)
+            if(_2367PressTime >= 0.3f && _isTrackSkipAvailable)
             {
                 BackToList().Forget();
             }
-            else if(_3456PressTime >= 1f && _isFastRetryAvailable)
+            else if(_3456PressTime >= 0.3f && _isFastRetryAvailable)
             {
                 FastRetry().Forget();
             }
@@ -896,6 +907,11 @@ namespace MajdataPlay.Game
                     break;
             }
         }
+
+        #endregion
+
+        #region GameEnding
+
         private GameResult CalculateScore(bool playEffect = true)
         {
             var acc = _objectCounter.CalculateFinalResult();
@@ -984,23 +1000,10 @@ namespace MajdataPlay.Game
             }
             MajInstances.SceneSwitcher.FadeIn();
             await UniTask.Delay(400);
-            MajInstances.SceneSwitcher.SwitchScene("Game", false);
             ClearAllResources();
+            MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
-        public float GetFrame()
-        {
-            var _audioTime = ThisFrameSec * 1000;
 
-            return _audioTime / 16.6667f;
-        }
-        void DisposeAudioTrack()
-        {
-            if (_audioSample is not null)
-            {
-                _audioSample.Stop();
-                _audioSample = null;
-            }
-        }
         public void GameOver()
         {
             //TODO: Play GameOver Animation
@@ -1008,19 +1011,7 @@ namespace MajdataPlay.Game
 
             EndGame(targetScene: "TotalResult").Forget();
         }
-        void ClearAllResources()
-        {
-            StopAllCoroutines();
 
-            _cts.Cancel();
-
-            InputManager.ClearAllSubscriber();
-            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
-            MajInstances.GameManager.EnableGC();
-            Majdata<GamePlayManager>.Free();
-            Majdata<INoteController>.Free();
-            Majdata<INoteTimeProvider>.Free();
-        }
         async UniTaskVoid BackToList()
         {
             State = GamePlayStatus.Ended;
@@ -1051,13 +1042,32 @@ namespace MajdataPlay.Game
             
             MajInstances.SceneSwitcher.SwitchScene(targetScene);
         }
-        void ChartMirror(ref string chartContent)
+
+        #endregion
+
+        #region Clean Up
+        void DisposeAudioTrack()
         {
-            var mirrorType = _setting.Game.Mirror;
-            if (mirrorType is MirrorType.Off)
-                return;
-            chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
+            if (_audioSample is not null)
+            {
+                _audioSample.Stop();
+                _audioSample = null;
+            }
         }
+        void ClearAllResources()
+        {
+            StopAllCoroutines();
+
+            _cts.Cancel();
+
+            InputManager.ClearAllSubscriber();
+            MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
+            MajInstances.GameManager.EnableGC();
+            Majdata<GamePlayManager>.Free();
+            Majdata<INoteController>.Free();
+            Majdata<INoteTimeProvider>.Free();
+        }
+
         void OnDestroy()
         {
             try
@@ -1072,5 +1082,6 @@ namespace MajdataPlay.Game
                 Cursor.visible = true;
             }
         }
+        #endregion
     }
 }
