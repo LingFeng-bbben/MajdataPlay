@@ -486,7 +486,7 @@ namespace MajdataPlay.IO
                     case DeviceType.HID:
                         if (manufacturer == DeviceManufacturer.Dao)
                         {
-                            return "SkyStar Sky Star";
+                            return "SkyStar Maimoller";
                         }
                         else
                         {
