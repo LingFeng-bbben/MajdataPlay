@@ -982,14 +982,14 @@ namespace MajdataPlay.Game
             {
                 case TopInfoDisplayType.Judge:
                     var p = _cPerfectCount + _perfectCount;
-                    _topInfoPerfect.text = p == 0 ? "" : p.ToString();
-                    _topInfoGreat.text = _greatCount == 0 ? "" : _greatCount.ToString();
-                    _topInfoGood.text = _goodCount == 0 ? "" : _goodCount.ToString();
-                    _topInfoMiss.text = _missCount == 0 ? "" : _missCount.ToString();
+                    _topInfoPerfect.text = ZString.Concat(p);
+                    _topInfoGreat.text = ZString.Concat(_greatCount);
+                    _topInfoGood.text = ZString.Concat(_goodCount);
+                    _topInfoMiss.text = ZString.Concat(_missCount);
                     break;
                 case TopInfoDisplayType.Timing:
-                    _topInfoFast.text = _fastCount == 0 ? "" : _fastCount.ToString();
-                    _topInfoLate.text = _lateCount == 0 ? "" : _lateCount.ToString();
+                    _topInfoFast.text = ZString.Concat(_fastCount);
+                    _topInfoLate.text = ZString.Concat(_lateCount);
                     break;
                 case TopInfoDisplayType.None:
                 default:
