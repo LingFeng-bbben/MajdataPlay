@@ -32,12 +32,12 @@ namespace MajdataPlay.IO
 
             readonly static bool[] _isSensorHadOnInternal = new bool[35];
             readonly static bool[] _isSensorHadOffInternal = new bool[35];
-            #region Public Methods
-            public static void Init()
+
+            static TouchPanel()
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                switch(MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type)
+                switch (MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type)
                 {
                     case DeviceType.SerialPort:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
@@ -45,8 +45,12 @@ namespace MajdataPlay.IO
                     case DeviceType.HID:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
+                    default:
+                        MajDebug.LogWarning($"Not supported touch panel device: {MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type}");
+                        break;
                 }
             }
+            #region Public Methods
             /// <summary>
             /// Update the touchpanel state of the this frame
             /// </summary>

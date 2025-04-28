@@ -29,12 +29,12 @@ namespace MajdataPlay.IO
 
             readonly static bool[] _isBtnHadOnInternal = new bool[12];
             readonly static bool[] _isBtnHadOffInternal = new bool[12];
-            #region Public Methods
-            public static void Init()
+
+            static ButtonRing()
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
                     return;
-                switch(MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
+                switch (MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
                 {
                     case DeviceType.Keyboard:
                         _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -43,8 +43,12 @@ namespace MajdataPlay.IO
                     case DeviceType.IO4:
                         _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
+                    default:
+                        MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type}");
+                        break;
                 }
             }
+            #region Public Methods
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>
