@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using LibVLCSharp;
 using UnityEngine.UI;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -17,6 +18,7 @@ namespace MajdataPlay.Game
     {
         public float CurrentSec
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if(_mediaPlayer is not null)
@@ -27,6 +29,14 @@ namespace MajdataPlay.Game
                 {
                     return 0;
                 }
+            }
+        }
+        public TimeSpan MediaLength
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return TimeSpan.FromMilliseconds(_mediaLengthMs);
             }
         }
         
@@ -47,7 +57,11 @@ namespace MajdataPlay.Game
         SpriteRenderer _pictureCover;
         SpriteRenderer _pictureRenderer;
 
-        MediaPlayer? _mediaPlayer;
+        MediaPlayer _mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary)
+        {
+            FileCaching = 0,
+            NetworkCaching = 0,
+        };
 
         // when copying native Texture2D textures to Unity RenderTextures, the orientation mapping is incorrect on Android, so we flip it over.
         [SerializeField]
@@ -57,13 +71,11 @@ namespace MajdataPlay.Game
 
         bool _usePictureAsBackground = false;
 
+        long _mediaLengthMs = 0;
+
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
-            if (_mediaPlayer is not null)
-            {
-                DestroyMediaPlayer();
-            }
             _mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary) { 
                 FileCaching = 0,
                 NetworkCaching = 0,
@@ -84,7 +96,7 @@ namespace MajdataPlay.Game
             {
                 return;
             }
-            else if (_mediaPlayer is null)
+            else if (!_mediaPlayer.IsPlaying)
             {
                 return;
             }
@@ -130,7 +142,8 @@ namespace MajdataPlay.Game
 
             //Copy the vlc texture into the output texture, automatically flipped over
             var flip = new Vector2(_flipTextureX ? -1 : 1, _flipTextureY ? -1 : 1);
-            Graphics.Blit(_vlcTexture, _renderTexture, flip, Vector2.zero); //If you wanted to do post processing outside of VLC you could use a shader here.
+            //If you wanted to do post processing outside of VLC you could use a shader here.
+            Graphics.Blit(_vlcTexture, _renderTexture, flip, Vector2.zero); 
         }
 
         public void PauseVideo()
@@ -151,15 +164,13 @@ namespace MajdataPlay.Game
         {
             if (_usePictureAsBackground)
                 return;
-            _mediaPlayer?.SetRate(speed);
-            _mediaPlayer?.SeekTo(TimeSpan.FromSeconds(time));
-            _mediaPlayer?.Play();
+            _mediaPlayer.SetRate(speed);
+            _mediaPlayer.SeekTo(TimeSpan.FromSeconds(time));
+            _mediaPlayer.Play();
         }
 
         public void SetVideoSpeed(float speed)
         {
-            if (_mediaPlayer is null)
-                return;
             if(speed != _mediaPlayer.Rate)
             {
                 _mediaPlayer.SetRate(speed);
@@ -214,10 +225,16 @@ namespace MajdataPlay.Game
 
                 MajDebug.Log("[VLC] BeginParse");
                 var ret = await _mediaPlayer.Media.ParseAsync(MajEnv.VLCLibrary);
+                if(ret != MediaParsedStatus.Done)
+                {
+                    SetBackgroundPic(fallback);
+                    return;
+                }
                 MajDebug.Log("[VLC] " + ret);
                 _pictureRenderer.forceRenderingOff = true;
                 _usePictureAsBackground = false;
                 _mediaPlayer.Play();
+                _mediaLengthMs = media.Duration;
                 await UniTask.Delay(200);
                 _mediaPlayer.Pause();
                 _mediaPlayer.SeekTo(TimeSpan.Zero);
@@ -232,9 +249,8 @@ namespace MajdataPlay.Game
         void DestroyMediaPlayer()
         {
             MajDebug.Log("[VLC] DestroyMediaPlayer");
-            _mediaPlayer?.Stop();
-            _mediaPlayer?.Dispose();
-            _mediaPlayer = null;
+            _mediaPlayer.Stop();
+            _mediaPlayer.Dispose();
         }
 
         public VideoOrientation? GetVideoOrientation()

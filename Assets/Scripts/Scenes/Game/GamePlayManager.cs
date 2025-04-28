@@ -547,7 +547,7 @@ namespace MajdataPlay.Game
                 }
             }
 
-            _bgManager.SetBackgroundDim(_setting.Game.BackgroundDim);
+            _bgManager.SetBackgroundDim(1.0f);
         }
         /// <summary>
         /// Parse and load notes into NotePool
@@ -591,6 +591,7 @@ namespace MajdataPlay.Game
             if (_audioSample is null)
                 return;
 
+            const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
             float extraTime = 5f;
@@ -637,20 +638,30 @@ namespace MajdataPlay.Game
             var startSec = _audioTrackStartAt * _playbackSpeed;
             if (!IsPracticeMode)
             {
+                var userSettingBGDim = _setting.Game.BackgroundDim;
+                var dimDiff = 1 - userSettingBGDim;
                 var isVideoStarted = false;
                 while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
                 {
-                    if (_timer.ElapsedSecondsAsFloat - AudioStartTime > -0.1f && !isVideoStarted ) {
+                    var timeDiff = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    if (timeDiff > -0.1f && !isVideoStarted) 
+                    {
                         _bgManager.PlayVideo(startSec, _playbackSpeed);
                         isVideoStarted = true;
+                    }
+                    if(timeDiff > -BG_FADE_IN_LENGTH_SEC)
+                    {
+                        var dim = 1 - (((BG_FADE_IN_LENGTH_SEC + timeDiff) / BG_FADE_IN_LENGTH_SEC) * dimDiff);
+                        _bgManager.SetBackgroundDim(dim);
                     }
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                 }
             }
             else
             {
-                _bgManager.PlayVideo(startSec+0.25f, _playbackSpeed);
+                _bgManager.PlayVideo(startSec + 0.25f, _playbackSpeed);
             }
+            _bgManager.SetBackgroundDim(_setting.Game.BackgroundDim);
             _audioSample.Play();
             _audioSample.Volume = 0;
             _audioSample.CurrentSec = startSec;
@@ -736,7 +747,14 @@ namespace MajdataPlay.Game
             }
             _noteEffectPool.OnLateUpdate();
             _recorderStateDisplayer.OnLateUpdate();
-            _bgManager.OnLateUpdate();
+            if(_bgManager.CurrentSec > _bgManager.MediaLength.TotalSeconds)
+            {
+                _bgManager.SetBackgroundDim(1.0f);
+            }
+            else
+            {
+                _bgManager.OnLateUpdate();
+            }
         }
         void GameControlUpdate()
         {
