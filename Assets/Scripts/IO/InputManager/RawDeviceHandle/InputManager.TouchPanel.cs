@@ -524,7 +524,7 @@ namespace MajdataPlay.IO
                         var encoding = Encoding.ASCII;
                         var serialStream = serialSession.BaseStream;
                         var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
-                        var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
+                        var index = MajEnv.UserSettings.Misc.InputDevice.Player == 1 ? 'L' : 'R';
                         //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialStream.Write(encoding.GetBytes("{RSET}"));

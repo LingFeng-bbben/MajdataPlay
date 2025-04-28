@@ -397,8 +397,8 @@ namespace MajdataPlay.IO
                 };
                 var ledConnProperties = new Dictionary<string, dynamic>()
                 {
-                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.COMPort}" },
-                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.BaudRate }
+                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.Port}" },
+                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.BaudRate }
                 };
 
                 _ioManager.AddButtonRing(deviceName,

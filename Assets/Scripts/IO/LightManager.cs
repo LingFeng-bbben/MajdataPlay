@@ -78,9 +78,9 @@ namespace MajdataPlay.IO
             }
 
             _ledDevices = ledDevices;
-            var comPort = MajInstances.Settings.Misc.OutputDevice.Led.COMPort;
+            var comPort = MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.Port;
             var comPortStr = $"COM{comPort}";
-            var baudRate = MajInstances.Settings.Misc.OutputDevice.Led.BaudRate;
+            var baudRate = MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.BaudRate;
             try
             {
                 if(comPort != 21 || baudRate != 9600)
