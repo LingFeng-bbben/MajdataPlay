@@ -226,7 +226,8 @@ namespace MajdataPlay.Types
         {
             Manufacturer = DeviceManufacturer.Dao,
             ProductId = 0x1224,
-            VendorId = 0x0E8F
+            VendorId = 0x0E8F,
+            DeviceName = "SkyStar Maimoller"
         };
     }
     public class HidOptions

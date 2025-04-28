@@ -365,7 +365,8 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var hidOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.HidOptions;
+                var touchPanelOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel;
+                var hidOptions = touchPanelOptions.HidOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
@@ -374,10 +375,15 @@ namespace MajdataPlay.IO
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
                 var manufacturer = hidOptions.Manufacturer;
-                var devices = DeviceList.Local.GetHidDevices();
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type;
-                var deviceName = GetHIDDeviceName(deviceType, manufacturer);
+                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
+                var filter = new DeviceFilter()
+                {
+                    DeviceName = deviceName,
+                    ProductId = pid,
+                    VendorId = vid,
+                };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
@@ -387,30 +393,8 @@ namespace MajdataPlay.IO
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
-                foreach (var d in devices)
-                {
-                    if (d.ProductID == pid && d.VendorID == vid)
-                    {
-                        var isMatch = false;
-                        if (!string.IsNullOrEmpty(deviceName))
-                        {
-                            if ($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
-                            {
-                                isMatch = true;
-                            }
-                        }
-                        else
-                        {
-                            isMatch = true;
-                        }
-                        if (isMatch)
-                        {
-                            device = d;
-                            break;
-                        }
-                    }
-                }
-                if (device is null)
+                
+                if (!HidManager.TryGetDevice(filter,out device))
                 {
                     MajDebug.LogWarning("TouchPanel: hid device not found");
                     return;
