@@ -736,6 +736,7 @@ namespace MajdataPlay.Game
             }
             _noteEffectPool.OnLateUpdate();
             _recorderStateDisplayer.OnLateUpdate();
+            _bgManager.OnLateUpdate();
         }
         void GameControlUpdate()
         {

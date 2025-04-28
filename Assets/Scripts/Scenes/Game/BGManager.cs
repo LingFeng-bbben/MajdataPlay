@@ -19,7 +19,14 @@ namespace MajdataPlay.Game
         {
             get
             {
-                return _mediaPlayer.Time / 1000f;
+                if(_mediaPlayer is not null)
+                {
+                    return _mediaPlayer.Time / 1000f;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
         
@@ -40,7 +47,7 @@ namespace MajdataPlay.Game
         SpriteRenderer _pictureCover;
         SpriteRenderer _pictureRenderer;
 
-        MediaPlayer _mediaPlayer;
+        MediaPlayer? _mediaPlayer;
 
         // when copying native Texture2D textures to Unity RenderTextures, the orientation mapping is incorrect on Android, so we flip it over.
         [SerializeField]
@@ -53,7 +60,7 @@ namespace MajdataPlay.Game
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
-            if (_mediaPlayer != null)
+            if (_mediaPlayer is not null)
             {
                 DestroyMediaPlayer();
             }
@@ -71,65 +78,92 @@ namespace MajdataPlay.Game
             Majdata<BGManager>.Free();
         }
 
-        private void Update()
+        internal void OnLateUpdate()
         {
             if (_usePictureAsBackground)
+            {
                 return;
-
-            //print("VideoTime: " + (mediaPlayer.Time));
+            }
+            else if (_mediaPlayer is null)
+            {
+                return;
+            }
 
             //Get size every frame
             uint height = 0;
             uint width = 0;
+            IntPtr texPtr;
             _mediaPlayer.Size(0, ref width, ref height);
+            //Update the vlc texture (tex)
+            texPtr = _mediaPlayer.GetTexture(width, height, out var isUpdated);
 
-            if (_vlcTexture == null || _vlcTexture.width != width || _vlcTexture.height != height)
+            if (!isUpdated)
             {
-                ResizeOutputTextures(width, height);
+                return;
             }
 
-            if (_vlcTexture != null)
+            if (_vlcTexture is null || _vlcTexture.width != width || _vlcTexture.height != height)
             {
-                //Update the vlc texture (tex)
-                var texptr = _mediaPlayer.GetTexture(width, height, out bool updated);
-                if (updated)
+                var px = width;
+                var py = height;
+                //If the currently playing video uses the Bottom Right orientation, we have to do this to avoid stretching it.
+                if (GetVideoOrientation() == VideoOrientation.BottomRight)
                 {
-                    _vlcTexture.UpdateExternalTexture(texptr);
-
-                    //Copy the vlc texture into the output texture, automatically flipped over
-                    var flip = new Vector2(_flipTextureX ? -1 : 1, _flipTextureY ? -1 : 1);
-                    Graphics.Blit(_vlcTexture, _renderTexture, flip, Vector2.zero); //If you wanted to do post processing outside of VLC you could use a shader here.
+                    uint swap = px;
+                    px = py;
+                    py = swap;
                 }
+
+                var scale = (float)py / (float)px;
+
+                //Make a texture of the proper size for the video to output to
+                _vlcTexture = Texture2D.CreateExternalTexture((int)px, (int)py, TextureFormat.RGBA32, false, true, texPtr); 
+                //Make a renderTexture the same size as vlctex
+                _renderTexture = new RenderTexture(_vlcTexture.width, _vlcTexture.height, 0, RenderTextureFormat.ARGB32); 
+
+                _videoRenderer.texture = _renderTexture;
+                _videoRenderer.gameObject.transform.localScale = new Vector3(1f, scale, 1f);
             }
+
+
+            _vlcTexture.UpdateExternalTexture(texPtr);
+
+            //Copy the vlc texture into the output texture, automatically flipped over
+            var flip = new Vector2(_flipTextureX ? -1 : 1, _flipTextureY ? -1 : 1);
+            Graphics.Blit(_vlcTexture, _renderTexture, flip, Vector2.zero); //If you wanted to do post processing outside of VLC you could use a shader here.
         }
 
         public void PauseVideo()
         {
             if (_usePictureAsBackground)
                 return;
-            _mediaPlayer.Pause();
+            _mediaPlayer?.Pause();
         }
 
         public void StopVideo()
         {
             if (_usePictureAsBackground)
                 return;
-            _mediaPlayer.Stop();
+            _mediaPlayer?.Stop();
         }
 
         public void PlayVideo(float time,float speed)
         {
             if (_usePictureAsBackground)
                 return;
-            _mediaPlayer.SetRate(speed);
-            _mediaPlayer.SeekTo(TimeSpan.FromSeconds(time));
-            _mediaPlayer.Play();
+            _mediaPlayer?.SetRate(speed);
+            _mediaPlayer?.SeekTo(TimeSpan.FromSeconds(time));
+            _mediaPlayer?.Play();
         }
 
         public void SetVideoSpeed(float speed)
         {
+            if (_mediaPlayer is null)
+                return;
             if(speed != _mediaPlayer.Rate)
+            {
                 _mediaPlayer.SetRate(speed);
+            }
         }
 
         public void SetBackgroundPic(Sprite? sprite)
@@ -149,7 +183,10 @@ namespace MajdataPlay.Game
 
         public void DisableVideo()
         {
-            _mediaPlayer.Media = null;
+            if(_mediaPlayer is not null)
+            {
+                _mediaPlayer.Media = null;
+            }
             _usePictureAsBackground = true;
         }
 
@@ -162,6 +199,7 @@ namespace MajdataPlay.Game
         {
             try
             {
+
                 MajDebug.Log("[VLC] LoadMedia");
                 if (_mediaPlayer.Media != null)
                     _mediaPlayer.Media.Dispose();
@@ -197,31 +235,6 @@ namespace MajdataPlay.Game
             _mediaPlayer?.Stop();
             _mediaPlayer?.Dispose();
             _mediaPlayer = null;
-        }
-
-        void ResizeOutputTextures(uint px, uint py)
-        {
-            var texptr = _mediaPlayer.GetTexture(px, py, out bool updated);
-            if (px != 0 && py != 0 && updated && texptr != IntPtr.Zero)
-            {
-                //If the currently playing video uses the Bottom Right orientation, we have to do this to avoid stretching it.
-                if (GetVideoOrientation() == VideoOrientation.BottomRight)
-                {
-                    uint swap = px;
-                    px = py;
-                    py = swap;
-                }
-
-                _vlcTexture = Texture2D.CreateExternalTexture((int)px, (int)py, TextureFormat.RGBA32, false, true, texptr); //Make a texture of the proper size for the video to output to
-                _renderTexture = new RenderTexture(_vlcTexture.width, _vlcTexture.height, 0, RenderTextureFormat.ARGB32); //Make a renderTexture the same size as vlctex
-
-                if (_videoRenderer != null)
-                    _videoRenderer.texture = _renderTexture;
-
-
-                var scale = (float)py / (float)px;
-                _videoRenderer.gameObject.transform.localScale = new Vector3(1f, scale, 1f);
-            }
         }
 
         public VideoOrientation? GetVideoOrientation()
