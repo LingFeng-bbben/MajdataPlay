@@ -29,12 +29,12 @@ namespace MajdataPlay.IO
 
             readonly static bool[] _isBtnHadOnInternal = new bool[12];
             readonly static bool[] _isBtnHadOffInternal = new bool[12];
-            #region Public Methods
-            public static void Init()
+
+            static ButtonRing()
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
                     return;
-                switch(MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
+                switch (MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
                 {
                     case DeviceType.Keyboard:
                         _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -43,8 +43,12 @@ namespace MajdataPlay.IO
                     case DeviceType.IO4:
                         _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
+                    default:
+                        MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type}");
+                        break;
                 }
             }
+            #region Public Methods
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>
@@ -325,7 +329,8 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var hidOptions = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.HidOptions;
+                var buttonRingOptions = MajEnv.UserSettings.Misc.InputDevice.ButtonRing;
+                var hidOptions = buttonRingOptions.HidOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -335,9 +340,14 @@ namespace MajdataPlay.IO
                 var vid = hidOptions.VendorId;
                 var manufacturer = hidOptions.Manufacturer;
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
-                var devices = DeviceList.Local.GetHidDevices();
-                var deviceName = GetHIDDeviceName(deviceType, manufacturer);
+                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
+                var filter = new DeviceFilter()
+                {
+                    DeviceName = deviceName,
+                    ProductId = pid,
+                    VendorId = vid,
+                };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
@@ -347,30 +357,7 @@ namespace MajdataPlay.IO
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
-                foreach(var d in devices)
-                {
-                    if (d.ProductID == pid && d.VendorID == vid)
-                    {
-                        var isMatch = false;
-                        if(!string.IsNullOrEmpty(deviceName))
-                        {
-                            if($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
-                            {
-                                isMatch = true;
-                            }
-                        }
-                        else
-                        {
-                            isMatch = true;
-                        }
-                        if(isMatch)
-                        {
-                            device = d;
-                            break;
-                        }
-                    }
-                }
-                if(device is null)
+                if(!HidManager.TryGetDevice(filter, out device))
                 {
                     MajDebug.LogWarning("ButtonRing: hid device not found");
                     return;

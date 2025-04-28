@@ -180,6 +180,7 @@ namespace MajdataPlay.Types
     }
     public class InputDeviceOptions
     {
+        public int Player { get; set; } = 1;
         public ButtonRingOptions ButtonRing { get; set; } = new();
         public TouchPanelOptions TouchPanel { get; set; } = new();
     }
@@ -190,9 +191,19 @@ namespace MajdataPlay.Types
     public class LedOptions
     {
         public bool Enable { get; set; } = true;
-        public int COMPort { get; set; } = 21;
-        public int BaudRate { get; set; } = 115200;
+        public DeviceType Type { get; set; } = DeviceType.SerialPort;
         public int RefreshRateMs { get; set; } = 100;
+        public SerialPortOptions SerialPortOptions { get; set; } = new()
+        {
+            Port = 21,
+            BaudRate = 115200
+        };
+        public HidOptions HidOptions { get; set; } = new()
+        {
+            Manufacturer = DeviceManufacturer.Dao,
+            ProductId = 0x1224,
+            VendorId = 0x0E8F
+        };
     }
     public class ButtonRingOptions
     {
@@ -202,17 +213,8 @@ namespace MajdataPlay.Types
         public int DebounceThresholdMs { get; set; } = 16;
         public HidOptions HidOptions { get; set; } = new();
     }
-    public class HidOptions
-    {
-        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.Adx;
-        public int ProductId { get; set; } = 0x0021;
-        public int VendorId { get; set; } = 0x0CA3;
-        public bool Exclusice { get; set; } = true;
-        public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
-    }
     public class TouchPanelOptions
     {
-        public int Index { get; set; } = 1;
         public DeviceType Type { get; set; } = DeviceType.SerialPort;
         public bool Debounce { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
@@ -220,7 +222,22 @@ namespace MajdataPlay.Types
         public int DebounceThresholdMs { get; set; } = 16;
         public float TouchSimulationRadius { get; set; } = 0.5f;
         public SerialPortOptions SerialPortOptions { get; set; } = new();
-        public HidOptions HidOptions { get; set; } = new();
+        public HidOptions HidOptions { get; set; } = new()
+        {
+            Manufacturer = DeviceManufacturer.Dao,
+            ProductId = 0x1224,
+            VendorId = 0x0E8F,
+            DeviceName = "SkyStar Maimoller"
+        };
+    }
+    public class HidOptions
+    {
+        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.Adx;
+        public string DeviceName { get; set; } = string.Empty;
+        public int ProductId { get; set; } = 0x0021;
+        public int VendorId { get; set; } = 0x0CA3;
+        public bool Exclusice { get; set; } = false;
+        public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
     }
     public class SerialPortOptions
     {

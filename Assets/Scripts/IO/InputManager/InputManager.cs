@@ -284,20 +284,7 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
-            switch (MajInstances.Settings.Misc.InputDevice.ButtonRing.Type)
-            {
-                case DeviceType.Keyboard:
-                case DeviceType.IO4:
-                case DeviceType.HID:
-                    StartInternalIOManager();
-                    _updateIOListenerPtr = &UpdateInternalIOListener;
-                    break;
-                //case DeviceType.IO4:
-                //case DeviceType.HID:
-                //    StartExternalIOManager();
-                //    _updateIOListenerPtr = &UpdateExternalIOListener;
-                //    break;
-            }
+            _updateIOListenerPtr = &UpdateInternalIOListener;
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
@@ -330,11 +317,6 @@ namespace MajdataPlay.IO
         static void DefaultIOListener()
         {
 
-        }
-        static void StartInternalIOManager()
-        {
-            ButtonRing.Init();
-            TouchPanel.Init();
         }
         static void StartExternalIOManager()
         {
@@ -397,8 +379,8 @@ namespace MajdataPlay.IO
                 };
                 var ledConnProperties = new Dictionary<string, dynamic>()
                 {
-                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.COMPort}" },
-                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.BaudRate }
+                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.Port}" },
+                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.BaudRate }
                 };
 
                 _ioManager.AddButtonRing(deviceName,

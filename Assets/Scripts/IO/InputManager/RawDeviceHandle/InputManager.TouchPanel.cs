@@ -32,12 +32,12 @@ namespace MajdataPlay.IO
 
             readonly static bool[] _isSensorHadOnInternal = new bool[35];
             readonly static bool[] _isSensorHadOffInternal = new bool[35];
-            #region Public Methods
-            public static void Init()
+
+            static TouchPanel()
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                switch(MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type)
+                switch (MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type)
                 {
                     case DeviceType.SerialPort:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
@@ -45,8 +45,12 @@ namespace MajdataPlay.IO
                     case DeviceType.HID:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
+                    default:
+                        MajDebug.LogWarning($"Not supported touch panel device: {MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type}");
+                        break;
                 }
             }
+            #region Public Methods
             /// <summary>
             /// Update the touchpanel state of the this frame
             /// </summary>
@@ -365,7 +369,8 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var hidOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.HidOptions;
+                var touchPanelOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel;
+                var hidOptions = touchPanelOptions.HidOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
@@ -374,10 +379,15 @@ namespace MajdataPlay.IO
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
                 var manufacturer = hidOptions.Manufacturer;
-                var devices = DeviceList.Local.GetHidDevices();
                 var deviceType = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type;
-                var deviceName = GetHIDDeviceName(deviceType, manufacturer);
+                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
+                var filter = new DeviceFilter()
+                {
+                    DeviceName = deviceName,
+                    ProductId = pid,
+                    VendorId = vid,
+                };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
@@ -387,30 +397,8 @@ namespace MajdataPlay.IO
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
-                foreach (var d in devices)
-                {
-                    if (d.ProductID == pid && d.VendorID == vid)
-                    {
-                        var isMatch = false;
-                        if (!string.IsNullOrEmpty(deviceName))
-                        {
-                            if ($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
-                            {
-                                isMatch = true;
-                            }
-                        }
-                        else
-                        {
-                            isMatch = true;
-                        }
-                        if (isMatch)
-                        {
-                            device = d;
-                            break;
-                        }
-                    }
-                }
-                if (device is null)
+                
+                if (!HidManager.TryGetDevice(filter,out device))
                 {
                     MajDebug.LogWarning("TouchPanel: hid device not found");
                     return;
@@ -524,7 +512,7 @@ namespace MajdataPlay.IO
                         var encoding = Encoding.ASCII;
                         var serialStream = serialSession.BaseStream;
                         var sens = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Sensitivity;
-                        var index = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Index == 1 ? 'L' : 'R';
+                        var index = MajEnv.UserSettings.Misc.InputDevice.Player == 1 ? 'L' : 'R';
                         //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialStream.Write(encoding.GetBytes("{RSET}"));
