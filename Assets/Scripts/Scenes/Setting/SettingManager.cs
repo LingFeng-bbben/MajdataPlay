@@ -6,6 +6,7 @@ using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,13 +27,14 @@ namespace MajdataPlay.Setting
         {
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                             .SkipLast(2)
+                             .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
                              .ToArray();
             menus = new Menu[properties.Length];
             foreach (var (i, property) in properties.WithIndex())
             {
                 object root = Setting;
                 var _property = property;
+
                 if (property.Name == "Audio")
                 {
                     root = property.GetValue(Setting);

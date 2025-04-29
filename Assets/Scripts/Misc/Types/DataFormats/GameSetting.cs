@@ -17,8 +17,11 @@ namespace MajdataPlay.Types
         [JsonIgnore]
         public ModOptions Mod { get; set; } = new();
         public DebugOptions Debug { get; set; } = new();
+        [SettingVisualizationIgnore]
         public OnlineOptions Online { get; set; } = new();
+        [SettingVisualizationIgnore]
         public MiscOptions Misc { get; set; } = new();
+        [SettingVisualizationIgnore]
         public IOOptions IO { get; set; } = new();
     }
     public class GameOptions
