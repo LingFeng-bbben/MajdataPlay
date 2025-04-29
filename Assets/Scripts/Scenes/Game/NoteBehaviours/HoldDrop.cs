@@ -159,7 +159,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else if (_isJudged)
             {
-                if(isBtnFirst)
+                var remainingTime = GetRemainingTime();
+                if(remainingTime <= 2 * FRAME_LENGTH_SEC)
+                {
+                    return;
+                }
+                if (isBtnFirst)
                 {
                     _noteManager.SimulateButtonPress(_sensorPos);
                 }
