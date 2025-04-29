@@ -10,7 +10,7 @@ using MajdataPlay.Game.Buffers;
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    internal class NoteUpdater : MajSingleton
+    internal class NoteUpdater : MonoBehaviour
     {
         public double PreUpdateElapsedMs => _preUpdateElapsedMs;
         public double UpdateElapsedMs => _updateElapsedMs;

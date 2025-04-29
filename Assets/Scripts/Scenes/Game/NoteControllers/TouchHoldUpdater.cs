@@ -1,4 +1,5 @@
-﻿using UnityEngine.Profiling;
+﻿using MajdataPlay.Utils;
+using UnityEngine.Profiling;
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
@@ -9,6 +10,15 @@ namespace MajdataPlay.Game.Notes.Controllers
         const string UPDATE_METHOD_NAME = UPDATER_NAME + ".Update";
         const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
         const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
+
+        void Awake()
+        {
+            Majdata<TouchHoldUpdater>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            Majdata<TouchHoldUpdater>.Free();
+        }
         internal override void OnFixedUpdate()
         {
             Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);

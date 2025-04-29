@@ -19,6 +19,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
         const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
 
+        void Awake()
+        {
+            Majdata<SlideUpdater>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            Majdata<SlideUpdater>.Free();
+        }
         private void Start()
         {
             _noteTimeProvider = Majdata<INoteController>.Instance!;
