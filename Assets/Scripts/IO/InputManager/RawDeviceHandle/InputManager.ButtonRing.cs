@@ -34,18 +34,29 @@ namespace MajdataPlay.IO
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
                     return;
-                switch (MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type)
+                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                if (manufacturer == DeviceManufacturer.General)
                 {
-                    case DeviceType.Keyboard:
-                        _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
-                        break;
-                    case DeviceType.HID:
-                    case DeviceType.IO4:
-                        _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
-                        break;
-                    default:
-                        MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type}");
-                        break;
+                    switch (MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type)
+                    {
+                        case ButtonRingDeviceType.Keyboard:
+                            _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
+                            break;
+                        case ButtonRingDeviceType.HID:
+                            _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
+                            break;
+                        default:
+                            MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type}");
+                            break;
+                    }
+                }
+                else if(manufacturer == DeviceManufacturer.Dao)
+                {
+                    _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
+                }
+                else
+                {
+                    MajDebug.LogWarning($"Not supported button ring manufacturer: {manufacturer}");
                 }
             }
             #region Public Methods
@@ -329,7 +340,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var buttonRingOptions = MajEnv.UserSettings.Misc.InputDevice.ButtonRing;
+                var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
                 var hidOptions = buttonRingOptions.HidOptions;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
@@ -338,8 +349,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = hidOptions.Manufacturer;
-                var deviceType = MajEnv.UserSettings.Misc.InputDevice.ButtonRing.Type;
+                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                var deviceType = MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
@@ -354,15 +365,13 @@ namespace MajdataPlay.IO
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
-                HidDevice? device = null;
-                HidStream? hidStream = null;
 
-                if(!HidManager.TryGetDevice(filter, out device))
+                if (!HidManager.TryGetDevice(filter, out var device))
                 {
                     MajDebug.LogWarning("ButtonRing: hid device not found");
                     return;
                 }
-                else if(!device.TryOpen(hidConfig, out hidStream))
+                if(!device.TryOpen(hidConfig, out var hidStream))
                 {
                     MajDebug.LogError($"ButtonRing: cannot open hid device:\n{device}");
                     return;
@@ -370,7 +379,9 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
+                    Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
+                    _ioThreadSync.Memory = memory;
+                    Span<byte> buffer = memory.Span;
                     IsConnected = true;
                     MajDebug.Log($"ButtonRing connected\nDevice: {device}");
                     stopwatch.Start();
@@ -381,24 +392,20 @@ namespace MajdataPlay.IO
                         {
                             var now = MajTimeline.UnscaledTime;
                             hidStream.Read(buffer);
-                            switch (deviceType)
+                            switch(manufacturer)
                             {
-                                case DeviceType.HID:
-                                    if (manufacturer == DeviceManufacturer.Adx)
-                                    {
-                                        AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    }
-                                    else
-                                    {
-                                        DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    }
+                                case DeviceManufacturer.General:
+                                    GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
-                                case DeviceType.IO4:
-                                    AdxIO4Device.Parse(buffer, _buttonRealTimeStates);
+                                case DeviceManufacturer.Yuan:
+                                    AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
-                                default:
-                                    continue;
+                                case DeviceManufacturer.Dao:
+                                    _ioThreadSync.Notify();
+                                    DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                    break;
                             }
+                            
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
@@ -439,30 +446,28 @@ namespace MajdataPlay.IO
                 }
                 finally
                 {
-                    hidStream.Dispose();
+                    ((HidStream?)null).Dispose();
                     IsConnected = false;
                 }
             }
 
-            static string GetHIDDeviceName(DeviceType deviceType, DeviceManufacturer manufacturer)
+            static string GetHIDDeviceName(ButtonRingDeviceType deviceType, DeviceManufacturer manufacturer)
             {
                 switch(deviceType)
                 {
-                    case DeviceType.HID:
-                        if(manufacturer == DeviceManufacturer.Adx)
+                    case ButtonRingDeviceType.HID:
+                        if(manufacturer == DeviceManufacturer.General)
                         {
                             return "MusicGame Composite USB";
                         }
                         else if(manufacturer == DeviceManufacturer.Dao)
                         {
-                            return "SkyStar SkyStar";
+                            return "SkyStar Maimoller";
                         }
                         else
                         {
                             throw new NotSupportedException();
                         }
-                    case DeviceType.IO4:
-                        return string.Empty;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(deviceType));
                 }
@@ -528,7 +533,7 @@ namespace MajdataPlay.IO
                     }
                 }
             }
-            static class AdxIO4Device
+            static class GeneralHIDDevice
             {
                 const int IO4_BA1_OFFSET = 0b00000100;
                 const int IO4_BA2_OFFSET = 0b00001000;

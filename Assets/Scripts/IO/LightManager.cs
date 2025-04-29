@@ -1,21 +1,13 @@
-using Cysharp.Threading.Tasks;
 using HidSharp;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
-using MychIO;
-using MychIO.Connection.SerialDevice;
-using MychIO.Device;
 using System;
 using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -53,7 +45,7 @@ namespace MajdataPlay.IO
 
         static LightManager()
         {
-            _isEnabled = MajInstances.Settings.Misc.OutputDevice.Led.Enable;
+            _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
             var ledDevices = new LedDevice[8];
             for (var i = 0; i < 8; i++)
             {
@@ -70,8 +62,8 @@ namespace MajdataPlay.IO
                 }
             }
 
-            if (MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs <= 100) {
-                MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs = 100;
+            if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100) {
+                MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 100;
             }
 
             _ledDevices = ledDevices;
@@ -82,16 +74,18 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                switch(MajEnv.UserSettings.Misc.OutputDevice.Led.Type)
+                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                switch (manufacturer)
                 {
-                    case DeviceType.SerialPort:
+                    case DeviceManufacturer.General:
+                    case DeviceManufacturer.Yuan:
                         _ledDeviceUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
-                    case DeviceType.HID:
+                    case DeviceManufacturer.Dao:
                         _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
-                        MajDebug.LogWarning($"Not supported led device: {MajEnv.UserSettings.Misc.OutputDevice.Led.Type}");
+                        MajDebug.LogWarning($"Not supported led device manufacturer: {manufacturer}");
                         break;
                 }
             }
@@ -141,10 +135,10 @@ namespace MajdataPlay.IO
         static void SerialPortUpdateLoop()
         {
             var currentThread = Thread.CurrentThread;
-            var ledOptions = MajEnv.UserSettings.Misc.OutputDevice.Led;
+            var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
             var serialPortOptions = ledOptions.SerialPortOptions;
             var token = MajEnv.GlobalCT;
-            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.OutputDevice.Led.RefreshRateMs);
+            var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
             var stopwatch = new Stopwatch();
             var t1 = stopwatch.Elapsed;
             var ledDevices = _ledDevices.Span;
@@ -256,7 +250,7 @@ namespace MajdataPlay.IO
         }
         static void HIDUpdateLoop()
         {
-            var ledOptions = MajEnv.UserSettings.Misc.OutputDevice.Led;
+            var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
             var hidOptions = ledOptions.HidOptions;
             var currentThread = Thread.CurrentThread;
             var token = MajEnv.GlobalCT;
@@ -266,9 +260,7 @@ namespace MajdataPlay.IO
             var t1 = stopwatch.Elapsed;
             var pid = hidOptions.ProductId;
             var vid = hidOptions.VendorId;
-            var manufacturer = hidOptions.Manufacturer;
-            var deviceType = MajEnv.UserSettings.Misc.InputDevice.TouchPanel.Type;
-            var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
+            var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? "SkyStar Maimoller" : hidOptions.DeviceName;
             var hidConfig = new OpenConfiguration();
             var filter = new DeviceFilter()
             {
@@ -325,16 +317,14 @@ namespace MajdataPlay.IO
             currentThread.Name = "IO/L Thread";
             currentThread.IsBackground = true;
             currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
-            HidDevice? hidDevice = null;
-            HidStream? hidStream = null;
 
 
-            if (!HidManager.TryGetDevice(filter, out hidDevice))
+            if (!HidManager.TryGetDevice(filter, out var hidDevice))
             {
                 MajDebug.LogWarning("Led: hid device not found");
                 return;
             }
-            else if (!hidDevice.TryOpen(hidConfig, out hidStream))
+            if (!hidDevice.TryOpen(hidConfig, out var hidStream))
             {
                 MajDebug.LogError($"Led: cannot open hid device:\n{hidDevice}");
                 return;
@@ -342,9 +332,9 @@ namespace MajdataPlay.IO
             try
             {
                 var outputReportId = hidDevice.GetReportDescriptor()
-                                           .OutputReports
-                                           .FirstOrDefault()
-                                           ?.ReportID ?? 0;
+                                              .OutputReports
+                                              .FirstOrDefault()
+                                              ?.ReportID ?? 0;
                 Span<byte> buffer = stackalloc byte[hidDevice.GetMaxOutputReportLength()];
                 buffer[0] = outputReportId;
                 IsConnected = true;
@@ -411,25 +401,6 @@ namespace MajdataPlay.IO
             {
                 hidStream.Dispose();
                 IsConnected = false;
-            }
-        }
-
-
-        static string GetHIDDeviceName(DeviceType deviceType, DeviceManufacturer manufacturer)
-        {
-            switch (deviceType)
-            {
-                case DeviceType.HID:
-                    if (manufacturer == DeviceManufacturer.Dao)
-                    {
-                        return "SkyStar Maimoller";
-                    }
-                    else
-                    {
-                        throw new NotSupportedException();
-                    }
-                default:
-                    throw new NotSupportedException();
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

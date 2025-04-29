@@ -17,12 +17,10 @@ namespace MajdataPlay.IO
         readonly static List<HidDevice> _cacheList = new(); 
         static HidManager()
         {
-            var ledOptions = MajEnv.UserSettings.Misc.OutputDevice.Led;
-            var buttonRingOptions = MajEnv.UserSettings.Misc.InputDevice.ButtonRing;
-            var touchPanelOptions = MajEnv.UserSettings.Misc.InputDevice.TouchPanel;
-            var includeHidDevice = ledOptions.Type == DeviceType.HID ||
-                                   (buttonRingOptions.Type == DeviceType.HID || buttonRingOptions.Type == DeviceType.IO4) ||
-                                   touchPanelOptions.Type == DeviceType.HID;
+            var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+            var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
+            var includeHidDevice = buttonRingOptions.Type == ButtonRingDeviceType.HID || 
+                                   manufacturer == DeviceManufacturer.Dao;
             if (!includeHidDevice)
                 return;
             _hidDevices = DeviceList.Local.GetHidDevices();

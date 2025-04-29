@@ -138,10 +138,10 @@ namespace MajdataPlay.Utils
                 File.WriteAllText(SettingPath, json);
             }
 
-            UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs);
-            UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs);
-            UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            UserSettings.IO.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.PollingRateMs);
+            UserSettings.IO.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.PollingRateMs);
+            UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
             UserSettings.Display.InnerJudgeDistance = UserSettings.Display.InnerJudgeDistance.Clamp(0, 1);
             UserSettings.Display.OuterJudgeDistance = UserSettings.Display.OuterJudgeDistance.Clamp(0, 1);
 

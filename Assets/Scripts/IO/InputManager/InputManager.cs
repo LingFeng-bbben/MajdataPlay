@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MychIO;
-using DeviceType = MajdataPlay.IO.DeviceType;
+using DeviceType = MajdataPlay.IO.ButtonRingDeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;
@@ -14,6 +14,7 @@ using MajdataPlay.Collections;
 using System.Collections.Concurrent;
 using System.Security.Policy;
 using HidSharp.Platform.Windows;
+using System.Threading;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -41,7 +42,7 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return MajEnv.UserSettings.Misc.InputDevice.TouchPanel.TouchSimulationRadius;
+                return MajEnv.UserSettings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
             }
         }
         public static ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
@@ -263,19 +264,20 @@ namespace MajdataPlay.IO
         readonly static bool _isSensorDebounceEnabled = false;
         readonly static bool _isSensorRendererEnabled = false;
 
+        readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();
+
         static IOManager? _ioManager = null;
 
-        static delegate*<void> _updateIOListenerPtr = &DefaultIOListener;
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
         static InputManager()
         {
             _isSensorRendererEnabled = MajEnv.UserSettings.Debug.DisplaySensor;
-            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs);
-            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
-            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.Misc.InputDevice.TouchPanel.PollingRateMs);
-            _isBtnDebounceEnabled = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
-            _isSensorDebounceEnabled = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.PollingRateMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.PollingRateMs);
+            _isBtnDebounceEnabled = MajInstances.Settings.IO.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajInstances.Settings.IO.InputDevice.TouchPanel.Debounce;
             for (var i = 0; i < 33; i++)
             {
                 if (i.InRange(0, 7))
@@ -284,7 +286,6 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
-            _updateIOListenerPtr = &UpdateInternalIOListener;
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
@@ -298,111 +299,11 @@ namespace MajdataPlay.IO
         }
         internal static void OnPreUpdate()
         {
-            _updateIOListenerPtr();
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
-            for (var i = 0; i < 12; i++)
-            {
-                var btn = buttons[i];
-                _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
-                _btnStatusInThisFrame[i] = btn.State;
-            }
-            for (var i = 0; i < 33; i++)
-            {
-                var sen = sensors[i];
-                _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
-                _sensorStatusInThisFrame[i] = sen.State;
-            }
-        }
-        static void DefaultIOListener()
-        {
-
-        }
-        static void StartExternalIOManager()
-        {
-            if(_ioManager is null)
-                _ioManager = new();
-            Majdata<IOManager>.Instance = _ioManager;
-            var useHID = MajInstances.Settings.Misc.InputDevice.ButtonRing.Type is DeviceType.HID;
             var executionQueue = MajEnv.ExecutionQueue;
-            var buttonRingCallbacks = new Dictionary<ButtonRingZone, Action<ButtonRingZone, InputState>>();
-            var touchPanelCallbacks = new Dictionary<TouchPanelZone, Action<TouchPanelZone, InputState>>();
-
-            foreach (ButtonRingZone zone in Enum.GetValues(typeof(ButtonRingZone)))
-            {
-                buttonRingCallbacks[zone] = OnButtonRingStateChanged;
-            }
-
-            foreach (TouchPanelZone zone in Enum.GetValues(typeof(TouchPanelZone)))
-            {
-                touchPanelCallbacks[zone] = OnTouchPanelStateChanged;
-            }
-
-            
-            _ioManager.Destroy();
-            _ioManager.SubscribeToAllEvents(ExternalIOEventHandler);
-            _ioManager.AddDeviceErrorHandler(new DeviceErrorHandler(_ioManager, StartExternalIOManager, 4));
-
             try
             {
-                var deviceName = useHID ? AdxHIDButtonRing.GetDeviceName() : AdxIO4ButtonRing.GetDeviceName();
-                var btnDebounce = MajInstances.Settings.Misc.InputDevice.ButtonRing.Debounce;
-                var touchPanelDebounce = MajInstances.Settings.Misc.InputDevice.TouchPanel.Debounce;
-
-                var btnProductId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.ProductId;
-                var btnVendorId = MajInstances.Settings.Misc.InputDevice.ButtonRing.HidOptions.VendorId;
-                var comPortNum = MajInstances.Settings.Misc.InputDevice.TouchPanel.SerialPortOptions.Port;
-
-                var btnPollingRate = MajInstances.Settings.Misc.InputDevice.ButtonRing.PollingRateMs;
-                //var btnDebounceThresholdMs = btnDebounce ? MajInstances.Setting.Misc.InputDevice.ButtonRing.DebounceThresholdMs : 0;
-                var btnDebounceThresholdMs = 0;
-
-                var touchPanelPollingRate = MajInstances.Settings.Misc.InputDevice.TouchPanel.PollingRateMs;
-                //var touchPanelDebounceThresholdMs = touchPanelDebounce ? MajInstances.Setting.Misc.InputDevice.TouchPanel.DebounceThresholdMs : 0;
-                var touchPanelDebounceThresholdMs = 0;
-
-                var btnConnProperties = new Dictionary<string, dynamic>()
-                {
-                    { "PollingRateMs", btnPollingRate },
-                    { "DebounceTimeMs", btnDebounceThresholdMs },
-                    { "ProductId", btnProductId },
-                    { "VendorId", btnVendorId },
-                };
-                var touchPanelConnProperties = new Dictionary<string, dynamic>()
-                {
-                    { "PollingRateMs", touchPanelPollingRate },
-                    { "DebounceTimeMs", touchPanelDebounceThresholdMs },
-                    { "ComPortNumber", $"COM{comPortNum}" },
-                    { "BaudRate", MajInstances.Settings.Misc.InputDevice.TouchPanel.SerialPortOptions.BaudRate },
-                    { "SensitivityOverride", true },
-                    { "Sensitivity", MajInstances.Settings.Misc.InputDevice.TouchPanel.Sensitivity }
-                };
-                var ledConnProperties = new Dictionary<string, dynamic>()
-                {
-                    { "ComPortNumber", $"COM{MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.Port}" },
-                    { "BaudRate", MajInstances.Settings.Misc.OutputDevice.Led.SerialPortOptions.BaudRate }
-                };
-
-                _ioManager.AddButtonRing(deviceName,
-                                         inputSubscriptions: buttonRingCallbacks,
-                                         connectionProperties: btnConnProperties);
-                _ioManager.AddTouchPanel(AdxTouchPanel.GetDeviceName(),
-                                         inputSubscriptions: touchPanelCallbacks,
-                                         connectionProperties: touchPanelConnProperties);
-                _ioManager.AddLedDevice(AdxLedDevice.GetDeviceName(),
-                                        connectionProperties: ledConnProperties);
-            }
-            catch (Exception e)
-            {
-                MajDebug.LogException(e);
-            }
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void UpdateInternalIOListener()
-        {
-            try
-            {
-                var executionQueue = MajEnv.ExecutionQueue;
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
                 if (_useDummy)
@@ -423,42 +324,18 @@ namespace MajdataPlay.IO
             {
                 MajDebug.LogException(e);
             }
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void UpdateExternalIOListener()
-        {
-            var executionQueue = MajEnv.ExecutionQueue;
-            try
+            
+            for (var i = 0; i < 12; i++)
             {
-                while (executionQueue.TryDequeue(out var eventAction))
-                    eventAction();
-                UpdateSensorState();
-                UpdateButtonState();
+                var btn = buttons[i];
+                _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
+                _btnStatusInThisFrame[i] = btn.State;
             }
-            catch (Exception e)
+            for (var i = 0; i < 33; i++)
             {
-                MajDebug.LogException(e);
-            }
-        }
-        static void ExternalIOEventHandler(IOEventType eventType,DeviceClassification deviceType,string msg)
-        {
-            var logContent = $"From external IOManager:\nEventType: {eventType}\nDeviceType: {deviceType}\nMsg: {msg.Trim()}";
-            switch (eventType)
-            {
-                case IOEventType.Attach:
-                case IOEventType.Debug:
-                    MajDebug.Log(logContent);
-                    break;
-                case IOEventType.ConnectionError:
-                case IOEventType.SerialDeviceReadError:
-                case IOEventType.HidDeviceReadError:
-                case IOEventType.ReconnectionError:
-                case IOEventType.InvalidDevicePropertyError:
-                    MajDebug.LogError(logContent);
-                    break;
-                case IOEventType.Detach:
-                    MajDebug.LogWarning(logContent);
-                    break;
+                var sen = sensors[i];
+                _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
+                _sensorStatusInThisFrame[i] = sen.State;
             }
         }
         public static void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
@@ -786,6 +663,28 @@ namespace MajdataPlay.IO
                 State = majState,
                 Timestamp = MajTimeline.UnscaledTime
             });
+        }
+        class IOThreadSynchronization
+        {
+            public ReadOnlySpan<byte> Buffer
+            {
+                get
+                {
+                    return Memory.Span;
+                }
+            }
+            public ReadOnlyMemory<byte> Memory { get; set; } = ReadOnlyMemory<byte>.Empty;
+
+            readonly EventWaitHandle _eventWaitHandle = new(false, EventResetMode.AutoReset);
+
+            public bool WaitOne()
+            {
+                return _eventWaitHandle.WaitOne();
+            }
+            public void Notify()
+            {
+                _eventWaitHandle.Set();
+            }
         }
     }
 }

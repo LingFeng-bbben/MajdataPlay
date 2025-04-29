@@ -8,7 +8,8 @@ namespace MajdataPlay.IO
 {
     public enum DeviceManufacturer
     {
-        Adx,
+        General,
+        Yuan,
         Dao
     }
 }

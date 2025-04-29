@@ -1,12 +1,10 @@
 ﻿using HidSharp;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading;
-using UnityEngine.Rendering;
 #nullable enable
 namespace MajdataPlay.Types
 {
@@ -21,6 +19,7 @@ namespace MajdataPlay.Types
         public DebugOptions Debug { get; set; } = new();
         public OnlineOptions Online { get; set; } = new();
         public MiscOptions Misc { get; set; } = new();
+        public IOOptions IO { get; set; } = new();
     }
     public class GameOptions
     {
@@ -171,12 +170,16 @@ namespace MajdataPlay.Types
     }
     public class MiscOptions
     {
-        public InputDeviceOptions InputDevice { get; set; } = new();
-        public OutputDeviceOptions OutputDevice { get; set; } = new();
         public int SelectedIndex { get; set; } = 0;
         public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
+    }
+    public class IOOptions
+    {
+        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.General;
+        public InputDeviceOptions InputDevice { get; set; } = new();
+        public OutputDeviceOptions OutputDevice { get; set; } = new();
     }
     public class InputDeviceOptions
     {
@@ -191,7 +194,6 @@ namespace MajdataPlay.Types
     public class LedOptions
     {
         public bool Enable { get; set; } = true;
-        public DeviceType Type { get; set; } = DeviceType.SerialPort;
         public int RefreshRateMs { get; set; } = 100;
         public SerialPortOptions SerialPortOptions { get; set; } = new()
         {
@@ -200,14 +202,13 @@ namespace MajdataPlay.Types
         };
         public HidOptions HidOptions { get; set; } = new()
         {
-            Manufacturer = DeviceManufacturer.Dao,
             ProductId = 0x1224,
             VendorId = 0x0E8F
         };
     }
     public class ButtonRingOptions
     {
-        public DeviceType Type { get; set; } = DeviceType.Keyboard;
+        public ButtonRingDeviceType Type { get; set; } = ButtonRingDeviceType.Keyboard;
         public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 16;
@@ -215,24 +216,15 @@ namespace MajdataPlay.Types
     }
     public class TouchPanelOptions
     {
-        public DeviceType Type { get; set; } = DeviceType.SerialPort;
         public bool Debounce { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 16;
         public float TouchSimulationRadius { get; set; } = 0.5f;
         public SerialPortOptions SerialPortOptions { get; set; } = new();
-        public HidOptions HidOptions { get; set; } = new()
-        {
-            Manufacturer = DeviceManufacturer.Dao,
-            ProductId = 0x1224,
-            VendorId = 0x0E8F,
-            DeviceName = "SkyStar Maimoller"
-        };
     }
     public class HidOptions
     {
-        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.Adx;
         public string DeviceName { get; set; } = string.Empty;
         public int ProductId { get; set; } = 0x0021;
         public int VendorId { get; set; } = 0x0CA3;
