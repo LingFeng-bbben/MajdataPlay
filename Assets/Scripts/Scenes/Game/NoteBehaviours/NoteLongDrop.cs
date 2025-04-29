@@ -22,6 +22,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [SerializeField]
         protected float _length = 1f;
 
+        protected readonly static Range<float> DEFAULT_HOLD_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
+        protected readonly static Range<float> CLASSIC_HOLD_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MaxValue, ContainsType.Closed);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual float GetRemainingTime() => MathF.Max(Length - GetTimeSpanToJudgeTiming(), 0);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

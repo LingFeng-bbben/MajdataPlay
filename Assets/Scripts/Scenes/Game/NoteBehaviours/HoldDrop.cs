@@ -82,9 +82,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         const int _exSortOrder = 0;
         const int _endSortOrder = 2;
 
-        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
-
-
         protected override void Awake()
         {
             base.Awake();
@@ -216,9 +213,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _lastHoldState = -2;
             _releaseTime = 0;
 
-            if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            if(IsClassic)
             {
-                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+                _bodyCheckRange = CLASSIC_HOLD_BODY_CHECK_RANGE;
+            }
+            else if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            {
+                _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
@@ -310,6 +311,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             TooLateCheck();
             Check();
             BodyCheck();
+            ForceEndCheck();
             Autoplay();
         }
         [OnUpdate]
@@ -496,8 +498,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (!_isJudged || IsEnded)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
-            var endTiming = timing - Length;
             var remainingTime = GetRemainingTime();
 
             if (_lastHoldState is -1 or 1)
@@ -505,25 +505,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _effectManager.ResetEffect(StartPos);
             }
 
-            if (IsClassic)
-            {
-                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
-                {
-                    End();
-                    return;
-                }
-                if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || _judgeResult.IsMissOrTooFast())
-                {
-                    End();
-                    return;
-                }
-            }
-            else if (remainingTime == 0)
-            {
-                End();
-                return;
-            }
-            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            
+            if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 return;
             }
@@ -562,6 +545,31 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
+            }
+        }
+        void ForceEndCheck()
+        {
+            if (!_isJudged || IsEnded)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - Length;
+            var remainingTime = GetRemainingTime();
+
+            if (IsClassic)
+            {
+                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
+                {
+                    End();
+                }
+                else if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || _judgeResult.IsMissOrTooFast())
+                {
+                    End();
+                }
+            }
+            else if (remainingTime == 0)
+            {
+                End();
             }
         }
         void PlayHoldEffect()

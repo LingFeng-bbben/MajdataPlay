@@ -81,7 +81,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         const int _borderSortOrder = 6;
         const int _pointBorderSortOrder = 1;
 
-        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
         protected override void Awake()
         {
             base.Awake();
@@ -217,7 +216,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (Length < TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC)
             {
-                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+                _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
@@ -353,6 +352,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             TooLateCheck();
             Check();
             BodyCheck();
+            ForceEndCheck();
             Autoplay();
         }
         [OnUpdate]
@@ -509,19 +509,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (!_isJudged || IsEnded)
                 return;
 
-            var remainingTime = GetRemainingTime();
-
             if (_lastHoldState is -1 or 1)
             {
                 _audioEffMana.PlayTouchHoldSound();
             }
 
-            if (remainingTime == 0)
-            {
-                End();
-                return;
-            }
-            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 return;
             }
@@ -542,6 +535,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
+            }
+        }
+        void ForceEndCheck()
+        {
+            if (!_isJudged || IsEnded)
+                return;
+
+            var remainingTime = GetRemainingTime();
+
+            if (remainingTime == 0)
+            {
+                End();
             }
         }
         public override void SetActive(bool state)
