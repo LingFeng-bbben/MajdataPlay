@@ -20,6 +20,7 @@ using System.Text.Json;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Recording;
+using UnityEngine.Profiling;
 
 namespace MajdataPlay.Game
 {
@@ -724,17 +725,22 @@ namespace MajdataPlay.Game
         #region GameUpdate
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnPreUpdate");
             AudioTimeUpdate();
             ComponentPreUpdate();
+            Profiler.EndSample();
         }
         internal void OnUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnUpdate");
             NoteManagerUpdate();
             GameControlUpdate();
             FnKeyStateUpdate();
+            Profiler.EndSample();
         }
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnLateUpdate");
             switch (State)
             {
                 case GamePlayStatus.WaitForEnd:
@@ -755,6 +761,7 @@ namespace MajdataPlay.Game
             {
                 _bgManager.OnLateUpdate();
             }
+            Profiler.EndSample();
         }
         void GameControlUpdate()
         {

@@ -7,7 +7,7 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public sealed class SlideUpdater : NoteUpdater
+    internal sealed class SlideUpdater : NoteUpdater
     {
         Memory<SlideQueueInfo> _queueInfos = Memory<SlideQueueInfo>.Empty;
 
@@ -18,10 +18,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         const string UPDATE_METHOD_NAME = UPDATER_NAME + ".Update";
         const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
         const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
-        private void Awake()
-        {
-            Majdata<SlideUpdater>.Instance = this;
-        }
+
         private void Start()
         {
             _noteTimeProvider = Majdata<INoteController>.Instance!;
@@ -83,10 +80,6 @@ namespace MajdataPlay.Game.Notes.Controllers
             }
             base.OnPreUpdate();
             Profiler.EndSample();
-        }
-        private void OnDestroy()
-        {
-            Majdata<SlideUpdater>.Free();
         }
     }
 }

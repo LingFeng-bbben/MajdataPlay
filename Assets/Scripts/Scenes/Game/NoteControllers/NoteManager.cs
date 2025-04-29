@@ -17,8 +17,12 @@ namespace MajdataPlay.Game.Notes.Controllers
     {
         public bool IsUseButtonRingForTouch { get; set; } = false;
 
-        [SerializeField]
-        NoteUpdater[] _noteUpdaters = new NoteUpdater[8];
+        TapUpdater _tapUpdater;
+        HoldUpdater _holdUpdater;
+        SlideUpdater _slideUpdater;
+        TouchUpdater _touchUpdater;
+        TouchHoldUpdater _touchHoldUpdater;
+
         int[] _noteCurrentIndex = new int[8];
         int[] _touchCurrentIndex = new int[33];
 
@@ -54,7 +58,6 @@ namespace MajdataPlay.Game.Notes.Controllers
         readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
-        GamePlayManager? _gpManager;
 
         readonly bool USERSETTING_IS_AUTOPLAY = (MajEnv.UserSettings?.Mod.AutoPlay ?? AutoplayMode.Disable) != AutoplayMode.Disable;
 
@@ -78,7 +81,11 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         void Start()
         {
-            _gpManager = Majdata<GamePlayManager>.Instance;
+            _tapUpdater = Majdata<TapUpdater>.Instance!;
+            _holdUpdater = Majdata<HoldUpdater>.Instance!;
+            _slideUpdater = Majdata<SlideUpdater>.Instance!;
+            _touchUpdater = Majdata<TouchUpdater>.Instance!;
+            _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
         }
         void OnDestroy()
         {
@@ -103,69 +110,84 @@ namespace MajdataPlay.Game.Notes.Controllers
             {
                 GameIOUpdate();
             }
-            for (var i = 0; i < _noteUpdaters.Length; i++)
-            {
-                var updater = _noteUpdaters[i];
-                updater.OnPreUpdate();
-            }
+            _tapUpdater.OnPreUpdate();
+            _holdUpdater.OnPreUpdate();
+            _slideUpdater.OnPreUpdate();
+            _touchUpdater.OnPreUpdate();
+            _touchHoldUpdater.OnPreUpdate();
 #if UNITY_EDITOR || DEBUG
             _preUpdateElapsedMs = 0;
-            foreach (var updater in _noteUpdaters)
-                _preUpdateElapsedMs += updater.UpdateElapsedMs;
+            _preUpdateElapsedMs += _tapUpdater.PreUpdateElapsedMs;
+            _preUpdateElapsedMs += _holdUpdater.PreUpdateElapsedMs;
+            _preUpdateElapsedMs += _slideUpdater.PreUpdateElapsedMs;
+            _preUpdateElapsedMs += _touchUpdater.PreUpdateElapsedMs;
+            _preUpdateElapsedMs += _touchHoldUpdater.PreUpdateElapsedMs;
 #endif
         }
         internal void OnUpdate()
         {
-            for (var i = 0; i < _noteUpdaters.Length; i++)
-            {
-                var updater = _noteUpdaters[i];
-                updater.OnUpdate();
-            }
+            _tapUpdater.OnUpdate();
+            _holdUpdater.OnUpdate();
+            _slideUpdater.OnUpdate();
+            _touchUpdater.OnUpdate();
+            _touchHoldUpdater.OnUpdate();
 #if UNITY_EDITOR || DEBUG
             _updateElapsedMs = 0;
-            foreach (var updater in _noteUpdaters)
-                _updateElapsedMs += updater.UpdateElapsedMs;
+            _updateElapsedMs += _tapUpdater.UpdateElapsedMs;
+            _updateElapsedMs += _holdUpdater.UpdateElapsedMs;
+            _updateElapsedMs += _slideUpdater.UpdateElapsedMs;
+            _updateElapsedMs += _touchUpdater.UpdateElapsedMs;
+            _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
 #endif
         }
         internal void OnLateUpdate()
         {
-            for (var i = 0; i < _noteUpdaters.Length; i++)
-            {
-                var updater = _noteUpdaters[i];
-                updater.OnLateUpdate();
-            }
+            _tapUpdater.OnLateUpdate();
+            _holdUpdater.OnLateUpdate();
+            _slideUpdater.OnLateUpdate();
+            _touchUpdater.OnLateUpdate();
+            _touchHoldUpdater.OnLateUpdate();
 #if UNITY_EDITOR || DEBUG
             _lateUpdateElapsedMs = 0;
-            foreach (var updater in _noteUpdaters)
-                _lateUpdateElapsedMs += updater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _tapUpdater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _holdUpdater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _slideUpdater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _touchUpdater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
 #endif
         }
         internal void OnFixedUpdate()
         {
-            for (var i = 0; i < _noteUpdaters.Length; i++)
-            {
-                var updater = _noteUpdaters[i];
-                updater.OnFixedUpdate();
-            }
+            _tapUpdater.OnFixedUpdate();
+            _holdUpdater.OnFixedUpdate();
+            _slideUpdater.OnFixedUpdate();
+            _touchUpdater.OnFixedUpdate();
+            _touchHoldUpdater.OnFixedUpdate();
 #if UNITY_EDITOR || DEBUG
             _fixedUpdateElapsedMs = 0;
-            foreach (var updater in _noteUpdaters)
-                _fixedUpdateElapsedMs += updater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _tapUpdater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _holdUpdater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _slideUpdater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _touchUpdater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _touchHoldUpdater.FixedUpdateElapsedMs;
 #endif
         }
         public void InitializeUpdater()
         {
-            foreach (var updater in _noteUpdaters)
-            {
-                updater.Initialize();
-            }
+            _tapUpdater.Initialize();
+            _holdUpdater.Initialize();
+            _slideUpdater.Initialize();
+            _touchUpdater.Initialize();
+            _touchHoldUpdater.Initialize();
         }
         internal void Clear()
         {
-            foreach (var updater in _noteUpdaters)
-            {
-                updater.Clear();
-            }
+            _tapUpdater.Clear();
+            _holdUpdater.Clear();
+            _slideUpdater.Clear();
+            _touchUpdater.Clear();
+            _touchHoldUpdater.Clear();
+
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFrame[i] = false;

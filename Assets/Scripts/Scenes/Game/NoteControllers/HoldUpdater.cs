@@ -2,13 +2,14 @@
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public sealed class HoldUpdater : NoteUpdater
+    internal sealed class HoldUpdater : NoteUpdater
     {
         const string UPDATER_NAME = "HoldUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
         const string UPDATE_METHOD_NAME = UPDATER_NAME + ".Update";
         const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
         const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
+
         internal override void OnFixedUpdate()
         {
             Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
