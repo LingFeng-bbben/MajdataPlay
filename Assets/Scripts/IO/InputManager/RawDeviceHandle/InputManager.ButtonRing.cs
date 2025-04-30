@@ -458,9 +458,14 @@ namespace MajdataPlay.IO
                     case ButtonRingDeviceType.HID:
                         if(manufacturer == DeviceManufacturer.General)
                         {
-                            return "MusicGame Composite USB";
+                            return string.Empty;
                         }
-                        else if(manufacturer == DeviceManufacturer.Dao)
+                        else if(manufacturer == DeviceManufacturer.Yuan)
+                        {
+                            //return "MusicGame Composite USB";
+                            return string.Empty;
+                        }
+                        else if (manufacturer == DeviceManufacturer.Dao)
                         {
                             return "SkyStar Maimoller";
                         }
@@ -469,7 +474,7 @@ namespace MajdataPlay.IO
                             throw new NotSupportedException();
                         }
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(deviceType));
+                        throw new NotSupportedException();
                 }
             }
             static class AdxHIDDevice
