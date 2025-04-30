@@ -366,14 +366,25 @@ namespace MajdataPlay.IO
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
 
-                if (!HidManager.TryGetDevice(filter, out var device))
+                HidDevice? device = null;
+                HidStream? hidStream = null;
+
+                if (!HidManager.TryGetDevices(filter, out var devices))
                 {
                     MajDebug.LogWarning("ButtonRing: hid device not found");
                     return;
                 }
-                if(!device.TryOpen(hidConfig, out var hidStream))
+                foreach(var d in devices)
                 {
-                    MajDebug.LogError($"ButtonRing: cannot open hid device:\n{device}");
+                    if (d.TryOpen(hidConfig, out hidStream))
+                    {
+                        device = d;
+                        break;
+                    }
+                }
+                if(hidStream is null || device is null)
+                {
+                    MajDebug.LogError($"ButtonRing: cannot open hid devices:\n{string.Join('\n', devices)}");
                     return;
                 }
 
@@ -446,7 +457,7 @@ namespace MajdataPlay.IO
                 }
                 finally
                 {
-                    ((HidStream?)null).Dispose();
+                    hidStream.Dispose();
                     IsConnected = false;
                 }
             }

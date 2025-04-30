@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -318,27 +319,37 @@ namespace MajdataPlay.IO
             currentThread.IsBackground = true;
             currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
 
+            HidDevice? device = null;
+            HidStream? hidStream = null;
 
-            if (!HidManager.TryGetDevice(filter, out var hidDevice))
+            if (!HidManager.TryGetDevices(filter, out var devices))
             {
                 MajDebug.LogWarning("Led: hid device not found");
                 return;
             }
-            if (!hidDevice.TryOpen(hidConfig, out var hidStream))
+            foreach (var d in devices)
             {
-                MajDebug.LogError($"Led: cannot open hid device:\n{hidDevice}");
+                if (d.TryOpen(hidConfig, out hidStream))
+                {
+                    device = d;
+                    break;
+                }
+            }
+            if (hidStream is null || device is null)
+            {
+                MajDebug.LogError($"Led: cannot open hid devices:\n{string.Join('\n', devices)}");
                 return;
             }
             try
             {
-                var outputReportId = hidDevice.GetReportDescriptor()
-                                              .OutputReports
-                                              .FirstOrDefault()
-                                              ?.ReportID ?? 0;
-                Span<byte> buffer = stackalloc byte[hidDevice.GetMaxOutputReportLength()];
+                var outputReportId = device.GetReportDescriptor()
+                                           .OutputReports
+                                           .FirstOrDefault()
+                                           ?.ReportID ?? 0;
+                Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                 buffer[0] = outputReportId;
                 IsConnected = true;
-                MajDebug.Log($"Led device connected\nDevice: {hidDevice}");
+                MajDebug.Log($"Led device connected\nDevice: {device}");
                 stopwatch.Start();
                 while (true)
                 {
@@ -349,8 +360,8 @@ namespace MajdataPlay.IO
                         var needUpdate = false;
                         for (var i = 0; i < 8; i++)
                         {
-                            var device = ledDevices[i];
-                            var color = device.Color;
+                            var ledDevice = ledDevices[i];
+                            var color = ledDevice.Color;
                             ref var latestReport = ref latestReports[i];
                             if (latestReport.Color == color)
                             {

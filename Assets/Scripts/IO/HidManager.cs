@@ -27,13 +27,12 @@ namespace MajdataPlay.IO
             MajDebug.Log($"All available HID devices:\n{string.Join('\n', _hidDevices)}");
             DeviceList.Local.Changed += OnDeviceListChanged;
         }
-        public static bool TryGetDevice(DeviceFilter filter, [NotNullWhen(true)] out HidDevice? device)
+        public static bool TryGetDevices(DeviceFilter filter, [NotNullWhen(true)] out IEnumerable<HidDevice> devices)
         {
             lock (_hidDevices)
             {
                 try
                 {
-                    var index = filter.Index;
                     var pid = filter.ProductId;
                     var vid = filter.VendorId;
                     var deviceName = filter.DeviceName;
@@ -62,7 +61,7 @@ namespace MajdataPlay.IO
                     }
                     if(_cacheList.Count != 0)
                     {
-                        device = _cacheList[index.Clamp(0, _cacheList.Count - 1)];
+                        devices = _cacheList.ToArray();
                         return true;
                     }
                 }
@@ -74,7 +73,7 @@ namespace MajdataPlay.IO
                 {
                     _cacheList.Clear();
                 }
-                device = null;
+                devices = Array.Empty<HidDevice>();
                 return false;
             }
         }
