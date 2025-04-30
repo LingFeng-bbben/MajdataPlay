@@ -386,7 +386,7 @@ namespace MajdataPlay.Game
             }
             catch(InvalidSimaiMarkupException syntaxE)
             {
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Invalid syntax")}\n{syntaxE.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Invalid syntax".i18n()}\n(at L{syntaxE.Line}:C{syntaxE.Column}) \"{syntaxE.Content}\"\n{syntaxE.Message}", Color.red);
                 MajDebug.LogError(syntaxE);
                 return;
             }
