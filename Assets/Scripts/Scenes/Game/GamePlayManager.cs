@@ -617,7 +617,7 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();
             }
-            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var wait4Recorder = RecordHelper.StartRecordAsync($"{_songDetail.Title}_{_songDetail.Designers[(int)_gameInfo.CurrentLevel]}");
@@ -626,9 +626,12 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
-
-            await wait4Recorder;
-
+            if(wait4Recorder.IsFaulted)
+            {
+                throw wait4Recorder.Exception.GetBaseException();
+            }
+            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.Delay(1000);
             MajInstances.SceneSwitcher.FadeOut();
             await UniTask.Delay(100); //wait the animation
 
