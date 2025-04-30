@@ -233,18 +233,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isFast = diffSec > 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;
 
-            var endResult = diffMSec switch
+            var endGrade = diffMSec switch
             {
-                <= HOLD_CLASSIC_END_JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
-                <= HOLD_CLASSIC_END_JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= HOLD_CLASSIC_END_JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= HOLD_CLASSIC_END_JUDGE_PERFECT_AREA_MSEC => JudgeGrade.Perfect,
                 _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
             };
 
             var num = Math.Abs(7 - (int)headGrade);
-            var endNum = Math.Abs(7 - (int)endResult);
+            var endNum = Math.Abs(7 - (int)endGrade);
             if (endNum > num) // 取最差判定
-                return endResult;
+                return endGrade;
             else
                 return headGrade;
         }
