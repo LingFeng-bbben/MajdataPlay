@@ -180,6 +180,8 @@ namespace MajdataPlay.Utils
         }
         internal static void OnApplicationQuitRequested()
         {
+            SharedHttpClient.CancelPendingRequests();
+            SharedHttpClient.Dispose();
             VLCLibrary.Dispose();
             _globalCTS.Cancel();
             if (OnApplicationQuit is not null)
