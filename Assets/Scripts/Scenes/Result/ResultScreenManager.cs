@@ -58,7 +58,7 @@ namespace MajdataPlay.Result
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
-        UniTask OnlineSaveTask = UniTask.Delay(0);
+        UniTask _scoreSaveTask = UniTask.CompletedTask;
 
         void Start()
         {
@@ -143,11 +143,16 @@ namespace MajdataPlay.Result
             PlayVoice(result.Acc.DX, song).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
-                MajInstances.ScoreManager.SaveScore(result, result.Level);
+                var localScoreSaveTask = MajInstances.ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song is OnlineSongDetail)
                 {
-                    OnlineSaveTask = intractSender.SendScore(score);
+                    var task = intractSender.SendScore(score);
+                    _scoreSaveTask = UniTask.WhenAll(localScoreSaveTask.AsUniTask(), task);
+                }
+                else
+                {
+                    _scoreSaveTask = localScoreSaveTask.AsUniTask();
                 }
             }
             
@@ -212,7 +217,7 @@ namespace MajdataPlay.Result
                 MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 await UniTask.WaitForSeconds(2);
             }
-            await OnlineSaveTask;
+            await _scoreSaveTask;
             await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);
             LightManager.SetButtonLight(Color.green, 3);
