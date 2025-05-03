@@ -22,6 +22,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         SlideUpdater _slideUpdater;
         TouchUpdater _touchUpdater;
         TouchHoldUpdater _touchHoldUpdater;
+        EachLineUpdater _eachLineUpdater;
 
         int[] _noteCurrentIndex = new int[8];
         int[] _touchCurrentIndex = new int[33];
@@ -86,6 +87,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater = Majdata<SlideUpdater>.Instance!;
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
+            _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
         }
         void OnDestroy()
         {
@@ -115,6 +117,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.OnPreUpdate();
             _touchUpdater.OnPreUpdate();
             _touchHoldUpdater.OnPreUpdate();
+            _eachLineUpdater.OnPreUpdate();
 #if UNITY_EDITOR || DEBUG
             _preUpdateElapsedMs = 0;
             _preUpdateElapsedMs += _tapUpdater.PreUpdateElapsedMs;
@@ -122,6 +125,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _preUpdateElapsedMs += _slideUpdater.PreUpdateElapsedMs;
             _preUpdateElapsedMs += _touchUpdater.PreUpdateElapsedMs;
             _preUpdateElapsedMs += _touchHoldUpdater.PreUpdateElapsedMs;
+            _preUpdateElapsedMs += _eachLineUpdater.PreUpdateElapsedMs;
 #endif
         }
         internal void OnUpdate()
@@ -131,6 +135,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.OnUpdate();
             _touchUpdater.OnUpdate();
             _touchHoldUpdater.OnUpdate();
+            _eachLineUpdater.OnUpdate();
 #if UNITY_EDITOR || DEBUG
             _updateElapsedMs = 0;
             _updateElapsedMs += _tapUpdater.UpdateElapsedMs;
@@ -138,6 +143,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _updateElapsedMs += _slideUpdater.UpdateElapsedMs;
             _updateElapsedMs += _touchUpdater.UpdateElapsedMs;
             _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
+            _updateElapsedMs += _eachLineUpdater.UpdateElapsedMs;
 #endif
         }
         internal void OnLateUpdate()
@@ -147,6 +153,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.OnLateUpdate();
             _touchUpdater.OnLateUpdate();
             _touchHoldUpdater.OnLateUpdate();
+            _eachLineUpdater.OnLateUpdate();
 #if UNITY_EDITOR || DEBUG
             _lateUpdateElapsedMs = 0;
             _lateUpdateElapsedMs += _tapUpdater.LateUpdateElapsedMs;
@@ -154,6 +161,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _lateUpdateElapsedMs += _slideUpdater.LateUpdateElapsedMs;
             _lateUpdateElapsedMs += _touchUpdater.LateUpdateElapsedMs;
             _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
+            _lateUpdateElapsedMs += _eachLineUpdater.LateUpdateElapsedMs;
 #endif
         }
         internal void OnFixedUpdate()
@@ -163,6 +171,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.OnFixedUpdate();
             _touchUpdater.OnFixedUpdate();
             _touchHoldUpdater.OnFixedUpdate();
+            _eachLineUpdater.OnFixedUpdate();
 #if UNITY_EDITOR || DEBUG
             _fixedUpdateElapsedMs = 0;
             _fixedUpdateElapsedMs += _tapUpdater.FixedUpdateElapsedMs;
@@ -170,6 +179,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _fixedUpdateElapsedMs += _slideUpdater.FixedUpdateElapsedMs;
             _fixedUpdateElapsedMs += _touchUpdater.FixedUpdateElapsedMs;
             _fixedUpdateElapsedMs += _touchHoldUpdater.FixedUpdateElapsedMs;
+            _fixedUpdateElapsedMs += _eachLineUpdater.FixedUpdateElapsedMs;
 #endif
         }
         public void InitializeUpdater()
@@ -179,6 +189,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.Initialize();
             _touchUpdater.Initialize();
             _touchHoldUpdater.Initialize();
+            _eachLineUpdater.Initialize();
         }
         internal void Clear()
         {
@@ -187,6 +198,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _slideUpdater.Clear();
             _touchUpdater.Clear();
             _touchHoldUpdater.Clear();
+            _eachLineUpdater.Clear();
 
             for (var i = 0; i < 8; i++)
             {
