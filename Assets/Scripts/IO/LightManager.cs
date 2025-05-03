@@ -63,7 +63,8 @@ namespace MajdataPlay.IO
                 }
             }
 
-            if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100) {
+            if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100) 
+            {
                 MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 100;
             }
 
@@ -71,7 +72,7 @@ namespace MajdataPlay.IO
 
             try
             {
-                if (!_ledDeviceUpdateLoop.IsCompleted)
+                if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
                 {
                     return;
                 }
