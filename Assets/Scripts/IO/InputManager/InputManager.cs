@@ -666,18 +666,26 @@ namespace MajdataPlay.IO
         }
         class IOThreadSynchronization
         {
-            public ReadOnlySpan<byte> Buffer
+            public ReadOnlySpan<byte> ReadBuffer
             {
                 get
                 {
-                    return Memory.Span;
+                    return ReadBufferMemory.Span;
                 }
             }
-            public ReadOnlyMemory<byte> Memory { get; set; } = ReadOnlyMemory<byte>.Empty;
+            public Span<byte> WriteBuffer
+            {
+                get
+                {
+                    return WriteBufferMemory.Span;
+                }
+            }
+            public Memory<byte> WriteBufferMemory { get; set; } = Memory<byte>.Empty;
+            public ReadOnlyMemory<byte> ReadBufferMemory { get; set; } = ReadOnlyMemory<byte>.Empty;
 
             readonly EventWaitHandle _eventWaitHandle = new(false, EventResetMode.AutoReset);
 
-            public bool WaitOne()
+            public bool WaitNotify()
             {
                 return _eventWaitHandle.WaitOne();
             }

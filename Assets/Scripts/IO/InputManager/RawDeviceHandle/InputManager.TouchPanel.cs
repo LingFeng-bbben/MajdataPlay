@@ -480,7 +480,7 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    ReadOnlySpan<byte> buffer = _ioThreadSync.Buffer;
+                    ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
                     MajDebug.Log($"TouchPanel slave thread has started");
                     while (true)
@@ -488,7 +488,7 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            _ioThreadSync.WaitOne();
+                            _ioThreadSync.WaitNotify();
                             DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
                             lock (_touchPanelUpdateLoop)
                             {

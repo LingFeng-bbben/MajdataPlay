@@ -391,7 +391,7 @@ namespace MajdataPlay.IO
                 try
                 {
                     Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
-                    _ioThreadSync.Memory = memory;
+                    _ioThreadSync.ReadBufferMemory = memory;
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
                     MajDebug.Log($"ButtonRing connected\nDevice: {device}");
