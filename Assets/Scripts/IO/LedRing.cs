@@ -5,7 +5,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    internal static class LightManager
+    internal static class LedRing
     {
         public static bool IsEnabled
         {
@@ -30,13 +30,13 @@ namespace MajdataPlay.IO
         }
         
         readonly static Memory<Color> _ledColors = new Color[8];
-        readonly static ReadOnlyMemory<LedDevice> _ledDevices = Array.Empty<LedDevice>();
+        readonly static ReadOnlyMemory<Led> _ledDevices = Array.Empty<Led>();
         readonly static bool _isEnabled = true;
 
-        static LightManager()
+        static LedRing()
         {
             _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
-            var ledDevices = new LedDevice[8];
+            var ledDevices = new Led[8];
             for (var i = 0; i < 8; i++)
             {
                 ledDevices[i] = new()
@@ -92,7 +92,7 @@ namespace MajdataPlay.IO
             _ledDevices.Span[button].SetColor(lightColor, duration);
         }
         
-        class LedDevice
+        class Led
         {
             public int Index { get; init; } = 0;
             public Color Color

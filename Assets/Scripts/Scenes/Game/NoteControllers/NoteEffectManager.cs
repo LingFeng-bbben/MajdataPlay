@@ -100,7 +100,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         public void PlayEffect(int position, in JudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
-            LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
+            LedRing.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -111,7 +111,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
-            LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
+            LedRing.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect(SensorArea sensorPos, in JudgeGrade judgeType)
@@ -120,7 +120,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void ResetHoldEffect(int keyIndex)
         {
-            LightManager.SetButtonLight(Color.white, keyIndex - 1);
+            LedRing.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorArea sensorPos)

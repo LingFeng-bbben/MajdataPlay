@@ -26,7 +26,7 @@ namespace MajdataPlay.TotalResult
         // Start is called before the first frame update
         void Start()
         {
-            LightManager.SetAllLight(Color.white);
+            LedRing.SetAllLight(Color.white);
             var results = _gameInfo.Results;
             var levels = _gameInfo.Levels;
             var songInfos = _gameInfo.Charts;
@@ -58,7 +58,7 @@ namespace MajdataPlay.TotalResult
         {
             await UniTask.Delay(1000);
             InputManager.BindAnyArea(OnAreaDown);
-            LightManager.SetButtonLight(Color.green, 3);
+            LedRing.SetButtonLight(Color.green, 3);
         }
 
         private void OnAreaDown(object sender, InputEventArgs e)

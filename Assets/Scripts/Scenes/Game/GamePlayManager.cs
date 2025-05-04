@@ -962,25 +962,25 @@ namespace MajdataPlay.Game
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.yellow);
+                    LedRing.SetAllLight(Color.yellow);
                     break;
                 case ComboState.AP:
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.red);
+                    LedRing.SetAllLight(Color.red);
                     break;
                 case ComboState.FCPlus:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.green);
+                    LedRing.SetAllLight(Color.green);
                     break;
                 case ComboState.FC:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.green);
+                    LedRing.SetAllLight(Color.green);
                     break;
             }
         }

@@ -67,7 +67,7 @@ namespace MajdataPlay.Result
             var result = _gameInfo.GetLastResult();
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
-            LightManager.SetAllLight(Color.white);
+            LedRing.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
@@ -220,8 +220,8 @@ namespace MajdataPlay.Result
             await _scoreSaveTask;
             await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);
-            LightManager.SetButtonLight(Color.green, 3);
-            LightManager.SetButtonLight(Color.yellow, 4);
+            LedRing.SetButtonLight(Color.green, 3);
+            LedRing.SetButtonLight(Color.yellow, 4);
         }
 
 

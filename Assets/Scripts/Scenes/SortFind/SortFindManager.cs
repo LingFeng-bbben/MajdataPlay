@@ -23,7 +23,7 @@ namespace MajdataPlay.SortFind
         void Start()
         {
             EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
-            LightManager.SetAllLight(Color.black);
+            LedRing.SetAllLight(Color.black);
             InputManager.BindAnyArea(OnAreaDown);
             SearchBar.text = SongStorage.OrderBy.Keyword;
             SetActiveSort(SongStorage.OrderBy.SortBy);

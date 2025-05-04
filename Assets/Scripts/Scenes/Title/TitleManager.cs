@@ -28,7 +28,7 @@ namespace MajdataPlay.Title
             DelayPlayVoice().Forget();
             songStorageTask = StartScanningChart();
             WaitForScanningTask().Forget();
-            LightManager.SetAllLight(Color.white);
+            LedRing.SetAllLight(Color.white);
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));

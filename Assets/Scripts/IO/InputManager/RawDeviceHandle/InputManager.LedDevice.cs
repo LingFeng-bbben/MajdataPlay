@@ -71,7 +71,7 @@ namespace MajdataPlay.IO
                 var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var ledColors = LightManager.LedColors;
+                var ledColors = LedRing.LedColors;
                 var updatePacket = GeneralSerialLedDevice.BuildUpdatePacket();
                 using var serial = new SerialPort($"COM{serialPortOptions.Port}", serialPortOptions.BaudRate);
 
@@ -185,7 +185,7 @@ namespace MajdataPlay.IO
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(ledOptions.RefreshRateMs);
                 var stopwatch = new Stopwatch();
-                var ledColors = LightManager.LedColors;
+                var ledColors = LedRing.LedColors;
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
