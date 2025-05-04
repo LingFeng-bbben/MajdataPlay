@@ -386,16 +386,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         if (float.IsNaN(distance))
                             distance = 0f;
 
-                        if (timing > -0.02f)
-                        {
-                            //_justBorderObject.SetActive(true);
-                            SetJustBorderActive(true);
-                        }
                         if (timing >= 0)
                         {
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
                             SetFansPosition(_distance);
+                            SetJustBorderActive(true);
                             State = NoteStatus.Arrived;
                         }
                         else
