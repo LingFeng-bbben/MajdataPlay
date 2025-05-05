@@ -52,7 +52,10 @@ namespace MajdataPlay.Utils
 
         static SongStorage()
         {
-            Serializer.Json.TryDeserialize(File.ReadAllText(MY_FAVORITE_STORAGE_PATH), out _userFavorites);
+            if(File.Exists(MY_FAVORITE_STORAGE_PATH))
+            {
+                Serializer.Json.TryDeserialize(File.ReadAllText(MY_FAVORITE_STORAGE_PATH), out _userFavorites);
+            }
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
