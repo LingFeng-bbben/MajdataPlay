@@ -159,7 +159,8 @@ namespace MajdataPlay.Types
         public bool FullScreen { get; set; } = true;
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
-        public bool DisableGCInGameing { get; set; } = false;
+        public bool DisableGCInGame { get; set; } = false;
+        public bool HideCursorInGame { get; set; } = true;
         public DJAutoPolicy DJAutoPolicy { get; set; } = DJAutoPolicy.Strict;
         public int MaxQueuedFrames { get; set; } = 2;
         public int TapPoolCapacity { get; set; } = 96;

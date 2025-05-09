@@ -159,9 +159,10 @@ namespace MajdataPlay.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-#if !UNITY_EDITOR
-            Cursor.visible = false;
-#endif
+            if(_setting.Debug.HideCursorInGame)
+            {
+                Cursor.visible = false;
+            }
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));

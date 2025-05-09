@@ -269,7 +269,7 @@ namespace MajdataPlay
         }
         public void EnableGC()
         {
-            if (!Setting.Debug.DisableGCInGameing)
+            if (!Setting.Debug.DisableGCInGame)
                 return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
@@ -279,7 +279,7 @@ namespace MajdataPlay
         }
         public void DisableGC() 
         {
-            if (!Setting.Debug.DisableGCInGameing)
+            if (!Setting.Debug.DisableGCInGame)
                 return;
             GC.Collect();
 #if !UNITY_EDITOR
