@@ -309,7 +309,7 @@ namespace MajdataPlay.IO
             {
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
-                if (_useDummy)
+                if (_useDummy || MajEnv.IsEditor)
                 {
                     UpdateMousePosition();
                 }

@@ -36,7 +36,11 @@ namespace MajdataPlay.Utils
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
-        
+#if UNITY_EDITOR
+        public static bool IsEditor { get; } = true;
+#else
+        public static bool IsEditor { get; } = false;
+#endif
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
