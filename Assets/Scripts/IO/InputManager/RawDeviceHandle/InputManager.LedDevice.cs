@@ -411,16 +411,16 @@ namespace MajdataPlay.IO
                 public static ReadOnlySpan<byte> BuildUpdatePacket(Span<byte> rawBuffer, ReadOnlySpan<Color> ledColors)
                 {
                     var buffer = rawBuffer.Slice(1);
-                    for (int i = 0; i < ledColors.Length; i++)
+                    for (int i = 0,li = 0; li < ledColors.Length;)
                     {
-                        var color = ledColors[i];
+                        var color = ledColors[li++];
                         var r = (byte)(color.r * 255);
                         var g = (byte)(color.g * 255);
                         var b = (byte)(color.b * 255);
 
-                        buffer[i] = r;
-                        buffer[i + 1] = g;
-                        buffer[i + 2] = b;
+                        buffer[i++] = r;
+                        buffer[i++] = g;
+                        buffer[i++] = b;
                     }
                     return rawBuffer;
                 }
