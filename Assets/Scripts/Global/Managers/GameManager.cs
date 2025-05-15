@@ -55,7 +55,11 @@ namespace MajdataPlay
         Material _breakMaterial;
         [SerializeField]
         Material _defaultMaterial;
-        public bool IsEnterView = false;
+
+        [SerializeField]
+        bool _isEnterView = false;
+        [SerializeField]
+        bool _isEnterTest = false;
 
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
@@ -93,7 +97,11 @@ namespace MajdataPlay
             }
 
 #if UNITY_EDITOR
-            if (IsEnterView)
+            if(_isEnterTest)
+            {
+                MajEnv.Mode = RunningMode.Test;
+            }
+            else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
                 Setting.Mod.AutoPlay = AutoplayMode.Enable;
