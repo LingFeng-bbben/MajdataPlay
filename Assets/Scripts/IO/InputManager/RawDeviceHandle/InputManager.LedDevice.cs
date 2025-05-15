@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
@@ -34,6 +34,9 @@ namespace MajdataPlay.IO
                 {
                     MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 100;
                 }
+            }
+            public static void Init()
+            {
                 try
                 {
                     if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
@@ -61,7 +64,6 @@ namespace MajdataPlay.IO
                     IsConnected = false;
                 }
             }
-
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
@@ -189,7 +191,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? "SkyStar Maimoller" : hidOptions.DeviceName;
+                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? string.Empty : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
                 {

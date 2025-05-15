@@ -30,7 +30,8 @@ namespace MajdataPlay.IO
             readonly static bool[] _isBtnHadOnInternal = new bool[12];
             readonly static bool[] _isBtnHadOffInternal = new bool[12];
 
-            static ButtonRing()
+            #region Public Methods
+            public static void Init()
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
                     return;
@@ -50,7 +51,7 @@ namespace MajdataPlay.IO
                             break;
                     }
                 }
-                else if(manufacturer == DeviceManufacturer.Dao)
+                else if (manufacturer == DeviceManufacturer.Dao)
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
@@ -59,7 +60,6 @@ namespace MajdataPlay.IO
                     MajDebug.LogWarning($"Not supported button ring manufacturer: {manufacturer}");
                 }
             }
-            #region Public Methods
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>

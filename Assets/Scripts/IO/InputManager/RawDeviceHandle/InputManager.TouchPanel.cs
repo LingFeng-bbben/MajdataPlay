@@ -33,7 +33,8 @@ namespace MajdataPlay.IO
             readonly static bool[] _isSensorHadOnInternal = new bool[35];
             readonly static bool[] _isSensorHadOffInternal = new bool[35];
 
-            static TouchPanel()
+            #region Public Methods
+            public static void Init()
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
@@ -50,7 +51,6 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
-            #region Public Methods
             /// <summary>
             /// Update the touchpanel state of the this frame
             /// </summary>

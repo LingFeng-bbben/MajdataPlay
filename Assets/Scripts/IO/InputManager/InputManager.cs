@@ -292,6 +292,9 @@ namespace MajdataPlay.IO
         {
             Input.multiTouchEnabled = true;
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
+            ButtonRing.Init();
+            TouchPanel.Init();
+            LedDevice.Init();
         }
         internal static void OnFixedUpdate()
         {
