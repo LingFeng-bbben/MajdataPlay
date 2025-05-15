@@ -480,6 +480,7 @@ namespace MajdataPlay.IO
 
                 try
                 {
+                    _ioThreadSync.WaitNotify();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
                     MajDebug.Log($"TouchPanel slave thread has started");

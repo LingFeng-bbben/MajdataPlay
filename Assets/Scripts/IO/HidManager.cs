@@ -61,7 +61,8 @@ namespace MajdataPlay.IO
                     }
                     if(_cacheList.Count != 0)
                     {
-                        devices = _cacheList.ToArray();
+                        devices = _cacheList.ToArray()
+                                            .OrderBy(x => x.GetInterfaceIndex());
                         return true;
                     }
                 }

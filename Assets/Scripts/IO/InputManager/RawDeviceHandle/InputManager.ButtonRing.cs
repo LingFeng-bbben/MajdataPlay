@@ -392,6 +392,7 @@ namespace MajdataPlay.IO
                 {
                     Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
                     _ioThreadSync.ReadBufferMemory = memory;
+                    _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
                     MajDebug.Log($"ButtonRing connected\nDevice: {device}");
@@ -478,7 +479,8 @@ namespace MajdataPlay.IO
                         }
                         else if (manufacturer == DeviceManufacturer.Dao)
                         {
-                            return "SkyStar Maimoller";
+                            //return "SkyStar Maimoller";
+                            return string.Empty;
                         }
                         else
                         {
