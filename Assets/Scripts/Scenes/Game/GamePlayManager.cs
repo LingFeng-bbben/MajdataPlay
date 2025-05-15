@@ -159,10 +159,12 @@ namespace MajdataPlay.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
+#if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
                 Cursor.visible = false;
             }
+#endif
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
@@ -724,7 +726,7 @@ namespace MajdataPlay.Game
             }
         }
 
-        #endregion
+#endregion
 
         #region GameUpdate
         internal void OnPreUpdate()
