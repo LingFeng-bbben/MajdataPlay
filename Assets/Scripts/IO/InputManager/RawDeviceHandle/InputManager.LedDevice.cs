@@ -25,10 +25,13 @@ namespace MajdataPlay.IO
             }
 
             static Task _ledDeviceUpdateLoop = Task.CompletedTask;
+
+            readonly static bool _isThrottlerEnabled = false;
             readonly static bool _isEnabled = true;
             static LedDevice()
             {
                 _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
+                _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
                 if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100)
                 {
@@ -145,7 +148,7 @@ namespace MajdataPlay.IO
                         {
                             var color = ledColors[i];
                             ref var latestReport = ref latestReports[i];
-                            if (latestReport.Color == color)
+                            if (latestReport.Color == color && _isThrottlerEnabled)
                             {
                                 continue;
                             }
@@ -292,7 +295,7 @@ namespace MajdataPlay.IO
                             {
                                 var color = ledColors[i];
                                 ref var latestReport = ref latestReports[i];
-                                if (latestReport.Color == color)
+                                if (latestReport.Color == color && _isThrottlerEnabled)
                                 {
                                     continue;
                                 }

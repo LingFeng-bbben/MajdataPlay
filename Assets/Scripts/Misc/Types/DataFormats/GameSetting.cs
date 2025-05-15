@@ -199,6 +199,7 @@ namespace MajdataPlay.Types
     {
         public bool Enable { get; set; } = true;
         public int RefreshRateMs { get; set; } = 100;
+        public bool Throttler { get; set; } = false;
         public SerialPortOptions SerialPortOptions { get; set; } = new()
         {
             Port = 21,
