@@ -1,4 +1,3 @@
-using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -10,6 +9,7 @@ using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.View;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Numerics;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
@@ -230,7 +230,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected abstract void LoadSkin();
         protected abstract void PlaySFX();
-        protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
+        protected abstract void PlayJudgeSFX(in NoteJudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
             if (_isJudged)

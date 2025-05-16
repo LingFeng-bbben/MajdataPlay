@@ -1,5 +1,5 @@
-﻿using MajdataPlay.Extensions;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -97,7 +97,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         /// <param name="position"></param>
         /// <param name="isBreak"></param>
         /// <param name="judge"></param>
-        public void PlayEffect(int position, in JudgeResult judgeResult)
+        public void PlayEffect(int position, in NoteJudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
             LedRing.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
@@ -127,7 +127,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             _effectPool.ResetHoldEffect(sensorPos);
         }
-        public void PlayTouchEffect(SensorArea sensorPos, in JudgeResult judgeResult)
+        public void PlayTouchEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -136,11 +136,11 @@ namespace MajdataPlay.Game.Notes.Controllers
             }
             _effectPool.Play(judgeResult, sensorPos);
         }
-        public void PlayTouchHoldEffect(SensorArea sensorPos, in JudgeResult judgeResult)
+        public void PlayTouchHoldEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
         }
-        public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
+        public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in NoteJudgeResult judgeResult)
         {
             var result = judgeResult.Grade;
             var resultValue = (int)result;

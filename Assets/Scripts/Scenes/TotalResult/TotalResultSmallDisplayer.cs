@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using MajdataPlay;
+using MajdataPlay.Game.Notes;
 
 namespace MajdataPlay.TotalResult
 {

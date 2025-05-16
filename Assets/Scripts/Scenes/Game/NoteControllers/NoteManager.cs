@@ -5,10 +5,9 @@ using UnityEngine;
 using MajdataPlay.References;
 using MajdataPlay.IO;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Extensions;
 using System;
 using MajdataPlay.Editor;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers

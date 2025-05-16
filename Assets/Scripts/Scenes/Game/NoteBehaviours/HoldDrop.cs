@@ -4,11 +4,12 @@ using MajdataPlay.Types;
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
-using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Numerics;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
@@ -263,14 +264,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
 
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = false,
@@ -298,7 +299,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -306,7 +307,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }

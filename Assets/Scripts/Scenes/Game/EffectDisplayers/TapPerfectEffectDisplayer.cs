@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+using MajdataPlay.Game.Notes;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace MajdataPlay.Game
         {
             SetActive(false);
         }
-        public void PlayEffect(in JudgeResult judgeResult)
+        public void PlayEffect(in NoteJudgeResult judgeResult)
         {
             if(judgeResult.IsBreak)
             {
@@ -58,7 +59,7 @@ namespace MajdataPlay.Game
                 PlayTapEffect(judgeResult);
             }
         }
-        void PlayTapEffect(in JudgeResult judgeResult)
+        void PlayTapEffect(in NoteJudgeResult judgeResult)
         {
             var grade = judgeResult.Grade;
             switch (grade)
@@ -74,7 +75,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void PlayBreakEffect(in JudgeResult judgeResult)
+        void PlayBreakEffect(in NoteJudgeResult judgeResult)
         {
             var grade = judgeResult.Grade;
             switch (grade)

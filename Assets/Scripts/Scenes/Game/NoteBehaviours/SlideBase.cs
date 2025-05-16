@@ -2,7 +2,6 @@
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,6 +11,7 @@ using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Numerics;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
@@ -269,7 +269,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _slideBars[i].layer = 3;
             }
         }
-        protected bool PlaySlideOK(in JudgeResult result)
+        protected bool PlaySlideOK(in NoteJudgeResult result)
         {
             if (_slideOK is null)
                 return false;
@@ -343,7 +343,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _isSoundPlayed = true;
             }
         }
-        protected sealed override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected sealed override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
                 _audioEffMana.PlayBreakSlideEndSound();

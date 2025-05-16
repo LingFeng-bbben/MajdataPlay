@@ -1,9 +1,7 @@
-﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Game.Notes;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 
@@ -72,7 +70,7 @@ namespace MajdataPlay.Game
             _fastLateDisplayerA.OnLateUpdate();
             _fastLateDisplayerB.OnLateUpdate();
         }
-        public void Play(in JudgeResult judgeResult)
+        public void Play(in NoteJudgeResult judgeResult)
         {
             _judgeTextDisplayer.Reset();
             _fastLateDisplayerA.Reset();
@@ -96,7 +94,7 @@ namespace MajdataPlay.Game
                 }
             }
         }
-        void PlayEffect(in JudgeResult judgeResult)
+        void PlayEffect(in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -108,7 +106,7 @@ namespace MajdataPlay.Game
             }
             _judgeEffectDisplayer.PlayEffect(judgeResult);
         }
-        bool PlayResult(in JudgeResult judgeResult)
+        bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -122,7 +120,7 @@ namespace MajdataPlay.Game
             _judgeTextDisplayer.Play(judgeResult);
             return true;
         }
-        bool PlayFastLate(in JudgeResult judgeResult, FastLateDisplayer displayer)
+        bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
             if (judgeResult.IsBreak)
@@ -136,7 +134,7 @@ namespace MajdataPlay.Game
             displayer.Play(judgeResult);
             return true;
         }
-        static bool IsClassCAvailable(in JudgeResult judgeResult)
+        static bool IsClassCAvailable(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return false;

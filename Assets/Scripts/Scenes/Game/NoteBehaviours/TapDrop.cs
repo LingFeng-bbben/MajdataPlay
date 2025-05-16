@@ -1,7 +1,9 @@
-﻿using MajdataPlay.Game.Buffers;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.References;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
@@ -138,7 +140,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             SetActive(false);
             RendererState = RendererStatus.Off;
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -152,7 +154,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -160,7 +162,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }

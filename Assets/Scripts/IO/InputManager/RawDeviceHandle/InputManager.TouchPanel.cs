@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -11,6 +10,7 @@ using HidSharp;
 using MychIO.Device;
 using System.IO;
 using UnityEngine;
+using MajdataPlay.Numerics;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;

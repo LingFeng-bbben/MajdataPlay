@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+using MajdataPlay.Game.Notes;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -63,7 +64,7 @@ namespace MajdataPlay.Game
         {
             SetActive(false);
         }
-        public void Play(in JudgeResult judgeResult)
+        public void Play(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast || judgeResult.Diff == 0)
             {

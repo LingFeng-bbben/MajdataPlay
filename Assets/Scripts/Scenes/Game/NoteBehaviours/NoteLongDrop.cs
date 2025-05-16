@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours

@@ -1,9 +1,11 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -150,7 +152,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                             > JudgeGrade.Perfect => -1,
                             _ => 0
                         };
-                        PlayJudgeSFX(new JudgeResult()
+                        PlayJudgeSFX(new NoteJudgeResult()
                         {
                             Grade = _judgeResult,
                             IsBreak = IsBreak,
@@ -261,7 +263,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _multTouchHandler.Unregister(_sensorPos);
             _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -278,7 +280,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = false,
@@ -655,7 +657,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             _audioEffMana.PlayTouchHoldSound();
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;

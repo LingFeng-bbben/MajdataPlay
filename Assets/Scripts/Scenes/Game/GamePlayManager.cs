@@ -21,6 +21,8 @@ using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Recording;
 using UnityEngine.Profiling;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 
 namespace MajdataPlay.Game
 {

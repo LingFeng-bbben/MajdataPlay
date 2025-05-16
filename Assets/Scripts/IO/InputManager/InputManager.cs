@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System;
 using System.Linq;
-using MajdataPlay.Extensions;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MychIO;
 using DeviceType = MajdataPlay.IO.ButtonRingDeviceType;
@@ -15,6 +13,7 @@ using System.Collections.Concurrent;
 using System.Security.Policy;
 using HidSharp.Platform.Windows;
 using System.Threading;
+using MajdataPlay.Numerics;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;

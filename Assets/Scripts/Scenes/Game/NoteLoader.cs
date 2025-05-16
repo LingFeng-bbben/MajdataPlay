@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using MajSimai;
-using MajdataPlay.Types;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
-using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
@@ -19,6 +17,8 @@ using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Notes.Behaviours;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 
 namespace MajdataPlay.Game
 {

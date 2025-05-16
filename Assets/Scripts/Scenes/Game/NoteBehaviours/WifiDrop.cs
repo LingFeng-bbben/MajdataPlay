@@ -1,9 +1,11 @@
-﻿using MajdataPlay.Collections;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Game.Notes.Slide.Utils;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -498,7 +500,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             base.End();
             ConvertJudgeGrade(ref _judgeResult);
             JudgeResultCorrection(ref _judgeResult);
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 Diff = _judgeDiff,

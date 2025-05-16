@@ -10,10 +10,11 @@ using System.Linq;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
-using MajdataPlay.Extensions;
 using Random = UnityEngine.Random;
 using MajdataPlay.Game;
 using MajdataPlay.List;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 #nullable enable
 namespace MajdataPlay.Result
 {

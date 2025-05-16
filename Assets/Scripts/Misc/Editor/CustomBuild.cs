@@ -4,7 +4,7 @@ using System;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
-namespace MajdataPlay.Misc.Editor
+namespace MajdataPlay.Editor
 {
     public class CustomBuild
     {
@@ -26,15 +26,15 @@ namespace MajdataPlay.Misc.Editor
         static (BuildTarget, int, string) Handle()
         {
             // Gather values from args
-            Dictionary<string, string> options = GetValidatedOptions();
+            var options = GetValidatedOptions();
 
             // Set version for this build
-            if (options.TryGetValue("buildVersion", out string buildVersion) && buildVersion != "none")
+            if (options.TryGetValue("buildVersion", out var buildVersion) && buildVersion != "none")
             {
                 PlayerSettings.bundleVersion = buildVersion;
                 PlayerSettings.macOS.buildNumber = buildVersion;
             }
-            if (options.TryGetValue("androidVersionCode", out string versionCode) && versionCode != "0")
+            if (options.TryGetValue("androidVersionCode", out var versionCode) && versionCode != "0")
             {
                 PlayerSettings.Android.bundleVersionCode = int.Parse(options["androidVersionCode"]);
             }
@@ -46,22 +46,22 @@ namespace MajdataPlay.Misc.Editor
                 case BuildTarget.Android:
                     {
                         EditorUserBuildSettings.buildAppBundle = options["customBuildPath"].EndsWith(".aab");
-                        if (options.TryGetValue("androidKeystoreName", out string keystoreName) &&
+                        if (options.TryGetValue("androidKeystoreName", out var keystoreName) &&
                             !string.IsNullOrEmpty(keystoreName))
                         {
                             PlayerSettings.Android.useCustomKeystore = true;
                             PlayerSettings.Android.keystoreName = keystoreName;
                         }
-                        if (options.TryGetValue("androidKeystorePass", out string keystorePass) &&
+                        if (options.TryGetValue("androidKeystorePass", out var keystorePass) &&
                             !string.IsNullOrEmpty(keystorePass))
                             PlayerSettings.Android.keystorePass = keystorePass;
-                        if (options.TryGetValue("androidKeyaliasName", out string keyaliasName) &&
+                        if (options.TryGetValue("androidKeyaliasName", out var keyaliasName) &&
                             !string.IsNullOrEmpty(keyaliasName))
                             PlayerSettings.Android.keyaliasName = keyaliasName;
-                        if (options.TryGetValue("androidKeyaliasPass", out string keyaliasPass) &&
+                        if (options.TryGetValue("androidKeyaliasPass", out var keyaliasPass) &&
                             !string.IsNullOrEmpty(keyaliasPass))
                             PlayerSettings.Android.keyaliasPass = keyaliasPass;
-                        if (options.TryGetValue("androidTargetSdkVersion", out string androidTargetSdkVersion) &&
+                        if (options.TryGetValue("androidTargetSdkVersion", out var androidTargetSdkVersion) &&
                             !string.IsNullOrEmpty(androidTargetSdkVersion))
                         {
                             var targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
@@ -86,7 +86,7 @@ namespace MajdataPlay.Misc.Editor
             }
 
             // Determine subtarget
-            int buildSubtarget = 0;
+            var buildSubtarget = 0;
 #if UNITY_2021_2_OR_NEWER
             if (!options.TryGetValue("standaloneBuildSubtarget", out var subtargetValue) || !Enum.TryParse(subtargetValue, out StandaloneBuildSubtarget buildSubtargetValue))
             {
@@ -99,15 +99,15 @@ namespace MajdataPlay.Misc.Editor
 
         private static Dictionary<string, string> GetValidatedOptions()
         {
-            ParseCommandLineArguments(out Dictionary<string, string> validatedOptions);
+            ParseCommandLineArguments(out var validatedOptions);
 
-            if (!validatedOptions.TryGetValue("projectPath", out string _))
+            if (!validatedOptions.TryGetValue("projectPath", out var _))
             {
                 Console.WriteLine("Missing argument -projectPath");
                 EditorApplication.Exit(110);
             }
 
-            if (!validatedOptions.TryGetValue("buildTarget", out string buildTarget))
+            if (!validatedOptions.TryGetValue("buildTarget", out var buildTarget))
             {
                 Console.WriteLine("Missing argument -buildTarget");
                 EditorApplication.Exit(120);
@@ -119,14 +119,14 @@ namespace MajdataPlay.Misc.Editor
                 EditorApplication.Exit(121);
             }
 
-            if (!validatedOptions.TryGetValue("customBuildPath", out string _))
+            if (!validatedOptions.TryGetValue("customBuildPath", out var _))
             {
                 Console.WriteLine("Missing argument -customBuildPath");
                 EditorApplication.Exit(130);
             }
 
             const string defaultCustomBuildName = "TestBuild";
-            if (!validatedOptions.TryGetValue("customBuildName", out string customBuildName))
+            if (!validatedOptions.TryGetValue("customBuildName", out var customBuildName))
             {
                 Console.WriteLine($"Missing argument -customBuildName, defaulting to {defaultCustomBuildName}.");
                 validatedOptions.Add("customBuildName", defaultCustomBuildName);
@@ -143,7 +143,7 @@ namespace MajdataPlay.Misc.Editor
         private static void ParseCommandLineArguments(out Dictionary<string, string> providedArguments)
         {
             providedArguments = new Dictionary<string, string>();
-            string[] args = Environment.GetCommandLineArgs();
+            var args = Environment.GetCommandLineArgs();
 
             Console.WriteLine(
                 $"{Eol}" +
@@ -157,15 +157,15 @@ namespace MajdataPlay.Misc.Editor
             for (int current = 0, next = 1; current < args.Length; current++, next++)
             {
                 // Parse flag
-                bool isFlag = args[current].StartsWith("-");
+                var isFlag = args[current].StartsWith("-");
                 if (!isFlag) continue;
-                string flag = args[current].TrimStart('-');
+                var flag = args[current].TrimStart('-');
 
                 // Parse optional value
-                bool flagHasValue = next < args.Length && !args[next].StartsWith("-");
-                string value = flagHasValue ? args[next].TrimStart('-') : "";
-                bool secret = Secrets.Contains(flag);
-                string displayValue = secret ? "*HIDDEN*" : "\"" + value + "\"";
+                var flagHasValue = next < args.Length && !args[next].StartsWith("-");
+                var value = flagHasValue ? args[next].TrimStart('-') : "";
+                var secret = Secrets.Contains(flag);
+                var displayValue = secret ? "*HIDDEN*" : "\"" + value + "\"";
 
                 // Assign
                 Console.WriteLine($"Found flag \"{flag}\" with value {displayValue}.");
@@ -173,12 +173,12 @@ namespace MajdataPlay.Misc.Editor
             }
         }
 
-        private static void Build(BuildTarget buildTarget, int buildSubtarget, string filePath,BuildOptions? options)
+        private static void Build(BuildTarget buildTarget, int buildSubtarget, string filePath, BuildOptions? options)
         {
             var buildOption = BuildOptions.None;
             if (options is not null)
                 buildOption = (BuildOptions)options;
-            string[] scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
+            var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 scenes = scenes,
@@ -190,8 +190,8 @@ namespace MajdataPlay.Misc.Editor
                 subtarget = buildSubtarget
 #endif
             };
-            
-            BuildSummary buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
+
+            var buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
             ReportSummary(buildSummary);
             ExitWithResult(buildSummary.result);
         }

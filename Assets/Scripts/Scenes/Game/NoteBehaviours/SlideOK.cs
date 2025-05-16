@@ -1,6 +1,6 @@
-﻿using MajdataPlay.Game.Notes.Slide;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Game.Notes.Slide;
 using MajdataPlay.Interfaces;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -37,7 +37,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             SetActiveInternal(false);
         }
-        public void PlayResult(in JudgeResult result)
+        public void PlayResult(in NoteJudgeResult result)
         {
             var isBreak = false;
             switch (result.Grade)

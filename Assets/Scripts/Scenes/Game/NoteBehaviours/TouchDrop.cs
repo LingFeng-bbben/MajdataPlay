@@ -1,9 +1,11 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -176,7 +178,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
 
             _multTouchHandler.Unregister(_sensorPos);
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 Diff = _judgeDiff,
@@ -516,7 +518,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -524,7 +526,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;

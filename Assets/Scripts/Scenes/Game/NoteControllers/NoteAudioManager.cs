@@ -1,4 +1,3 @@
-using MajdataPlay.Types;
 using UnityEngine;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
@@ -238,7 +237,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 MajDebug.LogException(e);
             }
         }
-        public void PlayTapSound(in JudgeResult judgeResult)
+        public void PlayTapSound(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;
@@ -285,7 +284,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                     break;
             }
         }
-        void PlayBreakTapSound(in JudgeResult judgeResult)
+        void PlayBreakTapSound(in NoteJudgeResult judgeResult)
         {
             switch (judgeResult.Grade)
             {

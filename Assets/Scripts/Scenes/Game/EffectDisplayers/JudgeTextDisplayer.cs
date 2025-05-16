@@ -1,4 +1,6 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Game.Notes;
+using MajdataPlay.Numerics;
 using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
@@ -83,7 +85,7 @@ namespace MajdataPlay.Game
         {
             SetActive(false);
         }
-        public void Play(in JudgeResult judgeResult, bool isClassC = false)
+        public void Play(in NoteJudgeResult judgeResult, bool isClassC = false)
         {
             SetActive(true);
             var isBreak = judgeResult.IsBreak;
@@ -100,7 +102,7 @@ namespace MajdataPlay.Game
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
-        void LoadTapSkin(in JudgeResult judgeResult,bool isClassC = false)
+        void LoadTapSkin(in NoteJudgeResult judgeResult,bool isClassC = false)
         {
             switch (judgeResult.Grade)
             {
@@ -165,7 +167,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void LoadBreakSkin(in JudgeResult judgeResult, bool isClassC = false)
+        void LoadBreakSkin(in NoteJudgeResult judgeResult, bool isClassC = false)
         {
             switch (judgeResult.Grade)
             {
