@@ -78,6 +78,7 @@ namespace MajdataPlay
             MajDebug.Log(s);
             MajDebug.Log($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
+            MajEnv.Init();
             base.Awake();
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;

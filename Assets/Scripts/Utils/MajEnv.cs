@@ -33,7 +33,7 @@ namespace MajdataPlay.Utils
         public const int HTTP_TIMEOUT_MS = 4000;
 
         public static event Action? OnApplicationQuit;
-        public static LibVLC VLCLibrary { get; }
+        public static LibVLC VLCLibrary { get; private set; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
@@ -157,7 +157,9 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = UserSettings.Debug.MainThreadPriority;
-
+        }
+        internal static void Init()
+        {
             MajDebug.Log("[VLC] init");
             if (VLCLibrary != null)
             {
