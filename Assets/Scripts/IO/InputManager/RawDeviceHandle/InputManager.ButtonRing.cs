@@ -415,6 +415,7 @@ namespace MajdataPlay.IO
                                 case DeviceManufacturer.Dao:
                                     _ioThreadSync.Notify();
                                     DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                    _ioThreadSync.WaitNotify();
                                     break;
                             }
                             

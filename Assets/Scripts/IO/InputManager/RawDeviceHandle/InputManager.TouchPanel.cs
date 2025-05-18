@@ -491,6 +491,7 @@ namespace MajdataPlay.IO
                         {
                             _ioThreadSync.WaitNotify();
                             DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                            _ioThreadSync.Notify();
                             lock (_touchPanelUpdateLoop)
                             {
                                 for (var i = 0; i < 35; i++)
