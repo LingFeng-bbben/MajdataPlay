@@ -594,7 +594,7 @@ namespace MajdataPlay.Game
         {
             if (_audioSample is null)
                 return;
-
+            var token = _cts.Token;
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
@@ -662,6 +662,7 @@ namespace MajdataPlay.Game
                         _bgManager.SetBackgroundDim(dim);
                     }
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                    token.ThrowIfCancellationRequested();
                 }
             }
             else
@@ -682,18 +683,31 @@ namespace MajdataPlay.Game
                 var originVol = _setting.Audio.Volume.BGM;
                 
                 BgHeaderFadeOut();
-                while (elapsedSeconds < 3)
+                try
                 {
-                    _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
-                    await UniTask.Yield();
-                    elapsedSeconds += Time.deltaTime;
+                    while (elapsedSeconds < 3)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
+                        await UniTask.Yield();
+                        elapsedSeconds += MajTimeline.DeltaTime;
+                    }
                 }
-                _audioSample.Volume = originVol;
+                catch(Exception e)
+                {
+                    MajDebug.LogException(e);
+                }
+                finally
+                {
+                    _audioSample.Volume = originVol;
+                }
             }
             else
             {
+                token.ThrowIfCancellationRequested();
                 _audioSample.Volume = _setting.Audio.Volume.BGM;
                 await UniTask.Delay(3000);
+                token.ThrowIfCancellationRequested();
                 BgHeaderFadeOut();
             }
         }
@@ -864,10 +878,6 @@ namespace MajdataPlay.Game
         {
             if (!_isFastRetryAvailable && !_isTrackSkipAvailable)
                 return;
-            else if (IsPracticeMode)
-                return;
-            else if (_thisFrameSec < 5f)
-                return;
             switch(State)
             {
                 case GamePlayStatus.Running:
@@ -900,11 +910,11 @@ namespace MajdataPlay.Game
                     _2367PressTime = 0;
                     return;
             }
-            if(_2367PressTime >= 0.3f && _isTrackSkipAvailable)
+            if(_2367PressTime >= 0.5f && _isTrackSkipAvailable)
             {
                 BackToList().Forget();
             }
-            else if(_3456PressTime >= 0.3f && _isFastRetryAvailable)
+            else if(_3456PressTime >= 0.5f && _isFastRetryAvailable)
             {
                 FastRetry().Forget();
             }
