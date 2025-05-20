@@ -2,8 +2,7 @@
 using HidSharp.Platform.Windows;
 using LibVLCSharp;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using MychIO;
 using System;
 using System.Collections.Concurrent;
@@ -32,11 +31,15 @@ namespace MajdataPlay.Utils
         public const int HTTP_TIMEOUT_MS = 4000;
 
         public static event Action? OnApplicationQuit;
-        public static LibVLC VLCLibrary { get; }
+        public static LibVLC VLCLibrary { get; private set; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
-        
+#if UNITY_EDITOR
+        public static bool IsEditor { get; } = true;
+#else
+        public static bool IsEditor { get; } = false;
+#endif
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
@@ -138,10 +141,10 @@ namespace MajdataPlay.Utils
                 File.WriteAllText(SettingPath, json);
             }
 
-            UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.PollingRateMs);
-            UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.PollingRateMs);
-            UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.ButtonRing.DebounceThresholdMs);
-            UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.Misc.InputDevice.TouchPanel.DebounceThresholdMs);
+            UserSettings.IO.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.PollingRateMs);
+            UserSettings.IO.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.PollingRateMs);
+            UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
             UserSettings.Display.InnerJudgeDistance = UserSettings.Display.InnerJudgeDistance.Clamp(0, 1);
             UserSettings.Display.OuterJudgeDistance = UserSettings.Display.OuterJudgeDistance.Clamp(0, 1);
 
@@ -152,7 +155,9 @@ namespace MajdataPlay.Utils
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = UserSettings.Debug.MainThreadPriority;
-
+        }
+        internal static void Init()
+        {
             MajDebug.Log("[VLC] init");
             if (VLCLibrary != null)
             {
@@ -180,6 +185,8 @@ namespace MajdataPlay.Utils
         }
         internal static void OnApplicationQuitRequested()
         {
+            SharedHttpClient.CancelPendingRequests();
+            SharedHttpClient.Dispose();
             VLCLibrary.Dispose();
             _globalCTS.Cancel();
             if (OnApplicationQuit is not null)

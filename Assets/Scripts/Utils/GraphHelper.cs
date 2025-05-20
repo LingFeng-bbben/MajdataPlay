@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Extensions;
-using SkiaSharp;
+﻿using SkiaSharp;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

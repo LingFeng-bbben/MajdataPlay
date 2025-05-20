@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using MajSimai;
@@ -12,7 +11,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Timer;
-using MajdataPlay.Game.Types;
 using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;
@@ -20,6 +18,9 @@ using System.Text.Json;
 using MajdataPlay.Editor;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Recording;
+using UnityEngine.Profiling;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 
 namespace MajdataPlay.Game
 {
@@ -159,7 +160,10 @@ namespace MajdataPlay.Game
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
 #if !UNITY_EDITOR
-            Cursor.visible = false;
+            if(_setting.Debug.HideCursorInGame)
+            {
+                Cursor.visible = false;
+            }
 #endif
             if (InputManager.IsTouchPanelConnected)
             {
@@ -385,7 +389,7 @@ namespace MajdataPlay.Game
             }
             catch(InvalidSimaiMarkupException syntaxE)
             {
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Invalid syntax")}\n{syntaxE.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Invalid syntax".i18n()}\n(at L{syntaxE.Line}:C{syntaxE.Column}) \"{syntaxE.Content}\"\n{syntaxE.Message}", Color.red);
                 MajDebug.LogError(syntaxE);
                 return;
             }
@@ -616,7 +620,7 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();
             }
-            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var wait4Recorder = RecordHelper.StartRecordAsync($"{_songDetail.Title}_{_songDetail.Designers[(int)_gameInfo.CurrentLevel]}");
@@ -625,9 +629,12 @@ namespace MajdataPlay.Game
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
-
-            await wait4Recorder;
-
+            if(wait4Recorder.IsFaulted)
+            {
+                throw wait4Recorder.Exception.GetBaseException();
+            }
+            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.Delay(1000);
             MajInstances.SceneSwitcher.FadeOut();
             await UniTask.Delay(100); //wait the animation
 
@@ -719,22 +726,27 @@ namespace MajdataPlay.Game
             }
         }
 
-        #endregion
+#endregion
 
         #region GameUpdate
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnPreUpdate");
             AudioTimeUpdate();
             ComponentPreUpdate();
+            Profiler.EndSample();
         }
         internal void OnUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnUpdate");
             NoteManagerUpdate();
             GameControlUpdate();
             FnKeyStateUpdate();
+            Profiler.EndSample();
         }
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("GamePlayManager.OnLateUpdate");
             switch (State)
             {
                 case GamePlayStatus.WaitForEnd:
@@ -755,6 +767,7 @@ namespace MajdataPlay.Game
             {
                 _bgManager.OnLateUpdate();
             }
+            Profiler.EndSample();
         }
         void GameControlUpdate()
         {
@@ -952,25 +965,25 @@ namespace MajdataPlay.Game
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.yellow);
+                    LedRing.SetAllLight(Color.yellow);
                     break;
                 case ComboState.AP:
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.red);
+                    LedRing.SetAllLight(Color.red);
                     break;
                 case ComboState.FCPlus:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.green);
+                    LedRing.SetAllLight(Color.green);
                     break;
                 case ComboState.FC:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LightManager.SetAllLight(Color.green);
+                    LedRing.SetAllLight(Color.green);
                     break;
             }
         }

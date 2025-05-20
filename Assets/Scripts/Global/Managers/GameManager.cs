@@ -1,4 +1,3 @@
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using System;
@@ -16,6 +15,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using MajdataPlay.IO;
 using MajdataPlay.Test;
+using MajdataPlay.Game;
 
 namespace MajdataPlay
 {
@@ -55,7 +55,11 @@ namespace MajdataPlay
         Material _breakMaterial;
         [SerializeField]
         Material _defaultMaterial;
-        public bool IsEnterView = false;
+
+        [SerializeField]
+        bool _isEnterView = false;
+        [SerializeField]
+        bool _isEnterTest = false;
 
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
@@ -73,6 +77,7 @@ namespace MajdataPlay
             MajDebug.Log(s);
             MajDebug.Log($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
+            MajEnv.Init();
             base.Awake();
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -93,7 +98,11 @@ namespace MajdataPlay
             }
 
 #if UNITY_EDITOR
-            if (IsEnterView)
+            if(_isEnterTest)
+            {
+                MajEnv.Mode = RunningMode.Test;
+            }
+            else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
                 Setting.Mod.AutoPlay = AutoplayMode.Enable;
@@ -269,7 +278,7 @@ namespace MajdataPlay
         }
         public void EnableGC()
         {
-            if (!Setting.Debug.DisableGCInGameing)
+            if (!Setting.Debug.DisableGCInGame)
                 return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
@@ -279,7 +288,7 @@ namespace MajdataPlay
         }
         public void DisableGC() 
         {
-            if (!Setting.Debug.DisableGCInGameing)
+            if (!Setting.Debug.DisableGCInGame)
                 return;
             GC.Collect();
 #if !UNITY_EDITOR

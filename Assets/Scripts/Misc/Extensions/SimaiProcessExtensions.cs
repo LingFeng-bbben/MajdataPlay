@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Numerics;
 using MajSimai;
 using System.Collections.Generic;
 using System.Linq;

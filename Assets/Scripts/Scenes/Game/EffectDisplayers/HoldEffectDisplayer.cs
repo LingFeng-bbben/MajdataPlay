@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Notes;
 using MajdataPlay.Utils;
 using System.Windows.Forms;
 using UnityEngine;

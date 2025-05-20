@@ -1,5 +1,5 @@
-﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+﻿using MajdataPlay.Game;
+using MajdataPlay.Game.Notes;
 using System.Collections;
 using System.Collections.Generic;
 

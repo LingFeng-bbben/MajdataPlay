@@ -3,18 +3,13 @@ using Cysharp.Threading.Tasks.Linq;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Unity.VisualScripting;
-using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -50,11 +45,17 @@ namespace MajdataPlay.Utils
 
         static int _collectionIndex = 0;
         static MyFavoriteSongCollection _myFavorite = new();
+
+        readonly static DanInfo? _userFavorites = null;
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
         readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
 
         static SongStorage()
         {
+            if(File.Exists(MY_FAVORITE_STORAGE_PATH))
+            {
+                Serializer.Json.TryDeserialize(File.ReadAllText(MY_FAVORITE_STORAGE_PATH), out _userFavorites);
+            }
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
@@ -140,23 +141,18 @@ namespace MajdataPlay.Utils
                 }
                 collections.Add(new SongCollection("All", allcharts.ToArray()));
                 MajDebug.Log("MyFavorite");
-                var favoriteListPath = Path.Combine(MY_FAVORITE_STORAGE_PATH);
-                if(File.Exists(favoriteListPath))
+                if(_userFavorites is not null)
                 {
-                    var (result, favoriteInfo) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(favoriteListPath));
-                    if (result && favoriteInfo is not null)
-                    {
-                        var hashSet = favoriteInfo.SongHashs;
-                        var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
-                                            .OrderByDescending(x => x.IsOnline)
-                                            .GroupBy(x => x.Hash)
-                                            .Select(x => x.FirstOrDefault())
-                                            .Where(x => x is not null)
-                                            .ToList();
-                        MajDebug.Log(favoriteSongs.Count);
-                        hashSet = favoriteSongs.Select(o => o.Hash).ToArray();
-                        _myFavorite = new(favoriteSongs, new HashSet<string>(hashSet));
-                    }
+                    var hashSet = _userFavorites.SongHashs;
+                    var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
+                                                 .OrderByDescending(x => x.IsOnline)
+                                                 .GroupBy(x => x.Hash)
+                                                 .Select(x => x.FirstOrDefault())
+                                                 .Where(x => x is not null)
+                                                 .ToList();
+                    MajDebug.Log(favoriteSongs.Count);
+                    hashSet = favoriteSongs.Select(o => o.Hash).ToArray();
+                    _myFavorite = new(favoriteSongs, new HashSet<string>(hashSet));
                 }
                 //The collections and _myFavorite share a same ref of original List<T>
                 collections.Add(_myFavorite);

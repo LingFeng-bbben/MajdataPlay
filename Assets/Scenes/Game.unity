@@ -3466,7 +3466,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 531443362}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Script: {fileID: 11500000, guid: e0781b2d7d6ff9b44ab61de025154bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _preUpdateElapsedMs: 0
@@ -7748,7 +7748,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1266702672}
-  - component: {fileID: 1266702673}
   m_Layer: 0
   m_Name: TapLines
   m_TagString: Untagged
@@ -7771,22 +7770,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1266702673
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1266702671}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
 --- !u!1 &1292823079
 GameObject:
   m_ObjectHideFlags: 1
@@ -11157,15 +11140,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96543ac24f695e24fae7c56e37ba763c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _noteUpdaters:
-  - {fileID: 1469190173}
-  - {fileID: 470916935}
-  - {fileID: 1241949067}
-  - {fileID: 1390256245}
-  - {fileID: 1265281308}
-  - {fileID: 1006855707}
-  - {fileID: 531443364}
-  - {fileID: 1266702673}
   _preUpdateElapsedMs: 0
   _updateElapsedMs: 0
   _fixedUpdateElapsedMs: 0

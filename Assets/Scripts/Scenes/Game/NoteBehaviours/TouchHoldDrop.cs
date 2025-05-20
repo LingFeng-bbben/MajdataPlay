@@ -1,10 +1,11 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; } = null;
@@ -81,7 +83,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         const int _borderSortOrder = 6;
         const int _pointBorderSortOrder = 1;
 
-        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
         protected override void Awake()
         {
             base.Awake();
@@ -151,7 +152,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                             > JudgeGrade.Perfect => -1,
                             _ => 0
                         };
-                        PlayJudgeSFX(new JudgeResult()
+                        PlayJudgeSFX(new NoteJudgeResult()
                         {
                             Grade = _judgeResult,
                             IsBreak = IsBreak,
@@ -217,7 +218,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (Length < TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC)
             {
-                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+                _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
@@ -262,7 +263,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _multTouchHandler.Unregister(_sensorPos);
             _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -279,7 +280,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (isFirework && !result.IsMissOrTooFast)
                 _effectManager.PlayFireworkEffect(transform.position);
 
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = false,
@@ -353,6 +354,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             TooLateCheck();
             Check();
             BodyCheck();
+            ForceEndCheck();
             Autoplay();
         }
         [OnUpdate]
@@ -509,19 +511,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (!_isJudged || IsEnded)
                 return;
 
-            var remainingTime = GetRemainingTime();
-
             if (_lastHoldState is -1 or 1)
             {
                 _audioEffMana.PlayTouchHoldSound();
             }
 
-            if (remainingTime == 0)
-            {
-                End();
-                return;
-            }
-            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 return;
             }
@@ -542,6 +537,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
+            }
+        }
+        void ForceEndCheck()
+        {
+            if (!_isJudged || IsEnded)
+                return;
+
+            var remainingTime = GetRemainingTime();
+
+            if (remainingTime == 0)
+            {
+                End();
             }
         }
         public override void SetActive(bool state)
@@ -650,7 +657,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             _audioEffMana.PlayTouchHoldSound();
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;

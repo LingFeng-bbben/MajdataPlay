@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Types;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,10 +9,11 @@ using System.Linq;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
-using MajdataPlay.Extensions;
 using Random = UnityEngine.Random;
 using MajdataPlay.Game;
 using MajdataPlay.List;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -58,7 +58,7 @@ namespace MajdataPlay.Result
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
-        UniTask OnlineSaveTask = UniTask.Delay(0);
+        UniTask _scoreSaveTask = UniTask.CompletedTask;
 
         void Start()
         {
@@ -67,7 +67,7 @@ namespace MajdataPlay.Result
             var result = _gameInfo.GetLastResult();
             var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
 
-            LightManager.SetAllLight(Color.white);
+            LedRing.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
@@ -143,11 +143,16 @@ namespace MajdataPlay.Result
             PlayVoice(result.Acc.DX, song).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
-                MajInstances.ScoreManager.SaveScore(result, result.Level);
+                var localScoreSaveTask = MajInstances.ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song is OnlineSongDetail)
                 {
-                    OnlineSaveTask = intractSender.SendScore(score);
+                    var task = intractSender.SendScore(score);
+                    _scoreSaveTask = UniTask.WhenAll(localScoreSaveTask.AsUniTask(), task);
+                }
+                else
+                {
+                    _scoreSaveTask = localScoreSaveTask.AsUniTask();
                 }
             }
             
@@ -212,11 +217,11 @@ namespace MajdataPlay.Result
                 MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 await UniTask.WaitForSeconds(2);
             }
-            await OnlineSaveTask;
+            await _scoreSaveTask;
             await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);
-            LightManager.SetButtonLight(Color.green, 3);
-            LightManager.SetButtonLight(Color.yellow, 4);
+            LedRing.SetButtonLight(Color.green, 3);
+            LedRing.SetButtonLight(Color.yellow, 4);
         }
 
 

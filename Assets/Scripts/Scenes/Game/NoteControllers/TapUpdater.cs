@@ -1,14 +1,24 @@
-﻿using UnityEngine.Profiling;
+﻿using MajdataPlay.Utils;
+using UnityEngine.Profiling;
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public sealed class TapUpdater : NoteUpdater
+    internal sealed class TapUpdater : NoteUpdater
     {
         const string UPDATER_NAME = "TapUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
         const string UPDATE_METHOD_NAME = UPDATER_NAME + ".Update";
         const string FIXED_UPDATE_METHOD_NAME = UPDATER_NAME + ".FixedUpdate";
         const string LATE_UPDATE_METHOD_NAME = UPDATER_NAME + ".LateUpdate";
+
+        void Awake()
+        {
+            Majdata<TapUpdater>.Instance = this;
+        }
+        void OnDestroy()
+        {
+            Majdata<TapUpdater>.Free();
+        }
         internal override void OnFixedUpdate()
         {
             Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);

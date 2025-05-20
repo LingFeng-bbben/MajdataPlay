@@ -1,7 +1,6 @@
 ﻿using MajdataPlay.Game;
 using MajdataPlay.IO;
-using MajdataPlay.References;
-using MajdataPlay.Types;
+using MajdataPlay.Unsafe;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -68,7 +67,7 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
-            LightManager.OnPreUpdate();
+            LedRing.OnPreUpdate();
             _dummyTouchPanelRenderer.OnPreUpdate();
             _dummyLedRenderer.OnPreUpdate();
             try

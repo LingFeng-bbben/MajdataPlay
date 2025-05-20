@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Numerics;
 using System;
 using System.IO;
 using System.Net;

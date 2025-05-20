@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 #nullable enable
 namespace MajdataPlay.Collections
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     public unsafe struct Heap<T> : IEnumerable<T>, ICloneable, IDisposable
     {
         public long Length

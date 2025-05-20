@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+using MajdataPlay.Game.Notes;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace MajdataPlay.Game
             _animator.Update(deltaTime);
             _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
         }
-        public void PlayEffect(in JudgeResult judgeResult)
+        public void PlayEffect(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsBreak)
             {

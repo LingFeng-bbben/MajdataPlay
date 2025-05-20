@@ -1,8 +1,5 @@
-﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Utils;
+﻿using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
@@ -175,7 +172,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="keyIndex"></param>
-        public void Play(in JudgeResult judgeResult, int keyIndex)
+        public void Play(in NoteJudgeResult judgeResult, int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Play(judgeResult);
@@ -185,7 +182,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
-        public void Play(in JudgeResult judgeResult, SensorArea sensorPos)
+        public void Play(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
@@ -195,7 +192,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
-        public void PlayTouchHoldEffect(in JudgeResult judgeResult, SensorArea sensorPos)
+        public void PlayTouchHoldEffect(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);

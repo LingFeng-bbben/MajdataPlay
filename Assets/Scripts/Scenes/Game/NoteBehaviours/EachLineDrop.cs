@@ -1,8 +1,6 @@
 using MajdataPlay.Buffers;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Interfaces;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;

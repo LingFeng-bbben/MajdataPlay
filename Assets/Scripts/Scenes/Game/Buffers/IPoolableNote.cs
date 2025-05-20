@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Game.Notes;
-using MajdataPlay.Types;
 using System;
 
 namespace MajdataPlay.Game.Buffers

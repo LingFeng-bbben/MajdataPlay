@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using System.Threading;
@@ -52,12 +51,12 @@ namespace MajdataPlay.List
                 MajInstances.SceneSwitcher.FadeOut();
                 _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
                 InputManager.BindAnyArea(OnAreaDown);
-                LightManager.SetButtonLight(Color.green, 3);
-                LightManager.SetButtonLight(Color.red, 4);
-                LightManager.SetButtonLight(Color.blue, 2);
-                LightManager.SetButtonLight(Color.blue, 5);
-                LightManager.SetButtonLight(Color.yellow, 6);
-                LightManager.SetButtonLight(Color.yellow, 1);
+                LedRing.SetButtonLight(Color.green, 3);
+                LedRing.SetButtonLight(Color.red, 4);
+                LedRing.SetButtonLight(Color.blue, 2);
+                LedRing.SetButtonLight(Color.blue, 5);
+                LedRing.SetButtonLight(Color.yellow, 6);
+                LedRing.SetButtonLight(Color.yellow, 1);
             }
         }
         void OnDestroy()
@@ -164,7 +163,7 @@ namespace MajdataPlay.List
                                 else
                                 {
                                     await _coverListDisplayer.SwitchToSongListAsync();
-                                    LightManager.SetButtonLight(Color.red, 4);
+                                    LedRing.SetButtonLight(Color.red, 4);
                                 }
                             }
                             else
@@ -243,7 +242,7 @@ namespace MajdataPlay.List
                             if (_coverListDisplayer.IsChartList)
                             {
                                 await _coverListDisplayer.SwitchToDirListAsync();
-                                LightManager.SetButtonLight(Color.white, 4);
+                                LedRing.SetButtonLight(Color.white, 4);
                                 SongStorage.WorkingCollection.Index = 0;
                             }
                             break;

@@ -40,7 +40,7 @@ namespace MajdataPlay.Utils
         }
         public static void StartRecord(string filename)
         {
-            if(!IsEnabled)
+            if(!IsEnabled || !_recorder.IsConnected)
             {
                 return;
             }
@@ -49,7 +49,7 @@ namespace MajdataPlay.Utils
         }
         public static async Task StartRecordAsync(string filename)
         {
-            if (!IsEnabled)
+            if (!IsEnabled || !_recorder.IsConnected)
             {
                 return;
             }
@@ -58,7 +58,7 @@ namespace MajdataPlay.Utils
         }
         public static void StopRecord()
         {
-            if (!IsEnabled)
+            if (!IsEnabled || !_recorder.IsConnected)
             {
                 return;
             }
@@ -66,7 +66,7 @@ namespace MajdataPlay.Utils
         }
         public static async Task StopRecordAsync()
         {
-            if (!IsEnabled)
+            if (!IsEnabled || !_recorder.IsConnected)
             {
                 return;
             }
@@ -78,7 +78,12 @@ namespace MajdataPlay.Utils
         }
         private static void OnApplicationQuit()
         {
+            if (!IsEnabled || !_recorder.IsConnected)
+            {
+                return;
+            }
             _recorder.StopRecord();
+            MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
     }
 }

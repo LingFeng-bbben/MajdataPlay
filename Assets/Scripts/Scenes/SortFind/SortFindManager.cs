@@ -2,11 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using UnityEngine.EventSystems;
 using MajdataPlay.Utils;
 using Cysharp.Threading.Tasks;
-using MajdataPlay;
 
 namespace MajdataPlay.SortFind
 {
@@ -23,7 +21,7 @@ namespace MajdataPlay.SortFind
         void Start()
         {
             EventSystem.current.SetSelectedGameObject(SearchBar.gameObject);
-            LightManager.SetAllLight(Color.black);
+            LedRing.SetAllLight(Color.black);
             InputManager.BindAnyArea(OnAreaDown);
             SearchBar.text = SongStorage.OrderBy.Keyword;
             SetActiveSort(SongStorage.OrderBy.SortBy);

@@ -1,9 +1,11 @@
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
+using System.Linq;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using static UnityEngine.UI.Image;
@@ -27,7 +29,9 @@ namespace MajdataPlay.Setting
         void Start()
         {
             var type = SubOptionObject.GetType();
-            var properties = type.GetProperties();
+            var properties = type.GetProperties()
+                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
+                                 .ToArray();
             _options = new Option[properties.Length];
             foreach(var (i,property) in properties.WithIndex())
             {

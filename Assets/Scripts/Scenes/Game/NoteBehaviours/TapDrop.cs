@@ -1,9 +1,9 @@
-﻿using MajdataPlay.Game.Buffers;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
-using MajdataPlay.References;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -11,6 +11,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState
@@ -138,7 +139,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             SetActive(false);
             RendererState = RendererStatus.Off;
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -152,7 +153,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -160,7 +161,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }

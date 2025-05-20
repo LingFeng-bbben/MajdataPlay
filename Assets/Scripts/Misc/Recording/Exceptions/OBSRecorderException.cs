@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MajdataPlay.Game.Types
+namespace MajdataPlay.Recording
 {
     internal class OBSRecorderException : Exception
     {

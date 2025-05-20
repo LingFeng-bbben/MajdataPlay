@@ -1,7 +1,4 @@
-﻿using MajdataPlay.Interfaces;
-using MajdataPlay.Types;
-using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
+﻿using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using MajdataPlay.Editor;
@@ -10,8 +7,9 @@ using MajdataPlay.Game.Buffers;
 
 namespace MajdataPlay.Game.Notes.Controllers
 {
-    public class NoteUpdater : MonoBehaviour
+    internal class NoteUpdater : MonoBehaviour
     {
+        public double PreUpdateElapsedMs => _preUpdateElapsedMs;
         public double UpdateElapsedMs => _updateElapsedMs;
         public double FixedUpdateElapsedMs => _fixedUpdateElapsedMs;
         public double LateUpdateElapsedMs => _lateUpdateElapsedMs;

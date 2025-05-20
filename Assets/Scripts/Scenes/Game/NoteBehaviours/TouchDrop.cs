@@ -1,10 +1,11 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo, TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; }
@@ -176,7 +178,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
 
             _multTouchHandler.Unregister(_sensorPos);
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 Diff = _judgeDiff,
@@ -386,16 +388,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         if (float.IsNaN(distance))
                             distance = 0f;
 
-                        if (timing > -0.02f)
-                        {
-                            //_justBorderObject.SetActive(true);
-                            SetJustBorderActive(true);
-                        }
                         if (timing >= 0)
                         {
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
                             SetFansPosition(_distance);
+                            SetJustBorderActive(true);
                             State = NoteStatus.Arrived;
                         }
                         else
@@ -520,7 +518,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -528,7 +526,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;

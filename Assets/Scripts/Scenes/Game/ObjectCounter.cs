@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
 using MajSimai;
 using System;
 using System.Collections.Generic;
@@ -12,6 +11,8 @@ using TMPro;
 using Cysharp.Text;
 using System.Threading.Tasks;
 using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Numerics;
+using MajdataPlay.Game.Notes;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -750,7 +751,7 @@ namespace MajdataPlay.Game
                 _noteJudgeDiffList = new(NoteSum);
             });
         }
-        internal void ReportResult<T>(T note, in JudgeResult judgeResult) where T: NoteDrop
+        internal void ReportResult<T>(T note, in NoteJudgeResult judgeResult) where T: NoteDrop
         {
             var grade = judgeResult.Grade;
             var isBreak = judgeResult.IsBreak;
@@ -1148,7 +1149,7 @@ namespace MajdataPlay.Game
                     break;
             }
         }
-        void UpdateNoteScoreCount<T>(T note, in JudgeResult judgeResult) where T : NoteDrop
+        void UpdateNoteScoreCount<T>(T note, in NoteJudgeResult judgeResult) where T : NoteDrop
         {
             var baseScore = 500;
 
@@ -1268,7 +1269,7 @@ namespace MajdataPlay.Game
         /// Update Fast/Late count
         /// </summary>
         /// <param name="judgeResult"></param>
-        void UpdateFastLateCount(in JudgeResult judgeResult)
+        void UpdateFastLateCount(in NoteJudgeResult judgeResult)
         {
             var gameSetting = judgeResult.IsBreak ? MajInstances.Settings.Display.BreakFastLateType : MajInstances.Settings.Display.FastLateType;
             var resultValue = (int)judgeResult.Grade;

@@ -1,17 +1,18 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Utils;
-using MajdataPlay.Types;
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
-using MajdataPlay.Extensions;
 using MajdataPlay.Game.Buffers;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Numerics;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState
@@ -81,9 +82,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         const int _spriteSortOrder = 1;
         const int _exSortOrder = 0;
         const int _endSortOrder = 2;
-
-        readonly static Range<float> DEFAULT_BODY_CHECK_RANGE = new Range<float>(float.MinValue, float.MinValue, ContainsType.Closed);
-
 
         protected override void Awake()
         {
@@ -162,7 +160,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else if (_isJudged)
             {
-                if(isBtnFirst)
+                var remainingTime = GetRemainingTime();
+                if(remainingTime <= 2 * FRAME_LENGTH_SEC)
+                {
+                    return;
+                }
+                if (isBtnFirst)
                 {
                     _noteManager.SimulateButtonPress(_sensorPos);
                 }
@@ -216,9 +219,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _lastHoldState = -2;
             _releaseTime = 0;
 
-            if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            if(IsClassic)
             {
-                _bodyCheckRange = DEFAULT_BODY_CHECK_RANGE;
+                _bodyCheckRange = CLASSIC_HOLD_BODY_CHECK_RANGE;
+            }
+            else if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            {
+                _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
@@ -257,14 +264,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
 
-            var result = new JudgeResult()
+            var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
                 Diff = _judgeDiff
             };
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = false,
@@ -292,7 +299,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected override void PlaySFX()
         {
-            PlayJudgeSFX(new JudgeResult()
+            PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = _judgeResult,
                 IsBreak = IsBreak,
@@ -300,7 +307,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 Diff = _judgeDiff
             });
         }
-        protected override void PlayJudgeSFX(in JudgeResult judgeResult)
+        protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             _audioEffMana.PlayTapSound(judgeResult);
         }
@@ -310,6 +317,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             TooLateCheck();
             Check();
             BodyCheck();
+            ForceEndCheck();
             Autoplay();
         }
         [OnUpdate]
@@ -496,8 +504,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (!_isJudged || IsEnded)
                 return;
 
-            var timing = GetTimeSpanToJudgeTiming();
-            var endTiming = timing - Length;
             var remainingTime = GetRemainingTime();
 
             if (_lastHoldState is -1 or 1)
@@ -505,25 +511,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _effectManager.ResetEffect(StartPos);
             }
 
-            if (IsClassic)
-            {
-                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
-                {
-                    End();
-                    return;
-                }
-                if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || _judgeResult.IsMissOrTooFast())
-                {
-                    End();
-                    return;
-                }
-            }
-            else if (remainingTime == 0)
-            {
-                End();
-                return;
-            }
-            else if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
+            
+            if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 return;
             }
@@ -562,6 +551,31 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = 0;
+            }
+        }
+        void ForceEndCheck()
+        {
+            if (!_isJudged || IsEnded)
+                return;
+
+            var timing = GetTimeSpanToJudgeTiming();
+            var endTiming = timing - Length;
+            var remainingTime = GetRemainingTime();
+
+            if (IsClassic)
+            {
+                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
+                {
+                    End();
+                }
+                else if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || _judgeResult.IsMissOrTooFast())
+                {
+                    End();
+                }
+            }
+            else if (remainingTime == 0)
+            {
+                End();
             }
         }
         void PlayHoldEffect()

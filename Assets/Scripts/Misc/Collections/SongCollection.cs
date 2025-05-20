@@ -1,5 +1,5 @@
 using MajdataPlay.Extensions;
-using MajdataPlay.Types;
+using MajdataPlay.Numerics;
 using System;
 using System.Buffers;
 using System.Collections;

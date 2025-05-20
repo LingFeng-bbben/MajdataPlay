@@ -1,5 +1,5 @@
 ﻿using Cysharp.Text;
-using MajdataPlay.Extensions;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using MychIO.Device;
 using System;

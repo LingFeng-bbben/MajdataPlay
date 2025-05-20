@@ -1,6 +1,5 @@
-﻿using MajdataPlay.Extensions;
-using MajdataPlay.IO;
-using MajdataPlay.Types;
+﻿using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -97,10 +96,10 @@ namespace MajdataPlay.Game.Notes.Controllers
         /// <param name="position"></param>
         /// <param name="isBreak"></param>
         /// <param name="judge"></param>
-        public void PlayEffect(int position, in JudgeResult judgeResult)
+        public void PlayEffect(int position, in NoteJudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
-            LightManager.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
+            LedRing.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -111,7 +110,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
-            LightManager.SetButtonLight(GetColor(judgeType), keyIndex - 1);
+            LedRing.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         public void PlayHoldEffect(SensorArea sensorPos, in JudgeGrade judgeType)
@@ -120,14 +119,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         public void ResetHoldEffect(int keyIndex)
         {
-            LightManager.SetButtonLight(Color.white, keyIndex - 1);
+            LedRing.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         public void ResetHoldEffect(SensorArea sensorPos)
         {
             _effectPool.ResetHoldEffect(sensorPos);
         }
-        public void PlayTouchEffect(SensorArea sensorPos, in JudgeResult judgeResult)
+        public void PlayTouchEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -136,11 +135,11 @@ namespace MajdataPlay.Game.Notes.Controllers
             }
             _effectPool.Play(judgeResult, sensorPos);
         }
-        public void PlayTouchHoldEffect(SensorArea sensorPos, in JudgeResult judgeResult)
+        public void PlayTouchHoldEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
         }
-        public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in JudgeResult judgeResult)
+        public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in NoteJudgeResult judgeResult)
         {
             var result = judgeResult.Grade;
             var resultValue = (int)result;

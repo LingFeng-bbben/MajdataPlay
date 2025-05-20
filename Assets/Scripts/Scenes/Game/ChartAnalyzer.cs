@@ -1,7 +1,5 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Extensions;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajSimai;
 using NeoSmart.AsyncLock;

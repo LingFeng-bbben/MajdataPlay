@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 29056190}
   - component: {fileID: 29056189}
   - component: {fileID: 29056188}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -240,7 +240,7 @@ GameObject:
   - component: {fileID: 73733773}
   - component: {fileID: 73733772}
   - component: {fileID: 73733771}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +346,7 @@ GameObject:
   - component: {fileID: 81347928}
   - component: {fileID: 81347927}
   - component: {fileID: 81347926}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -450,7 +450,7 @@ GameObject:
   m_Component:
   - component: {fileID: 189282377}
   - component: {fileID: 189282378}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -536,7 +536,7 @@ GameObject:
   - component: {fileID: 206928482}
   - component: {fileID: 206928481}
   - component: {fileID: 206928480}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -642,7 +642,7 @@ GameObject:
   - component: {fileID: 247062809}
   - component: {fileID: 247062808}
   - component: {fileID: 247062807}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -748,7 +748,7 @@ GameObject:
   - component: {fileID: 308980982}
   - component: {fileID: 308980981}
   - component: {fileID: 308980980}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -854,7 +854,7 @@ GameObject:
   - component: {fileID: 378527713}
   - component: {fileID: 378527712}
   - component: {fileID: 378527711}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1004,6 +1004,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: E1
       objectReference: {fileID: 0}
+    - target: {fileID: -8970095241330140159, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.021432761
@@ -1064,6 +1068,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: D1
       objectReference: {fileID: 0}
+    - target: {fileID: -6621177644281216983, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: -5738948747032835564, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.0000027258423
@@ -1096,13 +1104,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: B1
       objectReference: {fileID: 0}
+    - target: {fileID: -907994703797819552, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_Name
       value: IOManager
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2894476360537694669, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_Name
       value: A1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2894476360537694669, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3029453532666799776, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1135,6 +1155,10 @@ PrefabInstance:
     - target: {fileID: 5097984664202491809, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_Name
       value: C2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5097984664202491809, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7471379574883751410, guid: 2c7f04688452227478c919522bda2fb2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1328,7 +1352,7 @@ GameObject:
   - component: {fileID: 547940763}
   - component: {fileID: 547940762}
   - component: {fileID: 547940761}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1496,7 +1520,7 @@ GameObject:
   - component: {fileID: 588863244}
   - component: {fileID: 588863243}
   - component: {fileID: 588863242}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1600,7 +1624,7 @@ GameObject:
   m_Component:
   - component: {fileID: 614660270}
   - component: {fileID: 614660269}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ScoreManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1646,7 +1670,7 @@ GameObject:
   - component: {fileID: 638014423}
   - component: {fileID: 638014422}
   - component: {fileID: 638014424}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: FPSDisplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1830,7 +1854,7 @@ GameObject:
   - component: {fileID: 656229336}
   - component: {fileID: 656229335}
   - component: {fileID: 656229334}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1936,7 +1960,7 @@ GameObject:
   - component: {fileID: 688085903}
   - component: {fileID: 688085902}
   - component: {fileID: 688085901}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2042,7 +2066,7 @@ GameObject:
   - component: {fileID: 703940847}
   - component: {fileID: 703940846}
   - component: {fileID: 703940845}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2148,7 +2172,7 @@ GameObject:
   - component: {fileID: 789022890}
   - component: {fileID: 789022889}
   - component: {fileID: 789022888}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2254,7 +2278,7 @@ GameObject:
   - component: {fileID: 805911760}
   - component: {fileID: 805911759}
   - component: {fileID: 805911758}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2358,7 +2382,7 @@ GameObject:
   m_Component:
   - component: {fileID: 843500238}
   - component: {fileID: 843500239}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2444,7 +2468,7 @@ GameObject:
   - component: {fileID: 843605654}
   - component: {fileID: 843605653}
   - component: {fileID: 843605652}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2550,7 +2574,7 @@ GameObject:
   - component: {fileID: 853059338}
   - component: {fileID: 853059337}
   - component: {fileID: 853059336}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2654,7 +2678,7 @@ GameObject:
   m_Component:
   - component: {fileID: 969494142}
   - component: {fileID: 969494143}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2738,7 +2762,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1006618995}
   - component: {fileID: 1006618996}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2822,7 +2846,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1064008803}
   - component: {fileID: 1064008804}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3142,7 +3166,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1111381798}
   - component: {fileID: 1111381799}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: LightManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3158,7 +3182,7 @@ Transform:
   m_GameObject: {fileID: 1111381796}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 55.71, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3218,7 +3242,7 @@ GameObject:
   - component: {fileID: 1193202603}
   - component: {fileID: 1193202602}
   - component: {fileID: 1193202601}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3324,7 +3348,7 @@ GameObject:
   - component: {fileID: 1226280389}
   - component: {fileID: 1226280388}
   - component: {fileID: 1226280387}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3430,7 +3454,7 @@ GameObject:
   - component: {fileID: 1232706809}
   - component: {fileID: 1232706808}
   - component: {fileID: 1232706807}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3536,7 +3560,7 @@ GameObject:
   - component: {fileID: 1275864623}
   - component: {fileID: 1275864622}
   - component: {fileID: 1275864621}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3867,7 +3891,7 @@ GameObject:
   - component: {fileID: 1380027116}
   - component: {fileID: 1380027115}
   - component: {fileID: 1380027114}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4079,7 +4103,7 @@ GameObject:
   - component: {fileID: 1517703495}
   - component: {fileID: 1517703494}
   - component: {fileID: 1517703493}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4185,7 +4209,7 @@ GameObject:
   - component: {fileID: 1551480621}
   - component: {fileID: 1551480620}
   - component: {fileID: 1551480619}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: A8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4291,7 +4315,7 @@ GameObject:
   - component: {fileID: 1578381255}
   - component: {fileID: 1578381254}
   - component: {fileID: 1578381253}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4397,7 +4421,7 @@ GameObject:
   - component: {fileID: 1607541740}
   - component: {fileID: 1607541739}
   - component: {fileID: 1607541738}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: B8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4503,7 +4527,7 @@ GameObject:
   - component: {fileID: 1760800516}
   - component: {fileID: 1760800515}
   - component: {fileID: 1760800514}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4607,7 +4631,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1779746629}
   - component: {fileID: 1779746630}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4691,7 +4715,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1930011181}
   - component: {fileID: 1930011182}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4852,7 +4876,7 @@ GameObject:
   - component: {fileID: 2055085762}
   - component: {fileID: 2055085761}
   - component: {fileID: 2055085760}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: D5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4956,7 +4980,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2092479600}
   - component: {fileID: 2092479601}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5042,7 +5066,7 @@ GameObject:
   - component: {fileID: 2100323912}
   - component: {fileID: 2100323911}
   - component: {fileID: 2100323910}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: E6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5148,7 +5172,7 @@ GameObject:
   - component: {fileID: 2109896986}
   - component: {fileID: 2109896985}
   - component: {fileID: 2109896984}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: C1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5256,6 +5280,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
       propertyPath: IsEnterView
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}
+      propertyPath: _isEnterTest
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2651359853955731619, guid: e944b6e1c677207409a7d2c2034389b2, type: 3}

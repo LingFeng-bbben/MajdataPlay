@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Collections;
-using MajdataPlay.Types;
+using MajdataPlay.Game.Notes;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;

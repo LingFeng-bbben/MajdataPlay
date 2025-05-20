@@ -1,6 +1,4 @@
-using MajdataPlay.Extensions;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -10,6 +8,7 @@ using UnityEngine;
 using Random = System.Random;
 using MajdataPlay.View;
 using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Numerics;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
@@ -181,9 +180,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * FRAME_LENGTH_MSEC;
         protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * FRAME_LENGTH_MSEC;
 
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_1ST_PERFECT_MSEC = 5 * FRAME_LENGTH_MSEC;
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_2ND_PERFECT_MSEC = 10 * FRAME_LENGTH_MSEC;
-        protected const float HOLD_CLASSIC_END_JUDGE_SEG_3RD_PERFECT_MSEC = 15 * FRAME_LENGTH_MSEC;
+        protected const float HOLD_CLASSIC_END_JUDGE_PERFECT_AREA_MSEC = 12 * FRAME_LENGTH_MSEC;
 
         protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC;
         protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 10.5f * FRAME_LENGTH_MSEC;
@@ -199,9 +196,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 25 * FRAME_LENGTH_MSEC;
         protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
 
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC; // 3f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC; // 6f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
         protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 15 * FRAME_LENGTH_MSEC;  // 15f
         protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;  // 21f
         protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 27 * FRAME_LENGTH_MSEC;  // 27f
@@ -234,7 +229,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         protected abstract void LoadSkin();
         protected abstract void PlaySFX();
-        protected abstract void PlayJudgeSFX(in JudgeResult judgeResult);
+        protected abstract void PlayJudgeSFX(in NoteJudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
             if (_isJudged)
