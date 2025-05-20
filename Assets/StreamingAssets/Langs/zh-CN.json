@@ -303,6 +303,14 @@
       "Content": "调整Touch在游玩时的大小"
     },
     {
+      "Origin": "DisplayHoldHeadJudgeResult_MAJSETTING_TITLE",
+      "Content": "显示Hold头判判定"
+    },
+    {
+      "Origin": "DisplayHoldHeadJudgeResult_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
       "Origin": "TouchFeedback_MAJSETTING_TITLE",
       "Content": "触摸反馈"
     },

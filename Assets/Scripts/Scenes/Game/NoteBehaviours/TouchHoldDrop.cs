@@ -345,7 +345,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
-            _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
             _lastHoldState = -1;
         }
         [OnPreUpdate]
@@ -503,6 +502,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 isDeviceUsedInThisFrame = true;
                 _noteManager.NextTouch(QueueInfo);
+                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 RegisterGrade();
             }
         }

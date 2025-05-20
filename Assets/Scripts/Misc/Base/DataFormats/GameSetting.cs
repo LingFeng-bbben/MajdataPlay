@@ -71,6 +71,7 @@ namespace MajdataPlay
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
+        public bool DisplayHoldHeadJudgeResult { get; set; } = false;
         public float TapScale { get; set; } = 1f;
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;

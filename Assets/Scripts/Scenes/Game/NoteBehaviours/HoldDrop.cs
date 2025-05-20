@@ -293,9 +293,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (!_isJudged)
                 return;
             _lastHoldState = -1;
-            PlaySFX();
-            _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-            _effectManager.ResetEffect(StartPos);
         }
         protected override void PlaySFX()
         {
@@ -451,6 +448,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeDiff = 150;
                 _lastHoldState = -2;
                 _noteManager.NextNote(QueueInfo);
+                if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
+                {
+                    _effectManager.PlayEffect(StartPos, new NoteJudgeResult()
+                    {
+                        Grade = _judgeResult,
+                        IsBreak = IsBreak,
+                        IsEX = IsEX,
+                        Diff = _judgeDiff
+                    });
+                }
             }
         }
         void Check()
@@ -496,6 +503,19 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (_isJudged)
             {
                 isDeviceUsedInThisFrame = true;
+                PlaySFX();
+                if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
+                {
+                    _effectManager.PlayEffect(StartPos, new NoteJudgeResult()
+                    {
+                        Grade = _judgeResult,
+                        IsBreak = IsBreak,
+                        IsEX = IsEX,
+                        Diff = _judgeDiff
+                    });
+                }
+                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                _effectManager.ResetEffect(StartPos);
                 _noteManager.NextNote(QueueInfo);
             }
         }
