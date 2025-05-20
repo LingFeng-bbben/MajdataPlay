@@ -6,7 +6,6 @@ using MajdataPlay.Game.Notes.Slide.Utils;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;

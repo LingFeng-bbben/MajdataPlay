@@ -1,10 +1,9 @@
-using MajdataPlay;
 using System.Collections;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Misc
+namespace MajdataPlay
 {
     public class LoadSubBg : MonoBehaviour
     {

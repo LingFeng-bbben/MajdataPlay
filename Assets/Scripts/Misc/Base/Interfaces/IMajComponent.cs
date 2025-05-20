@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
-    public interface IMajComponent : IGameObjectProvider , ITransformProvider
+    public interface IMajComponent : IGameObjectProvider, ITransformProvider
     {
         string Tag { get; }
         bool Active { get; }

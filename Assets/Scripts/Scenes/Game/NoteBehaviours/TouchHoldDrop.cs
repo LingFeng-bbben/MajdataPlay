@@ -6,7 +6,6 @@ using MajdataPlay.Game.Notes.Touch;
 using MajdataPlay.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
@@ -16,6 +15,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; set; } = null;

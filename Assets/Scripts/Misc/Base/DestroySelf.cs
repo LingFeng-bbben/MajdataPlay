@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MajdataPlay.Misc
+namespace MajdataPlay
 {
     public class DestroySelf : MonoBehaviour
     {

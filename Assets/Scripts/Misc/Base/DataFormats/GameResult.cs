@@ -2,7 +2,7 @@
 using MajdataPlay.Game;
 using System;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public readonly struct GameResult
     {

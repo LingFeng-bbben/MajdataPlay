@@ -1,7 +1,6 @@
 ﻿using MajdataPlay.Extensions;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.Numerics;
-using MajdataPlay.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Types;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

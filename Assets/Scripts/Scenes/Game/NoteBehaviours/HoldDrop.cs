@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Utils;
-using MajdataPlay.Types;
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState

@@ -16,10 +16,11 @@ using System.Threading;
 using Unity.VisualScripting.Antlr3.Runtime;
 using System.Security.Policy;
 using System.Net;
+
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
-    internal class OnlineSongDetail: ISongDetail
+    internal class OnlineSongDetail : ISongDetail
     {
         public string Id { get; init; }
         public string Title { get; init; }
@@ -91,7 +92,7 @@ namespace MajdataPlay.Types
             Id = songDetail.Id;
             Timestamp = songDetail.Timestamp;
 
-            for (int i = 0; i < Designers.Length; i++)
+            for (var i = 0; i < Designers.Length; i++)
             {
                 Designers[i] = songDetail.Uploader + "@" + songDetail.Designer;
             }
@@ -100,9 +101,9 @@ namespace MajdataPlay.Types
             {
                 Directory.CreateDirectory(_cachePath);
             }
-            _preloadCallback = async () => 
-            { 
-                await UniTask.WhenAll(GetMaidataAsync(), GetCoverAsync(true)); 
+            _preloadCallback = async () =>
+            {
+                await UniTask.WhenAll(GetMaidataAsync(), GetCoverAsync(true));
                 _isPreloaded = true;
             };
         }
@@ -159,9 +160,9 @@ namespace MajdataPlay.Types
 
                     await CheckAndDownloadFile(_trackUri, savePath, token);
                     var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                    if(sampleWarp.IsEmpty)
+                    if (sampleWarp.IsEmpty)
                     {
-                        if(File.Exists(cacheFlagPath))
+                        if (File.Exists(cacheFlagPath))
                         {
                             File.Delete(cacheFlagPath);
                         }
@@ -205,7 +206,7 @@ namespace MajdataPlay.Types
                 {
                     token.ThrowIfCancellationRequested();
 
-                    if(_videoPath is not null)
+                    if (_videoPath is not null)
                         return _videoPath;
                     var savePath = Path.Combine(_cachePath, "bg.mp4");
                     var cacheFlagPath = Path.Combine(_cachePath, $"bg.mp4.cache");
@@ -222,7 +223,7 @@ namespace MajdataPlay.Types
                             var httpClient = MajEnv.SharedHttpClient;
                             using var rsp = await httpClient.GetAsync(_videoUri, HttpCompletionOption.ResponseHeadersRead, token);
 
-                            if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                            if (rsp.StatusCode != HttpStatusCode.OK)
                             {
                                 using var _ = File.Create(cacheFlagPath);
                                 _videoPath = string.Empty;
@@ -254,7 +255,7 @@ namespace MajdataPlay.Types
         }
         public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
         {
-            if(isCompressed)
+            if (isCompressed)
             {
                 return await GetCompressedCoverAsync(token);
             }
@@ -311,7 +312,7 @@ namespace MajdataPlay.Types
 
                     if (File.Exists(cacheFlagPath))
                     {
-                        if(!File.Exists(savePath))
+                        if (!File.Exists(savePath))
                             _cover = MajEnv.EmptySongCover;
                         else
                             _cover = await SpriteLoader.LoadAsync(savePath, token);
@@ -321,9 +322,9 @@ namespace MajdataPlay.Types
                     {
                         await CheckAndDownloadFile(_coverUri, savePath, token);
                     }
-                    catch(InternalHttpRequestException e)
+                    catch (InternalHttpRequestException e)
                     {
-                        if(e.ErrorCode is HttpErrorCode.Unsuccessful)
+                        if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
                             using var _ = File.Create(cacheFlagPath);
                             _cover = MajEnv.EmptySongCover;
@@ -335,7 +336,7 @@ namespace MajdataPlay.Types
                             return _cover;
                         }
                     }
-                    
+
                     token.ThrowIfCancellationRequested();
                     _cover = await SpriteLoader.LoadAsync(savePath, token);
 
@@ -345,7 +346,7 @@ namespace MajdataPlay.Types
             finally
             {
                 await UniTask.Yield();
-            }   
+            }
         }
         async UniTask<Sprite> GetFullSizeCoverAsync(CancellationToken token = default)
         {
@@ -365,9 +366,9 @@ namespace MajdataPlay.Types
                     var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
                     var cacheFlagPath = Path.Combine(_cachePath, $"bg_fullSize.jpg.cache");
 
-                    if(File.Exists(cacheFlagPath))
+                    if (File.Exists(cacheFlagPath))
                     {
-                        if(!File.Exists(savePath))
+                        if (!File.Exists(savePath))
                             _fullSizeCover = MajEnv.EmptySongCover;
                         else
                             _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
@@ -413,7 +414,7 @@ namespace MajdataPlay.Types
                 var buffer = bufferOwner.Memory;
                 var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
 
-                for (int i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
                     {
@@ -422,16 +423,16 @@ namespace MajdataPlay.Types
                             return;
                         }
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
-                        if(!rsp.IsSuccessStatusCode)
+                        if (!rsp.IsSuccessStatusCode)
                         {
                             throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
                         }
                         token.ThrowIfCancellationRequested();
                         MajDebug.Log($"Received http response header from: {uri}");
-                        
+
                         using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
-                        int read = 0;
+                        var read = 0;
                         do
                         {
                             token.ThrowIfCancellationRequested();
@@ -441,30 +442,30 @@ namespace MajdataPlay.Types
                         }
                         while (read > 0);
                         using (File.Create(cacheFlagPath))
-                        break;
+                            break;
                     }
-                    catch(InternalHttpRequestException)
+                    catch (InternalHttpRequestException)
                     {
                         throw;
                     }
-                    catch(InvalidOperationException)
+                    catch (InvalidOperationException)
                     {
                         throw new InternalHttpRequestException(HttpErrorCode.InvalidRequest, null);
                     }
-                    catch(OperationCanceledException)
+                    catch (OperationCanceledException)
                     {
-                        if(token.IsCancellationRequested)
+                        if (token.IsCancellationRequested)
                         {
                             MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
                             throw new InternalHttpRequestException(HttpErrorCode.Canceled, null);
-                        }    
+                        }
                         else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
                             throw new InternalHttpRequestException(HttpErrorCode.Timeout, null);
                         }
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
@@ -475,7 +476,7 @@ namespace MajdataPlay.Types
                 }
             });
         }
-        class InternalHttpRequestException: Exception
+        class InternalHttpRequestException : Exception
         {
             public HttpErrorCode ErrorCode { get; init; }
             public HttpStatusCode? StatusCode { get; init; }

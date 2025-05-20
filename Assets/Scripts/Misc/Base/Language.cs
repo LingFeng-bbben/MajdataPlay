@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public class Language
     {

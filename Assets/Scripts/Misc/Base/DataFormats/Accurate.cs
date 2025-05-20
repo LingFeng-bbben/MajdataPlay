@@ -1,5 +1,4 @@
-﻿
-namespace MajdataPlay.Types
+﻿namespace MajdataPlay
 {
     public readonly struct Accurate
     {
@@ -19,7 +18,7 @@ namespace MajdataPlay.Types
                 Classic = classic,
             };
         }
-        public static bool operator > (Accurate left,Accurate right)
+        public static bool operator >(Accurate left, Accurate right)
         {
             var dx = left.DX > right.DX;
             var classic = left.Classic > right.Classic;
@@ -33,7 +32,7 @@ namespace MajdataPlay.Types
 
             return dx && classic;
         }
-        public static bool operator < (Accurate left, Accurate right) => !(left > right);
+        public static bool operator <(Accurate left, Accurate right) => !(left > right);
         public static bool operator !=(Accurate left, Accurate right) => !(left == right);
     }
 }

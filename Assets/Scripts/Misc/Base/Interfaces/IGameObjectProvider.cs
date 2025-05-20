@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public interface IGameObjectProvider
     {

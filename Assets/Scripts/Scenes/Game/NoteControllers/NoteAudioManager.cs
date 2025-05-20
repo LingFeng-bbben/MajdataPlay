@@ -2,7 +2,6 @@ using UnityEngine;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
 using System;
 using System.Threading.Tasks;
 using MajSimai;

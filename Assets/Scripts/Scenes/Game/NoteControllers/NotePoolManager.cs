@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.Game.Buffers;
 using MajdataPlay.Game.Notes.Behaviours;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View;
 using System;

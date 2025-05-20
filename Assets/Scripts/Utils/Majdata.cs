@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace MajdataPlay.Utils
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal unsafe static class Majdata<T>
     {
         /// <summary>

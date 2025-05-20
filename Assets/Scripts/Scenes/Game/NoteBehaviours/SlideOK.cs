@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Interfaces;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;

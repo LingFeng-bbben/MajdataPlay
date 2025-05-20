@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public interface ISongDetail
     {

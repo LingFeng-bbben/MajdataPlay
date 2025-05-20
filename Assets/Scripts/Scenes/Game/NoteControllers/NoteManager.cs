@@ -2,12 +2,12 @@ using MajdataPlay.Game.Buffers;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
-using MajdataPlay.References;
 using MajdataPlay.IO;
 using System.Runtime.CompilerServices;
 using System;
 using MajdataPlay.Editor;
 using MajdataPlay.Numerics;
+using MajdataPlay.Unsafe;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers

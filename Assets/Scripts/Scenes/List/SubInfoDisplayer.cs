@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using MajdataPlay.Types;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
 using System.Text.Json;

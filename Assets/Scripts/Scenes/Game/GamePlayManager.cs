@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
 using MajSimai;
@@ -12,7 +11,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Timer;
-using MajdataPlay.Game.Types;
 using Cysharp.Text;
 using Unity.VisualScripting;
 using MajdataPlay.List;

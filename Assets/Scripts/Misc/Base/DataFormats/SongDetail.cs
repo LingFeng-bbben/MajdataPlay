@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
 
     public class SongDetail : ISongDetail
@@ -53,7 +53,7 @@ namespace MajdataPlay.Types
 
             if (string.IsNullOrEmpty(_coverPath))
                 _cover = MajEnv.EmptySongCover;
-            
+
             Title = metadata.Title;
             Artist = metadata.Artist;
             Designers = metadata.Designers;

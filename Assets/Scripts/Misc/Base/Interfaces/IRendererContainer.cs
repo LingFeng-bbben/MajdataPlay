@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public interface IRendererContainer
     {

@@ -2,9 +2,7 @@
 using HidSharp.Platform.Windows;
 using LibVLCSharp;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Types;
 using MajdataPlay.Numerics;
-using MajdataPlay.Types;
 using MychIO;
 using System;
 using System.Collections.Concurrent;

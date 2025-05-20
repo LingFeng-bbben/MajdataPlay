@@ -5,11 +5,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using MajdataPlay.Types;
 using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
-using MajdataPlay;
 using MajdataPlay.Game;
 
 namespace MajdataPlay.TotalResult

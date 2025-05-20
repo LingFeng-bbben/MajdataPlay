@@ -1,11 +1,11 @@
-﻿namespace MajdataPlay.Types
+﻿namespace MajdataPlay
 {
     public readonly ref struct DXScoreRank
     {
         public int Rank { get; init; }
         public long Upper { get; init; }
         public long Lower { get; init; }
-        public DXScoreRank(long dxScore,long totalDXScore)
+        public DXScoreRank(long dxScore, long totalDXScore)
         {
             var percent = dxScore / (double)totalDXScore;
             Rank = percent switch
@@ -17,7 +17,7 @@
                 > 0.85 => 1,
                 _ => 0
             };
-            switch(Rank)
+            switch (Rank)
             {
                 case 5:
                     Upper = totalDXScore * 1;
@@ -43,7 +43,7 @@
                     Upper = (long)(totalDXScore * 0.85);
                     Lower = 0;
                     break;
-                    
+
             }
         }
     }

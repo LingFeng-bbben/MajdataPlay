@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public class GameSetting
     {
@@ -118,7 +118,7 @@ namespace MajdataPlay.Types
         public bool IsAnyModActive()
         {
             return !(PlaybackSpeed == 1f &&
-                !AllBreak&&!AllEx&&!AllTouch&& AutoPlay == AutoplayMode.Disable && JudgeStyle == JudgeStyleType.DEFAULT);
+                !AllBreak && !AllEx && !AllTouch && AutoPlay == AutoplayMode.Disable && JudgeStyle == JudgeStyleType.DEFAULT);
         }
 
     }

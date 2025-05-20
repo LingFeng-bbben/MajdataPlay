@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Game;
 using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using System;
 using System.Collections;

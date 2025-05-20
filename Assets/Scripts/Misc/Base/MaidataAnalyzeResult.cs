@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     internal struct MaidataAnalyzeResult
     {

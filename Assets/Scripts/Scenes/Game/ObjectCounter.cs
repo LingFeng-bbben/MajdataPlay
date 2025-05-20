@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Types;
 using MajSimai;
 using System;
 using System.Collections.Generic;

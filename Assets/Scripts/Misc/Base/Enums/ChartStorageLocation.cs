@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Types
+﻿namespace MajdataPlay
 {
     public enum ChartStorageLocation
     {

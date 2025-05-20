@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public class DanInfo
     {
@@ -19,7 +19,7 @@ namespace MajdataPlay.Types
         public int RestoreHP { get; init; } = 10;
         public bool IsPlayList { get; init; } = false;
         public bool IsForceGameover { get; init; } = false;
-        public Dictionary<JudgeGrade, int> Damages { get; init; } = new Dictionary<JudgeGrade, int> 
+        public Dictionary<JudgeGrade, int> Damages { get; init; } = new Dictionary<JudgeGrade, int>
         {
             { JudgeGrade.Miss,-5 },
             { JudgeGrade.TooFast,-5 },

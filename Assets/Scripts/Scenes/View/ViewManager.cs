@@ -6,7 +6,6 @@ using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
-using MajdataPlay.Types;
 using MajdataPlay.Utils;
 using MajdataPlay.View.Types;
 using MajSimai;

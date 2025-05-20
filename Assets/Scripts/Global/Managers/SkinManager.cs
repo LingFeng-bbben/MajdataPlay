@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Types;
+﻿using MajdataPlay.Game.Notes.Skins;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;

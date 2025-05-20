@@ -2,11 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using MajdataPlay.IO;
-using MajdataPlay.Types;
 using UnityEngine.EventSystems;
 using MajdataPlay.Utils;
 using Cysharp.Threading.Tasks;
-using MajdataPlay;
 
 namespace MajdataPlay.SortFind
 {

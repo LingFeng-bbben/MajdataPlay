@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
-namespace MajdataPlay.Types
+namespace MajdataPlay
 {
     public partial class MajnetSongDetail
     {
@@ -17,28 +17,24 @@ namespace MajdataPlay.Types
         public DateTime Timestamp { get; set; }
         public string Hash { get; set; }
     }
-
     public struct MajNetSongInteract
     {
-        public  bool IsLiked { get; init; }
-        public  int Plays { get; init; }
-        public  string[] Likes { get; init; }
-        public  ChartCommentSummary[] Comments { get; init; }
+        public bool IsLiked { get; init; }
+        public int Plays { get; init; }
+        public string[] Likes { get; init; }
+        public ChartCommentSummary[] Comments { get; init; }
     }
-
     public readonly struct ChartCommentSummary
     {
-        public  UserSummary Sender { get; init; }
-        public  string Content { get; init; }
-        public  DateTime Timestamp { get; init; }
-        public  ChartCommentSummary[] Layers { get; init; }
+        public UserSummary Sender { get; init; }
+        public string Content { get; init; }
+        public DateTime Timestamp { get; init; }
+        public ChartCommentSummary[] Layers { get; init; }
     }
-
     public readonly struct UserSummary
     {
-        public  string Username { get; init; }
-        public string? Email { get; init; }
-        public  DateTime JoinDate { get; init; }
+        public string Username { get; init; }
+        public string Email { get; init; }
+        public DateTime JoinDate { get; init; }
     }
-
 }
