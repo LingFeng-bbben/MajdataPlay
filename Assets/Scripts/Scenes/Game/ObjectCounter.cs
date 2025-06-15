@@ -682,8 +682,8 @@ namespace MajdataPlay.Game
             //var totalExtraScore = Math.Max(BreakSum * 100, 1);
             Span<double> newAccRate = stackalloc double[5];
 
-            newAccRate[0] = CurrentNoteScoreClassic / (double)TotalNoteScore;
-            newAccRate[1] = (TotalNoteScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (double)TotalNoteScore;
+            newAccRate[0] = CurrentNoteScoreClassic / (double)TotalNoteBaseScore;
+            newAccRate[1] = (CurrentNoteBaseScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (double)TotalNoteBaseScore;
             newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
             newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
             newAccRate[4] = ((CurrentNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
