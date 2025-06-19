@@ -34,6 +34,7 @@ namespace MajdataPlay.Setting
 
         int _maxOptionIndex = 0;
         float _step = 1;
+        bool _isEnabled = false;
         bool _isNum = false;
         bool _isBound = false;
         bool _isFloat = false;
@@ -57,11 +58,6 @@ namespace MajdataPlay.Setting
             InitOptions();
             UpdatePosition();
             UpdateOption();
-
-            if (Parent.SelectedIndex == Index)
-                BindArea();
-            else
-                UnbindArea();
         }
         void OnLangChanged(object? sender,Language newLanguage)
         {
@@ -217,9 +213,13 @@ namespace MajdataPlay.Setting
                 else
                 {
                     if (_isUp)
+                    {
                         Up();
+                    }
                     else
+                    {
                         Down();
+                    }
                     _iterationThrottle = 0;
                 }
             }
@@ -228,13 +228,52 @@ namespace MajdataPlay.Setting
                 _pressTime += MajTimeline.DeltaTime;
             }
             var currentIndex = Parent.SelectedIndex;
-            if (_lastIndex == currentIndex)
-                return;
+            
 
-            if (currentIndex == Index)
-                BindArea();
-            else
-                UnbindArea();
+            if (currentIndex == Index && _isEnabled && !_isReadOnly)
+            {
+                var isE4OrB4On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SensorStatus.On) ||
+                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SensorStatus.On);
+                var isE6OrB5On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SensorStatus.On) ||
+                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SensorStatus.On);
+
+                if(_isPressed)
+                {
+                    if(isE4OrB4On)
+                    {
+                        _isUp = true;
+                    }
+                    else if(isE6OrB5On)
+                    {
+                        _isUp = false;
+                    }
+                    else
+                    {
+                        _isPressed = false;
+                        _pressTime = 0;
+                    }
+                }
+                else
+                {
+                    if (isE4OrB4On)
+                    {
+                        Up();
+                        _isUp = true;
+                        _isPressed = true;
+                    }
+                    else if (isE6OrB5On)
+                    {
+                        Down();
+                        _isUp = false;
+                        _isPressed = true;
+                    }
+                }
+            }
+            
+            if (_lastIndex == currentIndex)
+            {
+                return;
+            }
             _lastIndex = currentIndex;
             UpdatePosition();
         }
@@ -352,90 +391,18 @@ namespace MajdataPlay.Setting
                 }
             }
         }
-        void OnAreaDown(object sender, InputEventArgs e)
-        {
-            if (_isReadOnly)
-                return;
-            else if (e.IsButton)
-                return;
-            var on = e.Status == SensorStatus.On;
-            var canTrigger = on && !_isPressed;
-            switch (e.Type)
-            {
-                case SensorArea.E4:
-                case SensorArea.B4:
-
-                    if (canTrigger)
-                    {
-                        Up();
-                        _isUp = true;
-                        _isPressed = true;
-                    }
-                    else if(!on)
-                    {
-                        _isPressed = false;
-                        _pressTime = 0;
-                    }
-                    break;
-                case SensorArea.E6:
-                case SensorArea.B5:
-                    if (canTrigger)
-                    {
-                        Down();
-                        _isUp = false;
-                        _isPressed = true;
-                    }
-                    else if (!on)
-                    {
-                        _isPressed = false;
-                        _pressTime = 0;
-                    }
-                    break;
-            }
-        }
         void OnDestroy()
         {
-            UnbindArea();
+            _isEnabled = false;
             Localization.OnLanguageChanged -= OnLangChanged;
         }
         void OnDisable()
         {
-            UnbindArea();
+            _isEnabled = false;
         }
         void OnEnable()
         {
-            BindArea();
-        }
-        void BindArea()
-        {
-            if (_isBound)
-                return;
-            else if(_isReadOnly)
-            {
-                _isBound = true;
-                return;
-            }
-            else if (Parent == null)
-                return;
-            else if (Parent.SelectedIndex != Index)
-                return;
-            _isBound = true;
-            InputManager.BindSensor(OnAreaDown, SensorArea.B4);
-            InputManager.BindSensor(OnAreaDown, SensorArea.E4);
-            InputManager.BindSensor(OnAreaDown, SensorArea.B5);
-            InputManager.BindSensor(OnAreaDown, SensorArea.E6);
-        }
-        void UnbindArea()
-        {
-            if (!_isBound)
-                return;
-            _isPressed = false;
-            _pressTime = 0;
-            _isBound = false;
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.E4);
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.E6);
+            _isEnabled = true;
         }
         Vector3 GetScale(int diff)
         {
