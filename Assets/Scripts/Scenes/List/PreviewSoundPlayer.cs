@@ -67,7 +67,9 @@ namespace MajdataPlay.List
             finally
             {
                 if (previewSample is not null && !previewSample.IsEmpty)
+                {
                     previewSample.Pause();
+                }
             }
         }
 
@@ -77,6 +79,5 @@ namespace MajdataPlay.List
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             selectSound.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
         }
-
     }
 }

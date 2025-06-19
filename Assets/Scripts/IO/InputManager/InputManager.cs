@@ -431,6 +431,50 @@ namespace MajdataPlay.IO
                    _btnStatusInThisFrame[index] == SensorStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_OR(params SensorArea[] targets)
+        {
+            return IsButtonClickedInThisFrame_OR(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_OR(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfButtonIndexOutOfRange(target);
+                var index = GetButtonIndex(target);
+
+                var result = _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
+                             _btnStatusInThisFrame[index] == SensorStatus.On;
+                if (result)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_AND(params SensorArea[] targets)
+        {
+            return IsButtonClickedInThisFrame_AND(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_AND(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfButtonIndexOutOfRange(target);
+                var index = GetButtonIndex(target);
+
+                var result = _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
+                             _btnStatusInThisFrame[index] == SensorStatus.On;
+                if (!result)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CheckSensorStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
@@ -519,6 +563,50 @@ namespace MajdataPlay.IO
 
             return _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
                    _sensorStatusInThisFrame[index] == SensorStatus.On;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_OR(params SensorArea[] targets)
+        {
+            return IsSensorClickedInThisFrame_OR(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_OR(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfSensorIndexOutOfRange(target);
+                var index = (int)target;
+
+                var result = _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SensorStatus.On;
+                if (result)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_AND(params SensorArea[] targets)
+        {
+            return IsSensorClickedInThisFrame_AND(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_AND(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfSensorIndexOutOfRange(target);
+                var index = (int)target;
+
+                var result = _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SensorStatus.On;
+                if (!result)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static Button? GetButton(SensorArea type)

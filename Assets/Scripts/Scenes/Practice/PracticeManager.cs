@@ -104,7 +104,11 @@ namespace MajdataPlay.Practice
                 startTime = _simaiFile.Offset;
                 endTime = totalTime;
             }
-
+            var bgmSFX = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
+            if(bgmSFX.IsPlaying)
+            {
+                bgmSFX.Stop();
+            }
             audioTrack.Play();
             audioTrack.CurrentSec = startTime;
             audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
