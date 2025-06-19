@@ -21,6 +21,8 @@ namespace MajdataPlay.TotalResult
         public TextMeshProUGUI Title;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
+        bool _isExited = false;
+        bool _isInited = false;
         // Start is called before the first frame update
         void Start()
         {
@@ -55,16 +57,23 @@ namespace MajdataPlay.TotalResult
         async UniTaskVoid DelayBind()
         {
             await UniTask.Delay(1000);
-            InputManager.BindAnyArea(OnAreaDown);
             LedRing.SetButtonLight(Color.green, 3);
+            _isInited = true;
         }
-
-        private void OnAreaDown(object sender, InputEventArgs e)
+        void Update()
         {
-            InputManager.UnbindAnyArea(OnAreaDown);
-            MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-            MajInstances.SceneSwitcher.SwitchScene("List", false);
-            return;
+            if(_isExited || !_isInited)
+            {
+                return;
+            }
+
+            if(InputManager.IsButtonClickedInThisFrame(SensorArea.A4))
+            {
+                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+                _isExited = true;
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+                
+            }
         }
     }
 }
