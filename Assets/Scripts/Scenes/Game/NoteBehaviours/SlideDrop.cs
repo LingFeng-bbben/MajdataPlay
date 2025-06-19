@@ -37,7 +37,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var slideTable = SlideTables.FindTableByName(SlideType);
 
             if (slideTable is null)
+            {
                 throw new MissingComponentException($"Slide table of \"{SlideType}\" is not found");
+            }
 
             _table = slideTable;
             _judgeQueues[0] = _table.JudgeQueue;
@@ -124,7 +126,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void Initialize()
         {
             if (IsInitialized)
+            {
                 return;
+            }
 
             if (_isMirror)
             {
@@ -211,7 +215,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     if (Parent is null)
+                    {
                         throw new NullReferenceException();
+                    }
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     StartTiming = parent.StartTiming + parent.Length;
                 }
@@ -244,7 +250,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else
             {
                 foreach (var judgeArea in judgeQueue)
+                {
                     judgeArea.IsSkippable = true;
+                }
             }
         }
         [OnPreUpdate]
@@ -355,13 +363,21 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void SensorCheck()
         {
             if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
+            {
                 return;
+            }
             else if (IsEnded || !IsInitialized)
+            {
                 return;
+            }
             else if (IsFinished)
+            {
                 return;
+            }
             else if (_isChecking)
+            {
                 return;
+            }
 
             _isChecking = true;
             try
@@ -374,7 +390,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 SlideArea? second = null;
 
                 if (queue.Length >= 2)
+                {
                     second = queue[1];
+                }
 
                 foreach (var area in fAreas)
                 {
@@ -383,7 +401,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 }
 
                 if (canPlaySFX && first.On)
+                {
                     PlaySFX();
+                }
 
                 // Check the second area
 
@@ -444,12 +464,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 if (ConnectInfo.IsGroupPart)
                 {
                     if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
+                    {
                         _isCheckable = true;
+                    }
                     else if (!ConnectInfo.IsGroupPartHead)
+                    {
                         _isCheckable = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
+                    }
                 }
                 else if (startTiming >= -0.05f)
+                {
                     _isCheckable = true;
+                }
             }
 
             var isJudgable = ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide;
@@ -462,20 +488,30 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     {
                         HideAllBar();
                         if (IsClassic)
+                        {
                             ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                        }
                         else
+                        {
                             Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                        }
                         return;
                     }
                     else if (isTooLate)
+                    {
                         TooLateJudge();
+                    }
                 }
                 else
                 {
                     if (_lastWaitTimeSec <= 0)
+                    {
                         End();
+                    }
                     else
+                    {
                         _lastWaitTimeSec -= MajTimeline.DeltaTime;
+                    }
                 }
             }
         }
@@ -484,7 +520,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (Parent is not null)
             {
                 if (_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                {
                     Parent.ForceFinish();
+                }
             }
         }
         protected override void TooLateJudge()
@@ -500,7 +538,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public new void End()
         {
             if (IsEnded)
+            {
                 return;
+            }
             State = NoteStatus.End;
             base.End();
 
@@ -508,7 +548,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 ConvertJudgeGrade(ref _judgeResult);
-                JudgeResultCorrection(ref _judgeResult);
+                if(!USERSETTING_SUBDIVIDE_SLIDE_JUDGE_GRADE)
+                {
+                    JudgeGradeCorrection(ref _judgeResult);
+                }
                 var result = new NoteJudgeResult()
                 {
                     Grade = _judgeResult,

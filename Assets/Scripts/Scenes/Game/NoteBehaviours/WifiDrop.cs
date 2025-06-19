@@ -95,7 +95,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 var star = _stars[i];
                 if (star is null)
+                {
                     continue;
+                }
                 _starTransforms[i] = star.transform;
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
@@ -105,7 +107,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void Initialize()
         {
             if (State >= NoteStatus.Initialized)
+            {
                 return;
+            }
             var wifiTable = SlideTables.GetWifiTable(StartPos);
             const float wifiConst = 0.162870f;
 
@@ -158,7 +162,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 var star = _stars[i];
                 if (star is null)
+                {
                     continue;
+                }
                 _starTransforms[i] = star.transform;
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
@@ -169,13 +175,21 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void SensorCheck()
         {
             if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
+            {
                 return;
+            }
             else if (IsEnded || !IsInitialized)
+            {
                 return;
+            }
             else if (IsFinished)
+            {
                 return;
+            }
             else if (_isChecking)
+            {
                 return;
+            }
             _isChecking = true;
             try
             {
@@ -192,14 +206,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void SensorCheckInternal(ref Memory<SlideArea> queueMemory)
         {
             if (queueMemory.IsEmpty)
+            {
                 return;
+            }
 
             var queue = queueMemory.Span;
             var first = queue[0];
             SlideArea? second = null;
 
             if (queueMemory.Length >= 2)
+            {
                 second = queue[1];
+            }
             var fAreas = first.IncludedAreas;
             foreach (var t in fAreas)
             {
@@ -208,7 +226,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
 
             if (first.On)
+            {
                 PlaySFX();
+            }
 
             if (second is not null && (first.IsSkippable || first.On))
             {
@@ -249,7 +269,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (startTiming >= -0.05f)
+            {
                 _isCheckable = true;
+            }
 
             if (!_isJudged)
             {
@@ -257,35 +279,51 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 {
                     HideAllBar();
                     if (IsClassic)
+                    {
                         ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                    }
                     else
+                    {
                         Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                    }
                 }
                 else if (isTooLate)
+                {
                     TooLateJudge();
+                }
             }
             else
             {
                 if (_lastWaitTimeSec <= 0)
+                {
                     End();
+                }
                 else
+                {
                     _lastWaitTimeSec -= MajTimeline.DeltaTime;
+                }
             }
         }
         int GetIndex()
         {
             if (_judgeQueues.IsEmpty())
+            {
                 return int.MaxValue;
+            }
             else if (IsClassic)
             {
                 var isRemainingOne = _judgeQueues.All(x => x.Length <= 1);
                 if (isRemainingOne)
+                {
                     return 8;
+                }
             }
             else if (_judgeQueues[1].IsEmpty)
             {
                 if (_judgeQueues[0].Length <= 1 && _judgeQueues[2].Length <= 1)
+                {
                     return 9;
+                }
             }
             var nums = new int[3];
             foreach (var (i, queue) in _judgeQueues.WithIndex())
@@ -385,7 +423,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected override void Autoplay()
         {
             if (!IsAutoplay)
+            {
                 return;
+            }
             switch(State)
             {
                 case NoteStatus.Running:
@@ -401,7 +441,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     var queueMemory = _judgeQueues[0];
                     var queue = queueMemory.Span;
                     if (queueMemory.IsEmpty)
+                    {
                         return;
+                    }
                     else if (process >= 1)
                     {
                         HideAllBar();
@@ -424,7 +466,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         PlaySFX();
                     var areaIndex = (int)(process * queueMemory.Length) - 1;
                     if (areaIndex < 0)
+                    {
                         return;
+                    }
                     var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
                     HideBar(barIndex);
                     break;
@@ -463,7 +507,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         
                         var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
                         if (i == 8)
+                        {
                             circular = Vector3.zero;
+                        }
                         var ray = new Ray(pos + circular, Vector3.forward);
                         var ishit = Physics.Raycast(ray, out var hitInfom);
                         if (ishit)
@@ -494,11 +540,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected override void End()
         {
             if (IsEnded)
+            {
                 return;
+            }
             State = NoteStatus.End;
             base.End();
             ConvertJudgeGrade(ref _judgeResult);
-            JudgeResultCorrection(ref _judgeResult);
+            if (!USERSETTING_SUBDIVIDE_SLIDE_JUDGE_GRADE)
+            {
+                JudgeGradeCorrection(ref _judgeResult);
+            }
             var result = new NoteJudgeResult()
             {
                 Grade = _judgeResult,

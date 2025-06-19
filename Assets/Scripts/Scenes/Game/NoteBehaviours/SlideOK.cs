@@ -41,16 +41,20 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isBreak = false;
             switch (result.Grade)
             {
-                case JudgeGrade.LatePerfect3rd:
-                case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.Perfect:
+                    if (_displayCP)
+                    {
+                        SetJustCP();
+                    }
+                    else
+                    {
+                        SetJustP();
+                    }
+                    isBreak = result.IsBreak;
+                    break;
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.FastPerfect3rd:
-                    if (_displayCP)
-                        SetJustCP();
-                    else
-                        SetJustP();
-                    isBreak = result.IsBreak;
+                    SetFastP();
                     break;
                 case JudgeGrade.FastGreat3rd:
                 case JudgeGrade.FastGreat2nd:
@@ -62,6 +66,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     break;
                 case JudgeGrade.LateGood:
                     SetLateGd();
+                    break;
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                    SetLateP();
                     break;
                 case JudgeGrade.LateGreat2nd:
                 case JudgeGrade.LateGreat3rd:
@@ -114,57 +122,57 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RefreshSprite();
             return (int)Shape;
         }
-        public void SetJustCP()
+        void SetJustCP()
         {
             _judgeOffset = 0;
             RefreshSprite();
         }
-        public void SetJustP()
+        void SetJustP()
         {
             _judgeOffset = 6;
             RefreshSprite();
         }
-        public void SetFastP()
+         void SetFastP()
         {
             _judgeOffset = 12;
             RefreshSprite();
         }
-        public void SetFastGr()
+        void SetFastGr()
         {
             _judgeOffset = 18;
             RefreshSprite();
         }
-        public void SetFastGd()
+        void SetFastGd()
         {
             _judgeOffset = 24;
             RefreshSprite();
         }
-        public void SetLateP()
+        void SetLateP()
         {
             _judgeOffset = 30;
             RefreshSprite();
         }
-        public void SetLateGr()
+        void SetLateGr()
         {
             _judgeOffset = 36;
             RefreshSprite();
         }
-        public void SetLateGd()
+        void SetLateGd()
         {
             _judgeOffset = 42;
             RefreshSprite();
         }
-        public void SetMiss()
+        void SetMiss()
         {
             _judgeOffset = 48;
             RefreshSprite();
         }
-        public void SetTooFast()
+        void SetTooFast()
         {
             _judgeOffset = 54;
             RefreshSprite();
         }
-        private void RefreshSprite()
+        void RefreshSprite()
         {
             _spriteRenderer.sprite = _justSprites[(int)Shape + _indexOffset + _judgeOffset];
         }

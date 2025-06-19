@@ -417,7 +417,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 SetSlideBarAlpha(alpha);
             }
         }
-        protected void JudgeResultCorrection(ref JudgeGrade result)
+        protected void JudgeGradeCorrection(ref JudgeGrade result)
         {
             switch (result)
             {

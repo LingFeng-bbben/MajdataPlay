@@ -56,6 +56,7 @@ namespace MajdataPlay
         public string Skin { get; set; } = "default";
         public bool DisplayCriticalPerfect { get; set; } = false;
         public bool DisplayBreakScore { get; set; } = true;
+        public bool SubdivideSlideJudgeGrade { get; set; } = false;
         public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
