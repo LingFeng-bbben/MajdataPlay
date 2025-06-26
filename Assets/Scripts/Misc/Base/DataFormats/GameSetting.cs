@@ -56,7 +56,7 @@ namespace MajdataPlay
         public string Skin { get; set; } = "default";
         public bool DisplayCriticalPerfect { get; set; } = false;
         public bool DisplayBreakScore { get; set; } = true;
-        public bool SubdivideSlideJudgeGrade { get; set; } = false;
+
         public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
         public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
         public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
@@ -73,12 +73,14 @@ namespace MajdataPlay
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
+        public bool SubdivideSlideJudgeGrade { get; set; } = false;
         public float TapScale { get; set; } = 1f;
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;
         public float SlideScale { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Disable;
         public string Resolution { get; set; } = "1080x1920";
+        public float MainScreenPosition { get; set; } = 1f; 
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
         public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
