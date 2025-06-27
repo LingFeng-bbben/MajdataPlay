@@ -39,8 +39,8 @@ namespace MajdataPlay.IO
 
         private void Awake()
         {
-            SFXFilePath = MajEnv.AssetsPath + "/SFX/";
-            VoiceFilePath = MajEnv.AssetsPath + "/Voice/";
+            SFXFilePath = Path.Combine( MajEnv.AssetsPath, "SFX/");
+            VoiceFilePath = Path.Combine(MajEnv.AssetsPath, "Voice/");
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
             SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
@@ -82,7 +82,9 @@ namespace MajdataPlay.IO
                 isExclusiveRequest = false;
             }
 #endif
-#if !UNITY_STANDALONE_WIN
+#if UNITY_ANDROID
+            MajDebug.Log("Android: Using BassSimple");
+            MajInstances.Settings.Audio.Backend = SoundBackendType.BassSimple;
             backend = SoundBackendType.BassSimple;
 #endif
             switch (backend)

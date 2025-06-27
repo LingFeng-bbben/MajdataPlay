@@ -5,10 +5,13 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 #nullable enable
 namespace MajdataPlay.Title
@@ -23,6 +26,14 @@ namespace MajdataPlay.Title
         Task? songStorageTask = null;
         void Start()
         {
+#if UNITY_ANDROID 
+            //we extract the streaming assets files here and let the user to restart the app
+            if (!Directory.Exists(MajEnv.AssetsPath))
+            {
+                StartCoroutine(ExtractStreamingAss());
+                return;
+            }
+#endif
             echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
             DelayPlayVoice().Forget();
             songStorageTask = StartScanningChart();
@@ -33,6 +44,46 @@ namespace MajdataPlay.Title
                 Destroy(GameObject.Find("EventSystem"));
             }
         }
+
+        IEnumerator ExtractStreamingAss()
+        {
+            var extractRoot = MajEnv.AssetsPath;
+            echoText.text = $"Extracting Assets...";
+            Directory.CreateDirectory(extractRoot);
+            List<string> filePathsList = new List<string>();
+            TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
+            string fs = paths.text;
+            MajDebug.Log(fs);
+            string[] fLines = fs.Replace("\\","/").Split("\n");
+            foreach (string line in fLines)
+            {
+                if (line.Trim().Length <= 1) continue;
+                var path = Path.Combine( Application.streamingAssetsPath, line.Trim());
+                echoText.text = $"Extracting {path}...";
+                MajDebug.Log($"Extracting {path}");
+                yield return new WaitForEndOfFrame();
+                byte[] data = null;
+                int dataLen = 0;
+                UnityWebRequest webRequest = UnityWebRequest.Get(path);
+                yield return webRequest.SendWebRequest();
+
+                if (webRequest.result == UnityWebRequest.Result.Success)
+                {
+                    dataLen = webRequest.downloadHandler.data.Length;
+                    data = webRequest.downloadHandler.data;
+                    var file = Path.Combine(extractRoot, line.Trim());
+                    var dir = Path.GetDirectoryName(file);
+                    Directory.CreateDirectory(dir);
+                    File.WriteAllBytes(file, data);
+                }
+                else
+                {
+                    MajDebug.LogError("Extract failed");
+                }
+            }
+            echoText.text = $"Please Reboot The Game";
+        }
+
         async Task StartScanningChart()
         {
             var progress = new Progress<ChartScanProgress>();

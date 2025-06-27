@@ -43,15 +43,16 @@ namespace MajdataPlay.Utils
 #if UNITY_STANDALONE_WIN
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
+                public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
 #else
         public static string RootPath { get; } = Application.persistentDataPath;
-        public static string AssetsPath { get; } = Path.Combine(RootPath, "StreamingAssets/");
+        public static string AssetsPath { get; } = Path.Combine(Application.temporaryCachePath, "ExtStreamingAssets/");
+        public static string CachePath { get; } = Application.temporaryCachePath;
 #endif
 
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
         public static string SettingPath { get; } = Path.Combine(RootPath, "settings.json");
         public static string SkinPath { get; } = Path.Combine(RootPath, "Skins");
-        public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
         public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(AssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");

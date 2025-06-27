@@ -38,7 +38,6 @@ namespace MajdataPlay.Utils
             var path = MajEnv.LangPath;
             if (!Directory.Exists(path))
             {
-                Directory.CreateDirectory(path);
                 return;
             }
             var files = new DirectoryInfo(path).GetFiles()
