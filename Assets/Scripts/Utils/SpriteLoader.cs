@@ -33,7 +33,8 @@ namespace MajdataPlay.Utils
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             var bytes = await File.ReadAllBytesAsync(path, ct);
             ct.ThrowIfCancellationRequested();
-            var texture = await ImageDecodeAsync(bytes);
+            //var texture = await ImageDecodeAsync(bytes);
+            var texture = new Texture2D(0, 0);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
         public static async Task<Sprite> LoadAsync(byte[] bytes, CancellationToken ct = default)
@@ -41,7 +42,8 @@ namespace MajdataPlay.Utils
             try
             {
                 ct.ThrowIfCancellationRequested();
-                var texture = await ImageDecodeAsync(bytes);
+                //var texture = await ImageDecodeAsync(bytes);
+                var texture = new Texture2D(0, 0);
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
             catch
@@ -80,7 +82,8 @@ namespace MajdataPlay.Utils
                 bytes = await File.ReadAllBytesAsync(cachefile, ct);
             }
             ct.ThrowIfCancellationRequested();
-            var texture = await ImageDecodeAsync(bytes);
+            // var texture = await ImageDecodeAsync(bytes);
+            var texture = new Texture2D(0, 0);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
 
@@ -102,6 +105,7 @@ namespace MajdataPlay.Utils
             });
             await UniTask.Yield();
             return bitmap.ToTexture2D();
+            
         }
     }
 }
