@@ -159,6 +159,7 @@ namespace MajdataPlay.IO
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 
+            if(backend == SoundBackendType.Wasapi ||  backend == SoundBackendType.Asio)
             MajDebug.Log(Bass.LastError);
 
             if (PlayDebug)

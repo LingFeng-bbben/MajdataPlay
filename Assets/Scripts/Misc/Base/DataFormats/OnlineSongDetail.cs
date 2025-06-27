@@ -173,6 +173,12 @@ namespace MajdataPlay
                     return sampleWarp;
                 }
             }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                _audioTrack = null;
+                throw new Exception("Music track Load Failed");
+            }
             finally
             {
                 await UniTask.Yield();
@@ -286,6 +292,11 @@ namespace MajdataPlay
                     _maidata = await SimaiParser.Shared.ParseAsync(savePath);
                     return _maidata;
                 }
+            }catch(Exception e)
+            {
+                Debug.LogException(e);
+                _maidata = null;
+                throw new Exception("Maidata Load Failed");
             }
             finally
             {
