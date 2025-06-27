@@ -587,7 +587,9 @@ namespace MajdataPlay.IO
                 }
                 catch (Exception e)
                 {
+                    #if UNITY_STANDALONE_WIN
                     MajDebug.LogException(e);
+#endif
                     return false;
                 }
             }

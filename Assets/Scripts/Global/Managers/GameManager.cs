@@ -195,7 +195,9 @@ namespace MajdataPlay
         }
         void EnterTitle()
         {
+            #if UNITY_STANDALONE_WIN
             MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+#endif
             SceneManager.LoadScene("Title");
         }
         void EnterView()
