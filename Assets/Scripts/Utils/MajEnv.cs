@@ -31,7 +31,7 @@ namespace MajdataPlay.Utils
         public const int HTTP_TIMEOUT_MS = 4000;
 
         public static event Action? OnApplicationQuit;
-        public static LibVLC VLCLibrary { get; private set; }
+        public static LibVLC? VLCLibrary { get; private set; }
         public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
@@ -40,14 +40,20 @@ namespace MajdataPlay.Utils
 #else
         public static bool IsEditor { get; } = false;
 #endif
+#if UNITY_STANDALONE_WIN
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
+#else
+        public static string RootPath { get; } = Application.persistentDataPath;
+        public static string AssetsPath { get; } = Path.Combine(RootPath, "StreamingAssets/");
+#endif
+
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
         public static string SettingPath { get; } = Path.Combine(RootPath, "settings.json");
         public static string SkinPath { get; } = Path.Combine(RootPath, "Skins");
         public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
         public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
-        public static string LangPath { get; } = Path.Combine(Application.streamingAssetsPath, "Langs");
+        public static string LangPath { get; } = Path.Combine(AssetsPath, "Langs");
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime.log");
         public static string RecordOutputsPath { get; } = Path.Combine(RootPath, "RecordOutputs");
@@ -158,6 +164,8 @@ namespace MajdataPlay.Utils
         }
         internal static void Init()
         {
+
+#if UNITY_STANDALONE_WIN
             MajDebug.Log("[VLC] init");
             if (VLCLibrary != null)
             {
@@ -165,29 +173,16 @@ namespace MajdataPlay.Utils
             }
             Core.Initialize(Path.Combine(Application.dataPath, "Plugins")); //Load VLC dlls
             VLCLibrary = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
-#if UNITY_EDITOR
-            VLCLibrary.Log += (s, e) =>
-            {
-                //Always use try/catch in LibVLC events.
-                //LibVLC can freeze Unity if an exception goes unhandled inside an event handler.
-                try
-                {
-
-                    //MajDebug.Log("[VLC] " + e.FormattedLog);
-
-                }
-                catch (Exception ex)
-                {
-                    MajDebug.Log("Exception caught in libVLC.Log: \n" + ex.ToString());
-                }
-            };
+#else
+            VLCLibrary = null;
 #endif
         }
         internal static void OnApplicationQuitRequested()
         {
             SharedHttpClient.CancelPendingRequests();
             SharedHttpClient.Dispose();
-            VLCLibrary.Dispose();
+            if( VLCLibrary != null ) 
+                VLCLibrary.Dispose();
             _globalCTS.Cancel();
             if (OnApplicationQuit is not null)
             {

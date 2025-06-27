@@ -14,10 +14,13 @@ namespace MajdataPlay.Timer
         { 
             get
             {
+#if UNITY_STANDALONE_WIN
                 GetSystemTimePreciseAsFileTime(out long fileTime);
                 var now = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromTicks(fileTime);
 
                 return now.Ticks - _startAt;
+#endif
+                return 0;
             }
         }
 
@@ -25,13 +28,17 @@ namespace MajdataPlay.Timer
 
         public WinapiTimeProvider()
         {
+#if UNITY_STANDALONE_WIN
             GetSystemTimePreciseAsFileTime(out long fileTime);
             var now = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromTicks(fileTime);
 
             _startAt = now.Ticks;
+#endif
         }
 
+#if UNITY_STANDALONE_WIN
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         static extern void GetSystemTimePreciseAsFileTime(out long filetime);
+#endif
     }
 }

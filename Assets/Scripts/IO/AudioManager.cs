@@ -23,8 +23,8 @@ namespace MajdataPlay.IO
 {
     public class AudioManager : MonoBehaviour
     {
-        readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
-        readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
+        string SFXFilePath;
+        string VoiceFilePath;
         string[] SFXFileNames = new string[0];
         string[] VoiceFileNames = new string [0];
         private List<AudioSampleWrap> SFXSamples = new();
@@ -38,6 +38,8 @@ namespace MajdataPlay.IO
 
         private void Awake()
         {
+            SFXFilePath = MajEnv.AssetsPath + "/SFX/";
+            VoiceFilePath = MajEnv.AssetsPath + "/Voice/";
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
             SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
@@ -79,7 +81,9 @@ namespace MajdataPlay.IO
                 isExclusiveRequest = false;
             }
 #endif
-
+#if !UNITY_STANDALONE_WIN
+            backend = SoundBackendType.Unity;
+#else
             switch (backend)
             {
                 case SoundBackendType.Asio:
@@ -151,6 +155,7 @@ namespace MajdataPlay.IO
                     }
                     break;
             }
+#endif
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 

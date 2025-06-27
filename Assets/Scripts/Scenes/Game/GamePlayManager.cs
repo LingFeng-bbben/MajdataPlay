@@ -21,6 +21,7 @@ using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
+using MychIO;
 
 namespace MajdataPlay.Game
 {
@@ -540,6 +541,10 @@ namespace MajdataPlay.Game
             var dim = _setting.Game.BackgroundDim;
             if (dim < 1f)
             {
+#if !UNITY_STANDALONE_WIN
+                _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
+#else
+
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
@@ -549,6 +554,7 @@ namespace MajdataPlay.Game
                 {
                     _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
                 }
+#endif            
             }
 
             _bgManager.SetBackgroundDim(1.0f);

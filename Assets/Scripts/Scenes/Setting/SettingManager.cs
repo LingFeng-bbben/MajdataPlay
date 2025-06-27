@@ -197,6 +197,7 @@ namespace MajdataPlay.Setting
         private void OnDestroy()
         {
             _isExited = true;
+            MajInstances.GameManager.Save();
             GC.Collect();
         }
     }

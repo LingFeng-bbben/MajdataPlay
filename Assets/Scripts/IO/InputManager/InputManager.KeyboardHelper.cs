@@ -17,7 +17,8 @@ namespace MajdataPlay.IO
                 var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
                 return (result & 0x8000) != 0;
 #else
-            return Input.GetKey(ToUnityKeyCode(keyCode));
+                //return Input.GetKey(ToUnityKeyCode(keyCode));
+                return false;
 #endif
             }
             public static bool IsKeyUp(KeyCode keyCode)
