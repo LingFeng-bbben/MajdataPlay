@@ -29,11 +29,14 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return false;
+                return Bass.ChannelHasFlag(_stream, BassFlags.Loop);
             }
             set
             {
-                
+                if(value)
+                    Bass.ChannelAddFlag(_stream,BassFlags.Loop);
+                else
+                    Bass.ChannelRemoveFlag(_stream, BassFlags.Loop);
             }
         }
         public override bool IsEmpty => false;

@@ -28,7 +28,7 @@ namespace MajdataPlay.Utils
         public const int HIDDEN_LAYER = 3;
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
-        public const int HTTP_TIMEOUT_MS = 4000;
+        public const int HTTP_TIMEOUT_MS = 8000;
 
         public static event Action? OnApplicationQuit;
         public static LibVLC? VLCLibrary { get; private set; }
