@@ -30,7 +30,7 @@ namespace MajdataPlay.IO
             var now = MajTimeline.UnscaledTime;
             foreach (var (i, state) in newStates.WithIndex())
             {
-                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                var _state = state ? SwitchStatus.On : SwitchStatus.Off;
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -40,7 +40,7 @@ namespace MajdataPlay.IO
             }
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
-                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                var _state = state ? SwitchStatus.On : SwitchStatus.Off;
                 _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,

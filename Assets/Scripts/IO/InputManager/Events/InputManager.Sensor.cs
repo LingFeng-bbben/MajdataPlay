@@ -14,13 +14,13 @@ namespace MajdataPlay.IO
             /// <summary>
             /// Update by InputManager.PreUpdate
             /// </summary>
-            public SensorStatus State
+            public SwitchStatus State
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get;
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set;
-            } = SensorStatus.Off;
+            } = SwitchStatus.Off;
             public SensorArea Area
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]

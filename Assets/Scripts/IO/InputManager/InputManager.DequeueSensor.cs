@@ -17,7 +17,7 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
-            Span<SensorStatus> newStates = stackalloc SensorStatus[34];
+            Span<SwitchStatus> newStates = stackalloc SwitchStatus[34];
 
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
@@ -31,8 +31,8 @@ namespace MajdataPlay.IO
             {
                 var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
 
-                newStates[i] |= state ? SensorStatus.On : SensorStatus.Off;
-                sensorStates[i] = newStates[i] is SensorStatus.On;
+                newStates[i] |= state ? SwitchStatus.On : SwitchStatus.Off;
+                sensorStates[i] = newStates[i] is SwitchStatus.On;
             }
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
@@ -78,7 +78,7 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-        static void SetSensorState(SensorArea type,SensorStatus nState)
+        static void SetSensorState(SensorArea type,SwitchStatus nState)
         {
             var sensors = _sensors.Span;
             var sensor = sensors[(int)type];

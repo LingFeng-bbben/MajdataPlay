@@ -536,8 +536,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On);
-            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SwitchStatus.On);
+            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
             if (isPressed || AutoplayMode == AutoplayMode.Enable)
@@ -557,7 +557,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 if (IsClassic)
                 {
-                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SensorStatus.On) && 
+                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
                                            !isButtonPressed;
                     var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET;
                     End(offset);

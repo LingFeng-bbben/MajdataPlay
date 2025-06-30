@@ -28,7 +28,7 @@ namespace MajdataPlay.IO
             /// <summary>
             /// Update by InputManager.PreUpdate
             /// </summary>
-            public SensorStatus State
+            public SwitchStatus State
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get;
@@ -41,7 +41,7 @@ namespace MajdataPlay.IO
             {
                 BindingKey = bindingKey;
                 Area = type;
-                State = SensorStatus.Off;
+                State = SwitchStatus.Off;
                 OnStatusChanged = null;
             }
             public void AddSubscriber(EventHandler<InputEventArgs> handler)

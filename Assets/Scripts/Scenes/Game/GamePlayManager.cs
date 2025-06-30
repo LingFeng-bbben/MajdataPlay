@@ -881,14 +881,14 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
-                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
+                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A7, SwitchStatus.On);
+                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A4, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A5, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(SensorArea.A6, SwitchStatus.On);
                     if(_2367)
                     {
                         _2367PressTime += Time.deltaTime;

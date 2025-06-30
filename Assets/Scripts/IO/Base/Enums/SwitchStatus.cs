@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.IO
 {
-    public enum SensorStatus
+    public enum SwitchStatus
     {
         Off,
         On

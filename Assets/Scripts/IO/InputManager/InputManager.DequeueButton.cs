@@ -19,7 +19,7 @@ namespace MajdataPlay.IO
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
             
-            Span<SensorStatus> newStates = stackalloc SensorStatus[12];
+            Span<SwitchStatus> newStates = stackalloc SwitchStatus[12];
 
             while (_buttonRingInputBuffer.TryDequeue(out var report))
             {
@@ -31,7 +31,7 @@ namespace MajdataPlay.IO
 
             for (var i = 0; i < 12; i++)
             {
-                var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SensorStatus.On : SensorStatus.Off;
+                var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SwitchStatus.On : SwitchStatus.Off;
                 newStates[i] |= state;
             }
 

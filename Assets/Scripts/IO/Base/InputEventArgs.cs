@@ -6,10 +6,10 @@ namespace MajdataPlay.IO
     public readonly struct InputEventArgs
     {
         public SensorArea Type { get; init; }
-        public SensorStatus OldStatus { get; init; }
-        public SensorStatus Status { get; init; }
+        public SwitchStatus OldStatus { get; init; }
+        public SwitchStatus Status { get; init; }
         public bool IsButton { get; init; }
-        public bool IsDown => OldStatus == SensorStatus.Off && Status == SensorStatus.On;
-        public bool IsUp=> OldStatus == SensorStatus.On && Status == SensorStatus.Off;
+        public bool IsDown => OldStatus == SwitchStatus.Off && Status == SwitchStatus.On;
+        public bool IsUp=> OldStatus == SwitchStatus.On && Status == SwitchStatus.Off;
     }
 }

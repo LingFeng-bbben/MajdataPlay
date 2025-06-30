@@ -44,22 +44,22 @@ namespace MajdataPlay.IO
                 return MajEnv.UserSettings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
             }
         }
-        public static ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
+        public static ReadOnlySpan<SwitchStatus> ButtonStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInThisFrame;
         }
-        public static ReadOnlySpan<SensorStatus> ButtonStatusInPreviousFrame
+        public static ReadOnlySpan<SwitchStatus> ButtonStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInPreviousFrame;
         }
-        public static ReadOnlySpan<SensorStatus> SensorStatusInThisFrame
+        public static ReadOnlySpan<SwitchStatus> SensorStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInThisFrame;
         }
-        public static ReadOnlySpan<SensorStatus> SensorStatusInPreviousFrame
+        public static ReadOnlySpan<SwitchStatus> SensorStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInPreviousFrame;
@@ -114,8 +114,8 @@ namespace MajdataPlay.IO
             new Button(KeyCode.SelectP2,SensorArea.P2),
         };
         readonly static TimeSpan[] _btnLastTriggerTimes = new TimeSpan[8];
-        readonly static SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[12];
-        readonly static SensorStatus[] _btnStatusInThisFrame = new SensorStatus[12];
+        readonly static SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[12];
+        readonly static SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[12];
 
         readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
         {
@@ -255,8 +255,8 @@ namespace MajdataPlay.IO
         readonly static TimeSpan[] _sensorLastTriggerTimes = new TimeSpan[33];
         //The serial port will report the status of 35 zones, but there are actually only 34 zones.
         readonly static Memory<bool> _sensorStates = new bool[35];
-        readonly static SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
-        readonly static SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
 
         static bool _useDummy = false;
         readonly static bool _isBtnDebounceEnabled = false;
@@ -353,12 +353,12 @@ namespace MajdataPlay.IO
             button.RemoveSubscriber(checker);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
+        public static bool CheckAreaStatus(SensorArea sType, SwitchStatus targetStatus)
         {
             return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatus(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
 
@@ -369,7 +369,7 @@ namespace MajdataPlay.IO
             return sensor.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatus(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var button = GetButton(target);
@@ -380,7 +380,7 @@ namespace MajdataPlay.IO
             return button.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatusInThisFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -388,7 +388,7 @@ namespace MajdataPlay.IO
             return _btnStatusInThisFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatusInPreviousFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -396,7 +396,7 @@ namespace MajdataPlay.IO
             return _btnStatusInPreviousFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetButtonStatusInThisFrame(SensorArea target)
+        public static SwitchStatus GetButtonStatusInThisFrame(SensorArea target)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -404,7 +404,7 @@ namespace MajdataPlay.IO
             return _btnStatusInThisFrame[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetButtonStatusInPreviousFrame(SensorArea target)
+        public static SwitchStatus GetButtonStatusInPreviousFrame(SensorArea target)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -417,8 +417,8 @@ namespace MajdataPlay.IO
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
 
-            return _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
-                   _btnStatusInThisFrame[index] == SensorStatus.On;
+            return _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                   _btnStatusInThisFrame[index] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsButtonClickedInThisFrame_OR(params SensorArea[] targets)
@@ -433,8 +433,8 @@ namespace MajdataPlay.IO
                 ThrowIfButtonIndexOutOfRange(target);
                 var index = GetButtonIndex(target);
 
-                var result = _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
-                             _btnStatusInThisFrame[index] == SensorStatus.On;
+                var result = _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _btnStatusInThisFrame[index] == SwitchStatus.On;
                 if (result)
                 {
                     return true;
@@ -455,8 +455,8 @@ namespace MajdataPlay.IO
                 ThrowIfButtonIndexOutOfRange(target);
                 var index = GetButtonIndex(target);
 
-                var result = _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
-                             _btnStatusInThisFrame[index] == SensorStatus.On;
+                var result = _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _btnStatusInThisFrame[index] == SwitchStatus.On;
                 if (!result)
                 {
                     return false;
@@ -465,7 +465,7 @@ namespace MajdataPlay.IO
             return true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatusInThisFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -473,7 +473,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInThisFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatusInPreviousFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -481,7 +481,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInPreviousFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetSensorStatusInThisFrame(SensorArea target)
+        public static SwitchStatus GetSensorStatusInThisFrame(SensorArea target)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -489,7 +489,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInThisFrame[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetSensorStatusInPreviousFrame(SensorArea target)
+        public static SwitchStatus GetSensorStatusInPreviousFrame(SensorArea target)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -551,8 +551,8 @@ namespace MajdataPlay.IO
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
 
-            return _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
-                   _sensorStatusInThisFrame[index] == SensorStatus.On;
+            return _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                   _sensorStatusInThisFrame[index] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSensorClickedInThisFrame_OR(params SensorArea[] targets)
@@ -567,8 +567,8 @@ namespace MajdataPlay.IO
                 ThrowIfSensorIndexOutOfRange(target);
                 var index = (int)target;
 
-                var result = _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
-                             _sensorStatusInThisFrame[index] == SensorStatus.On;
+                var result = _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SwitchStatus.On;
                 if (result)
                 {
                     return true;
@@ -589,8 +589,8 @@ namespace MajdataPlay.IO
                 ThrowIfSensorIndexOutOfRange(target);
                 var index = (int)target;
 
-                var result = _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
-                             _sensorStatusInThisFrame[index] == SensorStatus.On;
+                var result = _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SwitchStatus.On;
                 if (!result)
                 {
                     return false;

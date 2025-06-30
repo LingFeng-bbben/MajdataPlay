@@ -75,12 +75,12 @@ namespace MajdataPlay.Setting
                 {
                     PressTime += Time.deltaTime;
                 }
-                if (InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.Off) && Direction == -1)
+                if (InputManager.CheckButtonStatus(SensorArea.A6, SwitchStatus.Off) && Direction == -1)
                 {
                     IsPressed = false;
                     PressTime = 0;
                 }
-                else if (InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.Off) && Direction == 1)
+                else if (InputManager.CheckButtonStatus(SensorArea.A3, SwitchStatus.Off) && Direction == 1)
                 {
                     IsPressed = false;
                     PressTime = 0;

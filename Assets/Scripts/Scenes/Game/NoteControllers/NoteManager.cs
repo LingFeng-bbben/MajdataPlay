@@ -44,13 +44,13 @@ namespace MajdataPlay.Game.Notes.Controllers
         internal event IOListener? OnGameIOUpdate;
 
         //DJAuto
-        readonly SensorStatus[] _btnStatusInNextFrame = new SensorStatus[8];
-        readonly SensorStatus[] _btnStatusInThisFrame = new SensorStatus[8];
-        readonly SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[8];
+        readonly SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
         //DJAuto
-        readonly SensorStatus[] _sensorStatusInNextFrame = new SensorStatus[33];
-        readonly SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
-        readonly SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
+        readonly SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         
         readonly bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly bool[] _isSensorUsedInThisFrame = new bool[33];
@@ -246,7 +246,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 
                 _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                 _btnStatusInThisFrame[i] = btnState;
-                _btnStatusInNextFrame[i] = SensorStatus.Off;
+                _btnStatusInNextFrame[i] = SwitchStatus.Off;
             }
             for (var i = 0; i < 33; i++)
             {
@@ -257,7 +257,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 }
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
-                _sensorStatusInNextFrame[i] = SensorStatus.Off;
+                _sensorStatusInNextFrame[i] = SwitchStatus.Off;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -323,56 +323,56 @@ namespace MajdataPlay.Game.Notes.Controllers
             return _sensorUsageStatusRefs[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatusInThisFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckSensorStatusInThisFrame(SensorArea area, SwitchStatus targetState)
         {
             ThrowIfSensorIndexOutOfRange(area);
 
             return _sensorStatusInThisFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatusInThisFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckButtonStatusInThisFrame(SensorArea area, SwitchStatus targetState)
         {
             ThrowIfButtonIndexOutOfRange(area);
 
             return _btnStatusInThisFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatusInPreviousFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckButtonStatusInPreviousFrame(SensorArea area, SwitchStatus targetState)
         {
             ThrowIfButtonIndexOutOfRange(area);
 
             return _btnStatusInPreviousFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatusInPreviousFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckSensorStatusInPreviousFrame(SensorArea area, SwitchStatus targetState)
         {
             ThrowIfSensorIndexOutOfRange(area);
 
             return _sensorStatusInPreviousFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetButtonStatusInThisFrame(SensorArea area)
+        public SwitchStatus GetButtonStatusInThisFrame(SensorArea area)
         {
             ThrowIfButtonIndexOutOfRange(area);
 
             return _btnStatusInThisFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetButtonStatusInPreviousFrame(SensorArea area)
+        public SwitchStatus GetButtonStatusInPreviousFrame(SensorArea area)
         {
             ThrowIfButtonIndexOutOfRange(area);
 
             return _btnStatusInPreviousFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetSensorStatusInThisFrame(SensorArea area)
+        public SwitchStatus GetSensorStatusInThisFrame(SensorArea area)
         {
             ThrowIfSensorIndexOutOfRange(area);
 
             return _sensorStatusInThisFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetSensorStatusInPreviousFrame(SensorArea area)
+        public SwitchStatus GetSensorStatusInPreviousFrame(SensorArea area)
         {
             ThrowIfSensorIndexOutOfRange(area);
 
@@ -385,8 +385,8 @@ namespace MajdataPlay.Game.Notes.Controllers
             var i = (int)area;
 
             //return _isBtnClickedInThisFrame[i] == SensorStatus.On;
-            return _btnStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _btnStatusInThisFrame[i] == SensorStatus.On;
+            return _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                   _btnStatusInThisFrame[i] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSensorClickedInThisFrame(SensorArea area)
@@ -395,8 +395,8 @@ namespace MajdataPlay.Game.Notes.Controllers
             var i = (int)area;
 
             //return _isSensorClickedInThisFrame[i] == SensorStatus.On;
-            return _sensorStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _sensorStatusInThisFrame[i] == SensorStatus.On;
+            return _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                   _sensorStatusInThisFrame[i] == SwitchStatus.On;
         }
 
         public bool SimulateSensorPress(SensorArea area)
@@ -405,9 +405,9 @@ namespace MajdataPlay.Game.Notes.Controllers
                 return false;
             var i = (int)area;
             var raw = _sensorStatusInNextFrame[i];
-            _sensorStatusInNextFrame[i] = SensorStatus.On;
+            _sensorStatusInNextFrame[i] = SwitchStatus.On;
 
-            return raw == SensorStatus.Off;
+            return raw == SwitchStatus.Off;
         }
         public bool SimulateButtonPress(SensorArea area)
         {
@@ -416,18 +416,18 @@ namespace MajdataPlay.Game.Notes.Controllers
 
             var i = (int)area;
             var raw = _btnStatusInNextFrame[i];
-            _btnStatusInNextFrame[i] = SensorStatus.On;
+            _btnStatusInNextFrame[i] = SwitchStatus.On;
 
-            return raw == SensorStatus.Off;
+            return raw == SwitchStatus.Off;
         }
         public bool SimulateSensorClick(SensorArea area)
         {
             if (area < SensorArea.A1 || area > SensorArea.E8)
                 return false;
             var i = (int)area;
-            var raw = _sensorStatusInThisFrame[i] == SensorStatus.Off &&
-                      _sensorStatusInNextFrame[i] == SensorStatus.Off;
-            _sensorStatusInNextFrame[i] = SensorStatus.On;
+            var raw = _sensorStatusInThisFrame[i] == SwitchStatus.Off &&
+                      _sensorStatusInNextFrame[i] == SwitchStatus.Off;
+            _sensorStatusInNextFrame[i] = SwitchStatus.On;
 
             return raw;
         }
@@ -437,9 +437,9 @@ namespace MajdataPlay.Game.Notes.Controllers
                 return false;
 
             var i = (int)area;
-            var raw = _btnStatusInThisFrame[i] == SensorStatus.Off &&
-                      _btnStatusInNextFrame[i] == SensorStatus.Off;
-            _btnStatusInNextFrame[i] = SensorStatus.On;
+            var raw = _btnStatusInThisFrame[i] == SwitchStatus.Off &&
+                      _btnStatusInNextFrame[i] == SwitchStatus.Off;
+            _btnStatusInNextFrame[i] = SwitchStatus.On;
 
             return raw;
         }

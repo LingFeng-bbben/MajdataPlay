@@ -153,7 +153,7 @@ namespace MajdataPlay.Test
             };
             for (var i = 0; i < btns.Length; i++)
             {
-                var state = InputManager.GetButtonStatusInThisFrame(btns[i]) is SensorStatus.On ? ON_STRING: OFF_STRING;
+                var state = InputManager.GetButtonStatusInThisFrame(btns[i]) is SwitchStatus.On ? ON_STRING: OFF_STRING;
                 _btnStateTexts[i].text = state;
             }
             if(_testBtnPressTime >= 5)
@@ -161,7 +161,7 @@ namespace MajdataPlay.Test
                 _testBtnPressTime = 0;
                 NextPage();
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.Test, SensorStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.Test, SwitchStatus.On))
             {
                 _testBtnPressTime += MajTimeline.DeltaTime;
             }

@@ -520,7 +520,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
