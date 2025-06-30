@@ -53,7 +53,9 @@ namespace MajdataPlay.IO
                 var newState = newStates[i];
 
                 if (oldState == newState)
-                    continue;              
+                {
+                    continue;
+                }              
                 if (_isSensorDebounceEnabled && i.InRange(0, 32))
                 {
                     if (JitterDetect(sensorArea, now))

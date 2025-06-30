@@ -57,23 +57,16 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var sensorStates = _sensorStates.AsSpan();
-                var isSensorHadOn = _isSensorHadOn.AsSpan();
-                var isSensorHadOff = _isSensorHadOff.AsSpan();
-                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-
                 lock (_touchPanelUpdateLoop)
                 {
                     for (var i = 0; i < 35; i++)
                     {
-                        isSensorHadOn[i] = isSensorHadOnInternal[i];
-                        isSensorHadOff[i] = isSensorHadOffInternal[i];
-                        sensorStates[i] = sensorRealTimeStates[i];
+                        _isSensorHadOn[i] = _isSensorHadOnInternal[i];
+                        _isSensorHadOff[i] = _isSensorHadOffInternal[i];
+                        _sensorStates[i] = _sensorRealTimeStates[i];
 
-                        isSensorHadOnInternal[i] = default;
-                        isSensorHadOffInternal[i] = default;
+                        _isSensorHadOnInternal[i] = default;
+                        _isSensorHadOffInternal[i] = default;
                     }
                 }
             }

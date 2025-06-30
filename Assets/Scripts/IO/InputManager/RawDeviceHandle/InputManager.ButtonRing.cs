@@ -34,7 +34,9 @@ namespace MajdataPlay.IO
             public static void Init()
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
+                {
                     return;
+                }
                 var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
                 if (manufacturer == DeviceManufacturer.General)
                 {
@@ -66,23 +68,16 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var buttonStates = _buttonStates.AsSpan();
-                var isBtnHadOn = _isBtnHadOn.AsSpan();
-                var isBtnHadOff = _isBtnHadOff.AsSpan();
-                var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
-                var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
-                var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
-
                 lock (_buttonRingUpdateLoop)
                 {
                     for (var i = 0; i < 12; i++)
                     {
-                        isBtnHadOn[i] = isBtnHadOnInternal[i];
-                        isBtnHadOff[i] = isBtnHadOffInternal[i];
-                        buttonStates[i] = buttonRealTimeStates[i];
+                        _isBtnHadOn[i] = _isBtnHadOnInternal[i];
+                        _isBtnHadOff[i] = _isBtnHadOffInternal[i];
+                        _buttonStates[i] = _buttonRealTimeStates[i];
 
-                        isBtnHadOnInternal[i] = default;
-                        isBtnHadOffInternal[i] = default;
+                        _isBtnHadOnInternal[i] = default;
+                        _isBtnHadOffInternal[i] = default;
                     }
                 }
             }
@@ -282,7 +277,9 @@ namespace MajdataPlay.IO
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var buttons = _buttons.Span;
+                var gameButtons = _buttons.Span.Slice(0, 8);
+                var fnButtons = _buttons.Span.Slice(8);
+                var fnBuffer = _buttonRealTimeStates.AsSpan(8);
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
@@ -297,13 +294,14 @@ namespace MajdataPlay.IO
                         {
                             var now = MajTimeline.UnscaledTime;
 
-                            for (var i = 0; i < buttons.Length; i++)
+                            for (var i = 0; i < gameButtons.Length; i++)
                             {
-                                var button = buttons[i];
+                                var button = gameButtons[i];
                                 var keyCode = button.BindingKey;
                                 var state = KeyboardHelper.IsKeyDown(keyCode);
                                 _buttonRealTimeStates[i] = state;
                             }
+                            UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
@@ -345,6 +343,8 @@ namespace MajdataPlay.IO
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
+                var fnButtons = _buttons.Span.Slice(8);
+                var fnBuffer = _buttonRealTimeStates.AsSpan(8);
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
@@ -418,7 +418,7 @@ namespace MajdataPlay.IO
                                     _ioThreadSync.WaitNotify();
                                     break;
                             }
-                            
+                            UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
@@ -463,7 +463,17 @@ namespace MajdataPlay.IO
                     IsConnected = false;
                 }
             }
-
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void UpdateKeyboardFn(in ReadOnlySpan<Button> fnButtons, in Span<bool> buffer)
+            {
+                for (var i = 0; i < fnButtons.Length; i++)
+                {
+                    var button = fnButtons[i];
+                    var keyCode = button.BindingKey;
+                    var state = KeyboardHelper.IsKeyDown(keyCode);
+                    buffer[i] |= state;
+                }
+            }
             static string GetHIDDeviceName(ButtonRingDeviceType deviceType, DeviceManufacturer manufacturer)
             {
                 switch(deviceType)

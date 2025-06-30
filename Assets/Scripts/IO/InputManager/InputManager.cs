@@ -303,24 +303,14 @@ namespace MajdataPlay.IO
         {
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
-            var executionQueue = MajEnv.ExecutionQueue;
             try
             {
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
-                if (_useDummy || MajEnv.IsEditor)
-                {
-                    UpdateMousePosition();
-                }
-                else
-                {
-                    UpdateSensorState();
-                }
+
+                UpdateMousePosition();
+                UpdateSensorState();
                 UpdateButtonState();
-                while (executionQueue.TryDequeue(out var eventAction))
-                {
-                    eventAction();
-                }
             }
             catch (Exception e)
             {
@@ -727,32 +717,6 @@ namespace MajdataPlay.IO
                 default:
                     throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
             }
-        }
-
-        static void OnTouchPanelStateChanged(TouchPanelZone zone, InputState state)
-        {
-            var i = (int)zone;
-            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
-
-            _touchPanelInputBuffer.Enqueue(new()
-            {
-                Index = i,
-                State = majState,
-                Timestamp = MajTimeline.UnscaledTime
-            });
-        }
-        static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
-        {
-            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
-            var i = GetIndexByButtonRingZone(zone);
-
-            //ButtonRing.OnButtonRingStateChanged(i, majState);
-            _buttonRingInputBuffer.Enqueue(new()
-            {
-                Index = i,
-                State = majState,
-                Timestamp = MajTimeline.UnscaledTime
-            });
         }
         class IOThreadSynchronization
         {

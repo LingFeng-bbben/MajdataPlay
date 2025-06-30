@@ -42,7 +42,9 @@ namespace MajdataPlay.IO
                 var newState = newStates[i];
 
                 if (oldState == newState)
+                {
                     continue;
+                }
                 if (_isBtnDebounceEnabled && i.InRange(0, 7))
                 {
                     if (JitterDetect(button.Area, now, true))
