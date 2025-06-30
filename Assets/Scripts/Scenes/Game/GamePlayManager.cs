@@ -172,7 +172,7 @@ namespace MajdataPlay.Game
         }
         void OnPauseButton(object sender, InputEventArgs e)
         {
-            if (e.IsButton && e.IsDown && e.Type == SensorArea.P1)
+            if (e.IsButton && e.IsDown && e.SArea == SensorArea.P1)
             {
                 print("Pause!!");
                 BackToList().Forget();
@@ -881,14 +881,14 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A3, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A7, SwitchStatus.On);
-                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A4, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A5, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SwitchStatus.On);
+                    var _2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
+                    var _3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
                     if(_2367)
                     {
                         _2367PressTime += Time.deltaTime;

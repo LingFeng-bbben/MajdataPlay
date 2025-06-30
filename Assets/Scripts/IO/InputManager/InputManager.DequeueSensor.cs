@@ -23,7 +23,9 @@ namespace MajdataPlay.IO
             {
                 var index = report.Index;
                 if (!index.InRange(0, 33))
+                {
                     continue;
+                }
 
                 newStates[index] |= report.State;
             }
@@ -69,7 +71,7 @@ namespace MajdataPlay.IO
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Area,
+                    SArea = sensor.Area,
                     OldStatus = oldState,
                     Status = newState,
                     IsButton = false
@@ -93,7 +95,7 @@ namespace MajdataPlay.IO
                 sensor.State = nState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Area,
+                    SArea = sensor.Area,
                     OldStatus = oState,
                     Status = nState,
                     IsButton = false

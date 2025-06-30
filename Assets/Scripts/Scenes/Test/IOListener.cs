@@ -123,11 +123,11 @@ namespace MajdataPlay.Test
                         break;
                 }
             }
-            if(InputManager.IsButtonClickedInThisFrame(SensorArea.Test))
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.Test))
             {
                 NextPage();
             }
-            if(InputManager.IsButtonClickedInThisFrame(SensorArea.A5))
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
             {
                 _exitBtnPressTime = 5;
             }
@@ -136,20 +136,20 @@ namespace MajdataPlay.Test
         {
             const string ON_STRING = "ON";
             const string OFF_STRING = "OFF";
-            Span<SensorArea> btns = stackalloc SensorArea[12]
+            Span<ButtonZone> btns = stackalloc ButtonZone[12]
             {
-                SensorArea.A1,
-                SensorArea.A2,
-                SensorArea.A3,
-                SensorArea.A4,
-                SensorArea.A5,
-                SensorArea.A6,
-                SensorArea.A7,
-                SensorArea.A8,
-                SensorArea.Test,
-                SensorArea.P1,
-                SensorArea.Service,
-                SensorArea.P2,
+                ButtonZone.A1,
+                ButtonZone.A2,
+                ButtonZone.A3,
+                ButtonZone.A4,
+                ButtonZone.A5,
+                ButtonZone.A6,
+                ButtonZone.A7,
+                ButtonZone.A8,
+                ButtonZone.Test,
+                ButtonZone.P1,
+                ButtonZone.Service,
+                ButtonZone.P2,
             };
             for (var i = 0; i < btns.Length; i++)
             {
@@ -161,7 +161,7 @@ namespace MajdataPlay.Test
                 _testBtnPressTime = 0;
                 NextPage();
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.Test, SwitchStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.Test, SwitchStatus.On))
             {
                 _testBtnPressTime += MajTimeline.DeltaTime;
             }

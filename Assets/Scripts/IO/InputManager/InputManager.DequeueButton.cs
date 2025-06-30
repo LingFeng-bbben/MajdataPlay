@@ -25,7 +25,9 @@ namespace MajdataPlay.IO
             {
                 var index = report.Index;
                 if (!index.InRange(0, 11))
+                {
                     continue;
+                }
                 newStates[index] |= report.State;
             }
 
@@ -45,9 +47,9 @@ namespace MajdataPlay.IO
                 {
                     continue;
                 }
-                if (_isBtnDebounceEnabled && i.InRange(0, 7))
+                if (_isBtnDebounceEnabled)
                 {
-                    if (JitterDetect(button.Area, now, true))
+                    if (JitterDetect(button.Zone, now))
                     {
                         continue;
                     }
@@ -57,7 +59,7 @@ namespace MajdataPlay.IO
                 MajDebug.Log(ZString.Format("Key \"{0}\": {1}", button.BindingKey, newState));
                 var msg = new InputEventArgs()
                 {
-                    Type = button.Area,
+                    BZone = button.Zone,
                     OldStatus = oldState,
                     Status = newState,
                     IsButton = true
@@ -66,39 +68,23 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-        public static void BindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void BindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {
-            var button = GetButton(sType);
+            var button = GetButton(zone);
             if (button == null)
-                throw new Exception($"{sType} Button not found.");
+            {
+                throw new Exception($"{zone} Button not found.");
+            }
             button.AddSubscriber(checker);
         }
-        public static void UnbindButton(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void UnbindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {
-            var button = GetButton(sType);
+            var button = GetButton(zone);
             if (button == null)
-                throw new Exception($"{sType} Button not found.");
-            button.RemoveSubscriber(checker);
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int GetIndexByButtonRingZone(ButtonRingZone btnZone)
-        {
-            return btnZone switch
             {
-                ButtonRingZone.BA1 => 0,
-                ButtonRingZone.BA2 => 1,
-                ButtonRingZone.BA3 => 2,
-                ButtonRingZone.BA4 => 3,
-                ButtonRingZone.BA5 => 4,
-                ButtonRingZone.BA6 => 5,
-                ButtonRingZone.BA7 => 6,
-                ButtonRingZone.BA8 => 7,
-                ButtonRingZone.ArrowUp => 9,
-                ButtonRingZone.ArrowDown => 11,
-                ButtonRingZone.Select => 8,
-                ButtonRingZone.InsertCoin => 10,
-                _ => throw new ArgumentOutOfRangeException("Does your 8-key game have 9 keys?")
-            };
+                throw new Exception($"{zone} Button not found.");
+            }
+            button.RemoveSubscriber(checker);
         }
     }
 }

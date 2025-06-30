@@ -80,7 +80,7 @@ namespace MajdataPlay.Title
                 return;
             if (e.IsButton)
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     case SensorArea.Test:
                         if(_flag)
@@ -93,7 +93,7 @@ namespace MajdataPlay.Title
             }
             else
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     case SensorArea.A8:
                         MajInstances.AudioManager.OpenAsioPannel();

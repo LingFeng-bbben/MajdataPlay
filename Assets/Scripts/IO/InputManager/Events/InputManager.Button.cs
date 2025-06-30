@@ -18,7 +18,7 @@ namespace MajdataPlay.IO
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set;
             }
-            public SensorArea Area
+            public ButtonZone Zone
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get;
@@ -37,10 +37,10 @@ namespace MajdataPlay.IO
             }
 
             event EventHandler<InputEventArgs>? OnStatusChanged;
-            public Button(KeyCode bindingKey, SensorArea type)
+            public Button(KeyCode bindingKey, ButtonZone zone)
             {
                 BindingKey = bindingKey;
-                Area = type;
+                Zone = zone;
                 State = SwitchStatus.Off;
                 OnStatusChanged = null;
             }
@@ -51,12 +51,16 @@ namespace MajdataPlay.IO
             public void RemoveSubscriber(EventHandler<InputEventArgs> handler)
             {
                 if (OnStatusChanged is not null)
+                {
                     OnStatusChanged -= handler;
+                }
             }
             public void PushEvent(in InputEventArgs args)
             {
                 if (OnStatusChanged is not null)
+                {
                     OnStatusChanged(this, args);
+                }
             }
             public void ClearSubscriber() => OnStatusChanged = null;
         }

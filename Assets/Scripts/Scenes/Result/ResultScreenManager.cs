@@ -249,7 +249,7 @@ namespace MajdataPlay.Result
         {
             if (e.IsDown && e.IsButton )
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     case SensorArea.A4:
                         var canNextRound = _gameInfo.NextRound();
