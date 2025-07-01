@@ -60,7 +60,9 @@ namespace MajdataPlay.Test
         void Update()
         {
             if (_exitFlag)
+            {
                 return;
+            }
             switch (_currentPage)
             {
                 case TestPages.Sensor:
@@ -71,7 +73,9 @@ namespace MajdataPlay.Test
                     break;
             }
             if (string.IsNullOrEmpty(NextScene))
+            {
                 return;
+            }
             if (_exitBtnPressTime >= 5)
             {
                 _exitFlag = true;
@@ -112,7 +116,9 @@ namespace MajdataPlay.Test
             foreach (var (i, state) in rawData.Span.WithIndex())
             {
                 if (i == 34)
+                {
                     continue;
+                }
                 switch (state)
                 {
                     case true:
