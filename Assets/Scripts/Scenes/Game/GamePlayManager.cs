@@ -153,7 +153,9 @@ namespace MajdataPlay.Game
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
+            {
                 throw new ArgumentNullException(nameof(_gameInfo));
+            }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);

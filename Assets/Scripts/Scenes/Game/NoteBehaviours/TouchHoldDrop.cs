@@ -58,6 +58,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly Transform[] _fanTransforms = new Transform[4];
         readonly SpriteRenderer[] _fanRenderers = new SpriteRenderer[4];
 
+        ButtonZone? _buttonPos;
+
         float displayDuration;
         float moveDuration;
         float wholeDuration;
@@ -212,6 +214,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
+            if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
+            {
+                _buttonPos = _sensorPos.ToButtonZone();
+            }
+            else
+            {
+                _buttonPos = null;
+            }
             _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
@@ -470,10 +480,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
-                _noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos).Target;
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))

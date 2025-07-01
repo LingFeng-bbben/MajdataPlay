@@ -80,9 +80,9 @@ namespace MajdataPlay.Title
                 return;
             if (e.IsButton)
             {
-                switch (e.SArea)
+                switch (e.BZone)
                 {
-                    case SensorArea.Test:
+                    case ButtonZone.Test:
                         if(_flag)
                         {
                             EnterTestMode();

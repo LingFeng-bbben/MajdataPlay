@@ -87,7 +87,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOn[16] || _isSensorHadOn[17];
                 }
-                else if(area < SensorArea.Test)
+                else if(area <= SensorArea.E8)
                 {
                     return _isSensorHadOn[(int)area + 1];
                 }
@@ -109,7 +109,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorStates[16] || _sensorStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorStates[(int)area + 1];
                 }
@@ -131,7 +131,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOff[16] && _isSensorHadOff[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _isSensorHadOff[(int)area + 1];
                 }
@@ -163,7 +163,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorRealTimeStates[16] || _sensorRealTimeStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorRealTimeStates[(int)area + 1];
                 }
