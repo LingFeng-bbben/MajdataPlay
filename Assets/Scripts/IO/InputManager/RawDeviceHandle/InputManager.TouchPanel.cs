@@ -40,6 +40,7 @@ namespace MajdataPlay.IO
                     return;
                 switch (MajEnv.UserSettings.IO.Manufacturer)
                 {
+                    case DeviceManufacturer.Yuan:
                     case DeviceManufacturer.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;

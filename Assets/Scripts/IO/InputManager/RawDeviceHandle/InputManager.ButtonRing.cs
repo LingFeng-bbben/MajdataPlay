@@ -53,7 +53,7 @@ namespace MajdataPlay.IO
                             break;
                     }
                 }
-                else if (manufacturer == DeviceManufacturer.Dao)
+                else if (manufacturer is DeviceManufacturer.Yuan or DeviceManufacturer.Dao)
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
