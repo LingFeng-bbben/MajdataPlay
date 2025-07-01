@@ -247,11 +247,11 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && e.IsButton )
+            if (e.IsDown && e.IsButton)
             {
-                switch (e.SArea)
+                switch (e.BZone)
                 {
-                    case SensorArea.A4:
+                    case ButtonZone.A4:
                         var canNextRound = _gameInfo.NextRound();
                         if (_gameInfo.IsDanMode)
                         {
@@ -279,7 +279,7 @@ namespace MajdataPlay.Result
                         MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                         MajInstances.SceneSwitcher.SwitchScene("List", false);
                         return;
-                    case SensorArea.A5:
+                    case ButtonZone.A5:
                         favoriteAdder.FavoratePressed();
                         break;
                 }

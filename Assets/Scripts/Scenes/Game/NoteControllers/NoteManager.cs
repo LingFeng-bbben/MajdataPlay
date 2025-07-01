@@ -303,10 +303,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var keyIndex = queueInfo.KeyIndex - 1;
             if (!keyIndex.InRange(0, 7))
+            {
                 return;
+            }
             var currentIndex = _noteCurrentIndex[keyIndex];
             if (currentIndex > queueInfo.Index)
+            {
                 return;
+            }
             _noteCurrentIndex[keyIndex]++;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -314,11 +318,15 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var sensorPos = queueInfo.SensorPos;
             if (sensorPos > SensorArea.E8 || sensorPos < SensorArea.A1)
+            {
                 return;
+            }
             var pos = (int)sensorPos;
             var currentIndex = _touchCurrentIndex[pos];
             if (currentIndex > queueInfo.Index)
+            {
                 return;
+            }
 
             _touchCurrentIndex[pos]++;
         }

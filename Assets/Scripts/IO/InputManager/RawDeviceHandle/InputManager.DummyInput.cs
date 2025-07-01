@@ -48,7 +48,6 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
-            UpdateSensorState();
         }
         static void FromTouchPanel(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
