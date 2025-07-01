@@ -1620,7 +1620,7 @@ namespace MajdataPlay.Game
             }
             static Dictionary<SensorArea,SensorArea> GenerateTouchPanelMappingTable()
             {
-                var areas = ((SensorArea[])Enum.GetValues(typeof(SensorArea))).SkipLast(4).ToArray();
+                var areas = ((SensorArea[])Enum.GetValues(typeof(SensorArea))).ToArray();
                 var newAreas = new SensorArea?[33];
                 var rd = new System.Random();
                 var dict = new Dictionary<SensorArea, SensorArea>();
