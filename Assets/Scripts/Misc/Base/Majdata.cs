@@ -3,9 +3,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal unsafe static class Majdata<T>
     {
         /// <summary>
@@ -13,7 +12,7 @@ namespace MajdataPlay.Utils
         /// </summary>
         public static ref T? Instance
         {
-            get => ref Unsafe.AsRef<T?>(_instancePtr);
+            get => ref System.Runtime.CompilerServices.Unsafe.AsRef<T?>(_instancePtr);
         }
         public static void* Pointer
         {
@@ -28,7 +27,7 @@ namespace MajdataPlay.Utils
         static Majdata()
         {
             var handle = GCHandle.Alloc(_instance, GCHandleType.Pinned);
-            _instancePtr = Unsafe.AsPointer(ref _instance);
+            _instancePtr = System.Runtime.CompilerServices.Unsafe.AsPointer(ref _instance);
             _handlePtr = (void*)GCHandle.ToIntPtr(handle);
         }
 

@@ -4,6 +4,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
     public static class SongStorage
     {
@@ -19,16 +20,16 @@ namespace MajdataPlay.Utils
         /// <summary>
         /// Current song collection index
         /// </summary>
-        public static int CollectionIndex 
-        { 
+        public static int CollectionIndex
+        {
             get => _collectionIndex;
-            set => _collectionIndex = value.Clamp(0, Collections.Length - 1); 
+            set => _collectionIndex = value.Clamp(0, Collections.Length - 1);
         }
         /// <summary>
         /// Current song collection
         /// </summary>
-        public static SongCollection WorkingCollection 
-        { 
+        public static SongCollection WorkingCollection
+        {
             get
             {
                 if (Collections.IsEmpty())
@@ -44,7 +45,7 @@ namespace MajdataPlay.Utils
         public static long TotalChartCount { get; private set; } = 0;
 
         static int _collectionIndex = 0;
-        
+
 
         static HashSet<string> _storageFav = new();
         static DanInfo? _userFavorites = null;
@@ -62,7 +63,7 @@ namespace MajdataPlay.Utils
                 {
                     bool result;
                     HashSet<string>? storageFav;
-                    if(File.Exists(MY_FAVORITE_EXPORT_PATH))
+                    if (File.Exists(MY_FAVORITE_EXPORT_PATH))
                     {
                         (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
                         if (!result)
@@ -81,9 +82,9 @@ namespace MajdataPlay.Utils
                         {
                             _storageFav = storageFav ?? _storageFav;
                         }
-                    } 
+                    }
                 }
-                
+
                 if (!Directory.Exists(MajEnv.ChartPath))
                 {
                     Directory.CreateDirectory(MajEnv.ChartPath);
@@ -98,7 +99,7 @@ namespace MajdataPlay.Utils
                 MajDebug.Log($"Loaded chart count: {TotalChartCount}");
                 MajEnv.OnApplicationQuit += OnApplicationQuit;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MajDebug.LogException(e);
                 throw;
@@ -166,9 +167,9 @@ namespace MajdataPlay.Utils
                 }
                 collections.Add(new SongCollection("All", allcharts.ToArray()));
                 MajDebug.Log("MyFavorite");
-                if(_userFavorites is not null)
+                if (_userFavorites is not null)
                 {
-                    foreach(var hash in _userFavorites.SongHashs)
+                    foreach (var hash in _userFavorites.SongHashs)
                     {
                         _storageFav.Add(hash);
                     }
@@ -189,7 +190,7 @@ namespace MajdataPlay.Utils
                 var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
                 for (var i = 0; i < loadDanTasks.Length; i++)
                 {
-                    if(i >= danFiles.Length)
+                    if (i >= danFiles.Length)
                     {
                         loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
                         continue;
@@ -210,20 +211,20 @@ namespace MajdataPlay.Utils
                         loadDanTasks[i] = GetDanCollection(allcharts, dan);
                     }
                 }
-                if(loadDanTasks.Length != 0)
+                if (loadDanTasks.Length != 0)
                 {
                     var allTask = Task.WhenAll(loadDanTasks);
                     while (!allTask.IsCompleted)
                         await Task.Yield();
-                    foreach(var task in loadDanTasks)
+                    foreach (var task in loadDanTasks)
                     {
-                        if(task.IsFaulted)
+                        if (task.IsFaulted)
                         {
                             MajDebug.LogError(task.Exception);
                             continue;
                         }
                         var collection = task.Result;
-                        if(collection is null)
+                        if (collection is null)
                         {
                             continue;
                         }
@@ -233,7 +234,7 @@ namespace MajdataPlay.Utils
                 }
                 return collections.ToArray();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MajDebug.LogException(e);
                 throw;
@@ -266,7 +267,7 @@ namespace MajdataPlay.Utils
                     }
                     var allTask = Task.WhenAll(tasks);
 
-                    while(!allTask.IsCompleted)
+                    while (!allTask.IsCompleted)
                     {
                         await Task.Yield();
                     }
@@ -281,7 +282,7 @@ namespace MajdataPlay.Utils
                     }
                     return new SongCollection(thisDir.Name, charts.ToArray());
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MajDebug.LogException(e);
                     throw;
@@ -293,7 +294,7 @@ namespace MajdataPlay.Utils
             var name = api.Name;
             var collection = SongCollection.Empty(name);
             var apiroot = api.Url;
-            if (string.IsNullOrEmpty(apiroot)) 
+            if (string.IsNullOrEmpty(apiroot))
                 return collection;
 
             var listurl = apiroot + "/maichart/list";
@@ -326,7 +327,7 @@ namespace MajdataPlay.Utils
                     Location = ChartStorageLocation.Online
                 };
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
                 if (!Directory.Exists(cachePath))
@@ -354,7 +355,7 @@ namespace MajdataPlay.Utils
                                             .Select(x => x.FirstOrDefault())
                                             .Where(x => x is not null)
                                             .ToArray();
-                if(targetCharts.Length == 0)
+                if (targetCharts.Length == 0)
                 {
                     MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + danInfo.Name);
                     return default;
@@ -387,7 +388,7 @@ namespace MajdataPlay.Utils
         }
         public static bool IsInMyFavorites(ISongDetail songDetail)
         {
-            return _myFavorite.Any(o=>o.Hash == songDetail.Hash);
+            return _myFavorite.Any(o => o.Hash == songDetail.Hash);
         }
         public static void RemoveFromMyFavorites(ISongDetail songDetail)
         {
@@ -403,5 +404,5 @@ namespace MajdataPlay.Utils
         {
             File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(_myFavorite.ExportHashSet()));
         }
-    }    
+    }
 }

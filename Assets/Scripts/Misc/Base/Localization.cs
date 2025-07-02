@@ -6,8 +6,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using MajdataPlay.Collections;
+using MajdataPlay.Utils;
+
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
     public static class Localization
     {

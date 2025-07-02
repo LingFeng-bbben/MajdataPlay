@@ -8,10 +8,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
     public static class MajDebug
     {

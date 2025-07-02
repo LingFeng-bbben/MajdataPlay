@@ -4,7 +4,7 @@ using Semver;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
     /// <summary>
     /// This class holds a reference to the only instance of a type.

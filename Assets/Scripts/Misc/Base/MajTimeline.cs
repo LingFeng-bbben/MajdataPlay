@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay
 {
     public static class MajTimeline
     {
