@@ -48,7 +48,7 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && (e.Type == SensorArea.E3 || e.Type == SensorArea.B3))
+            if (e.IsDown && (e.SArea == SensorArea.E3 || e.SArea == SensorArea.B3))
             {
                 InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(_onlineDetail);

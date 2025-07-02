@@ -61,7 +61,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         }
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
-            var pos = args.Type;
+            var pos = args.SArea;
             if (!args.IsDown)
                 return;
             else if (pos > SensorArea.E8)
@@ -77,7 +77,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             if ((now - lastTriggerTime).TotalMilliseconds < 416.6675f)
                 return;
 
-            _effectPool.PlayFeedbackEffect(args.Type);
+            _effectPool.PlayFeedbackEffect(args.SArea);
         }
         void Start()
         {

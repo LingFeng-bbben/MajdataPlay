@@ -99,12 +99,14 @@ namespace MajdataPlay.Game
         {
 
         }
-        public void OnNoteJudged(in JudgeGrade grade)
+        public void OnNoteJudged(in JudgeGrade grade,int multiple = 1)
         {
             if (!IsDanMode || DanInfo is null)
+            {
                 return;
+            }
             var damage = DanInfo.Damages[grade];
-            CurrentHP += damage;
+            CurrentHP += damage * multiple;
             CurrentHP = CurrentHP.Clamp(0, MaxHP);
         }
         public void RecordResult(in GameResult result)

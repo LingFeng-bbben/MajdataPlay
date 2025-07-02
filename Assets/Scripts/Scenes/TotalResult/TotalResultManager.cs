@@ -67,7 +67,7 @@ namespace MajdataPlay.TotalResult
                 return;
             }
 
-            if(InputManager.IsButtonClickedInThisFrame(SensorArea.A4))
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
             {
                 MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                 _isExited = true;

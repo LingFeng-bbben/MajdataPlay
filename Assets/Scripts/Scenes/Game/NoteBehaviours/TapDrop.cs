@@ -59,6 +59,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
         bool _isStarRotation = false;
 
+        ButtonZone? _buttonPos;
+
         Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
         Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
 
@@ -114,6 +116,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
+            _buttonPos = _sensorPos.ToButtonZone();
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
@@ -203,13 +206,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (isBtnFirst)
             {
-                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                _ = _noteManager.SimulateButtonClick(_buttonPos) ||
                     (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateButtonClick(_sensorPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
         [OnUpdate]
@@ -301,9 +304,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos).Target;
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))

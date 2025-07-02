@@ -53,7 +53,7 @@ namespace MajdataPlay.IO
                             break;
                     }
                 }
-                else if (manufacturer == DeviceManufacturer.Dao)
+                else if (manufacturer is DeviceManufacturer.Yuan or DeviceManufacturer.Dao)
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
@@ -189,7 +189,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsHadOn(SensorArea area)
+            public static bool IsHadOn(ButtonZone area)
             {
                 return IsHadOn(GetIndexFromArea(area));
             }
@@ -199,7 +199,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsOn(SensorArea area)
+            public static bool IsOn(ButtonZone area)
             {
                 return IsOn(GetIndexFromArea(area));
             }
@@ -209,7 +209,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsHadOff(SensorArea area)
+            public static bool IsHadOff(ButtonZone area)
             {
                 return IsHadOff(GetIndexFromArea(area));
             }
@@ -219,7 +219,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsOff(SensorArea area)
+            public static bool IsOff(ButtonZone area)
             {
                 return IsOff(GetIndexFromArea(area));
             }
@@ -229,7 +229,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsCurrentlyOn(SensorArea area)
+            public static bool IsCurrentlyOn(ButtonZone area)
             {
                 return IsCurrentlyOn(GetIndexFromArea(area));
             }
@@ -239,36 +239,20 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsCurrentlyOff(SensorArea area)
+            public static bool IsCurrentlyOff(ButtonZone area)
             {
                 return IsCurrentlyOff(GetIndexFromArea(area));
             }
             #endregion
 
-            static int GetIndexFromArea(SensorArea area)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static int GetIndexFromArea(ButtonZone area)
             {
-                switch (area)
+                if(area < ButtonZone.A1 || area > ButtonZone.P2)
                 {
-                    case SensorArea.A1:
-                    case SensorArea.A2:
-                    case SensorArea.A3:
-                    case SensorArea.A4:
-                    case SensorArea.A5:
-                    case SensorArea.A6:
-                    case SensorArea.A7:
-                    case SensorArea.A8:
-                        return (int)area;
-                    case SensorArea.Test:
-                        return 8;
-                    case SensorArea.P1:
-                        return 9;
-                    case SensorArea.Service:
-                        return 10;
-                    case SensorArea.P2:
-                        return 11;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    ThrowHelper.OutOfRange(nameof(area));
                 }
+                return (int)area;
             }
             static void KeyboardUpdateLoop()
             {

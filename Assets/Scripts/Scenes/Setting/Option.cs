@@ -232,10 +232,10 @@ namespace MajdataPlay.Setting
 
             if (currentIndex == Index && _isEnabled && !_isReadOnly)
             {
-                var isE4OrB4On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SensorStatus.On) ||
-                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SensorStatus.On);
-                var isE6OrB5On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SensorStatus.On) ||
-                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SensorStatus.On);
+                var isE4OrB4On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
+                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On);
+                var isE6OrB5On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
+                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On);
 
                 if(_isPressed)
                 {

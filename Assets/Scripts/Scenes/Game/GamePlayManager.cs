@@ -12,7 +12,6 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Timer;
 using Cysharp.Text;
-using Unity.VisualScripting;
 using MajdataPlay.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
@@ -154,7 +153,9 @@ namespace MajdataPlay.Game
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
             if (_gameInfo is null || _gameInfo.Current is null)
+            {
                 throw new ArgumentNullException(nameof(_gameInfo));
+            }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
             HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
@@ -168,14 +169,6 @@ namespace MajdataPlay.Game
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
-            }
-        }
-        void OnPauseButton(object sender, InputEventArgs e)
-        {
-            if (e.IsButton && e.IsDown && e.Type == SensorArea.P1)
-            {
-                print("Pause!!");
-                BackToList().Forget();
             }
         }
         void Start()
@@ -192,7 +185,6 @@ namespace MajdataPlay.Game
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
-            InputManager.BindAnyArea(OnPauseButton);
             LoadGameMod();
             if(_gameInfo.IsDanMode)
             {
@@ -346,21 +338,29 @@ namespace MajdataPlay.Game
                 {
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
-                    var task1 = _songDetail.GetAudioTrackAsync().AsValueTask();
+                    var task1 = _songDetail.GetAudioTrackAsync(token: _cts.Token).AsValueTask();
                     while (!task1.IsCompleted)
+                    {
                         await UniTask.Yield();
+                    }
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
-                    var task2 = _songDetail.GetMaidataAsync().AsValueTask();
+                    var task2 = _songDetail.GetMaidataAsync(token: _cts.Token).AsValueTask();
                     while (!task2.IsCompleted)
+                    {
                         await UniTask.Yield();
+                    }
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                    var task3 = _songDetail.GetCoverAsync(false).AsValueTask();
+                    var task3 = _songDetail.GetCoverAsync(false, _cts.Token).AsValueTask();
                     while (!task3.IsCompleted)
+                    {
                         await UniTask.Yield();
+                    }
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
-                    var task4 = _songDetail.GetVideoPathAsync().AsValueTask();
+                    var task4 = _songDetail.GetVideoPathAsync(token: _cts.Token).AsValueTask();
                     while (!task4.IsCompleted)
+                    {
                         await UniTask.Yield();
+                    }
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
@@ -502,13 +502,21 @@ namespace MajdataPlay.Game
                     }
                 }
                 if (PlaybackSpeed != 1)
+                {
                     _chart.Scale(PlaybackSpeed);
+                }
                 if (_isAllBreak)
+                {
                     _chart.ConvertToBreak();
+                }
                 if (_isAllEx)
+                {
                     _chart.ConvertToEx();
+                }
                 if (_isAllTouch)
+                {
                     _chart.ConvertToTouch();
+                }
                 if (_chart.IsEmpty)
                 {
                     throw new EmptyChartException();
@@ -564,9 +572,13 @@ namespace MajdataPlay.Game
             var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
 
             if(_setting.Game.TapSpeed < 0)
+            {
                 _noteLoader.NoteSpeed = -((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+            }
             else
+            {
                 _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
+            }
             _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
             _noteLoader.ChartRotation = _chartRotation;
 
@@ -785,12 +797,26 @@ namespace MajdataPlay.Game
         }
         void GameControlUpdate()
         {
+            if(State != GamePlayStatus.Ended)
+            {
+                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
+                {
+                    print("Pause!!");
+                    BackToList().Forget();
+                }
+            }
             if (_audioSample is null)
+            {
                 return;
+            }
             else if (State < GamePlayStatus.Running)
+            {
                 return;
+            }
             else if (!_objectCounter.AllFinished)
+            {
                 return;
+            }
             if (_allNotesFinishedTiming is null)
             {
                 _allNotesFinishedTiming = _thisFrameSec;
@@ -799,7 +825,9 @@ namespace MajdataPlay.Game
             else
             {
                 if (_thisFrameSec - (float)_allNotesFinishedTiming < 0.1)
+                {
                     return;
+                }
             }
             var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
             _2367PressTime = 0;
@@ -881,22 +909,22 @@ namespace MajdataPlay.Game
             switch(State)
             {
                 case GamePlayStatus.Running:
-                    var _2367 = InputManager.CheckButtonStatus(SensorArea.A2, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A7, SensorStatus.On);
-                    var _3456 = InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A4, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A5, SensorStatus.On) &&
-                                InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.On);
+                    var _2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
+                    var _3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
+                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
                     if(_2367)
                     {
-                        _2367PressTime += Time.deltaTime;
+                        _2367PressTime += MajTimeline.DeltaTime;
                         _3456PressTime = 0;
                     }
                     else if(_3456)
                     {
-                        _3456PressTime += Time.deltaTime;
+                        _3456PressTime += MajTimeline.DeltaTime;
                         _2367PressTime = 0;
                     }
                     else
