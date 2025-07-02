@@ -260,7 +260,7 @@ namespace MajdataPlay.List
             if (IsChartList)
             {
                 var songinfo = _currentCollection[desiredListPos];
-                var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
+                var songScore = ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
                 chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
@@ -351,7 +351,7 @@ namespace MajdataPlay.List
                     break;
                 case CoverListMode.Chart:
                     var songinfo = _currentCollection[desiredListPos];
-                    var songScore = MajInstances.ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
+                    var songScore = ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetSongDetail(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);

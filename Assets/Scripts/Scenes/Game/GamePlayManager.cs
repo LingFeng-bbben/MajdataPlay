@@ -159,7 +159,7 @@ namespace MajdataPlay.Game
             }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
-            HistoryScore = MajInstances.ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
+            HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)

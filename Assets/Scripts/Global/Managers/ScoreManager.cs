@@ -1,41 +1,55 @@
-﻿using MajdataPlay.Json;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Json;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 namespace MajdataPlay
 {
 #nullable enable
-    internal sealed class ScoreManager : MajSingleton
+    internal static class ScoreManager
     {
-        List<MaiScore> _scores = new();
+        static List<MaiScore> _scores = new();
 
-        protected override void Awake()
+        static bool _isInited = false;
+        internal static async UniTask InitAsync()
         {
-            base.Awake();
-            var path = MajEnv.ScoreDBPath;
-            var option = new JsonSerializerOptions();
-            option.Converters.Add(new JudgeDetailConverter());
-            option.Converters.Add(new JudgeInfoConverter());
-
-            if (!File.Exists(path))
+            if (_isInited)
             {
-                var json = Serializer.Json.Serialize(_scores);
-                File.WriteAllText(path, json);
                 return;
             }
-            var content = File.ReadAllText(path);
-            List<MaiScore>? result = Serializer.Json.Deserialize<List<MaiScore>>(content, option);
-            //shoud do some warning here, or all score will be lost and overwirtten
-            if (result != null)
+            _isInited = true;
+            try
             {
-                _scores = result;
+                var path = MajEnv.ScoreDBPath;
+                var option = new JsonSerializerOptions();
+                option.Converters.Add(new JudgeDetailConverter());
+                option.Converters.Add(new JudgeInfoConverter());
+
+                if (!File.Exists(path))
+                {
+                    var json = await Serializer.Json.SerializeAsync(_scores);
+                    await File.WriteAllTextAsync(path, json);
+                    return;
+                }
+                using var fileStream = File.OpenRead(path);
+                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(fileStream, option);
+                //shoud do some warning here, or all score will be lost and overwirtten
+                if (result != null)
+                {
+                    _scores = result;
+                }
+            }
+            finally
+            {
+                await UniTask.Yield();
             }
         }
-        public MaiScore GetScore(ISongDetail song, ChartLevel level)
+        public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
             var record = _scores.Find(x => x.Hash == song.Hash && x.ChartLevel == level);
             if (record is null)
@@ -49,7 +63,7 @@ namespace MajdataPlay
             }
             return record;
         }
-        public async Task<bool> SaveScore(GameResult result, ChartLevel level)
+        public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
             try
             {

@@ -23,7 +23,6 @@ namespace MajdataPlay.Title
 
         bool _flag = false;
         float _pressTime = 0f;
-        Task? songStorageTask = null;
         void Start()
         {
 #if UNITY_ANDROID 
@@ -34,17 +33,87 @@ namespace MajdataPlay.Title
                 return;
             }
 #endif
-            echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
-            DelayPlayVoice().Forget();
-            songStorageTask = StartScanningChart();
-            WaitForScanningTask().Forget();
+            InitAsync().Forget();
             LedRing.SetAllLight(Color.white);
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
             }
         }
+        async UniTaskVoid InitAsync()
+        {
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            MajInstances.AudioManager.PlaySFX("MajdataPlay.wav");
+            MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
 
+            echoText.text = $"{Localization.GetLocalizedText("Loading Score Storage")}...";
+            await UniTask.DelayFrame(9);
+            var task1 = ScoreManager.InitAsync().AsValueTask();
+            while(!task1.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+
+            echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
+            var task2 = StartScanningChart();
+            try
+            {
+                if (task2 is null)
+                {
+                    return;
+                }
+                var isEmpty = false;
+                while (true)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update);
+
+                    if (task2.IsCompleted)
+                    {
+                        if (task2.IsFaulted)
+                        {
+                            echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                            MajDebug.LogException(task2.Exception);
+                        }
+                        else if (SongStorage.IsEmpty)
+                        {
+                            isEmpty = true;
+                            echoText.text = Localization.GetLocalizedText("No Charts");
+                        }
+                        else
+                        {
+                            if (MajInstances.Settings.Online.Enable)
+                            {
+                                foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
+                                {
+                                    try
+                                    {
+                                        if (endpoint.Username is null || endpoint.Password is null) continue;
+                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
+                                        await Online.Login(endpoint);
+                                        await UniTask.Delay(1000);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MajDebug.LogError(ex);
+                                        echoText.text = "Login failed for " + endpoint.Name;
+                                        await UniTask.Delay(1000);
+                                    }
+                                }
+                            }
+                            echoText.text = Localization.GetLocalizedText("Press Any Key");
+                            InputManager.BindAnyArea(OnAreaDown);
+
+                        }
+                        break;
+                    }
+                }
+                fadeInAnim.SetBool("IsDone", true);
+            }
+            finally
+            {
+                _flag = true;
+            }
+        }
         IEnumerator ExtractStreamingAss()
         {
             var extractRoot = MajEnv.AssetsPath;
@@ -154,71 +223,6 @@ namespace MajdataPlay.Title
                         break;
                 }
             }
-        }
-
-        async UniTaskVoid WaitForScanningTask()
-        {
-            try
-            {
-                if (songStorageTask is null)
-                    return;
-                var isEmpty = false;
-                while (true)
-                {
-                    await UniTask.Yield(PlayerLoopTiming.Update);
-
-                    if (songStorageTask.IsCompleted)
-                    {
-                        if (songStorageTask.IsFaulted)
-                        {
-                            echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
-                            MajDebug.LogException(songStorageTask.Exception);
-                        }
-                        else if (SongStorage.IsEmpty)
-                        {
-                            isEmpty = true;
-                            echoText.text = Localization.GetLocalizedText("No Charts");
-                        }
-                        else
-                        {
-                            if (MajInstances.Settings.Online.Enable)
-                            {
-                                foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
-                                {
-                                    try
-                                    {
-                                        if (endpoint.Username is null || endpoint.Password is null) continue;
-                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                        await Online.Login(endpoint);
-                                        await UniTask.Delay(1000);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        MajDebug.LogError(ex);
-                                        echoText.text = "Login failed for " + endpoint.Name;
-                                        await UniTask.Delay(1000);
-                                    }
-                                }
-                            }
-                            echoText.text = Localization.GetLocalizedText("Press Any Key");
-                            InputManager.BindAnyArea(OnAreaDown);
-
-                        }
-                        break;
-                    }
-                }
-                fadeInAnim.SetBool("IsDone", true);
-            }
-            finally
-            {
-                _flag = true;
-            }
-        }
-        async UniTaskVoid DelayPlayVoice()
-        {
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            MajInstances.AudioManager.PlaySFX("MajdataPlay.wav");
-            MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
         }
 
         void EnterTestMode()

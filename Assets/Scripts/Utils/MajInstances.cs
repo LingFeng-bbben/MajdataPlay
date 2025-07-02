@@ -35,14 +35,6 @@ namespace MajdataPlay.Utils
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<AudioManager>.Instance = value;
         }
-        public static ScoreManager ScoreManager
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<ScoreManager>.Instance!;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<ScoreManager>.Instance = value;
-
-        }
         public static SkinManager SkinManager
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

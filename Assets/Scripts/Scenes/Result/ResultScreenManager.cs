@@ -71,7 +71,7 @@ namespace MajdataPlay.Result
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
-            var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
+            var historyResult = ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
@@ -143,7 +143,7 @@ namespace MajdataPlay.Result
             PlayVoice(result.Acc.DX, song).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
-                var localScoreSaveTask = MajInstances.ScoreManager.SaveScore(result, result.Level);
+                var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song is OnlineSongDetail)
                 {
