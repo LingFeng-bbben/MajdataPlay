@@ -5,7 +5,6 @@ using UnityEngine;
 using MajSimai;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Game.Utils;
@@ -19,6 +18,7 @@ using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
+using System.Buffers;
 
 namespace MajdataPlay.Game
 {
@@ -248,9 +248,13 @@ namespace MajdataPlay.Game
             _touchIndex.Clear();
 
             for (int i = 1; i < 9; i++)
+            {
                 _noteIndex.Add(i, 0);
+            }
             for (int i = 0; i < 33; i++)
+            {
                 _touchIndex.Add((SensorArea)i, 0);
+            }
 
 
             await _objectCounter.CountNoteSumAsync(maiChart);
@@ -270,13 +274,9 @@ namespace MajdataPlay.Game
                 {
                     List<NotePoolingInfo?> eachNotes = new();
                     List<ITouchGroupInfoProvider> members = new();
-                    foreach (var (i, note) in timing.Notes.WithIndex())
+                    var foldedNotes = NoteCreateHelper.NoteFolding(timing.Notes);
+                    foreach (var (i, note) in foldedNotes.WithIndex())
                     {
-                        _noteCount++;
-                        Progress = (double)_noteCount / NoteCount;
-                        if (_noteCount % 100 == 0)
-                            await UniTask.Yield();
-
                         try
                         {
                             switch (note.Type)
@@ -302,8 +302,34 @@ namespace MajdataPlay.Game
                                     _poolManager.AddTouch(CreateTouch(note, timing, members));
                                     break;
                                 case SimaiNoteType.Slide:
-                                    CreateSlideGroup(timing, note, eachNotes); // 星星组
+                                    var foldedSlide = note as FoldedSimaiNote;
+                                    foldedSlide ??= new FoldedSimaiNote()
+                                    {
+                                        Type = note.Type,
+                                        StartPosition = note.StartPosition,
+                                        HoldTime = note.HoldTime,
+                                        IsBreak = note.IsBreak,
+                                        IsEx = note.IsEx,
+                                        IsFakeRotate = note.IsFakeRotate,
+                                        IsForceStar = note.IsForceStar,
+                                        IsHanabi = note.IsHanabi,
+                                        IsSlideBreak = note.IsSlideBreak,
+                                        IsSlideNoHead = note.IsSlideNoHead,
+                                        RawContent = note.RawContent,
+                                        SlideStartTime = note.SlideStartTime,
+                                        SlideTime = note.SlideTime,
+                                        TouchArea = note.TouchArea,
+                                        Count = 1
+                                    };
+                                    CreateSlideGroup(timing, foldedSlide, eachNotes); // 星星组
+                                    _noteCount += foldedSlide.Count - 1;
                                     break;
+                            }
+                            _noteCount++;
+                            Progress = (double)_noteCount / NoteCount;
+                            if (_noteCount % 100 == 0)
+                            {
+                                await UniTask.DelayFrame(3);
                             }
                         }
                         catch (InvalidSimaiSyntaxException)
@@ -317,13 +343,17 @@ namespace MajdataPlay.Game
                         }
                     }
                     if (members.Count != 0)
+                    {
                         touchTasks.Add(AllocTouchGroup(members));
+                    }
                     eachNotes = eachNotes.FindAll(x => x is not null);
                     if (eachNotes.Count > 1) //有多个非touchnote
                     {
                         var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
                         if (eachLinePoolingInfo is not null)
+                        {
                             _poolManager.AddEachLine(eachLinePoolingInfo);
+                        }
                     }
                 }
 
@@ -332,7 +362,9 @@ namespace MajdataPlay.Game
                 {
                     await UniTask.Yield();
                     if (allTask.IsFaulted)
+                    {
                         throw allTask.Exception.GetBaseException();
+                    }
                 }
             }
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
@@ -525,13 +557,17 @@ namespace MajdataPlay.Game
                     {
                         isDouble = true;
                         if (count == timing.Notes.Length)
+                        {
                             isEach = false;
+                        }
                         else
                         {
                             var noteCount = timing.Notes.Length;
                             var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                             if (noteCount - noHeadSlideCount == 1)
+                            {
                                 isEach = false;
+                            }
                         }
                     }
                 }
@@ -764,7 +800,7 @@ namespace MajdataPlay.Game
                     member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
             });
         }
-        private void CreateSlideGroup(SimaiTimingPoint timing, SimaiNote note, in List<NotePoolingInfo?> eachNotes)
+        private void CreateSlideGroup(SimaiTimingPoint timing, FoldedSimaiNote note, in List<NotePoolingInfo?> eachNotes)
         {
             try
             {
@@ -954,11 +990,20 @@ namespace MajdataPlay.Game
                     if (note.RawContent!.Contains('w')) //wifi
                     {
                         if (isConn)
+                        {
                             throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
-                        var result = CreateWifi(timing, subSlide[i]);
+                        }
+                        var result = CreateWifi(timing, subSlide[i], note.Count);
                         sliObj = result.SlideInstance;
-                        eachNotes.Add(result.StarInfo);
-                        AddSlideToQueue(timing, result.SlideInstance);
+                        foreach(var starInfo in result.StarInfos)
+                        {
+                            if(starInfo is null)
+                            {
+                                continue;
+                            }
+                            eachNotes.Add(starInfo);
+                        }
+                        //AddSlideToQueue(timing, result.SlideInstance);
                         UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 20);
                         sliObj.Initialize();
                     }
@@ -973,13 +1018,22 @@ namespace MajdataPlay.Game
                             Parent = parent,
                             StartTiming = startTiming
                         };
-                        var result = CreateSlide(timing, subSlide[i], info, ref extraRotation);
+                        var result = CreateSlide(timing, subSlide[i], info, note.Count, ref extraRotation);
                         parent = result.SlideInstance;
                         sliObj = result.SlideInstance;
-                        eachNotes.Add(result.StarInfo);
+                        foreach (var starInfo in result.StarInfos)
+                        {
+                            if (starInfo is null)
+                            {
+                                continue;
+                            }
+                            eachNotes.Add(starInfo);
+                        }
                         subSlides.Add(result.SlideInstance);
                         if (i == 0)
+                        {
                             slideResult = result;
+                        }
                     }
                     AddSlideToQueue(timing, sliObj);
                 }
@@ -993,9 +1047,13 @@ namespace MajdataPlay.Game
 
                     totalSlideLen += s.SlideLength;
                     if (isEnd)
+                    {
                         judgeQueueLen += table!.JudgeQueue.Length;
+                    }
                     else
+                    {
                         judgeQueueLen += table!.JudgeQueue.Length - 1;
+                    }
                 }
                 subSlides.ForEach(s =>
                 {
@@ -1028,10 +1086,12 @@ namespace MajdataPlay.Game
             var speed = (totalSlideLen * 0.47f) / (totalLen * 1000);
             var ratio = speed / 0.0034803742562305f;
 
-            if (result.StarInfo is not null)
+            foreach(var starInfo in result.StarInfos)
             {
-                var starInfo = result.StarInfo;
-                starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio, -1080);
+                if (starInfo is not null)
+                {
+                    starInfo.RotateSpeed = Math.Max(-(68.54838709677419f) * ratio, -1080);
+                }
             }
         }
         void AddSlideToQueue<T>(SimaiTimingPoint timing, T SliCompo) where T : SlideBase
@@ -1048,9 +1108,10 @@ namespace MajdataPlay.Game
                 AppearTiming = Math.Min(appearTiming, slideFadeInTiming)
             });
         }
-        private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing, 
-                                                         SubSlideNote note, 
+        private CreateSlideResult<SlideDrop> CreateSlide(SimaiTimingPoint timing,
+                                                         SubSlideNote note,
                                                          ConnSlideInfo info,
+                                                         in int multiple,
                                                          ref int? extraRotation)
         {
             string slideShape = NoteCreateHelper.DetectShapeFromText(note.RawContent);
@@ -1093,12 +1154,16 @@ namespace MajdataPlay.Game
                 endPos = NoteCreateHelper.Rotation(endPos, ChartRotation + eR);
             }
 
-            TapPoolingInfo? starInfo = null;
+            TapPoolingInfo?[] starInfos = new TapPoolingInfo?[multiple];
             if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(startPos, note, timing);
-                _poolManager.AddTap(_info);
-                starInfo = _info;
+
+                for (var i = 0; i < multiple; i++)
+                {
+                    var _info = CreateStar(startPos, note, timing);
+                    _poolManager.AddTap(_info);
+                    starInfos[i] = _info;
+                }
             }
 
             //SliCompo.SlideType = slideShape;
@@ -1113,14 +1178,16 @@ namespace MajdataPlay.Game
                     if (_gpManager is not null && _gpManager.IsClassicMode)
                     {
                         if (index == slides.Length && index % 2 != 0)
+                        {
                             isEach = false;
+                        }
                     }
                 }
             }
 
             SliCompo.ConnectInfo = info;
             SliCompo.IsBreak = note.IsSlideBreak;
-            SliCompo.IsEach = isEach;
+            SliCompo.IsEach = isEach || multiple > 1;
             SliCompo.IsMirror = isMirror;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
@@ -1132,6 +1199,7 @@ namespace MajdataPlay.Game
             SliCompo.Length = (float)note.SlideTime;
             SliCompo.IsSlideNoHead = IsSlideNoHead;
             SliCompo.IsSlideNoTrack = IsSlideNoTrack;
+            SliCompo.Multiple = multiple;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
             if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
             {
@@ -1148,10 +1216,10 @@ namespace MajdataPlay.Game
             return new()
             {
                 SlideInstance = SliCompo,
-                StarInfo = starInfo
+                StarInfos = starInfos
             };
         }
-        private CreateSlideResult<WifiDrop> CreateWifi(SimaiTimingPoint timing, SubSlideNote note)
+        private CreateSlideResult<WifiDrop> CreateWifi(SimaiTimingPoint timing, SubSlideNote note, in int multiple)
         {
             var str = note.RawContent.Substring(0, 3);
             var digits = str.Split('w');
@@ -1172,12 +1240,16 @@ namespace MajdataPlay.Game
             NoteCreateHelper.SetSlideNewPositionIfRequested(ref startPos, ref endPos, _buttonRingMappingTable);
             slideWifi.SetActive(true);
 
-            TapPoolingInfo? starInfo = null;
+            TapPoolingInfo?[] starInfos = new TapPoolingInfo?[multiple];
             if (!note.IsSlideNoHead)
             {
-                var _info = CreateStar(startPos, note, timing);
-                _poolManager.AddTap(_info);
-                starInfo = _info;
+
+                for (var i = 0; i < multiple; i++)
+                {
+                    var _info = CreateStar(startPos, note, timing);
+                    _poolManager.AddTap(_info);
+                    starInfos[i] = _info;
+                }
             }
 
             if (timing.Notes.Length > 1)
@@ -1190,13 +1262,15 @@ namespace MajdataPlay.Game
                     if (_gpManager is not null && _gpManager.IsClassicMode)
                     {
                         if (index == slides.Length && index % 2 != 0)
+                        {
                             isEach = false;
+                        }
                     }
                 }
             }
 
             WifiCompo.IsBreak = note.IsSlideBreak;
-            WifiCompo.IsEach = isEach;
+            WifiCompo.IsEach = isEach || multiple > 1;
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
@@ -1206,6 +1280,7 @@ namespace MajdataPlay.Game
             WifiCompo.Length = (float)note.SlideTime;
             WifiCompo.IsSlideNoHead = IsSlideNoHead;
             WifiCompo.IsSlideNoTrack = IsSlideNoTrack;
+            WifiCompo.Multiple = multiple;
             //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var rightStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
@@ -1230,7 +1305,7 @@ namespace MajdataPlay.Game
             return new()
             {
                 SlideInstance = WifiCompo,
-                StarInfo = starInfo
+                StarInfos = starInfos
             };
         }
         
@@ -1243,16 +1318,6 @@ namespace MajdataPlay.Game
         string BuildSyntaxErrorMessage(int line, int column)
         {
             return $"(at L{line}:C{column})";
-        }
-        
-        class SubSlideNote : SimaiNote
-        {
-            public SimaiNote Origin { get; set; } = new();
-        }
-        readonly struct CreateSlideResult<T> where T : SlideBase
-        {
-            public T SlideInstance { get; init; }
-            public TapPoolingInfo? StarInfo { get; init; }
         }
         static class NoteCreateHelper
         {
@@ -1779,6 +1844,227 @@ namespace MajdataPlay.Game
                         break;
                 }
             }
+            public static SimaiNote[] NoteFolding(SimaiNote[] simaiNotes)
+            {
+                var buffer = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
+                var buffer2 = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
+                var buffer3 = ArrayPool<FoldedSimaiNote>.Shared.Rent(4);
+                try
+                {
+                    Array.Clear(buffer, 0, buffer.Length);
+                    Array.Clear(buffer2, 0, buffer2.Length);
+                    Array.Clear(buffer3, 0, buffer3.Length);
+                    var bufferIndex = 0;
+                    var buffer2Index = 0;
+                    var buffer3Index = 0;
+
+                    foreach (var note in simaiNotes)
+                    {
+                        var foldingNote = new FoldingSimaiNote(note);
+                        if (foldingNote.Type == SimaiNoteType.Slide)
+                        {
+                            BufferHelper.EnsureBufferLength(bufferIndex + 1, ref buffer);
+                            buffer[bufferIndex++] = foldingNote;
+                            continue;
+                        }
+                        else
+                        {
+                            BufferHelper.EnsureBufferLength(buffer2Index + 1, ref buffer2);
+                            buffer2[buffer2Index++] = foldingNote;
+                            continue;
+                        }
+                    }
+                    var groupedSlides = buffer.GroupBy(x => x);
+                    foreach (var slides in groupedSlides)
+                    {
+                        var key = slides.Key;
+                        if (key.Origin == null)
+                        {
+                            continue;
+                        }
+                        BufferHelper.EnsureBufferLength(buffer3Index + 1, ref buffer3);
+
+                        buffer3[buffer3Index++] = new()
+                        {
+                            Type = key.Type,
+                            StartPosition = key.StartPosition,
+                            HoldTime = key.HoldTime,
+                            IsBreak = key.IsBreak,
+                            IsEx = key.IsEx,
+                            IsFakeRotate = key.IsFakeRotate,
+                            IsForceStar = key.IsForceStar,
+                            IsHanabi = key.IsHanabi,
+                            IsSlideBreak = key.IsSlideBreak,
+                            IsSlideNoHead = key.IsSlideNoHead,
+                            RawContent = key.RawContent,
+                            SlideStartTime = key.SlideStartTime,
+                            SlideTime = key.SlideTime,
+                            TouchArea = key.TouchArea,
+                            Count = slides.Count()
+                        };
+                    }
+                    var result = new SimaiNote[buffer2Index + buffer3Index];
+                    var resultIndex = 0;
+                    foreach (var note in buffer2.AsSpan(0, buffer2Index))
+                    {
+                        result[resultIndex++] = note.Origin;
+                    }
+                    foreach (var note in buffer3.AsSpan(0, buffer3Index))
+                    {
+                        result[resultIndex++] = note;
+                    }
+
+                    return result;
+                }
+                finally
+                {
+                    ArrayPool<FoldingSimaiNote>.Shared.Return(buffer);
+                    ArrayPool<FoldingSimaiNote>.Shared.Return(buffer2);
+                    ArrayPool<FoldedSimaiNote>.Shared.Return(buffer3);
+                }
+            }
+        }
+
+        readonly struct FoldingSimaiNote
+        {
+            public SimaiNoteType Type
+            {
+                get => _origin.Type;
+            }
+            public int StartPosition
+            {
+                get => _origin.StartPosition;
+            }
+            public double HoldTime
+            {
+                get => _origin.HoldTime;
+            }
+            public bool IsBreak
+            {
+                get => _origin.IsBreak;
+            }
+            public bool IsEx
+            {
+                get => _origin.IsEx;
+            }
+            public bool IsFakeRotate
+            {
+                get => _origin.IsFakeRotate;
+            }
+            public bool IsForceStar
+            {
+                get => _origin.IsForceStar;
+            }
+            public bool IsHanabi
+            {
+                get => _origin.IsHanabi;
+            }
+            public bool IsSlideBreak
+            {
+                get => _origin.IsSlideBreak;
+            }
+            public bool IsSlideNoHead
+            {
+                get => _origin.IsSlideNoHead;
+            }
+            public string RawContent
+            {
+                get => _origin.RawContent;
+            }
+            public double SlideStartTime
+            {
+                get => _origin.SlideStartTime;
+            }
+            public double SlideTime
+            {
+                get => _origin.SlideTime;
+            }
+            public char TouchArea
+            {
+                get => _origin.TouchArea;
+            }
+            public SimaiNote? Origin
+            {
+                get => _origin;
+            }
+
+            readonly SimaiNote? _origin;
+            readonly int _hashCode;
+            public FoldingSimaiNote(SimaiNote origin,bool? isSlideNoHead = null)
+            {
+                _origin = origin;
+                var hash1 = HashCode.Combine(
+                    _origin.Type,
+                    _origin.StartPosition,
+                    _origin.RawContent,
+                    _origin.HoldTime,
+                    _origin.SlideStartTime,
+                    _origin.SlideTime,
+                    _origin.IsBreak,
+                    _origin.IsEx
+                );
+                var hash2 = HashCode.Combine(
+                    hash1,
+                    _origin.IsHanabi,
+                    _origin.IsSlideBreak,
+                    isSlideNoHead ?? _origin.IsSlideNoHead,
+                    _origin.IsFakeRotate,
+                    _origin.IsForceStar,
+                    _origin.TouchArea
+                );
+                _hashCode = hash2;
+            }
+            public static implicit operator FoldingSimaiNote(SimaiNote origin)
+            {
+                return new(origin);
+            }
+            public static bool operator ==(FoldingSimaiNote left, FoldingSimaiNote right)
+            {
+                //return left.Type == right.Type &&
+                //       left.StartPosition == right.StartPosition &&
+                //       left.RawContent == right.RawContent &&
+                //       left.HoldTime == right.HoldTime &&
+                //       left.SlideStartTime == right.SlideStartTime &&
+                //       left.SlideTime == left.SlideTime &&
+                //       left.IsBreak == left.IsBreak &&
+                //       left.IsEx == right.IsEx &&
+                //       left.IsHanabi == right.IsHanabi &&
+                //       left.IsSlideBreak == left.IsSlideBreak &&
+                //       left.IsSlideNoHead == right.IsSlideNoHead &&
+                //       left.IsFakeRotate == right.IsFakeRotate &&
+                //       left.IsForceStar == right.IsForceStar &&
+                //       left.TouchArea == right.TouchArea;
+                return left._hashCode == right._hashCode;
+            }
+            public static bool operator !=(FoldingSimaiNote left, FoldingSimaiNote right)
+            {
+                return !(left == right);
+            }
+            public override bool Equals(object obj)
+            {
+                if(obj is not FoldingSimaiNote obj2)
+                {
+                    return false;
+                }
+                return this == obj2;
+            }
+            public override int GetHashCode()
+            {
+                return _hashCode;
+            }
+        }
+        class FoldedSimaiNote : SimaiNote
+        {
+            public int Count { get; init; }
+        }
+        class SubSlideNote : SimaiNote
+        {
+            public SimaiNote Origin { get; set; } = new();
+        }
+        readonly struct CreateSlideResult<T> where T : SlideBase
+        {
+            public T SlideInstance { get; init; }
+            public TapPoolingInfo?[] StarInfos { get; init; }
         }
     }
 }

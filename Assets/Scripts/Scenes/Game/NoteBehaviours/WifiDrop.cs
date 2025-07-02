@@ -558,7 +558,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 IsBreak = IsBreak
             };
 
-            _objectCounter.ReportResult(this, result);
+            _objectCounter.ReportResult(this, result, Multiple);
             if (PlaySlideOK(result))
             {
                 _slideOK!.PlayResult(result);
