@@ -69,6 +69,8 @@ namespace MajdataPlay.Game
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
 
+        static readonly bool USERSETTING_NOTE_FOLDING = MajEnv.UserSettings?.Debug.NoteFolding ?? true;
+
         public static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
             {SimaiNoteType.Tap, 2 },
@@ -1846,6 +1848,10 @@ namespace MajdataPlay.Game
             }
             public static SimaiNote[] NoteFolding(SimaiNote[] simaiNotes)
             {
+                if(!USERSETTING_NOTE_FOLDING)
+                {
+                    return simaiNotes;
+                }
                 var buffer = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
                 var buffer2 = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
                 var buffer3 = ArrayPool<FoldedSimaiNote>.Shared.Rent(4);
@@ -1907,7 +1913,7 @@ namespace MajdataPlay.Game
                     var resultIndex = 0;
                     foreach (var note in buffer2.AsSpan(0, buffer2Index))
                     {
-                        result[resultIndex++] = note.Origin;
+                        result[resultIndex++] = note.Origin!;
                     }
                     foreach (var note in buffer3.AsSpan(0, buffer3Index))
                     {
