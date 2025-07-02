@@ -172,16 +172,16 @@ namespace MajdataPlay.Utils
                     {
                         _storageFav.Add(hash);
                     }
-                    var hashSet = _storageFav;
-                    var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
-                                                 .OrderByDescending(x => x.IsOnline)
-                                                 .GroupBy(x => x.Hash)
-                                                 .Select(x => x.FirstOrDefault())
-                                                 .Where(x => x is not null)
-                                                 .ToList();
-                    MajDebug.Log(favoriteSongs.Count);
-                    _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
                 }
+                var hashSet = _storageFav;
+                var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
+                                             .OrderByDescending(x => x.IsOnline)
+                                             .GroupBy(x => x.Hash)
+                                             .Select(x => x.FirstOrDefault())
+                                             .Where(x => x is not null)
+                                             .ToList();
+                MajDebug.Log(favoriteSongs.Count);
+                _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
                 //The collections and _myFavorite share a same ref of original List<T>
                 collections.Add(_myFavorite);
                 MajDebug.Log("Load Dans");
