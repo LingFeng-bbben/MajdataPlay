@@ -219,7 +219,7 @@ namespace MajdataPlay.IO
         }
         void OnAnyAreaDown(object sender, InputEventArgs e)
         {
-            if (e.Status != SensorStatus.On)
+            if (e.Status != SwitchStatus.On)
                 return;
             if(e.IsButton)
                 PlaySFX("answer.wav");

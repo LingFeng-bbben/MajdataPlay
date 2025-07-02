@@ -131,9 +131,9 @@ namespace MajdataPlay.Title
                 return;
             if (e.IsButton)
             {
-                switch (e.Type)
+                switch (e.BZone)
                 {
-                    case SensorArea.Test:
+                    case ButtonZone.Test:
                         if(_flag)
                         {
                             EnterTestMode();
@@ -144,7 +144,7 @@ namespace MajdataPlay.Title
             }
             else
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     case SensorArea.A8:
                         MajInstances.AudioManager.OpenAsioPannel();

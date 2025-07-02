@@ -23,8 +23,8 @@ namespace MajdataPlay.Game.Notes.Controllers
         TouchHoldUpdater _touchHoldUpdater;
         EachLineUpdater _eachLineUpdater;
 
-        int[] _noteCurrentIndex = new int[8];
-        int[] _touchCurrentIndex = new int[33];
+        readonly int[] _noteCurrentIndex = new int[8];
+        readonly int[] _touchCurrentIndex = new int[33];
 
         [ReadOnlyField]
         [SerializeField]
@@ -39,18 +39,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         [SerializeField]
         double _lateUpdateElapsedMs = 0;
 
-        internal delegate void IOListener(GameInputEventArgs args);
-
-        internal event IOListener? OnGameIOUpdate;
-
         //DJAuto
-        readonly SensorStatus[] _btnStatusInNextFrame = new SensorStatus[8];
-        readonly SensorStatus[] _btnStatusInThisFrame = new SensorStatus[8];
-        readonly SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[8];
+        readonly SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
         //DJAuto
-        readonly SensorStatus[] _sensorStatusInNextFrame = new SensorStatus[33];
-        readonly SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
-        readonly SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
+        readonly SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         
         readonly bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly bool[] _isSensorUsedInThisFrame = new bool[33];
@@ -58,9 +54,23 @@ namespace MajdataPlay.Game.Notes.Controllers
         readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
         readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
 
+        bool _defaultButtonStatusUsage = false;
+        bool _defaultSensorStatusUsage = false;
 
+        readonly Ref<bool> _defaultButtonUsageStatusRef;
+        readonly Ref<bool> _defaultSensorUsageStatusRef;
+
+        const string SENSOR_IS_NULL = "Sensor index requested by Note is null";
+        const string SENSOR_OUT_OF_RANGE = "Sensor index requested by Note is out of range";
+        const string BUTTON_IS_NULL = "Button index requested by Note is null";
+        const string BUTTON_OUT_OF_RANGE = "Button index requested by Note is out of range";
         readonly bool USERSETTING_IS_AUTOPLAY = (MajEnv.UserSettings?.Mod.AutoPlay ?? AutoplayMode.Disable) != AutoplayMode.Disable;
 
+        NoteManager()
+        {
+            _defaultButtonUsageStatusRef = new(ref _defaultButtonStatusUsage);
+            _defaultSensorUsageStatusRef = new(ref _defaultSensorStatusUsage);
+        }
         void Awake()
         {
             Majdata<NoteManager>.Instance = this;
@@ -246,7 +256,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 
                 _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                 _btnStatusInThisFrame[i] = btnState;
-                _btnStatusInNextFrame[i] = SensorStatus.Off;
+                _btnStatusInNextFrame[i] = SwitchStatus.Off;
             }
             for (var i = 0; i < 33; i++)
             {
@@ -257,7 +267,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 }
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
-                _sensorStatusInNextFrame[i] = SensorStatus.Off;
+                _sensorStatusInNextFrame[i] = SwitchStatus.Off;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -265,7 +275,9 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var keyIndex = queueInfo.KeyIndex - 1;
             if (!keyIndex.InRange(0, 7))
+            {
                 return false;
+            }
 
             var currentIndex = _noteCurrentIndex[keyIndex];
             var index = queueInfo.Index;
@@ -277,7 +289,9 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var sensorPos = queueInfo.SensorPos;
             if (sensorPos > SensorArea.E8 || sensorPos < SensorArea.A1)
+            {
                 return false;
+            }
             var pos = (int)sensorPos;
             var index = queueInfo.Index;
             var currentIndex = _touchCurrentIndex[pos];
@@ -289,10 +303,14 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var keyIndex = queueInfo.KeyIndex - 1;
             if (!keyIndex.InRange(0, 7))
+            {
                 return;
+            }
             var currentIndex = _noteCurrentIndex[keyIndex];
             if (currentIndex > queueInfo.Index)
+            {
                 return;
+            }
             _noteCurrentIndex[keyIndex]++;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -300,161 +318,293 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             var sensorPos = queueInfo.SensorPos;
             if (sensorPos > SensorArea.E8 || sensorPos < SensorArea.A1)
+            {
                 return;
+            }
             var pos = (int)sensorPos;
             var currentIndex = _touchCurrentIndex[pos];
             if (currentIndex > queueInfo.Index)
+            {
                 return;
+            }
 
             _touchCurrentIndex[pos]++;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ref<bool> GetButtonUsageInThisFrame(SensorArea area)
+        public Ref<bool> GetButtonUsageInThisFrame(ButtonZone? zone)
         {
-            ThrowIfButtonIndexOutOfRange(area);
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return _defaultButtonUsageStatusRef;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return _defaultButtonUsageStatusRef;
+            }
 
-            return _btnUsageStatusRefs[(int)area];
+            return _btnUsageStatusRefs[(int)zone];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ref<bool> GetSensorUsageInThisFrame(SensorArea area)
+        public Ref<bool> GetSensorUsageInThisFrame(SensorArea? area)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return _defaultSensorUsageStatusRef;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return _defaultSensorUsageStatusRef;
+            }
 
             return _sensorUsageStatusRefs[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatusInThisFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckSensorStatusInThisFrame(SensorArea? area, SwitchStatus targetState)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
 
             return _sensorStatusInThisFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatusInThisFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckButtonStatusInThisFrame(ButtonZone? zone, SwitchStatus targetState)
         {
-            ThrowIfButtonIndexOutOfRange(area);
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            return _btnStatusInThisFrame[(int)area] == targetState;
+            return _btnStatusInThisFrame[(int)zone] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckButtonStatusInPreviousFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckButtonStatusInPreviousFrame(ButtonZone? zone, SwitchStatus targetState)
         {
-            ThrowIfButtonIndexOutOfRange(area);
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            return _btnStatusInPreviousFrame[(int)area] == targetState;
+            return _btnStatusInPreviousFrame[(int)zone] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CheckSensorStatusInPreviousFrame(SensorArea area, SensorStatus targetState)
+        public bool CheckSensorStatusInPreviousFrame(SensorArea? area, SwitchStatus targetState)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
 
             return _sensorStatusInPreviousFrame[(int)area] == targetState;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetButtonStatusInThisFrame(SensorArea area)
+        public SwitchStatus GetButtonStatusInThisFrame(ButtonZone? zone)
         {
-            ThrowIfButtonIndexOutOfRange(area);
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            return _btnStatusInThisFrame[(int)area];
+            return _btnStatusInThisFrame[(int)zone];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetButtonStatusInPreviousFrame(SensorArea area)
+        public SwitchStatus GetButtonStatusInPreviousFrame(ButtonZone? zone)
         {
-            ThrowIfButtonIndexOutOfRange(area);
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            return _btnStatusInPreviousFrame[(int)area];
+            return _btnStatusInPreviousFrame[(int)zone];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetSensorStatusInThisFrame(SensorArea area)
+        public SwitchStatus GetSensorStatusInThisFrame(SensorArea? area)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
 
             return _sensorStatusInThisFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SensorStatus GetSensorStatusInPreviousFrame(SensorArea area)
+        public SwitchStatus GetSensorStatusInPreviousFrame(SensorArea? area)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
 
             return _sensorStatusInPreviousFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsButtonClickedInThisFrame(SensorArea area)
+        public bool IsButtonClickedInThisFrame(ButtonZone? zone)
         {
-            ThrowIfButtonIndexOutOfRange(area);
-            var i = (int)area;
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
+            var i = (int)zone;
 
             //return _isBtnClickedInThisFrame[i] == SensorStatus.On;
-            return _btnStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _btnStatusInThisFrame[i] == SensorStatus.On;
+            return _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                   _btnStatusInThisFrame[i] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSensorClickedInThisFrame(SensorArea area)
+        public bool IsSensorClickedInThisFrame(SensorArea? area)
         {
-            ThrowIfSensorIndexOutOfRange(area);
+            if(area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
             var i = (int)area;
 
             //return _isSensorClickedInThisFrame[i] == SensorStatus.On;
-            return _sensorStatusInPreviousFrame[i] == SensorStatus.Off &&
-                   _sensorStatusInThisFrame[i] == SensorStatus.On;
+            return _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                   _sensorStatusInThisFrame[i] == SwitchStatus.On;
         }
 
-        public bool SimulateSensorPress(SensorArea area)
+        public bool SimulateSensorPress(SensorArea? area)
         {
-            if (area < SensorArea.A1 || area > SensorArea.E8)
-                return false;
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
             var i = (int)area;
             var raw = _sensorStatusInNextFrame[i];
-            _sensorStatusInNextFrame[i] = SensorStatus.On;
+            _sensorStatusInNextFrame[i] = SwitchStatus.On;
 
-            return raw == SensorStatus.Off;
+            return raw == SwitchStatus.Off;
         }
-        public bool SimulateButtonPress(SensorArea area)
+        public bool SimulateButtonPress(ButtonZone? zone)
         {
-            if (area < SensorArea.A1 || area > SensorArea.A8)
-                return false;
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            var i = (int)area;
+            var i = (int)zone;
             var raw = _btnStatusInNextFrame[i];
-            _btnStatusInNextFrame[i] = SensorStatus.On;
+            _btnStatusInNextFrame[i] = SwitchStatus.On;
 
-            return raw == SensorStatus.Off;
+            return raw == SwitchStatus.Off;
         }
-        public bool SimulateSensorClick(SensorArea area)
+        public bool SimulateSensorClick(SensorArea? area)
         {
-            if (area < SensorArea.A1 || area > SensorArea.E8)
-                return false;
+            if (area is null)
+            {
+                MajDebug.LogWarning(SENSOR_IS_NULL);
+                return default;
+            }
+            else if (area < SensorArea.A1 || area > SensorArea.E8)
+            {
+                MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
+                return default;
+            }
+
             var i = (int)area;
-            var raw = _sensorStatusInThisFrame[i] == SensorStatus.Off &&
-                      _sensorStatusInNextFrame[i] == SensorStatus.Off;
-            _sensorStatusInNextFrame[i] = SensorStatus.On;
+            var raw = _sensorStatusInThisFrame[i] == SwitchStatus.Off &&
+                      _sensorStatusInNextFrame[i] == SwitchStatus.Off;
+            _sensorStatusInNextFrame[i] = SwitchStatus.On;
 
             return raw;
         }
-        public bool SimulateButtonClick(SensorArea area)
+        public bool SimulateButtonClick(ButtonZone? zone)
         {
-            if (area < SensorArea.A1 || area > SensorArea.A8)
-                return false;
+            if (zone is null)
+            {
+                MajDebug.LogWarning(BUTTON_IS_NULL);
+                return default;
+            }
+            else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
+            {
+                MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
+                return default;
+            }
 
-            var i = (int)area;
-            var raw = _btnStatusInThisFrame[i] == SensorStatus.Off &&
-                      _btnStatusInNextFrame[i] == SensorStatus.Off;
-            _btnStatusInNextFrame[i] = SensorStatus.On;
+            var i = (int)zone;
+            var raw = _btnStatusInThisFrame[i] == SwitchStatus.Off &&
+                      _btnStatusInNextFrame[i] == SwitchStatus.Off;
+            _btnStatusInNextFrame[i] = SwitchStatus.On;
 
             return raw;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ThrowIfButtonIndexOutOfRange(SensorArea area)
-        {
-            if (area < SensorArea.A1 || area > SensorArea.A8)
-                throw new ArgumentOutOfRangeException();
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ThrowIfSensorIndexOutOfRange(SensorArea area)
-        {
-            if (area < SensorArea.A1 || area > SensorArea.E8)
-                throw new ArgumentOutOfRangeException();
         }
         
     }

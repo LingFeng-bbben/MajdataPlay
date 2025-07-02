@@ -84,11 +84,11 @@ namespace MajdataPlay.Setting
             else
             {
                 _lastWaitTime = 0;
-                if(InputManager.IsButtonClickedInThisFrame(SensorArea.A6))
+                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
                 {
                     PreviousOption();
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(SensorArea.A3))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
                 {
                     NextOption();
                 }

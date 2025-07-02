@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MajdataPlay.Utils;
+using System;
+using System.Security.Policy;
+using UnityEngine.XR;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -14,12 +17,18 @@ namespace MajdataPlay.IO
         public static SensorArea Diff(this SensorArea source, int diff)
         {
             if (source > SensorArea.E8)
+            {
                 throw new InvalidOperationException($"\"{source}\" is not a valid touch panel area");
+            }
             diff = diff % 8;
             if (diff == 0)
+            {
                 return source;
+            }
             else if (diff < 0)
+            {
                 diff = 8 + diff;
+            }
             //var isReverse = diff < 0;
             var result = (source.GetIndex() - 1 + diff) % 8;
             var group = source.GetGroup();
@@ -50,18 +59,30 @@ namespace MajdataPlay.IO
         public static SensorGroup GetGroup(this SensorArea source)
         {
             if (source > SensorArea.E8)
+            {
                 throw new InvalidOperationException($"\"{source}\" is not a valid touch panel area");
+            }
             var i = (int)source;
             if (i <= 7)
+            {
                 return SensorGroup.A;
+            }
             else if (i <= 15)
+            {
                 return SensorGroup.B;
+            }
             else if (i <= 16)
+            {
                 return SensorGroup.C;
+            }
             else if (i <= 24)
+            {
                 return SensorGroup.D;
+            }
             else
+            {
                 return SensorGroup.E;
+            }
         }
         /// <summary>
         /// Get the index of the touch panel area within the group
@@ -85,7 +106,9 @@ namespace MajdataPlay.IO
         public static SensorArea Mirror(this SensorArea source, SensorArea baseLine)
         {
             if (source == SensorArea.C || source.IsCollinearWith(baseLine))
+            {
                 return source;
+            }
 
             var thisIndex = source.GetIndex();
             var baseIndex = baseLine.GetIndex();
@@ -112,7 +135,9 @@ namespace MajdataPlay.IO
                     return _baseLine.Diff(diff);
                 }
                 else
+                {
                     return baseLine.Diff(diff);
+                }
             }
             else
             {
@@ -481,24 +506,36 @@ namespace MajdataPlay.IO
             var thisGroup = source.GetGroup();
             var targetGroup = target.GetGroup();
             if (thisGroup is SensorGroup.C || targetGroup is SensorGroup.C)
+            {
                 return true;
+            }
 
             var thisIndex = source.GetIndex();
             var targetIndex = target.GetIndex();
 
             if (thisGroup is SensorGroup.A or SensorGroup.B && targetGroup is SensorGroup.A or SensorGroup.B)
+            {
                 return thisIndex == targetIndex || Math.Abs(thisIndex - targetIndex) == 4;
+            }
             else if (thisGroup is SensorGroup.D or SensorGroup.E && targetGroup is SensorGroup.D or SensorGroup.E)
+            {
                 return thisIndex == targetIndex || Math.Abs(thisIndex - targetIndex) == 4;
+            }
             else
+            {
                 return false;
+            }
         }
         public static bool IsLeftOf(this SensorArea source, SensorArea target)
         {
             if (source == SensorArea.C || target == SensorArea.C)
+            {
                 throw new InvalidOperationException("cnm");
+            }
             else if (source.IsCollinearWith(target))
+            {
                 return false;
+            }
 
             var opposite = target.Diff(4);
             var thisIndex = source.GetIndex();
@@ -515,36 +552,62 @@ namespace MajdataPlay.IO
             if (AorB || DorE)
             {
                 if (thisIndex > min && thisIndex < max)
+                {
                     return false;
+                }
                 else
+                {
                     return true;
+                }
             }
             else
             {
                 if (targetGroup is SensorGroup.A or SensorGroup.B)
                 {
                     if (thisIndex > min && thisIndex <= max)
+                    {
                         return false;
+                    }
                     else
+                    {
                         return true;
+                    }
                 }
                 else
                 {
                     if (thisIndex >= min && thisIndex < max)
+                    {
                         return false;
+                    }
                     else
+                    {
                         return true;
+                    }
                 }
             }
         }
         public static bool IsRightOf(this SensorArea source, SensorArea target)
         {
             if (source == SensorArea.C || target == SensorArea.C)
+            {
                 throw new InvalidOperationException("cnm");
+            }
             else if (source.IsCollinearWith(target))
+            {
                 return false;
+            }
             else
+            {
                 return !source.IsLeftOf(target);
+            }
+        }
+        public static ButtonZone ToButtonZone(this SensorArea area)
+        {
+            if(area > SensorArea.A8 || area < SensorArea.A1)
+            {
+                return ThrowHelper.Throw<ArgumentOutOfRangeException, ButtonZone>(new ArgumentOutOfRangeException(nameof(area)));
+            }
+            return (ButtonZone)((int)area);
         }
     }
 }

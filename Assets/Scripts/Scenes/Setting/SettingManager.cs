@@ -75,12 +75,12 @@ namespace MajdataPlay.Setting
                 {
                     PressTime += Time.deltaTime;
                 }
-                if (InputManager.CheckButtonStatus(SensorArea.A6, SensorStatus.Off) && Direction == -1)
+                if (InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.Off) && Direction == -1)
                 {
                     IsPressed = false;
                     PressTime = 0;
                 }
-                else if (InputManager.CheckButtonStatus(SensorArea.A3, SensorStatus.Off) && Direction == 1)
+                else if (InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.Off) && Direction == 1)
                 {
                     IsPressed = false;
                     PressTime = 0;
@@ -88,8 +88,8 @@ namespace MajdataPlay.Setting
             }
             else
             {
-                var isExitRequested = InputManager.IsButtonClickedInThisFrame(SensorArea.A4) ||
-                                      InputManager.IsButtonClickedInThisFrame(SensorArea.A5);
+                var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
+                                      InputManager.IsButtonClickedInThisFrame(ButtonZone.A5);
                 if (isExitRequested)
                 {
                     MajInstances.AudioManager.ReadVolumeFromSettings();
@@ -104,23 +104,23 @@ namespace MajdataPlay.Setting
                     }
                     return;
                 }
-                if(InputManager.IsButtonClickedInThisFrame(SensorArea.A3))
+                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
                 {
                     Direction = 1;
                     IsPressed = true;
                     PressTime = 0;
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(SensorArea.A6))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
                 {
                     Direction = -1;
                     IsPressed = true;
                     PressTime = 0;
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(SensorArea.A1))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A1))
                 {
                     NextMenu();
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(SensorArea.A8))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A8))
                 {
                     PreviousMenu();
                 }

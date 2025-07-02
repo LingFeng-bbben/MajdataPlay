@@ -141,7 +141,7 @@ namespace MajdataPlay.Game.Notes.Slide
                 area.IsLast = false;
             }
         }
-        public void Check(in SensorArea targetArea, in SensorStatus state)
+        public void Check(in SensorArea targetArea, in SwitchStatus state)
         {
             if (_areas.Length == 0)
                 return;
@@ -182,11 +182,11 @@ namespace MajdataPlay.Game.Notes.Slide
                         return On && Off;
                 }
             }
-            public void Check(in SensorArea area, in SensorStatus status)
+            public void Check(in SensorArea area, in SwitchStatus status)
             {
                 if (area != TargetArea)
                     return;
-                if (status == SensorStatus.Off)
+                if (status == SwitchStatus.Off)
                 {
                     if (On)
                     {

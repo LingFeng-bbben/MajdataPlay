@@ -10,6 +10,26 @@ namespace MajdataPlay.Utils
     static class ThrowHelper
     {
         [DoesNotReturn]
+        public static void Throw<TException>() where TException : Exception , new()
+        {
+            throw new TException();
+        }
+        [DoesNotReturn]
+        public static void Throw<TException>(TException e) where TException : Exception
+        {
+            throw e;
+        }
+        [DoesNotReturn]
+        public static TResult Throw<TException, TResult>() where TException : Exception, new()
+        {
+            throw new TException();
+        }
+        [DoesNotReturn]
+        public static TResult Throw<TException, TResult>(TException e) where TException : Exception
+        {
+            throw e;
+        }
+        [DoesNotReturn]
         public static void NotSupported()
         {
             throw new NotSupportedException();
@@ -30,49 +50,52 @@ namespace MajdataPlay.Utils
             throw new NotImplementedException(message);
         }
         [DoesNotReturn]
-        public static void Throw<TException>(TException e) where TException : Exception
+        public static void OutOfRange()
         {
-            throw e;
+            throw new ArgumentOutOfRangeException();
         }
-        
-        public static void ThrowIf<TException>(TException e, [DoesNotReturnIf(true)] bool condition) where TException : Exception
+        [DoesNotReturn]
+        public static void OutOfRange(string paramName)
         {
-            if(condition)
+            throw new ArgumentOutOfRangeException(paramName);
+        }
+        [DoesNotReturn]
+        public static void OutOfRange(string paramName,string msg)
+        {
+            throw new ArgumentOutOfRangeException(paramName, msg);
+        }
+        public static class If
+        {
+            public static void Throw<TException>([DoesNotReturnIf(true)] bool condition) where TException : Exception, new()
             {
-                throw e;
+                if(condition)
+                {
+                    throw new TException();
+                }
             }
-        }
-        [DoesNotReturn]
-        public static TReturn NotSupported<TReturn>()
-        {
-            throw new NotSupportedException();
-        }
-        [DoesNotReturn]
-        public static TReturn NotSupported<TReturn>(string message)
-        {
-            throw new NotSupportedException(message);
-        }
-        [DoesNotReturn]
-        public static TReturn NotImplemented<TReturn>()
-        {
-            throw new NotImplementedException();
-        }
-        [DoesNotReturn]
-        public static TReturn NotImplemented<TReturn>(string message)
-        {
-            throw new NotImplementedException(message);
-        }
-        public static TResult Throw<TExceprion, TResult>(TExceprion e) where TExceprion : Exception
-        {
-            throw e;
-        }
-        public static TResult ThrowIf<TException, TResult>(TException e, TResult value, [DoesNotReturnIf(true)] bool condition) where TException : Exception
-        {
-            if (condition)
+            public static void Throw<TException>(TException e, [DoesNotReturnIf(true)] bool condition) where TException : Exception
             {
-                throw e;
+                if (condition)
+                {
+                    throw e;
+                }
             }
-            return value;
+            public static TResult Throw<TException, TResult>([DoesNotReturnIf(true)] bool condition) where TException : Exception, new()
+            {
+                if (condition)
+                {
+                    throw new TException();
+                }
+                return default;
+            }
+            public static TResult Throw<TException, TResult>(TException e, [DoesNotReturnIf(true)] bool condition) where TException : Exception
+            {
+                if (condition)
+                {
+                    throw e;
+                }
+                return default;
+            }
         }
     }
 }

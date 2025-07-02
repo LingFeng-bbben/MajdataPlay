@@ -140,16 +140,16 @@ namespace MajdataPlay.List
                 return;
             }
 
-            if (InputManager.IsButtonClickedInThisFrame(SensorArea.A8))
+            if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A8))
             {
                 _coverListDisplayer.SlideDifficulty(-1);
             }
-            else if (InputManager.IsButtonClickedInThisFrame(SensorArea.A1))
+            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A1))
             {
                 _coverListDisplayer.SlideDifficulty(1);
             }
 
-            if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A3, SensorStatus.On))
+            if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A3, SwitchStatus.On))
             {
                 if (!_isPressed)
                 {
@@ -160,7 +160,7 @@ namespace MajdataPlay.List
                 }
                 return;
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A6, SensorStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A6, SwitchStatus.On))
             {
                 if (!_isPressed)
                 {
@@ -173,7 +173,7 @@ namespace MajdataPlay.List
             }
 
 
-            if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A4, SensorStatus.On))
+            if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A4, SwitchStatus.On))
             {
                 if (!_coverListDisplayer.IsDirList)
                 {
@@ -208,7 +208,7 @@ namespace MajdataPlay.List
                     return;
                 }
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A5, SensorStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A5, SwitchStatus.On))
             {
                 if (_coverListDisplayer.IsChartList)
                 {
@@ -219,20 +219,20 @@ namespace MajdataPlay.List
                     SongStorage.WorkingCollection.Index = 0;
                 }
             }
-            if (InputManager.CheckButtonStatusInThisFrame(SensorArea.P1, SensorStatus.On))
+            if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.P1, SwitchStatus.On))
             {
                 MajInstances.SceneSwitcher.SwitchScene("SortFind");
                 _isExited = true;
                 return;
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A2, SensorStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A2, SwitchStatus.On))
             {
                 MajInstances.GameManager.LastSettingPage = 4;
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
                 return;
             }
-            else if (InputManager.CheckButtonStatusInThisFrame(SensorArea.A7, SensorStatus.On))
+            else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.A7, SwitchStatus.On))
             {
                 MajInstances.GameManager.LastSettingPage = 0;
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
@@ -246,12 +246,12 @@ namespace MajdataPlay.List
             {
                 return;
             }
-            var isA3Up = InputManager.CheckButtonStatusInPreviousFrame(SensorArea.A3, SensorStatus.On) &&
-                         InputManager.CheckButtonStatusInThisFrame(SensorArea.A3, SensorStatus.Off);
-            var isA4Up = InputManager.CheckButtonStatusInPreviousFrame(SensorArea.A4, SensorStatus.On) &&
-                         InputManager.CheckButtonStatusInThisFrame(SensorArea.A4, SensorStatus.Off);
-            var isA6Up = InputManager.CheckButtonStatusInPreviousFrame(SensorArea.A6, SensorStatus.On) && 
-                         InputManager.CheckButtonStatusInThisFrame(SensorArea.A6, SensorStatus.Off);
+            var isA3Up = InputManager.CheckButtonStatusInPreviousFrame(ButtonZone.A3, SwitchStatus.On) &&
+                         InputManager.CheckButtonStatusInThisFrame(ButtonZone.A3, SwitchStatus.Off);
+            var isA4Up = InputManager.CheckButtonStatusInPreviousFrame(ButtonZone.A4, SwitchStatus.On) &&
+                         InputManager.CheckButtonStatusInThisFrame(ButtonZone.A4, SwitchStatus.Off);
+            var isA6Up = InputManager.CheckButtonStatusInPreviousFrame(ButtonZone.A6, SwitchStatus.On) && 
+                         InputManager.CheckButtonStatusInThisFrame(ButtonZone.A6, SwitchStatus.Off);
 
             if ((isA3Up && _delta == 1) || (isA6Up && _delta == -1))
             {
