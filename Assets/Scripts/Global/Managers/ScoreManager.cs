@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 
@@ -16,6 +17,7 @@ namespace MajdataPlay
         static List<MaiScore> _scores = new();
 
         static bool _isInited = false;
+
         internal static async UniTask InitAsync()
         {
             if (_isInited)
@@ -36,8 +38,8 @@ namespace MajdataPlay
                     await File.WriteAllTextAsync(path, json);
                     return;
                 }
-                using var fileStream = File.OpenRead(path);
-                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(fileStream, option);
+                using var storageStream = File.OpenRead(path);
+                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, option);
                 //shoud do some warning here, or all score will be lost and overwirtten
                 if (result != null)
                 {

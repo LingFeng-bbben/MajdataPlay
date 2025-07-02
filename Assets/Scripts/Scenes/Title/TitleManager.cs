@@ -168,7 +168,7 @@ namespace MajdataPlay.Title
                 }
             };
             await Task.Delay(3000);
-            await SongStorage.ScanMusicAsync(progress);
+            await SongStorage.InitAsync(progress);
 
             if (!SongStorage.IsEmpty)
             {

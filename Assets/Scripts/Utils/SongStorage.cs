@@ -44,24 +44,46 @@ namespace MajdataPlay.Utils
         public static long TotalChartCount { get; private set; } = 0;
 
         static int _collectionIndex = 0;
-        static MyFavoriteSongCollection _myFavorite = new();
+        
 
-        readonly static DanInfo? _userFavorites = null;
+        static HashSet<string> _storageFav = new();
+        static DanInfo? _userFavorites = null;
+        static MyFavoriteSongCollection _myFavorite;
+
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
-        readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
+        readonly static string MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
+        readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
 
-        static SongStorage()
-        {
-            if(File.Exists(MY_FAVORITE_STORAGE_PATH))
-            {
-                Serializer.Json.TryDeserialize(File.ReadAllText(MY_FAVORITE_STORAGE_PATH), out _userFavorites);
-            }
-            MajEnv.OnApplicationQuit += OnApplicationQuit;
-        }
-        public static async Task ScanMusicAsync(IProgress<ChartScanProgress> progressReporter)
+        internal static async Task InitAsync(IProgress<ChartScanProgress>? progressReporter = null)
         {
             try
             {
+                if (File.Exists(MY_FAVORITE_EXPORT_PATH))
+                {
+                    bool result;
+                    HashSet<string>? storageFav;
+                    if(File.Exists(MY_FAVORITE_EXPORT_PATH))
+                    {
+                        (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
+                        if (!result)
+                        {
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                        }
+                    }
+                    if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+                    {
+                        (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                        if (!result)
+                        {
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                        }
+                        else
+                        {
+                            _storageFav = storageFav ?? _storageFav;
+                        }
+                    } 
+                }
+                
                 if (!Directory.Exists(MajEnv.ChartPath))
                 {
                     Directory.CreateDirectory(MajEnv.ChartPath);
@@ -74,6 +96,7 @@ namespace MajdataPlay.Utils
                 Collections = songs;
                 TotalChartCount = await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
                 MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                MajEnv.OnApplicationQuit += OnApplicationQuit;
             }
             catch(Exception e)
             {
@@ -81,7 +104,7 @@ namespace MajdataPlay.Utils
                 throw;
             }
         }
-        static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress> progressReporter)
+        static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress>? progressReporter)
         {
             try
             {
@@ -120,14 +143,16 @@ namespace MajdataPlay.Utils
                             continue;
                         if (string.IsNullOrEmpty(api.Name))
                             continue;
-                        progressReporter.Report(new ChartScanProgress()
+                        progressReporter?.Report(new ChartScanProgress()
                         {
                             StorageType = ChartStorageLocation.Online,
                             Message = api.Name
                         });
                         var result = await GetOnlineCollection(api);
                         if (!result.IsEmpty)
+                        {
                             collections.Add(result);
+                        }
                     }
                 }
                 //Add all songs to "All" folder
@@ -143,7 +168,11 @@ namespace MajdataPlay.Utils
                 MajDebug.Log("MyFavorite");
                 if(_userFavorites is not null)
                 {
-                    var hashSet = _userFavorites.SongHashs;
+                    foreach(var hash in _userFavorites.SongHashs)
+                    {
+                        _storageFav.Add(hash);
+                    }
+                    var hashSet = _storageFav;
                     var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
                                                  .OrderByDescending(x => x.IsOnline)
                                                  .GroupBy(x => x.Hash)
@@ -151,8 +180,7 @@ namespace MajdataPlay.Utils
                                                  .Where(x => x is not null)
                                                  .ToList();
                     MajDebug.Log(favoriteSongs.Count);
-                    hashSet = favoriteSongs.Select(o => o.Hash).ToArray();
-                    _myFavorite = new(favoriteSongs, new HashSet<string>(hashSet));
+                    _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
                 }
                 //The collections and _myFavorite share a same ref of original List<T>
                 collections.Add(_myFavorite);
@@ -341,7 +369,8 @@ namespace MajdataPlay.Utils
         static void OnApplicationQuit()
         {
             var hashSet = _myFavorite.ExportHashSet();
-            File.WriteAllText(MY_FAVORITE_STORAGE_PATH,
+            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
+            File.WriteAllText(MY_FAVORITE_EXPORT_PATH,
                               Serializer.Json.Serialize(new DanInfo()
                               {
                                   Name = "My Favorites",
@@ -354,6 +383,7 @@ namespace MajdataPlay.Utils
         public static void AddToMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Add(songDetail);
+            RefreshMyFavStorage();
         }
         public static bool IsInMyFavorites(ISongDetail songDetail)
         {
@@ -362,10 +392,16 @@ namespace MajdataPlay.Utils
         public static void RemoveFromMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Remove(songDetail);
+            RefreshMyFavStorage();
         }
         public static void RemoveFromMyFavorites(string hashBase64Str)
         {
             _myFavorite.Remove(hashBase64Str);
+            RefreshMyFavStorage();
+        }
+        static void RefreshMyFavStorage()
+        {
+            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(_myFavorite.ExportHashSet()));
         }
     }    
 }
