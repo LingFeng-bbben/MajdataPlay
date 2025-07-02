@@ -96,7 +96,7 @@ namespace MajdataPlay.IO
             Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
             BassMix.MixerAddChannel(_resampler, _decode, BassFlags.Default);
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-            //Bass.ChannelStop(_decode);
+            Bass.ChannelStop(_decode);
             MajDebug.Log(Bass.LastError);
             MajDebug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }

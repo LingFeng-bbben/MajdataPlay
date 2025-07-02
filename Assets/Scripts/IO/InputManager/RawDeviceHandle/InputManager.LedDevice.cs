@@ -29,7 +29,12 @@ namespace MajdataPlay.IO
             readonly static bool _isEnabled = true;
             static LedDevice()
             {
+#if !UNITY_STANDALONE_WIN
+                _isEnabled = false;
+#else
                 _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
+#endif
+
                 _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
                 if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100)
@@ -39,6 +44,9 @@ namespace MajdataPlay.IO
             }
             public static void Init()
             {
+#if !UNITY_STANDALONE_WIN
+                return;
+#endif
                 try
                 {
                     if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)

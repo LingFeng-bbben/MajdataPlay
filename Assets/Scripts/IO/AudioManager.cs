@@ -18,13 +18,14 @@ using System.Linq;
 using MajdataPlay.Collections;
 using System.Text;
 
+
 #nullable enable
 namespace MajdataPlay.IO
 {
     public class AudioManager : MonoBehaviour
     {
-        readonly string SFXFilePath = Application.streamingAssetsPath + "/SFX/";
-        readonly string VoiceFilePath = Application.streamingAssetsPath + "/Voice/";
+        string SFXFilePath;
+        string VoiceFilePath;
         string[] SFXFileNames = new string[0];
         string[] VoiceFileNames = new string [0];
         private List<AudioSampleWrap> SFXSamples = new();
@@ -38,6 +39,8 @@ namespace MajdataPlay.IO
 
         private void Awake()
         {
+            SFXFilePath = Path.Combine( MajEnv.AssetsPath, "SFX/");
+            VoiceFilePath = Path.Combine(MajEnv.AssetsPath, "Voice/");
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
             SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
@@ -79,7 +82,11 @@ namespace MajdataPlay.IO
                 isExclusiveRequest = false;
             }
 #endif
-
+#if UNITY_ANDROID
+            MajDebug.Log("Android: Using BassSimple");
+            MajInstances.Settings.Audio.Backend = SoundBackendType.BassSimple;
+            backend = SoundBackendType.BassSimple;
+#endif
             switch (backend)
             {
                 case SoundBackendType.Asio:
@@ -150,10 +157,16 @@ namespace MajdataPlay.IO
                         BassWasapi.Start();
                     }
                     break;
+                case SoundBackendType.BassSimple:
+                    MajDebug.Log("Bass Init: " + Bass.Init());
+                    MajDebug.Log(Bass.LastError);
+                break;
             }
+
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 
+            if(backend == SoundBackendType.Wasapi ||  backend == SoundBackendType.Asio || backend == SoundBackendType.BassSimple)
             MajDebug.Log(Bass.LastError);
 
             if (PlayDebug)
@@ -180,6 +193,9 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         sample = BassAudioSample.Create(path, BassGlobalMixer, false, false);
+                        break;
+                    case SoundBackendType.BassSimple:
+                        sample = BassSimpleAudioSample.Create(path, false, false);
                         break;
                     default:
                         throw new NotImplementedException("Backend not supported");
@@ -214,13 +230,15 @@ namespace MajdataPlay.IO
         private void OnDestroy()
         {
             if(MajInstances.Settings.Audio.Backend == SoundBackendType.Wasapi
-                || MajInstances.Settings.Audio.Backend == SoundBackendType.Asio)
+                || MajInstances.Settings.Audio.Backend == SoundBackendType.Asio||
+                MajInstances.Settings.Audio.Backend == SoundBackendType.BassSimple)
             {
                 foreach (var sample in SFXSamples)
                 {
                     if(sample is not null)
                         sample.Dispose();
                 }
+
                 Bass.StreamFree(BassGlobalMixer);
                 BassAsio.Stop();
                 BassAsio.Free();
@@ -265,6 +283,8 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         return BassAudioSample.Create(path, BassGlobalMixer, true, speedChange);
+                    case SoundBackendType.BassSimple:
+                        return BassSimpleAudioSample.Create(path, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
                 }
@@ -285,6 +305,8 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Asio:
                 case SoundBackendType.Wasapi:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                case SoundBackendType.BassSimple:
+                    return BassSimpleAudioSample.CreateFromUri(uri);
                 default:
                     throw new NotImplementedException("Backend not supported");
             }
@@ -303,6 +325,8 @@ namespace MajdataPlay.IO
                     case SoundBackendType.Asio:
                     case SoundBackendType.Wasapi:
                         return await BassAudioSample.CreateAsync(path, BassGlobalMixer, true, speedChange);
+                    case SoundBackendType.BassSimple:
+                        return await BassSimpleAudioSample.CreateAsync(path, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
                 }
@@ -325,6 +349,8 @@ namespace MajdataPlay.IO
                 case SoundBackendType.Asio:
                 case SoundBackendType.Wasapi:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                case SoundBackendType.BassSimple:
+                    return BassSimpleAudioSample.CreateFromUri(uri);
                 default:
                     throw new NotImplementedException("Backend not supported");
             }

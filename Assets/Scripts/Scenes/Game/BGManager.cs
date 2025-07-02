@@ -57,11 +57,7 @@ namespace MajdataPlay.Game
         SpriteRenderer _pictureCover;
         SpriteRenderer _pictureRenderer;
 
-        MediaPlayer _mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary)
-        {
-            FileCaching = 0,
-            NetworkCaching = 0,
-        };
+        MediaPlayer? _mediaPlayer = null;
 
         // when copying native Texture2D textures to Unity RenderTextures, the orientation mapping is incorrect on Android, so we flip it over.
         [SerializeField]
@@ -76,10 +72,14 @@ namespace MajdataPlay.Game
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
-            _mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary) { 
-                FileCaching = 0,
-                NetworkCaching = 0,
-            };
+            if (MajEnv.VLCLibrary != null)
+            {
+                _mediaPlayer = new MediaPlayer(MajEnv.VLCLibrary)
+                {
+                    FileCaching = 0,
+                    NetworkCaching = 0,
+                };
+            }
             _pictureCover = GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>();
             _pictureRenderer = GetComponent<SpriteRenderer>();
             _defaultScale = transform.localScale;
@@ -92,6 +92,7 @@ namespace MajdataPlay.Game
 
         internal void OnLateUpdate()
         {
+            if (_mediaPlayer is null) return;
             if (_usePictureAsBackground)
             {
                 return;
@@ -164,6 +165,7 @@ namespace MajdataPlay.Game
         {
             if (_usePictureAsBackground)
                 return;
+            if (_mediaPlayer is null) return;
             _mediaPlayer.SetRate(speed);
             _mediaPlayer.SeekTo(TimeSpan.FromSeconds(time));
             _mediaPlayer.Play();
@@ -171,7 +173,8 @@ namespace MajdataPlay.Game
 
         public void SetVideoSpeed(float speed)
         {
-            if(speed != _mediaPlayer.Rate)
+            if (_mediaPlayer is null) return;
+            if (speed != _mediaPlayer.Rate)
             {
                 _mediaPlayer.SetRate(speed);
             }
@@ -208,6 +211,7 @@ namespace MajdataPlay.Game
 
         public async UniTask SetBackgroundMovie(string path,Sprite? fallback)
         {
+            if (_mediaPlayer is null) return;
             try
             {
 
@@ -248,6 +252,7 @@ namespace MajdataPlay.Game
         }
         void DestroyMediaPlayer()
         {
+            if (_mediaPlayer is null) return;
             MajDebug.Log("[VLC] DestroyMediaPlayer");
             _mediaPlayer.Stop();
             _mediaPlayer.Dispose();

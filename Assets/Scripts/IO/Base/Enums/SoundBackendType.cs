@@ -2,6 +2,6 @@
 {
     public enum SoundBackendType
     {
-        Unity, Wasapi, Asio
+        Unity, Wasapi, Asio, BassSimple
     }
 }

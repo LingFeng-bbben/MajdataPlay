@@ -282,7 +282,7 @@ namespace MajdataPlay.IO
             {
                 return !IsCurrentlyOn(index);
             }
-            #endregion
+#endregion
 
             static void SerialPortUpdateLoop()
             {

@@ -81,7 +81,7 @@ namespace MajdataPlay.Game
                 {
                     MajDebug.LogException(ex);
                     await UniTask.Yield();
-                    _rawImage.texture = new Texture2D(0, 0);
+                    //_rawImage.texture = new Texture2D(0, 0);
                     if (anaText is not null)
                     {
                         anaText.text = "";

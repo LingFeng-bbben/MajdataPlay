@@ -79,6 +79,11 @@ namespace MajdataPlay
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
             MajEnv.Init();
             base.Awake();
+#if UNITY_STANDALONE_WIN
+            _timer = BuiltInTimeProvider.Winapi;
+#else
+            _timer = BuiltInTimeProvider.Stopwatch;
+#endif
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
@@ -190,21 +195,28 @@ namespace MajdataPlay
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";
+            #if UNITY_STANDALONE_WIN
             MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            #endif
             SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {
+            #if UNITY_STANDALONE_WIN
             MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            #endif
             SceneManager.LoadScene("Title");
         }
         void EnterView()
         {
+            #if UNITY_STANDALONE_WIN
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.BelowNormal;
+            #endif
             SceneManager.LoadScene("View");
         }
         public void ApplyScreenConfig()
         {
+#if UNITY_STANDALONE_WIN
             if (MajEnv.Mode != RunningMode.View)
             {
                 var fullScreen = Setting.Debug.FullScreen;
@@ -224,6 +236,7 @@ namespace MajdataPlay
                     Screen.SetResolution(width, height, fullScreen);
                 }
             }
+#endif
             Application.targetFrameRate = Setting.Display.FPSLimit;
         }
         void Start()
@@ -270,7 +283,7 @@ namespace MajdataPlay
             Setting.Misc.SelectedDiff = SelectedDiff;
             Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
             Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
-            SongStorage.OrderBy.Keyword = string.Empty;
+            //SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
             var json = Serializer.Json.Serialize(Setting, MajEnv.UserJsonReaderOption);
