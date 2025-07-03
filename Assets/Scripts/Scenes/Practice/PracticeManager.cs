@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using TMPro;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -130,13 +129,13 @@ namespace MajdataPlay.Practice
             }
             if (e.IsButton)
             {
-                switch (e.SArea)
+                switch (e.BZone)
                 {
-                    case SensorArea.A4:
+                    case ButtonZone.A4:
                         _gameInfo.TimeRange = new Range<double>(startTime, endTime);
                         MajInstances.SceneSwitcher.SwitchScene("Game", false);
                         break;
-                    case SensorArea.A5:
+                    case ButtonZone.A5:
                         MajInstances.SceneSwitcher.SwitchScene("List", false);
                         break;
                 }
