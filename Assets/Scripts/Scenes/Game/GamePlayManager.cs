@@ -549,10 +549,6 @@ namespace MajdataPlay.Game
             var dim = _setting.Game.BackgroundDim;
             if (dim < 1f)
             {
-#if !UNITY_STANDALONE_WIN
-                _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
-#else
-
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
@@ -561,8 +557,7 @@ namespace MajdataPlay.Game
                 else
                 {
                     _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
-                }
-#endif            
+                }        
             }
 
             _bgManager.SetBackgroundDim(1.0f);
@@ -805,11 +800,14 @@ namespace MajdataPlay.Game
         {
             if(State != GamePlayStatus.Ended)
             {
+#if !UNITY_ANDROID
+//防止误触喵
                 if(InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
                 {
                     print("Pause!!");
                     BackToList().Forget();
                 }
+#endif
             }
             if (_audioSample is null)
             {
@@ -984,7 +982,7 @@ namespace MajdataPlay.Game
             }
         }
 
-        #endregion
+#endregion
 
         #region GameEnding
 

@@ -11,6 +11,8 @@ using UnityEngine;
 using LibVLCSharp;
 using UnityEngine.UI;
 using System.Runtime.CompilerServices;
+using UnityEngine.Video;
+using UnityEngine.UIElements;
 #nullable enable
 namespace MajdataPlay.Game
 {
@@ -24,6 +26,10 @@ namespace MajdataPlay.Game
                 if(_mediaPlayer is not null)
                 {
                     return _mediaPlayer.Time / 1000f;
+                }
+                else if(_uVideoPlayer is not null)
+                {
+                    return (float)_uVideoPlayer.time;
                 }
                 else
                 {
@@ -58,6 +64,7 @@ namespace MajdataPlay.Game
         SpriteRenderer _pictureRenderer;
 
         MediaPlayer? _mediaPlayer = null;
+        VideoPlayer _uVideoPlayer;
 
         // when copying native Texture2D textures to Unity RenderTextures, the orientation mapping is incorrect on Android, so we flip it over.
         [SerializeField]
@@ -80,6 +87,10 @@ namespace MajdataPlay.Game
                     NetworkCaching = 0,
                 };
             }
+            else
+            {
+                _uVideoPlayer = GetComponent<VideoPlayer>();
+            }
             _pictureCover = GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>();
             _pictureRenderer = GetComponent<SpriteRenderer>();
             _defaultScale = transform.localScale;
@@ -92,12 +103,16 @@ namespace MajdataPlay.Game
 
         internal void OnLateUpdate()
         {
-            if (_mediaPlayer is null) return;
             if (_usePictureAsBackground)
             {
                 return;
             }
-            else if (!_mediaPlayer.IsPlaying)
+            if (_mediaPlayer is null)
+            {
+                _videoRenderer.texture = _uVideoPlayer.texture;
+                return;
+            }
+            if (!_mediaPlayer.IsPlaying)
             {
                 return;
             }
@@ -152,6 +167,7 @@ namespace MajdataPlay.Game
             if (_usePictureAsBackground)
                 return;
             _mediaPlayer?.Pause();
+            if(_uVideoPlayer != null) _uVideoPlayer.Pause();
         }
 
         public void StopVideo()
@@ -159,13 +175,22 @@ namespace MajdataPlay.Game
             if (_usePictureAsBackground)
                 return;
             _mediaPlayer?.Stop();
+            if (_uVideoPlayer != null) _uVideoPlayer.Stop();
         }
 
         public void PlayVideo(float time,float speed)
         {
             if (_usePictureAsBackground)
                 return;
-            if (_mediaPlayer is null) return;
+            if (_mediaPlayer is null)
+            {
+                if (_uVideoPlayer != null) { 
+                    _uVideoPlayer.playbackSpeed = speed; 
+                    _uVideoPlayer.time = time;
+                    _uVideoPlayer.Play();
+                }
+                return;
+            }
             _mediaPlayer.SetRate(speed);
             _mediaPlayer.SeekTo(TimeSpan.FromSeconds(time));
             _mediaPlayer.Play();
@@ -173,7 +198,10 @@ namespace MajdataPlay.Game
 
         public void SetVideoSpeed(float speed)
         {
-            if (_mediaPlayer is null) return;
+            if (_mediaPlayer is null) {
+                if (_uVideoPlayer != null) _uVideoPlayer.playbackSpeed = speed;
+                return;
+            }
             if (speed != _mediaPlayer.Rate)
             {
                 _mediaPlayer.SetRate(speed);
@@ -197,9 +225,14 @@ namespace MajdataPlay.Game
 
         public void DisableVideo()
         {
+            //Disable rawimage optional
             if(_mediaPlayer is not null)
             {
                 _mediaPlayer.Media = null;
+            }
+            if(_uVideoPlayer is not null)
+            {
+                Destroy(_uVideoPlayer);
             }
             _usePictureAsBackground = true;
         }
@@ -211,7 +244,37 @@ namespace MajdataPlay.Game
 
         public async UniTask SetBackgroundMovie(string path,Sprite? fallback)
         {
-            if (_mediaPlayer is null) return;
+            if (_mediaPlayer is null)
+            {
+                _uVideoPlayer.url = "file://" + path;
+                _uVideoPlayer.Prepare();
+                var startAt = MajTimeline.UnscaledTime;
+                var timeout = TimeSpan.FromSeconds(15);
+                while (true)
+                {
+                    try
+                    {
+                        var remainingTime = timeout - (MajTimeline.UnscaledTime - startAt);
+                        if (remainingTime.TotalSeconds < 0)
+                        {
+                            MajDebug.LogError( "Video loading timeout, fall back to default cover".i18n());
+                            SetBackgroundPic(fallback);
+                            return;
+                        }
+                        if (_uVideoPlayer.isPrepared)
+                            break;
+                    }
+                    finally
+                    {
+                        await UniTask.Yield();
+                    }
+                }
+                _pictureRenderer.forceRenderingOff = true;
+                var scale = (float)_uVideoPlayer.height / (float)_uVideoPlayer.width;
+                _videoRenderer.gameObject.transform.localScale = new Vector3(1f, scale, 1f);
+                _mediaLengthMs = (long)(_uVideoPlayer.length * 1000);
+                return;
+            }
             try
             {
 
@@ -228,7 +291,7 @@ namespace MajdataPlay.Game
 
 
                 MajDebug.Log("[VLC] BeginParse");
-                var ret = await _mediaPlayer.Media.ParseAsync(MajEnv.VLCLibrary);
+                var ret = await _mediaPlayer.Media.ParseAsync(MajEnv.VLCLibrary!);
                 if(ret != MediaParsedStatus.Done)
                 {
                     SetBackgroundPic(fallback);

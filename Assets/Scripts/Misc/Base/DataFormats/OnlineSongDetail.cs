@@ -290,6 +290,7 @@ namespace MajdataPlay
                     await CheckAndDownloadFile(_maidataUri, savePath, token);
 
                     _maidata = await SimaiParser.Shared.ParseAsync(savePath);
+
                     return _maidata;
                 }
             }catch(Exception e)
@@ -431,7 +432,8 @@ namespace MajdataPlay
                     {
                         if (File.Exists(cacheFlagPath))
                         {
-                            return;
+                            if(new FileInfo(savePath).Length >= 10)
+                                return;
                         }
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
                         if (!rsp.IsSuccessStatusCode)
@@ -440,6 +442,8 @@ namespace MajdataPlay
                         }
                         token.ThrowIfCancellationRequested();
                         MajDebug.Log($"Received http response header from: {uri}");
+
+                        if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
 
                         using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
