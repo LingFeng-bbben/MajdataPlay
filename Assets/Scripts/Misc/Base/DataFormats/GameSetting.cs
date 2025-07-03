@@ -73,7 +73,6 @@ namespace MajdataPlay
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
-        public bool SubdivideSlideJudgeGrade { get; set; } = false;
         public float TapScale { get; set; } = 1f;
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;
@@ -111,6 +110,7 @@ namespace MajdataPlay
         public float PlaybackSpeed { get; set; } = 1f;
         public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
         public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
+        public bool SubdivideSlideJudgeGrade { get; set; } = false;
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
         public bool AllTouch { get; set; } = false;
