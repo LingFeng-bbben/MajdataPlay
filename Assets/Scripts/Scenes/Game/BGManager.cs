@@ -109,7 +109,6 @@ namespace MajdataPlay.Game
             }
             if (_mediaPlayer is null)
             {
-                _videoRenderer.texture = _uVideoPlayer.texture;
                 return;
             }
             if (!_mediaPlayer.IsPlaying)
@@ -270,6 +269,7 @@ namespace MajdataPlay.Game
                     }
                 }
                 _pictureRenderer.forceRenderingOff = true;
+                _videoRenderer.texture = _uVideoPlayer.texture;
                 var scale = (float)_uVideoPlayer.height / (float)_uVideoPlayer.width;
                 _videoRenderer.gameObject.transform.localScale = new Vector3(1f, scale, 1f);
                 _mediaLengthMs = (long)(_uVideoPlayer.length * 1000);
