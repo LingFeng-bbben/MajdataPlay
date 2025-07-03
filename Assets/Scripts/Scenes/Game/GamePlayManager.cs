@@ -805,11 +805,14 @@ namespace MajdataPlay.Game
         {
             if(State != GamePlayStatus.Ended)
             {
+#if !UNITY_ANDROID
+//防止误触喵
                 if(InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
                 {
                     print("Pause!!");
                     BackToList().Forget();
                 }
+#endif
             }
             if (_audioSample is null)
             {
@@ -984,7 +987,7 @@ namespace MajdataPlay.Game
             }
         }
 
-        #endregion
+#endregion
 
         #region GameEnding
 

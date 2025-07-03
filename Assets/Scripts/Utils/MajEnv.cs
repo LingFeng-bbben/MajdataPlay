@@ -43,10 +43,10 @@ namespace MajdataPlay.Utils
 #if UNITY_STANDALONE_WIN
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
-                public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
+        public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
 #else
         public static string RootPath { get; } = Application.persistentDataPath;
-        public static string AssetsPath { get; } = Path.Combine(Application.temporaryCachePath, "ExtStreamingAssets/");
+        public static string AssetsPath { get; } = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
         public static string CachePath { get; } = Application.temporaryCachePath;
 #endif
 
