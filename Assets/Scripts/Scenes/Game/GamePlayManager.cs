@@ -549,10 +549,6 @@ namespace MajdataPlay.Game
             var dim = _setting.Game.BackgroundDim;
             if (dim < 1f)
             {
-#if !UNITY_STANDALONE_WIN
-                _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
-#else
-
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
@@ -561,8 +557,7 @@ namespace MajdataPlay.Game
                 else
                 {
                     _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
-                }
-#endif            
+                }        
             }
 
             _bgManager.SetBackgroundDim(1.0f);
