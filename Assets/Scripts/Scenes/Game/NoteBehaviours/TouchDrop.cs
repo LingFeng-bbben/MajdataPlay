@@ -61,6 +61,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly GameObject[] _fans = new GameObject[4];
         readonly Transform[] _fanTransforms = new Transform[4];
 
+        ButtonZone? _buttonPos;
+
         GameObject _pointObject;
         GameObject _justBorderObject;
 
@@ -140,6 +142,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _isFirework = poolingInfo.IsFirework;
             GroupInfo = poolingInfo.GroupInfo;
             _sensorPos = poolingInfo.SensorPos;
+            if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
+            {
+                _buttonPos = _sensorPos.ToButtonZone();
+            }
+            else
+            {
+                _buttonPos = null;
+            }
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
 
             _wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
@@ -157,7 +167,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
 
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            }
             _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             _justBorderRenderer.sortingOrder = SortOrder - _justBorderSortOrder;
 
@@ -267,10 +279,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
-                _noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos).Target;
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))

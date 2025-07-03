@@ -130,7 +130,7 @@ namespace MajdataPlay.Practice
             }
             if (e.IsButton)
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     case SensorArea.A4:
                         _gameInfo.TimeRange = new Range<double>(startTime, endTime);
@@ -144,7 +144,7 @@ namespace MajdataPlay.Practice
             }
             else
             {
-                switch (e.Type)
+                switch (e.SArea)
                 {
                     /*                case SensorType.B1:
                                         _practiveCount--;

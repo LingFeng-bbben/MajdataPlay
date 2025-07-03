@@ -34,7 +34,9 @@ namespace MajdataPlay.IO
             public static void Init()
             {
                 if (!_buttonRingUpdateLoop.IsCompleted)
+                {
                     return;
+                }
                 var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
                 if (manufacturer == DeviceManufacturer.General)
                 {
@@ -51,7 +53,7 @@ namespace MajdataPlay.IO
                             break;
                     }
                 }
-                else if (manufacturer == DeviceManufacturer.Dao)
+                else if (manufacturer is DeviceManufacturer.Yuan or DeviceManufacturer.Dao)
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
@@ -66,23 +68,16 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var buttonStates = _buttonStates.AsSpan();
-                var isBtnHadOn = _isBtnHadOn.AsSpan();
-                var isBtnHadOff = _isBtnHadOff.AsSpan();
-                var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
-                var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
-                var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
-
                 lock (_buttonRingUpdateLoop)
                 {
                     for (var i = 0; i < 12; i++)
                     {
-                        isBtnHadOn[i] = isBtnHadOnInternal[i];
-                        isBtnHadOff[i] = isBtnHadOffInternal[i];
-                        buttonStates[i] = buttonRealTimeStates[i];
+                        _isBtnHadOn[i] = _isBtnHadOnInternal[i];
+                        _isBtnHadOff[i] = _isBtnHadOffInternal[i];
+                        _buttonStates[i] = _buttonRealTimeStates[i];
 
-                        isBtnHadOnInternal[i] = default;
-                        isBtnHadOffInternal[i] = default;
+                        _isBtnHadOnInternal[i] = default;
+                        _isBtnHadOffInternal[i] = default;
                     }
                 }
             }
@@ -194,7 +189,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsHadOn(SensorArea area)
+            public static bool IsHadOn(ButtonZone area)
             {
                 return IsHadOn(GetIndexFromArea(area));
             }
@@ -204,7 +199,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsOn(SensorArea area)
+            public static bool IsOn(ButtonZone area)
             {
                 return IsOn(GetIndexFromArea(area));
             }
@@ -214,7 +209,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsHadOff(SensorArea area)
+            public static bool IsHadOff(ButtonZone area)
             {
                 return IsHadOff(GetIndexFromArea(area));
             }
@@ -224,7 +219,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsOff(SensorArea area)
+            public static bool IsOff(ButtonZone area)
             {
                 return IsOff(GetIndexFromArea(area));
             }
@@ -234,7 +229,7 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsCurrentlyOn(SensorArea area)
+            public static bool IsCurrentlyOn(ButtonZone area)
             {
                 return IsCurrentlyOn(GetIndexFromArea(area));
             }
@@ -244,36 +239,20 @@ namespace MajdataPlay.IO
             /// <param name="area"></param>
             /// <returns></returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool IsCurrentlyOff(SensorArea area)
+            public static bool IsCurrentlyOff(ButtonZone area)
             {
                 return IsCurrentlyOff(GetIndexFromArea(area));
             }
             #endregion
 
-            static int GetIndexFromArea(SensorArea area)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static int GetIndexFromArea(ButtonZone area)
             {
-                switch (area)
+                if(area < ButtonZone.A1 || area > ButtonZone.P2)
                 {
-                    case SensorArea.A1:
-                    case SensorArea.A2:
-                    case SensorArea.A3:
-                    case SensorArea.A4:
-                    case SensorArea.A5:
-                    case SensorArea.A6:
-                    case SensorArea.A7:
-                    case SensorArea.A8:
-                        return (int)area;
-                    case SensorArea.Test:
-                        return 8;
-                    case SensorArea.P1:
-                        return 9;
-                    case SensorArea.Service:
-                        return 10;
-                    case SensorArea.P2:
-                        return 11;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    ThrowHelper.OutOfRange(nameof(area));
                 }
+                return (int)area;
             }
             static void KeyboardUpdateLoop()
             {
@@ -282,7 +261,9 @@ namespace MajdataPlay.IO
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var buttons = _buttons.Span;
+                var gameButtons = _buttons.Span.Slice(0, 8);
+                var fnButtons = _buttons.Span.Slice(8);
+                var fnBuffer = _buttonRealTimeStates.AsSpan(8);
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
@@ -297,13 +278,14 @@ namespace MajdataPlay.IO
                         {
                             var now = MajTimeline.UnscaledTime;
 
-                            for (var i = 0; i < buttons.Length; i++)
+                            for (var i = 0; i < gameButtons.Length; i++)
                             {
-                                var button = buttons[i];
+                                var button = gameButtons[i];
                                 var keyCode = button.BindingKey;
                                 var state = KeyboardHelper.IsKeyDown(keyCode);
                                 _buttonRealTimeStates[i] = state;
                             }
+                            UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
@@ -345,6 +327,8 @@ namespace MajdataPlay.IO
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
+                var fnButtons = _buttons.Span.Slice(8);
+                var fnBuffer = _buttonRealTimeStates.AsSpan(8);
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
@@ -418,7 +402,7 @@ namespace MajdataPlay.IO
                                     _ioThreadSync.WaitNotify();
                                     break;
                             }
-                            
+                            UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
                             {
@@ -463,7 +447,17 @@ namespace MajdataPlay.IO
                     IsConnected = false;
                 }
             }
-
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void UpdateKeyboardFn(in ReadOnlySpan<Button> fnButtons, in Span<bool> buffer)
+            {
+                for (var i = 0; i < fnButtons.Length; i++)
+                {
+                    var button = fnButtons[i];
+                    var keyCode = button.BindingKey;
+                    var state = KeyboardHelper.IsKeyDown(keyCode);
+                    buffer[i] |= state;
+                }
+            }
             static string GetHIDDeviceName(ButtonRingDeviceType deviceType, DeviceManufacturer manufacturer)
             {
                 switch(deviceType)

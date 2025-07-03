@@ -74,6 +74,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         // 1  => Pressed
         int _lastHoldState = -2;
         float _releaseTime = 0;
+        ButtonZone? _buttonPos;
         Range<float> _bodyCheckRange;
 
         readonly float _noteAppearRate = MajInstances.Settings?.Debug.NoteAppearRate ?? 0.265f;
@@ -167,7 +168,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 }
                 if (isBtnFirst)
                 {
-                    _noteManager.SimulateButtonPress(_sensorPos);
+                    _noteManager.SimulateButtonPress(_buttonPos);
                 }
                 else
                 {
@@ -186,19 +187,21 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (isBtnFirst)
             {
-                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
+                _ = _noteManager.SimulateButtonClick(_buttonPos) ||
                     (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive &&  _noteManager.SimulateButtonClick(_sensorPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive &&  _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            {
                 return;
+            }
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
             _judgeTiming = Timing;
@@ -214,6 +217,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
+            _buttonPos = _sensorPos.ToButtonZone();
             _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
             _lastHoldState = -2;
@@ -473,9 +477,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos).Target;
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
@@ -536,8 +540,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On);
-            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_buttonPos, SwitchStatus.On);
+            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
             if (isPressed || AutoplayMode == AutoplayMode.Enable)
@@ -557,7 +561,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 if (IsClassic)
                 {
-                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SensorStatus.On) && 
+                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
                                            !isButtonPressed;
                     var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET;
                     End(offset);

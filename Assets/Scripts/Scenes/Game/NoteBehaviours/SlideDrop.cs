@@ -560,7 +560,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     IsBreak = IsBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
-                _objectCounter.ReportResult(this, result);
+                _objectCounter.ReportResult(this, result, Multiple);
                 if (PlaySlideOK(result))
                 {
                     _slideOK!.PlayResult(result);

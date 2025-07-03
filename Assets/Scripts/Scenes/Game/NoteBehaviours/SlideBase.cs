@@ -110,6 +110,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     throw new ArgumentOutOfRangeException("End position must be between 1 and 8");
             }
         }
+        public int Multiple
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _multiple;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _multiple = value;
+        }
         public string SlideType
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -170,6 +177,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected GameObject?[] _stars = new GameObject[3];
 
         protected SlideOK? _slideOK;
+
+        [ReadOnlyField, SerializeField]
+        protected int _multiple = 1;
 
         protected float _lastWaitTimeSec;
 
