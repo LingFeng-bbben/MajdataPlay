@@ -231,7 +231,8 @@ namespace MajdataPlay.Game
             }
             if(_uVideoPlayer is not null)
             {
-                Destroy(_uVideoPlayer);
+                _uVideoPlayer.url = null;
+                _uVideoPlayer.Stop();
             }
             _usePictureAsBackground = true;
         }
