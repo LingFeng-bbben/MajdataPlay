@@ -548,7 +548,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 ConvertJudgeGrade(ref _judgeResult);
-                if(!USERSETTING_SUBDIVIDE_SLIDE_JUDGE_GRADE)
+                if(!ModInfo.SubdivideSlideJudgeGrade)
                 {
                     JudgeGradeCorrection(ref _judgeResult);
                 }

@@ -546,7 +546,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
             base.End();
             ConvertJudgeGrade(ref _judgeResult);
-            if (!USERSETTING_SUBDIVIDE_SLIDE_JUDGE_GRADE)
+            if (!ModInfo.SubdivideSlideJudgeGrade)
             {
                 JudgeGradeCorrection(ref _judgeResult);
             }

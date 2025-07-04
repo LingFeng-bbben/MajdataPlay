@@ -58,13 +58,16 @@ namespace MajdataPlay.Game
         // Control
         public bool IsStart { get; private set; } = false;
         public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode { get; private set; } = AutoplayMode.Disable;
+        public AutoplayMode AutoplayMode
+        {
+            get => ModInfo.AutoPlay;
+        }
+
         public JudgeGrade AutoplayGrade { get; private set; } =  JudgeGrade.Perfect;
-        public JudgeStyleType JudgeStyle { get; private set; } = JudgeStyleType.DEFAULT;
+        public GameModInfo ModInfo { get; private set; }
         public float PlaybackSpeed 
         {
-            get => _playbackSpeed;
-            private set => _playbackSpeed = value;
+            get => ModInfo.PlaybackSpeed;
         }
         public GamePlayStatus State { get; private set; } = GamePlayStatus.Start;
         // Data
@@ -106,13 +109,8 @@ namespace MajdataPlay.Game
         [ReadOnlyField]
         [SerializeField]
         float _audioStartTime = -114514;
-        float _playbackSpeed = 1f;
         int _chartRotation = 0;
-        bool _isAllBreak = false;
-        bool _isAllEx = false;
-        bool _isAllTouch = false;
-        bool _isSlideNoHead = false;
-        bool _isSlideNoTrack = false;
+
         bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
@@ -167,6 +165,11 @@ namespace MajdataPlay.Game
                 Cursor.visible = false;
             }
 #endif
+            LoadGameMod();
+            if (_gameInfo.IsDanMode)
+            {
+                LoadDanModSettings();
+            }
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
@@ -186,145 +189,150 @@ namespace MajdataPlay.Game
 
             _errText = GameObject.Find("ErrText").GetComponent<Text>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
-            LoadGameMod();
-            if(_gameInfo.IsDanMode)
-            {
-                LoadDanModSettings();
-            }
+            
             InitGame().Forget();
             return;
         }
         void LoadDanModSettings()
         {
             var danInfo = _gameInfo.DanInfo;
-
+            var playbackSpeed = ModInfo.PlaybackSpeed;
+            var isAllBreak = ModInfo.AllBreak;
+            var isAllEx = ModInfo.AllEx;
+            var isAllTouch = ModInfo.AllTouch;
+            var isUseButtonRingForTouch = ModInfo.ButtonRingForTouch;
+            var isSlideNoHead = ModInfo.SlideNoHead;
+            var isSlideNoTrack = ModInfo.SlideNoTrack;
+            var autoplayMode = ModInfo.AutoPlay;
+            var judgeStyle = ModInfo.JudgeStyle;
+            var subdivideSlideJudgeGrade = ModInfo.SubdivideSlideJudgeGrade;
+            var noteMask = ModInfo.NoteMask;
             foreach (var (k,v) in danInfo!.Mods)
             {
                 switch(k)
                 {
                     case "PlaybackSpeed":
                         if (v.ValueKind is JsonValueKind.Number && 
-                            v.TryGetSingle(out var playbackSpeed) || (float.TryParse(v.ToString(), out playbackSpeed)))
+                            v.TryGetSingle(out var playbackSpeed1) || (float.TryParse(v.ToString(), out playbackSpeed1)))
                         {
-                            PlaybackSpeed = playbackSpeed;
+                            playbackSpeed = playbackSpeed1;
                         }
                         break;
                     case "AllBreak":
                         if(v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _isAllBreak = v.GetBoolean();
+                            isAllBreak = v.GetBoolean();
                         }
                         else if(bool.TryParse(v.ToString(), out var allBreak))
                         {
-                            _isAllBreak = allBreak;
+                            isAllBreak = allBreak;
                         }
                         break;
                     case "AllEx":
                         if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _isAllEx = v.GetBoolean();
+                            isAllEx = v.GetBoolean();
                         }
                         else if (bool.TryParse(v.ToString(), out var allEx))
                         {
-                            _isAllEx = allEx;
+                            isAllEx = allEx;
+                        }
+                        break;
+                    case "AllTouch":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        {
+                            isAllTouch = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var allTouch))
+                        {
+                            isAllEx = allTouch;
                         }
                         break;
                     case "ButtonRingForTouch":
                         if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _noteManager.IsUseButtonRingForTouch = v.GetBoolean();
+                            isUseButtonRingForTouch = v.GetBoolean();
                         }
                         else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
                         {
-                            _noteManager.IsUseButtonRingForTouch = buttonRingSlide;
+                            isUseButtonRingForTouch = buttonRingSlide;
                         }
                         break;
                     case "IsSlideNoHead":
                         if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _noteLoader.IsSlideNoHead = v.GetBoolean();
+                            isSlideNoHead = v.GetBoolean();
                         }
-                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        else if (bool.TryParse(v.ToString(), out var slideNoHead))
                         {
-                            _noteLoader.IsSlideNoHead = buttonRingSlide;
+                            isSlideNoHead = slideNoHead;
                         }
                         break;
                     case "IsSlideNoTrack":
                         if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            _noteLoader.IsSlideNoTrack = v.GetBoolean();
+                            isSlideNoTrack = v.GetBoolean();
                         }
-                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
+                        else if (bool.TryParse(v.ToString(), out var slideNoTrack))
                         {
-                            _noteLoader.IsSlideNoTrack = buttonRingSlide;
+                            isSlideNoTrack = slideNoTrack;
                         }
                         break;
                     case "AutoPlay":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
-                            AutoplayMode = (AutoplayMode)modeIndex;
+                            autoplayMode = (AutoplayMode)modeIndex;
                         }
                         else if(Enum.TryParse<AutoplayMode>(v.ToString(), false, out var mode))
                         {
-                            AutoplayMode = mode;
+                            autoplayMode = mode;
                         }
                         break;
                     case "JudgeStyle":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
                         {
-                            JudgeStyle = (JudgeStyleType)styleIndex;
+                            judgeStyle = (JudgeStyleType)styleIndex;
                         }
                         else if (Enum.TryParse<JudgeStyleType>(v.ToString(), false, out var style))
                         {
-                            JudgeStyle = style;
+                            judgeStyle = style;
                         }
                         break;
                     case "NoteMask":
-                        switch (v.ToString())
+                        noteMask = v.ToString();
+                        break;
+                    case "SubdivideSlideJudgeGrade":
+                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         {
-                            case "Inner":
-                                _noteMask.gameObject.SetActive(true);
-                                _noteMask.sprite = _maskSpriteB;
-                                break;
-                            case "Outer":
-                                _noteMask.gameObject.SetActive(true);
-                                _noteMask.sprite = _maskSpriteA;
-                                break;
-                            case "Disable":
-                                _noteMask.gameObject.SetActive(false);
-                                break;
+                            subdivideSlideJudgeGrade = v.GetBoolean();
+                        }
+                        else if (bool.TryParse(v.ToString(), out var ssjg))
+                        {
+                            subdivideSlideJudgeGrade = ssjg;
                         }
                         break;
                 }
             }
+            ModInfo = new(ModInfo)
+            {
+                PlaybackSpeed = playbackSpeed,
+                AllBreak = isAllBreak,
+                AllEx = isAllEx,
+                AllTouch = isAllTouch,
+                ButtonRingForTouch = isUseButtonRingForTouch,
+                SlideNoHead = isSlideNoHead,
+                SlideNoTrack = isSlideNoTrack,
+                AutoPlay = autoplayMode,
+                JudgeStyle = judgeStyle,
+                NoteMask = noteMask,
+                SubdivideSlideJudgeGrade = subdivideSlideJudgeGrade
+            };
         }
         void LoadGameMod()
         {
             var modsetting = MajInstances.GameManager.Setting.Mod;
-            PlaybackSpeed = modsetting.PlaybackSpeed;
-            _isAllBreak = modsetting.AllBreak;
-            _isAllEx = modsetting.AllEx;
-            _isAllTouch = modsetting.AllTouch;
-            AutoplayMode = modsetting.AutoPlay;
+            ModInfo = modsetting;
             //AutoplayParam = mod5.Value ?? 7;
-            JudgeStyle = modsetting.JudgeStyle;
-            _noteManager.IsUseButtonRingForTouch = modsetting.ButtonRingForTouch;
-            _noteLoader.IsSlideNoHead = modsetting.SlideNoHead;
-            _noteLoader.IsSlideNoTrack = modsetting.SlideNoTrack;
-            switch (modsetting.NoteMask)
-            {
-                case "Inner":
-                    _noteMask.gameObject.SetActive(true);
-                    _noteMask.sprite = _maskSpriteB;
-                    break;
-                case "Outer":
-                    _noteMask.gameObject.SetActive(true);
-                    _noteMask.sprite = _maskSpriteA;
-                    break;
-                case "Disable":
-                    _noteMask.gameObject.SetActive(false); 
-                    break;
-            }
         }
         /// <summary>
         /// Parse the chart and load it into memory, or dump it locally if the chart is online
@@ -444,7 +452,7 @@ namespace MajdataPlay.Game
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
                 {
-                    var playbackSpeed = _playbackSpeed;
+                    var playbackSpeed = PlaybackSpeed;
                     var startAt = timeRange.Start;
                     var endAt = timeRange.End;
                     startAt = Math.Max(startAt - 3, 0) / playbackSpeed;
@@ -510,19 +518,19 @@ namespace MajdataPlay.Game
                         }
                     }
                 }
-                if (PlaybackSpeed != 1)
+                if (ModInfo.PlaybackSpeed != 1)
                 {
                     _chart.Scale(PlaybackSpeed);
                 }
-                if (_isAllBreak)
+                if (ModInfo.AllBreak)
                 {
                     _chart.ConvertToBreak();
                 }
-                if (_isAllEx)
+                if (ModInfo.AllEx)
                 {
                     _chart.ConvertToEx();
                 }
-                if (_isAllTouch)
+                if (ModInfo.AllTouch)
                 {
                     _chart.ConvertToTouch();
                 }
@@ -614,7 +622,23 @@ namespace MajdataPlay.Game
         async UniTask PrepareToPlay()
         {
             if (_audioSample is null)
+            {
                 return;
+            }
+            switch (ModInfo.NoteMask)
+            {
+                case "Inner":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteB;
+                    break;
+                case "Outer":
+                    _noteMask.gameObject.SetActive(true);
+                    _noteMask.sprite = _maskSpriteA;
+                    break;
+                case "Disable":
+                    _noteMask.gameObject.SetActive(false);
+                    break;
+            }
             var token = _cts.Token;
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
@@ -634,7 +658,9 @@ namespace MajdataPlay.Game
 
             _noteManager.InitializeUpdater();
             while (!_generateAnswerSFXTask.IsCompleted)
+            {
                 await UniTask.Yield();
+            }
             var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
             while (!allBackgroundTasks.IsCompleted)
             {
@@ -663,7 +689,7 @@ namespace MajdataPlay.Game
 
             State = GamePlayStatus.Running;
             IsStart = true;
-            var startSec = _audioTrackStartAt * _playbackSpeed;
+            var startSec = _audioTrackStartAt * PlaybackSpeed;
             if (!IsPracticeMode)
             {
                 var userSettingBGDim = _setting.Game.BackgroundDim;
@@ -674,7 +700,7 @@ namespace MajdataPlay.Game
                     var timeDiff = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     if (timeDiff > -0.1f && !isVideoStarted) 
                     {
-                        _bgManager.PlayVideo(startSec, _playbackSpeed);
+                        _bgManager.PlayVideo(startSec, PlaybackSpeed);
                         isVideoStarted = true;
                     }
                     if(timeDiff > -BG_FADE_IN_LENGTH_SEC)
@@ -688,7 +714,7 @@ namespace MajdataPlay.Game
             }
             else
             {
-                _bgManager.PlayVideo(startSec + 0.25f, _playbackSpeed);
+                _bgManager.PlayVideo(startSec + 0.25f, PlaybackSpeed);
             }
             _bgManager.SetBackgroundDim(_setting.Game.BackgroundDim);
             _audioSample.Play();

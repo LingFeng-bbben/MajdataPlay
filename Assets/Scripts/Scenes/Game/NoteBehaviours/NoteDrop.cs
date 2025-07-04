@@ -141,6 +141,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _holdShineMaterial;
         }
+        protected GameModInfo ModInfo
+        {
+            get;
+            private set;
+        }
 
         protected bool _isJudged = false;
         /// <summary>
@@ -166,7 +171,6 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
         protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
         protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
-        protected readonly bool USERSETTING_SUBDIVIDE_SLIDE_JUDGE_GRADE = MajInstances.Settings?.Mod.SubdivideSlideJudgeGrade ?? false;
         protected readonly bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
         protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeMode.Modern;
         protected readonly DJAutoPolicy USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicy.Strict;
@@ -215,15 +219,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
             base.Awake();
 
             _noteController = Majdata<INoteController>.Instance!;
-
+            ModInfo = _noteController.ModInfo;
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;
             _holdShineMaterial = _noteController.HoldShineMaterial;
             _isAutoplay = _noteController.IsAutoplay;
+            _autoplayMode = ModInfo.AutoPlay;
             _autoplayGrade = _noteController.AutoplayGrade;
-            _autoplayMode = _noteController.AutoplayMode;
-
-            IsUseButtonRingForTouch = _noteManager.IsUseButtonRingForTouch;
+            
+            IsUseButtonRingForTouch = ModInfo.ButtonRingForTouch;
         }
         void OnDestroy()
         {
@@ -307,7 +311,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
-            var judgeStyle = NoteController.JudgeStyle;
+            var judgeStyle = ModInfo.JudgeStyle;
             switch (judgeStyle)
             {
                 case JudgeStyleType.MAJI:

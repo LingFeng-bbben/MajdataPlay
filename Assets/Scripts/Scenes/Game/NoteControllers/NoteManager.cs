@@ -8,13 +8,13 @@ using System;
 using MajdataPlay.Editor;
 using MajdataPlay.Numerics;
 using MajdataPlay.Unsafe;
+using Unity.VisualScripting;
 
 #nullable enable
 namespace MajdataPlay.Game.Notes.Controllers
 {
     internal class NoteManager : MonoBehaviour
     {
-        public bool IsUseButtonRingForTouch { get; set; } = false;
 
         TapUpdater _tapUpdater;
         HoldUpdater _holdUpdater;
@@ -57,6 +57,8 @@ namespace MajdataPlay.Game.Notes.Controllers
         bool _defaultButtonStatusUsage = false;
         bool _defaultSensorStatusUsage = false;
 
+        bool _isUseButtonRingForTouch = false;
+
         readonly Ref<bool> _defaultButtonUsageStatusRef;
         readonly Ref<bool> _defaultSensorUsageStatusRef;
 
@@ -97,6 +99,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
             _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
+            _isUseButtonRingForTouch = Majdata<INoteController>.Instance?.ModInfo.ButtonRingForTouch ?? false;
         }
         void OnDestroy()
         {
@@ -242,7 +245,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             {
                 _sensorStatusInPreviousFrame[i] = previousSensorStatus[i];
                 _sensorStatusInThisFrame[i] = currentSensorStatus[i];
-                if (IsUseButtonRingForTouch && i < 8)
+                if (_isUseButtonRingForTouch && i < 8)
                 {
                     _sensorStatusInThisFrame[i] |= _btnStatusInThisFrame[i];
                 }
@@ -261,7 +264,7 @@ namespace MajdataPlay.Game.Notes.Controllers
             for (var i = 0; i < 33; i++)
             {
                 var senState = _sensorStatusInNextFrame[i];
-                if(IsUseButtonRingForTouch && i < 8)
+                if(_isUseButtonRingForTouch && i < 8)
                 {
                     senState |= _btnStatusInThisFrame[i];
                 }

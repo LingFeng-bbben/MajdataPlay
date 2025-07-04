@@ -34,8 +34,6 @@ namespace MajdataPlay.Game
             set => _touchSpeed = Math.Abs(value);
         }
         public long NoteCount { get; private set; } = 0;
-        public bool IsSlideNoHead { get; set; } = false;
-        public bool IsSlideNoTrack { get; set; } = false;
 
         public GameObject tapPrefab;
         public GameObject holdPrefab;
@@ -51,6 +49,9 @@ namespace MajdataPlay.Game
         public RuntimeAnimatorController BreakShine;
         public RuntimeAnimatorController JudgeBreakShine;
         public RuntimeAnimatorController HoldShine;
+
+        bool _isSlideNoHead = false;
+        bool _isSlideNoTrack = false;
 
         float _touchSpeed = 7.5f;
         long _noteCount = 0;
@@ -233,6 +234,8 @@ namespace MajdataPlay.Game
             _poolManager = Majdata<NotePoolManager>.Instance!;
             _gpManager = Majdata<GamePlayManager>.Instance;
             _slideUpdater = Majdata<SlideUpdater>.Instance!;
+            _isSlideNoHead = Majdata<INoteController>.Instance?.ModInfo.SlideNoHead ?? false;
+            _isSlideNoTrack = Majdata<INoteController>.Instance?.ModInfo.SlideNoTrack ?? false;
         }
         internal void Clear()
         {
@@ -1199,8 +1202,8 @@ namespace MajdataPlay.Game
             //SliCompo._stars = new GameObject[] { slide_star };
             SliCompo.Timing = (float)timing.Timing;
             SliCompo.Length = (float)note.SlideTime;
-            SliCompo.IsSlideNoHead = IsSlideNoHead;
-            SliCompo.IsSlideNoTrack = IsSlideNoTrack;
+            SliCompo.IsSlideNoHead = _isSlideNoHead;
+            SliCompo.IsSlideNoTrack = _isSlideNoTrack;
             SliCompo.Multiple = multiple;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
             if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
@@ -1280,8 +1283,8 @@ namespace MajdataPlay.Game
             WifiCompo.StartPos = startPos;
             WifiCompo.Timing = (float)timing.Timing;
             WifiCompo.Length = (float)note.SlideTime;
-            WifiCompo.IsSlideNoHead = IsSlideNoHead;
-            WifiCompo.IsSlideNoTrack = IsSlideNoTrack;
+            WifiCompo.IsSlideNoHead = _isSlideNoHead;
+            WifiCompo.IsSlideNoTrack = _isSlideNoTrack;
             WifiCompo.Multiple = multiple;
             //var centerStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));
             //var leftStar = Instantiate(star_slidePrefab, notes.transform.GetChild(3));

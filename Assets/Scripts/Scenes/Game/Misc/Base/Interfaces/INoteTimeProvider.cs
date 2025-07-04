@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay
+namespace MajdataPlay.Game
 {
-    internal interface INoteTimeProvider
+    public interface INoteTimeProvider
     {
         float ThisFrameSec { get; }
     }

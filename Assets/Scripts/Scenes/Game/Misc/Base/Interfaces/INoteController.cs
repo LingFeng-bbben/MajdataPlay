@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Game.Notes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,16 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay
+namespace MajdataPlay.Game
 {
-    internal interface INoteController: INoteTimeProvider
+    public interface INoteController : INoteTimeProvider
     {
         float AudioLength { get; }
         bool IsStart { get; }
         bool IsAutoplay { get; }
-        AutoplayMode AutoplayMode { get; }
+        public GameModInfo ModInfo { get; }
         JudgeGrade AutoplayGrade { get; }
-        JudgeStyleType JudgeStyle { get; }
         Material BreakMaterial { get; }
         Material DefaultMaterial { get; }
         Material HoldShineMaterial { get; }
