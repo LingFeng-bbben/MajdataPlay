@@ -35,7 +35,7 @@ namespace MajdataPlay.List
             await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
             token.ThrowIfCancellationRequested();
 
-            var previewSample = await info.GetPreviewAudioTrackAsync(token);
+            var previewSample = await info.GetPreviewAudioTrackAsync(token: token);
 
             try
             {

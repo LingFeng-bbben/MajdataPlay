@@ -97,7 +97,7 @@ namespace MajdataPlay.List
         {
             _loadingObj.SetActive(true);
             _cover.sprite = SpriteLoader.EmptySprite;
-            var cover = await detail.GetCoverAsync(true, ct);
+            var cover = await detail.GetCoverAsync(true, token: ct);
             ct.ThrowIfCancellationRequested();
             _cover.sprite = cover;
             _loadingObj.SetActive(false);

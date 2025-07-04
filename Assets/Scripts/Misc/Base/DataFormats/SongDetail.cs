@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
+using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using MajSimai;
 using NeoSmart.AsyncLock;
@@ -12,8 +13,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-
-    public class SongDetail : ISongDetail
+    internal class SongDetail : ISongDetail
     {
         public string Title { get; init; } = string.Empty;
         public string Artist { get; init; } = string.Empty;
@@ -69,7 +69,7 @@ namespace MajdataPlay
 
             return new SongDetail(chartFolder, metadata);
         }
-        public async UniTask PreloadAsync(CancellationToken token = default)
+        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -81,12 +81,12 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
+        public async UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             await UniTask.Yield();
             return _videoPath;
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
+        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -124,7 +124,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -143,7 +143,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default)
+        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {

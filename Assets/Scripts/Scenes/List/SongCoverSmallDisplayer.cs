@@ -90,7 +90,7 @@ namespace MajdataPlay.List
         async UniTask SetCoverAsync(CancellationToken token = default)
         {
             _loading.SetActive(true);
-            var cover = await _boundSong.GetCoverAsync(true, token);
+            var cover = await _boundSong.GetCoverAsync(true,token: token);
             token.ThrowIfCancellationRequested();
             _songCover.sprite = cover;
             _loading.SetActive(false);

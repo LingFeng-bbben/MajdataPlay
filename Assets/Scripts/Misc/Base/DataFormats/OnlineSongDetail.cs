@@ -13,9 +13,8 @@ using System.IO;
 using System.Net.Http;
 using System.Buffers;
 using System.Threading;
-using Unity.VisualScripting.Antlr3.Runtime;
-using System.Security.Policy;
 using System.Net;
+using MajdataPlay.Net;
 
 #nullable enable
 namespace MajdataPlay
@@ -108,7 +107,7 @@ namespace MajdataPlay
             };
         }
 
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -122,7 +121,9 @@ namespace MajdataPlay
                 {
                     token.ThrowIfCancellationRequested();
                     if (_previewAudioTrack is not null)
+                    {
                         return _previewAudioTrack;
+                    }
                     var audioManager = MajInstances.AudioManager;
                     var sample = await audioManager.LoadMusicFromUriAsync(_trackUri);
 
@@ -140,7 +141,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -158,7 +159,7 @@ namespace MajdataPlay
                     var savePath = Path.Combine(_cachePath, "track.mp3");
                     var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
 
-                    await CheckAndDownloadFile(_trackUri, savePath, token);
+                    await CheckAndDownloadFile(_trackUri, savePath, progress, token);
                     var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
                     if (sampleWarp.IsEmpty)
                     {
@@ -166,7 +167,7 @@ namespace MajdataPlay
                         {
                             File.Delete(cacheFlagPath);
                         }
-                        await CheckAndDownloadFile(_trackUri, savePath, token);
+                        await CheckAndDownloadFile(_trackUri, savePath, progress, token);
                     }
                     _audioTrack = sampleWarp;
 
@@ -184,7 +185,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask PreloadAsync(CancellationToken token = default)
+        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -198,7 +199,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
+        public async UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -249,7 +250,7 @@ namespace MajdataPlay
                             }
                         }
                     }
-                    await CheckAndDownloadFile(_videoUri, savePath, token);
+                    await CheckAndDownloadFile(_videoUri, savePath, progress, token);
                     _videoPath = savePath;
                     return _videoPath;
                 }
@@ -259,18 +260,18 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
+        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             if (isCompressed)
             {
-                return await GetCompressedCoverAsync(token);
+                return await GetCompressedCoverAsync(progress, token);
             }
             else
             {
-                return await GetFullSizeCoverAsync(token);
+                return await GetFullSizeCoverAsync(progress, token);
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default)
+        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
             if (!ignoreCache && _maidata is not null)
                 return _maidata;
@@ -287,7 +288,7 @@ namespace MajdataPlay
                     token.ThrowIfCancellationRequested();
                     var savePath = Path.Combine(_cachePath, "maidata.txt");
 
-                    await CheckAndDownloadFile(_maidataUri, savePath, token);
+                    await CheckAndDownloadFile(_maidataUri, savePath, progress, token);
 
                     _maidata = await SimaiParser.Shared.ParseAsync(savePath);
 
@@ -304,7 +305,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        async UniTask<Sprite> GetCompressedCoverAsync(CancellationToken token = default)
+        async UniTask<Sprite> GetCompressedCoverAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -332,7 +333,7 @@ namespace MajdataPlay
                     }
                     try
                     {
-                        await CheckAndDownloadFile(_coverUri, savePath, token);
+                        await CheckAndDownloadFile(_coverUri, savePath, progress, token);
                     }
                     catch (InternalHttpRequestException e)
                     {
@@ -360,7 +361,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        async UniTask<Sprite> GetFullSizeCoverAsync(CancellationToken token = default)
+        async UniTask<Sprite> GetFullSizeCoverAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -388,7 +389,7 @@ namespace MajdataPlay
                     }
                     try
                     {
-                        await CheckAndDownloadFile(_fullSizeCoverUri, savePath, token);
+                        await CheckAndDownloadFile(_fullSizeCoverUri, savePath, progress, token);
                     }
                     catch (InternalHttpRequestException e)
                     {
@@ -415,7 +416,7 @@ namespace MajdataPlay
                 await UniTask.Yield();
             }
         }
-        async Task CheckAndDownloadFile(Uri uri, string savePath, CancellationToken token = default)
+        async Task CheckAndDownloadFile(Uri uri, string savePath, INetProgress? progress = null, CancellationToken token = default)
         {
             await Task.Run(async () =>
             {
@@ -433,7 +434,9 @@ namespace MajdataPlay
                         if (File.Exists(cacheFlagPath))
                         {
                             if(new FileInfo(savePath).Length >= 10)
+                            {
                                 return;
+                            }
                         }
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
                         if (!rsp.IsSuccessStatusCode)
@@ -445,6 +448,10 @@ namespace MajdataPlay
 
                         if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
 
+                        if(progress is not null)
+                        {
+                            progress.TotalBytes = rsp.Content.Headers.ContentLength ?? 0;
+                        }
                         using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
                         var read = 0;
@@ -454,10 +461,22 @@ namespace MajdataPlay
                             read = await httpStream.ReadAsync(buffer, token);
                             token.ThrowIfCancellationRequested();
                             await fileStream.WriteAsync(buffer.Slice(0, read), token);
+                            if(progress is not null)
+                            {
+                                var percent = 0f;
+                                progress.ReadBytes += read;
+                                if(progress.TotalBytes != 0)
+                                {
+                                    percent = (float)progress.ReadBytes / progress.TotalBytes;
+                                }
+                                progress.Report(percent);
+                            }
                         }
                         while (read > 0);
                         using (File.Create(cacheFlagPath))
+                        {
                             break;
+                        }
                     }
                     catch (InternalHttpRequestException)
                     {

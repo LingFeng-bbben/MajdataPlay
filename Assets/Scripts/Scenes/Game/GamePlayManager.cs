@@ -337,30 +337,38 @@ namespace MajdataPlay.Game
             {
                 if (_songDetail.IsOnline)
                 {
+                    var progress = new NetProgress();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
-                    var task1 = _songDetail.GetAudioTrackAsync(token: _cts.Token).AsValueTask();
+                    var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token).AsValueTask();
                     while (!task1.IsCompleted)
                     {
                         await UniTask.Yield();
+                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
                     }
+                    progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync(token: _cts.Token).AsValueTask();
                     while (!task2.IsCompleted)
                     {
                         await UniTask.Yield();
+                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
                     }
+                    progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                    var task3 = _songDetail.GetCoverAsync(false, _cts.Token).AsValueTask();
+                    var task3 = _songDetail.GetCoverAsync(false, token: _cts.Token).AsValueTask();
                     while (!task3.IsCompleted)
                     {
                         await UniTask.Yield();
+                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
                     }
+                    progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     var task4 = _songDetail.GetVideoPathAsync(token: _cts.Token).AsValueTask();
                     while (!task4.IsCompleted)
                     {
                         await UniTask.Yield();
+                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");
                     }
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }

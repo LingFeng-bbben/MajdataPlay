@@ -374,7 +374,7 @@ namespace MajdataPlay.List
                 {
                     if (_currentCollection[i] is null)
                         continue;
-                    var preloadTask = _currentCollection[i].PreloadAsync(_listManager.CancellationToken);
+                    var preloadTask = _currentCollection[i].PreloadAsync(token: _listManager.CancellationToken);
                     if(!preloadTask.AsValueTask().IsCompleted)
                     {
                         ListManager.AllBackgroundTasks.Add(preloadTask);
