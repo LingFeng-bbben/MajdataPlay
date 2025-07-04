@@ -1454,6 +1454,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_NormalizedViewPortRect.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_NormalizedViewPortRect.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_NormalizedViewPortRect.width
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_NormalizedViewPortRect.height
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
       propertyPath: m_Name
       value: Main Camera
@@ -1649,7 +1665,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -418.58002, y: -29.720276}
+  m_AnchoredPosition: {x: -262, y: -31}
   m_SizeDelta: {x: 2.869995, y: 0.5499878}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &638014422

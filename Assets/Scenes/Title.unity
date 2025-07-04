@@ -497,11 +497,11 @@ Transform:
   m_GameObject: {fileID: 1270745514}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -420, z: 0}
-  m_LocalScale: {x: 110.129265, y: 110.129265, z: 91.77438}
+  m_LocalPosition: {x: 0, y: -0, z: 90}
+  m_LocalScale: {x: 1.1012927, y: 1.1012927, z: 0.91774386}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2118294496}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!328 &1270745517
 VideoPlayer:
@@ -884,7 +884,7 @@ GameObject:
   - component: {fileID: 1811113592}
   - component: {fileID: 1811113594}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Xxlb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -902,7 +902,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 2118294496}
+  m_Father: {fileID: 1056466748}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -1011,11 +1011,6 @@ Transform:
 --- !u!1 &2118294492 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7942307277902318624, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-  m_PrefabInstance: {fileID: 3234089997214234524}
-  m_PrefabAsset: {fileID: 0}
---- !u!224 &2118294496 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
   m_PrefabInstance: {fileID: 3234089997214234524}
   m_PrefabAsset: {fileID: 0}
 --- !u!95 &2118294497
@@ -1146,15 +1141,12 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-      insertIndex: 2
-      addedObject: {fileID: 1811113591}
-    - targetCorrespondingSourceObject: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 1270745516}
     - targetCorrespondingSourceObject: {fileID: 1902335688730886507, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1164821923}
+    - targetCorrespondingSourceObject: {fileID: 8053637610791840999, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1811113591}
     - targetCorrespondingSourceObject: {fileID: 8053637610791840999, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
       addedObject: {fileID: 800093671}
@@ -1242,6 +1234,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 6959415326676185805}
+  - {fileID: 1270745516}
   - {fileID: 3234089997214234524}
   - {fileID: 826534572}
   - {fileID: 2077852204}

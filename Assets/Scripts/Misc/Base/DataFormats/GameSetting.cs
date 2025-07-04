@@ -35,8 +35,8 @@ namespace MajdataPlay
         public bool StarRotation { get; set; } = true;
         public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
         public TopInfoDisplayType TopInfo { get; set; } = TopInfoDisplayType.None;
-        public bool TrackSkip { get; set; } = false;
-        public bool FastRetry { get; set; } = false;
+        public bool TrackSkip { get; set; } = true;
+        public bool FastRetry { get; set; } = true;
         public MirrorType Mirror { get; set; } = MirrorType.Off;
         public int Rotation { get; set; } = 0;
         public RandomMode Random { get; set; } = RandomMode.Disabled;
@@ -77,13 +77,13 @@ namespace MajdataPlay
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;
         public float SlideScale { get; set; } = 1f;
-        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Disable;
+        public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
         public string Resolution { get; set; } = "1080x1920";
         public float MainScreenPosition { get; set; } = 1f; 
-        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Medium;
+        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Low;
         public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
-        public bool VSync { get; set; } = false;
+        public bool VSync { get; set; } = true;
     }
     public class SoundOptions
     {

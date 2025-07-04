@@ -14,6 +14,7 @@
     "com.unity.toolchain.win-x86_64-linux-x86_64": "2.0.9",
     "com.unity.ugui": "1.0.0",
     "com.unity.visualscripting": "1.9.8",
+    "unity-missing-scripts-finder": "https://github.com/RimuruDev/Unity-MissingScriptsFinder.git",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
