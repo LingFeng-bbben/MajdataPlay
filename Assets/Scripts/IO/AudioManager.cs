@@ -180,7 +180,7 @@ namespace MajdataPlay.IO
                 var path = Path.Combine(rootPath, filePath);
                 if (!File.Exists(path))
                 {
-                    SFXSamples.Add(EmptyAudioSample.Shared);
+                    SFXSamples.Add(AudioSampleWrap.Empty);
                     MajDebug.LogWarning(path + " dos not exists");
                     continue;
                 }
@@ -292,7 +292,7 @@ namespace MajdataPlay.IO
             else
             {
                 MajDebug.LogWarning(path + " dos not exists");
-                return EmptyAudioSample.Shared;
+                return AudioSampleWrap.Empty;
             }
         }
         public AudioSampleWrap LoadMusicFromUri(Uri uri)
@@ -334,7 +334,7 @@ namespace MajdataPlay.IO
             else
             {
                 MajDebug.LogWarning(path + " dos not exists");
-                return EmptyAudioSample.Shared;
+                return AudioSampleWrap.Empty;
             }
         }
         public async UniTask<AudioSampleWrap> LoadMusicFromUriAsync(Uri uri)
@@ -384,7 +384,7 @@ namespace MajdataPlay.IO
             }
             else
             {
-                return EmptyAudioSample.Shared;
+                return AudioSampleWrap.Empty;
             }
         }
 

@@ -35,7 +35,7 @@ namespace MajdataPlay.Practice
         private float startTime = 0;
         private float endTime = 0;
         private float totalTime = 0;
-        private AudioSampleWrap? audioTrack;
+        private AudioSampleWrap audioTrack = AudioSampleWrap.Empty;
 
         [SerializeField]
         TextMeshProUGUI _practiceCountText;

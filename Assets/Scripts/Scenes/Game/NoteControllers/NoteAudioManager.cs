@@ -68,7 +68,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 var sfx = _audioManager.GetSFX(name);
                 if (sfx.Volume == 0)
                 {
-                    _noteSFXs[i] = EmptyAudioSample.Shared;
+                    _noteSFXs[i] = AudioSampleWrap.Empty;
                 }
                 else
                 {
