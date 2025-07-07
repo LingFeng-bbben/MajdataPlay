@@ -108,7 +108,8 @@ namespace MajdataPlay.IO
                         BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
                         BassAsio.GetInfo(out var asioInfo);
                         BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
-                        for (int i = 1; i < asioInfo.Inputs; i++)
+                        //we dont use Asio.Inputs because we only use stero channels
+                        for (int i = 1; i < 2; i++)
                         {
                             if (!BassAsio.ChannelJoin(false, i, 0)) // let channel i follow channel 0
                             {
