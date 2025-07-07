@@ -15,6 +15,7 @@ using System.Buffers;
 using System.Threading;
 using System.Net;
 using MajdataPlay.Net;
+using Unity.VisualScripting;
 
 #nullable enable
 namespace MajdataPlay
@@ -469,6 +470,7 @@ namespace MajdataPlay
                                 {
                                     percent = (float)progress.ReadBytes / progress.TotalBytes;
                                 }
+                                percent = Mathf.Clamp01(percent);
                                 progress.Report(percent);
                             }
                         }

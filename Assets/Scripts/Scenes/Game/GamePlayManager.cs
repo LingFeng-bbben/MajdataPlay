@@ -356,7 +356,7 @@ namespace MajdataPlay.Game
                     }
                     progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
-                    var task2 = _songDetail.GetMaidataAsync(token: _cts.Token).AsValueTask();
+                    var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token).AsValueTask();
                     while (!task2.IsCompleted)
                     {
                         await UniTask.Yield();
@@ -364,7 +364,7 @@ namespace MajdataPlay.Game
                     }
                     progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                    var task3 = _songDetail.GetCoverAsync(false, token: _cts.Token).AsValueTask();
+                    var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token).AsValueTask();
                     while (!task3.IsCompleted)
                     {
                         await UniTask.Yield();
@@ -372,7 +372,7 @@ namespace MajdataPlay.Game
                     }
                     progress.Reset();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
-                    var task4 = _songDetail.GetVideoPathAsync(token: _cts.Token).AsValueTask();
+                    var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token).AsValueTask();
                     while (!task4.IsCompleted)
                     {
                         await UniTask.Yield();
