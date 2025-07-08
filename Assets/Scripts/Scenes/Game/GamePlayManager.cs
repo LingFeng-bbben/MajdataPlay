@@ -114,8 +114,9 @@ namespace MajdataPlay.Game
         bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
-        float _2367PressTime = 0;
-        float _3456PressTime = 0;
+        float _2367Timer = 0;
+        float _3456Timer = 0;
+        float _pauseTimer = 0f;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
@@ -834,9 +835,23 @@ namespace MajdataPlay.Game
         {
             if(State != GamePlayStatus.Ended)
             {
-#if !UNITY_ANDROID
-//防止误触喵
-                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
+#if UNITY_ANDROID
+                if(_pauseTimer > 1f)
+                {
+                    print("Pause!!");
+                    BackToList().Forget();
+                }
+                else if(InputManager.CheckButtonStatusInThisFrame(ButtonZone.P1, SwitchStatus.On))
+                {
+                    _pauseTimer += MajTimeline.DeltaTime;
+                }
+                else
+                {
+                    _pauseTimer = 0f;
+                }
+#else
+                //防止误触喵
+                if (InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
                 {
                     print("Pause!!");
                     BackToList().Forget();
@@ -868,8 +883,8 @@ namespace MajdataPlay.Game
                 }
             }
             var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-            _2367PressTime = 0;
-            _3456PressTime = 0;
+            _2367Timer = 0;
+            _3456Timer = 0;
             switch (State)
             {
                 case GamePlayStatus.Running:
@@ -957,30 +972,30 @@ namespace MajdataPlay.Game
                                 InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
                     if(_2367)
                     {
-                        _2367PressTime += MajTimeline.DeltaTime;
-                        _3456PressTime = 0;
+                        _2367Timer += MajTimeline.DeltaTime;
+                        _3456Timer = 0;
                     }
                     else if(_3456)
                     {
-                        _3456PressTime += MajTimeline.DeltaTime;
-                        _2367PressTime = 0;
+                        _3456Timer += MajTimeline.DeltaTime;
+                        _2367Timer = 0;
                     }
                     else
                     {
-                        _3456PressTime = 0;
-                        _2367PressTime = 0;
+                        _3456Timer = 0;
+                        _2367Timer = 0;
                     }
                     break;
                 default:
-                    _3456PressTime = 0;
-                    _2367PressTime = 0;
+                    _3456Timer = 0;
+                    _2367Timer = 0;
                     return;
             }
-            if(_2367PressTime >= 0.5f && _isTrackSkipAvailable)
+            if(_2367Timer >= 0.5f && _isTrackSkipAvailable)
             {
                 BackToList().Forget();
             }
-            else if(_3456PressTime >= 0.5f && _isFastRetryAvailable)
+            else if(_3456Timer >= 0.5f && _isFastRetryAvailable)
             {
                 FastRetry().Forget();
             }
