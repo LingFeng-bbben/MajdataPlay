@@ -858,8 +858,6 @@ namespace MajdataPlay.Game
                 }
             }
             var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-            _2367Timer = 0;
-            _3456Timer = 0;
             switch (State)
             {
                 case GamePlayStatus.Running:

@@ -223,7 +223,7 @@ namespace MajdataPlay
         public ButtonRingDeviceType Type { get; set; } = ButtonRingDeviceType.Keyboard;
         public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 0;
-        public int DebounceThresholdMs { get; set; } = 16;
+        public int DebounceThresholdMs { get; set; } = 0;
         public HidOptions HidOptions { get; set; } = new();
     }
     public class TouchPanelOptions
@@ -231,7 +231,7 @@ namespace MajdataPlay
         public bool Debounce { get; set; } = false;
         public int Sensitivity { get; set; } = 0;
         public int PollingRateMs { get; set; } = 0;
-        public int DebounceThresholdMs { get; set; } = 16;
+        public int DebounceThresholdMs { get; set; } = 0;
         public float TouchSimulationRadius { get; set; } = 0.5f;
         public SerialPortOptions SerialPortOptions { get; set; } = new();
     }
