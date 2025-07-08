@@ -129,11 +129,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public CustomSkin(string skinCollectionPath)
         {
             if (!Directory.Exists(skinCollectionPath))
+            {
                 Directory.CreateDirectory(skinCollectionPath);
+            }
             Name = new DirectoryInfo(skinCollectionPath).Name;
 
             if (File.Exists(skinCollectionPath + "/outline.png"))
+            {
                 IsOutlineAvailable = true;
+            }
             Outline = SpriteLoader.Load(skinCollectionPath + "/outline.png");
             SubDisplay = SpriteLoader.Load(skinCollectionPath + "/SubBackgourd.png");
 
@@ -170,19 +174,31 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
 
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_on.png")))
+            {
                 Hold_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_on.png", border);
+            }
             else
+            {
                 Hold_On = Hold;
+            }
             Hold_Off = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_off.png", border);
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_each_on.png")))
+            {
                 Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
+            }
             else
+            {
                 Hold_Each_On = Hold_Each;
+            }
 
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_break_on.png")))
+            {
                 Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+            }
             else
+            {
                 Hold_Break_On = Hold_Break;
+            }
 
             // Critical Perfect
 
@@ -280,24 +296,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             CriticalPerfect = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect.png");
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png"))
+            {
                 CriticalPerfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
+            }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png"))
+            {
                 CriticalPerfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png");
+            }
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png"))
+            {
                 Perfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png");
+            }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png"))
+            {
                 Perfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png");
+            }
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png"))
+            {
                 Great_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png");
+            }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png"))
+            {
                 Great_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png");
+            }
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png"))
+            {
                 Good_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png");
+            }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png"))
+            {
                 Good_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png");
+            }
 
 
 
@@ -324,7 +356,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 var type = typeof(CustomSkin);
                 type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.Load(path));
                 if (value == 0)
+                {
                     continue;
+                }
                 if (File.Exists(_path))
                 {
                     type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.Load(_path));

@@ -1,8 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Drawing;
 using SkiaSharp;
 using SkiaSharp.Unity;
 using System;
-using System.Drawing;
+using System.Buffers;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -100,8 +101,7 @@ namespace MajdataPlay.Utils
             {
                 return SKBitmap.Decode(data);
             });
-            await UniTask.Yield();
-            return bitmap.ToTexture2D();
+            return await bitmap.ToTexture2DAsync();
         }
     }
 }
