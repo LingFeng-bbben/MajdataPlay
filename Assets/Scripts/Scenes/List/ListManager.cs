@@ -42,7 +42,7 @@ namespace MajdataPlay.List
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
 
-        readonly ButtonStatistic[] _buttonPressTimes = new ButtonStatistic[12];
+        readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
 
 
@@ -444,14 +444,6 @@ namespace MajdataPlay.List
             }
             await UniTask.WhenAll(AllBackgroundTasks);
             AllBackgroundTasks.Clear();
-        }
-        struct ButtonStatistic
-        {
-            public bool IsPressed { get; set; }
-            public bool IsClicked { get; set; }
-            public bool IsReleased { get; set; }
-            public float PressTime { get; set; }
-            public bool IsClickEventUsed { get; set; }
         }
     }
 }
