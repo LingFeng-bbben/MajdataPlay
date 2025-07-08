@@ -117,7 +117,7 @@ namespace MajdataPlay.Game
         {
             if (Results.Length == 0)
                 return default;
-            var index = (_index - 1).Clamp(0, Results.Length - 1);
+            var index = _index.Clamp(0, Results.Length - 1);
             return Results[index];
         }
         public bool NextRound()

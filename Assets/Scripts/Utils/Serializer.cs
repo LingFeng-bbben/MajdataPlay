@@ -80,8 +80,9 @@ namespace MajdataPlay.Utils
                         result = await JsonSerializer.DeserializeAsync<T>(jsonStream);
                     return (true, result);
                 }
-                catch
+                catch(Exception e)
                 {
+                    MajDebug.LogError($"{nameof(T)}: {e}");
                     return (false, default);
                 }
             }

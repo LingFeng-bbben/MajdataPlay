@@ -176,10 +176,10 @@ namespace MajdataPlay
                 }
                 var hashSet = _storageFav;
                 var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
-                                             .OrderByDescending(x => x.IsOnline)
                                              .GroupBy(x => x.Hash)
                                              .Select(x => x.FirstOrDefault())
                                              .Where(x => x is not null)
+                                             .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
                                              .ToList();
                 MajDebug.Log(favoriteSongs.Count);
                 _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
@@ -348,12 +348,13 @@ namespace MajdataPlay
         {
             return await Task.Run(() =>
             {
-                var songHashs = danInfo.SongHashs;
+                var songHashs = danInfo.SongHashs.ToList();
                 var targetCharts = allCharts.Where(x => songHashs.Any(y => y == x.Hash))
                                             .OrderByDescending(x => x.IsOnline)
                                             .GroupBy(x => x.Hash)
                                             .Select(x => x.FirstOrDefault())
                                             .Where(x => x is not null)
+                                            .OrderBy(x => songHashs.IndexOf(x.Hash))
                                             .ToArray();
                 if (targetCharts.Length == 0)
                 {
