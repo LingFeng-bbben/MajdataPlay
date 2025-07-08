@@ -12,6 +12,7 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        public static bool UseOuterTouchAsSensor;
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -38,9 +39,23 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
+            if (UseOuterTouchAsSensor) {
+                foreach (var (i, state) in extraButtonStates.WithIndex())
+                {
+                    var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+                    if (i >= 8) continue;
+                    _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
+                    {
+                        Index = i,
+                        State = _state,
+                        Timestamp = now
+                    });
+                }
+            }
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+                if (i < 8 && UseOuterTouchAsSensor) continue;
                 _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,

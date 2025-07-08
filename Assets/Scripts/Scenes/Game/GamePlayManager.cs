@@ -175,6 +175,7 @@ namespace MajdataPlay.Game
             {
                 Destroy(GameObject.Find("EventSystem"));
             }
+            InputManager.UseOuterTouchAsSensor = true;
         }
         void Start()
         {
@@ -1194,6 +1195,7 @@ namespace MajdataPlay.Game
             finally
             {
                 Cursor.visible = true;
+                InputManager.UseOuterTouchAsSensor = false;
             }
         }
         #endregion
