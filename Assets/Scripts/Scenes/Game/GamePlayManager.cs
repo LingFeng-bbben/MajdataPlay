@@ -116,6 +116,7 @@ namespace MajdataPlay.Game
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
+        float _p1SkipTime = 0;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
@@ -832,17 +833,6 @@ namespace MajdataPlay.Game
         }
         void GameControlUpdate()
         {
-            if(State != GamePlayStatus.Ended)
-            {
-#if !UNITY_ANDROID
-//防止误触喵
-                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.P1))
-                {
-                    print("Pause!!");
-                    BackToList().Forget();
-                }
-#endif
-            }
             if (_audioSample is null)
             {
                 return;
@@ -942,47 +932,65 @@ namespace MajdataPlay.Game
         }
         void FnKeyStateUpdate()
         {
-            if (!_isFastRetryAvailable && !_isTrackSkipAvailable)
-                return;
-            switch(State)
+            if (State != GamePlayStatus.Ended)
             {
-                case GamePlayStatus.Running:
-                    var _2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
-                    var _3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
-                                InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
-                    if(_2367)
-                    {
-                        _2367PressTime += MajTimeline.DeltaTime;
-                        _3456PressTime = 0;
-                    }
-                    else if(_3456)
-                    {
-                        _3456PressTime += MajTimeline.DeltaTime;
-                        _2367PressTime = 0;
-                    }
-                    else
-                    {
-                        _3456PressTime = 0;
-                        _2367PressTime = 0;
-                    }
-                    break;
-                default:
+
+                var _2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On) &&
+                            _isTrackSkipAvailable;
+                var _3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
+                            InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                            _isFastRetryAvailable;
+                var _p1Skip = InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On);
+                if (_p1Skip)
+                {
+                    _p1SkipTime += MajTimeline.DeltaTime;
+                }
+                else if (_2367)
+                {
+                    _2367PressTime += MajTimeline.DeltaTime;
+                    _3456PressTime = 0;
+                }
+                else if (_3456)
+                {
+                    _3456PressTime += MajTimeline.DeltaTime;
+                    _2367PressTime = 0;
+                }
+                else
+                {
                     _3456PressTime = 0;
                     _2367PressTime = 0;
-                    return;
+                    _p1SkipTime = 0;
+                }
+
+#if UNITY_ANDROID
+                var p1timeout = 0.5f;
+#else
+                var p1timeout = 0f;
+#endif
+                if (_p1SkipTime > p1timeout)
+                {
+                    BackToList().Forget();
+                }
+                else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
+                {
+                    BackToList().Forget();
+                }
+                else if (_3456PressTime >= 0.5f && _isFastRetryAvailable)
+                {
+                    FastRetry().Forget();
+                }
             }
-            if(_2367PressTime >= 0.5f && _isTrackSkipAvailable)
+            else
             {
-                BackToList().Forget();
-            }
-            else if(_3456PressTime >= 0.5f && _isFastRetryAvailable)
-            {
-                FastRetry().Forget();
+                _3456PressTime = 0;
+                _2367PressTime = 0;
+                _p1SkipTime = 0;
+                return;
             }
         }
         void AudioTimeUpdate()
