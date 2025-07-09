@@ -65,7 +65,7 @@ namespace MajdataPlay.List
                 });
                 await UniTask.Yield(cancellationToken: token);
                 token.ThrowIfCancellationRequested();
-                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
+                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length-list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
 
                 CommentBox.SetActive(true);
                 foreach (var comment in list.Comments)

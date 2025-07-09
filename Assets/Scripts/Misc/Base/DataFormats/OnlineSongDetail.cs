@@ -86,6 +86,17 @@ namespace MajdataPlay
             _videoUri = new Uri(_videoUriStr);
             _coverUri = new Uri(_coverUriStr);
 
+
+            foreach(var tag in songDetail.Tags)
+            {
+                Description += tag + '\n';
+            }
+
+            foreach (var tag in songDetail.PublicTags)
+            {
+                Description += tag + '\n';
+            }
+
             Hash = songDetail.Hash;
             _hashHexStr = HashHelper.ToHexString(Convert.FromBase64String(Hash));
             _serverInfo = serverInfo;

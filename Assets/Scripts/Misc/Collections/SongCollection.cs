@@ -117,8 +117,9 @@ namespace MajdataPlay.Collections
                 var isArtistMatch = song.Artist.ToLower().Contains(keyword);
                 var isDesMatch = song.Designers.Any(p => p == null ? false : p.ToLower().Contains(keyword));
                 var isLevelMatch = song.Levels.Any(p => p == null ? false : p.ToLower() == keyword);
+                var isTagDesMatch = song.Description.ToLower().Contains(keyword);
 
-                var isMatch = isTitleMatch || isArtistMatch || isDesMatch || isLevelMatch;
+                var isMatch = isTitleMatch || isArtistMatch || isDesMatch || isLevelMatch || isTagDesMatch;
                 if (isMatch)
                     result[i++] = song;
             }
