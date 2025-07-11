@@ -42,7 +42,8 @@ namespace MajdataPlay.Game.Notes.Controllers
             "answer.wav",
             "answer_clock.wav"
         };
-        float _userAnswerOffset = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
+        readonly float USERSETTING_ANSWER_OFFSET = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
+        readonly float USERSETTING_DISPLAY_OFFSET = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
         const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
         const int TAP_GREAT = 1;
@@ -210,7 +211,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 {
                     ref var sfxInfo = ref _answerTimingPoints.Span[i];
                     var playTiming = sfxInfo.Timing;
-                    var delta = _noteController.ThisFrameSec - (playTiming + _userAnswerOffset + ANSWER_PLAYBACK_OFFSET_SEC);
+                    var delta = _noteController.ThisFrameSec - (playTiming + USERSETTING_ANSWER_OFFSET + USERSETTING_DISPLAY_OFFSET + ANSWER_PLAYBACK_OFFSET_SEC);
 
                     if (delta > 0)
                     {

@@ -164,6 +164,7 @@ namespace MajdataPlay
         public bool DisplayFPS { get; set; } = true;
         public bool FullScreen { get; set; } = true;
         public int MenuOptionIterationSpeed { get; set; } = 45;
+        public float DisplayOffset { get; set; } = 0f;
         public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
         public bool DisableGCInGame { get; set; } = false;

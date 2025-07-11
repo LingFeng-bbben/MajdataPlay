@@ -1006,7 +1006,7 @@ namespace MajdataPlay.Game
                 case GamePlayStatus.WaitForEnd:
                     //Do not use this!!!! This have connection with sample batch size
                     //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset) / PlaybackSpeed;
+                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset - _setting.Debug.DisplayOffset) / PlaybackSpeed;
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
                     var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;

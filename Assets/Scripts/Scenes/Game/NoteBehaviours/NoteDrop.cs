@@ -165,7 +165,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly protected GameSetting _gameSetting = MajInstances.Settings;
         protected static readonly Random _randomizer = new();
 
-        protected readonly float USERSETTING_JUDGE_OFFSET = MajInstances.Settings?.Judge.JudgeOffset ?? 0;
+        protected readonly float USERSETTING_JUDGE_OFFSET = (MajInstances.Settings?.Judge.JudgeOffset ?? 0)  + (MajInstances.Settings?.Debug.DisplayOffset ?? 0);
         protected readonly float USERSETTING_TOUCHPANEL_OFFSET = MajInstances.Settings?.Judge.TouchPanelOffset ?? 0;
         protected readonly float USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
         protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
