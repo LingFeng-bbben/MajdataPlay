@@ -4,6 +4,7 @@ using MajdataPlay.Game;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -78,7 +79,6 @@ namespace MajdataPlay.List
 
                 for (var i = 0; i < collections.Length; i++)
                 {
-
                     var collection = collections[i];
                     if (collection.Type == ChartStorageType.FavoriteList)
                     {
@@ -140,6 +140,16 @@ namespace MajdataPlay.List
         void OnDestroy()
         {
             Majdata<CoverListDisplayer>.Free();
+            var collections = SongStorage.Collections;
+            var thisCollections = _collections.Span;
+            for (var i = 0; i < collections.Length; i++)
+            {
+                if(thisCollections[i].IsEmpty)
+                {
+                    continue;
+                }
+                collections[i].SetCursor(thisCollections[i].Current);
+            }
         }
         public async UniTask SwitchToDirListAsync()
         {
