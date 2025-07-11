@@ -206,7 +206,8 @@ namespace MajdataPlay.Setting
         {
             if (_pressTime >= 0.4f)
             {
-                if(_iterationThrottle <= 1 / 15f)
+                var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
+                if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
                 {
                     _iterationThrottle += MajTimeline.DeltaTime;
                 }
