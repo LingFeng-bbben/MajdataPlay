@@ -135,6 +135,7 @@ namespace MajdataPlay.Setting
                         _minValue = -1;
                         _step = 1;
                         break;
+                    case "MenuOptionIterationSpeed":
                     case "Direct3DMaxQueuedFrames":
                         _minValue = 0;
                         _step = 1;
@@ -150,7 +151,14 @@ namespace MajdataPlay.Setting
                     default:
                         _maxValue = null;
                         _minValue = null;
-                        _step = 0.001f;
+                        if(type.IsIntType())
+                        {
+                            _step = 1f;
+                        }
+                        else
+                        {
+                            _step = 0.001f;
+                        }
                         break;
                 }
             }
