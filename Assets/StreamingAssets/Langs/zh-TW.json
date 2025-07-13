@@ -484,7 +484,7 @@
     },
     {
       "Origin": "Unavailable",
-      "Content": "不可用"
+      "Content": "無法使用"
     },
     {
       "Origin": "Downloading Audio Track",
@@ -500,7 +500,7 @@
     },
     {
       "Origin": "Downloading Video",
-      "Content": "下載視頻中"
+      "Content": "下載PV動畫中"
     },
     {
       "Origin": "Search",
@@ -652,11 +652,11 @@
     },
     {
       "Origin": "Empty Chart",
-      "Content": "此難度為空"
+      "Content": "此難度不存在!"
     },
     {
       "Origin": "Waiting for the video player...{0}",
-      "Content": "等待視頻...{0}"
+      "Content": "等待PV...{0}"
     },
     {
       "Origin": "Press the 4th button to use default cover",
@@ -664,7 +664,7 @@
     },
     {
       "Origin": "Video loading timeout, fall back to default cover",
-      "Content": "視頻加載超時，將使用歌曲封面作為背景"
+      "Content": "PV加載超時，將使用歌曲封面作為背景"
     },
     {
       "Origin": "TouchPanelOffset_MAJSETTING_TITLE",
