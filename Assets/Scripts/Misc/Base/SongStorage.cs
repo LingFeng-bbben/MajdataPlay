@@ -364,6 +364,7 @@ namespace MajdataPlay
                             progressReporter?.Report(ZString.Format("Scanning Charts From {0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
                         }
                         rspStream = await client.GetStreamAsync(listurl);
+                        break;
                     }
                     catch
                     {
@@ -384,13 +385,16 @@ namespace MajdataPlay
                     return collection;
                 }
 
-                var gameList = new List<ISongDetail>();
-                foreach (var song in list)
+                var gameList = new ISongDetail[list.Length];
+                Parallel.For(0, list.Length, i =>
                 {
+                    var song = list[i];
                     var songDetail = new OnlineSongDetail(api, song);
-                    gameList.Add(songDetail);
-                }
-                MajDebug.Log("Loaded Online Charts List:" + gameList.Count);
+                    gameList[i] = songDetail;
+                });
+
+                MajDebug.Log("Loaded Online Charts List:" + gameList.Length);
+                Interlocked.Add(ref _totalChartCount, list.Length);
                 var cacheFolder = Path.Combine(MajEnv.CachePath, $"Net/{name}");
                 if (!Directory.Exists(cacheFolder))
                 {

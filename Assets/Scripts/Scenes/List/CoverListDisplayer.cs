@@ -199,10 +199,14 @@ namespace MajdataPlay.List
 
         void SwitchToSongListInternal()
         {
-            if (_currentCollection.Count == 0) 
+            if (_currentCollection.Count == 0)
+            {
                 return;
-            if (_currentCollection.Type == ChartStorageType.Dan) 
+            }
+            if (_currentCollection.Type == ChartStorageType.Dan)
+            {
                 return;
+            }
 
             for (var i = 0; i < _songCollectionBindings.Length; i++)
             {
@@ -241,8 +245,10 @@ namespace MajdataPlay.List
             }
             _songDetailBindings = bindings;
 
-            if (desiredListPos > _songDetailBindings.Length) 
+            if (desiredListPos > _songDetailBindings.Length)
+            {
                 desiredListPos = 0;
+            }
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
         }
