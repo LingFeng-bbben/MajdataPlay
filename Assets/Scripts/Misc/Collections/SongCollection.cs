@@ -115,7 +115,7 @@ namespace MajdataPlay.Collections
             {
                 return;
             }
-            var newIndex = dataSet.FindIndex(x => x == target);
+            var newIndex = dataSet.FindIndex(x => x.Hash == target.Hash);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
         }

@@ -92,6 +92,10 @@ namespace MajdataPlay.List
                 }
 
                 newCollections[i].Reset();
+                if(!collection.IsEmpty)
+                {
+                    newCollections[i].SetCursor(collection.Current);
+                }
                 newCollections[i].SortAndFilter(SongStorage.OrderBy);
             });
             _collections = newCollections;
@@ -230,7 +234,7 @@ namespace MajdataPlay.List
             _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
 
             Mode = CoverListMode.Chart;
-            desiredListPos = SongStorage.WorkingCollection.Index;
+            desiredListPos = _currentCollection.Index;
             var bindings = new SongDetailBinding[_currentCollection.Count];
             for (var i = 0; i < bindings.Length; i++)
             {
