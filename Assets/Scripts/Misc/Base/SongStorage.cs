@@ -1,3 +1,4 @@
+using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using MajdataPlay.Collections;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay
@@ -42,98 +44,135 @@ namespace MajdataPlay
         /// </summary>
         public static SongCollection[] Collections { get; private set; } = new SongCollection[0];
         public static SongOrder OrderBy { get; set; } = new();
-        public static long TotalChartCount { get; private set; } = 0;
+        public static long TotalChartCount
+        { 
+            get
+            {
+                return _totalChartCount;
+            }
+        }
 
         static int _collectionIndex = 0;
+        static long _totalChartCount = 0;
+        static long _parsedChartCount = 0;
 
 
         static HashSet<string> _storageFav = new();
         static DanInfo? _userFavorites = null;
         static MyFavoriteSongCollection _myFavorite;
 
+        static bool _isInited = false;
+
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
         readonly static string MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
         readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
 
-        internal static async Task InitAsync(IProgress<ChartScanProgress>? progressReporter = null)
+        internal static async Task InitAsync(IProgress<string>? progressReporter = null)
         {
             try
             {
-                if (File.Exists(MY_FAVORITE_EXPORT_PATH))
+                await Task.Run(async () =>
                 {
-                    bool result;
-                    HashSet<string>? storageFav;
                     if (File.Exists(MY_FAVORITE_EXPORT_PATH))
                     {
-                        (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
-                        if (!result)
+                        bool result;
+                        HashSet<string>? storageFav;
+                        if (File.Exists(MY_FAVORITE_EXPORT_PATH))
                         {
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                            (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
+                            if (!result)
+                            {
+                                MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                            }
+                        }
+                        if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+                        {
+                            (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                            if (!result)
+                            {
+                                MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                            }
+                            else
+                            {
+                                _storageFav = storageFav ?? _storageFav;
+                            }
                         }
                     }
-                    if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+
+                    if (!Directory.Exists(MajEnv.ChartPath))
                     {
-                        (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
-                        if (!result)
-                        {
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
-                        }
-                        else
-                        {
-                            _storageFav = storageFav ?? _storageFav;
-                        }
+                        Directory.CreateDirectory(MajEnv.ChartPath);
+                        Directory.CreateDirectory(Path.Combine(MajEnv.ChartPath, "default"));
+                        return;
                     }
-                }
+                    var rootPath = MajEnv.ChartPath;
+                    var songs = await GetCollections(rootPath, progressReporter);
 
-                if (!Directory.Exists(MajEnv.ChartPath))
-                {
-                    Directory.CreateDirectory(MajEnv.ChartPath);
-                    Directory.CreateDirectory(Path.Combine(MajEnv.ChartPath, "default"));
-                    return;
-                }
-                var rootPath = MajEnv.ChartPath;
-                var songs = await GetCollections(rootPath, progressReporter);
-
-                Collections = songs;
-                TotalChartCount = await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
-                MajDebug.Log($"Loaded chart count: {TotalChartCount}");
-                MajEnv.OnApplicationQuit += OnApplicationQuit;
+                    Collections = songs;
+                    //_totalChartCount = await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
+                    MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                    _isInited = true;
+                });
             }
             catch (Exception e)
             {
                 MajDebug.LogException(e);
                 throw;
             }
+            finally
+            {
+                MajEnv.OnApplicationQuit += OnApplicationQuit;
+            }
         }
-        static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<ChartScanProgress>? progressReporter)
+        static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
         {
             try
             {
                 var dirs = new DirectoryInfo(rootPath).GetDirectories();
-                List<Task<SongCollection>> tasks = new();
-                List<SongCollection> collections = new();
+                var tasks = new List<Task<SongCollection>>(dirs.Length);
+                var collections = new List<SongCollection>(dirs.Length);
+                var taskCount = 0;
 
                 //Local Charts
-                foreach (var dir in dirs)
+                Parallel.For(0, dirs.Length, i =>
                 {
+                    var dir = dirs[i];
                     var path = dir.FullName;
                     var files = dir.GetFiles();
                     var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
                     var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
 
                     if (maidataFile is not null || trackFile is not null)
-                        continue;
+                    {
+                        return;
+                    }
 
                     tasks.Add(GetCollection(path));
-                }
+                    Interlocked.Increment(ref taskCount);
+                });
 
-                await Task.WhenAll(tasks);
+                var allTasks = Task.WhenAll(tasks);
+
+                while (!allTasks.IsCompleted)
+                {
+                    var percent = 0f;
+                    if (_totalChartCount != 0)
+                    {
+                        percent = _parsedChartCount / (float)_totalChartCount;
+                    }
+                    progressReporter?.Report($"{Localization.GetLocalizedText("Scanning Charts")}...({percent * 100:F2}%)");
+                    await Task.Delay(33);
+                }
+                progressReporter?.Report($"{Localization.GetLocalizedText("Scanning Charts")}...(100.00%)");
 
                 foreach (var task in tasks)
                 {
                     if (task.Result != null)
+                    {
                         collections.Add(task.Result);
+                    }
                 }
+                await Task.Delay(1000);
                 //Online Charts
                 if (MajInstances.Settings.Online.Enable)
                 {
@@ -141,15 +180,15 @@ namespace MajdataPlay
                     {
                         var api = item.FirstOrDefault();
                         if (api is null)
-                            continue;
-                        if (string.IsNullOrEmpty(api.Name))
-                            continue;
-                        progressReporter?.Report(new ChartScanProgress()
                         {
-                            StorageType = ChartStorageLocation.Online,
-                            Message = api.Name
-                        });
-                        var result = await GetOnlineCollection(api);
+                            continue;
+                        }
+                        if (string.IsNullOrEmpty(api.Name))
+                        {
+                            continue;
+                        }
+                        progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("Scanning Charts From {0}"), api.Name));
+                        var result = await GetOnlineCollection(api, progressReporter);
                         if (!result.IsEmpty)
                         {
                             collections.Add(result);
@@ -215,7 +254,9 @@ namespace MajdataPlay
                 {
                     var allTask = Task.WhenAll(loadDanTasks);
                     while (!allTask.IsCompleted)
+                    {
                         await Task.Yield();
+                    }
                     foreach (var task in loadDanTasks)
                     {
                         if (task.IsFaulted)
@@ -242,73 +283,106 @@ namespace MajdataPlay
         }
         static async Task<SongCollection> GetCollection(string rootPath)
         {
-            return await Task.Run(async () =>
+            try
             {
-                try
+                var thisDir = new DirectoryInfo(rootPath);
+                var dirs = thisDir.GetDirectories()
+                                  .OrderBy(o => o.CreationTime)
+                                  .ToList();
+                if (dirs.Count == 0)
                 {
-                    var thisDir = new DirectoryInfo(rootPath);
-                    var dirs = thisDir.GetDirectories()
-                                      .OrderBy(o => o.CreationTime)
-                                      .ToList();
-                    var charts = new List<SongDetail>();
-                    var tasks = new List<Task<SongDetail>>();
-                    foreach (var songDir in dirs)
-                    {
-                        var files = songDir.GetFiles();
-                        var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                        var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
-
-                        if (maidataFile is null || trackFile is null)
-                            continue;
-
-                        var parsingTask = SongDetail.ParseAsync(songDir.FullName);
-
-                        tasks.Add(parsingTask);
-                    }
-                    var allTask = Task.WhenAll(tasks);
-
-                    while (!allTask.IsCompleted)
-                    {
-                        await Task.Yield();
-                    }
-                    foreach (var task in tasks)
-                    {
-                        if (task.IsFaulted)
-                        {
-                            MajDebug.LogException(task.Exception);
-                            continue;
-                        }
-                        charts.Add(task.Result);
-                    }
-                    return new SongCollection(thisDir.Name, charts.ToArray());
+                    return SongCollection.Empty(thisDir.Name);
                 }
-                catch (Exception e)
+                var charts = new List<SongDetail>();
+                var tasks = new List<Task<SongDetail>>();
+                foreach (var songDir in dirs)
                 {
-                    MajDebug.LogException(e);
-                    throw;
+                    var files = songDir.GetFiles();
+                    var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+                    var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+
+                    if (maidataFile is null || trackFile is null)
+                    {
+                        continue;
+                    }
+
+                    var parsingTask = Task.Run(async () => 
+                    {
+                        var chart = await SongDetail.ParseAsync(songDir.FullName);
+                        Interlocked.Increment(ref _parsedChartCount);
+                        return chart;
+                    });
+                    Interlocked.Increment(ref _totalChartCount);
+                    tasks.Add(parsingTask);
                 }
-            });
+                var allTask = Task.WhenAll(tasks);
+
+                while (!allTask.IsCompleted)
+                {
+                    await Task.Yield();
+                }
+                foreach (var task in tasks)
+                {
+                    if (task.IsFaulted)
+                    {
+                        MajDebug.LogException(task.Exception);
+                        Interlocked.Decrement(ref _totalChartCount);
+                        continue;
+                    }
+                    charts.Add(task.Result);
+                }
+                return new SongCollection(thisDir.Name, charts.ToArray());
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                throw;
+            }
         }
-        static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api)
+        static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
         {
             var name = api.Name;
             var collection = SongCollection.Empty(name);
             var apiroot = api.Url;
             if (string.IsNullOrEmpty(apiroot))
+            {
                 return collection;
+            }
 
             var listurl = apiroot + "/maichart/list";
             MajDebug.Log("Loading Online Charts from:" + listurl);
             try
             {
                 var client = MajEnv.SharedHttpClient;
-                var rspStream = await client.GetStreamAsync(listurl);
+                var rspStream = Stream.Null;
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+                    try
+                    {
+                        if(i != 0)
+                        {
+                            progressReporter?.Report(ZString.Format("Scanning Charts From {0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
+                        }
+                        rspStream = await client.GetStreamAsync(listurl);
+                    }
+                    catch
+                    {
+                        if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                        {
+                            progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                            await Task.Delay(2000);
+                            throw new OperationCanceledException();
+                        }
+                    }
+                }
                 var list = await JsonSerializer.DeserializeAsync<MajnetSongDetail[]>(rspStream, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
                 if (list is null || list.IsEmpty())
+                {
                     return collection;
+                }
 
                 var gameList = new List<ISongDetail>();
                 foreach (var song in list)
@@ -370,17 +444,27 @@ namespace MajdataPlay
         }
         static void OnApplicationQuit()
         {
-            var hashSet = _myFavorite.ExportHashSet();
-            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
-            File.WriteAllText(MY_FAVORITE_EXPORT_PATH,
-                              Serializer.Json.Serialize(new DanInfo()
-                              {
-                                  Name = "My Favorites",
-                                  SongHashs = hashSet.ToArray(),
-                                  IsPlayList = true
-                              }
-                ));
-            MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            try
+            {
+                if (!_isInited)
+                {
+                    return;
+                }
+                var hashSet = _myFavorite.ExportHashSet();
+                File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
+                File.WriteAllText(MY_FAVORITE_EXPORT_PATH,
+                                  Serializer.Json.Serialize(new DanInfo()
+                                  {
+                                      Name = "My Favorites",
+                                      SongHashs = hashSet.ToArray(),
+                                      IsPlayList = true
+                                  }
+                    ));
+            }
+            finally
+            {
+                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            }
         }
         public static void AddToMyFavorites(ISongDetail songDetail)
         {

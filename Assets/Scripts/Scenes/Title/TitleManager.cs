@@ -155,17 +155,10 @@ namespace MajdataPlay.Title
 
         async Task StartScanningChart()
         {
-            var progress = new Progress<ChartScanProgress>();
+            var progress = new Progress<string>();
             progress.ProgressChanged += (o,e) =>
             {
-                switch(e.StorageType)
-                {
-                    case ChartStorageLocation.Local:
-                        break;
-                    case ChartStorageLocation.Online:
-                        echoText.text = string.Format(Localization.GetLocalizedText("Scanning Charts From {0}"),e.Message);
-                        break;
-                }
+                echoText.text = e;
             };
             await Task.Delay(3000);
             await SongStorage.InitAsync(progress);
