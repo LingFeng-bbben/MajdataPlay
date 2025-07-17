@@ -67,8 +67,8 @@ namespace MajdataPlay.List
             try
             {
                 await UniTask.Yield();
-                await _coverListDisplayer.SwitchToDirListAsync();
-                await _coverListDisplayer.SwitchToSongListAsync();
+                _coverListDisplayer.SwitchToDirList();
+                _coverListDisplayer.SwitchToSongList();
                 await UniTask.Yield();
             }
             finally
@@ -283,9 +283,7 @@ namespace MajdataPlay.List
                     else
                     {
                         LedRing.SetButtonLight(Color.red, 4);
-                        _coverListDisplayer.SwitchToSongListAsync()
-                                           .AsTask()
-                                           .Wait();
+                        _coverListDisplayer.SwitchToSongList();
                     }
                     a4Statistic.IsClickEventUsed = true;
                 }
@@ -329,9 +327,7 @@ namespace MajdataPlay.List
             {
                 if (_coverListDisplayer.IsChartList)
                 {
-                    _coverListDisplayer.SwitchToDirListAsync()
-                                       .AsTask()
-                                       .Wait();
+                    _coverListDisplayer.SwitchToDirList();
                     LedRing.SetButtonLight(Color.white, 4);
                     SongStorage.WorkingCollection.Index = 0;
                     return;

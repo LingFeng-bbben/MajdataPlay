@@ -71,7 +71,7 @@ namespace MajdataPlay.Collections
         public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
         public void SortAndFilter(SongOrder orderBy)
         {
-            if(Type == ChartStorageType.Dan)
+            if(Type == ChartStorageType.Dan || IsEmpty)
             {
                 return;
             }
@@ -88,6 +88,10 @@ namespace MajdataPlay.Collections
         }
         public void Reset()
         {
+            if (!IsSorted)
+            {
+                return;
+            }
             IsSorted = false;
             if (_sorted.Length != 0)
             {
@@ -107,6 +111,10 @@ namespace MajdataPlay.Collections
         }
         public void SetCursor(ISongDetail target, ISongDetail[] dataSet)
         {
+            if(IsEmpty)
+            {
+                return;
+            }
             var newIndex = dataSet.FindIndex(x => x == target);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;

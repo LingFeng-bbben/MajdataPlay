@@ -51,7 +51,6 @@ namespace MajdataPlay.List
 
         private int coveri = 0;
         //SongCollection[] dirs = SongStorage.Collections;
-        Task _sortAndFindTask = Task.CompletedTask;
 
         ListManager _listManager;
 
@@ -72,34 +71,32 @@ namespace MajdataPlay.List
         private void Awake()
         {
             Majdata<CoverListDisplayer>.Instance = this;
-            _sortAndFindTask = Task.Run(() =>
+            var collections = SongStorage.Collections;
+            var newCollections = new SongCollection[collections.Length];
+
+            Parallel.For(0, collections.Length, i =>
             {
-                var collections = SongStorage.Collections;
-                var newCollections = new SongCollection[collections.Length];
-
-                for (var i = 0; i < collections.Length; i++)
+                var collection = collections[i];
+                if (collection.Type == ChartStorageType.FavoriteList)
                 {
-                    var collection = collections[i];
-                    if (collection.Type == ChartStorageType.FavoriteList)
-                    {
-                        newCollections[i] = collection;
-                    }
-                    else
-                    {
-                        newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
-                        {
-                            DanInfo = collection.DanInfo,
-                            Type = collection.Type,
-                            Location = collection.Location,
-                        };
-                    }
-
-                    newCollections[i].Reset();
-                    newCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    newCollections[i] = collection;
                 }
-                _collections = newCollections;
-                _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+                else
+                {
+                    newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
+                    {
+                        DanInfo = collection.DanInfo,
+                        Type = collection.Type,
+                        Location = collection.Location,
+                    };
+                }
+
+                newCollections[i].Reset();
+                newCollections[i].SortAndFilter(SongStorage.OrderBy);
             });
+            _collections = newCollections;
+            _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+
             var allocatedSongCoverDisplayer = new SongCoverSmallDisplayer[16];
             var allocatedFolderCoverDisplayer = new FolderCoverSmallDisplayer[16];
             var allocatedDanCoverDisplayer = new FolderCoverSmallDisplayer[16];
@@ -151,16 +148,12 @@ namespace MajdataPlay.List
                 collections[i].SetCursor(thisCollections[i].Current);
             }
         }
-        public async UniTask SwitchToDirListAsync()
+        public void SwitchToDirList()
         {
-            while(!_sortAndFindTask.IsCompleted)
-                await UniTask.Yield();
             SwitchToDirListInternal();
         }
-        public async UniTask SwitchToSongListAsync()
+        public void SwitchToSongList()
         {
-            while (!_sortAndFindTask.IsCompleted)
-                await UniTask.Yield();
             SwitchToSongListInternal();
         }
         void SwitchToDirListInternal()
@@ -400,8 +393,6 @@ namespace MajdataPlay.List
         }
         private void FixedUpdate()
         {
-            if (!_sortAndFindTask.IsCompleted)
-                return;
             var delta = (desiredListPos - listPosReal) ;
             listPosReal += Mathf.Clamp(delta* turnSpeed, -1f, 1f);
             if (Mathf.Abs(delta) < 0.01f || DisableAnimation || Mathf.Abs(delta) >3)
@@ -541,7 +532,6 @@ namespace MajdataPlay.List
                 cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
             }
         }
-
         Vector3 GetCoverPosition(float radius, float position)
         {
             return new Vector3(radius * Mathf.Sin(position), radius * Mathf.Cos(position));
