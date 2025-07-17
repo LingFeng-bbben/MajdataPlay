@@ -284,6 +284,7 @@ namespace MajdataPlay.List
                     {
                         LedRing.SetButtonLight(Color.red, 4);
                         _coverListDisplayer.SwitchToSongList();
+                        _coverListDisplayer.SlideListToTop();
                     }
                     a4Statistic.IsClickEventUsed = true;
                 }

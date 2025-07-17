@@ -303,7 +303,14 @@ namespace MajdataPlay.List
             }
             SlideListInternal(desiredListPos);
         }
-
+        public void SlideListToTop()
+        {
+            SlideList(int.MinValue / 2);
+        }
+        public void SlideListToTail()
+        {
+            SlideList(int.MaxValue / 2);
+        }
         public void RandomSelect()
         {
             switch (Mode)
