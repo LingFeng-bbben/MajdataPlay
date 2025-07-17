@@ -1,0 +1,878 @@
+{
+  "Code": "zh-TW",
+  "Author": "小向",
+  "MappingTable": [
+    {
+      "Origin": "Missing MSVC",
+      "Content": "Missing MSVC"
+    },
+    {
+      "Origin": "Scanning Charts",
+      "Content": "正在掃描譜面"
+    },
+    {
+      "Origin": "Scanning Charts From {0}",
+      "Content": "正在從{0}拉取譜面"
+    },
+    {
+      "Origin": "Scan Chart Failed",
+      "Content": "掃描文件時發生錯誤"
+    },
+    {
+      "Origin": "No Charts",
+      "Content": "目前沒有可用譜面"
+    },
+    {
+      "Origin": "Press Any Key",
+      "Content": "觸摸一下開始遊戲"
+    },
+    {
+      "Origin": "Downloading",
+      "Content": "正在下載"
+    },
+    {
+      "Origin": "Failed to download chart",
+      "Content": "下載失敗"
+    },
+    {
+      "Origin": "Unknown error",
+      "Content": "未知的錯誤"
+    },
+    {
+      "Origin": "Failed to load chart",
+      "Content": "加載譜面時發生錯誤"
+    },
+    {
+      "Origin": "Deserialization",
+      "Content": "正在加載譜面"
+    },
+    {
+      "Origin": "Loading Chart",
+      "Content": "正在吃您的BK中..."
+    },
+    {
+      "Origin": "Game_MAJSETTING_SCENE_TITLE",
+      "Content": "遊戲設定"
+    },
+    {
+      "Origin": "Judge_MAJSETTING_SCENE_TITLE",
+      "Content": "判定設定"
+    },
+    {
+      "Origin": "Display_MAJSETTING_SCENE_TITLE",
+      "Content": "顯示設定"
+    },
+    {
+      "Origin": "Audio_MAJSETTING_SCENE_TITLE",
+      "Content": "音訊設定"
+    },
+    {
+      "Origin": "Volume_MAJSETTING_SCENE_TITLE",
+      "Content": "音量設定"
+    },
+    {
+      "Origin": "Mod_MAJSETTING_SCENE_TITLE",
+      "Content": "而外模組設定"
+    },
+    {
+      "Origin": "Debug_MAJSETTING_SCENE_TITLE",
+      "Content": "除錯"
+    },
+    {
+      "Origin": "TapSpeed_MAJSETTING_TITLE",
+      "Content": "Tap速度"
+    },
+    {
+      "Origin": "TapSpeed_MAJSETTING_DESC",
+      "Content": "控制\nTap、Hold、Star\n的移動速度"
+    },
+    {
+      "Origin": "TouchSpeed_MAJSETTING_TITLE",
+      "Content": "Touch速度"
+    },
+    {
+      "Origin": "TouchSpeed_MAJSETTING_DESC",
+      "Content": "控制\nTouch、TouchHold\n的淡入速度"
+    },
+    {
+      "Origin": "SlideFadeInOffset_MAJSETTING_TITLE",
+      "Content": "Slide淡入偏移"
+    },
+    {
+      "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
+      "Content": "調整Slide的淡入時機\n往右調整將延遲Slide淡入\n單位為秒"
+    },
+    {
+      "Origin": "BackgroundDim_MAJSETTING_TITLE",
+      "Content": "背景亮度"
+    },
+    {
+      "Origin": "BackgroundDim_MAJSETTING_DESC",
+      "Content": "控制背景的亮度\n數值越大越暗"
+    },
+    {
+      "Origin": "Language_MAJSETTING_TITLE",
+      "Content": "語言"
+    },
+    {
+      "Origin": "Language_MAJSETTING_DESC",
+      "Content": "語言/LANGUAGE"
+    },
+    {
+      "Origin": "StarRotation_MAJSETTING_TITLE",
+      "Content": "Star旋轉"
+    },
+    {
+      "Origin": "StarRotation_MAJSETTING_DESC",
+      "Content": "開啟後，\nStar將根據Slide的速度進行旋轉"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_TITLE",
+      "Content": "中間顯示"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_DESC",
+      "Content": "調整螢幕中間顯示訊息"
+    },
+    {
+      "Origin": "TrackSkip_MAJSETTING_TITLE",
+      "Content": "跳過歌曲"
+    },
+    {
+      "Origin": "TrackSkip_MAJSETTING_DESC",
+      "Content": "開啟後，\n按住2367即可強制跳過歌曲"
+    },
+    {
+      "Origin": "FastRetry_MAJSETTING_TITLE",
+      "Content": "快速重開"
+    },
+    {
+      "Origin": "FastRetry_MAJSETTING_DESC",
+      "Content": "開啟後，\n按住3456即可重新開始歌曲"
+    },
+    {
+      "Origin": "AudioOffset_MAJSETTING_TITLE",
+      "Content": "音訊偏移"
+    },
+    {
+      "Origin": "AudioOffset_MAJSETTING_DESC",
+      "Content": "音押，當你覺得譜面對不上音訊時可以調整該項\nFast較多往左調，Late較多往右調"
+    },
+    {
+      "Origin": "JudgeOffset_MAJSETTING_TITLE",
+      "Content": "判定偏移"
+    },
+    {
+      "Origin": "JudgeOffset_MAJSETTING_DESC",
+      "Content": "目押，當你覺得設備有輸入延遲時可以調整該項\nFast較多往左調，Late較多往右調"
+    },
+    {
+      "Origin": "Mode_MAJSETTING_TITLE",
+      "Content": "判定模式"
+    },
+    {
+      "Origin": "Mode_MAJSETTING_DESC",
+      "Content": "此項會影響Hold、Slide的判定行為\n(舊框/新框判定)"
+    },
+    {
+      "Origin": "Skin_MAJSETTING_TITLE",
+      "Content": "Note造型"
+    },
+    {
+      "Origin": "Skin_MAJSETTING_DESC",
+      "Content": "更換Note使用的造型"
+    },
+    {
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_TITLE",
+      "Content": "顯示Critical判定"
+    },
+    {
+      "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
+      "Content": "開啟後，將會顯示Critical判定"
+    },
+    {
+      "Origin": "DisplayBreakScore_MAJSETTING_TITLE",
+      "Content": "顯示Break分數"
+    },
+    {
+      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Content": "開啟後，會顯示Break類Note的詳細分數"
+    },
+    {
+      "Origin": "FastLateType_MAJSETTING_TITLE",
+      "Content": "Fast/Late顯示等級"
+    },
+    {
+      "Origin": "FastLateType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示等級\n高於設定等級的判定結果將不會顯示"
+    },
+    {
+      "Origin": "NoteJudgeType_MAJSETTING_TITLE",
+      "Content": "Note判定顯示等級"
+    },
+    {
+      "Origin": "NoteJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示級別\n高於設置級別的判定結果將不會顯示"
+    },
+    {
+      "Origin": "TouchJudgeType_MAJSETTING_TITLE",
+      "Content": "Touch判定顯示等級"
+    },
+    {
+      "Origin": "TouchJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示級別\n高於設置級別的判定結果將不會顯示"
+    },
+    {
+      "Origin": "SlideJudgeType_MAJSETTING_TITLE",
+      "Content": "Slide判定顯示等級"
+    },
+    {
+      "Origin": "SlideJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示級別\n高於設置級別的判定結果將不會顯示"
+    },
+    {
+      "Origin": "BreakJudgeType_MAJSETTING_TITLE",
+      "Content": "Break判定顯示等級"
+    },
+    {
+      "Origin": "BreakJudgeType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示級別\n高於設置級別的判定結果將不會顯示"
+    },
+    {
+      "Origin": "BreakFastLateType_MAJSETTING_TITLE",
+      "Content": "Break Fast/Late顯示等級"
+    },
+    {
+      "Origin": "BreakFastLateType_MAJSETTING_DESC",
+      "Content": "控制判定的顯示級別\n高於設置級別的判定結果將不會顯示"
+    },
+    {
+      "Origin": "SlideSortOrder_MAJSETTING_TITLE",
+      "Content": "Slide排列順序"
+    },
+    {
+      "Origin": "SlideSortOrder_MAJSETTING_DESC",
+      "Content": "Classic: 舊Slide在新Slide下方\nModern: 舊Slide在新Slide上方"
+    },
+    {
+      "Origin": "InnerJudgeDistance_MAJSETTING_TITLE",
+      "Content": "內圈判定顯示距離"
+    },
+    {
+      "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
+      "Content": "調整Touch判定結果的顯示位置\n數值越小越靠近中心"
+    },
+    {
+      "Origin": "OuterJudgeDistance_MAJSETTING_TITLE",
+      "Content": "外圈判定顯示距離"
+    },
+    {
+      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
+      "Content": "調整Tap、Star、Hold判定結果的顯示位置\n數值越小越靠近中心"
+    },
+    {
+      "Origin": "TapScale_MAJSETTING_TITLE",
+      "Content": "Tap縮放級別"
+    },
+    {
+      "Origin": "TapScale_MAJSETTING_DESC",
+      "Content": "調整Tap在遊玩時的大小"
+    },
+    {
+      "Origin": "HoldScale_MAJSETTING_TITLE",
+      "Content": "Hold縮放級別"
+    },
+    {
+      "Origin": "HoldScale_MAJSETTING_DESC",
+      "Content": "調整Hold在遊玩時的大小"
+    },
+    {
+      "Origin": "SlideScale_MAJSETTING_TITLE",
+      "Content": "Slide縮放級別"
+    },
+    {
+      "Origin": "SlideScale_MAJSETTING_DESC",
+      "Content": "調整Slide在遊玩時的大小\n此項不影響Wifi Slide"
+    },
+    {
+      "Origin": "TouchScale_MAJSETTING_TITLE",
+      "Content": "Touch縮放級別"
+    },
+    {
+      "Origin": "TouchScale_MAJSETTING_DESC",
+      "Content": "調整Touch在遊玩時的大小"
+    },
+    {
+      "Origin": "DisplayHoldHeadJudgeResult_MAJSETTING_TITLE",
+      "Content": "顯示Hold頭判判定"
+    },
+    {
+      "Origin": "DisplayHoldHeadJudgeResult_MAJSETTING_DESC",
+      "Content": ""
+    },
+    {
+      "Origin": "TouchFeedback_MAJSETTING_TITLE",
+      "Content": "觸摸反饋"
+    },
+    {
+      "Origin": "TouchFeedback_MAJSETTING_DESC",
+      "Content": "設置觸摸反饋的顯示級別"
+    },
+    {
+      "Origin": "Resolution_MAJSETTING_TITLE",
+      "Content": "分辨率"
+    },
+    {
+      "Origin": "Resolution_MAJSETTING_DESC",
+      "Content": "不可調整"
+    },
+    {
+      "Origin": "MainScreenPosition_MAJSETTING_TITLE",
+      "Content": "觸控顯示位置"
+    },
+    {
+      "Origin": "MainScreenPosition_MAJSETTING_DESC",
+      "Content": "往左調整數值會往上"
+    },
+    {
+      "Origin": "Answer_MAJSETTING_TITLE",
+      "Content": "正解音"
+    },
+    {
+      "Origin": "Answer_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "BGM_MAJSETTING_TITLE",
+      "Content": "背景音樂"
+    },
+    {
+      "Origin": "BGM_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "Tap_MAJSETTING_TITLE",
+      "Content": "Tap/Hold判定音"
+    },
+    {
+      "Origin": "Tap_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "Slide_MAJSETTING_TITLE",
+      "Content": "Slide判定音"
+    },
+    {
+      "Origin": "Slide_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "Break_MAJSETTING_TITLE",
+      "Content": "Break判定音"
+    },
+    {
+      "Origin": "Break_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "Touch_MAJSETTING_TITLE",
+      "Content": "Touch判定音"
+    },
+    {
+      "Origin": "Touch_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "Voice_MAJSETTING_TITLE",
+      "Content": "小小藍白"
+    },
+    {
+      "Origin": "Voice_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "DisplaySensor_MAJSETTING_TITLE",
+      "Content": "顯示被觸發的傳感器"
+    },
+    {
+      "Origin": "DisplaySensor_MAJSETTING_DESC",
+      "Content": "開啟後，被觸發的傳感器會被渲染"
+    },
+    {
+      "Origin": "DisplayFPS_MAJSETTING_TITLE",
+      "Content": "顯示幀率"
+    },
+    {
+      "Origin": "DisplayFPS_MAJSETTING_DESC",
+      "Content": "開啟後，會在屏幕右上角顯示當前幀率"
+    },
+    {
+      "Origin": "FullScreen_MAJSETTING_TITLE",
+      "Content": "強制全螢幕"
+    },
+    {
+      "Origin": "FullScreen_MAJSETTING_DESC",
+      "Content": "Nothing"
+    },
+    {
+      "Origin": "TryFixAudioSync_MAJSETTING_TITLE",
+      "Content": "音訊卡頓時修正時間"
+    },
+    {
+      "Origin": "TryFixAudioSync_MAJSETTING_DESC",
+      "Content": "開啟後，當發生音訊卡頓時\n會嘗試修正Note與音訊的時間軸"
+    },
+    {
+      "Origin": "NoteAppearRate_MAJSETTING_TITLE",
+      "Content": "Note淡入偏移"
+    },
+    {
+      "Origin": "NoteAppearRate_MAJSETTING_DESC",
+      "Content": "調整Tap、Hold、Star的淡入行為"
+    },
+    {
+      "Origin": "DisableGCInGameing_MAJSETTING_TITLE",
+      "Content": "在遊玩時關閉GC"
+    },
+    {
+      "Origin": "DisableGCInGameing_MAJSETTING_DESC",
+      "Content": "開啟後，有可能解決音訊卡頓的問題"
+    },
+    {
+      "Origin": "Outer_Only",
+      "Content": "僅外部"
+    },
+    {
+      "Origin": "Inner_Only",
+      "Content": "僅內部"
+    },
+    {
+      "Origin": "All",
+      "Content": "全部"
+    },
+    {
+      "Origin": "BelowCP",
+      "Content": "Critical以下"
+    },
+    {
+      "Origin": "BelowP",
+      "Content": "Perfect以下"
+    },
+    {
+      "Origin": "BelowGR",
+      "Content": "Great以下"
+    },
+    {
+      "Origin": "MissOnly",
+      "Content": "僅Miss"
+    },
+    {
+      "Origin": "Enable",
+      "Content": "啟用"
+    },
+    {
+      "Origin": "Disable",
+      "Content": "禁用"
+    },
+    {
+      "Origin": "True",
+      "Content": "是"
+    },
+    {
+      "Origin": "False",
+      "Content": "否"
+    },
+    {
+      "Origin": "Unavailable",
+      "Content": "無法使用"
+    },
+    {
+      "Origin": "Downloading Audio Track",
+      "Content": "下載音訊中"
+    },
+    {
+      "Origin": "Downloading Maidata",
+      "Content": "下載譜面中"
+    },
+    {
+      "Origin": "Downloading Picture",
+      "Content": "下載圖片中"
+    },
+    {
+      "Origin": "Downloading Video",
+      "Content": "下載PV動畫中"
+    },
+    {
+      "Origin": "Search",
+      "Content": "搜索"
+    },
+    {
+      "Origin": "UseKeyboardHint",
+      "Content": "拿出你的鍵盤使勁的敲啊..."
+    },
+    {
+      "Origin": "Sort",
+      "Content": "排序"
+    },
+    {
+      "Origin": "SortbyTime",
+      "Content": "添加\n時間"
+    },
+    {
+      "Origin": "SortbyDiff",
+      "Content": "譜面\n難度"
+    },
+    {
+      "Origin": "SortbyDes",
+      "Content": "譜面\n作者"
+    },
+    {
+      "Origin": "SortbyTitle",
+      "Content": "譜面\n標題"
+    },
+    {
+      "Origin": "SortbyDefault",
+      "Content": "默認"
+    },
+    {
+      "Origin": "Inner",
+      "Content": "內"
+    },
+    {
+      "Origin": "Outer",
+      "Content": "外"
+    },
+    {
+      "Origin": "Mirror_MAJSETTING_TITLE",
+      "Content": "鏡像"
+    },
+    {
+      "Origin": "Mirror_MAJSETTING_DESC",
+      "Content": "對稱稱對\n大8大"
+    },
+    {
+      "Origin": "Rotation_MAJSETTING_TITLE",
+      "Content": "旋轉"
+    },
+    {
+      "Origin": "Rotation_MAJSETTING_DESC",
+      "Content": "正數為順時針旋轉\n負數為逆時針旋轉"
+    },
+    {
+      "Origin": "PlaybackSpeed_MAJSETTING_TITLE",
+      "Content": "遊玩速度"
+    },
+    {
+      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Content": "就是變速齒輪的意思啦"
+    },
+    {
+      "Origin": "NoteMask_MAJSETTING_TITLE",
+      "Content": "Note遮罩"
+    },
+    {
+      "Origin": "NoteMask_MAJSETTING_DESC",
+      "Content": "更適合中出式音遊的遮罩"
+    },
+    {
+      "Origin": "AllBreak_MAJSETTING_TITLE",
+      "Content": "全Break"
+    },
+    {
+      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Content": "所有音符全部變成Break"
+    },
+    {
+      "Origin": "AllEx_MAJSETTING_TITLE",
+      "Content": "全Ex"
+    },
+    {
+      "Origin": "AllEx_MAJSETTING_DESC",
+      "Content": "所有音符全部變成Ex"
+    },
+    {
+      "Origin": "AllTouch_MAJSETTING_TITLE",
+      "Content": "全Touch"
+    },
+    {
+      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Content": "所有音符全部變成Touch"
+    },
+    {
+      "Origin": "ButtonRingForTouch_MAJSETTING_TITLE",
+      "Content": "純內圈體驗"
+    },
+    {
+      "Origin": "ButtonRingForTouch_MAJSETTING_DESC",
+      "Content": "按鍵也可以處理Slide、Touch"
+    },
+    {
+      "Origin": "SlideNoHead_MAJSETTING_TITLE",
+      "Content": "無頭星星"
+    },
+    {
+      "Origin": "SlideNoHead_MAJSETTING_DESC",
+      "Content": "去掉所有星星頭"
+    },
+    {
+      "Origin": "SlideNoTrack_MAJSETTING_TITLE",
+      "Content": "去掉Slide"
+    },
+    {
+      "Origin": "SlideNoTrack_MAJSETTING_DESC",
+      "Content": "去掉所有星星的Slide"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_TITLE",
+      "Content": "自動遊玩"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Content": "小小藍白幫你打"
+    },
+    {
+      "Origin": "JudgeStyle_MAJSETTING_TITLE",
+      "Content": "判定風格"
+    },
+    {
+      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Content": "調整判定的松嚴"
+    },
+    {
+      "Origin": "PracticeCount",
+      "Content": "次數"
+    },
+    {
+      "Origin": "Global_MAJSETTING_TITLE",
+      "Content": "全局"
+    },
+    {
+      "Origin": "Global_MAJSETTING_DESC",
+      "Content": "控制全局音量"
+    },
+    {
+      "Origin": "Empty Chart",
+      "Content": "此難度不存在!"
+    },
+    {
+      "Origin": "Waiting for the video player...{0}",
+      "Content": "等待PV...{0}"
+    },
+    {
+      "Origin": "Press the 4th button to use default cover",
+      "Content": "按下4號鍵以跳過等待"
+    },
+    {
+      "Origin": "Video loading timeout, fall back to default cover",
+      "Content": "PV加載超時，將使用歌曲封面作為背景"
+    },
+    {
+      "Origin": "TouchPanelOffset_MAJSETTING_TITLE",
+      "Content": "內圈輸入偏移"
+    },
+    {
+      "Origin": "TouchPanelOffset_MAJSETTING_DESC",
+      "Content": "當你覺得內圈存在輸入延遲時可以調整該項\nFast較多往左調，Late較多往右調"
+    },
+    {
+      "Origin": "AnswerOffset_MAJSETTING_TITLE",
+      "Content": "正解音偏移"
+    },
+    {
+      "Origin": "AnswerOffset_MAJSETTING_DESC",
+      "Content": "調整正解音的播放時機，不影響判定\n往左調提早播放，往右調延後播放"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_Combo",
+      "Content": "Combo"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_PCombo",
+      "Content": "完美Combo"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_CPCombo",
+      "Content": "極致完美Combo"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_Achievement_101",
+      "Content": "達成率 (101-)"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_Achievement_100",
+      "Content": "達成率 (100-)"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_Achievement",
+      "Content": "達成率"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_AchievementClassical",
+      "Content": "FiNALE 達成率"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_AchievementClassical_100",
+      "Content": "FiNALE 達成率 (100-)"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_DXScore",
+      "Content": "DX分數"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_DXScoreRank",
+      "Content": "DX分數等級"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_S_Border",
+      "Content": "距S級"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_SS_Border",
+      "Content": "距SS級"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_SSS_Border",
+      "Content": "距SSS級"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_MyBest",
+      "Content": "距最好成績"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_Diff",
+      "Content": "判定誤差"
+    },
+    {
+      "Origin": "BGInfo_MAJSETTING_OPTIONS_None",
+      "Content": "無"
+    },
+    {
+      "Origin": "THUMBUP_INFO",
+      "Content": "<好玩就點個讚吧"
+    },
+    {
+      "Origin": "THUMBUP_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "THUMBUP_SENDED",
+      "Content": "點讚成功"
+    },
+    {
+      "Origin": "THUMBUP_ALREADY",
+      "Content": "你已經點過讚了"
+    },
+    {
+      "Origin": "THUMBUP_FAILED",
+      "Content": "點讚失敗"
+    },
+    {
+      "Origin": "SCORE_SENDING",
+      "Content": "..."
+    },
+    {
+      "Origin": "SCORE_SENDED",
+      "Content": "成績已上傳"
+    },
+    {
+      "Origin": "Random_MAJSETTING_TITLE",
+      "Content": "隨機"
+    },
+    {
+      "Origin": "Random_MAJSETTING_DESC",
+      "Content": "Note位置隨機打亂\nRANDOM是隨機重新分配軌道\nS-RANDOM是每個note隨機"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_TITLE",
+      "Content": "渲染質量"
+    },
+    {
+      "Origin": "RenderQuality_MAJSETTING_DESC",
+      "Content": "調整遊戲的渲染質量。\n越高越清晰，越低越糊。"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_TITLE",
+      "Content": "窗口置頂"
+    },
+    {
+      "Origin": "Topmost_MAJSETTING_DESC",
+      "Content": "讓majplay窗口總在最前"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_TITLE",
+      "Content": "幀率限制"
+    },
+    {
+      "Origin": "FPSLimit_MAJSETTING_DESC",
+      "Content": "限制遊戲最高FPS"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_TITLE",
+      "Content": "垂直同步"
+    },
+    {
+      "Origin": "VSync_MAJSETTING_DESC",
+      "Content": "是否開啟垂直同步"
+    },
+    {
+      "Origin": "RecordMode_MAJSETTING_TITLE",
+      "Content": "錄制模式"
+    },
+    {
+      "Origin": "RecordMode_MAJSETTING_DESC",
+      "Content": "Disable: 禁用\nOBS:使用OBS-Websocket伺服器\n幫你按開始和停止錄制\nOBS->工具->WS伺服器->\n開啟服務且關閉身份驗證"
+    },
+    {
+      "Origin": "DJAutoPolicy_MAJSETTING_TITLE",
+      "Content": "DJAuto策略"
+    },
+    {
+      "Origin": "DJAutoPolicy_MAJSETTING_OPTIONS_Strict",
+      "Content": "嚴格"
+    },
+    {
+      "Origin": "DJAutoPolicy_MAJSETTING_OPTIONS_Permissive",
+      "Content": "寬容"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_Enable",
+      "Content": "開啟"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_DJAuto_ButtonRing_First",
+      "Content": "DJAuto (按鍵優先)"
+    },
+    {
+      "Origin": "AutoPlay_MAJSETTING_OPTIONS_DJAuto_TouchPanel_First",
+      "Content": "DJAuto (內圈優先)"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_TITLE",
+      "Content": "外框顯示"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_DESC",
+      "Content": "就是1號和8號鍵中間的小格子啦!"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Judge",
+      "Content": "判定結果"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_Timing",
+      "Content": "Fast/Late"
+    },
+    {
+      "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
+      "Content": "不顯示"
+    },
+    {
+      "Origin": "OBSError",
+      "Content": "無法連接到OBS WebSocket"
+    },
+    {
+      "Origin": "Input_Hint",
+      "Content": "按Select(或觸摸副屏)搜索和排序歌曲。觸摸歌曲封面隨機選曲。長按4號鍵開啟練習模式。\n按Alt+Enter切換全屏模式。按Alt+F4退出遊戲。"
+    }
+  ]
+}
