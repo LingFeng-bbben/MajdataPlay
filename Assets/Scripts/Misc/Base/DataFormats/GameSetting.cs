@@ -81,6 +81,7 @@ namespace MajdataPlay
         public string Resolution { get; set; } = "1080x1920";
         public float MainScreenPosition { get; set; } = 1f; 
         public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Low;
+        [SettingVisualizationIgnore]
         public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
         public bool VSync { get; set; } = true;
@@ -162,6 +163,7 @@ namespace MajdataPlay
     {
         public bool DisplaySensor { get; set; } = false;
         public bool DisplayFPS { get; set; } = true;
+        [SettingVisualizationIgnore]
         public bool FullScreen { get; set; } = true;
         public int MenuOptionIterationSpeed { get; set; } = 45;
         public float DisplayOffset { get; set; } = 0f;
@@ -171,14 +173,23 @@ namespace MajdataPlay
         public bool HideCursorInGame { get; set; } = true;
         public bool NoteFolding { get; set; } = true;
         public DJAutoPolicy DJAutoPolicy { get; set; } = DJAutoPolicy.Strict;
+        [SettingVisualizationIgnore]
         public int MaxQueuedFrames { get; set; } = 2;
+        [SettingVisualizationIgnore]
         public int TapPoolCapacity { get; set; } = 96;
+        [SettingVisualizationIgnore]
         public int HoldPoolCapacity { get; set; } = 48;
+        [SettingVisualizationIgnore]
         public int TouchPoolCapacity { get; set; } = 64;
+        [SettingVisualizationIgnore]
         public int TouchHoldPoolCapacity { get; set; } = 16;
+        [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
+        [SettingVisualizationIgnore]
         public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.AboveNormal;
+        [SettingVisualizationIgnore]
         public ThreadPriority MainThreadPriority { get; set; } = ThreadPriority.Normal;
+        [SettingVisualizationIgnore]
         public ThreadPriority IOThreadPriority { get; set; } = ThreadPriority.AboveNormal;
     }
     public class MiscOptions
