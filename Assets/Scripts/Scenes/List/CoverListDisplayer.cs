@@ -52,6 +52,9 @@ namespace MajdataPlay.List
         private int coveri = 0;
         //SongCollection[] dirs = SongStorage.Collections;
 
+        float _preloadCooldownTimer = 0.5f;
+        bool _isNeedPreload = false;
+
         ListManager _listManager;
 
         Memory<SongDetailBinding> _songDetailBindings = Memory<SongDetailBinding>.Empty;
@@ -297,8 +300,14 @@ namespace MajdataPlay.List
                 case CoverListMode.Chart:
                     var collection = _currentCollection;
                     collection.Move(delta);
+                    var originPos = desiredListPos;
                     //desiredListPos = collection.Index;
                     desiredListPos += delta;
+                    if(originPos != desiredListPos)
+                    {
+                        _isNeedPreload = true;
+                        _preloadCooldownTimer = 0.5f;
+                    }
                     break;
             }
             SlideListInternal(desiredListPos);
@@ -381,33 +390,40 @@ namespace MajdataPlay.List
                     FavoriteAdder.SetSong(songinfo);
                     _currentCollection.Index = desiredListPos;
                     SongStorage.WorkingCollection.Index = desiredListPos;
-                    PreloadSongDetail();
                     break;
             }
         }
-        void PreloadSongDetail()
+        void Update()
         {
-            for (int i = 0; i < _currentCollection.Count; i++)
+            if(!_isNeedPreload)
+            {
+                return;
+            }
+            else if(_preloadCooldownTimer > 0f)
+            {
+                _preloadCooldownTimer -= MajTimeline.DeltaTime;
+                return;
+            }
+            var bindings = _songDetailBindings.Span;
+            for (int i = 0; i < bindings.Length; i++)
             {
                 var distance = i - listPosReal;
                 if (Mathf.Abs(distance) <= 10)
                 {
-                    if (_currentCollection[i] is null)
-                        continue;
-                    var preloadTask = _currentCollection[i].PreloadAsync(token: _listManager.CancellationToken);
-                    if(!preloadTask.AsValueTask().IsCompleted)
-                    {
-                        ListManager.AllBackgroundTasks.Add(preloadTask);
-                    }
+                    var binding = bindings[i];
+                    binding.PreloadAsync();
                 }
             }
+            _isNeedPreload = false;
         }
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             var delta = (desiredListPos - listPosReal) ;
             listPosReal += Mathf.Clamp(delta* turnSpeed, -1f, 1f);
             if (Mathf.Abs(delta) < 0.01f || DisableAnimation || Mathf.Abs(delta) >3)
+            {
                 listPosReal = desiredListPos;
+            }
             
             switch(Mode)
             {
@@ -565,11 +581,27 @@ namespace MajdataPlay.List
         {
             public ISongDetail SongDetail { get; set; }
             public SongCoverSmallDisplayer? Displayer { get; set; }
+            public ValueTask? PreloadTask { get; set; }
+
 
             public SongDetailBinding(ISongDetail songDetail, SongCoverSmallDisplayer? displayer)
             {
                 SongDetail = songDetail;
                 Displayer = displayer;
+                PreloadTask = null;
+            }
+            public void PreloadAsync()
+            {
+                if(PreloadTask is ValueTask task)
+                {
+                    if(!task.IsCompleted || task.IsCompletedSuccessfully)
+                    {
+                        return;
+                    }
+                }
+                var preloadTask = SongDetail.PreloadAsync();
+                ListManager.AllBackgroundTasks.Add(preloadTask);
+                PreloadTask = preloadTask;
             }
         }
         struct SongCollectionBinding
