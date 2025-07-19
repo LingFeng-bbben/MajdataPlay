@@ -43,12 +43,21 @@ namespace MajdataPlay
                 foreach (var (i, state) in InputManager.TouchPanelRawData.WithIndex())
                 {
                     if (i == 34)
+                    {
                         continue;
+                    }
 #if UNITY_EDITOR
                     sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.4f) : new Color(0, 0, 0, 0.1f);
 #else
                     sensorRenderers[i].Color = state ? new Color(0, 0, 0, 0.3f) : new Color(0, 0, 0, 0f);
 #endif
+                }
+            }
+            else
+            {
+                foreach(var renderer in _sensorRenderers.Span)
+                {
+                    renderer.Color = new Color(0, 0, 0, 0f);
                 }
             }
         }
