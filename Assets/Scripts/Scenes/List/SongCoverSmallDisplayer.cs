@@ -91,6 +91,7 @@ namespace MajdataPlay.List
         {
             _loading.SetActive(true);
             var cover = await _boundSong.GetCoverAsync(true,token: token);
+            await UniTask.SwitchToMainThread();
             token.ThrowIfCancellationRequested();
             _songCover.sprite = cover;
             _loading.SetActive(false);

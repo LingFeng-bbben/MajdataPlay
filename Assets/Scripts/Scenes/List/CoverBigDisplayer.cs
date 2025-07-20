@@ -80,7 +80,9 @@ namespace MajdataPlay.List
         public void SetSongDetail(ISongDetail detail)
         {
             if(_cts is not null)
+            {
                 _cts.Cancel();
+            }
             _cts = new();
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
             _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: _cts.Token).Forget();
@@ -98,6 +100,7 @@ namespace MajdataPlay.List
             _loadingObj.SetActive(true);
             _cover.sprite = SpriteLoader.EmptySprite;
             var cover = await detail.GetCoverAsync(true, token: ct);
+            await UniTask.SwitchToMainThread();
             ct.ThrowIfCancellationRequested();
             _cover.sprite = cover;
             _loadingObj.SetActive(false);

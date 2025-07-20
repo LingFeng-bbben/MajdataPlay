@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -45,6 +46,8 @@ namespace MajdataPlay.Title
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             MajInstances.AudioManager.PlaySFX("MajdataPlay.wav");
             MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
+
+
 
             echoText.text = $"{Localization.GetLocalizedText("Loading Score Storage")}...";
             await UniTask.DelayFrame(9);

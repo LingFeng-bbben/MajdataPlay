@@ -391,6 +391,7 @@ namespace MajdataPlay.Game
             }
             catch (EmptyChartException)
             {
+                await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("Empty Chart");
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
@@ -400,6 +401,7 @@ namespace MajdataPlay.Game
             }
             catch (OBSRecorderException)
             {
+                await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
                 var s = Localization.GetLocalizedText("OBSError");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
@@ -408,18 +410,21 @@ namespace MajdataPlay.Game
             }
             catch(InvalidSimaiMarkupException syntaxE)
             {
+                await UniTask.SwitchToMainThread();
                 MajInstances.SceneSwitcher.SetLoadingText($"{"Invalid syntax".i18n()}\n(at L{syntaxE.Line}:C{syntaxE.Column}) \"{syntaxE.Content}\"\n{syntaxE.Message}", Color.red);
                 MajDebug.LogError(syntaxE);
                 return;
             }
             catch(HttpTransmitException httpEx)
             {
+                await UniTask.SwitchToMainThread();
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
                 MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
+                await UniTask.SwitchToMainThread();
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
                 MajDebug.LogError(audioEx);
                 return;
@@ -436,6 +441,7 @@ namespace MajdataPlay.Game
             }
             catch(Exception e)
             {
+                await UniTask.SwitchToMainThread();
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
                 MajDebug.LogError(e);
                 throw;
@@ -484,76 +490,70 @@ namespace MajdataPlay.Game
                     return;
                 chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
             }
-            try
+            MajInstances.SceneSwitcher.SetLoadingText($"{"Deserialization".i18n()}...");
+
+            _simaiFile = await _songDetail.GetMaidataAsync(true);
+            var levelIndex = (int)_gameInfo.CurrentLevel;
+            var maidata = _simaiFile.RawCharts[levelIndex];
+
+            if (string.IsNullOrEmpty(maidata))
             {
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Deserialization")}...");
+                throw new EmptyChartException();
+            }
 
-                _simaiFile = await _songDetail.GetMaidataAsync(true);
-                var levelIndex = (int)_gameInfo.CurrentLevel;
-                var maidata = _simaiFile.RawCharts[levelIndex];
+            ChartMirror(ref maidata);
+            var simaiParser = SimaiParser.Shared;
+            _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
 
-                if (string.IsNullOrEmpty(maidata))
+            if (IsPracticeMode)
+            {
+                if (_gameInfo.TimeRange is Range<double> timeRange)
                 {
-                    throw new EmptyChartException();
+                    var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
+                    _chart.Clamp(range);
                 }
-
-                ChartMirror(ref maidata);
-                var simaiParser = SimaiParser.Shared;
-                _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
-
-                if (IsPracticeMode)
+                else if (_gameInfo.ComboRange is Range<long> comboRange)
                 {
-                    if (_gameInfo.TimeRange is Range<double> timeRange)
+                    _chart.Clamp(comboRange);
+                    if (_chart.NoteTimings.Length != 0)
                     {
-                        var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
-                        _chart.Clamp(range);
-                    }
-                    else if (_gameInfo.ComboRange is Range<long> comboRange)
-                    {
-                        _chart.Clamp(comboRange);
-                        if (_chart.NoteTimings.Length != 0)
-                        {
-                            var startAt = _chart.NoteTimings[0].Timing;
-                            startAt = Math.Max(startAt - 3, 0);
+                        var startAt = _chart.NoteTimings[0].Timing;
+                        startAt = Math.Max(startAt - 3, 0);
 
-                            _audioTrackStartAt = (float)startAt;
-                        }
+                        _audioTrackStartAt = (float)startAt;
                     }
                 }
-                if (ModInfo.PlaybackSpeed != 1)
-                {
-                    _chart.Scale(PlaybackSpeed);
-                }
-                if (ModInfo.AllBreak)
-                {
-                    _chart.ConvertToBreak();
-                }
-                if (ModInfo.AllEx)
-                {
-                    _chart.ConvertToEx();
-                }
-                if (ModInfo.AllTouch)
-                {
-                    _chart.ConvertToTouch();
-                }
-                if (_chart.IsEmpty)
-                {
-                    throw new EmptyChartException();
-                }
-
-                GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
-                var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
-                var countnum = 4;
-                if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
-                {
-                    countnum = 4;
-                }
-                _generateAnswerSFXTask = _noteAudioManager.GenerateAnswerSFX(_chart, IsPracticeMode, countnum);
             }
-            finally
+            if (ModInfo.PlaybackSpeed != 1)
             {
-                await UniTask.Yield();
+                _chart.Scale(PlaybackSpeed);
             }
+            if (ModInfo.AllBreak)
+            {
+                _chart.ConvertToBreak();
+            }
+            if (ModInfo.AllEx)
+            {
+                _chart.ConvertToEx();
+            }
+            if (ModInfo.AllTouch)
+            {
+                _chart.ConvertToTouch();
+            }
+            if (_chart.IsEmpty)
+            {
+                throw new EmptyChartException();
+            }
+            await UniTask.SwitchToMainThread();
+            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
+            await UniTask.SwitchToThreadPool();
+            var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
+            var countnum = 4;
+            if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
+            {
+                countnum = 4;
+            }
+            _generateAnswerSFXTask = _noteAudioManager.GenerateAnswerSFX(_chart, IsPracticeMode, countnum);
         }
 
         /// <summary>
@@ -570,11 +570,15 @@ namespace MajdataPlay.Game
                 var videoPath = await _songDetail.GetVideoPathAsync();
                 if (!string.IsNullOrEmpty(videoPath))
                 {
-                    await _bgManager.SetBackgroundMovie(videoPath, await _songDetail.GetCoverAsync(false));
+                    var cover = await _songDetail.GetCoverAsync(false);
+                    await UniTask.SwitchToMainThread();
+                    await _bgManager.SetBackgroundMovieAsync(videoPath, cover);
                 }
                 else
                 {
-                    _bgManager.SetBackgroundPic(await _songDetail.GetCoverAsync(false));
+                    var cover = await _songDetail.GetCoverAsync(false);
+                    await UniTask.SwitchToMainThread();
+                    _bgManager.SetBackgroundPic(cover);
                 }        
             }
 
@@ -627,6 +631,7 @@ namespace MajdataPlay.Game
             {
                 return;
             }
+            await UniTask.SwitchToMainThread();
             switch (ModInfo.NoteMask)
             {
                 case "Inner":

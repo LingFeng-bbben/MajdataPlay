@@ -242,7 +242,7 @@ namespace MajdataPlay.Game
             _pictureCover.color = new Color(0f, 0f, 0f, dim);
         }
 
-        public async UniTask SetBackgroundMovie(string path,Sprite? fallback)
+        public async UniTask SetBackgroundMovieAsync(string path,Sprite? fallback)
         {
             if (_mediaPlayer is null)
             {

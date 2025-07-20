@@ -124,7 +124,7 @@ namespace MajdataPlay.View
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
-                _bgManager.SetBackgroundMovie(_videoPath, _bgCover).AsTask().Wait();
+                _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover).AsTask().Wait();
             }
             else if (_bgCover is not null)
             {
@@ -388,6 +388,7 @@ namespace MajdataPlay.View
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
                 await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
+                await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
@@ -409,7 +410,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovie(_videoPath, _bgCover);
+                    await _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);
