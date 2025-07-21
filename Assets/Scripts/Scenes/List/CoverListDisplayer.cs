@@ -608,7 +608,10 @@ namespace MajdataPlay.List
                     }
                 }
                 var preloadTask = SongDetail.PreloadAsync();
-                ListManager.AllBackgroundTasks.Add(preloadTask);
+                if(!preloadTask.Status.IsCompleted())
+                {
+                    ListManager.AllBackgroundTasks.Add(preloadTask);
+                }
                 PreloadTask = preloadTask;
             }
         }
