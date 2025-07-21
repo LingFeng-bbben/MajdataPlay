@@ -29,6 +29,7 @@ namespace MajdataPlay.List
         bool _isRefreshed = false;
         ISongDetail _boundSong;
         CancellationTokenSource _cts = new();
+        CoverListDisplayer? _listDisplayer;
 
         protected override void Awake()
         {
@@ -37,6 +38,10 @@ namespace MajdataPlay.List
             {
                 _loading.SetActive(false);
             }
+        }
+        void Start()
+        {
+            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
         }
         public void SetOpacity(float alpha)
         {

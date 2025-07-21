@@ -160,7 +160,9 @@ namespace MajdataPlay.Result
 
         async UniTask LoadCover(ISongDetail song)
         {
-            coverImg.sprite = await song.GetCoverAsync(true);
+            var cover = await song.GetCoverAsync(true);
+            await UniTask.SwitchToMainThread();
+            coverImg.sprite = cover;
         }
 
         async UniTask PlayVoice(double dxacc, ISongDetail song)

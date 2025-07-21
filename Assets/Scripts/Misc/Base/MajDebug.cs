@@ -53,7 +53,9 @@ namespace MajdataPlay
 #if UNITY_EDITOR || DEBUG
             _unityLogger.Log(logLevel, message);    
             if(obj is not Exception)
+            {
                 log.StackTrace = GetStackTrack();
+            }
 #endif
             _logQueue.Enqueue(log);
         }

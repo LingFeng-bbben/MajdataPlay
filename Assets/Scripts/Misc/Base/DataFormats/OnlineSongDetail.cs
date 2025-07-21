@@ -196,6 +196,7 @@ namespace MajdataPlay
             {
                 return;
             }
+            await UniTask.SwitchToThreadPool();
             if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
             {
                 return;
@@ -207,6 +208,10 @@ namespace MajdataPlay
         {
             try
             {
+                if (_videoPath is not null)
+                {
+                    return _videoPath;
+                }
                 await UniTask.SwitchToThreadPool();
                 var waiting4LockTask = _videoPathLock.LockAsync(token);
                 await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
@@ -315,6 +320,10 @@ namespace MajdataPlay
         {
             try
             {
+                if (_cover is not null)
+                {
+                    return _cover;
+                }
                 await UniTask.SwitchToThreadPool();
                 var waiting4LockTask = _coverLock.LockAsync(token);
                 await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
@@ -376,6 +385,10 @@ namespace MajdataPlay
         {
             try
             {
+                if (_fullSizeCover is not null)
+                {
+                    return _fullSizeCover;
+                }
                 await UniTask.SwitchToThreadPool();
                 var waiting4LockTask = _fullSizeCoverLock.LockAsync(token);
                 await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));

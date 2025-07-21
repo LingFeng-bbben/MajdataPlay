@@ -45,6 +45,7 @@ namespace MajdataPlay.List
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
+        CoverListDisplayer? _listDisplayer;
         private void Awake()
         {
             /* Level = transform.Find("Level").GetComponent<TMP_Text>();
@@ -54,6 +55,10 @@ namespace MajdataPlay.List
              ArchieveRate = transform.Find("Rate").GetComponent<TMP_Text>();*/
             _chartAnalyzer = GameObject.FindObjectOfType<ChartAnalyzer>();
             _loadingObj.SetActive(false);
+        }
+        void Start()
+        {
+            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
         }
         public void SetDifficulty(int i)
         {

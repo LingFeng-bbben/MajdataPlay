@@ -29,6 +29,13 @@ namespace MajdataPlay.List
                 return _currentCollection;
             }
         }
+        public float PreloadCooldownTimer
+        {
+            get
+            {
+                return _preloadCooldownTimer;
+            }
+        }
 
         public string soundEffectName;
         public GameObject CoverSmallPrefab;
@@ -250,6 +257,7 @@ namespace MajdataPlay.List
                 desiredListPos = 0;
             }
             listPosReal = desiredListPos;
+            _preloadCooldownTimer = 0f;
             SlideListInternal(desiredListPos);
         }
 
