@@ -362,6 +362,7 @@ namespace MajdataPlay.List
         }
         void EnterGame()
         {
+            _cts.Cancel();
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
             var list = new string[] { "track_start.wav", "track_start_2.wav" };
             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
@@ -381,6 +382,7 @@ namespace MajdataPlay.List
         }
         void EnterPractice()
         {
+            _cts.Cancel();
             var levels = new ChartLevel[]
             {
                 MajInstances.GameManager.SelectedDiff
@@ -403,6 +405,7 @@ namespace MajdataPlay.List
         }
         void EnterDan()
         {
+            _cts.Cancel();
             var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
             var collection = _coverListDisplayer.SelectedCollection;
             if (danInfo is null)

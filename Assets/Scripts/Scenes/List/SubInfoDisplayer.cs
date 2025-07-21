@@ -49,7 +49,10 @@ namespace MajdataPlay.List
             _cts.Cancel();
             CommentBox.SetActive(false);
         }
-
+        void OnDestroy()
+        {
+            _cts.Cancel();
+        }
         async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
         {
             try
@@ -76,11 +79,15 @@ namespace MajdataPlay.List
                     token.ThrowIfCancellationRequested();
                 }
                 CommentBox.SetActive(false);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 MajDebug.LogException(ex);
                 await UniTask.SwitchToMainThread();
-                HideInteraction();
+                if(!token.IsCancellationRequested)
+                {
+                    HideInteraction();
+                }
             }
         }
     }
