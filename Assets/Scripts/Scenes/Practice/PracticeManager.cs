@@ -12,6 +12,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using TMPro;
 using UnityEngine;
@@ -20,6 +21,7 @@ using UnityEngine.UI;
 namespace MajdataPlay.Practice
 {
 #nullable enable
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     public class PracticeManager : MonoBehaviour
     {
         public TextMeshProUGUI startTimeText;
@@ -38,71 +40,66 @@ namespace MajdataPlay.Practice
         private AudioSampleWrap audioTrack = AudioSampleWrap.Empty;
 
         [SerializeField]
-        TextMeshProUGUI _practiceCountText;
+        TextMeshProUGUI _playbackSpeedTitle;
         [SerializeField]
-        TextMeshProUGUI _practiceCountValueText;
+        TextMeshProUGUI _playbackSpeedValue;
 
         private CancellationTokenSource cts = new CancellationTokenSource();
 
-        Ref<float>? _valueRef = null;
-        Ref<float> _startTimeRef = default;
-        Ref<float> _endTimeRef = default;
-
-
         int _practiceCount = 114514;
-        bool _isPressed = false;
-        float _pressTime = 0;
-        float _releaseTime = 0;
-        float _minValue = 0;
-        float _maxValue = 0;
         float _step = 0.2f;
-        float _direction = 1;
+
+        bool _isInited = false;
+        bool _isExited = false;
 
         GameInfo _gameInfo;
         SimaiFile _simaiFile;
+        
+        readonly SwitchStatistic[] _buttonStatistics = new SwitchStatistic[12];
+        readonly SwitchStatistic[] _sensorStatistics = new SwitchStatistic[33];
+
         private void Start()
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
-            _startTimeRef = new Ref<float>(ref startTime);
-            _endTimeRef = new Ref<float>(ref endTime);
-            //_practiceCountText.text = Localization.GetLocalizedText("PracticeCount");
             _gameInfo.PracticeCount = _practiceCount;
-            Load().Forget();
+            InitAsync().Forget();
         }
-        async UniTaskVoid Load()
+        async UniTaskVoid InitAsync()
         {
-            var songinfo = _gameInfo.Charts.FirstOrDefault();
-            var level = _gameInfo.Levels.FirstOrDefault();
-            await songinfo.PreloadAsync();
-            audioTrack = await songinfo.GetAudioTrackAsync();
-            //audioTrack.Speed = MajInstances.GameManager.Setting.Mod.PlaybackSpeed;
-            totalTime = (float)audioTrack.Length.TotalSeconds;
-            await UniTask.SwitchToMainThread();
-
-            _simaiFile = await songinfo.GetMaidataAsync(true);
-            var levelIndex = (int)_gameInfo.CurrentLevel;
-            var maidata = _simaiFile.RawCharts[levelIndex];
-
-            if (string.IsNullOrEmpty(maidata))
+            await using (UniTask.ReturnToMainThread())
             {
-                MajInstances.SceneSwitcher.SwitchScene("List", false);
-            }
+                await UniTask.SwitchToThreadPool();
+                var songinfo = _gameInfo.Charts.FirstOrDefault();
+                var level = _gameInfo.Levels.FirstOrDefault();
+                await songinfo.PreloadAsync();
+                audioTrack = await songinfo.GetAudioTrackAsync();
+                totalTime = (float)audioTrack.Length.TotalSeconds;
+                _simaiFile = await songinfo.GetMaidataAsync(true);
+                var levelIndex = (int)_gameInfo.CurrentLevel;
+                var maidata = _simaiFile.RawCharts[levelIndex];
 
-            var simaiParser = SimaiParser.Shared;
-            var chart = await simaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
+                if (string.IsNullOrEmpty(maidata))
+                {
+                    await UniTask.SwitchToMainThread();
+                    MajInstances.SceneSwitcher.SwitchScene("List", false);
+                    return;
+                }
 
-            await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart,totalTime);
-            await UniTask.SwitchToMainThread();
-            if (_gameInfo.TimeRange is not null)
-            {
-                startTime = (float)_gameInfo.TimeRange.Value.Start;
-                endTime = (float)_gameInfo.TimeRange.Value.End;
+                var simaiParser = SimaiParser.Shared;
+                var chart = await simaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
 
-            }
-            else
-            {
-                startTime = _simaiFile.Offset;
-                endTime = totalTime;
+                await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, totalTime);
+                if (_gameInfo.TimeRange is not null)
+                {
+                    startTime = (float)_gameInfo.TimeRange.Value.Start;
+                    endTime = (float)_gameInfo.TimeRange.Value.End;
+
+                }
+                else
+                {
+                    startTime = _simaiFile.Offset;
+                    endTime = totalTime;
+                }
             }
             var bgmSFX = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if(bgmSFX.IsPlaying)
@@ -112,161 +109,250 @@ namespace MajdataPlay.Practice
             audioTrack.Play();
             audioTrack.CurrentSec = startTime;
             audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
-            InputManager.BindAnyArea(OnAreaDown);
             LedRing.SetAllLight(Color.white);
             LedRing.SetButtonLight(Color.green, 3);
             LedRing.SetButtonLight(Color.red, 4);
             MajInstances.SceneSwitcher.FadeOut();
+            _isInited = true;
         }
-
-
-        private void OnAreaDown(object sender, InputEventArgs e)
+        void ButtonStatisticUpdate()
         {
-            if (e.IsUp)
+            ReadOnlySpan<ButtonZone> zones = stackalloc ButtonZone[]
             {
-                _valueRef = null;
-                _isPressed = false;
+                ButtonZone.A1,
+                ButtonZone.A2,
+                ButtonZone.A3,
+                ButtonZone.A4,
+                ButtonZone.A5,
+                ButtonZone.A6,
+                ButtonZone.A7,
+                ButtonZone.A8,
+                ButtonZone.Test,
+                ButtonZone.P1,
+                ButtonZone.Service,
+                ButtonZone.P2,
+            };
+            for (var i = 0; i < zones.Length; i++)
+            {
+                ref readonly var zone = ref zones[i];
+                ref var btnStatistic = ref _buttonStatistics[i];
+                var isPressed = InputManager.CheckButtonStatusInThisFrame(zone, SwitchStatus.On);
+
+                btnStatistic.IsPressed = isPressed;
+                btnStatistic.IsReleased = InputManager.CheckButtonStatusInPreviousFrame(zone, SwitchStatus.On) &&
+                                          InputManager.CheckButtonStatusInThisFrame(zone, SwitchStatus.Off);
+                btnStatistic.IsClicked = InputManager.IsButtonClickedInThisFrame(zone);
+                if (btnStatistic.IsClicked)
+                {
+                    btnStatistic.IsClickEventUsed = false;
+                }
+                if (isPressed)
+                {
+                    btnStatistic.PressTime += MajTimeline.DeltaTime;
+                }
+                else
+                {
+                    btnStatistic.PressTime = 0;
+                }
+            }
+        }
+        void SensorStatisticUpdate()
+        {
+            ReadOnlySpan<SensorArea> areas = stackalloc SensorArea[]
+            {
+                SensorArea.A1,
+                SensorArea.A2,
+                SensorArea.A3,
+                SensorArea.A4,
+                SensorArea.A5,
+                SensorArea.A6,
+                SensorArea.A7,
+                SensorArea.A8,
+                SensorArea.B1,
+                SensorArea.B2,
+                SensorArea.B3,
+                SensorArea.B4,
+                SensorArea.B5,
+                SensorArea.B6,
+                SensorArea.B7,
+                SensorArea.B8,
+                SensorArea.C,
+                SensorArea.D1,
+                SensorArea.D2,
+                SensorArea.D3,
+                SensorArea.D4,
+                SensorArea.D5,
+                SensorArea.D6,
+                SensorArea.D7,
+                SensorArea.D8,
+                SensorArea.E1,
+                SensorArea.E2,
+                SensorArea.E3,
+                SensorArea.E4,
+                SensorArea.E5,
+                SensorArea.E6,
+                SensorArea.E7,
+                SensorArea.E8,
+            };
+
+            for (var i = 0; i < areas.Length; i++)
+            {
+                ref readonly var area = ref areas[i];
+                ref var sensorStatistic = ref _sensorStatistics[i];
+                var isPressed = InputManager.CheckSensorStatusInThisFrame(area, SwitchStatus.On);
+
+                sensorStatistic.IsPressed = isPressed;
+                sensorStatistic.IsReleased = InputManager.CheckSensorStatusInPreviousFrame(area, SwitchStatus.On) &&
+                                          InputManager.CheckSensorStatusInThisFrame(area, SwitchStatus.Off);
+                sensorStatistic.IsClicked = InputManager.IsSensorClickedInThisFrame(area);
+
+                if (sensorStatistic.IsClicked)
+                {
+                    sensorStatistic.IsClickEventUsed = false;
+                }
+                if (isPressed)
+                {
+                    sensorStatistic.PressTime += MajTimeline.DeltaTime;
+                }
+                else
+                {
+                    sensorStatistic.PressTime = 0;
+                }
+            }
+        }
+        void ButtonCheck()
+        {
+            ref var btnA4Statistic = ref _buttonStatistics[(int)ButtonZone.A4];
+            ref var btnA5Statistic = ref _buttonStatistics[(int)ButtonZone.A5];
+
+            if(btnA4Statistic.IsClicked && !btnA4Statistic.IsClickEventUsed)
+            {
+                btnA4Statistic.IsClickEventUsed = true;
+                _isExited = true;
+                _gameInfo.TimeRange = new Range<double>(startTime, endTime);
+                MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                throw new OperationCanceledException();
+            }
+            else if(btnA5Statistic.IsClicked && !btnA5Statistic.IsClickEventUsed)
+            {
+                btnA5Statistic.IsClickEventUsed = true;
+                _isExited = true;
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+                throw new OperationCanceledException();
+            }
+        }
+        void SensorCheck()
+        {
+            // Start Time "<"
+            ref var e6Statistic = ref _sensorStatistics[(int)SensorArea.E6];
+            // Start Time ">"
+            ref var b5Statistic = ref _sensorStatistics[(int)SensorArea.B5];
+            // End Time "<"
+            ref var b4Statistic = ref _sensorStatistics[(int)SensorArea.B4];
+            // End Time ">"
+            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.E4];
+            
+
+            if(e6Statistic.IsClicked && !e6Statistic.IsClickEventUsed)
+            {
+                e6Statistic.IsClickEventUsed = true;
+                startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
+                audioTrack.CurrentSec = startTime;
                 return;
             }
-            if (e.IsButton)
+            else if(b5Statistic.IsClicked && !b5Statistic.IsClickEventUsed)
             {
-                switch (e.BZone)
-                {
-                    case ButtonZone.A4:
-                        _gameInfo.TimeRange = new Range<double>(startTime, endTime);
-                        MajInstances.SceneSwitcher.SwitchScene("Game", false);
-                        break;
-                    case ButtonZone.A5:
-                        MajInstances.SceneSwitcher.SwitchScene("List", false);
-                        break;
-                }
+                b5Statistic.IsClickEventUsed = true;
+                startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
+                audioTrack.CurrentSec = startTime;
                 return;
+            }
+            else if (b4Statistic.IsClicked && !b4Statistic.IsClickEventUsed)
+            {
+                b4Statistic.IsClickEventUsed = true;
+                endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
+                audioTrack.CurrentSec = endTime;
+                return;
+            }
+            else if (e4Statistic.IsClicked && !e4Statistic.IsClickEventUsed)
+            {
+                e4Statistic.IsClickEventUsed = true;
+                endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
+                audioTrack.CurrentSec = endTime;
+                return;
+            }
+            var pressTime = Mathf.Max(Mathf.Max(Mathf.Max(e6Statistic.PressTime, b5Statistic.PressTime), b4Statistic.PressTime), e4Statistic.PressTime);
+            if(pressTime < 0.5f)
+            {
+                return;
+            }
+            var ratio = pressTime switch
+            {
+                > 4 => 128,
+                > 3 => 64,
+                > 2 => 32,
+                > 1 => 16,
+                > 0.5f => 8,
+                _ => 0
+            };
+            ref var value = ref Unsafe.NullRef<float>();
+            var direction = 0;
+            var minValue = 0f;
+            var maxValue = 0f;
+            if (e6Statistic.IsPressed)
+            {
+                value = ref startTime;
+                direction = -1;
+                maxValue = endTime;
+                minValue = 0;
+            }
+            else if(b5Statistic.IsPressed)
+            {
+                value = ref startTime;
+                direction = 1;
+                maxValue = endTime;
+                minValue = 0;
+            }
+            else if(b4Statistic.IsPressed)
+            {
+                value = ref endTime;
+                direction = -1;
+                maxValue = totalTime;
+                minValue = startTime;
+            }
+            else if(e4Statistic.IsPressed)
+            {
+                value = ref endTime;
+                direction = 1;
+                maxValue = totalTime;
+                minValue = startTime;
             }
             else
             {
-                switch (e.SArea)
-                {
-                    /*                case SensorType.B1:
-                                        _practiveCount--;
-                                        _practiveCount = _practiveCount.Clamp(1, 99);
-                                        _practiveCountValueText.SetText(_practiveCount);
-                                        _gameInfo.PracticeCount = _practiveCount;
-                                        break;
-                                    case SensorType.E2:
-                                        _practiveCount++;
-                                        _practiveCount = _practiveCount.Clamp(1, 99);
-                                        _practiveCountValueText.SetText(_practiveCount);
-                                        _gameInfo.PracticeCount = _practiveCount;
-                                        break;*/
-                    case SensorArea.E6:
-                        startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
-                        audioTrack.CurrentSec = startTime;
-                        _isPressed = true;
-                        _valueRef = _startTimeRef;
-                        _direction = -1;
-                        _maxValue = endTime;
-                        _minValue = 0;
-                        break;
-                    case SensorArea.B5:
-                        startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
-                        audioTrack.CurrentSec = startTime;
-                        _isPressed = true;
-                        _valueRef = _startTimeRef;
-                        _direction = 1;
-                        _maxValue = endTime;
-                        _minValue = 0;
-                        break;
-                    case SensorArea.B4:
-                        endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
-                        audioTrack.CurrentSec = endTime;
-                        _isPressed = true;
-                        _valueRef = _endTimeRef;
-                        _direction = -1;
-                        _maxValue = totalTime;
-                        _minValue = startTime;
-                        break;
-                    case SensorArea.E4:
-                        endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
-                        audioTrack.CurrentSec = endTime;
-                        _isPressed = true;
-                        _valueRef = _endTimeRef;
-                        _direction = 1;
-                        _maxValue = totalTime;
-                        _minValue = startTime;
-                        break;
-                }
+                return;
             }
-        }
+            value = (value + _step * MajTimeline.DeltaTime * ratio * direction).Clamp(minValue, maxValue);
 
+            audioTrack.CurrentSec = value;
+            audioTrack.Play();
+        }
         void Update()
         {
-            if (audioTrack is null)
+            if (!_isInited || _isExited || audioTrack is null)
             {
                 return;
             }
             UpdateSBTextMeshProUGUI();
+            ButtonStatisticUpdate();
+            SensorStatisticUpdate();
+            ButtonCheck();
+            SensorCheck();
 
-            if (_isPressed)
+            var currentSec = audioTrack.CurrentSec;
+
+            if (currentSec > endTime)
             {
-                _releaseTime = 0;
-                if (_valueRef is not Ref<float> valueRef)
-                    return;
-
-                var deltaTime = Time.deltaTime;
-                _pressTime += deltaTime;
-                if (_pressTime <= 0.5f)
-                {
-                    return;
-                }
-
-                var ratio = _pressTime switch
-                {
-                    > 4 => 128,
-                    > 3 => 64,
-                    > 2 => 32,
-                    > 1 => 16,
-                    > 0.5f => 8,
-                    _ => 0
-                };
-                var oldValue = valueRef.Target;
-                var newValue = (oldValue + _step * deltaTime * ratio * _direction).Clamp(_minValue, _maxValue);
-                valueRef.Target = newValue;
-
-                audioTrack.CurrentSec = newValue;
-                audioTrack.Play();
-            }
-            else
-            {
-                _pressTime = 0;
-                if (_releaseTime < 0.5f)
-                {
-                    _releaseTime += Time.deltaTime;
-                    return;
-                }
-                /*            else if(!audioTrack.IsPlaying)
-                            {
-                                //var currentSec = audioTrack.CurrentSec;
-
-                                //if (currentSec > endTime)
-                                //{
-                                //    audioTrack.CurrentSec = startTime;
-                                //}
-                                //else if (currentSec < startTime)
-                                //{
-                                //    audioTrack.CurrentSec = startTime;
-                                //}
-                                audioTrack.CurrentSec = startTime;
-                                audioTrack.Play();
-                            }*/
-                else
-                {
-                    var currentSec = audioTrack.CurrentSec;
-
-                    if (currentSec > endTime)
-                    {
-                        audioTrack.CurrentSec = startTime;
-                    }
-                }
+                audioTrack.CurrentSec = startTime;
             }
         }
         void UpdateSBTextMeshProUGUI()
@@ -294,6 +380,7 @@ namespace MajdataPlay.Practice
             cts?.Cancel();
             audioTrack?.Stop();
             audioTrack = null;
+            _isExited = true;
         }
     }
 }
