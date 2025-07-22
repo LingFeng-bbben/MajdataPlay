@@ -212,30 +212,6 @@ namespace MajdataPlay.Setting
         }
         void Update()
         {
-            if (_pressTime >= 0.4f)
-            {
-                var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
-                if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
-                {
-                    _iterationThrottle += MajTimeline.DeltaTime;
-                }
-                else
-                {
-                    if (_isUp)
-                    {
-                        Up();
-                    }
-                    else
-                    {
-                        Down();
-                    }
-                    _iterationThrottle = 0;
-                }
-            }
-            else if (_isPressed)
-            {
-                _pressTime += MajTimeline.DeltaTime;
-            }
             var currentIndex = Parent.SelectedIndex;
             
 
@@ -246,8 +222,33 @@ namespace MajdataPlay.Setting
                 var isE6OrB5On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
                                  InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On);
 
-                if(_isPressed)
+                if (_pressTime >= 0.4f)
                 {
+                    var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
+                    if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
+                    {
+                        _iterationThrottle += MajTimeline.DeltaTime;
+                    }
+                    else
+                    {
+                        if (_isUp)
+                        {
+                            Up();
+                        }
+                        else
+                        {
+                            Down();
+                        }
+                        _iterationThrottle = 0;
+                    }
+                }
+
+                if (_isPressed)
+                {
+                    if(_pressTime < 0.4f)
+                    {
+                        _pressTime += MajTimeline.DeltaTime;
+                    }
                     if(isE4OrB4On)
                     {
                         _isUp = true;
