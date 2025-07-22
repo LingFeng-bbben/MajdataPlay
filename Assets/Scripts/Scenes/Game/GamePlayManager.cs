@@ -452,7 +452,9 @@ namespace MajdataPlay.Game
         {
             var audioSample = await _songDetail.GetAudioTrackAsync();
             if(audioSample is null || audioSample.IsEmpty)
+            {
                 throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
+            }
             _audioSample = audioSample;
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
@@ -606,14 +608,18 @@ namespace MajdataPlay.Game
             _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
-            var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart).AsTask();
+            var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token).AsTask();
 
             while (!loaderTask.IsCompleted)
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Progress * 100:F2}%");
                 await UniTask.Yield();
             }
-            if(loaderTask.IsFaulted)
+            if(loaderTask.IsCanceled)
+            {
+                return;
+            }
+            else if(loaderTask.IsFaulted)
             {
                 var e = loaderTask.Exception.InnerException;
 
