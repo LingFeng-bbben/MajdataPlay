@@ -467,6 +467,7 @@ namespace MajdataPlay.Game
             _audioSample = audioSample;
             _audioSample.SetVolume(_setting.Audio.Volume.BGM);
             _audioSample.Speed = PlaybackSpeed;
+            _audioSample.IsLoop = false;
             if(IsPracticeMode)
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)

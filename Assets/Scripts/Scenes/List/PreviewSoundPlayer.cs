@@ -69,6 +69,7 @@ namespace MajdataPlay.List
                 if (previewSample is not null && !previewSample.IsEmpty)
                 {
                     previewSample.Pause();
+                    previewSample.IsLoop = false;
                 }
             }
         }
