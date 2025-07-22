@@ -21,6 +21,7 @@ using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
 using MychIO;
+using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace MajdataPlay.Game
 {
@@ -343,6 +344,7 @@ namespace MajdataPlay.Game
         async UniTaskVoid InitGame()
         {
             State = GamePlayStatus.Loading;
+            var token = _cts.Token;
             try
             {
                 if (_songDetail.IsOnline)
@@ -350,43 +352,50 @@ namespace MajdataPlay.Game
                     var progress = new NetProgress();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
-                    var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token).AsValueTask();
-                    while (!task1.IsCompleted)
+                    var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
+                    while (!task1.Status.IsCompleted())
                     {
-                        await UniTask.Yield();
+                        await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
                     }
                     progress.Reset();
+                    token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
-                    var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token).AsValueTask();
-                    while (!task2.IsCompleted)
+                    var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
+                    while (!task2.Status.IsCompleted())
                     {
-                        await UniTask.Yield();
+                        await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
                     }
                     progress.Reset();
+                    token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
-                    var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token).AsValueTask();
-                    while (!task3.IsCompleted)
+                    var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
+                    while (!task3.Status.IsCompleted())
                     {
-                        await UniTask.Yield();
+                        await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
                     }
                     progress.Reset();
+                    token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
-                    var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token).AsValueTask();
-                    while (!task4.IsCompleted)
+                    var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
+                    while (!task4.Status.IsCompleted())
                     {
-                        await UniTask.Yield();
+                        await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");
                     }
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
                 await LoadAudioTrack();
+                token.ThrowIfCancellationRequested();
                 await InitBackground();
+                token.ThrowIfCancellationRequested();
                 await ParseChart();
+                token.ThrowIfCancellationRequested();
                 await LoadNotes();
+                token.ThrowIfCancellationRequested();
                 await PrepareToPlay();
             }
             catch (EmptyChartException)
@@ -608,23 +617,24 @@ namespace MajdataPlay.Game
             _noteLoader.ChartRotation = _chartRotation;
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
-            var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token).AsTask();
+            var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token);
 
-            while (!loaderTask.IsCompleted)
+            while (!loaderTask.Status.IsCompleted())
             {
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Progress * 100:F2}%");
                 await UniTask.Yield();
             }
-            if(loaderTask.IsCanceled)
+            if(loaderTask.Status.IsCanceled())
             {
                 return;
             }
-            else if(loaderTask.IsFaulted)
+            else if(loaderTask.Status.IsFaulted())
             {
-                var e = loaderTask.Exception.InnerException;
+                var task = loaderTask.AsTask();
+                var e = task.Exception.InnerException;
 
                 MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%", Color.red);
-                MajDebug.LogException(loaderTask.Exception);
+                MajDebug.LogException(task.Exception);
                 StopAllCoroutines();
                 throw e;
             }
@@ -672,31 +682,35 @@ namespace MajdataPlay.Game
             _noteManager.InitializeUpdater();
             while (!_generateAnswerSFXTask.IsCompleted)
             {
+                token.ThrowIfCancellationRequested();
                 await UniTask.Yield();
             }
-            var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync().AsValueTask();
-            while (!allBackgroundTasks.IsCompleted)
+            var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync();
+            while (!allBackgroundTasks.Status.IsCompleted())
             {
+                token.ThrowIfCancellationRequested();
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
                 await UniTask.Yield();
             }
-            
+            token.ThrowIfCancellationRequested();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var wait4Recorder = RecordHelper.StartRecordAsync($"{_songDetail.Title}_{_songDetail.Designers[(int)_gameInfo.CurrentLevel]}");
             while (!wait4Recorder.IsCompleted)
             {
+                token.ThrowIfCancellationRequested();
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
-            if(wait4Recorder.IsFaulted)
+            token.ThrowIfCancellationRequested();
+            if (wait4Recorder.IsFaulted)
             {
                 throw wait4Recorder.Exception.GetBaseException();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
-            await UniTask.Delay(1000);
+            await UniTask.Delay(1000, cancellationToken: token);
             MajInstances.SceneSwitcher.FadeOut();
-            await UniTask.Delay(100); //wait the animation
+            await UniTask.Delay(100, cancellationToken: token); //wait the animation
 
             MajInstances.GameManager.DisableGC();
 
