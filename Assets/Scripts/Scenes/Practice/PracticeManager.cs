@@ -34,20 +34,22 @@ namespace MajdataPlay.Practice
 
         const string TIME_STRING = "{0}:{1:00}.{2:000}";
 
-        private float startTime = 0;
-        private float endTime = 0;
-        private float totalTime = 0;
-        private AudioSampleWrap audioTrack = AudioSampleWrap.Empty;
+        private float _startTime = 0;
+        private float _endTime = 0;
+        private float _totalTime = 0;
+        float _iterationThrottle = 0f;
+        private AudioSampleWrap _audioTrack = AudioSampleWrap.Empty;
 
         [SerializeField]
         TextMeshProUGUI _playbackSpeedTitle;
         [SerializeField]
-        TextMeshProUGUI _playbackSpeedValue;
+        TextMeshPro _playbackSpeedValue;
 
         private CancellationTokenSource cts = new CancellationTokenSource();
 
         int _practiceCount = 114514;
         float _step = 0.2f;
+        float _playbackSpeed = 1f;
 
         bool _isInited = false;
         bool _isExited = false;
@@ -62,6 +64,9 @@ namespace MajdataPlay.Practice
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameInfo.PracticeCount = _practiceCount;
+            _playbackSpeed = MajEnv.UserSettings.Mod.PlaybackSpeed;
+            _playbackSpeedTitle.text = "PlaybackSpeed_MAJSETTING_TITLE".i18n();
+            _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             InitAsync().Forget();
         }
         async UniTaskVoid InitAsync()
@@ -72,8 +77,8 @@ namespace MajdataPlay.Practice
                 var songinfo = _gameInfo.Charts.FirstOrDefault();
                 var level = _gameInfo.Levels.FirstOrDefault();
                 await songinfo.PreloadAsync();
-                audioTrack = await songinfo.GetAudioTrackAsync();
-                totalTime = (float)audioTrack.Length.TotalSeconds;
+                _audioTrack = await songinfo.GetAudioTrackAsync();
+                _totalTime = (float)_audioTrack.Length.TotalSeconds;
                 _simaiFile = await songinfo.GetMaidataAsync(true);
                 var levelIndex = (int)_gameInfo.CurrentLevel;
                 var maidata = _simaiFile.RawCharts[levelIndex];
@@ -88,17 +93,17 @@ namespace MajdataPlay.Practice
                 var simaiParser = SimaiParser.Shared;
                 var chart = await simaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
 
-                await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, totalTime);
+                await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, _totalTime);
                 if (_gameInfo.TimeRange is not null)
                 {
-                    startTime = (float)_gameInfo.TimeRange.Value.Start;
-                    endTime = (float)_gameInfo.TimeRange.Value.End;
+                    _startTime = (float)_gameInfo.TimeRange.Value.Start;
+                    _endTime = (float)_gameInfo.TimeRange.Value.End;
 
                 }
                 else
                 {
-                    startTime = _simaiFile.Offset;
-                    endTime = totalTime;
+                    _startTime = _simaiFile.Offset;
+                    _endTime = _totalTime;
                 }
             }
             var bgmSFX = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
@@ -106,9 +111,9 @@ namespace MajdataPlay.Practice
             {
                 bgmSFX.Stop();
             }
-            audioTrack.Play();
-            audioTrack.CurrentSec = startTime;
-            audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
+            _audioTrack.Play();
+            _audioTrack.CurrentSec = _startTime;
+            _audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
             LedRing.SetAllLight(Color.white);
             LedRing.SetButtonLight(Color.green, 3);
             LedRing.SetButtonLight(Color.red, 4);
@@ -229,7 +234,8 @@ namespace MajdataPlay.Practice
             {
                 btnA4Statistic.IsClickEventUsed = true;
                 _isExited = true;
-                _gameInfo.TimeRange = new Range<double>(startTime, endTime);
+                _gameInfo.TimeRange = new Range<double>(_startTime, _endTime);
+                MajEnv.UserSettings.Mod.PlaybackSpeed = _playbackSpeed;
                 MajInstances.SceneSwitcher.SwitchScene("Game", false);
                 throw new OperationCanceledException();
             }
@@ -251,35 +257,96 @@ namespace MajdataPlay.Practice
             ref var b4Statistic = ref _sensorStatistics[(int)SensorArea.B4];
             // End Time ">"
             ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.E4];
-            
+            //Playback Speed "<"
+            ref var e8Statistic = ref _sensorStatistics[(int)SensorArea.E8];
+            ref var b7Statistic = ref _sensorStatistics[(int)SensorArea.B7];
+            //Playback Speed ">"
+            ref var e2Statistic = ref _sensorStatistics[(int)SensorArea.E2];
+            ref var b2Statistic = ref _sensorStatistics[(int)SensorArea.B2];
 
             if(e6Statistic.IsClicked && !e6Statistic.IsClickEventUsed)
             {
                 e6Statistic.IsClickEventUsed = true;
-                startTime = Mathf.Clamp(startTime - 0.2f, 0, totalTime);
-                audioTrack.CurrentSec = startTime;
-                return;
+                _startTime = Mathf.Clamp(_startTime - 0.2f, 0, _totalTime);
+                _audioTrack.CurrentSec = _startTime;
             }
             else if(b5Statistic.IsClicked && !b5Statistic.IsClickEventUsed)
             {
                 b5Statistic.IsClickEventUsed = true;
-                startTime = Mathf.Clamp(startTime + 0.2f, 0, totalTime);
-                audioTrack.CurrentSec = startTime;
-                return;
+                _startTime = Mathf.Clamp(_startTime + 0.2f, 0, _totalTime);
+                _audioTrack.CurrentSec = _startTime;
             }
             else if (b4Statistic.IsClicked && !b4Statistic.IsClickEventUsed)
             {
                 b4Statistic.IsClickEventUsed = true;
-                endTime = Mathf.Clamp(endTime - 0.2f, 0, totalTime);
-                audioTrack.CurrentSec = endTime;
-                return;
+                _endTime = Mathf.Clamp(_endTime - 0.2f, 0, _totalTime);
+                _audioTrack.CurrentSec = _endTime;
             }
             else if (e4Statistic.IsClicked && !e4Statistic.IsClickEventUsed)
             {
                 e4Statistic.IsClickEventUsed = true;
-                endTime = Mathf.Clamp(endTime + 0.2f, 0, totalTime);
-                audioTrack.CurrentSec = endTime;
-                return;
+                _endTime = Mathf.Clamp(_endTime + 0.2f, 0, _totalTime);
+                _audioTrack.CurrentSec = _endTime;
+            }
+
+            var needUpdatePBSValue = false;
+            if(e8Statistic.IsClicked && !e8Statistic.IsClickEventUsed)
+            {
+                e8Statistic.IsClickEventUsed = true;
+                _playbackSpeed -= 0.01f;
+                needUpdatePBSValue = true;
+            }
+            else if(b7Statistic.IsClicked && !b7Statistic.IsClickEventUsed)
+            {
+                b7Statistic.IsClickEventUsed = true;
+                _playbackSpeed -= 0.01f;
+                needUpdatePBSValue = true;
+            }
+            else if (e2Statistic.IsClicked && !e2Statistic.IsClickEventUsed)
+            {
+                e2Statistic .IsClickEventUsed = true;
+                _playbackSpeed += 0.01f;
+                needUpdatePBSValue = true;
+            }
+            else if (b2Statistic.IsClicked && !b2Statistic.IsClickEventUsed)
+            {
+                b2Statistic .IsClickEventUsed = true;
+                _playbackSpeed += 0.01f;
+                needUpdatePBSValue = true;
+            }
+            var playbackSpeedPressTime = Mathf.Max(Mathf.Max(Mathf.Max(e8Statistic.PressTime, b7Statistic.PressTime), e2Statistic.PressTime), b2Statistic.PressTime);
+            
+            if(playbackSpeedPressTime >= 0.4f)
+            {
+                var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
+                if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
+                {
+                    _iterationThrottle += MajTimeline.DeltaTime;
+                }
+                else
+                {
+                    var isUp = e2Statistic.IsPressed || b2Statistic.IsPressed;
+                    var isDown = e8Statistic.IsPressed || b7Statistic.IsPressed;
+                    if(isUp)
+                    {
+                        _playbackSpeed += 0.01f;
+                        needUpdatePBSValue = true;
+                    }
+                    else if(isDown)
+                    {
+                        _playbackSpeed -= 0.01f;
+                        needUpdatePBSValue = true;
+                    }
+                }
+            }
+            else
+            {
+                _iterationThrottle = 0;
+            }
+            _playbackSpeed = Mathf.Max(_playbackSpeed , 0.01f);
+            if(needUpdatePBSValue)
+            {
+                _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             }
             var pressTime = Mathf.Max(Mathf.Max(Mathf.Max(e6Statistic.PressTime, b5Statistic.PressTime), b4Statistic.PressTime), e4Statistic.PressTime);
             if(pressTime < 0.5f)
@@ -301,31 +368,31 @@ namespace MajdataPlay.Practice
             var maxValue = 0f;
             if (e6Statistic.IsPressed)
             {
-                value = ref startTime;
+                value = ref _startTime;
                 direction = -1;
-                maxValue = endTime;
+                maxValue = _endTime;
                 minValue = 0;
             }
             else if(b5Statistic.IsPressed)
             {
-                value = ref startTime;
+                value = ref _startTime;
                 direction = 1;
-                maxValue = endTime;
+                maxValue = _endTime;
                 minValue = 0;
             }
             else if(b4Statistic.IsPressed)
             {
-                value = ref endTime;
+                value = ref _endTime;
                 direction = -1;
-                maxValue = totalTime;
-                minValue = startTime;
+                maxValue = _totalTime;
+                minValue = _startTime;
             }
             else if(e4Statistic.IsPressed)
             {
-                value = ref endTime;
+                value = ref _endTime;
                 direction = 1;
-                maxValue = totalTime;
-                minValue = startTime;
+                maxValue = _totalTime;
+                minValue = _startTime;
             }
             else
             {
@@ -333,12 +400,12 @@ namespace MajdataPlay.Practice
             }
             value = (value + _step * MajTimeline.DeltaTime * ratio * direction).Clamp(minValue, maxValue);
 
-            audioTrack.CurrentSec = value;
-            audioTrack.Play();
+            _audioTrack.CurrentSec = value;
+            _audioTrack.Play();
         }
         void Update()
         {
-            if (!_isInited || _isExited || audioTrack is null)
+            if (!_isInited || _isExited || _audioTrack is null)
             {
                 return;
             }
@@ -348,28 +415,28 @@ namespace MajdataPlay.Practice
             ButtonCheck();
             SensorCheck();
 
-            var currentSec = audioTrack.CurrentSec;
+            var currentSec = _audioTrack.CurrentSec;
 
-            if (currentSec > endTime)
+            if (currentSec > _endTime)
             {
-                audioTrack.CurrentSec = startTime;
+                _audioTrack.CurrentSec = _startTime;
             }
         }
         void UpdateSBTextMeshProUGUI()
         {
-            var start = TimeSpan.FromSeconds(startTime - _simaiFile.Offset);
-            var end = TimeSpan.FromSeconds(endTime - _simaiFile.Offset);
+            var start = TimeSpan.FromSeconds(_startTime - _simaiFile.Offset);
+            var end = TimeSpan.FromSeconds(_endTime - _simaiFile.Offset);
             var anarect = chartAnalyzer.GetComponent<RectTransform>().rect;
-            var x = (startTime - _simaiFile.Offset) / totalTime * anarect.width;
-            var width = (endTime - startTime) / totalTime * anarect.width;
+            var x = (_startTime - _simaiFile.Offset) / _totalTime * anarect.width;
+            var width = (_endTime - _startTime) / _totalTime * anarect.width;
 
             startTimeText.text = ZString.Format(TIME_STRING, start.Minutes, start.Seconds, start.Milliseconds);
             endTimeText.text = ZString.Format(TIME_STRING, end.Minutes, end.Seconds, end.Milliseconds);
             selectionBox.sizeDelta = new Vector2((float)width, anarect.height);
             selectionBox.anchoredPosition = new Vector2((float)x, 0);
 
-            var audioLen = audioTrack.Length;
-            var current = TimeSpan.FromSeconds(audioTrack.CurrentSec - _simaiFile.Offset);
+            var audioLen = _audioTrack.Length;
+            var current = TimeSpan.FromSeconds(_audioTrack.CurrentSec - _simaiFile.Offset);
             var remaining = audioLen - current;
             timeText.text = ZString.Format(TIME_STRING, current.Minutes, current.Seconds, current.Milliseconds);
             rTimeText.text = ZString.Format(TIME_STRING, remaining.Minutes, remaining.Seconds, remaining.Milliseconds);
@@ -378,8 +445,8 @@ namespace MajdataPlay.Practice
         private void OnDestroy()
         {
             cts?.Cancel();
-            audioTrack?.Stop();
-            audioTrack = null;
+            _audioTrack?.Stop();
+            _audioTrack = null;
             _isExited = true;
         }
     }

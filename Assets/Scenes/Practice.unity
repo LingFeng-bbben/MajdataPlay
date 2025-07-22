@@ -12753,7 +12753,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: 90}
+  m_AnchoredPosition: {x: 0, y: 90}
   m_SizeDelta: {x: 410.28, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1513573597
@@ -19751,8 +19751,8 @@ MonoBehaviour:
   timeText: {fileID: 113350369}
   rTimeText: {fileID: 113350368}
   progress: {fileID: 113350370}
-  _practiceCountText: {fileID: 0}
-  _practiceCountValueText: {fileID: 0}
+  _playbackSpeedTitle: {fileID: 1513573597}
+  _playbackSpeedValue: {fileID: 699560310}
 --- !u!1001 &6959415326676185805
 PrefabInstance:
   m_ObjectHideFlags: 0
