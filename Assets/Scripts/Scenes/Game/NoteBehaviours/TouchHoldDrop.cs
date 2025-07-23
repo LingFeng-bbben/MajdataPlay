@@ -143,9 +143,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     {
                         var autoplayGrade = AutoplayGrade;
                         if (((int)autoplayGrade).InRange(0, 14))
+                        {
                             _judgeResult = autoplayGrade;
+                        }
                         else
+                        {
                             _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        }
                         ConvertJudgeGrade(ref _judgeResult);
                         _isJudged = true;
                         _judgeDiff = _judgeResult switch
@@ -196,7 +200,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            {
                 return;
+            }
 
             StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
@@ -254,7 +260,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
 
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            }
             _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             _borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
             _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
@@ -286,9 +294,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             _objectCounter.ReportResult(this, result);
             if (!_isJudged)
+            {
                 _noteManager.NextTouch(QueueInfo);
+            }
             if (isFirework && !result.IsMissOrTooFast)
+            {
                 _effectManager.PlayFireworkEffect(transform.position);
+            }
 
             PlayJudgeSFX(new NoteJudgeResult()
             {
@@ -312,7 +324,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (IsBreak)
             {
                 for (var i = 0; i < 4; i++)
+                {
                     _fanRenderers[i].sprite = skin.Fans_Break[i];
+                }
                 _borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
                 _pointRenderer.sprite = skin.Point_Break;
                 board_On = skin.Boader_Break;
@@ -321,7 +335,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else
             {
                 for (var i = 0; i < 4; i++)
+                {
                     _fanRenderers[i].sprite = skin.Fans[i];
+                }
                 _borderRenderer.sprite = skin.Boader; // TouchHold Border
                 _pointRenderer.sprite = skin.Point;
                 board_On = skin.Boader;
@@ -331,7 +347,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected override void Judge(float currentSec)
         {
             if (_isJudged)
+            {
                 return;
+            }
 
             var diffSec = currentSec - JudgeTiming;
             var isFast = diffSec < 0;
@@ -339,7 +357,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var diffMSec = MathF.Abs(diffSec * 1000);
 
             if (isFast && diffMSec > TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC)
+            {
                 return;
+            }
 
             var result = diffMSec switch
             {
@@ -440,7 +460,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             // Too late check
             if (IsEnded || _isJudged)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -464,6 +486,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _isJudged = true;
                 _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
                 _lastHoldState = -2;
+                _releaseTime = 114514;
                 _noteManager.NextTouch(QueueInfo);
             }
         }
@@ -518,7 +541,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void BodyCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             if (_lastHoldState is -1 or 1)
             {
@@ -551,7 +576,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void ForceEndCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             var remainingTime = GetRemainingTime();
 
@@ -563,7 +590,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             base.SetActive(state);
             SetFanActive(state);
             SetBorderActive(state);
@@ -660,7 +689,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void SetFansMaterial(Material material)
         {
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sharedMaterial = material;
+            }
         }
         protected override void PlaySFX()
         {

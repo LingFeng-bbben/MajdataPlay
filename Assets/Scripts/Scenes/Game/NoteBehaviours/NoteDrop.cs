@@ -274,9 +274,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 var autoplayGrade = NoteController.AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
+                {
                     _judgeResult = autoplayGrade;
+                }
                 else
+                {
                     _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                }
                 ConvertJudgeGrade(ref _judgeResult);
                 _isJudged = true;
                 _judgeDiff = _judgeResult switch

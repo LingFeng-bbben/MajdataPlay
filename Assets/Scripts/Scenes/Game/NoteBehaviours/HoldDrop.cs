@@ -233,7 +233,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(JudgeTiming + HOLD_HEAD_IGNORE_LENGTH_SEC, JudgeTiming + Length - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
@@ -263,9 +263,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
 
             if (IsClassic)
+            {
                 _judgeResult = HoldClassicEndJudge(_judgeResult, endJudgeOffset);
+            }
             else
+            {
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
+            }
             ConvertJudgeGrade(ref _judgeResult);
 
             var result = new NoteJudgeResult()
@@ -440,7 +444,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             // Too late check
             if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TAP_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -452,6 +458,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeDiff = 150;
                 _lastHoldState = -2;
                 _noteManager.NextNote(QueueInfo);
+                _releaseTime = 114514;
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {
                     _effectManager.PlayEffect(StartPos, new NoteJudgeResult()
@@ -526,7 +533,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void BodyCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             var remainingTime = GetRemainingTime();
 
@@ -623,7 +632,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             base.SetActive(state);
             switch (state)
             {
