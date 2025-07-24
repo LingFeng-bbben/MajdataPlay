@@ -93,15 +93,19 @@ namespace MajdataPlay.Result
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
             level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
 
-            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%" : $"{result.Acc.DX:F4}%";
-            var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
-            var historyacc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
-            accHistory.text = $"{nowacc - historyacc:+0.0000;-0.0000;0}%";
+            accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
+            var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
+            var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
+            accHistory.text = $"{nowAcc - historyAcc:+0.0000;-0.0000;0}%";
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
+            {
                 dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+            }
             else
+            {
                 dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
+            }
 
             perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";
@@ -128,16 +132,24 @@ namespace MajdataPlay.Result
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 
             if (!totalJudgeRecord.IsFullCombo)
+            {
                 clearLogo.SetActive(false);
+            }
             else if (totalJudgeRecord.IsAllPerfect)
             {
                 if (breakJudgeInfo.IsTheoretical)
+                {
                     clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+                }
                 else
+                {
                     clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+                }
             }
             else if (totalJudgeRecord.IsFullComboPlus)
+            {
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
+            }
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX, song).Forget();

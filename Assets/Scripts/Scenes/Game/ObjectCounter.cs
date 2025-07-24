@@ -680,19 +680,19 @@ namespace MajdataPlay.Game
             //var currentNoteScore = GetNoteScoreSum();
             //var totalScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
             //var totalExtraScore = Math.Max(BreakSum * 100, 1);
-            Span<double> newAccRate = stackalloc double[5];
+            Span<decimal> newAccRate = stackalloc decimal[5];
 
-            newAccRate[0] = CurrentNoteScoreClassic / (double)TotalNoteBaseScore;
-            newAccRate[1] = (CurrentNoteBaseScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (double)TotalNoteBaseScore;
-            newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
-            newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
-            newAccRate[4] = ((CurrentNoteBaseScore) / (double)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((double)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
+            newAccRate[0] = CurrentNoteScoreClassic / (decimal)TotalNoteBaseScore;
+            newAccRate[1] = (CurrentNoteBaseScore - LostNoteBaseScore + CurrentNoteExtraScoreClassic) / (decimal)TotalNoteBaseScore;
+            newAccRate[2] = ((TotalNoteBaseScore - LostNoteBaseScore) / (decimal)TotalNoteBaseScore) + ((TotalNoteExtraScore - LostNoteExtraScore) / ((decimal)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
+            newAccRate[3] = ((TotalNoteBaseScore - LostNoteBaseScore) / (decimal)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((decimal)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
+            newAccRate[4] = ((CurrentNoteBaseScore) / (decimal)TotalNoteBaseScore) + ((CurrentNoteExtraScore) / ((decimal)(TotalNoteExtraScore is 0 ? 1 : TotalNoteExtraScore) * 100));
 
-            _accRate[0] = newAccRate[0] * 100;
-            _accRate[1] = newAccRate[1] * 100;
-            _accRate[2] = newAccRate[2] * 100;
-            _accRate[3] = newAccRate[3] * 100;
-            _accRate[4] = newAccRate[4] * 100;
+            _accRate[0] = decimal.ToDouble(newAccRate[0] * 100);
+            _accRate[1] = decimal.ToDouble(newAccRate[1] * 100);
+            _accRate[2] = decimal.ToDouble(newAccRate[2] * 100);
+            _accRate[3] = decimal.ToDouble(newAccRate[3] * 100);
+            _accRate[4] = decimal.ToDouble(newAccRate[4] * 100);
         }
         internal async ValueTask CountNoteSumAsync(SimaiChart chart)
         {
@@ -820,11 +820,12 @@ namespace MajdataPlay.Game
             var bgInfo = MajInstances.Settings.Game.BGInfo;
             if (MajEnv.Mode != RunningMode.View &&_gameInfo.IsDanMode)
             {
-                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
+                _bgInfoText.text = ZString.Concat(_gameInfo.CurrentHP);
                 _bgInfoText.color = ComboColor;
                 SetBgInfoActive(true);
                 return;
             }
+            double accRate;
             switch (bgInfo)
             {
                 case BGInfoType.CPCombo:
@@ -837,23 +838,28 @@ namespace MajdataPlay.Game
                     UpdateCombo(_combo);
                     break;
                 case BGInfoType.Achievement_101:
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[2]);
+                    accRate = Math.Floor(_accRate[2] * 10000) / 10000;
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[2], _bgInfoText);
                     break;
                 case BGInfoType.Achievement_100:
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[3]);
+                    accRate = Math.Floor(_accRate[3] * 10000) / 10000;
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[3], _bgInfoText);
                     break;
                 case BGInfoType.Achievement:
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, _accRate[4]);
+                    accRate = Math.Floor(_accRate[4] * 10000) / 10000;
+                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[4], _bgInfoText);
                     break;
                 case BGInfoType.AchievementClassical:
-                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, _accRate[0]);
+                    accRate = Math.Floor(_accRate[0] * 100) / 100;
+                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[0], _bgInfoText);
                     break;
                 case BGInfoType.AchievementClassical_100:
-                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, _accRate[1]);
+                    accRate = Math.Floor(_accRate[1] * 100) / 100;
+                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[1], _bgInfoText);
                     break;
                 case BGInfoType.DXScore:
@@ -898,7 +904,7 @@ namespace MajdataPlay.Game
         }
         void UpdateRankBoard(in BGInfoType bgInfo)
         {
-            double rate = -1;
+            double rate;
             switch (bgInfo)
             {
                 case BGInfoType.S_Border:
@@ -917,9 +923,14 @@ namespace MajdataPlay.Game
                     return;
             }
             if (rate >= 0)
+            {
+                rate = Math.Floor(rate * 10000) / 10000;
                 _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, rate);
+            }
             else
+            {
                 SetBgInfoActive(false);
+            }
         }
         void SetBgInfoActive(bool state)
         {
@@ -1004,7 +1015,15 @@ namespace MajdataPlay.Game
         {
             var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
             var formatStr = isClassic ? CLASSIC_ACC_RATE_STRING : DX_ACC_RATE_STRING;
-            var value = isClassic ? _accRate[0] : _accRate[4];
+            double value;
+            if(isClassic)
+            {
+                value = Math.Floor(_accRate[0] * 100) / 100;
+            }
+            else
+            {
+                value = Math.Floor(_accRate[4] * 10000) / 10000;
+            }
             _rate.SetTextFormat(formatStr, value);
         }
         /// <summary>
@@ -1031,7 +1050,9 @@ namespace MajdataPlay.Game
             };
 
             if (textElement.color != newColor)
+            {
                 textElement.color = newColor;
+            }
         }
 
         #region Counter update
