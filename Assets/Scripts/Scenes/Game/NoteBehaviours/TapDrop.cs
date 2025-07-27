@@ -218,8 +218,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
-            //var timing = GetTimeSpanToArriveTiming();
-            var timing = TAP_JUDGE_SEG_1ST_PERFECT_MSEC / 1000;
+            var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
