@@ -20,8 +20,6 @@ using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
-using MychIO;
-using Unity.VisualScripting.Antlr3.Runtime;
 
 namespace MajdataPlay.Game
 {
@@ -112,12 +110,21 @@ namespace MajdataPlay.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
+        bool _isTryAudioSyncEnabled = false;
         bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
         float _p1SkipTime = 0;
+
+        // Offset
+        float _chartOffset = 0f;
+        /// <summary>
+        /// Setting - Judge - AudioOffset
+        /// </summary>
+        float _audioTimeOffset = 0f;
+        float _displayOffset = 0f;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
@@ -161,6 +168,9 @@ namespace MajdataPlay.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
+            _audioTimeOffset = _setting.Judge.AudioOffset;
+            _displayOffset = _setting.Debug.DisplayOffset;
+            _isTryAudioSyncEnabled = _setting.Debug.TryFixAudioSync;
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -505,6 +515,7 @@ namespace MajdataPlay.Game
             MajInstances.SceneSwitcher.SetLoadingText($"{"Deserialization".i18n()}...");
 
             _simaiFile = await _songDetail.GetMaidataAsync(true);
+            _chartOffset = _simaiFile.Offset;
             var levelIndex = (int)_gameInfo.CurrentLevel;
             var maidata = _simaiFile.RawCharts[levelIndex];
 
@@ -1021,9 +1032,13 @@ namespace MajdataPlay.Game
         void AudioTimeUpdate()
         {
             if (_audioSample is null)
+            {
                 return;
+            }
             else if (AudioStartTime == -114514f)
+            {
                 return;
+            }
 
             switch (State)
             {
@@ -1032,7 +1047,7 @@ namespace MajdataPlay.Game
                 case GamePlayStatus.WaitForEnd:
                     //Do not use this!!!! This have connection with sample batch size
                     //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = (_simaiFile.Offset + _setting.Judge.AudioOffset - _setting.Debug.DisplayOffset) / PlaybackSpeed;
+                    var chartOffset = ((_chartOffset + _audioTimeOffset) / PlaybackSpeed) - _displayOffset;
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
                     var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
@@ -1041,7 +1056,7 @@ namespace MajdataPlay.Game
                     _audioTimeNoOffset = (float)_audioSample.CurrentSec;
                     _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));
 
-                    if (Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0 && MajInstances.Settings.Debug.TryFixAudioSync)
+                    if (_isTryAudioSyncEnabled && Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0)
                     {
                         _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     }                  

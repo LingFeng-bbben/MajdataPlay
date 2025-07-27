@@ -77,7 +77,9 @@ namespace MajdataPlay.Setting
                 _maxOptionIndex = values.Length - 1;
                 _options = new object[values.Length];
                 for (int i = 0; i < values.Length; i++)
+                {
                     _options[i] = values.GetValue(i);
+                }
                 var obj = PropertyInfo.GetValue(OptionObject);
                 _current = _options.FindIndex(x => (int)x == (int)obj);
             }
@@ -147,6 +149,11 @@ namespace MajdataPlay.Setting
                         _maxValue = 2;
                         _minValue = 0;
                         _step = 0.01f;
+                        break;
+                    case "DisplayOffset":
+                        _maxValue = null;
+                        _minValue = 0;
+                        _step = 0.001f;
                         break;
                     default:
                         _maxValue = null;

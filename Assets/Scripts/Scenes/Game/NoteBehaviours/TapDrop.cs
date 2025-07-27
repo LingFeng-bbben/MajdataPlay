@@ -218,7 +218,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
-            var timing = GetTimeSpanToArriveTiming();
+            //var timing = GetTimeSpanToArriveTiming();
+            var timing = TAP_JUDGE_SEG_1ST_PERFECT_MSEC / 1000;
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
             var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
@@ -239,7 +240,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 case NoteStatus.Scaling:
                     {
                         if (destScale > 0.3f)
+                        {
                             SetTapLineActive(true);
+                        }
                         if (distance < 1.225f)
                         {
                             Distance = distance;
