@@ -269,7 +269,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 stopwatch.Start();
                 try
                 {
@@ -350,7 +350,7 @@ namespace MajdataPlay.IO
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;

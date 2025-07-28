@@ -185,12 +185,6 @@ namespace MajdataPlay.Settings
         public int TouchHoldPoolCapacity { get; set; } = 16;
         [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
-        public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.AboveNormal;
-        [SettingVisualizationIgnore]
-        public ThreadPriority MainThreadPriority { get; set; } = ThreadPriority.Normal;
-        [SettingVisualizationIgnore]
-        public ThreadPriority IOThreadPriority { get; set; } = ThreadPriority.AboveNormal;
     }
     public class MiscOptions
     {

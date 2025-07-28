@@ -299,7 +299,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
                 stopwatch.Start();
@@ -472,7 +472,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 try
                 {

@@ -1,23 +1,18 @@
-﻿using Cysharp.Threading.Tasks;
-using HidSharp.Platform.Windows;
+﻿using HidSharp.Platform.Windows;
 using LibVLCSharp;
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MychIO;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using UnityEngine;
@@ -33,6 +28,9 @@ namespace MajdataPlay
         public const int HTTP_TIMEOUT_MS = 8000;
         public const float FRAME_LENGTH_SEC = 1f / 60;
         public const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
+
+        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_IO = System.Threading.ThreadPriority.AboveNormal;
+        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN = System.Threading.ThreadPriority.Normal;
 
         public static event Action? OnApplicationQuit;
         public static LibVLC? VLCLibrary { get; private set; }
@@ -165,7 +163,13 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-            MainThread.Priority = UserSettings.Debug.MainThreadPriority;
+            MainThread.Priority = THREAD_PRIORITY_MAIN;
+#if !UNITY_EDITOR
+            if(MainThread.Name is not null)
+            {
+                MainThread.Name = "MajdataPlay MainThread";
+            }
+#endif
         }
         internal static void Init()
         {

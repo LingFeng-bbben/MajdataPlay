@@ -92,7 +92,7 @@ namespace MajdataPlay.IO
                 serial.WriteBufferSize = 16;
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 Span<byte> buffer = stackalloc byte[10];
                 Span<LedReport> latestReports = stackalloc LedReport[8]
                 {
@@ -258,7 +258,7 @@ namespace MajdataPlay.IO
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;

@@ -192,14 +192,14 @@ namespace MajdataPlay
         {
             IOListener.NextScene = "Title";
             #if UNITY_STANDALONE_WIN
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
             #endif
             SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {
             #if UNITY_STANDALONE_WIN
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
             #endif
             SceneManager.LoadScene("Title");
         }
