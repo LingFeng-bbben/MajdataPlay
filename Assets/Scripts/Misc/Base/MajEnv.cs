@@ -190,8 +190,10 @@ namespace MajdataPlay
         {
             SharedHttpClient.CancelPendingRequests();
             SharedHttpClient.Dispose();
-            if( VLCLibrary != null ) 
+            if( VLCLibrary != null )
+            {
                 VLCLibrary.Dispose();
+            }
             _globalCTS.Cancel();
             if (OnApplicationQuit is not null)
             {
@@ -202,12 +204,16 @@ namespace MajdataPlay
         static void CheckNoteSkinFolder()
         {
             if (!Directory.Exists(SkinPath))
+            {
                 Directory.CreateDirectory(SkinPath);
+            }
         }
         static void CreateDirectoryIfNotExists(string path)
         {
             if (!Directory.Exists(path))
+            {
                 Directory.CreateDirectory(path);
+            }
         }
     }
 }
