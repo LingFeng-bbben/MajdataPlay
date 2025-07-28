@@ -8,6 +8,7 @@ using MajSimai;
 using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Collections;
+using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -42,8 +43,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             "answer.wav",
             "answer_clock.wav"
         };
-        readonly float USERSETTING_ANSWER_OFFSET = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
-        readonly float USERSETTING_DISPLAY_OFFSET = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
         const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
         const int TAP_GREAT = 1;
@@ -60,6 +59,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         const int ANSWER = 12;
         const int ANSWER_CLOCK = 13;
 
+        float _answerOffsetSec = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
+        float _displayOffsetSec = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
+
         void Awake()
         {
             Majdata<NoteAudioManager>.Instance = this;
@@ -75,6 +77,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     _noteSFXs[i] = sfx;
                 }
+            }
+            var settings = MajEnv.UserSettings;
+            if (settings.Debug.OffsetUnit == OffsetUnitOption.MS)
+            {
+                _answerOffsetSec = settings.Judge.AudioOffset;
+                _displayOffsetSec = settings.Debug.DisplayOffset;
+            }
+            else
+            {
+                _answerOffsetSec = settings.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _displayOffsetSec = settings.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
         }
         private void Start()
@@ -211,7 +224,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     ref var sfxInfo = ref _answerTimingPoints.Span[i];
                     var playTiming = sfxInfo.Timing;
-                    var delta = _noteController.ThisFrameSec - (playTiming + USERSETTING_ANSWER_OFFSET + USERSETTING_DISPLAY_OFFSET + ANSWER_PLAYBACK_OFFSET_SEC);
+                    var delta = _noteController.ThisFrameSec - (playTiming + _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC);
 
                     if (delta > 0)
                     {

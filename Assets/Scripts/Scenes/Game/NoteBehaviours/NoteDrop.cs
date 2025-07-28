@@ -95,7 +95,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public float JudgeTiming
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _judgeTiming + USERSETTING_JUDGE_OFFSET;
+            get => _judgeTiming + USERSETTING_JUDGE_OFFSET_SEC;
         }
         public float ThisFrameSec
         {
@@ -163,11 +163,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
         readonly protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
         readonly protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
-        readonly protected GameSetting _gameSetting = MajInstances.Settings;
+        readonly protected GameSetting _settings = MajInstances.Settings;
         protected static readonly Random _randomizer = new();
 
-        protected readonly float USERSETTING_JUDGE_OFFSET = (MajInstances.Settings?.Judge.JudgeOffset ?? 0)  + (MajInstances.Settings?.Debug.DisplayOffset ?? 0);
-        protected readonly float USERSETTING_TOUCHPANEL_OFFSET = MajInstances.Settings?.Judge.TouchPanelOffset ?? 0;
+        protected readonly float USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0)  + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.MS) == OffsetUnitOption.MS ? 1 : FRAME_LENGTH_SEC);
+        protected readonly float USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.MS) == OffsetUnitOption.MS ? 1 : FRAME_LENGTH_SEC);
         protected readonly float USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
         protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
         protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;

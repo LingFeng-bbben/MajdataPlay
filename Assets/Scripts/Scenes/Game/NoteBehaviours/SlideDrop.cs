@@ -155,7 +155,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             FadeInTiming = -3.926913f / Speed;
-            FadeInTiming += _gameSetting.Game.SlideFadeInOffset;
+            var fadeInOffset = 0f;
+            if (_settings.Debug.OffsetUnit == OffsetUnitOption.MS)
+            {
+                fadeInOffset = _settings.Game.SlideFadeInOffset;
+            }
+            else
+            {
+                fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
+            FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
@@ -457,7 +466,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET, 0);
+            var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET_SEC, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (!_isCheckable)
@@ -490,11 +499,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         HideAllBar();
                         if (IsClassic)
                         {
-                            ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                            ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                         }
                         else
                         {
-                            Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                            Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                         }
                         return;
                     }

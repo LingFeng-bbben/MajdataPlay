@@ -304,7 +304,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)

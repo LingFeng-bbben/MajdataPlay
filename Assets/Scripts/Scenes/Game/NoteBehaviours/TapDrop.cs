@@ -74,7 +74,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _isStarRotation = _gameSetting.Game.StarRotation;
+            _isStarRotation = _settings.Game.StarRotation;
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
@@ -331,7 +331,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)

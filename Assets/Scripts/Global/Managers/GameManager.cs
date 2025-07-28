@@ -287,19 +287,17 @@ namespace MajdataPlay
         }
         public void EnableGC()
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
+            GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
             MajDebug.LogWarning("GC has been enabled");
 #endif
-            GC.Collect();
         }
         public void DisableGC() 
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
             GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             MajDebug.LogWarning("GC has been disabled");

@@ -167,9 +167,8 @@ namespace MajdataPlay.Settings
         public bool FullScreen { get; set; } = true;
         public int MenuOptionIterationSpeed { get; set; } = 45;
         public float DisplayOffset { get; set; } = 0f;
-        public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
-        public bool DisableGCInGame { get; set; } = false;
+        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.MS;
         public bool HideCursorInGame { get; set; } = true;
         public bool NoteFolding { get; set; } = true;
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;

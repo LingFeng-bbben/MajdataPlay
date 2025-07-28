@@ -111,7 +111,6 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTryAudioSyncEnabled = false;
         bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
@@ -124,8 +123,8 @@ namespace MajdataPlay.Scenes.Game
         /// <summary>
         /// Setting - Judge - AudioOffset
         /// </summary>
-        float _audioTimeOffset = 0f;
-        float _displayOffset = 0f;
+        float _audioTimeOffsetSec = 0f;
+        float _displayOffsetSec = 0f;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
@@ -169,9 +168,16 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            _audioTimeOffset = _setting.Judge.AudioOffset;
-            _displayOffset = _setting.Debug.DisplayOffset;
-            _isTryAudioSyncEnabled = _setting.Debug.TryFixAudioSync;
+            if(_setting.Debug.OffsetUnit == OffsetUnitOption.MS)
+            {
+                _audioTimeOffsetSec = _setting.Judge.AudioOffset;
+                _displayOffsetSec = _setting.Debug.DisplayOffset;
+            }
+            else
+            {
+                _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -1048,19 +1054,14 @@ namespace MajdataPlay.Scenes.Game
                 case GamePlayStatus.WaitForEnd:
                     //Do not use this!!!! This have connection with sample batch size
                     //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = ((_chartOffset + _audioTimeOffset) / PlaybackSpeed) - _displayOffset;
+                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / PlaybackSpeed) - _displayOffsetSec;
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
                     var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
                     _audioTimeNoOffset = (float)_audioSample.CurrentSec;
-                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));
-
-                    if (_isTryAudioSyncEnabled && Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0)
-                    {
-                        _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    }                  
+                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
                     break;
             }
         }

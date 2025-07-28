@@ -2,6 +2,7 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace MajdataPlay.Scenes.Setting
         object[] _options = Array.Empty<object>(); // 可用的选项
 
         int _maxOptionIndex = 0;
-        float _step = 1;
+        decimal _step = 1;
         bool _isEnabled = false;
         bool _isNum = false;
         bool _isBound = false;
@@ -42,8 +43,8 @@ namespace MajdataPlay.Scenes.Setting
         bool _isPressed = false;
         bool _isUp = false;
         float _pressTime = 0;
-        float? _maxValue = null;
-        float? _minValue = null;
+        decimal? _maxValue = null;
+        decimal? _minValue = null;
 
         float _iterationThrottle = 0;
         int _lastIndex = 0;
@@ -96,7 +97,7 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     case "Global":
                         _maxValue = 1;
-                        _step = 0.05f;
+                        _step = 0.05m;
                         _minValue = 0;
                         break;
                     case "Answer":
@@ -108,21 +109,21 @@ namespace MajdataPlay.Scenes.Setting
                     case "Touch":
                     case "Voice":
                         _maxValue = 2;
-                        _step = 0.05f;
+                        _step = 0.05m;
                         _minValue = 0;
                         break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
                     case "BackgroundDim":
                         _maxValue = 1;
-                        _step = 0.05f;
+                        _step = 0.05m;
                         _minValue = 0;
                         break;
                     case "TouchSpeed":
                     case "TapSpeed":
                         _maxValue = null;
                         _minValue = null;
-                        _step = 0.25f;
+                        _step = 0.25m;
                         break;
                     case "Rotation":
                         _maxValue = 7;
@@ -131,7 +132,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "PlaybackSpeed":
                         _minValue = 0;
-                        _step = 0.01f;
+                        _step = 0.01m;
                         break;
                     case "FPSLimit":
                         _minValue = -1;
@@ -148,23 +149,51 @@ namespace MajdataPlay.Scenes.Setting
                     case "SlideScale":
                         _maxValue = 2;
                         _minValue = 0;
-                        _step = 0.01f;
+                        _step = 0.01m;
+                        break;
+                    case "AudioOffset":
+                    case "JudgeOffset":
+                    case "AnswerOffset":
+                    case "TouchPanelOffset":
+                        {
+                            if(MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.MS)
+                            {
+                                goto default;
+                            }
+                            else
+                            {
+                                _maxValue = null;
+                                _minValue = null;
+                                _step = 0.1m;
+                            }
+                        }
                         break;
                     case "DisplayOffset":
-                        _maxValue = null;
-                        _minValue = 0;
-                        _step = 0.001f;
+                        {
+                            if (MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.MS)
+                            {
+                                _maxValue = null;
+                                _minValue = 0;
+                                _step = 0.001m;
+                            }
+                            else
+                            {
+                                _maxValue = null;
+                                _minValue = null;
+                                _step = 0.1m;
+                            }
+                        }
                         break;
                     default:
                         _maxValue = null;
                         _minValue = null;
                         if(type.IsIntType())
                         {
-                            _step = 1f;
+                            _step = 1m;
                         }
                         else
                         {
-                            _step = 0.001f;
+                            _step = 0.001m;
                         }
                         break;
                 }
@@ -286,7 +315,7 @@ namespace MajdataPlay.Scenes.Setting
                     }
                 }
             }
-            
+            UpdateOption();
             if (_lastIndex == currentIndex)
             {
                 return;
@@ -309,12 +338,36 @@ namespace MajdataPlay.Scenes.Setting
             string localizedText;
             switch (PropertyInfo.Name)
             {
+                case "AudioOffset":
+                case "JudgeOffset":
+                case "AnswerOffset":
+                case "TouchPanelOffset":
+                case "DisplayOffset":
+                    {
+                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.MS)
+                        {
+                            _maxValue = null;
+                            _minValue = 0;
+                            _step = 0.001m;
+                        }
+                        else
+                        {
+                            _maxValue = null;
+                            _minValue = null;
+                            _step = 0.1m;
+                        }
+                        goto default;
+                    }
                 case "OuterJudgeDistance":
                 case "InnerJudgeDistance":
                     if((float)value == 0)
+                    {
                         localizedText = Localization.GetLocalizedText("OFF");
+                    }
                     else
+                    {
                         localizedText = Localization.GetLocalizedText(origin);
+                    }
                     break;
                 default:
                     if(!_isNum)
@@ -332,32 +385,6 @@ namespace MajdataPlay.Scenes.Setting
                     break;
             }
             valueText.text = localizedText;
-            switch (PropertyInfo.Name)
-            {
-                case "Global":
-                case "Answer":
-                case "BGM":
-                case "Tap":
-                case "Judge":
-                case "Slide":
-                case "Break":
-                case "Touch":
-                case "Voice":
-                    UpdateVolume();
-                    break;
-                case "VSync":
-                    QualitySettings.vSyncCount = (bool)value ? 1 : 0;
-                    break;
-                case "FPSLimit":
-                    Application.targetFrameRate = (int)value;
-                    break;
-                case "RenderQuality":
-                    QualitySettings.SetQualityLevel((int)value, true);
-                    break;
-                case "Direct3DMaxQueuedFrames":
-                    QualitySettings.maxQueuedFrames = (int)value;
-                    break;
-            }
         }
         void UpdateVolume()
         {
@@ -380,21 +407,36 @@ namespace MajdataPlay.Scenes.Setting
             {
                 var valueObj = PropertyInfo.GetValue(OptionObject);
                 var valueType = valueObj.GetType();
-                var value = Convert.ToSingle(valueObj);
-                value += _step * num;
-                value = MathF.Round(value, 3);
+                var oldValue = Convert.ToDecimal(valueObj);
+                var newValue = Math.Round(oldValue + _step * num, 3);
+                
                 if (_maxValue is not null) //有上限
-                    value = Math.Min(value, (float)_maxValue);
+                {
+                    newValue = Math.Min(newValue, (decimal)_maxValue);
+                }
                 if(_minValue is not null)
-                    value = Math.Max(value, (float)_minValue);
-                PropertyInfo.SetValue(OptionObject,Convert.ChangeType(value,valueType));
+                {
+                    newValue = Math.Max(newValue, (decimal)_minValue);
+                }
+                OnValueChanged(oldValue, newValue);
+                PropertyInfo.SetValue(OptionObject, Convert.ChangeType(newValue, valueType));
             }
             else //非数值类
             {
                 _current += 1 * num;
-                if (_current < 0) _current = _maxOptionIndex;
-                if (_current>_maxOptionIndex) _current = 0;
-                PropertyInfo.SetValue(OptionObject, _options[_current]);
+                if (_current < 0)
+                {
+                    _current = _maxOptionIndex;
+                }
+                if (_current>_maxOptionIndex)
+                {
+                    _current = 0;
+                }
+                var oldValue = PropertyInfo.GetValue(OptionObject);
+                var newValue = _options[_current];
+
+                OnValueChanged(oldValue, newValue);
+                PropertyInfo.SetValue(OptionObject, newValue);
                 switch (PropertyInfo.Name)
                 {
                     case "Skin":
@@ -406,6 +448,77 @@ namespace MajdataPlay.Scenes.Setting
                         Localization.SetLang((string)_options[_current]);
                         break;
                 }
+            }
+        }
+        void OnValueChanged(object oldValue,object newValue)
+        {
+            switch(PropertyInfo.Name)
+            {
+                case "OffsetUnit":
+                    {
+                        var eOldValue = (OffsetUnitOption)oldValue;
+                        var eNewValue = (OffsetUnitOption)newValue;
+                        if (eOldValue == eNewValue)
+                        {
+                            return;
+                        }
+                        else if(eNewValue == OffsetUnitOption.MS)
+                        {
+                            MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AudioOffset, 3); 
+                            MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.JudgeOffset, 3);
+                            MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.TouchPanelOffset, 3); 
+                            MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AnswerOffset, 3); 
+                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC* MajEnv.UserSettings.Game.SlideFadeInOffset, 3); 
+                        }
+                        else
+                        {
+                            if(MajEnv.UserSettings.Judge.AudioOffset != 0)
+                            {
+                                MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.AudioOffset, 1);
+                            }
+                            if(MajEnv.UserSettings.Judge.JudgeOffset != 0)
+                            {
+                                MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.JudgeOffset, 1);
+
+                            }
+                            if(MajEnv.UserSettings.Judge.TouchPanelOffset != 0)
+                            {
+                                MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.TouchPanelOffset, 1);
+                            }
+                            if(MajEnv.UserSettings.Judge.AnswerOffset != 0)
+                            {
+                                MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.AnswerOffset, 1);
+                            }
+                            if(MajEnv.UserSettings.Game.SlideFadeInOffset != 0)
+                            {
+                                MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Game.SlideFadeInOffset, 1);
+                            }
+                        }
+                    }
+                    break;
+                case "Global":
+                case "Answer":
+                case "BGM":
+                case "Tap":
+                case "Judge":
+                case "Slide":
+                case "Break":
+                case "Touch":
+                case "Voice":
+                    UpdateVolume();
+                    break;
+                case "VSync":
+                    QualitySettings.vSyncCount = (bool)newValue ? 1 : 0;
+                    break;
+                case "FPSLimit":
+                    Application.targetFrameRate = (int)newValue;
+                    break;
+                case "RenderQuality":
+                    QualitySettings.SetQualityLevel((int)newValue, true);
+                    break;
+                case "Direct3DMaxQueuedFrames":
+                    QualitySettings.maxQueuedFrames = (int)newValue;
+                    break;
             }
         }
         void OnDestroy()

@@ -510,7 +510,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)
@@ -574,7 +574,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
                                            !isButtonPressed;
-                    var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET;
+                    var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET_SEC;
                     End(offset);
                     return;
                 }
