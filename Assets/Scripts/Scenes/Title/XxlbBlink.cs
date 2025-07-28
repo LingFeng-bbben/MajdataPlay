@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Title
+namespace MajdataPlay.Scenes.Title
 {
     public class XxlbBlink : MonoBehaviour
     {

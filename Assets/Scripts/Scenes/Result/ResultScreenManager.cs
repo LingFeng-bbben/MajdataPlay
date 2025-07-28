@@ -10,14 +10,14 @@ using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
-using MajdataPlay.Game;
-using MajdataPlay.List;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.List;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Result
+namespace MajdataPlay.Scenes.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
     {

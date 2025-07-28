@@ -1,4 +1,4 @@
-namespace MajdataPlay.View.Types
+namespace MajdataPlay.Scenes.View.Types
 {
     internal readonly struct MajWsResponseBase
     {

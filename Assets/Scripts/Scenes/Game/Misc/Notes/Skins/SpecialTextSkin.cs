@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Skins
+namespace MajdataPlay.Scenes.Game.Notes.Skins
 {
     public struct SpecialTextSkin
     {

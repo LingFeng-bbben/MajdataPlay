@@ -1,6 +1,6 @@
 ﻿using HidSharp;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using System.Collections.Generic;

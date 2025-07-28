@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using MajdataPlay.Editor;
 using UnityEngine;
 using Random = System.Random;
-using MajdataPlay.View;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.View;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class NoteDrop : MajComponent, IStatefulNote
     {

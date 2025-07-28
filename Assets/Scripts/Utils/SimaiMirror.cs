@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game;
+﻿using MajdataPlay.Scenes.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,11 +1,11 @@
-﻿using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Game.Utils;
+﻿using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using UnityEngine;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public sealed class TouchEffectDisplayer: MonoBehaviour
     {

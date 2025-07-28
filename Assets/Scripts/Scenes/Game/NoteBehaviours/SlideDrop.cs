@@ -1,19 +1,19 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using MajdataPlay.Editor;
-using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Game.Notes.Slide.Utils;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal sealed class SlideDrop : SlideBase, IConnectableSlide, IMajComponent
     {

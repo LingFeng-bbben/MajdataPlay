@@ -1,13 +1,13 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
 using MajdataPlay.Utils;
-using MajdataPlay.View.Types;
+using MajdataPlay.Scenes.View.Types;
 using MajSimai;
 using SkiaSharp;
 using System;
@@ -21,7 +21,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
 #nullable enable
-namespace MajdataPlay.View
+namespace MajdataPlay.Scenes.View
 {
     internal class ViewManager: MajComponent, INoteController
     {

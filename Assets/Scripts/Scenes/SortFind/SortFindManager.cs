@@ -5,7 +5,7 @@ using MajdataPlay.IO;
 using UnityEngine.EventSystems;
 using MajdataPlay.Utils;
 
-namespace MajdataPlay.SortFind
+namespace MajdataPlay.Scenes.SortFind
 {
 #nullable enable
     public class SortFindManager : MonoBehaviour

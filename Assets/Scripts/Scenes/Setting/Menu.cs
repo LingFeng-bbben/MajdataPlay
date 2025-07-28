@@ -10,7 +10,7 @@ using TMPro;
 using UnityEngine;
 using static UnityEngine.UI.Image;
 #nullable enable
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class Menu : MonoBehaviour
     {

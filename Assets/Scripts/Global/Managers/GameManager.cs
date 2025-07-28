@@ -1,8 +1,6 @@
 using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
 using System;
 using System.IO;
-using System.Threading;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
@@ -12,11 +10,8 @@ using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MajdataPlay.IO;
-using MajdataPlay.Test;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Test;
 
 namespace MajdataPlay
 {

@@ -1,8 +1,8 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class HoldEffectDisplayer: MajComponent
     {

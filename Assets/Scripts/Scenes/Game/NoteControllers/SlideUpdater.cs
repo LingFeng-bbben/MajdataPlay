@@ -1,11 +1,11 @@
-﻿using MajdataPlay.Game.Buffers;
+﻿using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Utils;
-using MajdataPlay.View;
+using MajdataPlay.Scenes.View;
 using System;
 using System.Linq;
 using UnityEngine.Profiling;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal sealed class SlideUpdater : NoteUpdater
     {

@@ -10,13 +10,13 @@ using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
 using System.Threading.Tasks;
-using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class ObjectCounter : MonoBehaviour
     {

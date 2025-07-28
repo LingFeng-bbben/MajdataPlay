@@ -16,7 +16,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 #nullable enable
-namespace MajdataPlay.Title
+namespace MajdataPlay.Scenes.Title
 {
     public class TitleManager : MonoBehaviour
     {

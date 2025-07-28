@@ -1,13 +1,13 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Skins;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Skins;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class JudgeTextDisplayer: MajComponent
     {

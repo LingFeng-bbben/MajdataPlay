@@ -13,16 +13,16 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Timer;
 using Cysharp.Text;
-using MajdataPlay.List;
+using MajdataPlay.Scenes.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
 #nullable enable
     public class GamePlayManager : MonoBehaviour, INoteController

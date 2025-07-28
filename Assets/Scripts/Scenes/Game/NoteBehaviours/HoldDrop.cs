@@ -3,16 +3,16 @@ using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
-using MajdataPlay.Game.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Utils;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent

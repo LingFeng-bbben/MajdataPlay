@@ -5,10 +5,10 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
 
-namespace MajdataPlay.TotalResult
+namespace MajdataPlay.Scenes.TotalResult
 {
     public class TotalResultSmallDisplayer : MonoBehaviour
     {

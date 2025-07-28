@@ -1,12 +1,12 @@
 using MajdataPlay.Settings;
 using MajdataPlay.Buffers;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal class EachLineDrop : MajComponent, IPoolableNote<EachLinePoolingInfo, NoteQueueInfo>, IStateful<NoteStatus>, IRendererContainer
     {

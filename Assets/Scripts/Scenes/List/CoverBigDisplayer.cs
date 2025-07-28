@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
@@ -13,7 +13,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class CoverBigDisplayer : MonoBehaviour
     {

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MajdataPlay
+namespace MajdataPlay.Scenes.Title
 {
     public class VersionDisplayer : MonoBehaviour
     {

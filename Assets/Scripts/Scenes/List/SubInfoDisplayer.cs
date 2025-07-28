@@ -11,7 +11,7 @@ using MajdataPlay.Utils;
 using System.Threading.Tasks;
 using System;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class SubInfoDisplayer : MonoBehaviour
     {

@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class NoteLongDrop : NoteDrop
     {

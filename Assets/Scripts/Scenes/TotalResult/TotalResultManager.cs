@@ -8,9 +8,9 @@ using TMPro;
 using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 
-namespace MajdataPlay.TotalResult
+namespace MajdataPlay.Scenes.TotalResult
 {
     public class TotalResultManager : MonoBehaviour
     {

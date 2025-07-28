@@ -1,4 +1,4 @@
-using MajdataPlay.Game.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +12,7 @@ using MajdataPlay.Unsafe;
 using Unity.VisualScripting;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteManager : MonoBehaviour
     {

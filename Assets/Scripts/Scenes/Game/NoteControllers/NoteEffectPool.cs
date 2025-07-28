@@ -1,9 +1,9 @@
-﻿using MajdataPlay.Game.Utils;
+﻿using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     public sealed class NoteEffectPool : MonoBehaviour
     {

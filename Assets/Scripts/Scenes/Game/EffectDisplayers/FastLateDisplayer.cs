@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class FastLateDisplayer: MajComponent
     {

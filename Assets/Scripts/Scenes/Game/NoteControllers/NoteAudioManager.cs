@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Collections;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteAudioManager : MonoBehaviour
     {

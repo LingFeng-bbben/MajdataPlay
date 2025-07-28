@@ -1,11 +1,11 @@
 using MajdataPlay.Collections;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     public class TouchBorder : MonoBehaviour
     {

@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
 #nullable enable
     public class PreviewSoundPlayer : MonoBehaviour

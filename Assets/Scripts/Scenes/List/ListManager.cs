@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using MajdataPlay.Utils;
@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class ListManager : MonoBehaviour
     {

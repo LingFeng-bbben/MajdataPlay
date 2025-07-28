@@ -10,7 +10,7 @@ using TMPro;
 using Unity.Collections;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class Option : MonoBehaviour
     {

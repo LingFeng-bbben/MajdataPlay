@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes.Skins
+namespace MajdataPlay.Scenes.Game.Notes.Skins
 {
     public readonly ref struct TapSkin
     {

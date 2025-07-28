@@ -6,7 +6,7 @@ using System;
 using TMPro;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Test
+namespace MajdataPlay.Scenes.Test
 {
     internal class IOListener : MajComponent
     {

@@ -1,13 +1,13 @@
-﻿using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Behaviours;
+﻿using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
-using MajdataPlay.View;
+using MajdataPlay.Scenes.View;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NotePoolManager : MonoBehaviour
     {

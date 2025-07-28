@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Collections;
-using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Slide.Utils
+namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
 {
     public static class SlideTables
     {

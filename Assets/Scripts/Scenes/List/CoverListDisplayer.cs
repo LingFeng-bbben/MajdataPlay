@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class CoverListDisplayer : MonoBehaviour
     {

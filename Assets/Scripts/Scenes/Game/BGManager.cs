@@ -2,7 +2,7 @@
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
-using MajdataPlay.View;
+using MajdataPlay.Scenes.View;
 using System;
 using System.Collections;
 using System.Threading;
@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine.Video;
 using UnityEngine.UIElements;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class BGManager : MonoBehaviour
     {

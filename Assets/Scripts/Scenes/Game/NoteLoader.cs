@@ -7,22 +7,22 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Collections;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Game.Notes.Slide.Utils;
-using MajdataPlay.Game.Notes.Touch;
-using MajdataPlay.Game.Notes.Behaviours;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
+using MajdataPlay.Scenes.Game.Notes.Touch;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using System.Buffers;
 using System.Threading;
 using MajdataPlay.Settings;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
 #nullable enable
     public class NoteLoader : MonoBehaviour
