@@ -1,3 +1,4 @@
+using MajdataPlay.Settings;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
@@ -82,7 +83,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public bool IsClassic
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => USERSETTING_SLIDE_JUDGE_MODE == JudgeMode.Classic;
+            get => USERSETTING_SLIDE_JUDGE_MODE == JudgeModeOption.Classic;
         }
         public NoteStatus State
         {
@@ -116,7 +117,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _isAutoplay;
         }
-        protected AutoplayMode AutoplayMode
+        protected AutoplayModeOption AutoplayMode
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _autoplayMode;
@@ -172,11 +173,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
         protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
         protected readonly bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
-        protected readonly JudgeMode USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeMode.Modern;
-        protected readonly DJAutoPolicy USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicy.Strict;
+        protected readonly JudgeModeOption USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
+        protected readonly DJAutoPolicyOption USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
 
-        protected const float FRAME_LENGTH_SEC = 1f / 60;
-        protected const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
+        protected const float FRAME_LENGTH_SEC = MajEnv.FRAME_LENGTH_SEC;
+        protected const float FRAME_LENGTH_MSEC = MajEnv.FRAME_LENGTH_MSEC;
 
         protected const float TAP_JUDGE_SEG_1ST_PERFECT_MSEC = 1 * FRAME_LENGTH_MSEC;
         protected const float TAP_JUDGE_SEG_2ND_PERFECT_MSEC = 2 * FRAME_LENGTH_MSEC;
@@ -318,16 +319,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var judgeStyle = ModInfo.JudgeStyle;
             switch (judgeStyle)
             {
-                case JudgeStyleType.MAJI:
+                case JudgeStyleOption.MAJI:
                     ConvertToMAJI(ref grade);
                     break;
-                case JudgeStyleType.GACHI:
+                case JudgeStyleOption.GACHI:
                     ConvertToGACHI(ref grade);
                     break;
-                case JudgeStyleType.GORI:
+                case JudgeStyleOption.GORI:
                     ConvertToGORI(ref grade);
                     break;
-                case JudgeStyleType.DEFAULT:
+                case JudgeStyleOption.DEFAULT:
                 default:
                     return;
             }
@@ -436,7 +437,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         [ReadOnlyField, SerializeField]
         JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
         [ReadOnlyField, SerializeField]
-        AutoplayMode _autoplayMode = AutoplayMode.Disable;
+        AutoplayModeOption _autoplayMode = AutoplayModeOption.Disable;
         [ReadOnlyField, SerializeField]
         NoteStatus _state = NoteStatus.Start;
 

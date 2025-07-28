@@ -14,6 +14,8 @@ using MajdataPlay.Game;
 using MajdataPlay.List;
 using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.Result
 {
@@ -65,7 +67,7 @@ namespace MajdataPlay.Result
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
 
             LedRing.SetAllLight(Color.white);
 

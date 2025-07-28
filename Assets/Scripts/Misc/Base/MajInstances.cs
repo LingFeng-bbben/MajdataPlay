@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.IO;
+using MajdataPlay.Settings;
 using MajdataPlay.Recording;
 using Semver;
 using System.Runtime.CompilerServices;

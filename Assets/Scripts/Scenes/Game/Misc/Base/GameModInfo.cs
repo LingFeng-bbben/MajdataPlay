@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Settings;
+using MajdataPlay.Game.Notes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,8 @@ namespace MajdataPlay.Game
     public readonly struct GameModInfo
     {
         public float PlaybackSpeed { get; init; }
-        public AutoplayMode AutoPlay { get; init; }
-        public JudgeStyleType JudgeStyle { get; init; }
+        public AutoplayModeOption AutoPlay { get; init; }
+        public JudgeStyleOption JudgeStyle { get; init; }
         public bool SubdivideSlideJudgeGrade { get; init; }
         public bool AllBreak { get; init; }
         public bool AllEx { get; init; }

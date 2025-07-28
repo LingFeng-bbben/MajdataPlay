@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using MajdataPlay.Game.Notes;
+using MajdataPlay.Settings;
 
 namespace MajdataPlay.TotalResult
 {
@@ -20,7 +21,7 @@ namespace MajdataPlay.TotalResult
 
         public void DisplayResult(ISongDetail song, GameResult result, ChartLevel chartlevel)
         {
-            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
             title.text = song.Title;
             artist.text = song.Artist;
             designer.text = song.Designers[(int)chartlevel];

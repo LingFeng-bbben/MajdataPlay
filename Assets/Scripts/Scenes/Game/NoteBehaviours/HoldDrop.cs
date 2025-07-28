@@ -9,6 +9,8 @@ using MajdataPlay.Game.Utils;
 using MajdataPlay.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
 {
@@ -122,7 +124,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     if (_isJudged || !IsAutoplay)
                         return;
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
@@ -146,15 +148,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
         }
         void DJAutoplay()
         {
-            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+            var isBtnFirst = AutoplayMode == AutoplayModeOption.DJAuto_ButtonRing_First;
             if (!IsAutoplay || IsEnded)
             {
                 return;
@@ -188,12 +190,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (isBtnFirst)
             {
                 _ = _noteManager.SimulateButtonClick(_buttonPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive &&  _noteManager.SimulateButtonClick(_buttonPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive &&  _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
@@ -443,7 +445,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
@@ -553,7 +555,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
-            if (isPressed || AutoplayMode == AutoplayMode.Enable)
+            if (isPressed || AutoplayMode == AutoplayModeOption.Enable)
             {
                 if (remainingTime == 0)
                 {
@@ -597,7 +599,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (IsClassic)
             {
-                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
+                if (AutoplayMode == AutoplayModeOption.Enable && remainingTime == 0)
                 {
                     End();
                 }

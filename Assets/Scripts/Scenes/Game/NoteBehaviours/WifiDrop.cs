@@ -9,6 +9,7 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
+using MajdataPlay.Settings;
 using UnityEngine;
 
 #nullable enable
@@ -174,7 +175,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void SensorCheck()
         {
-            if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
+            if (AutoplayMode == AutoplayModeOption.Enable || !_isCheckable)
             {
                 return;
             }
@@ -436,7 +437,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             switch(AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
                     var queueMemory = _judgeQueues[0];
                     var queue = queueMemory.Span;
@@ -472,8 +473,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
                     HideBar(barIndex);
                     break;
-                case AutoplayMode.DJAuto_ButtonRing_First:
-                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
                     DJAutoplay();
                     break;
             }

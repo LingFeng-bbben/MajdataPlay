@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Settings;
+using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
@@ -28,7 +29,7 @@ namespace MajdataPlay.Game
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
-        public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
+        public bool IsClassicMode => _setting.Judge.Mode == JudgeModeOption.Classic;
         // Timeline
         /// <summary>
         /// The timing of the current Update<para>Unit: Second</para>
@@ -56,8 +57,8 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart { get; private set; } = false;
-        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode
+        public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
+        public AutoplayModeOption AutoplayMode
         {
             get => ModInfo.AutoPlay;
         }
@@ -294,9 +295,9 @@ namespace MajdataPlay.Game
                     case "AutoPlay":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
-                            autoplayMode = (AutoplayMode)modeIndex;
+                            autoplayMode = (AutoplayModeOption)modeIndex;
                         }
-                        else if(Enum.TryParse<AutoplayMode>(v.ToString(), false, out var mode))
+                        else if(Enum.TryParse<AutoplayModeOption>(v.ToString(), false, out var mode))
                         {
                             autoplayMode = mode;
                         }
@@ -304,9 +305,9 @@ namespace MajdataPlay.Game
                     case "JudgeStyle":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
                         {
-                            judgeStyle = (JudgeStyleType)styleIndex;
+                            judgeStyle = (JudgeStyleOption)styleIndex;
                         }
-                        else if (Enum.TryParse<JudgeStyleType>(v.ToString(), false, out var style))
+                        else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), false, out var style))
                         {
                             judgeStyle = style;
                         }
@@ -508,7 +509,7 @@ namespace MajdataPlay.Game
             void ChartMirror(ref string chartContent)
             {
                 var mirrorType = _setting.Game.Mirror;
-                if (mirrorType is MirrorType.Off)
+                if (mirrorType is MirrorOption.Off)
                     return;
                 chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
             }
@@ -803,23 +804,23 @@ namespace MajdataPlay.Game
                 return;
             switch (MajInstances.Settings.Game.BGInfo)
             {
-                case BGInfoType.Achievement_101:
-                case BGInfoType.Achievement_100:
-                case BGInfoType.Achievement:
-                case BGInfoType.AchievementClassical:
-                case BGInfoType.AchievementClassical_100:
-                case BGInfoType.S_Border:
-                case BGInfoType.SS_Border:
-                case BGInfoType.SSS_Border:
-                case BGInfoType.MyBest:
-                case BGInfoType.DXScore:
+                case BGInfoOption.Achievement_101:
+                case BGInfoOption.Achievement_100:
+                case BGInfoOption.Achievement:
+                case BGInfoOption.AchievementClassical:
+                case BGInfoOption.AchievementClassical_100:
+                case BGInfoOption.S_Border:
+                case BGInfoOption.SS_Border:
+                case BGInfoOption.SSS_Border:
+                case BGInfoOption.MyBest:
+                case BGInfoOption.DXScore:
                     _bgInfoHeaderAnim.SetTrigger("fadeOut");
                     break;
-                case BGInfoType.CPCombo:
-                case BGInfoType.PCombo:
-                case BGInfoType.Combo:
-                case BGInfoType.DXScoreRank:
-                case BGInfoType.Diff:
+                case BGInfoOption.CPCombo:
+                case BGInfoOption.PCombo:
+                case BGInfoOption.Combo:
+                case BGInfoOption.DXScoreRank:
+                case BGInfoOption.Diff:
                     break;
                 default:
                     return;

@@ -4,6 +4,8 @@ using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.Game.Notes.Slide.Utils
 {
@@ -659,7 +661,7 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
         public static SlideArea[][] GetWifiTable(int startPos)
         {
             List<SlideArea[]> queue = new();
-            var raw = MajInstances.Settings.Judge.Mode == JudgeMode.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
+            var raw = MajInstances.Settings.Judge.Mode == JudgeModeOption.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
             foreach (var line in raw)
             {
                 List<SlideArea> rows = new();

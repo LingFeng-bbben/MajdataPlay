@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Settings;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;

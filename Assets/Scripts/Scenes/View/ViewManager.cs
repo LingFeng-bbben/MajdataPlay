@@ -16,8 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEditor;
+using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
@@ -52,9 +51,9 @@ namespace MajdataPlay.View
                 }
             }
         }
-        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
+        public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
         public GameModInfo ModInfo { get; private set; }
-        public AutoplayMode AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
+        public AutoplayModeOption AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;

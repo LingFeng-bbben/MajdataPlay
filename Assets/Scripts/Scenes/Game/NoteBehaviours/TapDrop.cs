@@ -7,6 +7,7 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Game.Notes.Behaviours
@@ -179,11 +180,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch(AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     base.Autoplay();
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
@@ -202,17 +203,17 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+            var isBtnFirst = AutoplayMode == AutoplayModeOption.DJAuto_ButtonRing_First;
 
             if (isBtnFirst)
             {
                 _ = _noteManager.SimulateButtonClick(_buttonPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateButtonClick(_buttonPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
         [OnUpdate]
@@ -275,7 +276,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (_isJudged || IsEnded || AutoplayMode == AutoplayMode.Enable)
+            if (_isJudged || IsEnded || AutoplayMode == AutoplayModeOption.Enable)
                 return;
 
             var timing = GetTimeSpanToJudgeTiming();

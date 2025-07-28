@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Buffers;
 using System.Threading;
 using System.Net;
+using MajdataPlay.Settings;
 using MajdataPlay.Net;
 using Unity.VisualScripting;
 using Cysharp.Text;

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
@@ -56,11 +57,11 @@ namespace MajdataPlay.IO
                     var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
                     switch (manufacturer)
                     {
-                        case DeviceManufacturer.General:
-                        case DeviceManufacturer.Yuan:
+                        case DeviceManufacturerOption.General:
+                        case DeviceManufacturerOption.Yuan:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
-                        case DeviceManufacturer.Dao:
+                        case DeviceManufacturerOption.Dao:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:

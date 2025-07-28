@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay
+namespace MajdataPlay.Settings
 {
-    public enum RenderQualityLevel
+    public enum RenderQualityOption
     {
         VeryLow,
         Low,

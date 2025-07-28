@@ -20,6 +20,7 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Game.Notes;
 using System.Buffers;
 using System.Threading;
+using MajdataPlay.Settings;
 
 namespace MajdataPlay.Game
 {
@@ -1204,7 +1205,7 @@ namespace MajdataPlay.Game
             SliCompo.IsSlideNoTrack = _isSlideNoTrack;
             SliCompo.Multiple = multiple;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
-            if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
                 SliCompo.SortOrder = _slideLayer;
@@ -1293,7 +1294,7 @@ namespace MajdataPlay.Game
             //    centerStar,
             //    leftStar
             //};
-            if (MajInstances.Settings.Display.SlideSortOrder == JudgeMode.Classic)
+            if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
                 _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
                 WifiCompo.SortOrder = _slideLayer;
@@ -1806,12 +1807,12 @@ namespace MajdataPlay.Game
             {
                 switch(MajEnv.UserSettings.Game.Random)
                 {
-                    case RandomMode.Disabled:
+                    case RandomModeOption.Disabled:
                         return;
-                    case RandomMode.RANDOM:
+                    case RandomModeOption.RANDOM:
                         originPos = RandomTap(originPos, mappingTable);
                         break;
-                    case RandomMode.S_RANDOM:
+                    case RandomModeOption.S_RANDOM:
                         originPos = RandomTap();
                         break;
                 }
@@ -1821,12 +1822,12 @@ namespace MajdataPlay.Game
             {
                 switch (MajEnv.UserSettings.Game.Random)
                 {
-                    case RandomMode.Disabled:
+                    case RandomModeOption.Disabled:
                         return;
-                    case RandomMode.RANDOM:
+                    case RandomModeOption.RANDOM:
                         originPos = RandomTouch(originPos, mappingTable);
                         break;
-                    case RandomMode.S_RANDOM:
+                    case RandomModeOption.S_RANDOM:
                         originPos = RandomTouch();
                         break;
                 }
@@ -1837,12 +1838,12 @@ namespace MajdataPlay.Game
             {
                 switch (MajEnv.UserSettings.Game.Random)
                 {
-                    case RandomMode.Disabled:
+                    case RandomModeOption.Disabled:
                         return;
-                    case RandomMode.RANDOM:
+                    case RandomModeOption.RANDOM:
                         (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos, mappingTable);
                         break;
-                    case RandomMode.S_RANDOM:
+                    case RandomModeOption.S_RANDOM:
                         (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos);
                         break;
                 }

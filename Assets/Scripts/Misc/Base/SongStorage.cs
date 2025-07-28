@@ -1,6 +1,7 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using MajdataPlay.Settings;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;

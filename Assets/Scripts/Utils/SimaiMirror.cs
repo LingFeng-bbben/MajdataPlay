@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 
 namespace MajdataPlay.Utils
 {
@@ -106,7 +107,7 @@ namespace MajdataPlay.Utils
 
         private static readonly string HS_SEQUENCE = "<HS*";
 
-        public static string NoteMirrorHandle(string str, MirrorType type)
+        public static string NoteMirrorHandle(string str, MirrorOption type)
         {
             // NOTE: 类似 1-5[8:1]{16}, 这样的字符串 可以被SimaiProcess处理 但无法被正确镜像
             // 我认为这是对的 因为这种语法本身就是错误的 只不过SimaiProcess没有做处理而已 不能因此而妥协 以上
@@ -198,14 +199,14 @@ namespace MajdataPlay.Utils
             return resultString.ToString();
         }
 
-        private static string NoteMirrorPart(string str, MirrorType type)
+        private static string NoteMirrorPart(string str, MirrorOption type)
         {
             switch (type)
             {
-                case MirrorType.LRMirror:
+                case MirrorOption.LRMirror:
                     str = NormalMirrorPart(str, MIRROR_LEFT_RIGHT_MAP, MIRROR_LEFT_RIGHT_SPECIAL_MAP, MIRROR_SPECIAL_PREFIX);
                     break;
-                case MirrorType.UDMirror:
+                case MirrorOption.UDMirror:
                     str = NormalMirrorPart(str, MIRROR_UPSIDE_DOWN_MAP, MIRROR_UPSIDE_DOWN_SPECIAL_MAP, MIRROR_SPECIAL_PREFIX);
                     break;
             }

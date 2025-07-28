@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using MajdataPlay.Utils;
 using MychIO;
-using DeviceType = MajdataPlay.IO.ButtonRingDeviceType;
 using MychIO.Device;
 using System.Collections.Generic;
 using MychIO.Event;

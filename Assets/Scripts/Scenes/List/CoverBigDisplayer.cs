@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -128,7 +129,7 @@ namespace MajdataPlay.List
             }
             else
             {
-                var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+                var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
                 _archieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
                 _archieveRate.enabled = true;
                 _APbg.SetActive(false);

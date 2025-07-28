@@ -11,6 +11,8 @@ using MychIO.Device;
 using System.IO;
 using UnityEngine;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
+
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -40,11 +42,11 @@ namespace MajdataPlay.IO
                     return;
                 switch (MajEnv.UserSettings.IO.Manufacturer)
                 {
-                    case DeviceManufacturer.Yuan:
-                    case DeviceManufacturer.General:
+                    case DeviceManufacturerOption.Yuan:
+                    case DeviceManufacturerOption.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
-                    case DeviceManufacturer.Dao:
+                    case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
+using MajdataPlay.Settings;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
@@ -97,7 +98,7 @@ namespace MajdataPlay
                 if (arg == "--view-mode")
                 {
                     MajEnv.Mode = RunningMode.View;
-                    Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                    Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
                     break;
                 }
             }
@@ -110,7 +111,7 @@ namespace MajdataPlay
             else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
-                Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
             }
 #endif
 
