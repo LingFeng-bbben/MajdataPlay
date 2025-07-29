@@ -466,31 +466,17 @@ namespace MajdataPlay.Scenes.Setting
                             MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.JudgeOffset, 3);
                             MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.TouchPanelOffset, 3); 
                             MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AnswerOffset, 3); 
-                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC* MajEnv.UserSettings.Game.SlideFadeInOffset, 3); 
+                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Game.SlideFadeInOffset, 3); 
+                            MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Debug.DisplayOffset, 3); 
                         }
                         else
                         {
-                            if(MajEnv.UserSettings.Judge.AudioOffset != 0)
-                            {
-                                MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.AudioOffset, 1);
-                            }
-                            if(MajEnv.UserSettings.Judge.JudgeOffset != 0)
-                            {
-                                MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.JudgeOffset, 1);
-
-                            }
-                            if(MajEnv.UserSettings.Judge.TouchPanelOffset != 0)
-                            {
-                                MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.TouchPanelOffset, 1);
-                            }
-                            if(MajEnv.UserSettings.Judge.AnswerOffset != 0)
-                            {
-                                MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Judge.AnswerOffset, 1);
-                            }
-                            if(MajEnv.UserSettings.Game.SlideFadeInOffset != 0)
-                            {
-                                MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC / MajEnv.UserSettings.Game.SlideFadeInOffset, 1);
-                            }
+                            MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.UserSettings.Judge.AudioOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.UserSettings.Judge.JudgeOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.UserSettings.Judge.TouchPanelOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.UserSettings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.UserSettings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.UserSettings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
                         }
                     }
                     break;
