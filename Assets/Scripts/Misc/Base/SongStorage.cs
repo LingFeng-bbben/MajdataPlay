@@ -127,218 +127,194 @@ namespace MajdataPlay
         }
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
         {
-            try
+            var dirs = new DirectoryInfo(rootPath).GetDirectories();
+            var tasks = new List<Task<SongCollection>>(dirs.Length);
+            var collections = new List<SongCollection>(dirs.Length);
+
+            //Local Charts
+            Parallel.For(0, dirs.Length, i =>
             {
-                var dirs = new DirectoryInfo(rootPath).GetDirectories();
-                var tasks = new List<Task<SongCollection>>(dirs.Length);
-                var collections = new List<SongCollection>(dirs.Length);
-                var taskCount = 0;
+                var dir = dirs[i];
+                var path = dir.FullName;
+                var files = dir.GetFiles();
+                var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
+                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
 
-                //Local Charts
-                Parallel.For(0, dirs.Length, i =>
+                if (maidataFile is not null || trackFile is not null)
                 {
-                    var dir = dirs[i];
-                    var path = dir.FullName;
-                    var files = dir.GetFiles();
-                    var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
-                    var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
+                    return;
+                }
 
-                    if (maidataFile is not null || trackFile is not null)
+                tasks.Add(GetCollection(path));
+            });
+
+            var allTasks = Task.WhenAll(tasks);
+
+            while (!allTasks.IsCompleted)
+            {
+                var percent = 0f;
+                if (_totalChartCount != 0)
+                {
+                    percent = _parsedChartCount / (float)_totalChartCount;
+                }
+                progressReporter?.Report($"{"Scanning Charts".i18n()}...({percent * 100:F2}%)");
+                await Task.Delay(33);
+            }
+            progressReporter?.Report($"{"Scanning Charts".i18n()}...(100.00%)");
+
+            foreach (var task in tasks)
+            {
+                if (task.Result != null)
+                {
+                    collections.Add(task.Result);
+                }
+            }
+            await Task.Delay(1000);
+            //Online Charts
+            if (MajInstances.Settings.Online.Enable)
+            {
+                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.GroupBy(x => x.Url))
+                {
+                    var api = item.FirstOrDefault();
+                    if (api is null)
                     {
-                        return;
+                        continue;
                     }
-
-                    tasks.Add(GetCollection(path));
-                    Interlocked.Increment(ref taskCount);
+                    if (string.IsNullOrEmpty(api.Name))
+                    {
+                        continue;
+                    }
+                    progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("Scanning Charts From {0}"), api.Name));
+                    var result = await GetOnlineCollection(api, progressReporter);
+                    if (!result.IsEmpty)
+                    {
+                        collections.Add(result);
+                    }
+                }
+            }
+            //Add all songs to "All" folder
+            var allcharts = new List<ISongDetail>();
+            foreach (var collection in collections)
+            {
+                foreach (var item in collection)
+                {
+                    allcharts.Add(item);
+                }
+            }
+            collections.Add(new SongCollection("All", allcharts.ToArray()));
+            MajDebug.Log("MyFavorite");
+            if (_userFavorites is not null)
+            {
+                foreach (var hash in _userFavorites.SongHashs)
+                {
+                    _storageFav.Add(hash);
+                }
+            }
+            var hashSet = _storageFav;
+            var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
+                                         .GroupBy(x => x.Hash)
+                                         .Select(x => x.FirstOrDefault())
+                                         .Where(x => x is not null)
+                                         .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
+                                         .ToList();
+            MajDebug.Log(favoriteSongs.Count);
+            _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
+            //The collections and _myFavorite share a same ref of original List<T>
+            collections.Add(_myFavorite);
+            MajDebug.Log("Load Dans");
+            var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
+            var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
+            for (var i = 0; i < loadDanTasks.Length; i++)
+            {
+                if (i >= danFiles.Length)
+                {
+                    loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
+                    continue;
+                }
+                var file = danFiles[i];
+                if (file.Name == MY_FAVORITE_FILENAME)
+                {
+                    loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
+                    continue;
+                }
+                var jsonStream = File.OpenRead(file.FullName);
+                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
+                {
+                    PropertyNameCaseInsensitive = false
                 });
-
-                var allTasks = Task.WhenAll(tasks);
-
-                while (!allTasks.IsCompleted)
+                if (result && dan is not null)
                 {
-                    var percent = 0f;
-                    if (_totalChartCount != 0)
-                    {
-                        percent = _parsedChartCount / (float)_totalChartCount;
-                    }
-                    progressReporter?.Report($"{Localization.GetLocalizedText("Scanning Charts")}...({percent * 100:F2}%)");
-                    await Task.Delay(33);
+                    loadDanTasks[i] = GetDanCollection(allcharts, dan);
                 }
-                progressReporter?.Report($"{Localization.GetLocalizedText("Scanning Charts")}...(100.00%)");
-
-                foreach (var task in tasks)
-                {
-                    if (task.Result != null)
-                    {
-                        collections.Add(task.Result);
-                    }
-                }
-                await Task.Delay(1000);
-                //Online Charts
-                if (MajInstances.Settings.Online.Enable)
-                {
-                    foreach (var item in MajInstances.Settings.Online.ApiEndpoints.GroupBy(x => x.Url))
-                    {
-                        var api = item.FirstOrDefault();
-                        if (api is null)
-                        {
-                            continue;
-                        }
-                        if (string.IsNullOrEmpty(api.Name))
-                        {
-                            continue;
-                        }
-                        progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("Scanning Charts From {0}"), api.Name));
-                        var result = await GetOnlineCollection(api, progressReporter);
-                        if (!result.IsEmpty)
-                        {
-                            collections.Add(result);
-                        }
-                    }
-                }
-                //Add all songs to "All" folder
-                var allcharts = new List<ISongDetail>();
-                foreach (var collection in collections)
-                {
-                    foreach (var item in collection)
-                    {
-                        allcharts.Add(item);
-                    }
-                }
-                collections.Add(new SongCollection("All", allcharts.ToArray()));
-                MajDebug.Log("MyFavorite");
-                if (_userFavorites is not null)
-                {
-                    foreach (var hash in _userFavorites.SongHashs)
-                    {
-                        _storageFav.Add(hash);
-                    }
-                }
-                var hashSet = _storageFav;
-                var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
-                                             .GroupBy(x => x.Hash)
-                                             .Select(x => x.FirstOrDefault())
-                                             .Where(x => x is not null)
-                                             .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
-                                             .ToList();
-                MajDebug.Log(favoriteSongs.Count);
-                _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
-                //The collections and _myFavorite share a same ref of original List<T>
-                collections.Add(_myFavorite);
-                MajDebug.Log("Load Dans");
-                var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
-                var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
-                for (var i = 0; i < loadDanTasks.Length; i++)
-                {
-                    if (i >= danFiles.Length)
-                    {
-                        loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
-                        continue;
-                    }
-                    var file = danFiles[i];
-                    if (file.Name == MY_FAVORITE_FILENAME)
-                    {
-                        loadDanTasks[i] = Task.FromResult<SongCollection?>(null);
-                        continue;
-                    }
-                    var jsonStream = File.OpenRead(file.FullName);
-                    var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
-                    {
-                        PropertyNameCaseInsensitive = false
-                    });
-                    if (result && dan is not null)
-                    {
-                        loadDanTasks[i] = GetDanCollection(allcharts, dan);
-                    }
-                }
-                if (loadDanTasks.Length != 0)
-                {
-                    var allTask = Task.WhenAll(loadDanTasks);
-                    while (!allTask.IsCompleted)
-                    {
-                        await Task.Yield();
-                    }
-                    foreach (var task in loadDanTasks)
-                    {
-                        if (task.IsFaulted)
-                        {
-                            MajDebug.LogError(task.Exception);
-                            continue;
-                        }
-                        var collection = task.Result;
-                        if (collection is null)
-                        {
-                            continue;
-                        }
-                        collections.Add(collection);
-                        MajDebug.Log("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
-                    }
-                }
-                return collections.ToArray();
             }
-            catch (Exception e)
+            if (loadDanTasks.Length != 0)
             {
-                MajDebug.LogException(e);
-                throw;
-            }
-        }
-        static async Task<SongCollection> GetCollection(string rootPath)
-        {
-            try
-            {
-                var thisDir = new DirectoryInfo(rootPath);
-                var dirs = thisDir.GetDirectories()
-                                  .OrderBy(o => o.CreationTime)
-                                  .ToList();
-                if (dirs.Count == 0)
-                {
-                    return SongCollection.Empty(thisDir.Name);
-                }
-                var charts = new List<SongDetail>();
-                var tasks = new List<Task<SongDetail>>();
-                foreach (var songDir in dirs)
-                {
-                    var files = songDir.GetFiles();
-                    var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                    var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                await Task.WhenAll(loadDanTasks);
 
-                    if (maidataFile is null || trackFile is null)
-                    {
-                        continue;
-                    }
-
-                    var parsingTask = Task.Run(async () => 
-                    {
-                        var chart = await SongDetail.ParseAsync(songDir.FullName);
-                        Interlocked.Increment(ref _parsedChartCount);
-                        return chart;
-                    });
-                    Interlocked.Increment(ref _totalChartCount);
-                    tasks.Add(parsingTask);
-                }
-                var allTask = Task.WhenAll(tasks);
-
-                while (!allTask.IsCompleted)
-                {
-                    await Task.Yield();
-                }
-                foreach (var task in tasks)
+                foreach (var task in loadDanTasks)
                 {
                     if (task.IsFaulted)
                     {
-                        MajDebug.LogException(task.Exception);
-                        Interlocked.Decrement(ref _totalChartCount);
+                        MajDebug.LogError(task.Exception);
                         continue;
                     }
-                    charts.Add(task.Result);
+                    var collection = task.Result;
+                    if (collection is null)
+                    {
+                        continue;
+                    }
+                    collections.Add(collection);
+                    MajDebug.Log("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
                 }
-                return new SongCollection(thisDir.Name, charts.ToArray());
             }
-            catch (Exception e)
+            return collections.ToArray();
+        }
+        static async Task<SongCollection> GetCollection(string rootPath)
+        {
+            await UniTask.SwitchToThreadPool();
+            var thisDir = new DirectoryInfo(rootPath);
+            var dirs = thisDir.GetDirectories()
+                              .OrderBy(o => o.CreationTime)
+                              .ToList();
+            if (dirs.Count == 0)
             {
-                MajDebug.LogException(e);
-                throw;
+                return SongCollection.Empty(thisDir.Name);
             }
+            var charts = new List<SongDetail>();
+            var tasks = new List<Task<SongDetail>>();
+            foreach (var songDir in dirs)
+            {
+                var files = songDir.GetFiles();
+                var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
+                var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+
+                if (maidataFile is null || trackFile is null)
+                {
+                    continue;
+                }
+
+                var parsingTask = Task.Run(async () =>
+                {
+                    var chart = await SongDetail.ParseAsync(songDir.FullName);
+                    Interlocked.Increment(ref _parsedChartCount);
+                    return chart;
+                });
+                Interlocked.Increment(ref _totalChartCount);
+                tasks.Add(parsingTask);
+            }
+            await Task.WhenAll(tasks);
+
+            foreach (var task in tasks)
+            {
+                if (task.IsFaulted)
+                {
+                    MajDebug.LogException(task.Exception);
+                    Interlocked.Decrement(ref _totalChartCount);
+                    continue;
+                }
+                charts.Add(task.Result);
+            }
+            return new SongCollection(thisDir.Name, charts.ToArray());
         }
         static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
         {
