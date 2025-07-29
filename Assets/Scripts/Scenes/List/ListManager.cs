@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
+using MajdataPlay.Scenes.Setting;
 
 namespace MajdataPlay.Scenes.List
 {
@@ -347,15 +348,25 @@ namespace MajdataPlay.Scenes.List
             }
             else if (a2Statistic.IsClicked)
             {
-                const int MOD_PAGE_INDEX = 5;
-                MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
+                //const int MOD_PAGE_INDEX = 5;
+                //MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
+                SettingManager.JmpToModPage();
+                if (_coverListDisplayer.Mode == CoverListMode.Directory)
+                {
+                    SettingManager.IgnoreChartSettingPage();
+                }
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
                 return;
             }
             else if (a7Statistic.IsClicked)
             {
-                MajInstances.GameManager.LastSettingPage = 0;
+                //MajInstances.GameManager.LastSettingPage = 0;
+                SettingManager.JmpToDefaultPage();
+                if(_coverListDisplayer.Mode == CoverListMode.Directory)
+                {
+                    SettingManager.IgnoreChartSettingPage();
+                }
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
                 return;

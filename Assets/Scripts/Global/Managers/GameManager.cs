@@ -39,7 +39,6 @@ namespace MajdataPlay
             }
         }
         private ChartLevel _selectedDiff = ChartLevel.Easy;
-        public int LastSettingPage { get; set; } = 0;
 
 
         [SerializeField]

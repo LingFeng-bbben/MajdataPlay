@@ -24,16 +24,28 @@ namespace MajdataPlay.Scenes.Setting
         Menu[] menus = Array.Empty<Menu>();
         bool _isExited = false;
         bool _isInited = false;
+
+        const int NO_REQUEST = 0;
+        const int JMP_TO_MOD_PAGE = 1;
+        const int JMP_TO_DEFAULT_PAGE = 1 << 1;
+        const int IGNORE_CHART_SETTING_PAGE = 1 << 2;
+
+        static int _fromListRequest = NO_REQUEST;
         void Start()
         {
-            var selectedChart = SongStorage.WorkingCollection.Current;
-            var chartSetting = ChartSettingStorgae.GetSetting(selectedChart);
+            var fromListRequest = _fromListRequest;
             var type = Setting.GetType();
             var properties = type.GetProperties()
                                  .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
                                  .ToArray();
-            menus = new Menu[properties.Length + 1];
+            var offset = 0;
+
+            if((fromListRequest & IGNORE_CHART_SETTING_PAGE) == 0)
             {
+                menus = new Menu[properties.Length + 1];
+                offset = 1;
+                var selectedChart = SongStorage.WorkingCollection.Current;
+                var chartSetting = ChartSettingStorgae.GetSetting(selectedChart);
                 var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = chartSettingType.Name;
@@ -41,6 +53,10 @@ namespace MajdataPlay.Scenes.Setting
                 menus[0] = menu;
                 menu.SubOptionObject = chartSetting;
                 menu.Name = chartSettingType.Name;
+            }
+            else
+            {
+                menus = new Menu[properties.Length];
             }
             foreach (var (i, property) in properties.WithIndex())
             {
@@ -56,7 +72,7 @@ namespace MajdataPlay.Scenes.Setting
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
-                menus[i + 1] = menu;
+                menus[i + offset] = menu;
                 menu.SubOptionObject = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
@@ -150,13 +166,24 @@ namespace MajdataPlay.Scenes.Setting
             }
             await UniTask.DelayFrame(3);
             await SwitchToDesiredIndex();
+            _fromListRequest = NO_REQUEST;
             _isInited = true;
         }
 
         async UniTask SwitchToDesiredIndex()
         {
             await UniTask.Yield();
-            Index = MajInstances.GameManager.LastSettingPage;
+            var fromListRequest = _fromListRequest;
+            var index = 0;
+            if((fromListRequest & JMP_TO_MOD_PAGE) != 0)
+            {
+                index = menus.AsEnumerable().FindIndex(x => x.Name == "Mod");
+            }
+            else if ((fromListRequest & JMP_TO_MOD_PAGE) != 0)
+            {
+                index = 0;
+            }
+            Index = index;
             UpdateMenu(0, Index);
         }
 
@@ -181,6 +208,18 @@ namespace MajdataPlay.Scenes.Setting
                 Index = 0;
             }
             UpdateMenu(oldIndex, Index);
+        }
+        public static void JmpToModPage()
+        {
+            _fromListRequest |= JMP_TO_MOD_PAGE;
+        }
+        public static void IgnoreChartSettingPage()
+        {
+            _fromListRequest |= IGNORE_CHART_SETTING_PAGE;
+        }
+        public static void JmpToDefaultPage()
+        {
+            _fromListRequest |= JMP_TO_DEFAULT_PAGE;
         }
         void UpdateMenu(int oldIndex,int newIndex)
         {
