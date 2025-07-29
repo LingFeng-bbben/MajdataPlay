@@ -468,7 +468,7 @@ namespace MajdataPlay.Scenes.Setting
                             MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AnswerOffset, 3); 
                             MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Game.SlideFadeInOffset, 3); 
                             MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Debug.DisplayOffset, 3);
-                            ChartSettingStorgae.ConvertUnitToSecond();
+                            ChartSettingStorage.ConvertUnitToSecond();
                         }
                         else
                         {
@@ -478,7 +478,7 @@ namespace MajdataPlay.Scenes.Setting
                             MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.UserSettings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
                             MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.UserSettings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
                             MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.UserSettings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            ChartSettingStorgae.ConvertUnitToFrame();
+                            ChartSettingStorage.ConvertUnitToFrame();
                         }
                     }
                     break;

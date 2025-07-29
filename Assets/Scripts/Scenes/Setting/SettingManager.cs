@@ -45,7 +45,7 @@ namespace MajdataPlay.Scenes.Setting
                 menus = new Menu[properties.Length + 1];
                 offset = 1;
                 var selectedChart = SongStorage.WorkingCollection.Current;
-                var chartSetting = ChartSettingStorgae.GetSetting(selectedChart);
+                var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
                 var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = chartSettingType.Name;

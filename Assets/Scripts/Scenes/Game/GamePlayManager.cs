@@ -168,7 +168,7 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            var chartSetting = ChartSettingStorgae.GetSetting(_songDetail);
+            var chartSetting = ChartSettingStorage.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Settings
 {
-    internal static class ChartSettingStorgae
+    internal static class ChartSettingStorage
     {
         static bool _isInited = false;
 
@@ -40,7 +40,7 @@ namespace MajdataPlay.Settings
                 }
                 else
                 {
-                    for (var i = 0; i < _storage.Count; i++)
+                    for (var i = 0; i < data.Length; i++)
                     {
                         var setting = data[i];
                         if (setting.Unit != MajEnv.UserSettings.Debug.OffsetUnit)

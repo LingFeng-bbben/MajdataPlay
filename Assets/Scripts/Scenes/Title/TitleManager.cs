@@ -58,7 +58,7 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
 
-            task1 = ChartSettingStorgae.InitAsync();
+            task1 = ChartSettingStorage.InitAsync();
 
             while (!task1.IsCompleted)
             {
