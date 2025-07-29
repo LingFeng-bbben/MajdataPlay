@@ -7,6 +7,8 @@ using System.Diagnostics;
 using HidSharp;
 using System.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
+
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -38,14 +40,14 @@ namespace MajdataPlay.IO
                     return;
                 }
                 var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-                if (manufacturer == DeviceManufacturer.General)
+                if (manufacturer == DeviceManufacturerOption.General)
                 {
                     switch (MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type)
                     {
-                        case ButtonRingDeviceType.Keyboard:
+                        case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
-                        case ButtonRingDeviceType.HID:
+                        case ButtonRingDeviceOption.HID:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
@@ -53,7 +55,7 @@ namespace MajdataPlay.IO
                             break;
                     }
                 }
-                else if (manufacturer is DeviceManufacturer.Yuan or DeviceManufacturer.Dao)
+                else if (manufacturer is DeviceManufacturerOption.Yuan or DeviceManufacturerOption.Dao)
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
@@ -267,7 +269,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 stopwatch.Start();
                 try
                 {
@@ -348,7 +350,7 @@ namespace MajdataPlay.IO
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;
@@ -390,13 +392,13 @@ namespace MajdataPlay.IO
                             hidStream.Read(buffer);
                             switch(manufacturer)
                             {
-                                case DeviceManufacturer.General:
+                                case DeviceManufacturerOption.General:
                                     GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
-                                case DeviceManufacturer.Yuan:
+                                case DeviceManufacturerOption.Yuan:
                                     AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
-                                case DeviceManufacturer.Dao:
+                                case DeviceManufacturerOption.Dao:
                                     _ioThreadSync.Notify();
                                     DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     _ioThreadSync.WaitNotify();
@@ -458,21 +460,21 @@ namespace MajdataPlay.IO
                     buffer[i] |= state;
                 }
             }
-            static string GetHIDDeviceName(ButtonRingDeviceType deviceType, DeviceManufacturer manufacturer)
+            static string GetHIDDeviceName(ButtonRingDeviceOption deviceType, DeviceManufacturerOption manufacturer)
             {
                 switch(deviceType)
                 {
-                    case ButtonRingDeviceType.HID:
-                        if(manufacturer == DeviceManufacturer.General)
+                    case ButtonRingDeviceOption.HID:
+                        if(manufacturer == DeviceManufacturerOption.General)
                         {
                             return string.Empty;
                         }
-                        else if(manufacturer == DeviceManufacturer.Yuan)
+                        else if(manufacturer == DeviceManufacturerOption.Yuan)
                         {
                             //return "MusicGame Composite USB";
                             return string.Empty;
                         }
-                        else if (manufacturer == DeviceManufacturer.Dao)
+                        else if (manufacturer == DeviceManufacturerOption.Dao)
                         {
                             //return "SkyStar Maimoller";
                             return string.Empty;

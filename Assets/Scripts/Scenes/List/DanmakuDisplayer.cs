@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class DanmakuDisplayer : MonoBehaviour
     {

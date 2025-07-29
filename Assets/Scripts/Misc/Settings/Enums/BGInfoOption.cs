@@ -1,6 +1,6 @@
-﻿namespace MajdataPlay.Game
+﻿namespace MajdataPlay.Settings
 {
-    public enum BGInfoType
+    public enum BGInfoOption
     {
         CPCombo,
         PCombo,

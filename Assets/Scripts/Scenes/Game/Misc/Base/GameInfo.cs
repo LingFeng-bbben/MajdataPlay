@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal class GameInfo
     {

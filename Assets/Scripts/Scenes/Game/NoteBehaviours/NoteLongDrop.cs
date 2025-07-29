@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class NoteLongDrop : NoteDrop
     {
@@ -228,7 +228,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else if (headGrade.IsMissOrTooFast())
                 return headGrade;
 
-            var releaseTiming = ThisFrameSec - USERSETTING_JUDGE_OFFSET - offset;
+            var releaseTiming = ThisFrameSec - USERSETTING_JUDGE_OFFSET_SEC - offset;
             var diffSec = Timing + Length - releaseTiming;
             var isFast = diffSec > 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.IO
+namespace MajdataPlay.Settings
 {
-    public enum DeviceManufacturer
+    public enum TopInfoDisplayOption
     {
-        General,
-        Yuan,
-        Dao
+        None,
+        Judge,
+        Timing,
+        TimingGauge
     }
 }

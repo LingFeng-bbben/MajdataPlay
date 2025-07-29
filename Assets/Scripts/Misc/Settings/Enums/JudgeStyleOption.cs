@@ -1,6 +1,6 @@
-﻿namespace MajdataPlay.Game.Notes
+﻿namespace MajdataPlay.Settings
 {
-    public enum JudgeStyleType
+    public enum JudgeStyleOption
     {
         DEFAULT,
         MAJI,

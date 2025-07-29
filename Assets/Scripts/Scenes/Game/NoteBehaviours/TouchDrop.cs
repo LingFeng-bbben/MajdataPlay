@@ -1,17 +1,18 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Game.Notes.Touch;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Touch;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo, TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
@@ -236,7 +237,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
                 return;
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -303,7 +304,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)
@@ -317,11 +318,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     base.Autoplay();
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }

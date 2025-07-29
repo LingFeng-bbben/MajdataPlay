@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Collections;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 using MajSimai;
 using System;
 using System.Collections.Generic;

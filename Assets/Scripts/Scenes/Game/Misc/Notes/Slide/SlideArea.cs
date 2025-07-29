@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Slide
+namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
     public class SlideArea
     {

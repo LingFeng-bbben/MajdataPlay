@@ -1,13 +1,13 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Skins;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Skins;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class JudgeTextDisplayer: MajComponent
     {
@@ -54,16 +54,24 @@ namespace MajdataPlay.Game
             if (_displayCriticalPerfect)
             {
                 if (_displayBreakScore)
+                {
                     breakSprite = _skin.Break_2600_Shine;
+                }
                 else
+                {
                     breakSprite = _skin.CP_Shine;
+                }
             }
             else
             {
                 if (_displayBreakScore)
+                {
                     breakSprite = _skin.Break_2600_Shine;
+                }
                 else
+                {
                     breakSprite = _skin.P_Shine;
+                }
             }
             breakRenderer.sprite = breakSprite;
             _children = Transform.GetChildren()
@@ -79,7 +87,7 @@ namespace MajdataPlay.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -92,14 +100,23 @@ namespace MajdataPlay.Game
             var result = judgeResult.Grade;
 
             if (isBreak && _displayBreakScore)
-                LoadBreakSkin(judgeResult,isClassC);
+            {
+                LoadBreakSkin(judgeResult, isClassC);
+            }
             else
-                LoadTapSkin(judgeResult,isClassC);
+            {
+                LoadTapSkin(judgeResult, isClassC);
+            }
             
             if (isBreak && result == JudgeGrade.Perfect)
+            {
                 _animator.SetTrigger(BREAK_ANIM_HASH);
+            }
             else
+            {
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
+            }
+            _animator.Update(0.000000114514f);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
         void LoadTapSkin(in NoteJudgeResult judgeResult,bool isClassC = false)

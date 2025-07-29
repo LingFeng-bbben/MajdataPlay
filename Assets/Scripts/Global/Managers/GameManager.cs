@@ -1,21 +1,18 @@
 using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
 using System;
 using System.IO;
-using System.Threading;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
+using MajdataPlay.Settings;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MajdataPlay.IO;
-using MajdataPlay.Test;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Test;
+using System.Collections.Generic;
 
 namespace MajdataPlay
 {
@@ -97,7 +94,7 @@ namespace MajdataPlay
                 if (arg == "--view-mode")
                 {
                     MajEnv.Mode = RunningMode.View;
-                    Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                    Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
                     break;
                 }
             }
@@ -110,7 +107,7 @@ namespace MajdataPlay
             else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
-                Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
             }
 #endif
 
@@ -196,14 +193,14 @@ namespace MajdataPlay
         {
             IOListener.NextScene = "Title";
             #if UNITY_STANDALONE_WIN
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
             #endif
             SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {
             #if UNITY_STANDALONE_WIN
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
             #endif
             SceneManager.LoadScene("Title");
         }
@@ -291,19 +288,17 @@ namespace MajdataPlay
         }
         public void EnableGC()
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
+            GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
             MajDebug.LogWarning("GC has been enabled");
 #endif
-            GC.Collect();
         }
         public void DisableGC() 
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
             GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             MajDebug.LogWarning("GC has been disabled");

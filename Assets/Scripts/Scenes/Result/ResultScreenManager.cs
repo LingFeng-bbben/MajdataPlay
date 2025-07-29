@@ -10,12 +10,14 @@ using System;
 using SkiaSharp;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
-using MajdataPlay.Game;
-using MajdataPlay.List;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.List;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Settings;
+
 #nullable enable
-namespace MajdataPlay.Result
+namespace MajdataPlay.Scenes.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
     {
@@ -65,7 +67,7 @@ namespace MajdataPlay.Result
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
 
             LedRing.SetAllLight(Color.white);
 
@@ -118,14 +120,29 @@ namespace MajdataPlay.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            if(result.NoteJudgeDiffs.IsEmpty)
+            if(MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                avgJudgeTime.text = $"0.000s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.000s";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                }
             }
             else
             {
-                avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.0f";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / MajEnv.FRAME_LENGTH_MSEC:F1}f";
+                }
             }
+            
 
             LoadCover(song).Forget();
 
@@ -336,7 +353,7 @@ namespace MajdataPlay.Result
             greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
-            goodPaint.Color = greatColor.ToSkColor();
+            goodPaint.Color = goodColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
             linePaint.Color = SKColors.White;
@@ -358,7 +375,9 @@ namespace MajdataPlay.Result
                 var y = sampleCount;
 
                 if (y > maxSampleCount)
+                {
                     maxSampleCount = y;
+                }
 
                 points[(int)i] = new Point()
                 {

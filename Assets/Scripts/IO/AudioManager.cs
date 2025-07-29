@@ -17,6 +17,7 @@ using System;
 using System.Linq;
 using MajdataPlay.Collections;
 using System.Text;
+using MajdataPlay.Settings;
 
 
 #nullable enable
@@ -74,22 +75,21 @@ namespace MajdataPlay.IO
             var backend = MajInstances.Settings.Audio.Backend;
             var sampleRate = MajInstances.Settings.Audio.Samplerate;
             var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
-
 #if !UNITY_EDITOR
             if (MajEnv.Mode == RunningMode.View)
             {
-                backend = SoundBackendType.Wasapi;
+                backend = SoundBackendOption.Wasapi;
                 isExclusiveRequest = false;
             }
 #endif
 #if UNITY_ANDROID
             MajDebug.Log("Android: Using BassSimple");
-            MajInstances.Settings.Audio.Backend = SoundBackendType.BassSimple;
-            backend = SoundBackendType.BassSimple;
+            MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
+            backend = SoundBackendOption.BassSimple;
 #endif
             switch (backend)
             {
-                case SoundBackendType.Asio:
+                case SoundBackendOption.Asio:
                     {
                         MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
                         var asioCount = BassAsio.DeviceCount;
@@ -124,7 +124,7 @@ namespace MajdataPlay.IO
                         BassAsio.Start();
                     }
                     break;
-                case SoundBackendType.Wasapi:
+                case SoundBackendOption.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
                         MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
@@ -158,7 +158,7 @@ namespace MajdataPlay.IO
                         BassWasapi.Start();
                     }
                     break;
-                case SoundBackendType.BassSimple:
+                case SoundBackendOption.BassSimple:
                     MajDebug.Log("Bass Init: " + Bass.Init());
                     MajDebug.Log(Bass.LastError);
                 break;
@@ -167,7 +167,7 @@ namespace MajdataPlay.IO
             InitSFXSample(SFXFileNames,SFXFilePath);
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 
-            if(backend == SoundBackendType.Wasapi ||  backend == SoundBackendType.Asio || backend == SoundBackendType.BassSimple)
+            if(backend == SoundBackendOption.Wasapi ||  backend == SoundBackendOption.Asio || backend == SoundBackendOption.BassSimple)
             MajDebug.Log(Bass.LastError);
 
             if (PlayDebug)
@@ -188,14 +188,14 @@ namespace MajdataPlay.IO
                 AudioSampleWrap sample;
                 switch(MajInstances.Settings.Audio.Backend)
                 {
-                    case SoundBackendType.Unity:
+                    case SoundBackendOption.Unity:
                         sample = UnityAudioSample.Create($"file://{path}", gameObject);
                         break;
-                    case SoundBackendType.Asio:
-                    case SoundBackendType.Wasapi:
+                    case SoundBackendOption.Asio:
+                    case SoundBackendOption.Wasapi:
                         sample = BassAudioSample.Create(path, BassGlobalMixer, false, false);
                         break;
-                    case SoundBackendType.BassSimple:
+                    case SoundBackendOption.BassSimple:
                         sample = BassSimpleAudioSample.Create(path, false, false);
                         break;
                     default:
@@ -230,9 +230,9 @@ namespace MajdataPlay.IO
 
         private void OnDestroy()
         {
-            if(MajInstances.Settings.Audio.Backend == SoundBackendType.Wasapi
-                || MajInstances.Settings.Audio.Backend == SoundBackendType.Asio||
-                MajInstances.Settings.Audio.Backend == SoundBackendType.BassSimple)
+            if(MajInstances.Settings.Audio.Backend == SoundBackendOption.Wasapi
+                || MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio||
+                MajInstances.Settings.Audio.Backend == SoundBackendOption.BassSimple)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -279,12 +279,12 @@ namespace MajdataPlay.IO
             {
                 switch (backend)
                 {
-                    case SoundBackendType.Unity:
+                    case SoundBackendOption.Unity:
                         return UnityAudioSample.Create($"file://{path}", gameObject);
-                    case SoundBackendType.Asio:
-                    case SoundBackendType.Wasapi:
+                    case SoundBackendOption.Asio:
+                    case SoundBackendOption.Wasapi:
                         return BassAudioSample.Create(path, BassGlobalMixer, true, speedChange);
-                    case SoundBackendType.BassSimple:
+                    case SoundBackendOption.BassSimple:
                         return BassSimpleAudioSample.Create(path, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
@@ -301,12 +301,12 @@ namespace MajdataPlay.IO
             var backend = MajInstances.Settings.Audio.Backend;
             switch (backend)
             {
-                case SoundBackendType.Unity:
+                case SoundBackendOption.Unity:
                     return UnityAudioSample.Create(uri.OriginalString, gameObject);
-                case SoundBackendType.Asio:
-                case SoundBackendType.Wasapi:
+                case SoundBackendOption.Asio:
+                case SoundBackendOption.Wasapi:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
-                case SoundBackendType.BassSimple:
+                case SoundBackendOption.BassSimple:
                     return BassSimpleAudioSample.CreateFromUri(uri);
                 default:
                     throw new NotImplementedException("Backend not supported");
@@ -320,13 +320,13 @@ namespace MajdataPlay.IO
             {
                 switch (backend)
                 {
-                    case SoundBackendType.Unity:
+                    case SoundBackendOption.Unity:
                         await UniTask.SwitchToMainThread();
                         return await UnityAudioSample.CreateAsync($"file://{path}", gameObject);
-                    case SoundBackendType.Asio:
-                    case SoundBackendType.Wasapi:
+                    case SoundBackendOption.Asio:
+                    case SoundBackendOption.Wasapi:
                         return await BassAudioSample.CreateAsync(path, BassGlobalMixer, true, speedChange);
-                    case SoundBackendType.BassSimple:
+                    case SoundBackendOption.BassSimple:
                         return await BassSimpleAudioSample.CreateAsync(path, true, speedChange);
                     default:
                         throw new NotImplementedException("Backend not supported");
@@ -344,13 +344,13 @@ namespace MajdataPlay.IO
             var backend = MajInstances.Settings.Audio.Backend;
             switch (backend)
             {
-                case SoundBackendType.Unity:
+                case SoundBackendOption.Unity:
                     await UniTask.SwitchToMainThread();
                     return await UnityAudioSample.CreateAsync(uri.OriginalString, gameObject);
-                case SoundBackendType.Asio:
-                case SoundBackendType.Wasapi:
+                case SoundBackendOption.Asio:
+                case SoundBackendOption.Wasapi:
                     return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
-                case SoundBackendType.BassSimple:
+                case SoundBackendOption.BassSimple:
                     return BassSimpleAudioSample.CreateFromUri(uri);
                 default:
                     throw new NotImplementedException("Backend not supported");
@@ -399,7 +399,7 @@ namespace MajdataPlay.IO
         }
         public void OpenAsioPannel()
         {
-            if(MajInstances.Settings.Audio.Backend == SoundBackendType.Asio)
+            if(MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio)
             {
                 BassAsio.ControlPanel();
             }

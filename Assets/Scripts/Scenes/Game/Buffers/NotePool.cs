@@ -1,13 +1,13 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     internal class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo

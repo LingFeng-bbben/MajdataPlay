@@ -8,9 +8,8 @@ using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
-using static UnityEngine.UI.Image;
 #nullable enable
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class Menu : MonoBehaviour
     {
@@ -43,7 +42,8 @@ namespace MajdataPlay.Setting
                 option.Parent = this;
                 option.Index = i;
             }
-            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
+
+            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
             titleText.text = localizedText;
             Localization.OnLanguageChanged += OnLangChanged;
             manager = FindObjectOfType<SettingManager>();
@@ -96,7 +96,7 @@ namespace MajdataPlay.Setting
         }
         void OnLangChanged(object? sender, Language newLanguage)
         {
-            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
+            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
             titleText.text = localizedText;
         }
         void PreviousOption()

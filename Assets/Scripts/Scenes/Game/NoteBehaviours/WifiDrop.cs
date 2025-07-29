@@ -1,18 +1,19 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Game.Notes.Slide.Utils;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
+using MajdataPlay.Settings;
 using UnityEngine;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
@@ -123,7 +124,16 @@ namespace MajdataPlay.Game.Notes.Behaviours
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             FadeInTiming = -3.926913f / Speed;
-            FadeInTiming += _gameSetting.Game.SlideFadeInOffset;
+            var fadeInOffset = 0f;
+            if (_settings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            {
+                fadeInOffset = _settings.Game.SlideFadeInOffset;
+            }
+            else
+            {
+                fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
+            FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
@@ -174,7 +184,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void SensorCheck()
         {
-            if (AutoplayMode == AutoplayMode.Enable || !_isCheckable)
+            if (AutoplayMode == AutoplayModeOption.Enable || !_isCheckable)
             {
                 return;
             }
@@ -265,7 +275,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             var thisFrameSec = ThisFrameSec;
             var startTiming = thisFrameSec - Timing;
-            var tooLateTiming = StartTiming + Length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET, 0);
+            var tooLateTiming = StartTiming + Length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET_SEC, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
             if (startTiming >= -0.05f)
@@ -280,11 +290,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     HideAllBar();
                     if (IsClassic)
                     {
-                        ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                        ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                     }
                     else
                     {
-                        Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                        Judge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                     }
                 }
                 else if (isTooLate)
@@ -436,7 +446,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             switch(AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
                     var queueMemory = _judgeQueues[0];
                     var queue = queueMemory.Span;
@@ -472,8 +482,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                     var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
                     HideBar(barIndex);
                     break;
-                case AutoplayMode.DJAuto_ButtonRing_First:
-                case AutoplayMode.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
                     DJAutoplay();
                     break;
             }

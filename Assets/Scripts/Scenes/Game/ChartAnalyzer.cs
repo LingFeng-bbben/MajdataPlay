@@ -16,7 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class ChartAnalyzer : MonoBehaviour
     {

@@ -10,7 +10,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class ChartInfoDisplayer: MonoBehaviour
     {

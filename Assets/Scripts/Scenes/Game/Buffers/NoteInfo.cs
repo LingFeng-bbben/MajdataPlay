@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Buffers;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     public sealed class NoteInfo : ComponentInfo
     {

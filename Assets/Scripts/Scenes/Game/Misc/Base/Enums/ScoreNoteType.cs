@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Game
+﻿namespace MajdataPlay.Scenes.Game
 {
     public enum ScoreNoteType
     {

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Result
+namespace MajdataPlay.Scenes.Result
 {
     public class OnlineInteractionSender : MonoBehaviour
     {

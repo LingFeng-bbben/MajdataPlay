@@ -1,6 +1,6 @@
-﻿namespace MajdataPlay.Game
+﻿namespace MajdataPlay.Settings
 {
-    public enum JudgeDisplayType
+    public enum JudgeDisplayOption
     {
         /// <summary>
         /// CriticalPerfect, Perfect, Great, Good

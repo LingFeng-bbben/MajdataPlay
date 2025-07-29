@@ -9,12 +9,12 @@ using System.Linq;
 using UnityEngine;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
-using MajdataPlay.Game.Notes.Slide;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class SlideBase : NoteLongDrop
     {

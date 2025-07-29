@@ -1,11 +1,11 @@
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
 #nullable enable
     public class XxlbAnimationController : MonoBehaviour

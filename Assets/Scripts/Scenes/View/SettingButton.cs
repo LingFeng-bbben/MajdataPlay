@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.View
+namespace MajdataPlay.Scenes.View
 {
     internal class SettingButton: MajComponent
     {

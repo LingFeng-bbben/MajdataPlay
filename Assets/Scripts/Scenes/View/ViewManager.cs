@@ -1,13 +1,13 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
 using MajdataPlay.Utils;
-using MajdataPlay.View.Types;
+using MajdataPlay.Scenes.View.Types;
 using MajSimai;
 using SkiaSharp;
 using System;
@@ -16,13 +16,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEditor;
+using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
 #nullable enable
-namespace MajdataPlay.View
+namespace MajdataPlay.Scenes.View
 {
     internal class ViewManager: MajComponent, INoteController
     {
@@ -52,9 +51,9 @@ namespace MajdataPlay.View
                 }
             }
         }
-        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
+        public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
         public GameModInfo ModInfo { get; private set; }
-        public AutoplayMode AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
+        public AutoplayModeOption AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;

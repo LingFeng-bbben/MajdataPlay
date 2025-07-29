@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Scenes.Game.Notes;
 using System;
 using System.Collections;
 using System.Collections.Generic;

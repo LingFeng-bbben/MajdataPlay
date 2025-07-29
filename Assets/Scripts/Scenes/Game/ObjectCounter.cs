@@ -10,11 +10,13 @@ using MajdataPlay.Collections;
 using TMPro;
 using Cysharp.Text;
 using System.Threading.Tasks;
-using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Settings;
+
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class ObjectCounter : MonoBehaviour
     {
@@ -301,15 +303,15 @@ namespace MajdataPlay.Game
 
             switch (MajInstances.Settings.Game.TopInfo)
             {
-                case TopInfoDisplayType.Judge:
+                case TopInfoDisplayOption.Judge:
                     _topInfoJudgeParent.SetActive(true);
                     _topInfoTimingParent.SetActive(false);
                     break;
-                case TopInfoDisplayType.Timing:
+                case TopInfoDisplayOption.Timing:
                     _topInfoJudgeParent.SetActive(false);
                     _topInfoTimingParent.SetActive(true);
                     break;
-                case TopInfoDisplayType.None:
+                case TopInfoDisplayOption.None:
                 default:
                     _topInfoJudgeParent.SetActive(false);
                     _topInfoTimingParent.SetActive(false);
@@ -319,74 +321,74 @@ namespace MajdataPlay.Game
             SetBgInfoActive(true);
             switch (MajInstances.Settings.Game.BGInfo)
             {
-                case BGInfoType.CPCombo:
+                case BGInfoOption.CPCombo:
                     _bgInfoHeader.color = CPComboColor;
                     _bgInfoText.color = CPComboColor;
                     _bgInfoHeader.text = "CPCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
-                case BGInfoType.PCombo:
+                case BGInfoOption.PCombo:
                     _bgInfoHeader.color = PComboColor;
                     _bgInfoText.color = PComboColor;
                     _bgInfoHeader.text = "PCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
-                case BGInfoType.Combo:
+                case BGInfoOption.Combo:
                     _bgInfoHeader.color = ComboColor;
                     _bgInfoText.color = ComboColor;
                     _bgInfoHeader.text = "Combo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
-                case BGInfoType.Achievement_101:
-                case BGInfoType.Achievement_100:
-                case BGInfoType.Achievement:
-                case BGInfoType.AchievementClassical:
-                case BGInfoType.AchievementClassical_100:
+                case BGInfoOption.Achievement_101:
+                case BGInfoOption.Achievement_100:
+                case BGInfoOption.Achievement:
+                case BGInfoOption.AchievementClassical:
+                case BGInfoOption.AchievementClassical_100:
                     _bgInfoHeader.text = "Achievement";
                     _bgInfoHeader.color = AchievementGoldColor;
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.DXScore:
-                case BGInfoType.DXScoreRank:
+                case BGInfoOption.DXScore:
+                case BGInfoOption.DXScoreRank:
                     _bgInfoHeader.text = "でらっくす SCORE";
                     _bgInfoHeader.color = DXScoreColor;
                     _bgInfoText.color = DXScoreColor;
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
-                case BGInfoType.S_Border:
+                case BGInfoOption.S_Border:
                     _bgInfoHeader.text = "S  BORDER";
                     _bgInfoHeader.color = AchievementSilverColor;
                     _bgInfoText.color = AchievementSilverColor;
                     _bgInfoText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.SS_Border:
+                case BGInfoOption.SS_Border:
                     _bgInfoHeader.text = "SS  BORDER";
                     _bgInfoHeader.color = AchievementGoldColor;
                     _bgInfoText.color = AchievementGoldColor;
                     _bgInfoText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.SSS_Border:
+                case BGInfoOption.SSS_Border:
                     _bgInfoHeader.text = "SSS  BORDER";
                     _bgInfoHeader.color = AchievementGoldColor;
                     _bgInfoText.color = AchievementGoldColor;
                     _bgInfoText.text = "1.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
-                case BGInfoType.MyBest:
+                case BGInfoOption.MyBest:
                     _bgInfoHeader.text = "MyBestScore BORDER";
                     _bgInfoHeader.color = AchievementGoldColor;
                     _bgInfoText.color = AchievementGoldColor;
                     _bgInfoText.text = "101.0000%";
                     break;
-                case BGInfoType.Diff:
+                case BGInfoOption.Diff:
                     _bgInfoHeader.color = ComboColor;
                     _bgInfoText.color = ComboColor;
                     _bgInfoHeader.text = "";
                     _bgInfoText.text = "";
                     break;
-                case BGInfoType.None:
+                case BGInfoOption.None:
                     SetBgInfoActive(false);
                     break;
                 default:
@@ -828,53 +830,53 @@ namespace MajdataPlay.Game
             double accRate;
             switch (bgInfo)
             {
-                case BGInfoType.CPCombo:
+                case BGInfoOption.CPCombo:
                     UpdateCombo(_cPCombo);
                     break;
-                case BGInfoType.PCombo:
+                case BGInfoOption.PCombo:
                     UpdateCombo(_pCombo);
                     break;
-                case BGInfoType.Combo:
+                case BGInfoOption.Combo:
                     UpdateCombo(_combo);
                     break;
-                case BGInfoType.Achievement_101:
+                case BGInfoOption.Achievement_101:
                     accRate = Math.Floor(_accRate[2] * 10000) / 10000;
                     _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[2], _bgInfoText);
                     break;
-                case BGInfoType.Achievement_100:
+                case BGInfoOption.Achievement_100:
                     accRate = Math.Floor(_accRate[3] * 10000) / 10000;
                     _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[3], _bgInfoText);
                     break;
-                case BGInfoType.Achievement:
+                case BGInfoOption.Achievement:
                     accRate = Math.Floor(_accRate[4] * 10000) / 10000;
                     _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[4], _bgInfoText);
                     break;
-                case BGInfoType.AchievementClassical:
+                case BGInfoOption.AchievementClassical:
                     accRate = Math.Floor(_accRate[0] * 100) / 100;
                     _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[0], _bgInfoText);
                     break;
-                case BGInfoType.AchievementClassical_100:
+                case BGInfoOption.AchievementClassical_100:
                     accRate = Math.Floor(_accRate[1] * 100) / 100;
                     _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
                     UpdateAchievementColor(_accRate[1], _bgInfoText);
                     break;
-                case BGInfoType.DXScore:
+                case BGInfoOption.DXScore:
                     _bgInfoText.text = ZString.Format(COMBO_OR_DXSCORE_STRING, _lostDXScore);
                     break;
-                case BGInfoType.DXScoreRank:
+                case BGInfoOption.DXScoreRank:
                     UpdateDXScoreRank();
                     break;
-                case BGInfoType.S_Border:
-                case BGInfoType.SS_Border:
-                case BGInfoType.SSS_Border:
-                case BGInfoType.MyBest:
+                case BGInfoOption.S_Border:
+                case BGInfoOption.SS_Border:
+                case BGInfoOption.SSS_Border:
+                case BGInfoOption.MyBest:
                     UpdateRankBoard(bgInfo);
                     break;
-                case BGInfoType.Diff:
+                case BGInfoOption.Diff:
                     _bgInfoText.text = ZString.Format(DIFF_STRING, _lastJudgeDiff);
                     var oldColor = _bgInfoText.color;
                     if (_lastJudgeDiff < 0)
@@ -902,21 +904,21 @@ namespace MajdataPlay.Game
                     return;
             }
         }
-        void UpdateRankBoard(in BGInfoType bgInfo)
+        void UpdateRankBoard(in BGInfoOption bgInfo)
         {
             double rate;
             switch (bgInfo)
             {
-                case BGInfoType.S_Border:
+                case BGInfoOption.S_Border:
                     rate = _accRate[2] - 97;
                     break;
-                case BGInfoType.SS_Border:
+                case BGInfoOption.SS_Border:
                     rate = _accRate[2] - 99;
                     break;
-                case BGInfoType.SSS_Border:
+                case BGInfoOption.SSS_Border:
                     rate = _accRate[2] - 100;
                     break;
-                case BGInfoType.MyBest:
+                case BGInfoOption.MyBest:
                     rate = _accRate[2] - _gpManager.HistoryScore?.Acc.DX ?? 0;
                     break;
                 default:
@@ -992,18 +994,18 @@ namespace MajdataPlay.Game
                                                     _lateCount);
             switch (MajInstances.Settings.Game.TopInfo)
             {
-                case TopInfoDisplayType.Judge:
+                case TopInfoDisplayOption.Judge:
                     var p = _cPerfectCount + _perfectCount;
                     _topInfoPerfect.text = p == 0 ? "" : p.ToString();
                     _topInfoGreat.text = _greatCount == 0 ? "" : _greatCount.ToString();
                     _topInfoGood.text = _goodCount == 0 ? "" : _goodCount.ToString();
                     _topInfoMiss.text = _missCount == 0 ? "" : _missCount.ToString();
                     break;
-                case TopInfoDisplayType.Timing:
+                case TopInfoDisplayOption.Timing:
                     _topInfoFast.text = _fastCount == 0 ? "" : _fastCount.ToString();
                     _topInfoLate.text = _lateCount == 0 ? "" : _lateCount.ToString();
                     break;
-                case TopInfoDisplayType.None:
+                case TopInfoDisplayOption.None:
                 default:
                     break;
             }
@@ -1013,7 +1015,7 @@ namespace MajdataPlay.Game
         /// </summary>
         void UpdateTopAcc()
         {
-            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
             var formatStr = isClassic ? CLASSIC_ACC_RATE_STRING : DX_ACC_RATE_STRING;
             double value;
             if(isClassic)
@@ -1298,7 +1300,7 @@ namespace MajdataPlay.Game
 
             switch (gameSetting)
             {
-                case JudgeDisplayType.All:
+                case JudgeDisplayOption.All:
                     {
                         if (judgeResult.Diff == 0 || judgeResult.IsMissOrTooFast)
                         {
@@ -1314,7 +1316,7 @@ namespace MajdataPlay.Game
                         }
                     }
                     break;
-                case JudgeDisplayType.BelowCP:
+                case JudgeDisplayOption.BelowCP:
                     {
                         if (judgeResult.IsMissOrTooFast || judgeResult.Grade == JudgeGrade.Perfect)
                         {
@@ -1331,9 +1333,9 @@ namespace MajdataPlay.Game
                     }
                     break;
                 //默认只统计Great、Good的Fast/Late
-                case JudgeDisplayType.BelowP:
-                case JudgeDisplayType.BelowGR:
-                case JudgeDisplayType.Disable:
+                case JudgeDisplayOption.BelowP:
+                case JudgeDisplayOption.BelowGR:
+                case JudgeDisplayOption.Disable:
                     {
                         if (judgeResult.IsMissOrTooFast || absValue <= 2)
                         {

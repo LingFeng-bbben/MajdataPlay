@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     [RequireComponent(typeof(RectTransform))]
     public class CoverSmallDisplayer : MonoBehaviour

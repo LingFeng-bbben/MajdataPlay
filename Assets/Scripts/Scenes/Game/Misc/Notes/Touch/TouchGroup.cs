@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MajdataPlay.Game.Notes.Touch
+namespace MajdataPlay.Scenes.Game.Notes.Touch
 {
     public class TouchGroup
     {

@@ -1,19 +1,20 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Game.Notes.Touch;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Touch;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
@@ -136,7 +137,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     if (_isJudged || !IsAutoplay)
                         return;
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
@@ -169,8 +170,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
@@ -492,7 +493,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
@@ -527,7 +528,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)

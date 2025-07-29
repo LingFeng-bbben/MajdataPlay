@@ -2,7 +2,7 @@ using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Triggers;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Unsafe;
@@ -18,7 +18,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Practice
+namespace MajdataPlay.Scenes.Practice
 {
 #nullable enable
     using Unsafe = System.Runtime.CompilerServices.Unsafe;

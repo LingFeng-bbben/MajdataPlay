@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
@@ -56,11 +57,11 @@ namespace MajdataPlay.IO
                     var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
                     switch (manufacturer)
                     {
-                        case DeviceManufacturer.General:
-                        case DeviceManufacturer.Yuan:
+                        case DeviceManufacturerOption.General:
+                        case DeviceManufacturerOption.Yuan:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
-                        case DeviceManufacturer.Dao:
+                        case DeviceManufacturerOption.Dao:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
@@ -91,7 +92,7 @@ namespace MajdataPlay.IO
                 serial.WriteBufferSize = 16;
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 Span<byte> buffer = stackalloc byte[10];
                 Span<LedReport> latestReports = stackalloc LedReport[8]
                 {
@@ -257,7 +258,7 @@ namespace MajdataPlay.IO
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;

@@ -1,5 +1,5 @@
-﻿using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Touch;
+﻿using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Touch;
 using MajdataPlay.IO;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     internal class TouchHoldPoolingInfo : NotePoolingInfo, ITouchGroupInfoProvider
     {

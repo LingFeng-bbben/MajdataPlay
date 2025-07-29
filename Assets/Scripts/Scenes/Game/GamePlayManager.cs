@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Settings;
+using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using MajdataPlay.Extensions;
@@ -12,23 +13,23 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Timer;
 using Cysharp.Text;
-using MajdataPlay.List;
+using MajdataPlay.Scenes.List;
 using System.Text.Json;
 using MajdataPlay.Editor;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
 #nullable enable
     public class GamePlayManager : MonoBehaviour, INoteController
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
-        public bool IsClassicMode => _setting.Judge.Mode == JudgeMode.Classic;
+        public bool IsClassicMode => _setting.Judge.Mode == JudgeModeOption.Classic;
         // Timeline
         /// <summary>
         /// The timing of the current Update<para>Unit: Second</para>
@@ -56,8 +57,8 @@ namespace MajdataPlay.Game
         public float AudioStartTime => _audioStartTime;
         // Control
         public bool IsStart { get; private set; } = false;
-        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode
+        public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
+        public AutoplayModeOption AutoplayMode
         {
             get => ModInfo.AutoPlay;
         }
@@ -110,7 +111,6 @@ namespace MajdataPlay.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTryAudioSyncEnabled = false;
         bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
@@ -123,8 +123,8 @@ namespace MajdataPlay.Game
         /// <summary>
         /// Setting - Judge - AudioOffset
         /// </summary>
-        float _audioTimeOffset = 0f;
-        float _displayOffset = 0f;
+        float _audioTimeOffsetSec = 0f;
+        float _displayOffsetSec = 0f;
 
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
@@ -168,9 +168,16 @@ namespace MajdataPlay.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            _audioTimeOffset = _setting.Judge.AudioOffset;
-            _displayOffset = _setting.Debug.DisplayOffset;
-            _isTryAudioSyncEnabled = _setting.Debug.TryFixAudioSync;
+            if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
+            {
+                _audioTimeOffsetSec = _setting.Judge.AudioOffset;
+                _displayOffsetSec = _setting.Debug.DisplayOffset;
+            }
+            else
+            {
+                _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -294,9 +301,9 @@ namespace MajdataPlay.Game
                     case "AutoPlay":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
-                            autoplayMode = (AutoplayMode)modeIndex;
+                            autoplayMode = (AutoplayModeOption)modeIndex;
                         }
-                        else if(Enum.TryParse<AutoplayMode>(v.ToString(), false, out var mode))
+                        else if(Enum.TryParse<AutoplayModeOption>(v.ToString(), false, out var mode))
                         {
                             autoplayMode = mode;
                         }
@@ -304,9 +311,9 @@ namespace MajdataPlay.Game
                     case "JudgeStyle":
                         if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
                         {
-                            judgeStyle = (JudgeStyleType)styleIndex;
+                            judgeStyle = (JudgeStyleOption)styleIndex;
                         }
-                        else if (Enum.TryParse<JudgeStyleType>(v.ToString(), false, out var style))
+                        else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), false, out var style))
                         {
                             judgeStyle = style;
                         }
@@ -508,7 +515,7 @@ namespace MajdataPlay.Game
             void ChartMirror(ref string chartContent)
             {
                 var mirrorType = _setting.Game.Mirror;
-                if (mirrorType is MirrorType.Off)
+                if (mirrorType is MirrorOption.Off)
                     return;
                 chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
             }
@@ -720,11 +727,11 @@ namespace MajdataPlay.Game
                 throw wait4Recorder.Exception.GetBaseException();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            MajInstances.GameManager.DisableGC();
+
             await UniTask.Delay(1000, cancellationToken: token);
             MajInstances.SceneSwitcher.FadeOut();
             await UniTask.Delay(100, cancellationToken: token); //wait the animation
-
-            MajInstances.GameManager.DisableGC();
 
             State = GamePlayStatus.Running;
             IsStart = true;
@@ -803,23 +810,23 @@ namespace MajdataPlay.Game
                 return;
             switch (MajInstances.Settings.Game.BGInfo)
             {
-                case BGInfoType.Achievement_101:
-                case BGInfoType.Achievement_100:
-                case BGInfoType.Achievement:
-                case BGInfoType.AchievementClassical:
-                case BGInfoType.AchievementClassical_100:
-                case BGInfoType.S_Border:
-                case BGInfoType.SS_Border:
-                case BGInfoType.SSS_Border:
-                case BGInfoType.MyBest:
-                case BGInfoType.DXScore:
+                case BGInfoOption.Achievement_101:
+                case BGInfoOption.Achievement_100:
+                case BGInfoOption.Achievement:
+                case BGInfoOption.AchievementClassical:
+                case BGInfoOption.AchievementClassical_100:
+                case BGInfoOption.S_Border:
+                case BGInfoOption.SS_Border:
+                case BGInfoOption.SSS_Border:
+                case BGInfoOption.MyBest:
+                case BGInfoOption.DXScore:
                     _bgInfoHeaderAnim.SetTrigger("fadeOut");
                     break;
-                case BGInfoType.CPCombo:
-                case BGInfoType.PCombo:
-                case BGInfoType.Combo:
-                case BGInfoType.DXScoreRank:
-                case BGInfoType.Diff:
+                case BGInfoOption.CPCombo:
+                case BGInfoOption.PCombo:
+                case BGInfoOption.Combo:
+                case BGInfoOption.DXScoreRank:
+                case BGInfoOption.Diff:
                     break;
                 default:
                     return;
@@ -1047,19 +1054,14 @@ namespace MajdataPlay.Game
                 case GamePlayStatus.WaitForEnd:
                     //Do not use this!!!! This have connection with sample batch size
                     //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = ((_chartOffset + _audioTimeOffset) / PlaybackSpeed) - _displayOffset;
+                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / PlaybackSpeed) - _displayOffsetSec;
                     var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
                     var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
                     var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
                     _audioTimeNoOffset = (float)_audioSample.CurrentSec;
-                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));
-
-                    if (_isTryAudioSyncEnabled && Math.Abs(realTimeDifference) > 0.01f && _thisFrameSec > 0)
-                    {
-                        _audioSample.CurrentSec = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    }                  
+                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
                     break;
             }
         }

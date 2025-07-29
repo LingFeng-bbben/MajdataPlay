@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game.Notes
+namespace MajdataPlay.Scenes.Game.Notes
 {
     public readonly ref struct NoteJudgeResult
     {

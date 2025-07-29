@@ -1,4 +1,5 @@
-﻿using MajdataPlay.IO;
+﻿using MajdataPlay.Settings;
+using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
 #nullable enable
     public class NoteEffectManager : MonoBehaviour
@@ -141,7 +142,7 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
         }
-        public static bool CheckJudgeDisplaySetting(in JudgeDisplayType setting, in NoteJudgeResult judgeResult)
+        public static bool CheckJudgeDisplaySetting(in JudgeDisplayOption setting, in NoteJudgeResult judgeResult)
         {
             var result = judgeResult.Grade;
             var resultValue = (int)result;
@@ -149,11 +150,11 @@ namespace MajdataPlay.Game.Notes.Controllers
 
             return setting switch
             {
-                JudgeDisplayType.All => true,
-                JudgeDisplayType.BelowCP => resultValue != 7,
-                JudgeDisplayType.BelowP => absValue > 2,
-                JudgeDisplayType.BelowGR => absValue > 5,
-                JudgeDisplayType.MissOnly => judgeResult.IsMissOrTooFast,
+                JudgeDisplayOption.All => true,
+                JudgeDisplayOption.BelowCP => resultValue != 7,
+                JudgeDisplayOption.BelowP => absValue > 2,
+                JudgeDisplayOption.BelowGR => absValue > 5,
+                JudgeDisplayOption.MissOnly => judgeResult.IsMissOrTooFast,
                 _ => false
             };
         }

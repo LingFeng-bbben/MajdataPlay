@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Settings;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
@@ -8,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class SettingManager : MonoBehaviour
     {

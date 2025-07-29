@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game;
+﻿using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Unsafe;
 using MajdataPlay.Utils;

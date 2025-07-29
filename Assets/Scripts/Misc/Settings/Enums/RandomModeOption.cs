@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Settings
 {
-    public enum RandomMode
+    public enum RandomModeOption
     {
         Disabled,
         RANDOM,

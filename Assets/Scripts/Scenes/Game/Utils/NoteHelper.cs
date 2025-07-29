@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Game.Notes.Slide;
+﻿using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.IO;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Utils
+namespace MajdataPlay.Scenes.Game.Utils
 {
     internal static class NoteHelper
     {

@@ -1,10 +1,10 @@
 ﻿using MajdataPlay.Buffers;
-using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {

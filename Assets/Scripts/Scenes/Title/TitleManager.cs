@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Settings;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
@@ -15,7 +16,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 #nullable enable
-namespace MajdataPlay.Title
+namespace MajdataPlay.Scenes.Title
 {
     public class TitleManager : MonoBehaviour
     {

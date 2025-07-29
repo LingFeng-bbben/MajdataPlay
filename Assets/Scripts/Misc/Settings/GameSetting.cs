@@ -1,6 +1,6 @@
 ﻿using HidSharp;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading;
 #nullable enable
-namespace MajdataPlay
+namespace MajdataPlay.Settings
 {
     public class GameSetting
     {
@@ -33,14 +33,14 @@ namespace MajdataPlay
         public float SlideFadeInOffset { get; set; } = 0f;
         public float BackgroundDim { get; set; } = 0.8f;
         public bool StarRotation { get; set; } = true;
-        public BGInfoType BGInfo { get; set; } = BGInfoType.Combo;
-        public TopInfoDisplayType TopInfo { get; set; } = TopInfoDisplayType.None;
+        public BGInfoOption BGInfo { get; set; } = BGInfoOption.Combo;
+        public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
         public bool TrackSkip { get; set; } = true;
         public bool FastRetry { get; set; } = true;
-        public MirrorType Mirror { get; set; } = MirrorType.Off;
+        public MirrorOption Mirror { get; set; } = MirrorOption.Off;
         public int Rotation { get; set; } = 0;
-        public RandomMode Random { get; set; } = RandomMode.Disabled;
-        public RecordMode RecordMode { get; set; } = RecordMode.Disable;
+        public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
+        public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
     }
     public class JudgeOptions
     {
@@ -48,7 +48,7 @@ namespace MajdataPlay
         public float JudgeOffset { get; set; } = 0f;
         public float AnswerOffset { get; set; } = 0f;
         public float TouchPanelOffset { get; set; } = 0f;
-        public JudgeMode Mode { get; set; } = JudgeMode.Modern;
+        public JudgeModeOption Mode { get; set; } = JudgeModeOption.Modern;
     }
     public class DisplayOptions
     {
@@ -57,13 +57,13 @@ namespace MajdataPlay
         public bool DisplayCriticalPerfect { get; set; } = false;
         public bool DisplayBreakScore { get; set; } = true;
 
-        public JudgeDisplayType FastLateType { get; set; } = JudgeDisplayType.Disable;
-        public JudgeDisplayType NoteJudgeType { get; set; } = JudgeDisplayType.All;
-        public JudgeDisplayType TouchJudgeType { get; set; } = JudgeDisplayType.All;
-        public JudgeDisplayType SlideJudgeType { get; set; } = JudgeDisplayType.All;
-        public JudgeDisplayType BreakJudgeType { get; set; } = JudgeDisplayType.All;
-        public JudgeDisplayType BreakFastLateType { get; set; } = JudgeDisplayType.Disable;
-        public JudgeMode SlideSortOrder { get; set; } = JudgeMode.Modern;
+        public JudgeDisplayOption FastLateType { get; set; } = JudgeDisplayOption.Disable;
+        public JudgeDisplayOption NoteJudgeType { get; set; } = JudgeDisplayOption.All;
+        public JudgeDisplayOption TouchJudgeType { get; set; } = JudgeDisplayOption.All;
+        public JudgeDisplayOption SlideJudgeType { get; set; } = JudgeDisplayOption.All;
+        public JudgeDisplayOption BreakJudgeType { get; set; } = JudgeDisplayOption.All;
+        public JudgeDisplayOption BreakFastLateType { get; set; } = JudgeDisplayOption.Disable;
+        public JudgeModeOption SlideSortOrder { get; set; } = JudgeModeOption.Modern;
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>
@@ -80,7 +80,7 @@ namespace MajdataPlay
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
         public string Resolution { get; set; } = "1080x1920";
         public float MainScreenPosition { get; set; } = 1f; 
-        public RenderQualityLevel RenderQuality { get; set; } = RenderQualityLevel.Low;
+        public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
         [SettingVisualizationIgnore]
         public bool Topmost { get; set; } = false;
         public int FPSLimit { get; set; } = 240;
@@ -92,7 +92,7 @@ namespace MajdataPlay
         public int AsioDeviceIndex { get; set; } = 0;
         public bool WasapiExclusive { get; set; } = true;
         public SFXVolume Volume { get; set; } = new();
-        public SoundBackendType Backend { get; set; } = SoundBackendType.Wasapi;
+        public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
     }
     public class SFXVolume
     {
@@ -109,8 +109,8 @@ namespace MajdataPlay
     public class ModOptions
     {
         public float PlaybackSpeed { get; set; } = 1f;
-        public AutoplayMode AutoPlay { get; set; } = AutoplayMode.Disable;
-        public JudgeStyleType JudgeStyle { get; set; } = JudgeStyleType.DEFAULT;
+        public AutoplayModeOption AutoPlay { get; set; } = AutoplayModeOption.Disable;
+        public JudgeStyleOption JudgeStyle { get; set; } = JudgeStyleOption.DEFAULT;
         public bool SubdivideSlideJudgeGrade { get; set; } = false;
         public bool AllBreak { get; set; } = false;
         public bool AllEx { get; set; } = false;
@@ -123,7 +123,7 @@ namespace MajdataPlay
         public bool IsAnyModActive()
         {
             return !(PlaybackSpeed == 1f &&
-                !AllBreak && !AllEx && !AllTouch && AutoPlay == AutoplayMode.Disable && JudgeStyle == JudgeStyleType.DEFAULT);
+                !AllBreak && !AllEx && !AllTouch && AutoPlay == AutoplayModeOption.Disable && JudgeStyle == JudgeStyleOption.DEFAULT);
         }
 
     }
@@ -167,12 +167,11 @@ namespace MajdataPlay
         public bool FullScreen { get; set; } = true;
         public int MenuOptionIterationSpeed { get; set; } = 45;
         public float DisplayOffset { get; set; } = 0f;
-        public bool TryFixAudioSync { get; set; } = false;
         public float NoteAppearRate { get; set; } = 0.265f;
-        public bool DisableGCInGame { get; set; } = false;
+        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
         public bool HideCursorInGame { get; set; } = true;
         public bool NoteFolding { get; set; } = true;
-        public DJAutoPolicy DJAutoPolicy { get; set; } = DJAutoPolicy.Strict;
+        public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
         [SettingVisualizationIgnore]
         public int MaxQueuedFrames { get; set; } = 2;
         [SettingVisualizationIgnore]
@@ -185,12 +184,6 @@ namespace MajdataPlay
         public int TouchHoldPoolCapacity { get; set; } = 16;
         [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
-        public ProcessPriorityClass ProcessPriority { get; set; } = ProcessPriorityClass.AboveNormal;
-        [SettingVisualizationIgnore]
-        public ThreadPriority MainThreadPriority { get; set; } = ThreadPriority.Normal;
-        [SettingVisualizationIgnore]
-        public ThreadPriority IOThreadPriority { get; set; } = ThreadPriority.AboveNormal;
     }
     public class MiscOptions
     {
@@ -201,7 +194,7 @@ namespace MajdataPlay
     }
     public class IOOptions
     {
-        public DeviceManufacturer Manufacturer { get; set; } = DeviceManufacturer.General;
+        public DeviceManufacturerOption Manufacturer { get; set; } = DeviceManufacturerOption.General;
         public InputDeviceOptions InputDevice { get; set; } = new();
         public OutputDeviceOptions OutputDevice { get; set; } = new();
     }
@@ -233,7 +226,7 @@ namespace MajdataPlay
     }
     public class ButtonRingOptions
     {
-        public ButtonRingDeviceType Type { get; set; } = ButtonRingDeviceType.Keyboard;
+        public ButtonRingDeviceOption Type { get; set; } = ButtonRingDeviceOption.Keyboard;
         public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 0;

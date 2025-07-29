@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using MajdataPlay.Editor;
 using UnityEngine;
-using MajdataPlay.Game.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteUpdater : MonoBehaviour
     {

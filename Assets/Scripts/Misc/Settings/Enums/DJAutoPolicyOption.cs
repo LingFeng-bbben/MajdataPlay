@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Settings
 {
-    public enum MirrorType
+    public enum DJAutoPolicyOption
     {
-        Off,
-        LRMirror,
-        UDMirror
+        Strict,
+        Permissive
     }
 }
