@@ -347,7 +347,8 @@ namespace MajdataPlay.Scenes.List
             }
             else if (a2Statistic.IsClicked)
             {
-                MajInstances.GameManager.LastSettingPage = 4;
+                const int MOD_PAGE_INDEX = 5;
+                MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
                 return;

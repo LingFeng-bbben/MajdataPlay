@@ -168,14 +168,17 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
+            var chartSetting = ChartSettingStorgae.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
+                _audioTimeOffsetSec += chartSetting.AudioOffset;
                 _displayOffsetSec = _setting.Debug.DisplayOffset;
             }
             else
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _audioTimeOffsetSec += chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
 #if !UNITY_EDITOR

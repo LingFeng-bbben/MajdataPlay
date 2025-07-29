@@ -26,11 +26,22 @@ namespace MajdataPlay.Scenes.Setting
         bool _isInited = false;
         void Start()
         {
+            var selectedChart = SongStorage.WorkingCollection.Current;
+            var chartSetting = ChartSettingStorgae.GetSetting(selectedChart);
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                             .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
-                             .ToArray();
-            menus = new Menu[properties.Length];
+                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
+                                 .ToArray();
+            menus = new Menu[properties.Length + 1];
+            {
+                var chartSettingType = chartSetting.GetType();
+                var menuObj = Instantiate(menuPrefab, transform);
+                menuObj.name = chartSettingType.Name;
+                var menu = menuObj.GetComponent<Menu>();
+                menus[0] = menu;
+                menu.SubOptionObject = chartSetting;
+                menu.Name = chartSettingType.Name;
+            }
             foreach (var (i, property) in properties.WithIndex())
             {
                 object root = Setting;
@@ -45,7 +56,7 @@ namespace MajdataPlay.Scenes.Setting
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
-                menus[i] = menu;
+                menus[i + 1] = menu;
                 menu.SubOptionObject = _property.GetValue(root);
                 menu.Name = _property.Name;
             }

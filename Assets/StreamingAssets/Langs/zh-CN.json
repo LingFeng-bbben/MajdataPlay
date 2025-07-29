@@ -79,6 +79,10 @@
       "Content": "调试"
     },
     {
+      "Origin": "MAJSETTING_CATEGORY_ChartSetting",
+      "Content": "谱面设置"
+    },
+    {
       "Origin": "MAJSETTING_PROPERTY_TapSpeed",
       "Content": "Tap速度"
     },

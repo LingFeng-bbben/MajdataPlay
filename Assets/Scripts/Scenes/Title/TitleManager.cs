@@ -58,6 +58,13 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
 
+            task1 = ChartSettingStorgae.InitAsync();
+
+            while (!task1.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+
             echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
             var task2 = StartScanningChart();
             try
