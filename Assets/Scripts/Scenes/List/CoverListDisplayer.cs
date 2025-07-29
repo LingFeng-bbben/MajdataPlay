@@ -3,6 +3,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -74,9 +75,12 @@ namespace MajdataPlay.Scenes.List
         ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedFolderCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
         ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedDanCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
 
-        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
-        readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
-        readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
+        SongDetailBinding[]? _rentSongDetailBindings = null;
+        SongCollectionBinding[]? _rentSongCollectionBindings = null;
+
+        static readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
+        static readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
+        static readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
 
         private void Awake()
         {
@@ -114,7 +118,7 @@ namespace MajdataPlay.Scenes.List
             var allocatedSongCoverDisplayer = new SongCoverSmallDisplayer[16];
             var allocatedFolderCoverDisplayer = new FolderCoverSmallDisplayer[16];
             var allocatedDanCoverDisplayer = new FolderCoverSmallDisplayer[16];
-
+            
             for (var i = 0; i < 16; i++)
             {
                 var obj = Instantiate(CoverSmallPrefab, transform);
@@ -161,6 +165,19 @@ namespace MajdataPlay.Scenes.List
                 }
                 collections[i].SetCursor(thisCollections[i].Current);
             }
+            if(_rentSongDetailBindings is not null)
+            {
+                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                _rentSongDetailBindings = null;
+            }
+            if(_rentSongCollectionBindings is not null)
+            {
+                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                _rentSongCollectionBindings = null;
+            }
+            _idleDanCoverDisplayer.Clear();
+            _idleFolderCoverDisplayer.Clear();
+            _idleSongCoverDisplayer.Clear();
         }
         public void SwitchToDirList()
         {
@@ -191,15 +208,32 @@ namespace MajdataPlay.Scenes.List
             FavoriteAdder.Hide();
             Mode = CoverListMode.Directory;
             desiredListPos = SongStorage.CollectionIndex;
-            var bindings = new SongCollectionBinding[_collections.Length];
+
+            if (_rentSongDetailBindings is not null)
+            {
+                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                _rentSongDetailBindings = null;
+            }
+            if (_rentSongCollectionBindings is not null)
+            {
+                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                _rentSongCollectionBindings = null;
+            }
+
+            _rentSongCollectionBindings = ArrayPool<SongCollectionBinding>.Shared.Rent(_collections.Length);
+            var rentBindings = _rentSongCollectionBindings;
+            var bindings = rentBindings.AsSpan(0, _collections.Length);
             var collections = _collections.Span;
             for (var i = 0; i < bindings.Length; i++)
             {
                 bindings[i] = GetSongCollectionBinding(collections[i]);
             }
-            _songCollectionBindings = bindings;
-            if (desiredListPos > _songCollectionBindings.Length) 
+
+            _songCollectionBindings = rentBindings.AsMemory(0, _collections.Length);
+            if (desiredListPos > _songCollectionBindings.Length)
+            {
                 desiredListPos = 0;
+            }
             listPosReal = desiredListPos;
             SlideListInternal(desiredListPos);
         }
@@ -245,12 +279,26 @@ namespace MajdataPlay.Scenes.List
 
             Mode = CoverListMode.Chart;
             desiredListPos = _currentCollection.Index;
-            var bindings = new SongDetailBinding[_currentCollection.Count];
+
+            if (_rentSongDetailBindings is not null)
+            {
+                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                _rentSongDetailBindings = null;
+            }
+            if (_rentSongCollectionBindings is not null)
+            {
+                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                _rentSongCollectionBindings = null;
+            }
+
+            _rentSongDetailBindings = ArrayPool<SongDetailBinding>.Shared.Rent(_currentCollection.Count);
+            var rentBindings = _rentSongDetailBindings;
+            var bindings = rentBindings.AsSpan(0, _currentCollection.Count);
             for (var i = 0; i < bindings.Length; i++)
             {
                 bindings[i] = GetSongDetailBinding(_currentCollection[i]);
             }
-            _songDetailBindings = bindings;
+            _songDetailBindings = rentBindings.AsMemory(0, _currentCollection.Count);
 
             if (desiredListPos > _songDetailBindings.Length)
             {
