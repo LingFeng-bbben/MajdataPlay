@@ -75,18 +75,17 @@ namespace MajdataPlay.IO
             var backend = MajInstances.Settings.Audio.Backend;
             var sampleRate = MajInstances.Settings.Audio.Samplerate;
             var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
-
 #if !UNITY_EDITOR
             if (MajEnv.Mode == RunningMode.View)
             {
-                backend = SoundBackendType.Wasapi;
+                backend = SoundBackendOption.Wasapi;
                 isExclusiveRequest = false;
             }
 #endif
 #if UNITY_ANDROID
             MajDebug.Log("Android: Using BassSimple");
-            MajInstances.Settings.Audio.Backend = SoundBackendType.BassSimple;
-            backend = SoundBackendType.BassSimple;
+            MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
+            backend = SoundBackendOption.BassSimple;
 #endif
             switch (backend)
             {

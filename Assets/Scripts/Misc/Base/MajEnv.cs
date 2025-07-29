@@ -16,6 +16,7 @@ using System.Threading;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay
 {
