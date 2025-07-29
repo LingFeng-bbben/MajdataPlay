@@ -16,7 +16,6 @@ using System.Threading;
 using System.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.Net;
-using Unity.VisualScripting;
 using Cysharp.Text;
 
 #nullable enable
@@ -449,94 +448,101 @@ namespace MajdataPlay
         async Task DownloadFile(Uri uri, string savePath, INetProgress? progress = null, CancellationToken token = default)
         {
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
-            using var bufferOwner = MemoryPool<byte>.Shared.Rent(bufferSize);
             var fileInfo = new FileInfo(savePath);
             var httpClient = MajEnv.SharedHttpClient;
-            var buffer = bufferOwner.Memory;
+            var rentBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            var buffer = rentBuffer.AsMemory();
             var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
 
-            for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+            try
             {
-                try
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
-                    if (File.Exists(cacheFlagPath))
+                    try
                     {
-                        return;
-                    }
-                    using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
-                    if (!rsp.IsSuccessStatusCode)
-                    {
-                        throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
-                    }
-                    token.ThrowIfCancellationRequested();
-                    MajDebug.Log($"Received http response header from: {uri}");
-
-                    if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
-
-                    if (progress is not null)
-                    {
-                        progress.TotalBytes = rsp.Content.Headers.ContentLength ?? 0;
-                    }
-                    using var fileStream = File.Create(savePath);
-                    using var httpStream = await rsp.Content.ReadAsStreamAsync();
-                    var read = 0;
-                    var totalRead = 0;
-                    do
-                    {
+                        if (File.Exists(cacheFlagPath))
+                        {
+                            return;
+                        }
+                        using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                        if (!rsp.IsSuccessStatusCode)
+                        {
+                            throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
+                        }
                         token.ThrowIfCancellationRequested();
-                        read = await httpStream.ReadAsync(buffer, token);
-                        token.ThrowIfCancellationRequested();
-                        await fileStream.WriteAsync(buffer.Slice(0, read), token);
-                        totalRead += read;
+                        MajDebug.Log($"Received http response header from: {uri}");
+
+                        if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
+
                         if (progress is not null)
                         {
-                            var percent = 0f;
-                            progress.ReadBytes = totalRead;
-                            if (progress.TotalBytes != 0)
+                            progress.TotalBytes = rsp.Content.Headers.ContentLength ?? 0;
+                        }
+                        using var fileStream = File.Create(savePath);
+                        using var httpStream = await rsp.Content.ReadAsStreamAsync();
+                        var read = 0;
+                        var totalRead = 0;
+                        do
+                        {
+                            token.ThrowIfCancellationRequested();
+                            read = await httpStream.ReadAsync(buffer, token);
+                            token.ThrowIfCancellationRequested();
+                            await fileStream.WriteAsync(buffer.Slice(0, read), token);
+                            totalRead += read;
+                            if (progress is not null)
                             {
-                                percent = (float)progress.ReadBytes / progress.TotalBytes;
+                                var percent = 0f;
+                                progress.ReadBytes = totalRead;
+                                if (progress.TotalBytes != 0)
+                                {
+                                    percent = (float)progress.ReadBytes / progress.TotalBytes;
+                                }
+                                percent = Mathf.Clamp01(percent);
+                                progress.Report(percent);
                             }
-                            percent = Mathf.Clamp01(percent);
-                            progress.Report(percent);
+                        }
+                        while (read > 0);
+                        if (totalRead < 10)
+                        {
+                            continue;
+                        }
+                        File.Create(cacheFlagPath).Dispose();
+                        break;
+                    }
+                    catch (InternalHttpRequestException)
+                    {
+                        throw;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        throw new InternalHttpRequestException(HttpErrorCode.InvalidRequest, null);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
+                            throw new InternalHttpRequestException(HttpErrorCode.Canceled, null);
+                        }
+                        else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                        {
+                            MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
+                            throw new InternalHttpRequestException(HttpErrorCode.Timeout, null);
                         }
                     }
-                    while (read > 0);
-                    if(totalRead < 10)
+                    catch (Exception e)
                     {
-                        continue;
-                    }
-                    File.Create(cacheFlagPath).Dispose();
-                    break;
-                }
-                catch (InternalHttpRequestException)
-                {
-                    throw;
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new InternalHttpRequestException(HttpErrorCode.InvalidRequest, null);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
-                        throw new InternalHttpRequestException(HttpErrorCode.Canceled, null);
-                    }
-                    else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                    {
-                        MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
-                        throw new InternalHttpRequestException(HttpErrorCode.Timeout, null);
+                        if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                        {
+                            MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
+                            throw new InternalHttpRequestException(HttpErrorCode.Unreachable, null);
+                        }
                     }
                 }
-                catch (Exception e)
-                {
-                    if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                    {
-                        MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                        throw new InternalHttpRequestException(HttpErrorCode.Unreachable, null);
-                    }
-                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(rentBuffer, true);
             }
         }
         class InternalHttpRequestException : Exception
