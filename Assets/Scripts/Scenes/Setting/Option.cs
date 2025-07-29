@@ -178,7 +178,7 @@ namespace MajdataPlay.Scenes.Setting
                             else
                             {
                                 _maxValue = null;
-                                _minValue = null;
+                                _minValue = 0;
                                 _step = 0.1m;
                             }
                         }
