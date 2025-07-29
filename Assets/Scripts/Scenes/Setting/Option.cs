@@ -53,17 +53,16 @@ namespace MajdataPlay.Scenes.Setting
         void Start()
         {
             Localization.OnLanguageChanged += OnLangChanged;
-            nameText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_TITLE");
-            //valueText.text = Localization.GetLocalizedText(PropertyInfo.GetValue(OptionObject).ToString());
-            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
+            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
+            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
             InitOptions();
             UpdatePosition();
             UpdateOption();
         }
         void OnLangChanged(object? sender,Language newLanguage)
         {
-            nameText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_TITLE");
-            descriptionText.text = Localization.GetLocalizedText($"{PropertyInfo.Name}_MAJSETTING_DESC");
+            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
+            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
             UpdateOption();
         }
         void InitOptions()
@@ -362,17 +361,17 @@ namespace MajdataPlay.Scenes.Setting
                 case "InnerJudgeDistance":
                     if((float)value == 0)
                     {
-                        localizedText = Localization.GetLocalizedText("OFF");
+                        localizedText = "OFF".i18n();
                     }
                     else
                     {
-                        localizedText = Localization.GetLocalizedText(origin);
+                        localizedText = origin.i18n();
                     }
                     break;
                 default:
                     if(!_isNum)
                     {
-                        if (!$"{PropertyInfo.Name}_MAJSETTING_OPTIONS_{origin}".Tryi18n(out localizedText))
+                        if (!$"MAJSETTING_PROPERTY_{PropertyInfo.Name}_OPTION_{origin}".Tryi18n(out localizedText))
                         {
                             localizedText = origin.i18n();
                         }
@@ -381,7 +380,6 @@ namespace MajdataPlay.Scenes.Setting
                     {
                         localizedText = origin;
                     }
-                    //localizedText = Localization.GetLocalizedText(origin);
                     break;
             }
             valueText.text = localizedText;
