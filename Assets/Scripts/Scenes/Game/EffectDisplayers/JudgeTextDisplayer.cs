@@ -54,16 +54,24 @@ namespace MajdataPlay.Scenes.Game
             if (_displayCriticalPerfect)
             {
                 if (_displayBreakScore)
+                {
                     breakSprite = _skin.Break_2600_Shine;
+                }
                 else
+                {
                     breakSprite = _skin.CP_Shine;
+                }
             }
             else
             {
                 if (_displayBreakScore)
+                {
                     breakSprite = _skin.Break_2600_Shine;
+                }
                 else
+                {
                     breakSprite = _skin.P_Shine;
+                }
             }
             breakRenderer.sprite = breakSprite;
             _children = Transform.GetChildren()
@@ -79,7 +87,7 @@ namespace MajdataPlay.Scenes.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -92,14 +100,23 @@ namespace MajdataPlay.Scenes.Game
             var result = judgeResult.Grade;
 
             if (isBreak && _displayBreakScore)
-                LoadBreakSkin(judgeResult,isClassC);
+            {
+                LoadBreakSkin(judgeResult, isClassC);
+            }
             else
-                LoadTapSkin(judgeResult,isClassC);
+            {
+                LoadTapSkin(judgeResult, isClassC);
+            }
             
             if (isBreak && result == JudgeGrade.Perfect)
+            {
                 _animator.SetTrigger(BREAK_ANIM_HASH);
+            }
             else
+            {
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
+            }
+            _animator.Update(0.000000114514f);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
         void LoadTapSkin(in NoteJudgeResult judgeResult,bool isClassC = false)

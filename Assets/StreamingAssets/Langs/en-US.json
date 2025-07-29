@@ -100,7 +100,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset_DESC",
-      "Content": "Adjust the appearance timing of slide paths\nPositive values are later (in seconds)"
+      "Content": "Adjust the appearance timing of slide paths\nPositive values are later"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BackgroundDim",

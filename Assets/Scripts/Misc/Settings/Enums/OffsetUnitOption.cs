@@ -8,7 +8,7 @@ namespace MajdataPlay.Settings
 {
     public enum OffsetUnitOption
     {
-        MS,
+        Second,
         Frame
     }
 }

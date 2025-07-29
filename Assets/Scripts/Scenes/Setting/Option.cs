@@ -155,7 +155,7 @@ namespace MajdataPlay.Scenes.Setting
                     case "AnswerOffset":
                     case "TouchPanelOffset":
                         {
-                            if(MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.MS)
+                            if(MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
                                 goto default;
                             }
@@ -169,7 +169,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "DisplayOffset":
                         {
-                            if (MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.MS)
+                            if (MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
                                 _maxValue = null;
                                 _minValue = 0;
@@ -343,7 +343,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "TouchPanelOffset":
                 case "DisplayOffset":
                     {
-                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.MS)
+                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
                         {
                             _maxValue = null;
                             _minValue = 0;
@@ -460,7 +460,7 @@ namespace MajdataPlay.Scenes.Setting
                         {
                             return;
                         }
-                        else if(eNewValue == OffsetUnitOption.MS)
+                        else if(eNewValue == OffsetUnitOption.Second)
                         {
                             MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AudioOffset, 3); 
                             MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.JudgeOffset, 3);

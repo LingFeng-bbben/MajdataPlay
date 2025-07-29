@@ -79,7 +79,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
             }
             var settings = MajEnv.UserSettings;
-            if (settings.Debug.OffsetUnit == OffsetUnitOption.MS)
+            if (settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _answerOffsetSec = settings.Judge.AudioOffset;
                 _displayOffsetSec = settings.Debug.DisplayOffset;

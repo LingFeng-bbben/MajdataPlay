@@ -42,7 +42,7 @@ namespace MajdataPlay.Scenes.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
+            _animRemainingTime -= deltaTime;
         }
         public void PlayEffect(in NoteJudgeResult judgeResult)
         {
@@ -58,6 +58,7 @@ namespace MajdataPlay.Scenes.Game
                     SetActive(true);
                     _animator.SetTrigger(TAP_GOOD_ANIM_HASH);
                     _animRemainingTime = ANIM_LENGTH_SEC;
+                    _animator.Update(0.000000114514f);
                     break;
             }
         }

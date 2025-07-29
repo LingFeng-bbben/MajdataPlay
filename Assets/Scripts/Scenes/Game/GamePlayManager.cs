@@ -168,7 +168,7 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            if(_setting.Debug.OffsetUnit == OffsetUnitOption.MS)
+            if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
                 _displayOffsetSec = _setting.Debug.DisplayOffset;
@@ -727,11 +727,11 @@ namespace MajdataPlay.Scenes.Game
                 throw wait4Recorder.Exception.GetBaseException();
             }
             _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            MajInstances.GameManager.DisableGC();
+
             await UniTask.Delay(1000, cancellationToken: token);
             MajInstances.SceneSwitcher.FadeOut();
             await UniTask.Delay(100, cancellationToken: token); //wait the animation
-
-            MajInstances.GameManager.DisableGC();
 
             State = GamePlayStatus.Running;
             IsStart = true;

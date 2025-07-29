@@ -168,7 +168,7 @@ namespace MajdataPlay.Settings
         public int MenuOptionIterationSpeed { get; set; } = 45;
         public float DisplayOffset { get; set; } = 0f;
         public float NoteAppearRate { get; set; } = 0.265f;
-        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.MS;
+        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
         public bool HideCursorInGame { get; set; } = true;
         public bool NoteFolding { get; set; } = true;
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;

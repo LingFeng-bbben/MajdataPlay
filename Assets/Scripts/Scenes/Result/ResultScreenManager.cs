@@ -120,14 +120,29 @@ namespace MajdataPlay.Scenes.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            if(result.NoteJudgeDiffs.IsEmpty)
+            if(MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                avgJudgeTime.text = $"0.000s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.000s";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                }
             }
             else
             {
-                avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.0f";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / MajEnv.FRAME_LENGTH_MSEC:F1}f";
+                }
             }
+            
 
             LoadCover(song).Forget();
 
@@ -338,7 +353,7 @@ namespace MajdataPlay.Scenes.Result
             greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
-            goodPaint.Color = greatColor.ToSkColor();
+            goodPaint.Color = goodColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
             linePaint.Color = SKColors.White;
@@ -360,7 +375,9 @@ namespace MajdataPlay.Scenes.Result
                 var y = sampleCount;
 
                 if (y > maxSampleCount)
+                {
                     maxSampleCount = y;
+                }
 
                 points[(int)i] = new Point()
                 {

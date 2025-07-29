@@ -100,7 +100,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset_DESC",
-      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入\n单位为秒"
+      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BackgroundDim",
