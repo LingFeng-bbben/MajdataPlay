@@ -18,6 +18,7 @@ using System.Linq;
 using MajdataPlay.Collections;
 using System.Text;
 using MajdataPlay.Settings;
+using System.Runtime.InteropServices;
 
 
 #nullable enable
@@ -31,13 +32,20 @@ namespace MajdataPlay.IO
         string[] VoiceFileNames = new string [0];
         private List<AudioSampleWrap> SFXSamples = new();
 
-        private WasapiProcedure? wasapiProcedure;
-        private AsioProcedure? asioProcedure;
-        public static event Action<IntPtr, int, IntPtr>? OnBassProcessExtraLogic;
+        readonly static WasapiProcedure _wasapiProcedure;
+        readonly static AsioProcedure _asioProcedure;
         private static int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
 
+        unsafe static AudioManager()
+        {
+            delegate*<IntPtr, int, IntPtr, int> ptr1 = &WasapiProcedure;
+            delegate*<bool, int, IntPtr, int, IntPtr, int> ptr2 = &AsioProcedure;
+
+            _wasapiProcedure = Marshal.GetDelegateForFunctionPointer<WasapiProcedure>((IntPtr)ptr1);
+            _asioProcedure = Marshal.GetDelegateForFunctionPointer<AsioProcedure>((IntPtr)ptr2);
+        }
         private void Awake()
         {
             SFXFilePath = Path.Combine( MajEnv.AssetsPath, "SFX/");
@@ -54,17 +62,32 @@ namespace MajdataPlay.IO
                                                              .ToArray();
         }
 
-        int globalProcedure(IntPtr buffer, int length, IntPtr user)
+        static int WasapiProcedure(IntPtr buffer, int length, IntPtr user)
         {
             if (BassGlobalMixer == -114514)
+            {
                 return 0;
+            }
             if (Bass.LastError != Errors.OK)
+            {
                 MajDebug.LogError(Bass.LastError);
+            }
 
             var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
 
-            if (bytesRead > 0)
-                OnBassProcessExtraLogic?.Invoke(buffer, bytesRead, user);
+            return bytesRead;
+        }
+        static int AsioProcedure(bool input, int channel, IntPtr buffer, int length, IntPtr user)
+        {
+            if (BassGlobalMixer == -114514)
+            {
+                return 0;
+            }
+            if (Bass.LastError != Errors.OK)
+            {
+                MajDebug.LogError(Bass.LastError);
+            }
+            var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
 
             return bytesRead;
         }
@@ -104,8 +127,8 @@ namespace MajdataPlay.IO
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        asioProcedure = (input, channel, buffer, length, user) => globalProcedure(buffer, length, user);
-                        BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
+                        //BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
+                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
                         BassAsio.GetInfo(out var asioInfo);
                         BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
                         //we dont use Asio.Inputs because we only use stero channels
@@ -129,7 +152,7 @@ namespace MajdataPlay.IO
                         //Bass.Init(-1, sampleRate);
                         MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
-                        wasapiProcedure = (buffer, length, user) => globalProcedure(buffer, length, user);
+                        //wasapiProcedure = (buffer, length, user) => GlobalProcedure(buffer, length, user);
                         bool isExclusiveSuccess = false;
                         if (isExclusiveRequest)
                         {
@@ -138,7 +161,7 @@ namespace MajdataPlay.IO
                                 WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
                                 0.02f, //buffer
                                 0.005f, //peried
-                                wasapiProcedure);
+                                _wasapiProcedure);
                             MajDebug.Log($"Wasapi Exclusive Init: {isExclusiveSuccess}");
                         }
 
@@ -149,7 +172,7 @@ namespace MajdataPlay.IO
                                 WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
                                 0, //buffer
                                 0, //peried
-                                wasapiProcedure));
+                                _wasapiProcedure));
                         }
                         MajDebug.Log(Bass.LastError);
                         BassWasapi.GetInfo(out var wasapiInfo);
