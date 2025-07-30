@@ -43,14 +43,14 @@ namespace MajdataPlay.Scenes.Setting
             if((fromListRequest & IGNORE_CHART_SETTING_PAGE) == 0)
             {
                 menus = new Menu[properties.Length + 1];
-                offset = 1;
+                offset = 0;
                 var selectedChart = SongStorage.WorkingCollection.Current;
                 var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
                 var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
-                menus[0] = menu;
+                menus[properties.Length] = menu;
                 menu.SubOptionObject = chartSetting;
                 menu.Name = chartSettingType.Name;
             }
@@ -181,12 +181,13 @@ namespace MajdataPlay.Scenes.Setting
             {
                 index = menus.AsEnumerable().FindIndex(x => x.Name == "Mod");
             }
-            else if ((fromListRequest & JMP_TO_MOD_PAGE) != 0)
+            else if ((fromListRequest & JMP_TO_DEFAULT_PAGE) != 0)
             {
-                index = 0;
+                index = Setting.Misc.SelectedSettingPage;
             }
             Index = index;
             UpdateMenu(0, Index);
+            menus[Index].ToIndex(Setting.Misc.SelectedSettingMenuIndex);
         }
 
         public void PreviousMenu()
@@ -249,6 +250,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         private void OnDestroy()
         {
+            Setting.Misc.SelectedSettingPage = Index;
             _isExited = true;
             MajInstances.GameManager.Save();
             GC.Collect();

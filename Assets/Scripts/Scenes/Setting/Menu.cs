@@ -107,6 +107,7 @@ namespace MajdataPlay.Scenes.Setting
                 manager.PreviousMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
         }
         void NextOption()
         {
@@ -116,9 +117,17 @@ namespace MajdataPlay.Scenes.Setting
                 manager.NextMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
         }
         public void ToLast() => _selectedIndex = _options.Length - 1;
         public void ToFirst() => _selectedIndex = 0;
+
+        public void ToIndex(int index)
+        {
+            _selectedIndex = index;
+            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+        }
+
         [SerializeField]
         int _selectedIndex = 0;
         [SerializeField]

@@ -199,6 +199,10 @@ namespace MajdataPlay.Settings
         public int SelectedDir { get; set; } = 0;
         public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
         public SongOrder OrderBy { get; set; } = new();
+        [JsonIgnore]
+        public int SelectedSettingPage { get; set; } = 0;
+        [JsonIgnore]
+        public int SelectedSettingMenuIndex { get; set; } = 0;
     }
     public class IOOptions
     {
