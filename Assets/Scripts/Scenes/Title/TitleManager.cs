@@ -114,6 +114,9 @@ namespace MajdataPlay.Scenes.Title
                             echoText.text = Localization.GetLocalizedText("Press Any Key");
                             InputManager.BindAnyArea(OnAreaDown);
 
+                            var list = new string[] { "game_init.wav", "game_init_2.wav", "game_init_3.wav" };
+                            MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+
                         }
                         break;
                     }

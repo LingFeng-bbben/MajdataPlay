@@ -72,13 +72,16 @@ namespace MajdataPlay.Settings
         /// Such like Touch and TouchHold
         /// </summary>
         public float InnerJudgeDistance { get; set; } = 1f;
+        [SettingVisualizationIgnore]
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
         public float TapScale { get; set; } = 1f;
         public float HoldScale { get; set; } = 1f;
         public float TouchScale { get; set; } = 1f;
         public float SlideScale { get; set; } = 1f;
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
+        [SettingVisualizationIgnore]
         public string Resolution { get; set; } = "1080x1920";
+        [SettingVisualizationIgnore]
         public float MainScreenPosition { get; set; } = 1f; 
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
         [SettingVisualizationIgnore]
@@ -165,12 +168,17 @@ namespace MajdataPlay.Settings
         public bool DisplayFPS { get; set; } = true;
         [SettingVisualizationIgnore]
         public bool FullScreen { get; set; } = true;
+        [SettingVisualizationIgnore]
         public int MenuOptionIterationSpeed { get; set; } = 45;
+        [SettingVisualizationIgnore]
         public float DisplayOffset { get; set; } = 0f;
         public float NoteAppearRate { get; set; } = 0.265f;
         public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
+        [SettingVisualizationIgnore]
         public bool HideCursorInGame { get; set; } = true;
+        [SettingVisualizationIgnore]
         public bool NoteFolding { get; set; } = true;
+        [SettingVisualizationIgnore]
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
         [SettingVisualizationIgnore]
         public int MaxQueuedFrames { get; set; } = 2;

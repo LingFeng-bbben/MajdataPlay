@@ -89,6 +89,8 @@ namespace MajdataPlay.Scenes.Setting
             LedRing.SetButtonLight(Color.blue, 0);
             LedRing.SetButtonLight(Color.blue, 7);
 
+            MajInstances.AudioManager.PlaySFX("settings.wav");
+
             InitializeAllMenu().Forget();
         }
         void Update()

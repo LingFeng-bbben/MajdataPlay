@@ -45,6 +45,7 @@ namespace MajdataPlay.Scenes.List
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
                 previewSample.CurrentSec = 0;
+                previewSample.Speed = 1.0f;
                 previewSample.Play();
                 token.ThrowIfCancellationRequested();
                 await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);

@@ -79,7 +79,7 @@ namespace MajdataPlay.Scenes.Result
             intractSender.Init(song);
             favoriteAdder.SetSong(song);
 
-            if (result.Acc.DX < 70)
+            if (result.Acc.DX < 97)
             {
                 omg.text = "您输了";
                 xxlb.GetComponent<Animator>().SetTrigger("Bad");
@@ -169,7 +169,7 @@ namespace MajdataPlay.Scenes.Result
             }
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
-            PlayVoice(result.Acc.DX, song).Forget();
+            PlayVoice(result.Acc.DX, song,totalJudgeRecord.IsAllPerfect, totalJudgeRecord.IsFullCombo).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
@@ -194,60 +194,78 @@ namespace MajdataPlay.Scenes.Result
             coverImg.sprite = cover;
         }
 
-        async UniTask PlayVoice(double dxacc, ISongDetail song)
+        async UniTask PlayVoice(double dxacc, ISongDetail song, bool isAP, bool isFC)
         {
-            if (dxacc >= 97)
+            try
             {
-                MajInstances.AudioManager.PlaySFX("Rank.wav");
-                await UniTask.WaitForSeconds(1);
-            }
-            if (dxacc >= 100.5f)
-            {
-                MajInstances.AudioManager.PlaySFX("SSS+.wav");
-                rank.text = "SSS+";
-            }
-            else if (dxacc >= 100f)
-            {
-                MajInstances.AudioManager.PlaySFX("SSS.wav");
-                rank.text = "SSS";
-            }
-            else if (dxacc >= 99.5f)
-            {
-                MajInstances.AudioManager.PlaySFX("SS+.wav");
-                rank.text = "SS+";
-            }
-            else if (dxacc >= 99f)
-            {
-                MajInstances.AudioManager.PlaySFX("SS.wav");
-                rank.text = "SS";
-            }
-            else if (dxacc >= 98f)
-            {
-                MajInstances.AudioManager.PlaySFX("S+.wav");
-                rank.text = "S+";
-            }
-            else if (dxacc >= 97f)
-            {
-                MajInstances.AudioManager.PlaySFX("S.wav");
-                rank.text = "S";
-            }
-            if (dxacc > 97)
-            {
-                await UniTask.WaitForSeconds(2);
-                var list = new string[] { "good.wav", "good_2.wav", "good_3.wav", "good_4.wav", "good_5.wav", "good_6.wav" };
-                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
-                await UniTask.WaitForSeconds(3);
+                AudioSampleWrap? lastSample = null;
+                if (dxacc >= 97)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("clear.wav")!;
+                    while (lastSample.IsPlaying) await UniTask.Yield();
+                }
+                if (dxacc >= 100.5f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SSS+.wav")!;
+                    rank.text = "SSS+";
+                }
+                else if (dxacc >= 100f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SSS.wav")!;
+                    rank.text = "SSS";
+                }
+                else if (dxacc >= 99.5f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SS+.wav")!;
+                    rank.text = "SS+";
+                }
+                else if (dxacc >= 99f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SS.wav")!;
+                    rank.text = "SS";
+                }
+                else if (dxacc >= 98f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("S+.wav")!;
+                    rank.text = "S+";
+                }
+                else if (dxacc >= 97f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("S.wav")!;
+                    rank.text = "S";
+                }
+
+                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+
+                if (isAP)
+                {
+                    var list = new string[] { "ap_comment.wav", "ap_comment_2.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+                else if(isFC)
+                {
+                    var list = new string[] { "fc_comment.wav", "fc_comment_2.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }else if (dxacc >= 97f)
+                {
+                    var list = new string[] { "clear_comment.wav", "clear_comment_2.wav", "clear_comment_3.wav", "clear_comment_4.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+                else
+                {
+                    var list = new string[] { "fail_comment.wav", "fail_comment_2.wav", "fail_comment_3.wav", "fail_comment_4.wav", "fail_comment_5.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+
+                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+
                 if (song is OnlineSongDetail)
                 {
                     MajInstances.AudioManager.PlaySFX("dian_zan.wav");
                 }
             }
-            else
-            {
-                var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav" };
-                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
-                await UniTask.WaitForSeconds(2);
-            }
+            catch (Exception e){ MajDebug.LogException(e); }
+
             await _scoreSaveTask;
             await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);

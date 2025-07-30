@@ -73,6 +73,8 @@ namespace MajdataPlay.Scenes.Result
             {
                 await Online.SendLike(song);
                 infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
+                var list = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
+                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
             catch (Exception ex)
             {
@@ -85,11 +87,12 @@ namespace MajdataPlay.Scenes.Result
 
         public async UniTask SendScore(MaiScore score)
         {
-            uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
             for(int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
                 try
                 {
+                    uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
+                    await UniTask.Yield();
                     await Online.SendScore(_onlineDetail, score);
                     uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
                     return;

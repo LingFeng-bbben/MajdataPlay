@@ -52,6 +52,16 @@ namespace MajdataPlay.Scenes.TotalResult
             //SongStorage.WorkingCollection.Reset();
             //MajInstances.GameManager.isDanMode = false;
             DelayBind().Forget();
+            MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+            MajInstances.AudioManager.PlaySFX("bgm_dan.mp3", true);
+            if(_gameInfo.DanInfo.RestoreHP > 0)
+            {
+                MajInstances.AudioManager.PlaySFX("challenge_clear.wav");
+            }
+            else
+            {
+                MajInstances.AudioManager.PlaySFX("challenge_fail.wav");
+            }
         }
 
         async UniTaskVoid DelayBind()
@@ -69,7 +79,7 @@ namespace MajdataPlay.Scenes.TotalResult
 
             if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
             {
-                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+                MajInstances.AudioManager.StopSFX("bgm_dan.mp3");
                 _isExited = true;
                 MajInstances.SceneSwitcher.SwitchScene("List", false);
                 

@@ -356,24 +356,28 @@ namespace MajdataPlay.IO
                     throw new NotImplementedException("Backend not supported");
             }
         }
-        public void PlaySFX(string name, bool isLoop = false)
+        public AudioSampleWrap? PlaySFX(string name, bool isLoop = false)
         {
             var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
-            if (psp is not null) 
+            if (psp is not null)
             {
                 if (psp.SampleType == SFXSampleType.Voice)
                 {
-                    foreach(var voice in SFXSamples.FindAll(o => o.SampleType == SFXSampleType.Voice))
+                    foreach (var voice in SFXSamples.FindAll(o => o.SampleType == SFXSampleType.Voice))
                     {
-                        if(voice is not null)
+                        if (voice is not null)
                             voice.Stop();
                     }
                 }
                 psp.PlayOneShot();
                 psp.IsLoop = isLoop;
-            }   
+                return psp;
+            }
             else
+            {
                 MajDebug.LogError("No such SFX");
+                return null;
+            }
         }
 
         public AudioSampleWrap GetSFX(string name)

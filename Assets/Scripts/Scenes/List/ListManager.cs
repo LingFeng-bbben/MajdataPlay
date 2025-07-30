@@ -30,14 +30,6 @@ namespace MajdataPlay.Scenes.List
         float _autoSlideTimer = 0f;
         float _enterPracticeTimer = 0f;
 
-        static ReadOnlyMemory<string> _xxlbVoices = new string[]
-        {
-            "notouch.wav",
-            "notouch_2.wav",
-            "notouch_3.wav",
-            "notouch_4.wav",
-            "notouch_5.wav"
-        };
         CoverListDisplayer _coverListDisplayer;
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
@@ -60,7 +52,8 @@ namespace MajdataPlay.Scenes.List
             if (!selectsfx.IsPlaying)
             {
                 MajInstances.AudioManager.PlaySFX("bgm_select.mp3", true);
-                MajInstances.AudioManager.PlaySFX("SelectSong.wav");
+                var list = new string[] { "select_song.wav", "select_song_2.wav", "select_song_3.wav", "select_song_4.wav" };
+                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
         }
         async UniTaskVoid InitializeCoverListAsync()
@@ -136,7 +129,16 @@ namespace MajdataPlay.Scenes.List
 
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
             {
-                var list = _xxlbVoices.Span;
+                var list = new string[]
+                            {
+                                "no_touch.wav",
+                                "no_touch_2.wav",
+                                "no_touch_3.wav",
+                                "no_touch_4.wav",
+                                "no_touch_5.wav",
+                                "no_touch_6.wav",
+                                "no_touch_7.wav"
+                            };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                 XxlbAnimation.instance.PlayTouchAnimation();
             }
@@ -210,10 +212,14 @@ namespace MajdataPlay.Scenes.List
             if (a8Statistic.IsClicked)
             {
                 _coverListDisplayer.SlideDifficulty(-1);
+                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
+                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
                 _coverListDisplayer.SlideDifficulty(1);
+                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
+                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
             }
             
 
@@ -286,6 +292,10 @@ namespace MajdataPlay.Scenes.List
                         LedRing.SetButtonLight(Color.red, 4);
                         _coverListDisplayer.SwitchToSongList();
                         _coverListDisplayer.SlideListToTop();
+                        if (SongStorage.WorkingCollection.IsOnline)
+                        {
+                            MajInstances.AudioManager.PlaySFX("online_page.wav");
+                        }
                     }
                     a4Statistic.IsClickEventUsed = true;
                 }
@@ -376,7 +386,7 @@ namespace MajdataPlay.Scenes.List
         {
             _cts.Cancel();
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-            var list = new string[] { "track_start.wav", "track_start_2.wav" };
+            var list = new string[] { "track_start.wav", "track_start_2.wav", "track_start_3.wav" };
             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             var levels = new ChartLevel[]
             {
@@ -429,8 +439,7 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-            var list = new string[] { "track_start.wav", "track_start_2.wav" };
-            MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+            MajInstances.AudioManager.PlaySFX("challenge_mode.wav");
             var levels = new ChartLevel[danInfo.SongLevels.Length];
             for (int i = 0; i < levels.Length; i++)
             {
