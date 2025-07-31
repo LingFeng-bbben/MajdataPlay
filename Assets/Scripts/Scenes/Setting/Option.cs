@@ -494,16 +494,16 @@ namespace MajdataPlay.Scenes.Setting
                     UpdateVolume();
                     break;
                 case "VSync":
-                    QualitySettings.vSyncCount = (bool)newValue ? 1 : 0;
+                    QualitySettings.vSyncCount = Convert.ToBoolean(newValue) ? 1 : 0;
                     break;
                 case "FPSLimit":
-                    Application.targetFrameRate = (int)newValue;
+                    Application.targetFrameRate = Convert.ToInt32(newValue);
                     break;
                 case "RenderQuality":
-                    QualitySettings.SetQualityLevel((int)newValue, true);
+                    QualitySettings.SetQualityLevel(Convert.ToInt32(newValue), true);
                     break;
                 case "Direct3DMaxQueuedFrames":
-                    QualitySettings.maxQueuedFrames = (int)newValue;
+                    QualitySettings.maxQueuedFrames = Convert.ToInt32(newValue);
                     break;
             }
         }
