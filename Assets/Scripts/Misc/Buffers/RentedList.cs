@@ -10,11 +10,9 @@ using System.Threading.Tasks;
 namespace MajdataPlay.Buffers;
 internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisposable
 {
+    
     struct RentedArray : IMemoryOwner<T>, IDisposable
     {
-        const int MAX_ARRAY_LENGTH = 256 * 1024 * 1024; // 256MB
-        const int MAX_ARRAY_PER_BUCKET = 100;
-
         public T[] Array
         {
             get
@@ -53,7 +51,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         int _length = 0;
         ArrayPool<T> _arrayPool = _sharedArrayPool;
 
-        readonly static ArrayPool<T> _sharedArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
+        
         public RentedArray()
         {
             
@@ -240,6 +238,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
     bool _isDisposed = false;
     RentedArray _rentedArray;
 
+    readonly static ArrayPool<T> _sharedArrayPool = Pool<T>.ArrayPool;
     ~RentedList()
     {
         Dispose();
