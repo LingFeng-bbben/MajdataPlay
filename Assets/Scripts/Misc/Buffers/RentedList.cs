@@ -250,6 +250,16 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         _rentedArray = RentedArray.Rent(0);
         _array = _rentedArray.Array;
     }
+    public RentedList(IEnumerable<T> items)
+    {
+        if (items == null)
+        {
+            throw new ArgumentNullException(nameof(items), "Items cannot be null.");
+        }
+        _rentedArray = RentedArray.Rent(0);
+        _array = _rentedArray.Array;
+        AddRange(items);
+    }
     public RentedList(int capacity)
     {
         _rentedArray = RentedArray.Rent(capacity);
@@ -264,6 +274,26 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         }
         _array[_size++] = item;
         _version++;
+    }
+    public void AddRange(IEnumerable<T> items)
+    {
+        ThrowIfDisposed();
+        if (items == null)
+        {
+            throw new ArgumentNullException(nameof(items), "Items cannot be null.");
+        }
+        foreach (var item in items)
+        {
+            Add(item);
+        }
+    }
+    public void AddRange(ReadOnlySpan<T> items)
+    {
+        ThrowIfDisposed();
+        for (var i = 0; i < items.Length; i++)
+        {
+            Add(items[i]);
+        }
     }
     public void Insert(int index, T item)
     {
