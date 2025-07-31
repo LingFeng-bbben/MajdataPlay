@@ -86,7 +86,7 @@ namespace MajdataPlay.Settings
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
         [SettingVisualizationIgnore]
         public bool Topmost { get; set; } = false;
-        public int FPSLimit { get; set; } = 240;
+        public int FPSLimit { get; set; } = 120;
         public bool VSync { get; set; } = true;
     }
     public class SoundOptions
