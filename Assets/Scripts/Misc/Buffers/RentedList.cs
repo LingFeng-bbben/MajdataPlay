@@ -390,7 +390,29 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         {
             throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Array index is out of range.");
         }
+        else if(_size == 0)
+        {
+            return;
+        }
         Array.Copy(_array, 0, array, arrayIndex, _size);
+    }
+    public void CopyTo(Span<T> span)
+    {
+        ThrowIfDisposed();
+        if (span.Length < _size)
+        {
+            throw new ArgumentException("Span is too small to copy the elements.");
+        }
+        else if(_size == 0)
+        {
+            return;
+        }
+        var array = _array.AsSpan(0, _size);
+        array.CopyTo(span);
+    }
+    public void CopyTo(Memory<T> memory)
+    {
+        CopyTo(memory.Span);
     }
     public void Dispose()
     {
@@ -400,6 +422,18 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         }
         _isDisposed = true;
         _rentedArray.Dispose();
+    }
+    public T[] ToArray()
+    {
+        ThrowIfDisposed();
+        if(_size == 0)
+        {
+            return Array.Empty<T>();
+        }
+        var array = new T[_size];
+        Array.Copy(_array, array, _size);
+
+        return array;
     }
     void ThrowIfDisposed()
     {
