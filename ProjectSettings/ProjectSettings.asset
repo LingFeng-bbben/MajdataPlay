@@ -726,7 +726,9 @@ PlayerSettings:
     XboxOne: dUI_TextMeshPro
     iPhone: dUI_TextMeshPro
     tvOS: dUI_TextMeshPro
-  additionalCompilerArguments: {}
+  additionalCompilerArguments:
+    Standalone:
+    - -langversion:preview
   platformArchitecture: {}
   scriptingBackend:
     Android: 0
