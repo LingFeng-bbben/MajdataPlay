@@ -53,10 +53,12 @@ namespace MajdataPlay.IO
             MajInstances.AudioManager = this;
             DontDestroyOnLoad(this);
             SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
+                                                         .AsEnumerable()
                                                          .FindAll(o => !o.Name.EndsWith(".meta"))
                                                          .Select(x => x.Name)
                                                          .ToArray();
             VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles()
+                                                             .AsEnumerable()
                                                              .FindAll(o => !o.Name.EndsWith(".meta"))
                                                              .Select(x => x.Name)
                                                              .ToArray();
