@@ -1,8 +1,10 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.IO;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
@@ -15,9 +17,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             get
             {
                 if (_areas.Length == 0)
+                {
                     return false;
+                }
                 else
+                {
                     return _isFinished;
+                }
             }
         }
         public ReadOnlySpan<SensorArea> IncludedAreas => _includedAreas.Span;
@@ -38,20 +44,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         Memory<Area> _areas = Memory<Area>.Empty;
         ReadOnlyMemory<SensorArea> _includedAreas = Memory<SensorArea>.Empty;
 
-        public SlideArea(Dictionary<SensorArea, bool> types, int progressWhenOn, int progressWhenFinished)
+        public SlideArea(ReadOnlySpan<(SensorArea, bool)> types, int progressWhenOn, int progressWhenFinished)
         {
-            if (types is null || types.Count == 0)
+            if (types.Length == 0)
+            {
                 return;
-            Span<SensorArea?> registeredAreas = stackalloc SensorArea?[types.Count];
-            Span<Area?> areas = stackalloc Area?[types.Count];
+            }
+            Span<SensorArea?> registeredAreas = stackalloc SensorArea?[types.Length];
+            Span<Area?> areas = stackalloc Area?[types.Length];
             var i = 0;
             var i2 = 0;
             foreach (var item in types)
             {
-                var area = item.Key;
-                var isLast = item.Value;
+                var (area, isLast) = item;
                 if (registeredAreas.Any(x => x == area))
+                {
                     continue;
+                }
 
                 registeredAreas[i++] = area;
                 areas[i2++] = new Area()
@@ -77,7 +86,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             _arrowProgressWhenFinished = progressWhenFinished;
             _arrowProgressWhenOn = progressWhenOn;
         }
-        public SlideArea(Dictionary<SensorArea, bool> types, int arrowProgress) : this(types, arrowProgress, arrowProgress)
+        public SlideArea(ReadOnlySpan<(SensorArea, bool)> types, int arrowProgress) : this(types, arrowProgress, arrowProgress)
         {
 
         }
@@ -144,7 +153,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         public void Check(in SensorArea targetArea, in SwitchStatus state)
         {
             if (_areas.Length == 0)
+            {
                 return;
+            }
             var span = _areas.Span;
             var isOn = false;
             var isFinished = Policy switch
@@ -159,17 +170,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
 
                 isOn = isOn || area.On;
                 if (Policy == AreaPolicy.AND)
+                {
                     isFinished = isFinished && area.IsFinished;
+                }
                 else
+                {
                     isFinished = isFinished || area.IsFinished;
+                }
             }
             _isFinished = isFinished;
             _isOn = isOn;
         }
         struct Area
         {
-            public bool On { get; private set; }
-            public bool Off { get; private set; }
+            /// <summary>
+            /// True if the target area has been triggered.
+            /// </summary>
+            public bool On
+            {
+                get
+                {
+                    return _wasOn;
+                }
+            }
+            /// <summary>
+            /// True if the target area has been untriggered and has been triggered.
+            /// </summary>
+            public bool Off
+            {
+                get
+                {
+                    return _wasOff;
+                }
+            }
             public SensorArea TargetArea { get; init; }
             public bool IsLast { get; set; }
             public bool IsFinished
@@ -177,25 +210,36 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 get
                 {
                     if (IsLast)
-                        return On;
+                    {
+                        return _wasOn;
+                    }
                     else
-                        return On && Off;
+                    {
+                        return _wasOn && _wasOff;
+                    }
                 }
             }
+
+            bool _wasOn;
+            bool _wasOff;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Check(in SensorArea area, in SwitchStatus status)
             {
                 if (area != TargetArea)
+                {
                     return;
+                }
                 if (status == SwitchStatus.Off)
                 {
-                    if (On)
+                    if (_wasOn)
                     {
-                        Off = true;
+                        _wasOff = true;
                     }
                 }
                 else
                 {
-                    On = true;
+                    _wasOn = true;
                 }
             }
         }

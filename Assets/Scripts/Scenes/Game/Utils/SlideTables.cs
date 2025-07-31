@@ -612,21 +612,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B8,2),
                 BuildSlideArea(SensorArea.B7,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
             },
             new SlideArea[] // Center
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B1,2),
                 BuildSlideArea(SensorArea.C,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A5 , SensorArea.B5 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A5 , SensorArea.B5 },7,true,true)
             },
             new SlideArea[] // R
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B2,2),
                 BuildSlideArea(SensorArea.B3,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
             }
         };
         public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new SlideArea[][]
@@ -636,7 +636,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B8,2),
                 BuildSlideArea(SensorArea.B7,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
             },
             new SlideArea[] // Center
             {
@@ -649,7 +649,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B2,2),
                 BuildSlideArea(SensorArea.B3,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
             }
         };
         public static SlideTable? FindTableByName(string prefabName)
@@ -683,39 +683,47 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
         }
         static SlideArea BuildSlideArea(SensorArea type, int arrowProgress, bool isSkippable = true, bool isLast = false)
         {
-            var obj = new SlideArea(new Dictionary<SensorArea, bool>
-                      {
-                          { type, isLast}
-                      }, arrowProgress);
+            ReadOnlySpan<(SensorArea, bool)> areaInfos = stackalloc (SensorArea, bool)[]
+            {
+                (type, isLast)
+            };
+            var obj = new SlideArea(areaInfos, arrowProgress);
             obj.IsSkippable = isSkippable;
             return obj;
         }
         static SlideArea BuildSlideArea(SensorArea type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
         {
-            var obj = new SlideArea(new Dictionary<SensorArea, bool>
-                      {
-                          { type, isLast}
-                      }, progressWhenOn, progressWhenFinished);
+            ReadOnlySpan<(SensorArea, bool)> areaInfos = stackalloc (SensorArea, bool)[]
+            {
+                (type, isLast)
+            };
+            var obj = new SlideArea(areaInfos, progressWhenOn, progressWhenFinished);
             obj.IsSkippable = isSkippable;
             return obj;
         }
-        static SlideArea BuildSlideArea(SensorArea[] type, int barIndex, bool isSkippable = true, bool isLast = false)
+        static SlideArea BuildSlideArea(ReadOnlySpan<SensorArea> type, int arrowProgress, bool isSkippable = true, bool isLast = false)
         {
-            var table = new Dictionary<SensorArea, bool>();
-            foreach (var sensorType in type)
-                table.Add(sensorType, isLast);
+            Span<(SensorArea, bool)> areaInfos = stackalloc (SensorArea, bool)[type.Length];
 
-            var obj = new SlideArea(table, barIndex);
+            for (var i = 0; i < type.Length; i++)
+            {
+                areaInfos[i] = (type[i], isLast);
+            }
+
+            var obj = new SlideArea(areaInfos, arrowProgress);
             obj.IsSkippable = isSkippable;
             return obj;
         }
-        static SlideArea BuildSlideArea(SensorArea[] type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
+        static SlideArea BuildSlideArea(ReadOnlySpan<SensorArea> type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
         {
-            var table = new Dictionary<SensorArea, bool>();
-            foreach (var sensorType in type)
-                table.Add(sensorType, isLast);
+            Span<(SensorArea, bool)> areaInfos = stackalloc (SensorArea, bool)[type.Length];
 
-            var obj = new SlideArea(table, progressWhenOn, progressWhenFinished);
+            for (var i = 0; i < type.Length; i++)
+            {
+                areaInfos[i] = (type[i], isLast);
+            }
+
+            var obj = new SlideArea(areaInfos, progressWhenOn, progressWhenFinished);
             obj.IsSkippable = isSkippable;
             return obj;
         }
