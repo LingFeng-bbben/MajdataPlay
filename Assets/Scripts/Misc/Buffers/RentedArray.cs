@@ -42,11 +42,11 @@ namespace MajdataPlay.Buffers
         readonly ArrayPool<T> _arrayPool;
         
         readonly static ArrayPool<T> _sharedArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
-        //public RentedArray()
-        //{
-        //    _arrayPool = _sharedArrayPool;
-        //    _array = Array.Empty<T>();
-        //}
+        public RentedArray()
+        {
+            _arrayPool = _sharedArrayPool;
+            _array = System.Array.Empty<T>();
+        }
         public RentedArray(int length)
         {
             if (length <= 0)
