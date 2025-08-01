@@ -57,7 +57,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 return;
             }
             _isDisposed = true;
-            var areas = JudgeQueue.Span;
+            var areas = _judgeQueue.Span;
             for (var i = 0; i < areas.Length; i++)
             {
                 ref var area = ref areas[i];

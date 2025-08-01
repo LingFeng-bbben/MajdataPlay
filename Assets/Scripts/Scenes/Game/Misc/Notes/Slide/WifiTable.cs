@@ -128,9 +128,9 @@ public class WifiTable: IDisposable
             return;
         }
         _isDisposed = true;
-        var left = Left.Span;
-        var center = Center.Span;
-        var right = Right.Span;
+        var left = _left.Span;
+        var center = _center.Span;
+        var right = _right.Span;
 
         for (var i = 0; i < left.Length; i++)
         {
