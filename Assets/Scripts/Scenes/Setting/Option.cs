@@ -341,6 +341,21 @@ namespace MajdataPlay.Scenes.Setting
                 case "JudgeOffset":
                 case "AnswerOffset":
                 case "TouchPanelOffset":
+                    {
+                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+                        {
+                            _maxValue = null;
+                            _minValue = null;
+                            _step = 0.001m;
+                        }
+                        else
+                        {
+                            _maxValue = null;
+                            _minValue = null;
+                            _step = 0.1m;
+                        }
+                        goto default;
+                    }
                 case "DisplayOffset":
                     {
                         if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
