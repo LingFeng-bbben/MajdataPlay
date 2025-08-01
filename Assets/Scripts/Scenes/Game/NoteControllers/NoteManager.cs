@@ -197,12 +197,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         public void InitializeUpdater()
         {
-            _tapUpdater.Initialize();
-            _holdUpdater.Initialize();
-            _slideUpdater.Initialize();
-            _touchUpdater.Initialize();
-            _touchHoldUpdater.Initialize();
-            _eachLineUpdater.Initialize();
+            _tapUpdater.Init();
+            _holdUpdater.Init();
+            _slideUpdater.Init();
+            _touchUpdater.Init();
+            _touchHoldUpdater.Init();
+            _eachLineUpdater.Init();
         }
         internal void Clear()
         {

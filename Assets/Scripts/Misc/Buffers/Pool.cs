@@ -16,9 +16,9 @@ internal static class Pool<T>
 
     public static T[] RentArray(int length, bool clearArray = false)
     {
-        if (length <= 0)
+        if (length < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(length), $"Length must be between 1 and {MAX_ARRAY_LENGTH}.");
+            throw new ArgumentOutOfRangeException(nameof(length), $"Length must be greater than 0");
         }
         else if(length > MAX_ARRAY_LENGTH)
         {
