@@ -177,11 +177,12 @@ namespace MajdataPlay
                     collections.Add(task.Result);
                 }
             }
+            collections = collections.OrderBy(x => x.Name).ToList();
             await Task.Delay(1000);
             //Online Charts
             if (MajInstances.Settings.Online.Enable)
             {
-                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.GroupBy(x => x.Url))
+                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.OrderBy(x => x.Name).GroupBy(x => x.Url))
                 {
                     var api = item.FirstOrDefault();
                     if (api is null)
