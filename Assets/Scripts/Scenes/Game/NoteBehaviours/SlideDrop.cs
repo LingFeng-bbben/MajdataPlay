@@ -15,6 +15,7 @@ using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class SlideDrop : SlideBase, IConnectableSlide, IMajComponent
     {
         public bool IsMirror
@@ -259,7 +260,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                foreach (var judgeArea in judgeQueue)
+                foreach (ref var judgeArea in judgeQueue)
                 {
                     judgeArea.IsSkippable = true;
                 }
@@ -394,14 +395,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 ref var queueMemory = ref _judgeQueues[0];
                 var queue = queueMemory.Span;
-                var first = queue[0];
+                ref var first = ref queue[0];
+                ref SlideArea second = ref Unsafe.NullRef<SlideArea>(); ;
                 var fAreas = first.IncludedAreas;
                 var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-                SlideArea? second = null;
+                
 
                 if (queue.Length >= 2)
                 {
-                    second = queue[1];
+                    second = ref queue[1];
                 }
 
                 foreach (var area in fAreas)
@@ -417,7 +419,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
                 // Check the second area
 
-                if (second is not null && (first.IsSkippable || first.On))
+                if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
                 {
                     var sAreas = second.IncludedAreas;
                     foreach (var area in sAreas)
@@ -823,7 +825,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
             }
         }
-
+        void OnDestroy()
+        {
+            _table?.Dispose();
+        }
         [ReadOnlyField]
         [SerializeField]
         bool _isMirror = false;

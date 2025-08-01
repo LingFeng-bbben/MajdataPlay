@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.IO;
 using System;
 using System.Collections;
@@ -8,7 +9,7 @@ using System.Runtime.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
-    public class SlideArea
+    public struct SlideArea: IDisposable
     {
         public bool On => _isOn;
         public bool IsSkippable { get; set; } = true;
@@ -16,6 +17,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         {
             get
             {
+                ThrowIfDisposed();
                 if (_areas.Length == 0)
                 {
                     return false;
@@ -26,7 +28,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 }
             }
         }
-        public ReadOnlySpan<SensorArea> IncludedAreas => _includedAreas.Span;
+        public ReadOnlySpan<SensorArea> IncludedAreas
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _includedAreas.Span;
+            }
+        }
         public AreaPolicy Policy { get; init; } = AreaPolicy.OR;
         public int ArrowProgressWhenFinished
         {
@@ -36,14 +45,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         {
             get => _arrowProgressWhenOn;
         }
+
         bool _isFinished = false;
         bool _isOn = false;
+        bool _isDisposed = false;
         int _arrowProgressWhenFinished = 0;
         int _arrowProgressWhenOn = 0;
 
         Memory<Area> _areas = Memory<Area>.Empty;
-        ReadOnlyMemory<SensorArea> _includedAreas = Memory<SensorArea>.Empty;
+        Memory<SensorArea> _includedAreas = Memory<SensorArea>.Empty;
 
+        Area[] _rentedArrayForAreas = Array.Empty<Area>();
+        SensorArea[] _rentedArrayForIncludedAreas = Array.Empty<SensorArea>();
         public SlideArea(ReadOnlySpan<(SensorArea, bool)> types, int progressWhenOn, int progressWhenFinished)
         {
             if (types.Length == 0)
@@ -81,8 +94,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             {
                 _areas[j] = (Area)areas[j]!;
             }
-            this._areas = _areas.ToArray();
-            _includedAreas = _registeredAreas.ToArray();
+            _rentedArrayForAreas = Pool<Area>.RentArray(_areas.Length, true);
+            _rentedArrayForIncludedAreas = Pool<SensorArea>.RentArray(_registeredAreas.Length, true);
+            _areas.CopyTo(_rentedArrayForAreas);
+            _registeredAreas.CopyTo(_rentedArrayForIncludedAreas);
+            this._areas = _rentedArrayForAreas.AsMemory(0, _areas.Length);
+            _includedAreas = _rentedArrayForIncludedAreas.AsMemory(0, _registeredAreas.Length);
+
             _arrowProgressWhenFinished = progressWhenFinished;
             _arrowProgressWhenOn = progressWhenOn;
         }
@@ -96,44 +114,47 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         }
         public void Mirror(SensorArea baseLine)
         {
-            var newAreas = new Area[_areas.Length];
-            var includedAreas = new SensorArea[_includedAreas.Length];
-            foreach (var (i, area) in _areas.Span.WithIndex())
+            ThrowIfDisposed();
+            var areas = _areas.Span;
+            var includedAreas = _includedAreas.Span;
+            for (var i = 0; i < areas.Length; i++)
             {
-                newAreas[i] = new Area()
+                ref var area = ref areas[i];
+                area = new Area()
                 {
                     TargetArea = area.TargetArea.Mirror(baseLine),
                     IsLast = area.IsLast
                 };
             }
-            foreach (var (i, area) in _includedAreas.Span.WithIndex())
+            for (var i = 0; i < includedAreas.Length; i++)
             {
-                includedAreas[i] = area.Mirror(baseLine);
+                ref var area = ref includedAreas[i];
+                area = area.Mirror(baseLine);
             }
-            _areas = newAreas;
-            _includedAreas = includedAreas;
         }
         public void Diff(int diff)
         {
-            var newAreas = new Area[_areas.Length];
-            var includedAreas = new SensorArea[_includedAreas.Length];
-            foreach (var (i, area) in _areas.Span.WithIndex())
+            ThrowIfDisposed();
+            var areas = _areas.Span;
+            var includedAreas = _includedAreas.Span;
+            for (var i = 0; i < areas.Length; i++)
             {
-                newAreas[i] = new Area()
+                ref var area = ref areas[i];
+                area = new Area()
                 {
                     TargetArea = area.TargetArea.Diff(diff),
                     IsLast = area.IsLast
                 };
             }
-            foreach (var (i, area) in _includedAreas.Span.WithIndex())
+            for (var i = 0; i < includedAreas.Length; i++)
             {
-                includedAreas[i] = area.Diff(diff);
+                ref var area = ref includedAreas[i];
+                area = area.Diff(diff);
             }
-            _areas = newAreas;
-            _includedAreas = includedAreas;
         }
         public void SetIsLast()
         {
+            ThrowIfDisposed();
             var span = _areas.Span;
             for (var i = 0; i < span.Length; i++)
             {
@@ -143,6 +164,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         }
         public void SetNonLast()
         {
+            ThrowIfDisposed();
             var span = _areas.Span;
             for (var i = 0; i < span.Length; i++)
             {
@@ -152,6 +174,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         }
         public void Check(in SensorArea targetArea, in SwitchStatus state)
         {
+            ThrowIfDisposed();
             if (_areas.Length == 0)
             {
                 return;
@@ -180,6 +203,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             }
             _isFinished = isFinished;
             _isOn = isOn;
+        }
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            if (_rentedArrayForAreas.Length > 0)
+            {
+                Pool<Area>.ReturnArray(_rentedArrayForAreas, true);
+                _rentedArrayForAreas = Array.Empty<Area>();
+                _areas = Memory<Area>.Empty;
+            }
+            if (_rentedArrayForIncludedAreas.Length > 0)
+            {
+                Pool<SensorArea>.ReturnArray(_rentedArrayForIncludedAreas, true);
+                _rentedArrayForIncludedAreas = Array.Empty<SensorArea>();
+                _includedAreas = Memory<SensorArea>.Empty;
+            }
+        }
+        void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(SlideArea), "This SlideArea has been disposed.");
+            }
         }
         struct Area
         {

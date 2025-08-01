@@ -14,13 +14,18 @@ internal static class Pool<T>
     public readonly static ArrayPool<T> ArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
     public readonly static MemoryPool<T> MemoryPool = MemoryPool<T>.Shared;
 
-    public static T[] RentArray(int length)
+    public static T[] RentArray(int length, bool clearArray = false)
     {
         if (length <= 0 || length > MAX_ARRAY_LENGTH)
         {
             throw new ArgumentOutOfRangeException(nameof(length), $"Length must be between 1 and {MAX_ARRAY_LENGTH}.");
         }
-        return ArrayPool.Rent(length);
+        var array = ArrayPool.Rent(length);
+        if(clearArray)
+        {
+            Array.Clear(array, 0, array.Length);
+        }
+        return array;
     }
     public static IMemoryOwner<T> RentMemory(int length)
     {

@@ -11,10 +11,12 @@ using System;
 using System.Linq;
 using MajdataPlay.Settings;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
 
@@ -24,6 +26,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         Vector3[] _starStartPositions = new Vector3[3];
 
+        WifiTable _wifiTable = SlideTables.GetWifiTable(1);
+
         protected override void Awake()
         {
             base.Awake();
@@ -32,7 +36,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var centerStar = Instantiate(_slideStarPrefab, slideParent);
             var leftStar = Instantiate(_slideStarPrefab, slideParent);
             var rightStar = Instantiate(_slideStarPrefab, slideParent);
-            var wifiTable = SlideTables.GetWifiTable(StartPos);
 
             var sensorPos = (SensorArea)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
@@ -47,9 +50,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _starRenderers[0] = _stars[0]!.GetComponent<SpriteRenderer>();
             _starRenderers[1] = _stars[1]!.GetComponent<SpriteRenderer>();
             _starRenderers[2] = _stars[2]!.GetComponent<SpriteRenderer>();
-            _judgeQueues[0] = wifiTable[0];
-            _judgeQueues[1] = wifiTable[1];
-            _judgeQueues[2] = wifiTable[2];
+            _judgeQueues[0] = _wifiTable.Left;
+            _judgeQueues[1] = _wifiTable.Center;
+            _judgeQueues[2] = _wifiTable.Right;
             _starEndPositions[0] = NoteHelper.GetTapPosition(rIndex, 4.8f);// R
             _starEndPositions[1] = NoteHelper.GetTapPosition(EndPos, 4.8f);// Center
             _starEndPositions[2] = NoteHelper.GetTapPosition(lIndex, 4.8f); // L
@@ -111,12 +114,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            var wifiTable = SlideTables.GetWifiTable(StartPos);
-            const float wifiConst = 0.162870f;
+            _wifiTable.Dispose();
+            _wifiTable = SlideTables.GetWifiTable(StartPos);
+            var wifiConst = _wifiTable.Const;
 
-            _judgeQueues[0] = wifiTable[0];
-            _judgeQueues[1] = wifiTable[1];
-            _judgeQueues[2] = wifiTable[2];
+            _judgeQueues[0] = _wifiTable.Left;
+            _judgeQueues[1] = _wifiTable.Center;
+            _judgeQueues[2] = _wifiTable.Right;
 
             _judgeTiming = StartTiming + Length * (1 - wifiConst);
             _lastWaitTimeSec = Length * wifiConst;
@@ -221,12 +225,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             var queue = queueMemory.Span;
-            var first = queue[0];
-            SlideArea? second = null;
+            ref var first = ref queue[0];
+            ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
 
             if (queueMemory.Length >= 2)
             {
-                second = queue[1];
+                second = ref queue[1];
             }
             var fAreas = first.IncludedAreas;
             foreach (var t in fAreas)
@@ -240,7 +244,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 PlaySFX();
             }
 
-            if (second is not null && (first.IsSkippable || first.On))
+            if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
             {
                 var sAreas = second.IncludedAreas;
                 foreach (var t in sAreas)
@@ -632,6 +636,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _slideOK!.SetL();
                 _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
+        }
+        void OnDestroy()
+        {
+            _wifiTable.Dispose();
         }
     }
 }
