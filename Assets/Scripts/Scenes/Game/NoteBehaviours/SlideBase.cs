@@ -57,7 +57,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Span<int> reamaining = stackalloc int[3];
                 var judgeQueues = _judgeQueues.AsSpan();
                 foreach (var (i, queue) in judgeQueues.WithIndex())
+                {
                     reamaining[i] = queue.Length;
+                }
                 return reamaining.Max();
             }
         }
@@ -194,9 +196,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected sealed override void Judge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
+            {
                 return;
+            }
             else if (_isJudged)
+            {
                 return;
+            }
             var stayTimeMSec = _lastWaitTimeSec * 1000; // 停留时间
 
             // By Minepig
@@ -229,16 +235,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
+            {
                 _lastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
+            }
             else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
+            {
                 _lastWaitTimeSec = 0.05f;
+            }
         }
         protected void ClassicJudge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
+            {
                 return;
+            }
             else if (_isJudged)
+            {
                 return;
+            }
 
             var stayTimeMSec = _lastWaitTimeSec * 1000; // 停留时间
             var diffSec = currentSec - JudgeTiming;
@@ -267,7 +281,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
+            {
                 _lastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
+            }
+            else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
+            {
+                _lastWaitTimeSec = 0.05f;
+            }
         }
         protected void HideBar(int endIndex)
         {
