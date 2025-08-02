@@ -287,6 +287,11 @@ namespace MajdataPlay.IO
                                 var state = KeyboardHelper.IsKeyDown(keyCode);
                                 _buttonRealTimeStates[i] = state;
                             }
+                            //we reset the fn buffer here as well, since the gamebutton loop does not 
+                            for (var i = 0; i < fnButtons.Length; i++)
+                            {
+                                fnBuffer[i] = false;
+                            }
                             UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
