@@ -287,7 +287,6 @@ namespace MajdataPlay.IO
                                 var state = KeyboardHelper.IsKeyDown(keyCode);
                                 _buttonRealTimeStates[i] = state;
                             }
-                            fnBuffer.Clear();
                             UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
                             lock (_buttonRingUpdateLoop)
