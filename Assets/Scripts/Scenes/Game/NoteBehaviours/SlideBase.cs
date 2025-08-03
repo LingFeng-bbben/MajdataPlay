@@ -12,6 +12,7 @@ using MajdataPlay.Editor;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
+using MajdataPlay.Buffers;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -107,9 +108,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             set
             {
                 if (value.InRange(1, 8))
+                {
                     _endPos = value;
+                }
                 else
+                {
                     throw new ArgumentOutOfRangeException("End position must be between 1 and 8");
+                }
             }
         }
         public int Multiple
@@ -163,20 +168,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// </summary>
         [ReadOnlyField]
         [SerializeField]
-        protected GameObject[] _slideBars = { };
+        protected readonly RentedList<GameObject> _slideBars = new();
         /// <summary>
         /// Arrow Renderers
         /// </summary>
         [ReadOnlyField]
         [SerializeField]
-        protected SpriteRenderer[] _slideBarRenderers = { };
-
-        protected readonly Transform[] _starTransforms = new Transform[3];
-        protected Transform[] _slideBarTransforms = { };
+        protected readonly RentedList<SpriteRenderer> _slideBarRenderers = new();
+        protected readonly RentedList<Transform> _slideBarTransforms = new();
         /// <summary>
         /// Slide star
         /// </summary>
-        protected GameObject?[] _stars = new GameObject[3];
+        protected readonly Memory<GameObject?> _stars = Memory<GameObject?>.Empty;
+        protected readonly Memory<Transform> _starTransforms = Memory<Transform>.Empty;
 
         protected SlideOK? _slideOK;
 
@@ -192,6 +196,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected bool _isSoundPlayed = false;
         protected bool _isChecking = false;
 
+        GameObject?[] _rentedArrayForStars;
+        Transform[] _rentedArrayForStarTransforms;
+        protected SlideBase()
+        {
+            _rentedArrayForStars = Pool<GameObject?>.RentArray(3, true);
+            _rentedArrayForStarTransforms = Pool<Transform>.RentArray(3, true);
+
+            _stars = _rentedArrayForStars.AsMemory(0, 3);
+            _starTransforms = _rentedArrayForStarTransforms.AsMemory(0, 3);
+        }
+        ~SlideBase()
+        {
+            Dispose();
+        }
         public abstract void Initialize();
         protected sealed override void Judge(float currentSec)
         {
@@ -292,7 +310,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected void HideBar(int endIndex)
         {
             endIndex = endIndex - 1;
-            endIndex = Math.Min(endIndex, _slideBars.Length - 1);
+            endIndex = Math.Min(endIndex, _slideBars.Count - 1);
             for (var i = 0; i <= endIndex; i++)
             {
                 //_slideBarRenderers[i].forceRenderingOff = true;
@@ -312,10 +330,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected void HideAllBar() => HideBar(int.MaxValue);
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var sr in _slideBarRenderers.AsSpan())
+            foreach (var sr in _slideBarRenderers)
             {
                 if (IsEnded)
+                {
                     return;
+                }
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
@@ -332,14 +352,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.SetActive(state);
             if (state)
             {
-                foreach (var slideBar in _slideBars.AsSpan())
+                foreach (var slideBar in _slideBars)
+                {
                     slideBar.layer = MajEnv.DEFAULT_LAYER;
+                }
             }
             else
             {
 
-                foreach (var slideBar in _slideBars.AsSpan())
+                foreach (var slideBar in _slideBars)
+                {
                     slideBar.layer = MajEnv.HIDDEN_LAYER;
+                }
             }
             SetStarActive(state);
         }
@@ -348,18 +372,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             switch (state)
             {
                 case true:
-                    foreach (var star in _stars.AsSpan())
+                    foreach (var star in _stars.Span)
                     {
                         if (star is null)
+                        {
                             continue;
+                        }
                         star.layer = MajEnv.DEFAULT_LAYER;
                     }
                     break;
                 case false:
-                    foreach (var star in _stars.AsSpan())
+                    foreach (var star in _stars.Span)
                     {
                         if (star is null)
+                        {
                             continue;
+                        }
                         star.layer = MajEnv.HIDDEN_LAYER;
                     }
                     break;
@@ -409,11 +437,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected void DestroyStars()
         {
-            if (_stars.IsEmpty())
+            if (_stars.IsEmpty)
+            {
                 return;
+            }
             SetStarActive(false);
-            foreach (ref var star in _stars.AsSpan())
+            foreach (ref var star in _stars.Span)
+            {
                 star = null;
+            }
             //GameObjectHelper.Destroy(ref _stars);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -442,10 +474,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 float alpha = 0;
 
                 if (interval != 0)
+                {
                     alpha = 1 - diff / interval;
+                }
                 alpha *= _maxFadeInAlpha;
                 SetSlideBarAlpha(alpha);
             }
+        }
+        protected virtual void OnDestroy()
+        {
+            Dispose();
         }
         protected void JudgeGradeCorrection(ref JudgeGrade result)
         {
@@ -465,6 +503,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected sealed override float GetRemainingTimeWithoutOffset() => MathF.Max(ArriveTiming - ThisFrameSec, 0);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override float GetTimeSpanToArriveTiming() => ThisFrameSec - ArriveTiming;
+        void Dispose()
+        {
+            if(_rentedArrayForStars.Length != 0)
+            {
+                Pool<GameObject?>.ReturnArray(_rentedArrayForStars, true);
+                _rentedArrayForStars = Array.Empty<GameObject?>();
+            }
+            if(_rentedArrayForStarTransforms.Length != 0)
+            {
+                Pool<Transform>.ReturnArray(_rentedArrayForStarTransforms, true);
+                _rentedArrayForStarTransforms = Array.Empty<Transform>();
+            }
+            _slideBars.Dispose();
+            _slideBarTransforms.Dispose();
+            _slideBarRenderers.Dispose();
+        }
         [ReadOnlyField, SerializeField]
         float _startTiming;
         [ReadOnlyField, SerializeField]
