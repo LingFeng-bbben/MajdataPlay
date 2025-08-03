@@ -4,13 +4,15 @@ using MajdataPlay.Scenes.View;
 using System;
 using System.Linq;
 using UnityEngine.Profiling;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal sealed class SlideUpdater : NoteUpdater
     {
-        Memory<SlideQueueInfo> _queueInfos = Memory<SlideQueueInfo>.Empty;
+        ReadOnlyMemory<SlideQueueInfo> _queueInfos = ReadOnlyMemory<SlideQueueInfo>.Empty;
 
+        SlideQueueInfo[] _rentedArrayForQueueInfos = Array.Empty<SlideQueueInfo>();
         INoteTimeProvider _noteTimeProvider;
 
         const string UPDATER_NAME = "SlideUpdater";
@@ -23,9 +25,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<SlideUpdater>.Instance = this;
         }
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             Majdata<SlideUpdater>.Free();
+            base.OnDestroy();
+            _queueInfos = ReadOnlyMemory<SlideQueueInfo>.Empty;
+            Pool<SlideQueueInfo>.ReturnArray(_rentedArrayForQueueInfos, true);
+            _rentedArrayForQueueInfos = Array.Empty<SlideQueueInfo>();
         }
         private void Start()
         {
@@ -34,14 +40,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal override void Clear()
         {
             base.Clear();
-            _queueInfos = Array.Empty<SlideQueueInfo>();
+            _queueInfos = ReadOnlyMemory<SlideQueueInfo>.Empty;
+            Pool<SlideQueueInfo>.ReturnArray(_rentedArrayForQueueInfos, true);
+            _rentedArrayForQueueInfos = Array.Empty<SlideQueueInfo>();
         }
         internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
         {
             if (infos is null)
+            {
                 throw new ArgumentNullException();
-            _queueInfos = infos.OrderBy(x => x.AppearTiming)
-                               .ToArray();
+            }
+            _rentedArrayForQueueInfos = Pool<SlideQueueInfo>.RentArray(infos.Length, true);
+            var i = 0;
+            foreach(var info in infos.OrderBy(x => x.AppearTiming))
+            {
+                _rentedArrayForQueueInfos[i++] = info;
+            }
+            _queueInfos = _rentedArrayForQueueInfos.AsMemory(0, infos.Length);
         }
         internal override void OnFixedUpdate()
         {
@@ -73,7 +88,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     var info = queueInfos[i];
                     if (info is null)
+                    {
                         continue;
+                    }
                     var appearTiming = info.AppearTiming;
                     if (thisFrameSec >= appearTiming)
                     {

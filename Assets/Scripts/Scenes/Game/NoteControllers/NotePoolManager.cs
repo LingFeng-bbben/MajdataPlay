@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -31,11 +32,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         GameObject eachLinePrefab;
 
         INoteTimeProvider _noteTimeProvider;
-        List<TapPoolingInfo> tapInfos = new();
-        List<HoldPoolingInfo> holdInfos = new();
-        List<TouchPoolingInfo> touchInfos = new();
-        List<TouchHoldPoolingInfo> touchHoldInfos = new();
-        List<EachLinePoolingInfo> eachLineInfos = new();
+        RentedList<TapPoolingInfo> _tapInfos = new();
+        RentedList<HoldPoolingInfo> _holdInfos = new();
+        RentedList<TouchPoolingInfo> _touchInfos = new();
+        RentedList<TouchHoldPoolingInfo> _touchHoldInfos = new();
+        RentedList<EachLinePoolingInfo> _eachLineInfos = new();
         void Awake()
         {
             Majdata<NotePoolManager>.Instance = this;
@@ -48,11 +49,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
             var debugOptions = MajEnv.UserSettings.Debug;
-            tapPool = new(tapPrefab, tapParent, tapInfos.ToArray(), Math.Max(debugOptions.TapPoolCapacity, 1));
-            holdPool = new(holdPrefab, holdParent, holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
-            touchPool = new(touchPrefab, touchParent, touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
-            touchHoldPool = new(touchHoldPrefab, touchHoldParent, touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
-            eachLinePool = new(eachLinePrefab, eachLineParent, eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
+            tapPool = new(tapPrefab, tapParent, _tapInfos.ToArray(), Math.Max(debugOptions.TapPoolCapacity, 1));
+            holdPool = new(holdPrefab, holdParent, _holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
+            touchPool = new(touchPrefab, touchParent, _touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
+            touchHoldPool = new(touchHoldPrefab, touchHoldParent, _touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
+            eachLinePool = new(eachLinePrefab, eachLineParent, _eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
             State = ComponentState.Running;
         }
         void Start()
@@ -74,23 +75,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {
-            tapInfos.Add(tapInfo);
+            _tapInfos.Add(tapInfo);
         }
         public void AddHold(HoldPoolingInfo holdInfo)
         {
-            holdInfos.Add(holdInfo);
+            _holdInfos.Add(holdInfo);
         }
         public void AddTouch(TouchPoolingInfo touchInfo)
         {
-            touchInfos.Add(touchInfo);
+            _touchInfos.Add(touchInfo);
         }
         public void AddTouchHold(TouchHoldPoolingInfo touchHoldInfo)
         {
-            touchHoldInfos.Add(touchHoldInfo);
+            _touchHoldInfos.Add(touchHoldInfo);
         }
         public void AddEachLine(EachLinePoolingInfo eachLineInfo)
         {
-            eachLineInfos.Add(eachLineInfo);
+            _eachLineInfos.Add(eachLineInfo);
         }
         public void Collect<TNote>(TNote endNote)
         {
@@ -115,6 +116,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         void OnDestroy()
         {
+            _tapInfos.Dispose();
+            _holdInfos.Dispose();
+            _touchInfos.Dispose();
+            _touchHoldInfos.Dispose();
+            _eachLineInfos.Dispose();
+
             tapPool?.Destroy();
             holdPool?.Destroy();
             touchPool?.Destroy();
@@ -141,11 +148,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
             }
 
-            tapInfos.Clear();
-            holdInfos.Clear();
-            touchInfos.Clear();
-            touchHoldInfos.Clear();
-            eachLineInfos.Clear();
+            _tapInfos.Clear();
+            _holdInfos.Clear();
+            _touchInfos.Clear();
+            _touchHoldInfos.Clear();
+            _eachLineInfos.Clear();
         }
     }
 }

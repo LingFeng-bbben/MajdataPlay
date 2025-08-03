@@ -15,9 +15,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<TouchUpdater>.Instance = this;
         }
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             Majdata<TouchUpdater>.Free();
+            base.OnDestroy();
         }
         internal override void OnFixedUpdate()
         {
