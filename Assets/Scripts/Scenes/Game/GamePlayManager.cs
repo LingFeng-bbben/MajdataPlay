@@ -1176,10 +1176,11 @@ namespace MajdataPlay.Scenes.Game
         async UniTaskVoid BackToList()
         {
             State = GamePlayStatus.Ended;
-            ClearAllResources();
             var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeInAsync();
+            ClearAllResources();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            sceneSwitcher.FadeIn();
+            
             var wait4Recorder = RecordHelper.StopRecordAsync();
             while (!wait4Recorder.IsCompleted)
             {
@@ -1196,8 +1197,7 @@ namespace MajdataPlay.Scenes.Game
             State = GamePlayStatus.Ended;
 
             await UniTask.Delay(delayMiliseconds);
-            MajInstances.SceneSwitcher.FadeIn();
-            await UniTask.Delay(400);
+            await MajInstances.SceneSwitcher.FadeInAsync();
             ClearAllResources();
             await UniTask.DelayFrame(5);
             
