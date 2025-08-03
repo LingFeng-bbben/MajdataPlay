@@ -77,30 +77,27 @@ namespace MajdataPlay
                     if (File.Exists(MY_FAVORITE_EXPORT_PATH))
                     {
                         bool result;
-                        HashSet<string>? storageFav;
-                        if (File.Exists(MY_FAVORITE_EXPORT_PATH))
+                        (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
+                        if (!result)
                         {
-                            (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
-                            if (!result)
-                            {
-                                var path = Path.Combine(MY_FAVORITE_EXPORT_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                                File.Copy(MY_FAVORITE_EXPORT_PATH, path);
-                                MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
-                            }
+                            var path = Path.Combine(MY_FAVORITE_EXPORT_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
+                            File.Copy(MY_FAVORITE_EXPORT_PATH, path);
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
                         }
-                        if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+                    }
+                    if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+                    {
+
+                        var (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                        if (!result)
                         {
-                            (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
-                            if (!result)
-                            {
-                                var path = Path.Combine(MY_FAVORITE_STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                                File.Copy(MY_FAVORITE_STORAGE_PATH, path);
-                                MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
-                            }
-                            else
-                            {
-                                _storageFav = storageFav ?? _storageFav;
-                            }
+                            var path = Path.Combine(MY_FAVORITE_STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
+                            File.Copy(MY_FAVORITE_STORAGE_PATH, path);
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
+                        }
+                        else
+                        {
+                            _storageFav = storageFav ?? _storageFav;
                         }
                     }
 
@@ -114,7 +111,6 @@ namespace MajdataPlay
                     var songs = await GetCollections(rootPath, progressReporter);
 
                     Collections = songs;
-                    //_totalChartCount = await Collections.ToUniTaskAsyncEnumerable().SumAsync(x => x.Count);
                     MajDebug.Log($"Loaded chart count: {TotalChartCount}");
                     _isInited = true;
                 });
