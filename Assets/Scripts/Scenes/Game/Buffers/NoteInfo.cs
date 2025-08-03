@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,12 +9,21 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {
-    public sealed class NoteInfo
+    public sealed class NoteInfo: IDisposable
     {
-        public IStateful<NoteStatus>? Component { get; init; }
+        public IStateful<NoteStatus>? Component
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ThrowIfDisposed();
+                return _noteObject;
+            }
+        }
         public bool IsPreUpdatable { get; init; }
         public bool IsUpdatable { get; init; }
         public bool IsFixedUpdatable { get; init; }
@@ -23,9 +33,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _onUpdateFunctions is not null ||
-                       _onFixedUpdateFunctions is not null ||
-                       _onLateUpdateFunctions is not null;
+                return _isValid;
             }
         }
         public NoteStatus State
@@ -33,36 +41,56 @@ namespace MajdataPlay.Scenes.Game.Buffers
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return Component?.State ?? NoteStatus.End;
+                ThrowIfDisposed();
+                return _noteObject?.State ?? NoteStatus.End;
             }
         }
 
+        IStateful<NoteStatus>? _noteObject;
         IMajComponent? _component;
+        GameObject? _gameObject;
 
-        readonly PlayerLoopFunction[] _onPreUpdateFunctions = Array.Empty<PlayerLoopFunction>();
-        readonly PlayerLoopFunction[] _onUpdateFunctions = Array.Empty<PlayerLoopFunction>();
-        readonly PlayerLoopFunction[] _onFixedUpdateFunctions = Array.Empty<PlayerLoopFunction>();
-        readonly PlayerLoopFunction[] _onLateUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+        bool _isDisposed = false;
+        readonly bool _isValid = false;
+
+        ReadOnlyMemory<PlayerLoopFunction> _onPreUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+        ReadOnlyMemory<PlayerLoopFunction> _onUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+        ReadOnlyMemory<PlayerLoopFunction> _onFixedUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+        ReadOnlyMemory<PlayerLoopFunction> _onLateUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+
+        PlayerLoopFunction[] _rentedArrayForOnPreUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+        PlayerLoopFunction[] _rentedArrayForOnUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+        PlayerLoopFunction[] _rentedArrayForOnFixedUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+        PlayerLoopFunction[] _rentedArrayForOnLateUpdateFunctions = Array.Empty<PlayerLoopFunction>();
 
         delegate void PlayerLoopFunction();
-        public NoteInfo(IStateful<NoteStatus> component)
+        public NoteInfo(object component)
         {
             if (component is null)
             {
-                Component = default;
+                _noteObject = default;
                 IsUpdatable = false;
                 IsFixedUpdatable = false;
                 IsLateUpdatable = false;
+                _isValid = false;
                 return;
             }
+            _gameObject = component as GameObject;
+            _noteObject = component as IStateful<NoteStatus>;
+            _component = component as IMajComponent;
+
             var componentType = component.GetType();
             var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
-            var methods = componentType.GetMethods(flags);
+            if(!MajCache<(Type, BindingFlags), MethodInfo[]>.TryGetValue((componentType, flags),out var methods))
+            {
+                methods = componentType.GetMethods(flags);
+                MajCache<(Type, BindingFlags), MethodInfo[]>.Add((componentType, flags), methods);
+            }
             var delegateType = typeof(PlayerLoopFunction);
-            var onPreUpdateFunctions = ArrayPool<PlayerLoopFunction>.Shared.Rent(methods.Length);
-            var onUpdateFunctions = ArrayPool<PlayerLoopFunction>.Shared.Rent(methods.Length);
-            var onLateUpdateFunctions = ArrayPool<PlayerLoopFunction>.Shared.Rent(methods.Length);
-            var onFixedUpdateFunctions = ArrayPool<PlayerLoopFunction>.Shared.Rent(methods.Length);
+            _rentedArrayForOnPreUpdateFunctions = Pool<PlayerLoopFunction>.RentArray(methods.Length, true);
+            _rentedArrayForOnUpdateFunctions = Pool<PlayerLoopFunction>.RentArray(methods.Length, true);
+            _rentedArrayForOnFixedUpdateFunctions = Pool<PlayerLoopFunction>.RentArray(methods.Length, true);
+            _rentedArrayForOnLateUpdateFunctions = Pool<PlayerLoopFunction>.RentArray(methods.Length, true);
 
             var onPreUpdateFuncCount = 0;
             var onUpdateFuncCount = 0;
@@ -71,10 +99,23 @@ namespace MajdataPlay.Scenes.Game.Buffers
 
             foreach (var method in methods)
             {
-                if (method.GetParameters().Length != 0)
+                var paramCount = 0;
+                if (!MajCache<MethodInfo, ParameterInfo[]>.TryGetValue(method, out var paramInfos))
+                {
+                    paramInfos = method.GetParameters();
+                    MajCache<MethodInfo, ParameterInfo[]>.Add(method, paramInfos);
+                }
+                paramCount = paramInfos.Length;
+                if (paramCount != 0)
+                {
                     continue;
-                var attributes = method.GetCustomAttributes<PlayerLoopFunctionAttribute>();
-                if (attributes.Count() == 0)
+                }
+                if (!MajCache<MethodInfo, PlayerLoopFunctionAttribute[]>.TryGetValue(method, out var attributes))
+                {
+                    attributes = (PlayerLoopFunctionAttribute[])Attribute.GetCustomAttributes(method, typeof(PlayerLoopFunctionAttribute));
+                    MajCache<MethodInfo, PlayerLoopFunctionAttribute[]>.Add(method, attributes);
+                }
+                if (attributes.Length == 0)
                 {
                     continue;
                 }
@@ -85,7 +126,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     var func = (PlayerLoopFunction?)method.CreateDelegate(delegateType, component);
                     if (func is not null)
                     {
-                        onPreUpdateFunctions[onPreUpdateFuncCount++] = func;
+                        _rentedArrayForOnPreUpdateFunctions[onPreUpdateFuncCount++] = func;
                     }
                 }
                 if ((timing & LoopTiming.Update) == LoopTiming.Update)
@@ -93,7 +134,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     var func = (PlayerLoopFunction?)method.CreateDelegate(delegateType, component);
                     if (func is not null)
                     {
-                        onUpdateFunctions[onUpdateFuncCount++] = func;
+                        _rentedArrayForOnUpdateFunctions[onUpdateFuncCount++] = func;
                     }
                 }
                 if ((timing & LoopTiming.LateUpdate) == LoopTiming.LateUpdate)
@@ -101,7 +142,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     var func = (PlayerLoopFunction?)method.CreateDelegate(delegateType, component);
                     if (func is not null)
                     {
-                        onLateUpdateFunctions[onLateUpdateFuncCount++] = func;
+                        _rentedArrayForOnLateUpdateFunctions[onLateUpdateFuncCount++] = func;
                     }
                 }
                 if ((timing & LoopTiming.FixedUpdate) == LoopTiming.FixedUpdate)
@@ -109,7 +150,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     var func = (PlayerLoopFunction?)method.CreateDelegate(delegateType, component);
                     if (func is not null)
                     {
-                        onFixedUpdateFunctions[onFixedUpdateFuncCount++] = func;
+                        _rentedArrayForOnFixedUpdateFunctions[onFixedUpdateFuncCount++] = func;
                     }
                 }
 
@@ -119,37 +160,25 @@ namespace MajdataPlay.Scenes.Game.Buffers
             IsFixedUpdatable = onFixedUpdateFuncCount != 0;
             IsLateUpdatable = onLateUpdateFuncCount != 0;
 
-            if (IsPreUpdatable)
-            {
-                _onPreUpdateFunctions = new PlayerLoopFunction[onPreUpdateFuncCount];
-                Array.Copy(onPreUpdateFunctions, _onPreUpdateFunctions, onPreUpdateFuncCount);
-            }
-            if (IsUpdatable)
-            {
-                _onUpdateFunctions = new PlayerLoopFunction[onUpdateFuncCount];
-                Array.Copy(onUpdateFunctions, _onUpdateFunctions, onUpdateFuncCount);
-            }
-            if (IsFixedUpdatable)
-            {
-                _onFixedUpdateFunctions = new PlayerLoopFunction[onFixedUpdateFuncCount];
-                Array.Copy(onFixedUpdateFunctions, _onFixedUpdateFunctions, onFixedUpdateFuncCount);
-            }
-            if (IsLateUpdatable)
-            {
-                _onLateUpdateFunctions = new PlayerLoopFunction[onLateUpdateFuncCount];
-                Array.Copy(onLateUpdateFunctions, _onLateUpdateFunctions, onLateUpdateFuncCount);
-            }
-            ArrayPool<PlayerLoopFunction>.Shared.Return(onPreUpdateFunctions);
-            ArrayPool<PlayerLoopFunction>.Shared.Return(onUpdateFunctions);
-            ArrayPool<PlayerLoopFunction>.Shared.Return(onFixedUpdateFunctions);
-            ArrayPool<PlayerLoopFunction>.Shared.Return(onLateUpdateFunctions);
+            _onPreUpdateFunctions = _rentedArrayForOnPreUpdateFunctions.AsMemory(0, onPreUpdateFuncCount);
+            _onUpdateFunctions = _rentedArrayForOnUpdateFunctions.AsMemory(0, onUpdateFuncCount);
+            _onFixedUpdateFunctions = _rentedArrayForOnFixedUpdateFunctions.AsMemory(0, onFixedUpdateFuncCount);
+            _onLateUpdateFunctions = _rentedArrayForOnLateUpdateFunctions.AsMemory(0, onLateUpdateFuncCount);
 
-            _component = component as IMajComponent;
+            _isValid = !_onUpdateFunctions.IsEmpty ||
+                       !_onFixedUpdateFunctions.IsEmpty ||
+                       !_onLateUpdateFunctions.IsEmpty;
+        }
+        ~NoteInfo()
+        {
+            Dispose();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnPreUpdate()
         {
-            var funcCount = _onPreUpdateFunctions.Length;
+            ThrowIfDisposed();
+            var onPreUpdateFunctions = _onPreUpdateFunctions.Span;
+            var funcCount = onPreUpdateFunctions.Length;
             if (funcCount == 0)
             {
                 return;
@@ -158,7 +187,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             {
                 for (var i = 0; i < funcCount; i++)
                 {
-                    var func = _onPreUpdateFunctions[i];
+                    var func = onPreUpdateFunctions[i];
                     func();
                 }
             }
@@ -166,7 +195,9 @@ namespace MajdataPlay.Scenes.Game.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnUpdate()
         {
-            var funcCount = _onUpdateFunctions.Length;
+            ThrowIfDisposed();
+            var onUpdateFunctions = _onUpdateFunctions.Span;
+            var funcCount = onUpdateFunctions.Length;
             if (funcCount == 0)
             {
                 return;
@@ -175,7 +206,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             {
                 for (var i = 0; i < funcCount; i++)
                 {
-                    var func = _onUpdateFunctions[i];
+                    var func = onUpdateFunctions[i];
                     func();
                 }
             }
@@ -183,7 +214,9 @@ namespace MajdataPlay.Scenes.Game.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnLateUpdate()
         {
-            var funcCount = _onLateUpdateFunctions.Length;
+            ThrowIfDisposed();
+            var onLateUpdateFunctions = _onLateUpdateFunctions.Span;
+            var funcCount = onLateUpdateFunctions.Length;
             if (funcCount == 0)
             {
                 return;
@@ -192,7 +225,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             {
                 for (var i = 0; i < funcCount; i++)
                 {
-                    var func = _onLateUpdateFunctions[i];
+                    var func = onLateUpdateFunctions[i];
                     func();
                 }
             }
@@ -200,7 +233,9 @@ namespace MajdataPlay.Scenes.Game.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnFixedUpdate()
         {
-            var funcCount = _onFixedUpdateFunctions.Length;
+            ThrowIfDisposed();
+            var onFixedUpdateFunctions = _onFixedUpdateFunctions.Span;
+            var funcCount = onFixedUpdateFunctions.Length;
             if (funcCount == 0)
             {
                 return;
@@ -209,7 +244,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             {
                 for (var i = 0; i < funcCount; i++)
                 {
-                    var func = _onFixedUpdateFunctions[i];
+                    var func = onFixedUpdateFunctions[i];
                     func();
                 }
             }
@@ -217,8 +252,46 @@ namespace MajdataPlay.Scenes.Game.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExecutable()
         {
+            ThrowIfDisposed();
+            if(((object?)_noteObject ?? _component) is null)
+            {
+                return _gameObject?.activeSelf ?? false;
+            }
             return State is not (NoteStatus.Start or NoteStatus.End) &&
                    (_component?.Active ?? false);
+        }
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            _noteObject = default;
+            _component = default;
+            _gameObject = default;
+
+            Pool<PlayerLoopFunction>.ReturnArray(_rentedArrayForOnPreUpdateFunctions, true);
+            Pool<PlayerLoopFunction>.ReturnArray(_rentedArrayForOnUpdateFunctions, true);
+            Pool<PlayerLoopFunction>.ReturnArray(_rentedArrayForOnFixedUpdateFunctions, true);
+            Pool<PlayerLoopFunction>.ReturnArray(_rentedArrayForOnLateUpdateFunctions, true);
+
+            _onPreUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+            _onUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+            _onFixedUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+            _onLateUpdateFunctions = ReadOnlyMemory<PlayerLoopFunction>.Empty;
+
+            _rentedArrayForOnPreUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+            _rentedArrayForOnUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+            _rentedArrayForOnFixedUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+            _rentedArrayForOnLateUpdateFunctions = Array.Empty<PlayerLoopFunction>();
+        }
+        void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(NoteInfo));
+            }
         }
     }
 }

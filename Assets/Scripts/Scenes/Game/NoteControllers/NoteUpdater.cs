@@ -37,6 +37,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [ReadOnlyField]
         [SerializeField]
         double _lateUpdateElapsedMs = 0;
+
+        readonly static List<MonoBehaviour> SHARED_CACHE_LIST = new(64);
         public void Init()
         {
             var children = transform.GetChildren();
@@ -48,10 +50,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             
             foreach (var child in children)
             {
-                var childComponents = child.GetComponents<IStateful<NoteStatus>>();
-                if (childComponents.Length != 0)
+                child.GetComponents<MonoBehaviour>(SHARED_CACHE_LIST);
+                if (SHARED_CACHE_LIST.Count != 0)
                 {
-                    foreach (var component in childComponents)
+                    foreach (var component in SHARED_CACHE_LIST)
                     {
                         var noteInfo = new NoteInfo(component);
                         if (noteInfo.IsValid)
@@ -73,9 +75,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                                 preUpdatableComponents.Add(noteInfo);
                             }
                         }
+                        else
+                        {
+                            noteInfo.Dispose();
+                        }
                     }
                 }
             }
+            SHARED_CACHE_LIST.Clear();
             _rentedArrayForPreUpdatebleComponents = Pool<NoteInfo>.RentArray(preUpdatableComponents.Count, true);
             _rentedArrayForUpdatebleComponents = Pool<NoteInfo>.RentArray(updatableComponents.Count, true);
             _rentedArrayForFixedUpdatebleComponents = Pool<NoteInfo>.RentArray(fixedUpdatableComponents.Count, true);
@@ -99,6 +106,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
         internal virtual void Clear()
         {
+            foreach (var component in _preUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _updatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _fixedUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _lateUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
             _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
             _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
             _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
