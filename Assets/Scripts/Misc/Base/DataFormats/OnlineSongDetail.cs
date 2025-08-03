@@ -17,6 +17,7 @@ using System.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.Net;
 using Cysharp.Text;
+using MajdataPlay.Buffers;
 
 #nullable enable
 namespace MajdataPlay
@@ -450,7 +451,7 @@ namespace MajdataPlay
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
             var fileInfo = new FileInfo(savePath);
             var httpClient = MajEnv.SharedHttpClient;
-            var rentBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            var rentBuffer = Pool<byte>.RentArray(bufferSize, true);
             var buffer = rentBuffer.AsMemory();
             var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
 
@@ -542,7 +543,7 @@ namespace MajdataPlay
             }
             finally
             {
-                ArrayPool<byte>.Shared.Return(rentBuffer, true);
+                Pool<byte>.ReturnArray(rentBuffer, true);
             }
         }
         class InternalHttpRequestException : Exception
