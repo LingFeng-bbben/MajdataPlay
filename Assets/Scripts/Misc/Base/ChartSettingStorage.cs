@@ -37,6 +37,7 @@ namespace MajdataPlay.Settings
                 {
                     var path = Path.Combine(STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
                     File.Copy(STORAGE_PATH, path);
+                    MajDebug.LogError($"Failed to load chart settings\nPath: {STORAGE_PATH}");
                 }
                 else
                 {
