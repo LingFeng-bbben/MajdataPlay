@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Collections;
 using MajdataPlay.Settings;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -22,9 +23,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         bool _isTouchHoldRiserPlaying = false;
 
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
+        AnswerSoundPoint[] _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
 
-        readonly bool[] _noteSFXPlaybackRequests = new bool[14];
-        readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
+        readonly static bool[] _noteSFXPlaybackRequests = new bool[14];
+        readonly static AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
         readonly AudioManager _audioManager = MajInstances.AudioManager;
         static readonly ReadOnlyMemory<string> SFX_NAMES = new string[14]
         {
@@ -98,6 +100,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         void OnDestroy()
         {
             Majdata<NoteAudioManager>.Free();
+            Array.Clear(_noteSFXPlaybackRequests, 0, _noteSFXPlaybackRequests.Length);
+            Array.Clear(_noteSFXs, 0, _noteSFXs.Length);
+            Pool<AnswerSoundPoint>.ReturnArray(_rentedArrayForAnswerSoundPoints, true);
+            _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
+            _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         }
         internal void OnPreUpdate()
         {
@@ -336,7 +343,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 //Generate ClockSounds
                 var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
                 var interval = 60 / firstBpm;
-                List<AnswerSoundPoint> answerTimingPoints = new();
+                using RentedList<AnswerSoundPoint> answerTimingPoints = new();
 
                 if (!isPracticeMode)
                 {
@@ -397,7 +404,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                             });
                     }
                 }
-                _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
+                _rentedArrayForAnswerSoundPoints = Pool<AnswerSoundPoint>.RentArray(answerTimingPoints.Count, true);
+                foreach(var (i, tp) in answerTimingPoints.OrderBy(o => o.Timing).WithIndex())
+                {
+                    _rentedArrayForAnswerSoundPoints[i] = tp;
+                }
+                _answerTimingPoints = _rentedArrayForAnswerSoundPoints.AsMemory(0, answerTimingPoints.Capacity);
             });
         }
         internal void Clear()
