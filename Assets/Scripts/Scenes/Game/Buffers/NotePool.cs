@@ -1,9 +1,11 @@
-﻿using MajdataPlay.Collections;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 #nullable enable
@@ -170,6 +172,82 @@ namespace MajdataPlay.Scenes.Game.Buffers
         {
             public float Timing { get; init; }
             public Memory<T> Infos { get; set; }
+        }
+        protected struct Bucket: IDisposable
+        {
+            public int Size
+            {
+                get
+                {
+                    return _size;
+                }
+            }
+
+            int _cursor = 0;
+            bool _isDisposed = false;
+            readonly int _size = 0;
+            Memory<IPoolableNote<TInfo, TMember>?> _storage = Memory<IPoolableNote<TInfo, TMember>?>.Empty;
+            IPoolableNote<TInfo, TMember>?[] _rentedArray = Array.Empty<IPoolableNote<TInfo, TMember>?>();
+
+            public Bucket(IPoolableNote<TInfo, TMember>?[] rentedArray, int size)
+            {
+                _size = size;
+                _storage = rentedArray.AsMemory();
+            }
+            public Bucket(IPoolableNote<TInfo, TMember>?[] rentedArray): this(rentedArray, rentedArray.Length)
+            {
+
+            }
+            public IPoolableNote<TInfo, TMember>? Rent()
+            {
+                ThrowIfDisposed();
+                if (_cursor >= _size)
+                {
+                    return null;
+                }
+                var note = _storage.Span[_cursor];
+                _storage.Span[_cursor] = null;
+                _cursor++;
+                return note;
+            }
+            public bool TryRent([NotNullWhen(true)]out IPoolableNote<TInfo, TMember>? note)
+            {
+                ThrowIfDisposed();
+                if (_cursor >= _size)
+                {
+                    note = null;
+                    return false;
+                }
+                note = _storage.Span[_cursor]!;
+                _storage.Span[_cursor] = null;
+                _cursor++;
+                return true;
+            }
+            public void Return(IPoolableNote<TInfo, TMember> note)
+            {
+                ThrowIfDisposed();
+                if(note is null)
+                {
+                    throw new ArgumentNullException(nameof(note));
+                }
+                if (_cursor <= 0)
+                {
+                    return;
+                }
+                _cursor--;
+                _storage.Span[_cursor] = note;
+            }
+            public void Dispose()
+            {
+                Pool<IPoolableNote<TInfo, TMember>?>.ReturnArray(_rentedArray, true);
+            }
+            void ThrowIfDisposed()
+            {
+                if (_isDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(Bucket));
+                }
+            }
         }
     }
 }
