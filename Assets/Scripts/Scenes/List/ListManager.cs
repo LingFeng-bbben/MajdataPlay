@@ -457,14 +457,17 @@ namespace MajdataPlay.Scenes.List
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
-        public static async UniTask WaitForBackgroundTasksSuspendAsync()
+        public static UniTask WaitForBackgroundTasksSuspendAsync()
         {
             if (AllBackgroundTasks.Count == 0)
             {
-                return;
+                return UniTask.CompletedTask;
             }
-            await UniTask.WhenAll(AllBackgroundTasks);
-            AllBackgroundTasks.Clear();
+            return UniTask.WhenAll(AllBackgroundTasks)
+                          .ContinueWith(() => 
+            {
+                AllBackgroundTasks.Clear();
+            });
         }
     }
 }

@@ -401,7 +401,8 @@ namespace MajdataPlay.Scenes.View
                 _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
 
                 await _noteLoader.LoadNotesIntoPoolAsync(_chart);
-                _noteManager.InitializeUpdater();
+                await _noteManager.InitAsync();
+                await UniTask.SwitchToMainThread();
                 if (_videoPath.IsNullOrEmpty())
                 {
                     _bgManager.DisableVideo();

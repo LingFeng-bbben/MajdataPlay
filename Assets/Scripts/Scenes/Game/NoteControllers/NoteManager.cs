@@ -10,6 +10,7 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Unsafe;
 using Unity.VisualScripting;
+using Cysharp.Threading.Tasks;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
@@ -195,14 +196,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _fixedUpdateElapsedMs += _eachLineUpdater.FixedUpdateElapsedMs;
 #endif
         }
-        public void InitializeUpdater()
+        public async UniTask InitAsync()
         {
-            _tapUpdater.Init();
-            _holdUpdater.Init();
-            _slideUpdater.Init();
-            _touchUpdater.Init();
-            _touchHoldUpdater.Init();
-            _eachLineUpdater.Init();
+            await UniTask.WhenAll(
+                _tapUpdater.InitAsync(),
+                _holdUpdater.InitAsync(),
+                _slideUpdater.InitAsync(),
+                _touchUpdater.InitAsync(),
+                _touchHoldUpdater.InitAsync(),
+                _eachLineUpdater.InitAsync()
+            );
         }
         internal void Clear()
         {

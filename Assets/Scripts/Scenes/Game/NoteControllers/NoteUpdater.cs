@@ -5,6 +5,7 @@ using MajdataPlay.Editor;
 using UnityEngine;
 using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Buffers;
+using Cysharp.Threading.Tasks;
 
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -39,50 +40,55 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         double _lateUpdateElapsedMs = 0;
 
         readonly static List<MonoBehaviour> SHARED_CACHE_LIST = new(64);
-        public void Init()
+        public async UniTask InitAsync()
         {
+            await UniTask.SwitchToMainThread();
             var children = transform.GetChildren();
 
             using RentedList<NoteInfo> preUpdatableComponents = new();
             using RentedList<NoteInfo> updatableComponents = new();
             using RentedList<NoteInfo> fixedUpdatableComponents = new();
             using RentedList<NoteInfo> lateUpdatableComponents = new();
-            
+            using RentedList<MonoBehaviour> components = new();
+
             foreach (var child in children)
             {
                 child.GetComponents<MonoBehaviour>(SHARED_CACHE_LIST);
                 if (SHARED_CACHE_LIST.Count != 0)
                 {
-                    foreach (var component in SHARED_CACHE_LIST)
+                    components.AddRange(SHARED_CACHE_LIST);
+                }
+                SHARED_CACHE_LIST.Clear();
+            }
+            await UniTask.SwitchToThreadPool();
+            foreach (var component in components)
+            {
+                var noteInfo = new NoteInfo(component);
+                if (noteInfo.IsValid)
+                {
+                    if (noteInfo.IsUpdatable)
                     {
-                        var noteInfo = new NoteInfo(component);
-                        if (noteInfo.IsValid)
-                        {
-                            if (noteInfo.IsUpdatable)
-                            {
-                                updatableComponents.Add(noteInfo);
-                            }
-                            if (noteInfo.IsFixedUpdatable)
-                            {
-                                fixedUpdatableComponents.Add(noteInfo);
-                            }
-                            if (noteInfo.IsLateUpdatable)
-                            {
-                                lateUpdatableComponents.Add(noteInfo);
-                            }
-                            if (noteInfo.IsPreUpdatable)
-                            {
-                                preUpdatableComponents.Add(noteInfo);
-                            }
-                        }
-                        else
-                        {
-                            noteInfo.Dispose();
-                        }
+                        updatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsFixedUpdatable)
+                    {
+                        fixedUpdatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsLateUpdatable)
+                    {
+                        lateUpdatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsPreUpdatable)
+                    {
+                        preUpdatableComponents.Add(noteInfo);
                     }
                 }
+                else
+                {
+                    noteInfo.Dispose();
+                }
             }
-            SHARED_CACHE_LIST.Clear();
+            
             _rentedArrayForPreUpdatebleComponents = Pool<NoteInfo>.RentArray(preUpdatableComponents.Count, true);
             _rentedArrayForUpdatebleComponents = Pool<NoteInfo>.RentArray(updatableComponents.Count, true);
             _rentedArrayForFixedUpdatebleComponents = Pool<NoteInfo>.RentArray(fixedUpdatableComponents.Count, true);

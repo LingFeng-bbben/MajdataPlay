@@ -701,7 +701,7 @@ namespace MajdataPlay.Scenes.Game
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
 
-            _noteManager.InitializeUpdater();
+            await _noteManager.InitAsync();
             while (!_generateAnswerSFXTask.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
