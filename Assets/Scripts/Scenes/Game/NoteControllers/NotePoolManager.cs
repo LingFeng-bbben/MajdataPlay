@@ -122,20 +122,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchHoldInfos.Dispose();
             _eachLineInfos.Dispose();
 
-            tapPool?.Destroy();
-            holdPool?.Destroy();
-            touchPool?.Destroy();
-            touchHoldPool?.Destroy();
-            eachLinePool?.Destroy();
+            tapPool?.Dispose();
+            holdPool?.Dispose();
+            touchPool?.Dispose();
+            touchHoldPool?.Dispose();
+            eachLinePool?.Dispose();
             Majdata<NotePoolManager>.Free();
         }
         internal void Clear()
         {
-            tapPool?.Destroy();
-            holdPool?.Destroy();
-            touchPool?.Destroy();
-            touchHoldPool?.Destroy();
-            eachLinePool?.Destroy();
+            tapPool?.Dispose();
+            holdPool?.Dispose();
+            touchPool?.Dispose();
+            touchHoldPool?.Dispose();
+            eachLinePool?.Dispose();
 
             for (var i = 0; i < transform.childCount; i++)
             {
