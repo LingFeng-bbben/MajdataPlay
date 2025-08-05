@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay
 {
@@ -36,7 +37,9 @@ namespace MajdataPlay
             get
             {
                 if (Collections.IsEmpty())
-                    return SongCollection.Empty("default");
+                {
+                    return EMPTY_SONG_COLLECTION;
+                }
                 return Collections[_collectionIndex];
             }
         }
@@ -65,6 +68,7 @@ namespace MajdataPlay
 
         static bool _isInited = false;
 
+        readonly static SongCollection EMPTY_SONG_COLLECTION = SongCollection.Empty("default");
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
         readonly static string MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
         readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
@@ -131,6 +135,47 @@ namespace MajdataPlay
             finally
             {
                 MajEnv.OnApplicationQuit += OnApplicationQuit;
+            }
+        }
+        internal static async Task RefreshAsync(IProgress<string>? progressReporter = null)
+        {
+            if(!_isInited)
+            {
+                return;
+            }
+            await UniTask.SwitchToThreadPool();
+            using var chartListBackup = new RentedList<ISongDetail>(_allCharts);
+            try
+            {
+                _allCharts.Clear();
+                _parsedChartCount = 0;
+                _totalChartCount = 0;
+                
+                var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
+                await UniTask.Delay(100);
+                progressReporter?.Report($"{"MAJTEXT_CLEAN_UP".i18n()}");
+                await UniTask.Delay(100);
+                foreach (var songDetail in chartListBackup)
+                {
+                    switch(songDetail)
+                    {
+                        case OnlineSongDetail online:
+                            online.Dispose();
+                            break;
+                        case SongDetail local:
+                            local.Dispose();
+                            break;
+                    }
+                }
+                Collections = collections;
+                MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+            }
+            catch(Exception e)
+            {
+                _allCharts.Clear();
+                _allCharts.AddRange(chartListBackup);
+                MajDebug.LogException(e);
+                throw;
             }
         }
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)

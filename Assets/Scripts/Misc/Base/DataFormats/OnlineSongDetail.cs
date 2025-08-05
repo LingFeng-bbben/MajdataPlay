@@ -22,7 +22,7 @@ using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay
 {
-    internal class OnlineSongDetail : ISongDetail
+    internal class OnlineSongDetail : ISongDetail, IDisposable
     {
         public string Id { get; init; }
         public string Title { get; init; }
@@ -48,6 +48,7 @@ namespace MajdataPlay
 
         static readonly Action _emptyCallback = () => { };
 
+        bool _isDisposed = false;
         bool _isPreloaded = false;
 
         string? _videoPath = null;
@@ -65,6 +66,10 @@ namespace MajdataPlay
         readonly AsyncLock _maidataLock = new();
         readonly AsyncLock _preloadLock = new();
 
+        ~OnlineSongDetail()
+        {
+            Dispose();
+        }
         public OnlineSongDetail(ApiEndpoint serverInfo, MajnetSongDetail songDetail)
         {
             var apiroot = $"{serverInfo.Url}/maichart";
@@ -118,6 +123,7 @@ namespace MajdataPlay
 
         public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             try
             {
                 await UniTask.SwitchToThreadPool();
@@ -153,6 +159,7 @@ namespace MajdataPlay
         }
         public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             try
             {
                 await UniTask.SwitchToThreadPool();
@@ -193,6 +200,7 @@ namespace MajdataPlay
         }
         public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             if (_isPreloaded)
             {
                 return;
@@ -207,6 +215,7 @@ namespace MajdataPlay
         }
         public async UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             try
             {
                 if (_videoPath is not null)
@@ -273,6 +282,7 @@ namespace MajdataPlay
         }
         public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             if (isCompressed)
             {
                 return await GetCompressedCoverAsync(progress, token);
@@ -284,6 +294,7 @@ namespace MajdataPlay
         }
         public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
+            ThrowIfDisposed();
             if (!ignoreCache && _maidata is not null)
             {
                 return _maidata;
@@ -444,6 +455,31 @@ namespace MajdataPlay
             {
                 Debug.LogException(e);
                 throw;
+            }
+        }
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            _audioTrack?.Dispose();
+            _previewAudioTrack?.Dispose();
+            GameObject.Destroy(_cover);
+            GameObject.Destroy(_fullSizeCover);
+            _maidata = null;
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _fullSizeCover = null;
+            _videoPath = null;
+        }
+        void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
         async Task DownloadFile(Uri uri, string savePath, INetProgress? progress = null, CancellationToken token = default)
