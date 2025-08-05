@@ -64,7 +64,7 @@ namespace MajdataPlay.Scenes.Title
             {
                 await UniTask.Yield();
             }
-
+            await UniTask.Delay(2000);
             echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SKIN")}...";
             var task2 = MajInstances.SkinManager.InitAsync();
             while (!task2.IsCompleted)
