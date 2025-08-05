@@ -1180,6 +1180,8 @@ namespace MajdataPlay.Scenes.Game
             State = GamePlayStatus.Ended;
             var sceneSwitcher = MajInstances.SceneSwitcher;
             await sceneSwitcher.FadeInAsync();
+            await UniTask.Delay(500);
+            _audioSample?.Stop();
             ClearAllResources();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
             
