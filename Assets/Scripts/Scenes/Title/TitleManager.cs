@@ -65,11 +65,18 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
 
+            echoText.text = $"{Localization.GetLocalizedText("Loading skin")}...";
+            var task2 = MajInstances.SkinManager.InitAsync();
+            while (!task2.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+
             echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
-            var task2 = StartScanningChart();
+            var task3 = StartScanningChart();
             try
             {
-                if (task2 is null)
+                if (task3 is null)
                 {
                     return;
                 }
@@ -78,12 +85,12 @@ namespace MajdataPlay.Scenes.Title
                 {
                     await UniTask.Yield(PlayerLoopTiming.Update);
 
-                    if (task2.IsCompleted)
+                    if (task3.IsCompleted)
                     {
-                        if (task2.IsFaulted)
+                        if (task3.IsFaulted)
                         {
                             echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
-                            MajDebug.LogException(task2.Exception);
+                            MajDebug.LogException(task3.Exception);
                         }
                         else if (SongStorage.IsEmpty)
                         {

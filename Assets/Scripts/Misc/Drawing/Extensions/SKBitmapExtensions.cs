@@ -17,60 +17,58 @@ namespace MajdataPlay.Drawing
     {
         public static async Task<Texture2D> ToTexture2DAsync(this SKBitmap bitmap, int width = 0, int height = 0, SKSamplingOptions? options = null)
         {
-            return await Task.Run(async () =>
+            await UniTask.SwitchToThreadPool();
+            var resize = width != 0 || height != 0;
+
+            width = width == 0 ? bitmap.Width : width;
+            height = height == 0 ? bitmap.Height : height;
+
+            if (resize)
             {
-                var resize = width != 0 || height != 0;
+                bitmap = bitmap.Resize(new SKSizeI(width, height), options ?? SKSamplingOptions.Default);
+            }
 
-                width = width == 0 ? bitmap.Width : width;
-                height = height == 0 ? bitmap.Height : height;
+            Texture2D texture2D;
+            var l = bitmap.ColorType.TryConvertToTextureFormat(out TextureFormat textureFormat);
+            if (l > 0)
+            {
+                var writer = new ArrayBufferWriter<byte>(width * height * l);
 
-                if (resize)
+                for (var i = height - 1; i >= 0; i--)
                 {
-                    bitmap = bitmap.Resize(new SKSizeI(width, height), options ?? SKSamplingOptions.Default);
+                    writer.Write(bitmap.GetPixelSpan().Slice(i * width * l, width * l));
                 }
 
-                Texture2D texture2D;
-                var l = bitmap.ColorType.TryConvertToTextureFormat(out TextureFormat textureFormat);
-                if (l > 0)
+                await UniTask.SwitchToMainThread();
+                texture2D = new Texture2D(width, height, textureFormat, false);
+                texture2D.SetPixelData(writer.WrittenSpan.ToArray(), 0);
+                texture2D.Apply();
+                await UniTask.SwitchToThreadPool();
+            }
+            else
+            {
+                var data = bitmap.Pixels;
+                var writer = new ArrayBufferWriter<SKColor>();
+
+                for (var i = height - 1; i >= 0; i--)
                 {
-                    var writer = new ArrayBufferWriter<byte>(width * height * l);
-
-                    for (var i = height - 1; i >= 0; i--)
-                    {
-                        writer.Write(bitmap.GetPixelSpan().Slice(i * width * l, width * l));
-                    }
-
-                    await UniTask.SwitchToMainThread();
-                    texture2D = new Texture2D(width, height, textureFormat, false);
-                    texture2D.SetPixelData(writer.WrittenSpan.ToArray(), 0);
-                    texture2D.Apply();
-                    await UniTask.SwitchToThreadPool();
+                    writer.Write(data.AsSpan().Slice(i * width, width));
                 }
-                else
-                {
-                    var data = bitmap.Pixels;
-                    var writer = new ArrayBufferWriter<SKColor>();
 
-                    for (var i = height - 1; i >= 0; i--)
-                    {
-                        writer.Write(data.AsSpan().Slice(i * width, width));
-                    }
+                var data1 = writer.WrittenSpan.AsNativeArray();
+                var colors = ColorConverter.ConvertToColor32(data1, width * 64);
+                var pixels32 = colors.ToArray();
 
-                    var data1 = writer.WrittenSpan.AsNativeArray();
-                    var colors = ColorConverter.ConvertToColor32(data1, width * 64);
-                    var pixels32 = colors.ToArray();
+                await UniTask.SwitchToMainThread();
+                texture2D = new Texture2D(width, height, textureFormat, false);
+                texture2D.SetPixels32(pixels32);
+                texture2D.Apply();
+                await UniTask.SwitchToThreadPool();
 
-                    await UniTask.SwitchToMainThread();
-                    texture2D = new Texture2D(width, height, textureFormat, false);
-                    texture2D.SetPixels32(pixels32);
-                    texture2D.Apply();
-                    await UniTask.SwitchToThreadPool();
-
-                    data1.Dispose();
-                    colors.Dispose();
-                }
-                return texture2D;
-            });
+                data1.Dispose();
+                colors.Dispose();
+            }
+            return texture2D;
         }
         static int TryConvertToTextureFormat(this SKColorType skColorType, out TextureFormat textureFormat)
         {

@@ -14,7 +14,11 @@ namespace MajdataPlay
         }
         IEnumerator WaitSkinManager()
         {
-            yield return new WaitForEndOfFrame();
+            var woe = new WaitForEndOfFrame();
+            while (!MajInstances.SkinManager.IsInited)
+            {
+                yield return woe;
+            }
             var img = GetComponent<Image>();
             img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             img.color = Color.white;
