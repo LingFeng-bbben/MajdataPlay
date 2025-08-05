@@ -466,8 +466,8 @@ namespace MajdataPlay
             _isDisposed = true;
             _audioTrack?.Dispose();
             _previewAudioTrack?.Dispose();
-            GameObject.Destroy(_cover);
-            GameObject.Destroy(_fullSizeCover);
+            GameObject.DestroyImmediate(_cover, true);
+            GameObject.DestroyImmediate(_fullSizeCover, true);
             _maidata = null;
             _audioTrack = null;
             _previewAudioTrack = null;

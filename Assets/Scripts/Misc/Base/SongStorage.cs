@@ -150,10 +150,13 @@ namespace MajdataPlay
                 _allCharts.Clear();
                 _parsedChartCount = 0;
                 _totalChartCount = 0;
-                
+                var selectedDiff = MajInstances.GameManager.SelectedDiff;
+                var selectedIndex = SongStorage.WorkingCollection.Index;
+                var selectedDir = SongStorage.CollectionIndex;
+
                 var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
                 await UniTask.Delay(100);
-                progressReporter?.Report($"{"MAJTEXT_CLEAN_UP".i18n()}");
+                progressReporter?.Report($"{"MAJTEXT_CLEANING_UP".i18n()}");
                 await UniTask.Delay(100);
                 foreach (var songDetail in chartListBackup)
                 {
@@ -169,6 +172,23 @@ namespace MajdataPlay
                 }
                 Collections = collections;
                 MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                GC.Collect();
+
+                CollectionIndex = selectedDir;
+                var selectedCollection = WorkingCollection;
+
+                if (selectedCollection.IsEmpty)
+                {
+                    return;
+                }
+                else if (selectedIndex >= selectedCollection.Count)
+                {
+                    selectedCollection.Index = 0;
+                }
+                else
+                {
+                    selectedCollection.Index = selectedIndex;
+                }
             }
             catch(Exception e)
             {
