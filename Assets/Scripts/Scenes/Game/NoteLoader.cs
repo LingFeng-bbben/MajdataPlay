@@ -21,6 +21,7 @@ using MajdataPlay.Scenes.Game.Notes;
 using System.Buffers;
 using System.Threading;
 using MajdataPlay.Settings;
+using MajdataPlay.Buffers;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -817,8 +818,8 @@ namespace MajdataPlay.Scenes.Game
                     return c - '0';
                 }
 
-                var subSlide = new List<SubSlideNote>();
-                var subBarCount = new List<int>();
+                using var preprocessSubSlides = new RentedList<SubSlideNote>();
+                using var subBarCount = new RentedList<int>();
                 var sumBarCount = 0;
 
                 var noteContent = note.RawContent;
@@ -899,7 +900,7 @@ namespace MajdataPlay.Scenes.Game
                         sumBarCount += barCount;
 
                         slidePart.Origin = note;
-                        subSlide.Add(slidePart);
+                        preprocessSubSlides.Add(slidePart);
                     }
                     else
                     {
@@ -907,15 +908,14 @@ namespace MajdataPlay.Scenes.Game
                         throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
                     }
                 }
-
-                subSlide.ForEach(o =>
+                foreach(var subSlide in preprocessSubSlides)
                 {
-                    o.IsBreak = note.IsBreak;
-                    o.IsEx = note.IsEx;
-                    o.IsSlideBreak = note.IsSlideBreak;
-                    o.IsSlideNoHead = true;
-                });
-                subSlide[0].IsSlideNoHead = note.IsSlideNoHead;
+                    subSlide.IsBreak = note.IsBreak;
+                    subSlide.IsEx = note.IsEx;
+                    subSlide.IsSlideBreak = note.IsSlideBreak;
+                    subSlide.IsSlideNoHead = true;
+                }
+                preprocessSubSlides[0].IsSlideNoHead = note.IsSlideNoHead;
 
                 if (specTimeFlag == 1 || specTimeFlag == 0)
                     // 如果到结束还是1 那说明没有一个指定了时长 报错
@@ -926,10 +926,10 @@ namespace MajdataPlay.Scenes.Game
                 {
                     // 整体指定语法 使用slideTime来计算
                     var tempBarCount = 0;
-                    for (var i = 0; i < subSlide.Count; i++)
+                    for (var i = 0; i < preprocessSubSlides.Count; i++)
                     {
-                        subSlide[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
-                        subSlide[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
+                        preprocessSubSlides[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
+                        preprocessSubSlides[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
                         tempBarCount += subBarCount[i];
                     }
                 }
@@ -973,26 +973,26 @@ namespace MajdataPlay.Scenes.Game
                     }
 
                     double tempSlideTime = 0;
-                    for (var i = 0; i < subSlide.Count; i++)
+                    for (var i = 0; i < preprocessSubSlides.Count; i++)
                     {
-                        subSlide[i].SlideStartTime = note.SlideStartTime + tempSlideTime;
-                        subSlide[i].SlideTime = getTimeFromBeats(subSlide[i].RawContent, timing.Bpm);
-                        tempSlideTime += subSlide[i].SlideTime;
+                        preprocessSubSlides[i].SlideStartTime = note.SlideStartTime + tempSlideTime;
+                        preprocessSubSlides[i].SlideTime = getTimeFromBeats(preprocessSubSlides[i].RawContent, timing.Bpm);
+                        tempSlideTime += preprocessSubSlides[i].SlideTime;
                     }
                 }
 
                 IConnectableSlide? parent = null;
-                List<SlideDrop> subSlides = new();
-                float totalLen = (float)subSlide.Select(x => x.SlideTime).Sum();
-                float startTiming = (float)subSlide[0].SlideStartTime;
+                using var subSlides = new RentedList<SlideDrop>();
+                float totalLen = (float)preprocessSubSlides.Select(x => x.SlideTime).Sum();
+                float startTiming = (float)preprocessSubSlides[0].SlideStartTime;
                 float totalSlideLen = 0;
                 int? extraRotation = null;
                 CreateSlideResult<SlideDrop>? slideResult = null;
-                for (var i = 0; i <= subSlide.Count - 1; i++)
+                for (var i = 0; i <= preprocessSubSlides.Count - 1; i++)
                 {
-                    bool isConn = subSlide.Count != 1;
+                    bool isConn = preprocessSubSlides.Count != 1;
                     bool isGroupHead = i == 0;
-                    bool isGroupEnd = i == subSlide.Count - 1;
+                    bool isGroupEnd = i == preprocessSubSlides.Count - 1;
                     SlideBase sliObj;
 
                     if (note.RawContent!.Contains('w')) //wifi
@@ -1001,7 +1001,7 @@ namespace MajdataPlay.Scenes.Game
                         {
                             throw new InvalidOperationException("不允许Wifi Slide作为Connection Slide的一部分");
                         }
-                        var result = CreateWifi(timing, subSlide[i], note.Count);
+                        var result = CreateWifi(timing, preprocessSubSlides[i], note.Count);
                         sliObj = result.SlideInstance;
                         foreach(var starInfo in result.StarInfos)
                         {
@@ -1012,7 +1012,7 @@ namespace MajdataPlay.Scenes.Game
                             eachNotes.Add(starInfo);
                         }
                         //AddSlideToQueue(timing, result.SlideInstance);
-                        UpdateStarRotateSpeed(result, (float)subSlide[i].SlideTime, 20);
+                        UpdateStarRotateSpeed(result, (float)preprocessSubSlides[i].SlideTime, 20);
                         sliObj.Initialize();
                     }
                     else
@@ -1026,7 +1026,7 @@ namespace MajdataPlay.Scenes.Game
                             Parent = parent,
                             StartTiming = startTiming
                         };
-                        var result = CreateSlide(timing, subSlide[i], info, note.Count, ref extraRotation);
+                        var result = CreateSlide(timing, preprocessSubSlides[i], info, note.Count, ref extraRotation);
                         parent = result.SlideInstance;
                         sliObj = result.SlideInstance;
                         foreach (var starInfo in result.StarInfos)
@@ -1063,12 +1063,15 @@ namespace MajdataPlay.Scenes.Game
                         judgeQueueLen += table!.JudgeQueue.Length - 1;
                     }
                 }
-                subSlides.ForEach(s =>
+                foreach(var subSlide in subSlides)
                 {
-                    s.ConnectInfo.TotalSlideLen = totalSlideLen;
-                    s.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
-                });
-                subSlides.ForEach(s => s.Initialize());
+                    subSlide.ConnectInfo.TotalSlideLen = totalSlideLen;
+                    subSlide.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
+                }
+                foreach (var subSlide in subSlides)
+                {
+                    subSlide.Initialize();
+                }
                 if (slideResult is not null)
                 {
                     UpdateStarRotateSpeed((CreateSlideResult<SlideDrop>)slideResult, totalLen, totalSlideLen);
