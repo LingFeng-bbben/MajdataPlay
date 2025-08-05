@@ -157,10 +157,10 @@ namespace MajdataPlay
                 {
                     percent = _parsedChartCount / (float)_totalChartCount;
                 }
-                progressReporter?.Report($"{"Scanning Charts".i18n()}...({percent * 100:F2}%)");
+                progressReporter?.Report($"{"MAJTEXT_SCANNING_CHARTS".i18n()}...({percent * 100:F2}%)");
                 await Task.Delay(33);
             }
-            progressReporter?.Report($"{"Scanning Charts".i18n()}...(100.00%)");
+            progressReporter?.Report($"{"MAJTEXT_SCANNING_CHARTS".i18n()}...(100.00%)");
 
             foreach (var task in tasks)
             {
@@ -184,7 +184,7 @@ namespace MajdataPlay
                     {
                         continue;
                     }
-                    progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("Scanning Charts From {0}"), api.Name));
+                    progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("MAJTEXT_SCANNING_CHARTS_FROM_{0}"), api.Name));
                     var result = await GetOnlineCollection(api, progressReporter);
                     if (!result.IsEmpty)
                     {

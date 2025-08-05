@@ -11,19 +11,31 @@
       "Content": "MSVCライブラリ見つかりませんでした\nOKをクリックするとダウンロードページへ行きます"
     },
     {
-      "Origin": "Scanning Charts",
+      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
+      "Content": "読み取りデータベース"
+    },
+    {
+      "Origin": "MAJTEXT_LOADING_SKIN",
+      "Content": "スキンを読み込んでいます"
+    },
+    {
+      "Origin": "MAJTEXT_SCANNING_CHARTS",
       "Content": "Scanning Charts"
     },
     {
-      "Origin": "Scan Chart Failed",
+      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
+      "Content": "{0} からチャートを取得しています"
+    },
+    {
+      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
       "Content": "譜面スキャンエラー"
     },
     {
-      "Origin": "No Charts",
+      "Origin": "MAJTEXT_NO_CHART",
       "Content": "譜面がない"
     },
     {
-      "Origin": "Press Any Key",
+      "Origin": "MAJTEXT_PRESS_ANY_KEY",
       "Content": "TOUCH TO START"
     },
     {

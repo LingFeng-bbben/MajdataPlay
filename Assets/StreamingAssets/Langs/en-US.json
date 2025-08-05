@@ -11,23 +11,31 @@
       "Content": "MSVC Library not found.\nClick OK to go to the download page"
     },
     {
-      "Origin": "Scanning Charts",
+      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
+      "Content": "Loading database"
+    },
+    {
+      "Origin": "MAJTEXT_LOADING_SKIN",
+      "Content": "Loading skin"
+    },
+    {
+      "Origin": "MAJTEXT_SCANNING_CHARTS",
       "Content": "Scanning charts"
     },
     {
-      "Origin": "Scanning Charts From {0}",
+      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
       "Content": "Scanning charts from {0}"
     },
     {
-      "Origin": "Scan Chart Failed",
+      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
       "Content": "Chart scanning Failed"
     },
     {
-      "Origin": "No Charts",
+      "Origin": "MAJTEXT_NO_CHART",
       "Content": "No charts"
     },
     {
-      "Origin": "Press Any Key",
+      "Origin": "MAJTEXT_PRESS_ANY_KEY",
       "Content": "TOUCH TO START"
     },
     {
@@ -374,7 +382,7 @@
       "Origin": "MAJSETTING_PROPERTY_DisableGCInGameing_DESC",
       "Content": ""
     },
-	{
+    {
       "Origin": "Outer_Only",
       "Content": "Outer only"
     },
@@ -470,7 +478,7 @@
       "Origin": "SortbyDefault",
       "Content": "Default Sort"
     },
-	{
+    {
       "Origin": "Inner",
       "Content": "Inner"
     },

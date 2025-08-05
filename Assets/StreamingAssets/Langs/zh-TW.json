@@ -7,23 +7,31 @@
       "Content": "Missing MSVC"
     },
     {
-      "Origin": "Scanning Charts",
+      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
+      "Content": "正在讀取資料庫"
+    },
+    {
+      "Origin": "MAJTEXT_LOADING_SKIN",
+      "Content": "正在加載皮膚"
+    },
+    {
+      "Origin": "MAJTEXT_SCANNING_CHARTS",
       "Content": "正在掃描譜面"
     },
     {
-      "Origin": "Scanning Charts From {0}",
+      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
       "Content": "正在從{0}拉取譜面"
     },
     {
-      "Origin": "Scan Chart Failed",
+      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
       "Content": "掃描文件時發生錯誤"
     },
     {
-      "Origin": "No Charts",
+      "Origin": "MAJTEXT_NO_CHART",
       "Content": "目前沒有可用譜面"
     },
     {
-      "Origin": "Press Any Key",
+      "Origin": "MAJTEXT_PRESS_ANY_KEY",
       "Content": "觸摸一下開始遊戲"
     },
     {

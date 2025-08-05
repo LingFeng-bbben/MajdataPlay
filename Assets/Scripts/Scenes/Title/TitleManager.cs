@@ -50,7 +50,7 @@ namespace MajdataPlay.Scenes.Title
 
 
 
-            echoText.text = $"{Localization.GetLocalizedText("Loading Score Storage")}...";
+            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SCORE_STORAGE")}...";
             await UniTask.DelayFrame(9);
             var task1 = ScoreManager.InitAsync().AsValueTask();
             while(!task1.IsCompleted)
@@ -65,14 +65,14 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
 
-            echoText.text = $"{Localization.GetLocalizedText("Loading skin")}...";
+            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SKIN")}...";
             var task2 = MajInstances.SkinManager.InitAsync();
             while (!task2.IsCompleted)
             {
                 await UniTask.Yield();
             }
 
-            echoText.text = $"{Localization.GetLocalizedText("Scanning Charts")}...";
+            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_SCANNING_CHARTS")}...";
             var task3 = StartScanningChart();
             try
             {
@@ -89,13 +89,13 @@ namespace MajdataPlay.Scenes.Title
                     {
                         if (task3.IsFaulted)
                         {
-                            echoText.text = Localization.GetLocalizedText("Scan Chart Failed");
+                            echoText.text = Localization.GetLocalizedText("MAJTEXT_SCAN_CHARTS_FAILED");
                             MajDebug.LogException(task3.Exception);
                         }
                         else if (SongStorage.IsEmpty)
                         {
                             isEmpty = true;
-                            echoText.text = Localization.GetLocalizedText("No Charts");
+                            echoText.text = Localization.GetLocalizedText("MAJTEXT_NO_CHART");
                         }
                         else
                         {
@@ -118,7 +118,7 @@ namespace MajdataPlay.Scenes.Title
                                     }
                                 }
                             }
-                            echoText.text = Localization.GetLocalizedText("Press Any Key");
+                            echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
                             InputManager.BindAnyArea(OnAreaDown);
 
                             var list = new string[] { "game_init.wav", "game_init_2.wav", "game_init_3.wav" };
