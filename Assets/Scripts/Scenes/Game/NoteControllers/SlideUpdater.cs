@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using UnityEngine.Profiling;
 using MajdataPlay.Buffers;
+using System.Collections.Generic;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -44,19 +45,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Pool<SlideQueueInfo>.ReturnArray(_rentedArrayForQueueInfos, true);
             _rentedArrayForQueueInfos = Array.Empty<SlideQueueInfo>();
         }
-        internal void AddSlideQueueInfos(SlideQueueInfo[] infos)
+        internal void AddSlideQueueInfos(IEnumerable<SlideQueueInfo> infos)
         {
             if (infos is null)
             {
                 throw new ArgumentNullException();
             }
-            _rentedArrayForQueueInfos = Pool<SlideQueueInfo>.RentArray(infos.Length, true);
-            var i = 0;
-            foreach(var info in infos.OrderBy(x => x.AppearTiming))
-            {
-                _rentedArrayForQueueInfos[i++] = info;
-            }
-            _queueInfos = _rentedArrayForQueueInfos.AsMemory(0, infos.Length);
+            using var buffer = new RentedList<SlideQueueInfo>();
+            buffer.AddRange(infos.OrderBy(x => x.AppearTiming));
+            _rentedArrayForQueueInfos = Pool<SlideQueueInfo>.RentArray(buffer.Count, true);
+            var queueInfos = _rentedArrayForQueueInfos.AsMemory(0, buffer.Count);
+            buffer.CopyTo(queueInfos.Span);
+            _queueInfos = queueInfos;
         }
         internal override void OnFixedUpdate()
         {

@@ -62,10 +62,11 @@ namespace MajdataPlay.Scenes.Game
         int _touchSortOrder = short.MaxValue;
         int _slideIndex = 0;
 
-        List<SlideQueueInfo> _slideQueueInfos = new();
         NoteManager _noteManager;
-        Dictionary<int, int> _noteIndex = new();
-        Dictionary<SensorArea, int> _touchIndex = new();
+
+        static readonly List<SlideQueueInfo> _slideQueueInfos = new();
+        static readonly Dictionary<int, int> _noteIndex = new();
+        static readonly Dictionary<SensorArea, int> _touchIndex = new();
 
         SlideUpdater _slideUpdater;
         GamePlayManager? _gpManager;
@@ -228,6 +229,9 @@ namespace MajdataPlay.Scenes.Game
         void OnDestroy()
         {
             Majdata<NoteLoader>.Free();
+            _slideQueueInfos.Clear();
+            _noteIndex.Clear();
+            _touchIndex.Clear();
         }
         private void Start()
         {
@@ -378,7 +382,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
             token.ThrowIfCancellationRequested();
-            _slideUpdater.AddSlideQueueInfos(_slideQueueInfos.ToArray());
+            _slideUpdater.AddSlideQueueInfos(_slideQueueInfos);
             _poolManager.Initialize();
         }
         EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
