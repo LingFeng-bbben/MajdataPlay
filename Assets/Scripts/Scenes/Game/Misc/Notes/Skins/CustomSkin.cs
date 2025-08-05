@@ -628,7 +628,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             customSkin.Perfect_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_break.png");
 
 
-            foreach (var value in stackalloc int[] { 2600, 2550, 2500, 2000, 1500, 1250, 1000, 0 })
+            foreach (var value in new int[] { 2600, 2550, 2500, 2000, 1500, 1250, 1000, 0 })
             {
                 var path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}.png";
                 var _path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}_fast.png";
