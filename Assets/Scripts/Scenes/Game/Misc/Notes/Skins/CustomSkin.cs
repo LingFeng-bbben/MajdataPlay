@@ -444,16 +444,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             customSkin.Tap_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap_break.png");
             customSkin.Tap_Ex = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap_ex.png");
 
-            customSkin.Slide = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideSkins/slide.png");
-            customSkin.Slide_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideSkins/slide_each.png");
-            customSkin.Slide_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideSkins/slide_break.png");
+            await UniTask.SwitchToMainThread();
+            customSkin.Slide = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide.png");
+            customSkin.Slide_Each = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_each.png");
+            customSkin.Slide_Break = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break.png");
+            
             for (var i = 0; i < 11; i++)
             {
-                customSkin.Wifi[i] = await SpriteLoader.LoadAsync(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
-                customSkin.Wifi_Each[i] = await SpriteLoader.LoadAsync(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
-                customSkin.Wifi_Break[i] = await SpriteLoader.LoadAsync(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
+                customSkin.Wifi[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
+                customSkin.Wifi_Each[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
+                customSkin.Wifi_Break[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
             }
-
+            await UniTask.SwitchToThreadPool();
             customSkin.Star = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star.png");
             customSkin.Star_Double = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_double.png");
             customSkin.Star_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_each.png");
