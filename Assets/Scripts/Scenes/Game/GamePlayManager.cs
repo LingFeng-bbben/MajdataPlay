@@ -1080,8 +1080,10 @@ namespace MajdataPlay.Scenes.Game
             var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             _gameInfo.RecordResult(result);
 
-            if (!playEffect) 
+            if (!playEffect)
+            {
                 return result;
+            }
             PlayComboEffect(result);
 
             return result;
