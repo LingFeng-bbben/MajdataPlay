@@ -43,7 +43,7 @@ namespace MajdataPlay
         /// <summary>
         /// Loaded song collections
         /// </summary>
-        public static SongCollection[] Collections { get; private set; } = new SongCollection[0];
+        public static SongCollection[] Collections { get; private set; } = Array.Empty<SongCollection>();
         public static SongOrder OrderBy { get; set; } = new();
         public static long TotalChartCount
         { 
@@ -58,7 +58,8 @@ namespace MajdataPlay
         static long _parsedChartCount = 0;
 
 
-        static HashSet<string> _storageFav = new();
+        readonly static List<ISongDetail> _allCharts = new(8192);
+        readonly static HashSet<string> _storageFav = new();
         static DanInfo? _userFavorites = null;
         static MyFavoriteSongCollection _myFavorite;
 
@@ -95,9 +96,16 @@ namespace MajdataPlay
                             File.Copy(MY_FAVORITE_STORAGE_PATH, path);
                             MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
                         }
-                        else
+                        else if(storageFav is not null)
                         {
-                            _storageFav = storageFav ?? _storageFav;
+                            foreach(var hash in storageFav)
+                            {
+                                if (string.IsNullOrEmpty(hash))
+                                {
+                                    continue;
+                                }
+                                _storageFav.Add(hash);
+                            }
                         }
                     }
 
@@ -193,15 +201,14 @@ namespace MajdataPlay
                 }
             }
             //Add all songs to "All" folder
-            var allcharts = new List<ISongDetail>();
             foreach (var collection in collections)
             {
                 foreach (var item in collection)
                 {
-                    allcharts.Add(item);
+                    _allCharts.Add(item);
                 }
             }
-            collections.Add(new SongCollection("All", allcharts.ToArray()));
+            collections.Add(new SongCollection("All", _allCharts.ToArray()));
             MajDebug.Log("MyFavorite");
             if (_userFavorites is not null)
             {
@@ -211,12 +218,12 @@ namespace MajdataPlay
                 }
             }
             var hashSet = _storageFav;
-            var favoriteSongs = allcharts.Where(x => hashSet.Any(y => y == x.Hash))
-                                         .GroupBy(x => x.Hash)
-                                         .Select(x => x.FirstOrDefault())
-                                         .Where(x => x is not null)
-                                         .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
-                                         .ToList();
+            var favoriteSongs = _allCharts.Where(x => hashSet.Any(y => y == x.Hash))
+                                          .GroupBy(x => x.Hash)
+                                          .Select(x => x.FirstOrDefault())
+                                          .Where(x => x is not null)
+                                          .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
+                                          .ToList();
             MajDebug.Log(favoriteSongs.Count);
             _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
             //The collections and _myFavorite share a same ref of original List<T>
@@ -244,7 +251,7 @@ namespace MajdataPlay
                 });
                 if (result && dan is not null)
                 {
-                    loadDanTasks[i] = GetDanCollection(allcharts, dan);
+                    loadDanTasks[i] = GetDanCollection(_allCharts, dan);
                 }
             }
             if (loadDanTasks.Length != 0)
