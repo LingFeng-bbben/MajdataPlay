@@ -436,15 +436,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             {
                 customSkin.IsOutlineAvailable = true;
             }
-            customSkin.Outline = await SpriteLoader.LoadAsync(skinCollectionPath + "/outline.png");
-            customSkin.SubDisplay = await SpriteLoader.LoadAsync(skinCollectionPath + "/SubBackgourd.png");
+            await UniTask.Yield();
+            customSkin.Outline = SpriteLoader.Load(skinCollectionPath + "/outline.png");
+            customSkin.SubDisplay = SpriteLoader.Load(skinCollectionPath + "/SubBackgourd.png");
 
-            customSkin.Tap = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap.png");
-            customSkin.Tap_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap_each.png");
-            customSkin.Tap_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap_break.png");
-            customSkin.Tap_Ex = await SpriteLoader.LoadAsync(skinCollectionPath + "/TapSkins/tap_ex.png");
+            customSkin.Tap = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap.png");
+            customSkin.Tap_Each = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_each.png");
+            customSkin.Tap_Break = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_break.png");
+            customSkin.Tap_Ex = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_ex.png");
 
-            await UniTask.SwitchToMainThread();
+            await UniTask.Yield();
             customSkin.Slide = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide.png");
             customSkin.Slide_Each = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_each.png");
             customSkin.Slide_Break = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break.png");
@@ -454,37 +455,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 customSkin.Wifi[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
                 customSkin.Wifi_Each[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
                 customSkin.Wifi_Break[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
+                await UniTask.Yield();
             }
-            await UniTask.SwitchToThreadPool();
-            customSkin.Star = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star.png");
-            customSkin.Star_Double = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_double.png");
-            customSkin.Star_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_each.png");
-            customSkin.Star_Each_Double = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_each_double.png");
-            customSkin.Star_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_break.png");
-            customSkin.Star_Break_Double = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_break_double.png");
-            customSkin.Star_Ex = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_ex.png");
-            customSkin.Star_Ex_Double = await SpriteLoader.LoadAsync(skinCollectionPath + "/StarSkins/star_ex_double.png");
+            await UniTask.Yield();
+            customSkin.Star = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star.png");
+            customSkin.Star_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_double.png");
+            customSkin.Star_Each = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each.png");
+            customSkin.Star_Each_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each_double.png");
+            customSkin.Star_Break = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break.png");
+            customSkin.Star_Break_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_double.png");
+            customSkin.Star_Ex = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex.png");
+            customSkin.Star_Ex_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex_double.png");
 
+            await UniTask.Yield();
             var border = new Vector4(0, 58, 0, 58);
-            customSkin.Hold = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold.png", border);
-            customSkin.Hold_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_each.png", border);
-            customSkin.Hold_Each_On = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
-            customSkin.Hold_Ex = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_ex.png", border);
-            customSkin.Hold_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_break.png", border);
-            customSkin.Hold_Break_On = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+            customSkin.Hold = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold.png", border);
+            customSkin.Hold_Each = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each.png", border);
+            customSkin.Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
+            customSkin.Hold_Ex = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_ex.png", border);
+            customSkin.Hold_Break = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break.png", border);
+            customSkin.Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+            await UniTask.Yield();
 
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_on.png")))
             {
-                customSkin.Hold_On = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_on.png", border);
+                customSkin.Hold_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_on.png", border);
             }
             else
             {
                 customSkin.Hold_On = customSkin.Hold;
             }
-            customSkin.Hold_Off = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_off.png", border);
+            customSkin.Hold_Off = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_off.png", border);
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_each_on.png")))
             {
-                customSkin.Hold_Each_On = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
+                customSkin.Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
             }
             else
             {
@@ -493,7 +497,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
 
             if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_break_on.png")))
             {
-                customSkin.Hold_Break_On = await SpriteLoader.LoadAsync(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+                customSkin.Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
             }
             else
             {
@@ -501,141 +505,143 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
             }
 
             // Critical Perfect
-
-            customSkin.Just[0] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r.png");
-            customSkin.Just[1] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r.png");
-            customSkin.Just[2] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u.png");
-            customSkin.Just[3] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l.png");
-            customSkin.Just[4] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l.png");
-            customSkin.Just[5] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d.png");
+            await UniTask.Yield();
+            customSkin.Just[0] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r.png");
+            customSkin.Just[1] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r.png");
+            customSkin.Just[2] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u.png");
+            customSkin.Just[3] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l.png");
+            customSkin.Just[4] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l.png");
+            customSkin.Just[5] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d.png");
 
             // Perfect
-
-            customSkin.Just[6] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_p.png");
-            customSkin.Just[7] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_p.png");
-            customSkin.Just[8] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_p.png");
-            customSkin.Just[9] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_p.png");
-            customSkin.Just[10] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_p.png");
-            customSkin.Just[11] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_p.png");
+            await UniTask.Yield();
+            customSkin.Just[6] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_p.png");
+            customSkin.Just[7] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_p.png");
+            customSkin.Just[8] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_p.png");
+            customSkin.Just[9] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_p.png");
+            customSkin.Just[10] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_p.png");
+            customSkin.Just[11] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_p.png");
 
             // Fast Perfect
-
-            customSkin.Just[12] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_p.png");
-            customSkin.Just[13] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_p.png");
-            customSkin.Just[14] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_p.png");
-            customSkin.Just[15] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_p.png");
-            customSkin.Just[16] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_p.png");
-            customSkin.Just[17] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_p.png");
+            await UniTask.Yield();
+            customSkin.Just[12] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_p.png");
+            customSkin.Just[13] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_p.png");
+            customSkin.Just[14] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_p.png");
+            customSkin.Just[15] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_p.png");
+            customSkin.Just[16] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_p.png");
+            customSkin.Just[17] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_p.png");
 
             // Fast Great
-
-            customSkin.Just[18] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gr.png");
-            customSkin.Just[19] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gr.png");
-            customSkin.Just[20] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gr.png");
-            customSkin.Just[21] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gr.png");
-            customSkin.Just[22] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gr.png");
-            customSkin.Just[23] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gr.png");
+            await UniTask.Yield();
+            customSkin.Just[18] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gr.png");
+            customSkin.Just[19] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gr.png");
+            customSkin.Just[20] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gr.png");
+            customSkin.Just[21] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gr.png");
+            customSkin.Just[22] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gr.png");
+            customSkin.Just[23] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gr.png");
 
             // Fast Good
-
-            customSkin.Just[24] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gd.png");
-            customSkin.Just[25] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gd.png");
-            customSkin.Just[26] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gd.png");
-            customSkin.Just[27] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gd.png");
-            customSkin.Just[28] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gd.png");
-            customSkin.Just[29] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gd.png");
+            await UniTask.Yield();
+            customSkin.Just[24] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gd.png");
+            customSkin.Just[25] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gd.png");
+            customSkin.Just[26] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gd.png");
+            customSkin.Just[27] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gd.png");
+            customSkin.Just[28] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gd.png");
+            customSkin.Just[29] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gd.png");
 
             // Late Perfect
-
-            customSkin.Just[30] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_p.png");
-            customSkin.Just[31] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_late_p.png");
-            customSkin.Just[32] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_p.png");
-            customSkin.Just[33] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_p.png");
-            customSkin.Just[34] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_late_p.png");
-            customSkin.Just[35] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_p.png");
+            await UniTask.Yield();
+            customSkin.Just[30] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_p.png");
+            customSkin.Just[31] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_p.png");
+            customSkin.Just[32] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_p.png");
+            customSkin.Just[33] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_p.png");
+            customSkin.Just[34] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_p.png");
+            customSkin.Just[35] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_p.png");
 
             // Late Great
-
-            customSkin.Just[36] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gr.png");
-            customSkin.Just[37] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gr.png");
-            customSkin.Just[38] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gr.png");
-            customSkin.Just[39] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gr.png");
-            customSkin.Just[40] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gr.png");
-            customSkin.Just[41] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gr.png");
+            await UniTask.Yield();
+            customSkin.Just[36] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gr.png");
+            customSkin.Just[37] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gr.png");
+            customSkin.Just[38] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gr.png");
+            customSkin.Just[39] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gr.png");
+            customSkin.Just[40] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gr.png");
+            customSkin.Just[41] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gr.png");
 
             // Late Good
-
-            customSkin.Just[42] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gd.png");
-            customSkin.Just[43] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gd.png");
-            customSkin.Just[44] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gd.png");
-            customSkin.Just[45] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gd.png");
-            customSkin.Just[46] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gd.png");
-            customSkin.Just[47] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gd.png");
+            await UniTask.Yield();
+            customSkin.Just[42] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gd.png");
+            customSkin.Just[43] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gd.png");
+            customSkin.Just[44] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gd.png");
+            customSkin.Just[45] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gd.png");
+            customSkin.Just[46] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gd.png");
+            customSkin.Just[47] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gd.png");
 
             // Miss
-
-            customSkin.Just[48] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_curv_r.png");
-            customSkin.Just[49] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_str_r.png");
-            customSkin.Just[50] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_wifi_u.png");
-            customSkin.Just[51] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_curv_l.png");
-            customSkin.Just[52] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_str_l.png");
-            customSkin.Just[53] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/miss_wifi_d.png");
+            await UniTask.Yield();
+            customSkin.Just[48] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_curv_r.png");
+            customSkin.Just[49] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_str_r.png");
+            customSkin.Just[50] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_wifi_u.png");
+            customSkin.Just[51] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_curv_l.png");
+            customSkin.Just[52] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_str_l.png");
+            customSkin.Just[53] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_wifi_d.png");
 
             // TooFast
-            customSkin.Just[54] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_curv_r.png");
-            customSkin.Just[55] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_str_r.png");
-            customSkin.Just[56] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_wifi_u.png");
-            customSkin.Just[57] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_curv_l.png");
-            customSkin.Just[58] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_str_l.png");
-            customSkin.Just[59] = await SpriteLoader.LoadAsync(skinCollectionPath + "/SlideOKSkins/toofast_wifi_d.png");
+            await UniTask.Yield();
+            customSkin.Just[54] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_curv_r.png");
+            customSkin.Just[55] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_str_r.png");
+            customSkin.Just[56] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_wifi_u.png");
+            customSkin.Just[57] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_curv_l.png");
+            customSkin.Just[58] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_str_l.png");
+            customSkin.Just[59] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_wifi_d.png");
 
-            customSkin.Miss = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_miss.png");
-            customSkin.Good = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_good.png");
-            customSkin.Great = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_great.png");
-            customSkin.Perfect = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect.png");
-            customSkin.CriticalPerfect = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect.png");
+            await UniTask.Yield();
+            customSkin.Miss = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_miss.png");
+            customSkin.Good = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good.png");
+            customSkin.Great = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great.png");
+            customSkin.Perfect = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect.png");
+            customSkin.CriticalPerfect = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect.png");
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png"))
             {
-                customSkin.CriticalPerfect_Fast = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
+                customSkin.CriticalPerfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
             }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png"))
             {
-                customSkin.CriticalPerfect_Late = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png");
+                customSkin.CriticalPerfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png");
             }
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png"))
             {
-                customSkin.Perfect_Fast = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png");
+                customSkin.Perfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png");
             }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png"))
             {
-                customSkin.Perfect_Late = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png");
+                customSkin.Perfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png");
             }
-
+            await UniTask.Yield();
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png"))
             {
-                customSkin.Great_Fast = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png");
+                customSkin.Great_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png");
             }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png"))
             {
-                customSkin.Great_Late = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png");
+                customSkin.Great_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png");
             }
 
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png"))
             {
-                customSkin.Good_Fast = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png");
+                customSkin.Good_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png");
             }
             if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png"))
             {
-                customSkin.Good_Late = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png");
+                customSkin.Good_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png");
             }
 
 
-
-            customSkin.CriticalPerfect_Shine = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_break.png");
-            customSkin.Break_2600_Shine = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_break_2600_shine.png");
-            customSkin.Perfect_Shine = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_break.png");
+            await UniTask.Yield();
+            customSkin.CriticalPerfect_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_break.png");
+            customSkin.Break_2600_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_break_2600_shine.png");
+            customSkin.Perfect_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_break.png");
 
 
             foreach (var value in new int[] { 2600, 2550, 2500, 2000, 1500, 1250, 1000, 0 })
@@ -644,64 +650,72 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 var _path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}_fast.png";
                 var __path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}_late.png";
                 var type = typeof(CustomSkin);
-                type.GetProperty($"Break_{value}").SetValue(customSkin, await SpriteLoader.LoadAsync(path));
+                type.GetProperty($"Break_{value}").SetValue(customSkin, SpriteLoader.Load(path));
                 if (value == 0)
                 {
                     continue;
                 }
                 if (File.Exists(_path))
                 {
-                    type.GetProperty($"Break_{value}_Fast").SetValue(customSkin, await SpriteLoader.LoadAsync(_path));
+                    type.GetProperty($"Break_{value}_Fast").SetValue(customSkin, SpriteLoader.Load(_path));
                 }
                 if (File.Exists(__path))
                 {
-                    type.GetProperty($"Break_{value}_Late").SetValue(customSkin, await SpriteLoader.LoadAsync(__path));
+                    type.GetProperty($"Break_{value}_Late").SetValue(customSkin, SpriteLoader.Load(__path));
                 }
+                await UniTask.Yield();
             }
 
-            customSkin.Fast = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/fast.png");
-            customSkin.Late = await SpriteLoader.LoadAsync(skinCollectionPath + "/JudgeTextSkins/late.png");
+            customSkin.Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/fast.png");
+            customSkin.Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/late.png");
 
-            customSkin.Touch = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch.png");
-            customSkin.Touch_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_each.png");
-            customSkin.Touch_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_break.png");
-            customSkin.TouchPoint = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_point.png");
-            customSkin.TouchPoint_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_point_each.png");
-            customSkin.TouchPoint_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_break_point.png");
+            await UniTask.Yield();
+            customSkin.Touch = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch.png");
+            customSkin.Touch_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_each.png");
+            customSkin.Touch_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break.png");
+            customSkin.TouchPoint = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point.png");
+            customSkin.TouchPoint_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point_each.png");
+            customSkin.TouchPoint_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_point.png");
 
-            customSkin.TouchJust = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_just.png");
+            customSkin.TouchJust = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_just.png");
 
-            customSkin.TouchBorder[0] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_border_2.png");
-            customSkin.TouchBorder[1] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_border_3.png");
-            customSkin.TouchBorder_Each[0] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_border_2_each.png");
-            customSkin.TouchBorder_Each[1] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
-            customSkin.TouchBorder_Break[0] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
-            customSkin.TouchBorder_Break[1] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
+            await UniTask.Yield();
+            customSkin.TouchBorder[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2.png");
+            customSkin.TouchBorder[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3.png");
+            customSkin.TouchBorder_Each[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2_each.png");
+            customSkin.TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
+            customSkin.TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
+            customSkin.TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
 
             for (var i = 0; i < 4; i++)
             {
-                customSkin.TouchHold[i] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchHoldSkins/touchhold_" + i + ".png");
-                customSkin.TouchHold_Break[i] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchHoldSkins/touchhold_break_" + i + ".png");
+                customSkin.TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_" + i + ".png");
+                customSkin.TouchHold_Break[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_" + i + ".png");
+                await UniTask.Yield();
             }
-            customSkin.TouchHold[4] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchHoldSkins/touchhold_border.png");
-            customSkin.TouchHold_Break[4] = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchHoldSkins/touchhold_break_border.png");
-            customSkin.TouchHold_Off = await SpriteLoader.LoadAsync(skinCollectionPath + "/TouchHoldSkins/touchhold_off.png");
+            await UniTask.Yield();
+            customSkin.TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_border.png");
+            customSkin.TouchHold_Break[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_border.png");
+            customSkin.TouchHold_Off = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_off.png");
 
-            customSkin.LoadingSplash = await SpriteLoader.LoadAsync(skinCollectionPath + "/now_loading.png");
+            customSkin.LoadingSplash = SpriteLoader.Load(skinCollectionPath + "/now_loading.png");
 
-            customSkin.TapLine_Normal = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Normal.png");
-            customSkin.TapLine_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Each.png");
-            customSkin.TapLine_Slide = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Slide.png");
-            customSkin.TapLine_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Break.png");
+            await UniTask.Yield();
+            customSkin.TapLine_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Normal.png");
+            customSkin.TapLine_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Each.png");
+            customSkin.TapLine_Slide = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Slide.png");
+            customSkin.TapLine_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Break.png");
 
-            customSkin.EachLines[0] = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
-            customSkin.EachLines[1] = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
-            customSkin.EachLines[2] = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/EachLine3.png");
-            customSkin.EachLines[3] = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/EachLine4.png");
+            await UniTask.Yield();
+            customSkin.EachLines[0] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
+            customSkin.EachLines[1] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
+            customSkin.EachLines[2] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine3.png");
+            customSkin.EachLines[3] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine4.png");
 
-            customSkin.HoldEndPoint_Normal = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
-            customSkin.HoldEndPoint_Each = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
-            customSkin.HoldEndPoint_Break = await SpriteLoader.LoadAsync(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
+            await UniTask.Yield();
+            customSkin.HoldEndPoint_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
+            customSkin.HoldEndPoint_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
+            customSkin.HoldEndPoint_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
 
             return customSkin;
         }
