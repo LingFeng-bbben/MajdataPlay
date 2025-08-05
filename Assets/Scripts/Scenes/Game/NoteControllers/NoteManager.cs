@@ -25,8 +25,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         TouchHoldUpdater _touchHoldUpdater;
         EachLineUpdater _eachLineUpdater;
 
-        readonly int[] _noteCurrentIndex = new int[8];
-        readonly int[] _touchCurrentIndex = new int[33];
+        readonly static int[] _noteCurrentIndex = new int[8];
+        readonly static int[] _touchCurrentIndex = new int[33];
 
         [ReadOnlyField]
         [SerializeField]
@@ -42,27 +42,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         double _lateUpdateElapsedMs = 0;
 
         //DJAuto
-        readonly SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
-        readonly SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
-        readonly SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
+        readonly static SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
+        readonly static SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
+        readonly static SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
         //DJAuto
-        readonly SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
-        readonly SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
-        readonly SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         
-        readonly bool[] _isBtnUsedInThisFrame = new bool[8];
-        readonly bool[] _isSensorUsedInThisFrame = new bool[33];
+        readonly static bool[] _isBtnUsedInThisFrame = new bool[8];
+        readonly static bool[] _isSensorUsedInThisFrame = new bool[33];
 
-        readonly Ref<bool>[] _btnUsageStatusRefs = new Ref<bool>[8];
-        readonly Ref<bool>[] _sensorUsageStatusRefs = new Ref<bool>[33];
+        static bool _defaultButtonStatusUsage = false;
+        static bool _defaultSensorStatusUsage = false;
 
-        bool _defaultButtonStatusUsage = false;
-        bool _defaultSensorStatusUsage = false;
-
-        bool _isUseButtonRingForTouch = false;
-
-        readonly Ref<bool> _defaultButtonUsageStatusRef;
-        readonly Ref<bool> _defaultSensorUsageStatusRef;
+        static bool _isUseButtonRingForTouch = false;
 
         const string SENSOR_IS_NULL = "Sensor index requested by Note is null";
         const string SENSOR_OUT_OF_RANGE = "Sensor index requested by Note is out of range";
@@ -70,27 +64,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         const string BUTTON_OUT_OF_RANGE = "Button index requested by Note is out of range";
         readonly bool USERSETTING_IS_AUTOPLAY = (MajEnv.UserSettings?.Mod.AutoPlay ?? AutoplayModeOption.Disable) != AutoplayModeOption.Disable;
 
-        NoteManager()
-        {
-            _defaultButtonUsageStatusRef = new(ref _defaultButtonStatusUsage);
-            _defaultSensorUsageStatusRef = new(ref _defaultSensorStatusUsage);
-        }
         void Awake()
         {
             Majdata<NoteManager>.Instance = this;
 
-            for (var i = 0; i < 8; i++)
-            {
-                _isBtnUsedInThisFrame[i] = false;
-                ref var state = ref _isBtnUsedInThisFrame[i];
-                _btnUsageStatusRefs[i] = new Ref<bool>(ref state);
-            }
-            for (var i = 0; i < 33; i++)
-            {
-                _isSensorUsedInThisFrame[i] = false;
-                ref var state = ref _isSensorUsedInThisFrame[i];
-                _sensorUsageStatusRefs[i] = new Ref<bool>(ref state);
-            }
+            Array.Fill(_btnStatusInNextFrame, SwitchStatus.Off);
+            Array.Fill(_btnStatusInThisFrame, SwitchStatus.Off);
+            Array.Fill(_btnStatusInPreviousFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInNextFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInThisFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInPreviousFrame, SwitchStatus.Off);
+            Array.Fill(_isBtnUsedInThisFrame, false);
+            Array.Fill(_isSensorUsedInThisFrame, false);
+            Array.Fill(_noteCurrentIndex, 0);
+            Array.Fill(_touchCurrentIndex, 0);
             //InputManager.BindAnyArea(OnAnyAreaTrigger);
         }
         void Start()
@@ -216,21 +203,27 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchHoldUpdater.Clear();
             _eachLineUpdater.Clear();
 
-            for (var i = 0; i < 8; i++)
-            {
-                _isBtnUsedInThisFrame[i] = false;
-            }
-            for (var i = 0; i < 33; i++)
-            {
-                _isSensorUsedInThisFrame[i] = false;
-            }
+            Array.Fill(_btnStatusInNextFrame, SwitchStatus.Off);
+            Array.Fill(_btnStatusInThisFrame, SwitchStatus.Off);
+            Array.Fill(_btnStatusInPreviousFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInNextFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInThisFrame, SwitchStatus.Off);
+            Array.Fill(_sensorStatusInPreviousFrame, SwitchStatus.Off);
+            Array.Fill(_isBtnUsedInThisFrame, false);
+            Array.Fill(_isSensorUsedInThisFrame, false);
+            Array.Fill(_noteCurrentIndex, 0);
+            Array.Fill(_touchCurrentIndex, 0);
         }
         public void ResetCounter()
         {
             for (var i = 0; i < 8; i++)
+            {
                 _noteCurrentIndex[i] = 0;
+            }
             for (var i = 0; i < 33; i++)
+            {
                 _touchCurrentIndex[i] = 0;
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void GameIOUpdate()
@@ -338,36 +331,36 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchCurrentIndex[pos]++;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ref<bool> GetButtonUsageInThisFrame(ButtonZone? zone)
+        public ref bool GetButtonUsageInThisFrame(ButtonZone? zone)
         {
             if (zone is null)
             {
                 MajDebug.LogWarning(BUTTON_IS_NULL);
-                return _defaultButtonUsageStatusRef;
+                return ref _defaultButtonStatusUsage;
             }
             else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
             {
                 MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
-                return _defaultButtonUsageStatusRef;
+                return ref _defaultButtonStatusUsage;
             }
 
-            return _btnUsageStatusRefs[(int)zone];
+            return ref _isBtnUsedInThisFrame[(int)zone];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Ref<bool> GetSensorUsageInThisFrame(SensorArea? area)
+        public ref bool GetSensorUsageInThisFrame(SensorArea? area)
         {
             if (area is null)
             {
                 MajDebug.LogWarning(SENSOR_IS_NULL);
-                return _defaultSensorUsageStatusRef;
+                return ref _defaultSensorStatusUsage;
             }
             else if (area < SensorArea.A1 || area > SensorArea.E8)
             {
                 MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
-                return _defaultSensorUsageStatusRef;
+                return ref _defaultSensorStatusUsage;
             }
 
-            return _sensorUsageStatusRefs[(int)area];
+            return ref _isSensorUsedInThisFrame[(int)area];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CheckSensorStatusInThisFrame(SensorArea? area, SwitchStatus targetState)

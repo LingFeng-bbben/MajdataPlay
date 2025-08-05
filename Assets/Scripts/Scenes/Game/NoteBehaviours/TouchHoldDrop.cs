@@ -506,12 +506,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var isButton = false;
             if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
             }
             else
             {
