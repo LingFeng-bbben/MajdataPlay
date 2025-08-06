@@ -707,8 +707,8 @@ namespace MajdataPlay.Scenes.Game
                 token.ThrowIfCancellationRequested();
                 await UniTask.Yield();
             }
-            var allBackgroundTasks = ListManager.WaitForBackgroundTasksSuspendAsync();
-            while (!allBackgroundTasks.Status.IsCompleted())
+            var allBackgroundTasks = ListManager.WaitForBackgroundTaskSuspendAsync();
+            while (!allBackgroundTasks.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
                 _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");

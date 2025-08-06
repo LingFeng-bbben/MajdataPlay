@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
 using MajdataPlay.Scenes.Setting;
+using System.Threading.Tasks;
 
 namespace MajdataPlay.Scenes.List
 {
@@ -453,8 +454,8 @@ namespace MajdataPlay.Scenes.List
             await UniTask.Delay(400);
             sceneSwitcher.SetLoadingText("MAJTEXT_CLEANING_UP".i18n());
             await UniTask.Delay(100);
-            var bTasks = WaitForBackgroundTasksSuspendAsync();
-            while(!bTasks.Status.IsCompleted())
+            var bTasks = WaitForBackgroundTaskSuspendAsync();
+            while(!bTasks.IsCompleted)
             {
                 await UniTask.Yield();
             }
@@ -511,17 +512,17 @@ namespace MajdataPlay.Scenes.List
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
-        public static UniTask WaitForBackgroundTasksSuspendAsync()
+        public static Task WaitForBackgroundTaskSuspendAsync()
         {
             if (AllBackgroundTasks.Count == 0)
             {
-                return UniTask.CompletedTask;
+                return Task.CompletedTask;
             }
             return UniTask.WhenAll(AllBackgroundTasks)
                           .ContinueWith(() => 
             {
                 AllBackgroundTasks.Clear();
-            });
+            }).AsTask();
         }
     }
 }
