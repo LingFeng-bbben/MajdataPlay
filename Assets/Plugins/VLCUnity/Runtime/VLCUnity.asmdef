@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [
+        "Editor",
         "WindowsStandalone64"
     ],
     "excludePlatforms": [],
