@@ -67,7 +67,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         }
         public static RentedArray Rent(int arraySize)
         {
-            if (arraySize <= 0)
+            if (arraySize < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(arraySize), "Array size must be greater than zero.");
             }
@@ -269,7 +269,14 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         ThrowIfDisposed();
         if (_size >= _array.Length)
         {
-            Capacity = _array.Length << 1;
+            if (_array.Length != 0)
+            {
+                Capacity = _array.Length << 1;
+            }
+            else
+            {
+                Capacity = 1;
+            }
         }
         _array[_size++] = item;
         _version++;
@@ -408,10 +415,6 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         }
         var array = _array.AsSpan(0, _size);
         array.CopyTo(span);
-    }
-    public void CopyTo(Memory<T> memory)
-    {
-        CopyTo(memory.Span);
     }
     public void Dispose()
     {

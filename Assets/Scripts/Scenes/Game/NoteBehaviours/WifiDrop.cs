@@ -11,10 +11,12 @@ using System;
 using System.Linq;
 using MajdataPlay.Settings;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
 
@@ -24,15 +26,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         Vector3[] _starStartPositions = new Vector3[3];
 
+        WifiTable _wifiTable = SlideTables.GetWifiTable(1);
+
         protected override void Awake()
         {
             base.Awake();
             EndPos = 5;
+            var stars = _stars.Span;
+            var starTransforms = _starTransforms.Span;
+
             var slideParent = _noteManager.transform.GetChild(3);
             var centerStar = Instantiate(_slideStarPrefab, slideParent);
             var leftStar = Instantiate(_slideStarPrefab, slideParent);
             var rightStar = Instantiate(_slideStarPrefab, slideParent);
-            var wifiTable = SlideTables.GetWifiTable(StartPos);
 
             var sensorPos = (SensorArea)(EndPos - 1);
             var rIndex = sensorPos.Diff(-1).GetIndex();
@@ -41,15 +47,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             rightStar.SetActive(true);
             centerStar.SetActive(true);
             leftStar.SetActive(true);
-            _stars[0] = rightStar;
-            _stars[1] = centerStar;
-            _stars[2] = leftStar;
-            _starRenderers[0] = _stars[0]!.GetComponent<SpriteRenderer>();
-            _starRenderers[1] = _stars[1]!.GetComponent<SpriteRenderer>();
-            _starRenderers[2] = _stars[2]!.GetComponent<SpriteRenderer>();
-            _judgeQueues[0] = wifiTable[0];
-            _judgeQueues[1] = wifiTable[1];
-            _judgeQueues[2] = wifiTable[2];
+            stars[0] = rightStar;
+            stars[1] = centerStar;
+            stars[2] = leftStar;
+            _starRenderers[0] = stars[0]!.GetComponent<SpriteRenderer>();
+            _starRenderers[1] = stars[1]!.GetComponent<SpriteRenderer>();
+            _starRenderers[2] = stars[2]!.GetComponent<SpriteRenderer>();
+            _judgeQueues[0] = _wifiTable.Left;
+            _judgeQueues[1] = _wifiTable.Center;
+            _judgeQueues[2] = _wifiTable.Right;
             _starEndPositions[0] = NoteHelper.GetTapPosition(rIndex, 4.8f);// R
             _starEndPositions[1] = NoteHelper.GetTapPosition(EndPos, 4.8f);// Center
             _starEndPositions[2] = NoteHelper.GetTapPosition(lIndex, 4.8f); // L
@@ -77,15 +83,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _slideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType("wifi");
 
             //Transform.rotation = Quaternion.Euler(0f, 0f, -45f * (StartPos - 1));
-            _slideBars = new GameObject[Transform.childCount - 1];
-            _slideBarRenderers = new SpriteRenderer[Transform.childCount - 1];
-            _slideBarTransforms = new Transform[Transform.childCount - 1];
 
             for (var i = 0; i < Transform.childCount - 1; i++)
             {
-                _slideBars[i] = Transform.GetChild(i).gameObject;
-                _slideBarTransforms[i] = _slideBars[i].transform;
-                _slideBarRenderers[i] = _slideBars[i].GetComponent<SpriteRenderer>();
+                _slideBars.Add(Transform.GetChild(i).gameObject);
+                _slideBarTransforms.Add(_slideBars[i].transform);
+                _slideBarRenderers.Add(_slideBars[i].GetComponent<SpriteRenderer>());
             }
 
             SetActive(false);
@@ -94,12 +97,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             for (var i = 0; i < _stars.Length; i++)
             {
-                var star = _stars[i];
+                var star = stars[i];
                 if (star is null)
                 {
                     continue;
                 }
-                _starTransforms[i] = star.transform;
+                starTransforms[i] = star.transform;
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
@@ -111,12 +114,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            var wifiTable = SlideTables.GetWifiTable(StartPos);
-            const float wifiConst = 0.162870f;
+            _wifiTable.Dispose();
+            _wifiTable = SlideTables.GetWifiTable(StartPos);
+            var wifiConst = _wifiTable.Const;
 
-            _judgeQueues[0] = wifiTable[0];
-            _judgeQueues[1] = wifiTable[1];
-            _judgeQueues[2] = wifiTable[2];
+            _judgeQueues[0] = _wifiTable.Left;
+            _judgeQueues[1] = _wifiTable.Center;
+            _judgeQueues[2] = _wifiTable.Right;
 
             _judgeTiming = StartTiming + Length * (1 - wifiConst);
             _lastWaitTimeSec = Length * wifiConst;
@@ -168,14 +172,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             LoadSkin();
             _slideOK!.transform.SetParent(transform.parent);
-            for (var i = 0; i < _stars.Length; i++)
+            var stars = _stars.Span;
+            var starTransforms = _starTransforms.Span;
+            for (var i = 0; i < stars.Length; i++)
             {
-                var star = _stars[i];
+                var star = stars[i];
                 if (star is null)
                 {
                     continue;
                 }
-                _starTransforms[i] = star.transform;
+                starTransforms[i] = star.transform;
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
@@ -221,12 +227,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             var queue = queueMemory.Span;
-            var first = queue[0];
-            SlideArea? second = null;
+            ref var first = ref queue[0];
+            ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
 
             if (queueMemory.Length >= 2)
             {
-                second = queue[1];
+                second = ref queue[1];
             }
             var fAreas = first.IncludedAreas;
             foreach (var t in fAreas)
@@ -240,7 +246,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 PlaySFX();
             }
 
-            if (second is not null && (first.IsSkippable || first.On))
+            if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
             {
                 var sAreas = second.IncludedAreas;
                 foreach (var t in sAreas)
@@ -354,6 +360,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             Autoplay();
             SensorCheck();
+            var stars = _stars.Span;
+            var starTransforms = _starTransforms.Span;
             switch (State)
             {
                 case NoteStatus.Initialized:
@@ -361,9 +369,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     if (ThisFrameSec - Timing > 0)
                     {
                         SetStarActive(true);
-                        for (var i = 0; i < _stars.Length; i++)
+                        for (var i = 0; i < stars.Length; i++)
                         {
-                            var starTransform = _starTransforms[i];
+                            var starTransform = starTransforms[i];
 
                             starTransform.position = _starStartPositions[i];
                         }
@@ -375,9 +383,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     var timing = ThisFrameSec - StartTiming;
                     if (timing > 0f)
                     {
-                        for (var i = 0; i < _stars.Length; i++)
+                        for (var i = 0; i < stars.Length; i++)
                         {
-                            var starTransform = _starTransforms[i];
+                            var starTransform = starTransforms[i];
 
                             _starRenderers[i].color = new Color(1, 1, 1, 1);
                             if (!IsSlideNoHead)
@@ -394,9 +402,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
-                    for (var i = 0; i < _stars.Length; i++)
+                    for (var i = 0; i < stars.Length; i++)
                     {
-                        var starTransform = _starTransforms[i];
+                        var starTransform = starTransforms[i];
 
                         _starRenderers[i].color = new Color(1, 1, 1, alpha);
                         starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
@@ -405,9 +413,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Running:
                     if (GetRemainingTimeWithoutOffset() == 0)
                     {
-                        for (var i = 0; i < _stars.Length; i++)
+                        for (var i = 0; i < stars.Length; i++)
                         {
-                            var starTransform = _starTransforms[i];
+                            var starTransform = starTransforms[i];
                             starTransform.position = _starEndPositions[i];
                         }
                         State = NoteStatus.Arrived;
@@ -415,9 +423,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
 
-                    for (var i = 0; i < _stars.Length; i++)
+                    for (var i = 0; i < stars.Length; i++)
                     {
-                        var starTransform = _starTransforms[i];
+                        var starTransform = starTransforms[i];
                         var a = _starEndPositions[i];
                         var b = _starStartPositions[i];
                         var ba = a - b;
@@ -577,7 +585,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void LoadSkin()
         {
-            var bars = _slideBars;
+            var barRenderers = _slideBarRenderers;
             var skin = MajInstances.SkinManager.GetWifiSkin();
 
             var barSprites = skin.Normal;
@@ -595,23 +603,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 starSprite = skin.Star.Break;
                 breakMaterial = BreakMaterial;
             }
-            foreach (var (i, bar) in bars.WithIndex())
+            foreach (var (i, renderer) in barRenderers.WithIndex())
             {
-                var barRenderer = bar.GetComponent<SpriteRenderer>();
+                renderer.color = new Color(1f, 1f, 1f, 0f);
+                renderer.sortingOrder = SortOrder--;
+                renderer.sortingLayerName = "Slides";
 
-                barRenderer.color = new Color(1f, 1f, 1f, 0f);
-                barRenderer.sortingOrder = SortOrder--;
-                barRenderer.sortingLayerName = "Slides";
-
-                barRenderer.sprite = barSprites[i];
+                renderer.sprite = barSprites[i];
                 if (breakMaterial is not null)
                 {
-                    barRenderer.sharedMaterial = breakMaterial;
+                    renderer.sharedMaterial = breakMaterial;
                     //var controller = bar.AddComponent<BreakShineController>();
                     //controller.Parent = this;
                 }
             }
-            foreach (var (i, star) in _stars.WithIndex())
+            foreach (var (i, star) in _stars.Span.WithIndex())
             {
                 var starRenderer = _starRenderers[i];
                 starRenderer.sprite = starSprite;
@@ -632,6 +638,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _slideOK!.SetL();
                 _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
+        }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            _wifiTable.Dispose();
         }
     }
 }

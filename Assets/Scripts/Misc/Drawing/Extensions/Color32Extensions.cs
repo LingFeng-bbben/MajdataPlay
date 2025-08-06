@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay
+namespace MajdataPlay.Drawing
 {
     internal static class Color32Extensions
     {

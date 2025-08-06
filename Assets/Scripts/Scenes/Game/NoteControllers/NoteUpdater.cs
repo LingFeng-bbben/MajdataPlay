@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using MajdataPlay.Editor;
 using UnityEngine;
 using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Buffers;
+using Cysharp.Threading.Tasks;
 
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -14,10 +16,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         public double FixedUpdateElapsedMs => _fixedUpdateElapsedMs;
         public double LateUpdateElapsedMs => _lateUpdateElapsedMs;
 
-        NoteInfo[] _preUpdatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _updatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _fixedUpdatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _lateUpdatebleComponents = Array.Empty<NoteInfo>();
+        ReadOnlyMemory<NoteInfo> _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        ReadOnlyMemory<NoteInfo> _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        ReadOnlyMemory<NoteInfo> _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        ReadOnlyMemory<NoteInfo> _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+
+        NoteInfo[] _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
+        NoteInfo[] _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
+        NoteInfo[] _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
+        NoteInfo[] _rentedArrayForLateUpdatebleComponents = Array.Empty<NoteInfo>();
 
         [ReadOnlyField]
         [SerializeField]
@@ -31,58 +38,119 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [ReadOnlyField]
         [SerializeField]
         double _lateUpdateElapsedMs = 0;
-        public void Initialize()
+
+        readonly static List<MonoBehaviour> SHARED_CACHE_LIST = new(64);
+        public async UniTask InitAsync()
         {
+            await UniTask.SwitchToMainThread();
             var children = transform.GetChildren();
 
-            List<NoteInfo> preUpdatableComponents = new();
-            List<NoteInfo> updatableComponents = new();
-            List<NoteInfo> fixedUpdatableComponents = new();
-            List<NoteInfo> lateUpdatableComponents = new();
-            //for (int i = 0; i < children.Length; i++)
-            //    children[i] = transform.GetChild(i);
+            using RentedList<NoteInfo> preUpdatableComponents = new();
+            using RentedList<NoteInfo> updatableComponents = new();
+            using RentedList<NoteInfo> fixedUpdatableComponents = new();
+            using RentedList<NoteInfo> lateUpdatableComponents = new();
+            using RentedList<MonoBehaviour> components = new();
+
             foreach (var child in children)
             {
-                var childComponents = child.GetComponents<IStateful<NoteStatus>>();
-                if (childComponents.Length != 0)
+                child.GetComponents<MonoBehaviour>(SHARED_CACHE_LIST);
+                if (SHARED_CACHE_LIST.Count != 0)
                 {
-                    foreach (var component in childComponents)
+                    components.AddRange(SHARED_CACHE_LIST);
+                }
+                SHARED_CACHE_LIST.Clear();
+            }
+            await UniTask.SwitchToThreadPool();
+            foreach (var component in components)
+            {
+                var noteInfo = new NoteInfo(component);
+                if (noteInfo.IsValid)
+                {
+                    if (noteInfo.IsUpdatable)
                     {
-                        var noteInfo = new NoteInfo(component);
-                        if (noteInfo.IsValid)
-                        {
-                            if (noteInfo.IsUpdatable)
-                                updatableComponents.Add(noteInfo);
-                            if (noteInfo.IsFixedUpdatable)
-                                fixedUpdatableComponents.Add(noteInfo);
-                            if (noteInfo.IsLateUpdatable)
-                                lateUpdatableComponents.Add(noteInfo);
-                            if (noteInfo.IsPreUpdatable)
-                                preUpdatableComponents.Add(noteInfo);
-                        }
+                        updatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsFixedUpdatable)
+                    {
+                        fixedUpdatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsLateUpdatable)
+                    {
+                        lateUpdatableComponents.Add(noteInfo);
+                    }
+                    if (noteInfo.IsPreUpdatable)
+                    {
+                        preUpdatableComponents.Add(noteInfo);
                     }
                 }
+                else
+                {
+                    noteInfo.Dispose();
+                }
             }
-            _preUpdatebleComponents = preUpdatableComponents.ToArray();
-            _updatebleComponents = updatableComponents.ToArray();
-            _fixedUpdatebleComponents = fixedUpdatableComponents.ToArray();
-            _lateUpdatebleComponents = lateUpdatableComponents.ToArray();
+            
+            _rentedArrayForPreUpdatebleComponents = Pool<NoteInfo>.RentArray(preUpdatableComponents.Count, true);
+            _rentedArrayForUpdatebleComponents = Pool<NoteInfo>.RentArray(updatableComponents.Count, true);
+            _rentedArrayForFixedUpdatebleComponents = Pool<NoteInfo>.RentArray(fixedUpdatableComponents.Count, true);
+            _rentedArrayForLateUpdatebleComponents = Pool<NoteInfo>.RentArray(lateUpdatableComponents.Count, true);
+
+            preUpdatableComponents.CopyTo(_rentedArrayForPreUpdatebleComponents);
+            updatableComponents.CopyTo(_rentedArrayForUpdatebleComponents);
+            fixedUpdatableComponents.CopyTo(_rentedArrayForFixedUpdatebleComponents);
+            lateUpdatableComponents.CopyTo(_rentedArrayForLateUpdatebleComponents);
+
+            _preUpdatebleComponents = _rentedArrayForPreUpdatebleComponents.AsMemory(0, preUpdatableComponents.Count);
+            _updatebleComponents = _rentedArrayForUpdatebleComponents.AsMemory(0, updatableComponents.Count);
+            _fixedUpdatebleComponents = _rentedArrayForFixedUpdatebleComponents.AsMemory(0, fixedUpdatableComponents.Count);
+            _lateUpdatebleComponents = _rentedArrayForLateUpdatebleComponents.AsMemory(0, lateUpdatableComponents.Count);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            Clear();
         }
 
         internal virtual void Clear()
         {
-            _preUpdatebleComponents = Array.Empty<NoteInfo>();
-            _updatebleComponents = Array.Empty<NoteInfo>();
-            _fixedUpdatebleComponents = Array.Empty<NoteInfo>();
-            _lateUpdatebleComponents = Array.Empty<NoteInfo>();
+            foreach (var component in _preUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _updatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _fixedUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            foreach (var component in _lateUpdatebleComponents.Span)
+            {
+                component.Dispose();
+            }
+            _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+
+            Pool<NoteInfo>.ReturnArray(_rentedArrayForPreUpdatebleComponents, true);
+            Pool<NoteInfo>.ReturnArray(_rentedArrayForUpdatebleComponents, true);
+            Pool<NoteInfo>.ReturnArray(_rentedArrayForFixedUpdatebleComponents, true);
+            Pool<NoteInfo>.ReturnArray(_rentedArrayForLateUpdatebleComponents, true);
+
+            _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
+            _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
+            _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
+            _rentedArrayForLateUpdatebleComponents = Array.Empty<NoteInfo>();
         }
         internal virtual void OnPreUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var len = _preUpdatebleComponents.Length;
+            var preUpdatebleComponents = _preUpdatebleComponents.Span;
+            var len = preUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
-                var component = _preUpdatebleComponents[i];
+                var component = preUpdatebleComponents[i];
                 try
                 {
                     component.OnPreUpdate();
@@ -100,10 +168,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var len = _updatebleComponents.Length;
+            var updatebleComponents = _updatebleComponents.Span;
+            var len = updatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
-                var component = _updatebleComponents[i];
+                var component = updatebleComponents[i];
                 try
                 {
                     component.OnUpdate();
@@ -121,10 +190,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var len = _fixedUpdatebleComponents.Length;
+            var fixedUpdatebleComponents = _fixedUpdatebleComponents.Span;
+            var len = fixedUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
-                var component = _fixedUpdatebleComponents[i];
+                var component = fixedUpdatebleComponents[i];
                 try
                 {
                     component.OnFixedUpdate();
@@ -141,10 +211,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnLateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var len = _lateUpdatebleComponents.Length;
+            var lateUpdatebleComponents = _lateUpdatebleComponents.Span;
+            var len = lateUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
-                var component = _lateUpdatebleComponents[i];
+                var component = lateUpdatebleComponents[i];
                 try
                 {
                     component.OnLateUpdate();

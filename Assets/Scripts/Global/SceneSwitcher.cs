@@ -69,9 +69,24 @@ namespace MajdataPlay
             loadingText.gameObject.SetActive(false);
             LedRing.SetAllLight(Color.white);
         }
+        public async UniTask FadeOutAsync()
+        {
+            animator.SetBool("In", false);
+            await UniTask.Delay(SWITCH_ELAPSED);
+            loadingText.gameObject.SetActive(false);
+            LedRing.SetAllLight(Color.white);
+        }
         public void FadeIn()
         {
             animator.SetBool("In", true);
+            loadingText.text = string.Empty;
+            loadingText.gameObject.SetActive(true);
+            LedRing.SetAllLight(LoadingLightColor);
+        }
+        public async UniTask FadeInAsync()
+        {
+            animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED);
             loadingText.text = string.Empty;
             loadingText.gameObject.SetActive(true);
             LedRing.SetAllLight(LoadingLightColor);

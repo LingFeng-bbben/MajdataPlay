@@ -15,9 +15,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<EachLineUpdater>.Instance = this;
         }
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             Majdata<EachLineUpdater>.Free();
+            base.OnDestroy();
         }
         internal override void OnFixedUpdate()
         {

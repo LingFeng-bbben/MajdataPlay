@@ -7,23 +7,31 @@
       "Content": "Missing MSVC"
     },
     {
-      "Origin": "Scanning Charts",
+      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
+      "Content": "正在读取数据库"
+    },
+    {
+      "Origin": "MAJTEXT_LOADING_SKIN",
+      "Content": "正在加载皮肤"
+    },
+    {
+      "Origin": "MAJTEXT_SCANNING_CHARTS",
       "Content": "正在扫描谱面"
     },
     {
-      "Origin": "Scanning Charts From {0}",
+      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
       "Content": "正在从{0}拉取谱面"
     },
     {
-      "Origin": "Scan Chart Failed",
+      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
       "Content": "扫描谱面时出现问题"
     },
     {
-      "Origin": "No Charts",
+      "Origin": "MAJTEXT_NO_CHART",
       "Content": "没有可用的谱面"
     },
     {
-      "Origin": "Press Any Key",
+      "Origin": "MAJTEXT_PRESS_ANY_KEY",
       "Content": "触摸继续"
     },
     {

@@ -350,10 +350,16 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer = 0;
             }
 
-            if (p1Statistic.IsClicked)
+            if (p1Statistic.IsClicked || p1Statistic.IsPressed || p1Statistic.IsReleased)
             {
-                MajInstances.SceneSwitcher.SwitchScene("SortFind");
-                _isExited = true;
+                if(p1Statistic.PressTime >= 3f)
+                {
+                    RefreshList();
+                }
+                else if(p1Statistic.IsReleased)
+                {
+                    EnterSortAndFind();
+                }
                 return;
             }
             else if (a2Statistic.IsClicked)
@@ -425,6 +431,54 @@ namespace MajdataPlay.Scenes.List
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Practice", false);
         }
+        void EnterSortAndFind()
+        {
+            _cts.Cancel();
+            MajInstances.SceneSwitcher.SwitchScene("SortFind");
+            _isExited = true;
+        }
+        void RefreshList()
+        {
+            _cts.Cancel();
+            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+            _pressTime = 0;
+            _isExited = true;
+            RefreshListBackgroundAsync();
+        }
+        static async void RefreshListBackgroundAsync()
+        {
+            var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeInAsync();
+            sceneSwitcher.SwitchScene("Empty", false);
+            await UniTask.Delay(400);
+            sceneSwitcher.SetLoadingText("MAJTEXT_CLEANING_UP".i18n());
+            await UniTask.Delay(100);
+            var bTasks = WaitForBackgroundTasksSuspendAsync();
+            while(!bTasks.Status.IsCompleted())
+            {
+                await UniTask.Yield();
+            }
+            var progress = new Progress<string>();
+            progress.ProgressChanged += (o, e) =>
+            {
+                MajInstances.SceneSwitcher.SetLoadingText(e);
+            };
+            var task = SongStorage.RefreshAsync(progress);
+            while(!task.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            if (!task.IsCompletedSuccessfully)
+            {
+                sceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n());
+            }
+            else
+            {
+                sceneSwitcher.SetLoadingText(string.Empty);
+            }
+            await UniTask.Delay(3000);
+            sceneSwitcher.SwitchScene("List");
+        }
         void EnterDan()
         {
             _cts.Cancel();
@@ -457,14 +511,17 @@ namespace MajdataPlay.Scenes.List
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
-        public static async UniTask WaitForBackgroundTasksSuspendAsync()
+        public static UniTask WaitForBackgroundTasksSuspendAsync()
         {
             if (AllBackgroundTasks.Count == 0)
             {
-                return;
+                return UniTask.CompletedTask;
             }
-            await UniTask.WhenAll(AllBackgroundTasks);
-            AllBackgroundTasks.Clear();
+            return UniTask.WhenAll(AllBackgroundTasks)
+                          .ContinueWith(() => 
+            {
+                AllBackgroundTasks.Clear();
+            });
         }
     }
 }

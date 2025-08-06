@@ -701,7 +701,7 @@ namespace MajdataPlay.Scenes.Game
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
 
-            _noteManager.InitializeUpdater();
+            await _noteManager.InitAsync();
             while (!_generateAnswerSFXTask.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
@@ -1080,8 +1080,10 @@ namespace MajdataPlay.Scenes.Game
             var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
             _gameInfo.RecordResult(result);
 
-            if (!playEffect) 
+            if (!playEffect)
+            {
                 return result;
+            }
             PlayComboEffect(result);
 
             return result;
@@ -1176,10 +1178,13 @@ namespace MajdataPlay.Scenes.Game
         async UniTaskVoid BackToList()
         {
             State = GamePlayStatus.Ended;
-            ClearAllResources();
             var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeInAsync();
+            await UniTask.Delay(500);
+            _audioSample?.Stop();
+            ClearAllResources();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            sceneSwitcher.FadeIn();
+            
             var wait4Recorder = RecordHelper.StopRecordAsync();
             while (!wait4Recorder.IsCompleted)
             {
@@ -1196,8 +1201,7 @@ namespace MajdataPlay.Scenes.Game
             State = GamePlayStatus.Ended;
 
             await UniTask.Delay(delayMiliseconds);
-            MajInstances.SceneSwitcher.FadeIn();
-            await UniTask.Delay(400);
+            await MajInstances.SceneSwitcher.FadeInAsync();
             ClearAllResources();
             await UniTask.DelayFrame(5);
             

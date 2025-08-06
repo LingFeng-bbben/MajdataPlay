@@ -99,14 +99,14 @@ namespace MajdataPlay.Scenes.Game
         public long LostNoteExtraScore { get; private set; }
         public long LostNoteExtraScoreClassic { get; private set; }
 
-        readonly double[] _accRate = new double[5]
-{
+        readonly static double[] _accRate = new double[5]
+        {
             0.00,    // classic acc (+)
             100.00,  // classic acc (-)
             101.0000,// acc 101(-)
             100.0000,// acc 100(-)
             0.0000,  // acc (+)
-};
+        };
 
         long _cPerfectCount = 0;
         long _perfectCount = 0;
@@ -127,134 +127,23 @@ namespace MajdataPlay.Scenes.Game
         long _pCombo = 0; // Perfect Combo
         long _cPCombo = 0; // Critical Perfect
 
-        List<float> _noteJudgeDiffList = new();
-        Dictionary<JudgeGrade, int> _judgedTapCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _judgedHoldCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _judgedTouchCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _judgedTouchHoldCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _judgedSlideCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _judgedBreakCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
-        Dictionary<JudgeGrade, int> _totalJudgedCount = new()
-        {
-            {JudgeGrade.TooFast, 0 },
-            {JudgeGrade.FastGood, 0 },
-            {JudgeGrade.FastGreat3rd, 0 },
-            {JudgeGrade.FastGreat2nd, 0 },
-            {JudgeGrade.FastGreat, 0 },
-            {JudgeGrade.FastPerfect3rd, 0 },
-            {JudgeGrade.FastPerfect2nd, 0 },
-            {JudgeGrade.Perfect, 0 },
-            {JudgeGrade.LatePerfect2nd, 0 },
-            {JudgeGrade.LatePerfect3rd, 0 },
-            {JudgeGrade.LateGreat, 0 },
-            {JudgeGrade.LateGreat2nd, 0 },
-            {JudgeGrade.LateGreat3rd, 0 },
-            {JudgeGrade.LateGood, 0 },
-            {JudgeGrade.Miss, 0 },
-        };
+        readonly static List<float> _noteJudgeDiffList = new(2048);
 
+        readonly static int[] _judgedTapCount = new int[15];
+        readonly static int[] _judgedHoldCount = new int[15];
+        readonly static int[] _judgedTouchCount = new int[15];
+        readonly static int[] _judgedTouchHoldCount = new int[15];
+        readonly static int[] _judgedSlideCount = new int[15];
+        readonly static int[] _judgedBreakCount = new int[15];
+        readonly static int[] _totalJudgedCount = new int[15];
+
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedTapCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedHoldCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedTouchCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedTouchHoldCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedSlideCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictJudgedBreakCount = new();
+        readonly static Dictionary<JudgeGrade, int> _dictTotalJudgedCount = new();
         #endregion
 
         #region UIrefs
@@ -300,6 +189,9 @@ namespace MajdataPlay.Scenes.Game
 
             _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
             _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
+
+            //clean up
+            Clear();
 
             switch (MajInstances.Settings.Game.TopInfo)
             {
@@ -438,132 +330,24 @@ namespace MajdataPlay.Scenes.Game
         }
         internal void Clear()
         {
-            _judgedTapCount = new()
+            Array.Fill(_judgedTapCount, 0);
+            Array.Fill(_judgedHoldCount, 0);
+            Array.Fill(_judgedTouchCount, 0);
+            Array.Fill(_judgedTouchHoldCount, 0);
+            Array.Fill(_judgedSlideCount, 0);
+            Array.Fill(_judgedBreakCount, 0);
+            Array.Fill(_totalJudgedCount, 0);
+            _noteJudgeDiffList.Clear();
+            for (var i = 0; i < 15; i++)
             {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _judgedHoldCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _judgedTouchCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _judgedTouchHoldCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _judgedSlideCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _judgedBreakCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
-            _totalJudgedCount = new()
-            {
-                {JudgeGrade.TooFast, 0 },
-                {JudgeGrade.FastGood, 0 },
-                {JudgeGrade.FastGreat3rd, 0 },
-                {JudgeGrade.FastGreat2nd, 0 },
-                {JudgeGrade.FastGreat, 0 },
-                {JudgeGrade.FastPerfect3rd, 0 },
-                {JudgeGrade.FastPerfect2nd, 0 },
-                {JudgeGrade.Perfect, 0 },
-                {JudgeGrade.LatePerfect2nd, 0 },
-                {JudgeGrade.LatePerfect3rd, 0 },
-                {JudgeGrade.LateGreat, 0 },
-                {JudgeGrade.LateGreat2nd, 0 },
-                {JudgeGrade.LateGreat3rd, 0 },
-                {JudgeGrade.LateGood, 0 },
-                {JudgeGrade.Miss, 0 },
-            };
+                _dictJudgedTapCount[(JudgeGrade)i] = 0;
+                _dictJudgedHoldCount[(JudgeGrade)i] = 0;
+                _dictJudgedTouchCount[(JudgeGrade)i] = 0;
+                _dictJudgedTouchHoldCount[(JudgeGrade)i] = 0;
+                _dictJudgedSlideCount[(JudgeGrade)i] = 0;
+                _dictJudgedBreakCount[(JudgeGrade)i] = 0;
+                _dictTotalJudgedCount[(JudgeGrade)i] = 0;
+            }
             Span<double> newAccRate = stackalloc double[5]
             {
                 0.00,    // classic acc (+)
@@ -613,17 +397,27 @@ namespace MajdataPlay.Scenes.Game
             //var late = totalJudgedCount.Where(x => x.Key < JudgeType.Perfect && x.Key != JudgeType.Miss)
             //                           .Select(x => x.Value)
             //                           .Sum();
-            var holdRecord = _judgedHoldCount.ToDictionary(
+            for (var i = 0; i < 15; i++)
+            {
+                _dictJudgedTapCount[(JudgeGrade)i] = _judgedTapCount[i];
+                _dictJudgedHoldCount[(JudgeGrade)i] = _judgedHoldCount[i];
+                _dictJudgedTouchCount[(JudgeGrade)i] = _judgedTouchCount[i];
+                _dictJudgedTouchHoldCount[(JudgeGrade)i] = _judgedTouchHoldCount[i];
+                _dictJudgedSlideCount[(JudgeGrade)i] = _judgedSlideCount[i];
+                _dictJudgedBreakCount[(JudgeGrade)i] = _judgedBreakCount[i];
+                _dictTotalJudgedCount[(JudgeGrade)i] = _totalJudgedCount[i];
+            }
+            var holdRecord = _dictJudgedHoldCount.ToDictionary(
                 kv => kv.Key,
-                kv => _judgedHoldCount[kv.Key] + _judgedTouchHoldCount[kv.Key]
+                kv => _dictJudgedHoldCount[kv.Key] + _dictJudgedTouchHoldCount[kv.Key]
             );
             var record = new Dictionary<ScoreNoteType, JudgeInfo>()
             {
-                { ScoreNoteType.Tap, new (_judgedTapCount) },
+                { ScoreNoteType.Tap, new (_dictJudgedTapCount) },
                 { ScoreNoteType.Hold, new (holdRecord)},
-                { ScoreNoteType.Slide,new (_judgedSlideCount)},
-                { ScoreNoteType.Break, new (_judgedBreakCount)},
-                { ScoreNoteType.Touch, new (_judgedTouchCount) }
+                { ScoreNoteType.Slide,new (_dictJudgedSlideCount)},
+                { ScoreNoteType.Break, new (_dictJudgedBreakCount)},
+                { ScoreNoteType.Touch, new (_dictJudgedTouchCount) }
             };
             var judgeRecord = new JudgeDetail(record);
 
@@ -750,7 +544,6 @@ namespace MajdataPlay.Scenes.Game
                 TotalNoteBaseScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
                 TotalNoteExtraScore = BreakSum * 100;
                 _totalDXScore = NoteSum * 3;
-                _noteJudgeDiffList = new(NoteSum);
             });
         }
         internal void ReportResult<T>(T note, in NoteJudgeResult judgeResult, int multiple = 1) where T: NoteDrop
@@ -1065,12 +858,12 @@ namespace MajdataPlay.Scenes.Game
                 case TapDrop:
                     if (isBreak)
                     {
-                        _judgedBreakCount[grade] += multiple;
+                        _judgedBreakCount[(int)grade] += multiple;
                         BreakFinishedCount += multiple;
                     }
                     else
                     {
-                        _judgedTapCount[grade] += multiple;
+                        _judgedTapCount[(int)grade] += multiple;
                         TapFinishedCount += multiple;
                     }
                     break;
@@ -1078,53 +871,53 @@ namespace MajdataPlay.Scenes.Game
                 case SlideDrop:
                     if (isBreak)
                     {
-                        _judgedBreakCount[grade] += multiple;
+                        _judgedBreakCount[(int)grade] += multiple;
                         BreakFinishedCount += multiple;
                     }
                     else
                     {
-                        _judgedSlideCount[grade] += multiple;
+                        _judgedSlideCount[(int)grade] += multiple;
                         SlideFinishedCount += multiple;
                     }
                     break;
                 case HoldDrop:
                     if (isBreak)
                     {
-                        _judgedBreakCount[grade] += multiple;
+                        _judgedBreakCount[(int)grade] += multiple;
                         BreakFinishedCount += multiple;
                     }
                     else
                     {
-                        _judgedHoldCount[grade] += multiple;
+                        _judgedHoldCount[(int)grade] += multiple;
                         HoldFinishedCount += multiple;
                     }
                     break;
                 case TouchDrop:
                     if (isBreak)
                     {
-                        _judgedBreakCount[grade] += multiple;
+                        _judgedBreakCount[(int)grade] += multiple;
                         BreakFinishedCount += multiple;
                     }
                     else
                     {
-                        _judgedTouchCount[grade] += multiple;
+                        _judgedTouchCount[(int)grade] += multiple;
                         TouchFinishedCount += multiple;
                     }
                     break;
                 case TouchHoldDrop:
                     if (isBreak)
                     {
-                        _judgedBreakCount[grade] += multiple;
+                        _judgedBreakCount[(int)grade] += multiple;
                         BreakFinishedCount += multiple;
                     }
                     else
                     {
-                        _judgedTouchHoldCount[grade] += multiple;
+                        _judgedTouchHoldCount[(int)grade] += multiple;
                         HoldFinishedCount += multiple;
                     }
                     break;
             }
-            _totalJudgedCount[grade] += multiple;
+            _totalJudgedCount[(int)grade] += multiple;
         }
         void UpdateComboCount(JudgeGrade grade, int multiple = 1)
         {
