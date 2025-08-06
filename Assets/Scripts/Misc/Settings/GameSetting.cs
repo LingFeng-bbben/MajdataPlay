@@ -170,7 +170,6 @@ namespace MajdataPlay.Settings
         public bool FullScreen { get; set; } = true;
         [SettingVisualizationIgnore]
         public int MenuOptionIterationSpeed { get; set; } = 45;
-        [SettingVisualizationIgnore]
         public float DisplayOffset { get; set; } = 0f;
         public float NoteAppearRate { get; set; } = 0.265f;
         public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
@@ -178,7 +177,6 @@ namespace MajdataPlay.Settings
         public bool HideCursorInGame { get; set; } = true;
         [SettingVisualizationIgnore]
         public bool NoteFolding { get; set; } = true;
-        [SettingVisualizationIgnore]
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
         [SettingVisualizationIgnore]
         public int MaxQueuedFrames { get; set; } = 2;

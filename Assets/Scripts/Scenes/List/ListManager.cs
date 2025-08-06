@@ -452,7 +452,7 @@ namespace MajdataPlay.Scenes.List
             await sceneSwitcher.FadeInAsync();
             sceneSwitcher.SwitchScene("Empty", false);
             await UniTask.Delay(400);
-            sceneSwitcher.SetLoadingText("MAJTEXT_CLEANING_UP".i18n());
+            sceneSwitcher.SetLoadingText("Waiting for all background tasks to suspend".i18n());
             await UniTask.Delay(100);
             var bTasks = WaitForBackgroundTaskSuspendAsync();
             while(!bTasks.IsCompleted)
@@ -471,7 +471,7 @@ namespace MajdataPlay.Scenes.List
             }
             if (!task.IsCompletedSuccessfully)
             {
-                sceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n());
+                sceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
             }
             else
             {
