@@ -164,7 +164,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_AudioOffset",
-      "Content": "音频偏移"
+      "Content": "音频偏移(A判)"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_AudioOffset_DESC",
@@ -172,7 +172,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_JudgeOffset",
-      "Content": "判定偏移"
+      "Content": "判定偏移(B判)"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_JudgeOffset_DESC",
@@ -911,7 +911,7 @@
       "Content": "单位: 秒"
     },
     {
-      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Second",
+      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Frame",
       "Content": "单位: 帧"
     }
   ]

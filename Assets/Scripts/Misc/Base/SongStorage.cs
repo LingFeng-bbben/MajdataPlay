@@ -411,7 +411,7 @@ namespace MajdataPlay
                     {
                         if(i != 0)
                         {
-                            progressReporter?.Report(ZString.Format("Scanning Charts From {0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
+                            progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
                         }
                         rspStream = await client.GetStreamAsync(listurl);
                         break;

@@ -55,6 +55,17 @@ namespace MajdataPlay.Scenes.Setting
             Localization.OnLanguageChanged += OnLangChanged;
             nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
             descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            switch (PropertyInfo.Name)
+            {
+                case "SlideFadeInOffset":
+                case "AudioOffset":
+                case "JudgeOffset":
+                case "AnswerOffset":
+                case "TouchPanelOffset":
+                case "DisplayOffset":
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    break;
+            }
             InitOptions();
             UpdatePosition();
             UpdateOption();
@@ -63,6 +74,17 @@ namespace MajdataPlay.Scenes.Setting
         {
             nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
             descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            switch (PropertyInfo.Name)
+            {
+                case "SlideFadeInOffset":
+                case "AudioOffset":
+                case "JudgeOffset":
+                case "AnswerOffset":
+                case "TouchPanelOffset":
+                case "DisplayOffset":
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    break;
+            }
             UpdateOption();
         }
         void InitOptions()
@@ -398,6 +420,19 @@ namespace MajdataPlay.Scenes.Setting
                     break;
             }
             valueText.text = localizedText;
+            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
+            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            switch (PropertyInfo.Name)
+            {
+                case "SlideFadeInOffset":
+                case "AudioOffset":
+                case "JudgeOffset":
+                case "AnswerOffset":
+                case "TouchPanelOffset":
+                case "DisplayOffset":
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    break;
+            }
         }
         void UpdateVolume()
         {
