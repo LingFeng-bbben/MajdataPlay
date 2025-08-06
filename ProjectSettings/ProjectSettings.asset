@@ -727,6 +727,8 @@ PlayerSettings:
     iPhone: dUI_TextMeshPro
     tvOS: dUI_TextMeshPro
   additionalCompilerArguments:
+    Android:
+    - -langversion:preview
     Standalone:
     - -langversion:preview
   platformArchitecture: {}
