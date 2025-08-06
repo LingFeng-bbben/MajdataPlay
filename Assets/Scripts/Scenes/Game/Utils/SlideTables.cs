@@ -11,7 +11,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
 {
     public static class SlideTables
     {
-        public static SlideTable[] SLIDE_TABLES => new SlideTable[]
+        public static SlideTable[] SLIDE_TABLES { get; } = new SlideTable[]
         {
             new SlideTable()
             {
@@ -605,7 +605,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 Const = 0.0895f
             },
         };
-        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE => new SlideArea[][]
+        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE { get; } = new SlideArea[][]
         {
             new SlideArea[] // L
             {
@@ -629,7 +629,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
             }
         };
-        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new SlideArea[][]
+        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC { get; } = new SlideArea[][]
         {
             new SlideArea[] // L
             {
@@ -666,7 +666,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
             {
                 List<SlideArea> rows = new();
                 foreach (var row in line)
+                {
                     rows.Add(row.Clone()!);
+                }
                 queue.Add(rows.ToArray());
             }
             var _queue = queue.ToArray();
@@ -675,8 +677,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
             if (diff != 0)
             {
                 foreach (var line in _queue)
+                {
                     foreach (var area in line)
+                    {
                         area.Diff(diff);
+                    }
+                }
             }
 
             return _queue;
