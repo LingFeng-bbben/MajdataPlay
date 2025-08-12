@@ -1,18 +1,21 @@
-﻿using UnityEngine;
-using System;
-using System.Linq;
+﻿using HidSharp;
+using HidSharp.Platform.Windows;
+using MajdataPlay.Collections;
+using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MychIO;
 using MychIO.Device;
-using System.Collections.Generic;
 using MychIO.Event;
-using System.Runtime.CompilerServices;
-using MajdataPlay.Collections;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Policy;
-using HidSharp.Platform.Windows;
 using System.Threading;
-using MajdataPlay.Numerics;
+using UnityEngine;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -267,6 +270,9 @@ namespace MajdataPlay.IO
         static IOManager? _ioManager = null;
 
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
+
+        static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
+        static ButtonRingDeviceOption _buttonRingDevice = ButtonRingDeviceOption.Keyboard;
         static InputManager()
         {
             _isSensorRendererEnabled = MajEnv.UserSettings.Debug.DisplaySensor;
@@ -290,9 +296,117 @@ namespace MajdataPlay.IO
         {
             Input.multiTouchEnabled = true;
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
+            
             ButtonRing.Init();
             TouchPanel.Init();
             LedDevice.Init();
+        }
+        static void IODeviceDetect()
+        {
+            var hidDevices = HidManager.Devices;
+            var serialPorts = SerialPort.GetPortNames();
+            
+            var ioSettings = MajEnv.UserSettings.IO;
+            var buttonRingSettings = ioSettings.InputDevice.ButtonRing;
+            var touchPanelSettings = ioSettings.InputDevice.TouchPanel;
+            var ledDeviceSettings = ioSettings.OutputDevice.Led;
+            var userManufacturer = ioSettings.Manufacturer;
+            var userButtonRingType = buttonRingSettings.Type;
+
+            var manufacturer = DeviceManufacturerOption.General;
+            var buttonRingType = ButtonRingDeviceOption.Keyboard;
+
+            MajDebug.Log($"All available HID devices:\n{string.Join('\n', hidDevices)}");
+            MajDebug.Log($"All available serial ports:\n{string.Join('\n', serialPorts)}");
+
+            if(userButtonRingType is null || userManufacturer is null)
+            {
+                var forceFallback = false;
+                forceFallback |= buttonRingSettings.HidOptions.ProductId is not null;
+                forceFallback |= buttonRingSettings.HidOptions.VendorId is not null;
+                forceFallback |= buttonRingSettings.HidOptions.DeviceName is not null;
+                forceFallback |= touchPanelSettings.SerialPortOptions.Port is not null;
+                forceFallback |= touchPanelSettings.SerialPortOptions.BaudRate is not null;
+                forceFallback |= ledDeviceSettings.SerialPortOptions.Port is not null;
+                forceFallback |= ledDeviceSettings.SerialPortOptions.BaudRate is not null;
+                if(forceFallback)
+                {
+                    manufacturer = DeviceManufacturerOption.General;
+                    buttonRingType = ButtonRingDeviceOption.Keyboard;
+
+                    _deviceManufacturer = manufacturer;
+                    _buttonRingDevice = buttonRingType;
+                    return;
+                }
+            }
+
+            if (userManufacturer is DeviceManufacturerOption userManufacturerNotNull)
+            {
+                if(userManufacturerNotNull is DeviceManufacturerOption.Yuan)
+                {
+                    manufacturer = DeviceManufacturerOption.Yuan;
+                    buttonRingType = ButtonRingDeviceOption.HID;
+                }
+                else if(userManufacturerNotNull is DeviceManufacturerOption.Dao)
+                {
+                    manufacturer = DeviceManufacturerOption.Dao;
+                    buttonRingType = ButtonRingDeviceOption.HID;
+                }
+                else
+                {
+                    manufacturer = DeviceManufacturerOption.General;
+                    if (userButtonRingType is ButtonRingDeviceOption userButtonRingTypeNotNull)
+                    {
+                        buttonRingType = userButtonRingTypeNotNull;
+                    }
+                }
+            }
+            else
+            {
+                const int YUAN_HID_PID = 22352;
+                const int YUAN_HID_VID = 11836;
+                const int DAO_HID_PID = 4644;
+                const int DAO_HID_VID = 3727;
+                const int GENERAL_HID_PID = 33;
+                const int GENERAL_HID_VID = 3235;
+                var filteredHidDevices = hidDevices.Where(x =>
+                {
+                    var isYuan = x.ProductID == YUAN_HID_PID && x.VendorID == YUAN_HID_VID;
+                    var isDao = x.ProductID == DAO_HID_PID && x.VendorID == DAO_HID_VID;
+                    var isGeneral = x.ProductID == GENERAL_HID_PID && x.VendorID == GENERAL_HID_VID;
+
+                    return isYuan || isDao || isGeneral;
+                });
+                if(filteredHidDevices.Count() != 0)
+                {
+                    if (hidDevices.Any(x => x.ProductID == YUAN_HID_PID && x.VendorID == YUAN_HID_VID))
+                    {
+                        manufacturer = DeviceManufacturerOption.Yuan;
+                        buttonRingType = ButtonRingDeviceOption.HID;
+                        buttonRingSettings.HidOptions.ProductId = YUAN_HID_PID;
+                        buttonRingSettings.HidOptions.VendorId = YUAN_HID_VID;
+                    }
+                    else if (hidDevices.Any(x => x.ProductID == DAO_HID_PID && x.VendorID == DAO_HID_VID))
+                    {
+                        manufacturer = DeviceManufacturerOption.Dao;
+                        buttonRingType = ButtonRingDeviceOption.HID;
+                    }
+                    else if (hidDevices.Any(x => x.ProductID == GENERAL_HID_PID && x.VendorID == GENERAL_HID_VID))
+                    {
+                        manufacturer = DeviceManufacturerOption.General;
+                        buttonRingType = ButtonRingDeviceOption.HID;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("?");
+                    }
+                }
+                else
+                {
+                    manufacturer = DeviceManufacturerOption.General;
+                    buttonRingType = ButtonRingDeviceOption.Keyboard;
+                }
+            }
         }
         internal static void OnFixedUpdate()
         {
@@ -737,6 +851,40 @@ namespace MajdataPlay.IO
             public void Notify()
             {
                 _eventWaitHandle.Set();
+            }
+        }
+        readonly struct HidConnInfo
+        {
+            public string DeviceName { get; init; }
+            public int ProductId { get; init; }
+            public int VendorId { get; init; }
+            public bool Exclusice { get; init; }
+            public OpenPriority OpenPriority { get; init; }
+
+            public static implicit operator HidConnInfo(HidOptions options)
+            {
+                return new HidConnInfo()
+                {
+                    DeviceName = options.DeviceName,
+                    ProductId = options.ProductId,
+                    VendorId = options.VendorId,
+                    Exclusice = options.Exclusice,
+                    OpenPriority = options.OpenPriority
+                };
+            }
+        }
+        readonly struct SerialPortConnInfo
+        {
+            public int Port { get; init; }
+            public int BaudRate { get; init; }
+
+            public static implicit operator SerialPortConnInfo(SerialPortOptions options)
+            {
+                return new SerialPortConnInfo()
+                {
+                    Port = options.Port,
+                    BaudRate = options.BaudRate
+                };
             }
         }
     }

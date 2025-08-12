@@ -39,10 +39,10 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                var manufacturer = _deviceManufacturer;
                 if (manufacturer == DeviceManufacturerOption.General)
                 {
-                    switch (MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type)
+                    switch (_buttonRingDevice)
                     {
                         case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -51,7 +51,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type}");
+                            MajDebug.LogWarning($"Not supported button ring device: {_buttonRingDevice}");
                             break;
                     }
                 }
@@ -336,8 +336,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-                var deviceType = MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type;
+                var manufacturer = _deviceManufacturer;
+                var deviceType = _buttonRingDevice;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
