@@ -436,7 +436,7 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = _currentCollection[desiredListPos];
+                    var songinfo = _songDetailBindings.Span[desiredListPos].SongDetail;
                     var songScore = ScoreManager.GetScore(songinfo, MajInstances.GameManager.SelectedDiff);
                     CoverBigDisplayer.SetSongDetail(songinfo);
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
