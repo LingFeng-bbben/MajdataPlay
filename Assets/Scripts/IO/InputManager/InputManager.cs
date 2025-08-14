@@ -334,7 +334,7 @@ namespace MajdataPlay.IO
 
             try
             {
-                if (buttonRingType == ButtonRingDeviceOption.Keyboard)
+                if (userButtonRingType is not null && buttonRingType == ButtonRingDeviceOption.Keyboard)
                 {
                     manufacturer = DeviceManufacturerOption.General;
 
@@ -344,6 +344,11 @@ namespace MajdataPlay.IO
                     {
                         Port = touchPanelSettings.SerialPortOptions.Port ?? 3,
                         BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                    };
+                    _ledDeviceSerialConnInfo = new()
+                    {
+                        Port = ledDeviceSettings.SerialPortOptions.Port ?? 21,
+                        BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
                     };
                     return;
                 }
@@ -420,18 +425,16 @@ namespace MajdataPlay.IO
                 else
                 {
                     MajDebug.Log("User has not set the IO manufacturer and button ring type, will be detected automatically");
-                    var isAnyMatched = false;
                     var filteredHidDevices = hidDevices.Where(x =>
                     {
                         var isYuan = x.ProductID == YUAN_HID_PID && x.VendorID == YUAN_HID_VID;
                         var isDao = x.ProductID == DAO_HID_PID && x.VendorID == DAO_HID_VID;
                         var isGeneral = x.ProductID == GENERAL_HID_PID && x.VendorID == GENERAL_HID_VID;
                         var result = isYuan || isDao || isGeneral;
-                        isAnyMatched |= result;
 
                         return result;
                     });
-                    if (isAnyMatched)
+                    if (filteredHidDevices.Count() != 0)
                     {
                         if (hidDevices.Any(x => x.ProductID == YUAN_HID_PID && x.VendorID == YUAN_HID_VID))
                         {
@@ -517,6 +520,11 @@ namespace MajdataPlay.IO
                         {
                             Port = 3,
                             BaudRate = 9600,
+                        };
+                        _ledDeviceSerialConnInfo = new()
+                        {
+                            Port = 21,
+                            BaudRate = 115200,
                         };
                     }
                 }

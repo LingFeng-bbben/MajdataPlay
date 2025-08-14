@@ -204,7 +204,7 @@ namespace MajdataPlay.Settings
     }
     public class IOOptions
     {
-        public DeviceManufacturerOption? Manufacturer { get; set; } = DeviceManufacturerOption.General;
+        public DeviceManufacturerOption? Manufacturer { get; set; } = null;
         public InputDeviceOptions InputDevice { get; set; } = new();
         public OutputDeviceOptions OutputDevice { get; set; } = new();
     }
