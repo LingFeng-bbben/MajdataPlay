@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Utils;
@@ -167,12 +168,12 @@ namespace MajdataPlay.Scenes.List
             }
             if(_rentSongDetailBindings is not null)
             {
-                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                Pool<SongDetailBinding>.ReturnArray(_rentSongDetailBindings);
                 _rentSongDetailBindings = null;
             }
             if(_rentSongCollectionBindings is not null)
             {
-                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                Pool<SongCollectionBinding>.ReturnArray(_rentSongCollectionBindings);
                 _rentSongCollectionBindings = null;
             }
             _idleDanCoverDisplayer.Clear();
@@ -211,16 +212,16 @@ namespace MajdataPlay.Scenes.List
 
             if (_rentSongDetailBindings is not null)
             {
-                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                Pool<SongDetailBinding>.ReturnArray(_rentSongDetailBindings);
                 _rentSongDetailBindings = null;
             }
             if (_rentSongCollectionBindings is not null)
             {
-                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                Pool<SongCollectionBinding>.ReturnArray(_rentSongCollectionBindings);
                 _rentSongCollectionBindings = null;
             }
 
-            _rentSongCollectionBindings = ArrayPool<SongCollectionBinding>.Shared.Rent(_collections.Length);
+            _rentSongCollectionBindings = Pool<SongCollectionBinding>.RentArray(_collections.Length);
             var rentBindings = _rentSongCollectionBindings;
             var bindings = rentBindings.AsSpan(0, _collections.Length);
             var collections = _collections.Span;
@@ -282,16 +283,16 @@ namespace MajdataPlay.Scenes.List
 
             if (_rentSongDetailBindings is not null)
             {
-                ArrayPool<SongDetailBinding>.Shared.Return(_rentSongDetailBindings);
+                Pool<SongDetailBinding>.ReturnArray(_rentSongDetailBindings);
                 _rentSongDetailBindings = null;
             }
             if (_rentSongCollectionBindings is not null)
             {
-                ArrayPool<SongCollectionBinding>.Shared.Return(_rentSongCollectionBindings);
+                Pool<SongCollectionBinding>.ReturnArray(_rentSongCollectionBindings);
                 _rentSongCollectionBindings = null;
             }
 
-            _rentSongDetailBindings = ArrayPool<SongDetailBinding>.Shared.Rent(_currentCollection.Count);
+            _rentSongDetailBindings = Pool<SongDetailBinding>.RentArray(_currentCollection.Count);
             var rentBindings = _rentSongDetailBindings;
             var bindings = rentBindings.AsSpan(0, _currentCollection.Count);
             for (var i = 0; i < bindings.Length; i++)
