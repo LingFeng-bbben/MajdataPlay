@@ -54,7 +54,7 @@ namespace MajdataPlay.IO
                     {
                         return;
                     }
-                    var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                    var manufacturer = _deviceManufacturer;
                     switch (manufacturer)
                     {
                         case DeviceManufacturerOption.General:
@@ -78,8 +78,7 @@ namespace MajdataPlay.IO
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var serialPortOptions = ledOptions.SerialPortOptions;
+                var serialPortOptions = _ledDeviceSerialConnInfo;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
@@ -193,7 +192,7 @@ namespace MajdataPlay.IO
             static void HIDUpdateLoop()
             {
                 var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var hidOptions = ledOptions.HidOptions;
+                var hidOptions = _ledDeviceHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(ledOptions.RefreshRateMs);

@@ -40,7 +40,7 @@ namespace MajdataPlay.IO
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                switch (MajEnv.UserSettings.IO.Manufacturer)
+                switch (_deviceManufacturer)
                 {
                     case DeviceManufacturerOption.Yuan:
                     case DeviceManufacturerOption.General:
@@ -288,7 +288,7 @@ namespace MajdataPlay.IO
 
             static void SerialPortUpdateLoop()
             {
-                var serialPortOptions = MajInstances.Settings.IO.InputDevice.TouchPanel.SerialPortOptions;
+                var serialPortOptions = _touchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;

@@ -325,8 +325,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-                var hidOptions = buttonRingOptions.HidOptions;
+                var hidOptions = _buttonRingHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;

@@ -223,16 +223,8 @@ namespace MajdataPlay.Settings
         public bool Enable { get; set; } = true;
         public int RefreshRateMs { get; set; } = 100;
         public bool Throttler { get; set; } = false;
-        public SerialPortOptions SerialPortOptions { get; set; } = new()
-        {
-            Port = 21,
-            BaudRate = 115200
-        };
-        public HidOptions HidOptions { get; set; } = new()
-        {
-            ProductId = 0x1224,
-            VendorId = 0x0E8F
-        };
+        public SerialPortOptions SerialPortOptions { get; set; } = new();
+        public HidOptions HidOptions { get; set; } = new();
     }
     public class ButtonRingOptions
     {
