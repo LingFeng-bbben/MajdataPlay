@@ -444,6 +444,30 @@ namespace MajdataPlay.IO
                             _buttonRingHidConnInfo = new()
                             {
                                 DeviceName = string.Empty,
+                                ProductId = YUAN_HID_PID,
+                                VendorId = YUAN_HID_VID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = 3,
+                                BaudRate = 9600,
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = 21,
+                                BaudRate = 115200,
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == DAO_HID_PID && x.VendorID == DAO_HID_VID))
+                        {
+                            MajDebug.Log("Manufacturer detect result: Dao");
+                            manufacturer = DeviceManufacturerOption.Dao;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
                                 ProductId = DAO_HID_PID,
                                 VendorId = DAO_HID_VID,
                                 Exclusice = false,
@@ -456,30 +480,6 @@ namespace MajdataPlay.IO
                                 VendorId = DAO_HID_VID,
                                 Exclusice = false,
                                 OpenPriority = OpenPriority.VeryHigh
-                            };
-                        }
-                        else if (hidDevices.Any(x => x.ProductID == DAO_HID_PID && x.VendorID == DAO_HID_VID))
-                        {
-                            MajDebug.Log("Manufacturer detect result: Dao");
-                            manufacturer = DeviceManufacturerOption.Dao;
-                            buttonRingType = ButtonRingDeviceOption.HID;
-                            _touchPanelSerialConnInfo = new()
-                            {
-                                Port = 3,
-                                BaudRate = 9600,
-                            };
-                            _buttonRingHidConnInfo = new()
-                            {
-                                DeviceName = string.Empty,
-                                ProductId = YUAN_HID_PID,
-                                VendorId = YUAN_HID_VID,
-                                Exclusice = false,
-                                OpenPriority = OpenPriority.VeryHigh
-                            };
-                            _ledDeviceSerialConnInfo = new()
-                            {
-                                Port = 21,
-                                BaudRate = 115200,
                             };
                         }
                         else if (hidDevices.Any(x => x.ProductID == GENERAL_HID_PID && x.VendorID == GENERAL_HID_VID))
