@@ -512,7 +512,7 @@
     },
     {
       "Origin": "Search",
-      "Content": "搜索"
+      "Content": "搜尋"
     },
     {
       "Origin": "UseKeyboardHint",
@@ -824,7 +824,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_RecordMode",
-      "Content": "錄制模式"
+      "Content": "錄影模式"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_RecordMode_DESC",
@@ -881,6 +881,46 @@
     {
       "Origin": "Input_Hint",
       "Content": "按Select(或觸摸副屏)搜索和排序歌曲。觸摸歌曲封面隨機選曲。長按4號鍵開啟練習模式。\n按Alt+Enter切換全屏模式。按Alt+F4退出遊戲。"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade",
+      "Content": "細分Slide判定"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade_DESC",
+      "Content": "開啟後將允許Slide出現小P判定"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_OffsetUnit",
+      "Content": "偏移單位"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_DESC",
+      "Content": "調整各類偏移單位"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Second",
+      "Content": "秒"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Frame",
+      "Content": "幀數"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_DisplayOffset",
+      "Content": "幀偏移"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_DisplayOffset_DESC",
+      "Content": "用於補償幀數延遲\n如果您不知道是幹嘛用，請不要調整"
+    },
+    {
+      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Second",
+      "Content": "單位: 秒"
+    },
+    {
+      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Frame",
+      "Content": "單位: 幀"
     }
   ]
 }
