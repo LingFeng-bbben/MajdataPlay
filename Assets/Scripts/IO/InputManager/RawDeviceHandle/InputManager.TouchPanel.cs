@@ -288,6 +288,8 @@ namespace MajdataPlay.IO
 
             static void SerialPortUpdateLoop()
             {
+                const int RECONNECT_INTERVAL = 1000;
+
                 var serialPortOptions = _touchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
@@ -295,23 +297,35 @@ namespace MajdataPlay.IO
                 var comPort = $"COM{serialPortOptions.Port}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                using var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
+                var isReconnecting = false;
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
-                serial.ReadTimeout = 2000;
-                serial.WriteTimeout = 2000;
                 stopwatch.Start();
 
+            SERIAL_START:
+                var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
+                serial.ReadTimeout = 2000;
+                serial.WriteTimeout = 2000;
                 try
                 {
-                    if(!EnsureSerialStreamIsOpen(serial))
+                    if (!EnsureSerialStreamIsOpen(serial))
                     {
-                        MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
-                        return;
+                        if (!isReconnecting)
+                        {
+                            MajDebug.LogWarning($"TouchPanel: Cannot open {comPort}, using Mouse as fallback.");
+                            return;
+                        }
+                        else
+                        {
+                            MajDebug.LogError($"TouchPanel: Cannot open {comPort}");
+                            Thread.Sleep(RECONNECT_INTERVAL);
+                            goto SERIAL_START;
+                        }
                     }
                     IsConnected = true;
+                    isReconnecting = true;
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -334,25 +348,35 @@ namespace MajdataPlay.IO
                                 }
                             }
                         }
+                        catch (IOException e)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"TouchPanel: \n{e}");
+                            MajDebug.Log($"TouchPanel: Trying to reconnect to {comPort}");
+                            Thread.Sleep(RECONNECT_INTERVAL);
+                            goto SERIAL_START;
+                        }
                         catch (TimeoutException)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From SerialPort listener: Read timeout");
+                            MajDebug.LogError($"TouchPanel: Read timeout");
                         }
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From SerialPort listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: \n{e}");
                         }
                         finally
                         {
-                            if(pollingRate.TotalMilliseconds > 0)
+                            if (pollingRate.TotalMilliseconds > 0)
                             {
                                 var t2 = stopwatch.Elapsed;
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }
@@ -361,6 +385,7 @@ namespace MajdataPlay.IO
                 {
                     _useDummy = true;
                     IsConnected = false;
+                    serial.Dispose();
                 }
             }
             //static void HIDUpdateLoop()
@@ -479,7 +504,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.WaitNotify();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
-                    MajDebug.Log($"TouchPanel slave thread has started");
+                    MajDebug.Log($"TouchPanel: TouchPanel slave thread has started");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -505,11 +530,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"TouchPanel: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: \n{e}");
                         }
                     }
                 }
@@ -539,12 +564,12 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                        MajDebug.Log($"TouchPanel: TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
                         var serialStream = serialSession.BaseStream;
                         var sens = MajEnv.UserSettings.IO.InputDevice.TouchPanel.Sensitivity;
-                        var index = MajEnv.UserSettings.IO.InputDevice.Player == 1 ? 'L' : 'R';
+                        var index = _playerIndex == 1 ? 'L' : 'R';
                         //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialStream.Write(encoding.GetBytes("{RSET}"));
@@ -566,18 +591,18 @@ namespace MajdataPlay.IO
                         }
                         catch (TimeoutException)
                         {
-                            MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                            MajDebug.LogWarning($"TouchPanel: TouchPanel does not support sensitivity override: Write timeout");
                             return false;
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                            MajDebug.LogError($"TouchPanel: Failed to override sensitivity: \n{e}");
                             return false;
                         }
                         serialStream.Write(encoding.GetBytes("{STAT}"));
                         serialSession.DiscardInBuffer();
 
-                        MajDebug.Log("TouchPannel connected");
+                        MajDebug.Log("TouchPanel: Connected");
                         return true;
                     }
                 }

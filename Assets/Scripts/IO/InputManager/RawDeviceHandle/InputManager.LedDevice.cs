@@ -65,7 +65,7 @@ namespace MajdataPlay.IO
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported led device manufacturer: {manufacturer}");
+                            MajDebug.LogWarning($"Led: Not supported led device manufacturer: {manufacturer}");
                             break;
                     }
                 }
@@ -141,7 +141,7 @@ namespace MajdataPlay.IO
 
                 if (!EnsureSerialPortIsOpen(serial))
                 {
-                    MajDebug.LogWarning($"Cannot open COM{serialPortOptions.Port}, using dummy lights");
+                    MajDebug.LogWarning($"Led: Cannot open COM{serialPortOptions.Port}, using dummy lights");
                     return;
                 }
                 while (true)
@@ -175,7 +175,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        MajDebug.LogError($"From Led refresher: \n{e}");
+                        MajDebug.LogError($"Led: \n{e}");
                     }
                     finally
                     {
@@ -289,7 +289,7 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
-                    MajDebug.Log($"Led device connected\nDevice: {device}");
+                    MajDebug.Log($"Led: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -326,11 +326,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"Led: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"Led: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Led: from HID listener: \n{e}");
+                            MajDebug.LogError($"Led: \n{e}");
                         }
                         finally
                         {
@@ -342,7 +342,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < refreshRate)
+                                {
                                     Thread.Sleep(refreshRate - elapsed);
+                                }
                             }
                         }
                     }

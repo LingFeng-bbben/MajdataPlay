@@ -51,7 +51,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported button ring device: {_buttonRingDevice}");
+                            MajDebug.LogWarning($"ButtonRing: Not supported button ring device: {_buttonRingDevice}");
                             break;
                     }
                 }
@@ -61,7 +61,7 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    MajDebug.LogWarning($"Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");
                 }
             }
             /// <summary>
@@ -381,7 +381,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.Log($"ButtonRing connected\nDevice: {device}");
+                    MajDebug.Log($"ButtonRing: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -423,11 +423,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"ButtonRing: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{e}");
+                            MajDebug.LogError($"ButtonRing: \n{e}");
                         }
                         finally
                         {
@@ -438,7 +438,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }
