@@ -49,7 +49,7 @@ namespace MajdataPlay.Collections
         protected ISongDetail[] _sorted;
         protected ISongDetail[] _origin;
 
-        public SongCollection(string name, in ISongDetail[] pArray)
+        public SongCollection(string name, ISongDetail[] pArray)
         {
             _sorted = pArray;
             _origin = pArray;
@@ -57,7 +57,7 @@ namespace MajdataPlay.Collections
         }
         public SongCollection()
         {
-            _origin = new ISongDetail[0];
+            _origin = Array.Empty<ISongDetail>();
             _sorted = _origin;
             Name = string.Empty;
         }
@@ -109,7 +109,7 @@ namespace MajdataPlay.Collections
         {
             SetCursor(target, _sorted);
         }
-        public void SetCursor(ISongDetail target, ISongDetail[] dataSet)
+        void SetCursor(ISongDetail target, ISongDetail[] dataSet)
         {
             if(IsEmpty)
             {
