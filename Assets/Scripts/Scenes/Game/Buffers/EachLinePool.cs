@@ -1,46 +1,31 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     internal sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
-        new Queue<EachLineDrop> _storage;
-        Queue<EachLineDrop> _idleEachLines;
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
         {
-            _storage = new Queue<EachLineDrop>(capacity);
-            _idleEachLines = new Queue<EachLineDrop>(capacity);
 
-            foreach(var obj in base._storage)
-            {
-                _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
-            }
-            foreach (var obj in base._idleNotes)
-            {
-                _idleEachLines.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
-            }
         }
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos) : base(prefab, parent, noteInfos)
         {
-            _storage = new Queue<EachLineDrop>(64);
-            _idleEachLines = new Queue<EachLineDrop>(64);
 
-            foreach (var obj in base._storage)
-            {
-                _storage.Enqueue(obj.GameObject.GetComponent<EachLineDrop>());
-            }
         }
         public override void OnPreUpdate(float currentSec)
         {
+            ThrowIfDisposed();
             if (_timingPoints.IsEmpty)
+            {
                 return;
+            }
             var timingPoints = _timingPoints.Span;
             var i = 0;
             try
@@ -72,7 +57,9 @@ namespace MajdataPlay.Game.Buffers
         {
             var infos = tp.Infos;
             if (infos.IsEmpty)
+            {
                 return true;
+            }
             var _infos = infos.Span;
             var i = 0;
             try
@@ -82,9 +69,13 @@ namespace MajdataPlay.Game.Buffers
                     var info = _infos[i];
                     var eachLine = Dequeue();
                     if (eachLine is null)
+                    {
                         return false;
+                    }
                     else if (!ActiveObject(info, eachLine))
+                    {
                         return false;
+                    }
                 }
             }
             finally
@@ -95,24 +86,13 @@ namespace MajdataPlay.Game.Buffers
         }
         new EachLineDrop? Dequeue()
         {
-            EachLineDrop idleEachLine;
-            if (_idleEachLines.Count == 0)
+            EachLineDrop? idleEachLine;
+            if(!_storage.TryRent(out var poolableNote))
             {
-                if (_storage.Count != 0)
-                {
-                    idleEachLine = _storage.Dequeue();
-                    idleEachLine.GameObject.SetActive(true);
-                }
-                else
-                {
-                    MajDebug.LogWarning($"No more EachLine can use");
-                    return null;
-                }
+                MajDebug.LogWarning($"No more EachLine can use");
+                return null;
             }
-            else
-            {
-                idleEachLine = _idleEachLines.Dequeue();
-            }
+            idleEachLine = poolableNote as EachLineDrop;
 
             return idleEachLine;
         }
@@ -146,9 +126,10 @@ namespace MajdataPlay.Game.Buffers
         }
         public override void Collect(in IPoolableNote<EachLinePoolingInfo, NoteQueueInfo> endNote)
         {
+            ThrowIfDisposed();
             if(endNote is EachLineDrop eachLine)
             {
-                _idleEachLines.Enqueue(eachLine);
+                _storage.Return(eachLine);
             }
             else
             {

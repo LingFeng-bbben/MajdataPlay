@@ -1,17 +1,18 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Game.Notes.Touch;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Touch;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchDrop : NoteDrop, IRendererContainer, IPoolableNote<TouchPoolingInfo, TouchQueueInfo>, INoteQueueMember<TouchQueueInfo>, IMajComponent
@@ -60,6 +61,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly SpriteRenderer[] _fanRenderers = new SpriteRenderer[4];
         readonly GameObject[] _fans = new GameObject[4];
         readonly Transform[] _fanTransforms = new Transform[4];
+
+        ButtonZone? _buttonPos;
 
         GameObject _pointObject;
         GameObject _justBorderObject;
@@ -140,6 +143,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _isFirework = poolingInfo.IsFirework;
             GroupInfo = poolingInfo.GroupInfo;
             _sensorPos = poolingInfo.SensorPos;
+            if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
+            {
+                _buttonPos = _sensorPos.ToButtonZone();
+            }
+            else
+            {
+                _buttonPos = null;
+            }
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
 
             _wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
@@ -157,7 +168,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
 
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            }
             _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             _justBorderRenderer.sortingOrder = SortOrder - _justBorderSortOrder;
 
@@ -224,7 +237,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
                 return;
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -267,15 +280,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
-                _noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
             }
             else
             {
@@ -292,7 +304,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)
@@ -306,11 +318,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     base.Autoplay();
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }

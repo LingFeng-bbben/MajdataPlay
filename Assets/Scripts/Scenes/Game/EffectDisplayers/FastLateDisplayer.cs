@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class FastLateDisplayer: MajComponent
     {
@@ -58,7 +58,7 @@ namespace MajdataPlay.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -73,19 +73,30 @@ namespace MajdataPlay.Game
             }
             SetActive(true);
             if (judgeResult.IsFast)
+            {
                 textRenderer.sprite = fastSprite;
+            }
             else
+            {
                 textRenderer.sprite = lateSprite;
+            }
             if (judgeResult.IsBreak)
+            {
                 _animator.SetTrigger(BREAK_ANIM_HASH);
+            }
             else
+            {
                 _animator.SetTrigger(PERFECT_ANIM_HASH);
+            }
+            _animator.Update(0.000000114514f);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             SetActiveInternal(state);
         }
         void SetActiveInternal(bool state)

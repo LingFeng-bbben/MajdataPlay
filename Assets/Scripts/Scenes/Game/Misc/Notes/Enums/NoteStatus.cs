@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Game.Notes
+﻿namespace MajdataPlay.Scenes.Game.Notes
 {
     public enum NoteStatus
     {

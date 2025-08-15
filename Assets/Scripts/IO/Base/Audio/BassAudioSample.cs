@@ -35,15 +35,26 @@ namespace MajdataPlay.IO
                 if (value)
                 {
                     if (!Bass.ChannelHasFlag(_decode, BassFlags.Loop))
+                    {
                         Bass.ChannelAddFlag(_decode, BassFlags.Loop);
-                }else
+                    }
+                }
+                else
                 {
                     if (Bass.ChannelHasFlag(_decode, BassFlags.Loop))
+                    {
                         Bass.ChannelRemoveFlag(_decode, BassFlags.Loop);
+                    }
                 }
             }
         }
-        public override bool IsEmpty => false;
+        public override bool IsEmpty
+        {
+            get
+            {
+                return false;
+            }
+        }
         public override double CurrentSec
         {
             get => Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
@@ -64,25 +75,48 @@ namespace MajdataPlay.IO
             get
             {
                 if (_isSpeedChangeSupported)
+                {
                     return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Tempo) / 100f + 1f;
+                }
                 else
+                {
                     return 1f;
+                }
             }
             set
             {
                 if (_isSpeedChangeSupported)
+                {
                     Bass.ChannelSetAttribute(_decode, ChannelAttribute.Tempo, (value - 1) * 100f);
+                }
                 else
+                {
                     return;
+                }
             }
         }
 
-        public override TimeSpan Length => TimeSpan.FromSeconds(_length);
-        public override bool IsPlaying => !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
+        public override TimeSpan Length
+        {
+            get
+            {
+                return TimeSpan.FromSeconds(_length);
+            }
+        }
+        public override bool IsPlaying
+        {
+            get
+            {
+                var state = Bass.ChannelIsActive(_decode);
+                return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
+            }
+        }
         public BassAudioSample(int decode, int globalMixer,double gain, bool speedChange = false)
         {
             if(decode is 0 || globalMixer is 0)
+            {
                 throw new ArgumentException(nameof(decode));
+            }
             
 
             _decode = decode;
@@ -96,7 +130,7 @@ namespace MajdataPlay.IO
             Bass.ChannelSetAttribute(_resampler, ChannelAttribute.Buffer, 0);
             BassMix.MixerAddChannel(_resampler, _decode, BassFlags.Default);
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-            //Bass.ChannelStop(_decode);
+            Bass.ChannelStop(_decode);
             MajDebug.Log(Bass.LastError);
             MajDebug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }

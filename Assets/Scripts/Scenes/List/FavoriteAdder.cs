@@ -1,10 +1,9 @@
-using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class FavoriteAdder : MonoBehaviour
     {

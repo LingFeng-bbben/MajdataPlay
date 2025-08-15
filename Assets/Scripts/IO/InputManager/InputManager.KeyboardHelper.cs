@@ -16,8 +16,10 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE_WIN
                 var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
                 return (result & 0x8000) != 0;
+#elif UNITY_ANDROID
+                return false;
 #else
-            return Input.GetKey(ToUnityKeyCode(keyCode));
+                return Input.GetKey(ToUnityKeyCode(keyCode));
 #endif
             }
             public static bool IsKeyUp(KeyCode keyCode)

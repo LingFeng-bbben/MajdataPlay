@@ -8,8 +8,10 @@ using MajSimai;
 using System.Collections.Generic;
 using System.Linq;
 using MajdataPlay.Collections;
+using MajdataPlay.Settings;
+using MajdataPlay.Buffers;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteAudioManager : MonoBehaviour
     {
@@ -21,9 +23,10 @@ namespace MajdataPlay.Game.Notes.Controllers
         bool _isTouchHoldRiserPlaying = false;
 
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
+        AnswerSoundPoint[] _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
 
-        readonly bool[] _noteSFXPlaybackRequests = new bool[14];
-        readonly AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
+        readonly static bool[] _noteSFXPlaybackRequests = new bool[14];
+        readonly static AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
         readonly AudioManager _audioManager = MajInstances.AudioManager;
         static readonly ReadOnlyMemory<string> SFX_NAMES = new string[14]
         {
@@ -42,7 +45,6 @@ namespace MajdataPlay.Game.Notes.Controllers
             "answer.wav",
             "answer_clock.wav"
         };
-        float _userAnswerOffset = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
         const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
         const int TAP_GREAT = 1;
@@ -59,6 +61,9 @@ namespace MajdataPlay.Game.Notes.Controllers
         const int ANSWER = 12;
         const int ANSWER_CLOCK = 13;
 
+        float _answerOffsetSec = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
+        float _displayOffsetSec = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
+
         void Awake()
         {
             Majdata<NoteAudioManager>.Instance = this;
@@ -68,12 +73,23 @@ namespace MajdataPlay.Game.Notes.Controllers
                 var sfx = _audioManager.GetSFX(name);
                 if (sfx.Volume == 0)
                 {
-                    _noteSFXs[i] = EmptyAudioSample.Shared;
+                    _noteSFXs[i] = AudioSampleWrap.Empty;
                 }
                 else
                 {
                     _noteSFXs[i] = sfx;
                 }
+            }
+            var settings = MajEnv.UserSettings;
+            if (settings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            {
+                _answerOffsetSec = settings.Judge.AudioOffset;
+                _displayOffsetSec = settings.Debug.DisplayOffset;
+            }
+            else
+            {
+                _answerOffsetSec = settings.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _displayOffsetSec = settings.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
         }
         private void Start()
@@ -84,6 +100,11 @@ namespace MajdataPlay.Game.Notes.Controllers
         void OnDestroy()
         {
             Majdata<NoteAudioManager>.Free();
+            Array.Clear(_noteSFXPlaybackRequests, 0, _noteSFXPlaybackRequests.Length);
+            Array.Clear(_noteSFXs, 0, _noteSFXs.Length);
+            Pool<AnswerSoundPoint>.ReturnArray(_rentedArrayForAnswerSoundPoints, true);
+            _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
+            _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         }
         internal void OnPreUpdate()
         {
@@ -210,7 +231,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 {
                     ref var sfxInfo = ref _answerTimingPoints.Span[i];
                     var playTiming = sfxInfo.Timing;
-                    var delta = _noteController.ThisFrameSec - (playTiming + _userAnswerOffset + ANSWER_PLAYBACK_OFFSET_SEC);
+                    var delta = _noteController.ThisFrameSec - (playTiming + _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC);
 
                     if (delta > 0)
                     {
@@ -322,7 +343,7 @@ namespace MajdataPlay.Game.Notes.Controllers
                 //Generate ClockSounds
                 var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
                 var interval = 60 / firstBpm;
-                List<AnswerSoundPoint> answerTimingPoints = new();
+                using RentedList<AnswerSoundPoint> answerTimingPoints = new();
 
                 if (!isPracticeMode)
                 {
@@ -383,7 +404,12 @@ namespace MajdataPlay.Game.Notes.Controllers
                             });
                     }
                 }
-                _answerTimingPoints = answerTimingPoints.OrderBy(o => o.Timing).ToArray();
+                _rentedArrayForAnswerSoundPoints = Pool<AnswerSoundPoint>.RentArray(answerTimingPoints.Count, true);
+                foreach(var (i, tp) in answerTimingPoints.OrderBy(o => o.Timing).WithIndex())
+                {
+                    _rentedArrayForAnswerSoundPoints[i] = tp;
+                }
+                _answerTimingPoints = _rentedArrayForAnswerSoundPoints.AsMemory(0, answerTimingPoints.Capacity);
             });
         }
         internal void Clear()

@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
@@ -8,8 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEditor;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal sealed class TapPerfectEffectDisplayer : MajComponent
     {
@@ -42,7 +43,7 @@ namespace MajdataPlay.Game
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
-            _animRemainingTime -= deltaTime.Clamp(0, _animRemainingTime);
+            _animRemainingTime -= deltaTime;
         }
         public void Reset()
         {
@@ -72,6 +73,7 @@ namespace MajdataPlay.Game
                     SetActive(true);
                     _animator.SetTrigger(TAP_PERFECT_ANIM_HASH);
                     _animRemainingTime = ANIM_LENGTH_SEC;
+                    _animator.Update(0.000000114514f);
                     break;
             }
         }
@@ -85,6 +87,7 @@ namespace MajdataPlay.Game
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GOOD_ANIM_HASH);
                     _animRemainingTime = ANIM_LENGTH_SEC;
+                    _animator.Update(0.000000114514f);
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -95,6 +98,7 @@ namespace MajdataPlay.Game
                     SetActive(true);
                     _animator.SetTrigger(BREAK_GREAT_ANIM_HASH);
                     _animRemainingTime = ANIM_LENGTH_SEC;
+                    _animator.Update(0.000000114514f);
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
@@ -104,6 +108,7 @@ namespace MajdataPlay.Game
                     SetActive(true);
                     _animator.SetTrigger(BREAK_PERFECT_ANIM_HASH);
                     _animRemainingTime = ANIM_LENGTH_SEC;
+                    _animator.Update(0.000000114514f);
                     break;
                 default:
                     break;

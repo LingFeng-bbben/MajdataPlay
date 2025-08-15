@@ -1,30 +1,117 @@
 ﻿using MajdataPlay.Collections;
-using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using MajdataPlay.Settings;
+using MajdataPlay.Buffers;
+
 #nullable enable
-namespace MajdataPlay.Game.Notes.Slide.Utils
+namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
 {
     public static class SlideTables
     {
-        public static SlideTable[] SLIDE_TABLES => new SlideTable[]
+        class StaticSlideTable
         {
-            new SlideTable()
+            public string Name { get; init; } = string.Empty;
+            public PredefinedSlideArea[] JudgeQueue { get; init; } = Array.Empty<PredefinedSlideArea>();
+            public float Const { get; init; } = 0f;
+            public SlideTable Build()
+            {
+                var rentedArray = Pool<SlideArea>.RentArray(JudgeQueue.Length, true);
+                for (var i = 0; i < JudgeQueue.Length; i++)
+                {
+                    rentedArray[i] = JudgeQueue[i].Build();
+                }
+                return new SlideTable(rentedArray, JudgeQueue.Length)
+                {
+                    Name = Name,
+                    Const = Const
+                };
+            }
+        }
+        class StaticWifiTable
+        {
+            public string Name { get; init; } = string.Empty;
+            public PredefinedSlideArea[] Left { get; init; } = Array.Empty<PredefinedSlideArea>();
+            public PredefinedSlideArea[] Center { get; init; } = Array.Empty<PredefinedSlideArea>();
+            public PredefinedSlideArea[] Right { get; init; } = Array.Empty<PredefinedSlideArea>();
+            public float Const { get; init; } = 0f;
+            public WifiTable Build()
+            {
+                var rentedArrayForLeft = Pool<SlideArea>.RentArray(Left.Length, true);
+                var rentedArrayForCenter = Pool<SlideArea>.RentArray(Center.Length, true);
+                var rentedArrayForRight = Pool<SlideArea>.RentArray(Right.Length, true);
+                for (var i = 0; i < Left.Length; i++)
+                {
+                    rentedArrayForLeft[i] = Left[i].Build();
+                }
+                for (var i = 0; i < Center.Length; i++)
+                {
+                    rentedArrayForCenter[i] = Center[i].Build();
+                }
+                for (var i = 0; i < Right.Length; i++)
+                {
+                    rentedArrayForRight[i] = Right[i].Build();
+                }
+                return new WifiTable(rentedArrayForLeft,
+                                     rentedArrayForCenter,
+                                     rentedArrayForRight,
+                                     Left.Length,
+                                     Center.Length,
+                                     Right.Length)
+                {
+                    Name = Name,
+                    Const = Const
+                };
+            }
+        }
+        readonly struct PredefinedSlideArea
+        {
+            public ReadOnlySpan<SensorArea> Areas
+            {
+                get => _areas;
+            }
+            public int ArrowProgressWhenOn { get; init; }
+            public int ArrowProgressWhenFinished { get; init; }
+            public bool IsSkippable { get; init; }
+            public bool IsLast { get; init; }
+
+            readonly SensorArea[] _areas;
+            public PredefinedSlideArea(ReadOnlySpan<SensorArea> areas)
+            {
+                _areas = areas.ToArray();
+            }
+            public SlideArea Build()
+            {
+                Span<(SensorArea, bool)> areaInfos = stackalloc (SensorArea, bool)[_areas.Length];
+                for (var i = 0; i < _areas.Length; i++)
+                {
+                    areaInfos[i] = (_areas[i], IsLast);
+                }
+                return new SlideArea(areaInfos, ArrowProgressWhenOn, ArrowProgressWhenFinished)
+                {
+                    IsSkippable = IsSkippable
+                };
+            }
+        }
+        readonly static StaticSlideTable[] SLIDE_TABLES = new StaticSlideTable[]
+        {
+            new StaticSlideTable()
             {
                 Name = "circle2",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3,false),
                     BuildSlideArea(SensorArea.A2,5,7,true,true)
                 },
                 Const = 0.465f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11,false),
@@ -32,10 +119,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.233f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -44,10 +131,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.155f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle5",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -57,10 +144,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.116f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle6",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -71,10 +158,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.093f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle7",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -86,10 +173,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.078f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle8",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -102,10 +189,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.066f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "circle1",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.A2,7,11),
@@ -119,10 +206,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.058f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "line3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[]{SensorArea.A2,SensorArea.B2 },6,9,false),
@@ -130,10 +217,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.182f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "line4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B2,6,9),
@@ -142,10 +229,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.19f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "line5",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -155,10 +242,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.152f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "line6",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,6, 9),
@@ -167,10 +254,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.19f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "line7",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[]{SensorArea.A8,SensorArea.B8 },6,9,false),
@@ -178,10 +265,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.182f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v1",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -191,10 +278,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.185f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v2",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -204,10 +291,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.15f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -217,10 +304,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.158f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -230,10 +317,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.158f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v6",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -243,10 +330,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.158f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v7",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -256,10 +343,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.158f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "v8",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -269,10 +356,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.154f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq1",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -285,10 +372,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 Const = 0.065f
 
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq2",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -299,10 +386,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.086f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,4,7),
@@ -312,10 +399,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.157f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -330,10 +417,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.065f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq5",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -348,10 +435,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.065f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq6",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -366,10 +453,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.067f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq7",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -383,10 +470,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.079f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "ppqq8",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(SensorArea.B1,5,7),
@@ -399,10 +486,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.0626f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "L2",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[] { SensorArea.B8,SensorArea.A8 },6,10,false),
@@ -413,10 +500,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.1f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "L3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[] { SensorArea.B8,SensorArea.A8 },6,10,false),
@@ -428,10 +515,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.104f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "L4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[] { SensorArea.B8,SensorArea.A8 },6,10,false),
@@ -442,10 +529,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.098f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "L5",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,3),
                     BuildSlideArea(new SensorArea[] { SensorArea.B8,SensorArea.A8 },6,10,false),
@@ -455,10 +542,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.105f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "s",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,7,9),
@@ -470,10 +557,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.13f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq1",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5, 8),
@@ -487,10 +574,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.095f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq2",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -503,10 +590,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.112f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq3",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -518,10 +605,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.125f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq4",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -532,10 +619,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.139f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq5",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -545,10 +632,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.160f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq6",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -565,10 +652,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.080f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq7",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,7,9),
@@ -584,10 +671,10 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 },
                 Const = 0.084f
             },
-            new SlideTable()
+            new StaticSlideTable()
             {
                 Name = "pq8",
-                JudgeQueue = new SlideArea[]
+                JudgeQueue = new PredefinedSlideArea[]
                 {
                     BuildSlideArea(SensorArea.A1,0,4),
                     BuildSlideArea(SensorArea.B8,5,8),
@@ -603,119 +690,131 @@ namespace MajdataPlay.Game.Notes.Slide.Utils
                 Const = 0.0895f
             },
         };
-        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE => new SlideArea[][]
+        readonly static StaticWifiTable WIFISLIDE_JUDGE_QUEUE = new StaticWifiTable
         {
-            new SlideArea[] // L
+            Name = "wifi",
+            Left = new PredefinedSlideArea[] // L
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B8,2),
                 BuildSlideArea(SensorArea.B7,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
             },
-            new SlideArea[] // Center
+            Center = new PredefinedSlideArea[] // Center
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B1,2),
                 BuildSlideArea(SensorArea.C,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A5 , SensorArea.B5 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A5 , SensorArea.B5 },7,true,true)
             },
-            new SlideArea[] // R
+            Right = new PredefinedSlideArea[] // R
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B2,2),
                 BuildSlideArea(SensorArea.B3,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
-            }
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
+            },
+            Const = 0.162870f
         };
-        public static SlideArea[][] WIFISLIDE_JUDGE_QUEUE_CLASSIC => new SlideArea[][]
+        readonly static StaticWifiTable WIFISLIDE_JUDGE_QUEUE_CLASSIC = new StaticWifiTable
         {
-            new SlideArea[] // L
+            Name = "wifi",
+            Left = new PredefinedSlideArea[] // L
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B8,2),
                 BuildSlideArea(SensorArea.B7,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A6 , SensorArea.D6 },7,true,true)
             },
-            new SlideArea[] // Center
+            Center = new PredefinedSlideArea[] // Center
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B1,2),
                 BuildSlideArea(SensorArea.C,7,true,false),
             },
-            new SlideArea[] // R
+            Right = new PredefinedSlideArea[] // R
             {
                 BuildSlideArea(SensorArea.A1,0),
                 BuildSlideArea(SensorArea.B2,2),
                 BuildSlideArea(SensorArea.B3,4),
-                BuildSlideArea(new SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
-            }
+                BuildSlideArea(stackalloc SensorArea[]{ SensorArea.A4 , SensorArea.D5 },7,true,true)
+            },
+            Const = 0.162870f
         };
         public static SlideTable? FindTableByName(string prefabName)
         {
-            var result = SLIDE_TABLES.Find(x => x.Name == prefabName);
-            var clone = result.Clone();
-            return clone;
+            var predefinedTable = SLIDE_TABLES.Find(x => x.Name == prefabName);
+            
+            return predefinedTable?.Build();
         }
-        public static SlideArea[][] GetWifiTable(int startPos)
+        public static WifiTable GetWifiTable(int startPos)
         {
-            List<SlideArea[]> queue = new();
-            var raw = MajInstances.Settings.Judge.Mode == JudgeMode.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
-            foreach (var line in raw)
-            {
-                List<SlideArea> rows = new();
-                foreach (var row in line)
-                    rows.Add(row.Clone()!);
-                queue.Add(rows.ToArray());
-            }
-            var _queue = queue.ToArray();
+            var predefinedTable = MajInstances.Settings.Judge.Mode == JudgeModeOption.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
+            var table = predefinedTable.Build();
             var diff = Math.Abs(1 - startPos);
 
             if (diff != 0)
             {
-                foreach (var line in _queue)
-                    foreach (var area in line)
-                        area.Diff(diff);
+                table.Diff(diff);
             }
 
-            return _queue;
+            return table;
         }
-        static SlideArea BuildSlideArea(SensorArea type, int arrowProgress, bool isSkippable = true, bool isLast = false)
+        static PredefinedSlideArea BuildSlideArea(SensorArea type, int arrowProgress, bool isSkippable = true, bool isLast = false)
         {
-            var obj = new SlideArea(new Dictionary<SensorArea, bool>
-                      {
-                          { type, isLast}
-                      }, arrowProgress);
-            obj.IsSkippable = isSkippable;
-            return obj;
-        }
-        static SlideArea BuildSlideArea(SensorArea type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
-        {
-            var obj = new SlideArea(new Dictionary<SensorArea, bool>
-                      {
-                          { type, isLast}
-                      }, progressWhenOn, progressWhenFinished);
-            obj.IsSkippable = isSkippable;
-            return obj;
-        }
-        static SlideArea BuildSlideArea(SensorArea[] type, int barIndex, bool isSkippable = true, bool isLast = false)
-        {
-            var table = new Dictionary<SensorArea, bool>();
-            foreach (var sensorType in type)
-                table.Add(sensorType, isLast);
+            ReadOnlySpan<SensorArea> areaInfos = stackalloc SensorArea[]
+            {
+                type
+            };
+            var a = new PredefinedSlideArea(areaInfos)
+            {
+                ArrowProgressWhenOn = arrowProgress,
+                ArrowProgressWhenFinished = arrowProgress,
+                IsSkippable = isSkippable,
+                IsLast = isLast
+            };
 
-            var obj = new SlideArea(table, barIndex);
-            obj.IsSkippable = isSkippable;
-            return obj;
+            return a;
         }
-        static SlideArea BuildSlideArea(SensorArea[] type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
+        static PredefinedSlideArea BuildSlideArea(SensorArea type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
         {
-            var table = new Dictionary<SensorArea, bool>();
-            foreach (var sensorType in type)
-                table.Add(sensorType, isLast);
+            ReadOnlySpan<SensorArea> areaInfos = stackalloc SensorArea[]
+            {
+                type
+            };
+            var a = new PredefinedSlideArea(areaInfos)
+            {
+                ArrowProgressWhenOn = progressWhenOn,
+                ArrowProgressWhenFinished = progressWhenFinished,
+                IsSkippable = isSkippable,
+                IsLast = isLast
+            };
 
-            var obj = new SlideArea(table, progressWhenOn, progressWhenFinished);
-            obj.IsSkippable = isSkippable;
-            return obj;
+            return a;
+        }
+        static PredefinedSlideArea BuildSlideArea(ReadOnlySpan<SensorArea> type, int arrowProgress, bool isSkippable = true, bool isLast = false)
+        {
+            var a = new PredefinedSlideArea(type)
+            {
+                ArrowProgressWhenOn = arrowProgress,
+                ArrowProgressWhenFinished = arrowProgress,
+                IsSkippable = isSkippable,
+                IsLast = isLast
+            };
+
+            return a;
+        }
+        static PredefinedSlideArea BuildSlideArea(ReadOnlySpan<SensorArea> type, int progressWhenOn, int progressWhenFinished, bool isSkippable = true, bool isLast = false)
+        {
+            var a = new PredefinedSlideArea(type)
+            {
+                ArrowProgressWhenOn = progressWhenOn,
+                ArrowProgressWhenFinished = progressWhenFinished,
+                IsSkippable = isSkippable,
+                IsLast = isLast
+            };
+
+            return a;
         }
     }
 }

@@ -11,7 +11,7 @@ using MajdataPlay.Utils;
 using System.Threading.Tasks;
 using System;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class SubInfoDisplayer : MonoBehaviour
     {
@@ -49,7 +49,10 @@ namespace MajdataPlay.List
             _cts.Cancel();
             CommentBox.SetActive(false);
         }
-
+        void OnDestroy()
+        {
+            _cts.Cancel();
+        }
         async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
         {
             try
@@ -65,7 +68,7 @@ namespace MajdataPlay.List
                 });
                 await UniTask.Yield(cancellationToken: token);
                 token.ThrowIfCancellationRequested();
-                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + list.Likes.Length + " ÆÀ: " + list.Comments.Length;
+                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length-list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
 
                 CommentBox.SetActive(true);
                 foreach (var comment in list.Comments)
@@ -76,11 +79,15 @@ namespace MajdataPlay.List
                     token.ThrowIfCancellationRequested();
                 }
                 CommentBox.SetActive(false);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 MajDebug.LogException(ex);
                 await UniTask.SwitchToMainThread();
-                HideInteraction();
+                if(!token.IsCancellationRequested)
+                {
+                    HideInteraction();
+                }
             }
         }
     }

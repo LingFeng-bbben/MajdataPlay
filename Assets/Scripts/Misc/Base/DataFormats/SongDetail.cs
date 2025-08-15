@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
+using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using MajSimai;
 using NeoSmart.AsyncLock;
@@ -12,8 +13,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-
-    public class SongDetail : ISongDetail
+    internal class SongDetail : ISongDetail, IDisposable
     {
         public string Title { get; init; } = string.Empty;
         public string Artist { get; init; } = string.Empty;
@@ -29,6 +29,10 @@ namespace MajdataPlay
         readonly string _videoPath = string.Empty;
         readonly string _coverPath = string.Empty;
 
+        static readonly Action _emptyCallback = () => { };
+        bool _isPreloaded = false;
+        bool _isDisposed = false;
+
         AudioSampleWrap? _audioTrack = null;
         AudioSampleWrap? _previewAudioTrack = null;
         Sprite? _cover = null;
@@ -40,7 +44,10 @@ namespace MajdataPlay
         readonly AsyncLock _maidataLock = new();
         readonly AsyncLock _preloadLock = new();
 
-        readonly Func<Task> _preloadCallback;
+        ~SongDetail()
+        {
+            Dispose();
+        }
         public SongDetail(string chartFolder, SimaiMetadata metadata)
         {
             var files = new DirectoryInfo(chartFolder).GetFiles();
@@ -52,7 +59,9 @@ namespace MajdataPlay
             _maidata = null;
 
             if (string.IsNullOrEmpty(_coverPath))
+            {
                 _cover = MajEnv.EmptySongCover;
+            }
 
             Title = metadata.Title;
             Artist = metadata.Artist;
@@ -60,7 +69,6 @@ namespace MajdataPlay
             Levels = metadata.Levels;
             Hash = metadata.Hash;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
-            _preloadCallback = async () => { await UniTask.WhenAll(GetMaidataAsync(), GetCoverAsync(true)); };
         }
         public static async Task<SongDetail> ParseAsync(string chartFolder)
         {
@@ -69,97 +77,126 @@ namespace MajdataPlay
 
             return new SongDetail(chartFolder, metadata);
         }
-        public async UniTask PreloadAsync(CancellationToken token = default)
+        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            try
+            ThrowIfDisposed();
+            if (_isPreloaded)
             {
-                if (!await _preloadLock.TryLockAsync(_preloadCallback, TimeSpan.Zero))
-                    return;
+                return;
             }
-            finally
+            await UniTask.SwitchToThreadPool();
+            if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
             {
-                await UniTask.Yield();
+                return;
             }
+            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token: token));
+            _isPreloaded = true;
         }
-        public async UniTask<string> GetVideoPathAsync(CancellationToken token = default)
+        public UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            await UniTask.Yield();
-            return _videoPath;
+            ThrowIfDisposed();
+            return UniTask.FromResult(_videoPath);
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, CancellationToken token = default)
+        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
-            try
+            ThrowIfDisposed();
+            if (_cover is not null)
             {
-                using (await _coverLock.LockAsync(token))
+                return _cover;
+            }
+            await UniTask.SwitchToThreadPool();
+            using (await _coverLock.LockAsync(token))
+            {
+                token.ThrowIfCancellationRequested();
+                if (_cover is not null)
                 {
-                    token.ThrowIfCancellationRequested();
-                    if (_cover is not null)
-                        return _cover;
-
-                    _cover = await SpriteLoader.LoadAsync(_coverPath, token);
                     return _cover;
                 }
-            }
-            finally
-            {
-                await UniTask.Yield();
+
+                _cover = await SpriteLoader.LoadAsync(_coverPath, token);
+                return _cover;
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            try
+            ThrowIfDisposed();
+            if (_audioTrack is not null)
             {
-                using (await _audioTrackLock.LockAsync(token))
+                return _audioTrack;
+            }
+            await UniTask.SwitchToThreadPool();
+            using (await _audioTrackLock.LockAsync(token))
+            {
+                token.ThrowIfCancellationRequested();
+                if (_audioTrack is not null)
                 {
-                    token.ThrowIfCancellationRequested();
-                    if (_audioTrack is not null)
-                        return _audioTrack;
-
-                    _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true);
                     return _audioTrack;
                 }
-            }
-            finally
-            {
-                await UniTask.Yield();
+
+                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true);
+                return _audioTrack;
             }
         }
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(CancellationToken token = default)
+        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            try
+            ThrowIfDisposed();
+            if (_previewAudioTrack is not null)
             {
-                using (await _previewAudioTrackLock.LockAsync(token))
+                return _previewAudioTrack;
+            }
+            await UniTask.SwitchToThreadPool();
+            using (await _previewAudioTrackLock.LockAsync(token))
+            {
+                token.ThrowIfCancellationRequested();
+                if (_previewAudioTrack is not null)
                 {
-                    token.ThrowIfCancellationRequested();
-                    if (_previewAudioTrack is not null)
-                        return _previewAudioTrack;
-
-                    _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, false);
                     return _previewAudioTrack;
                 }
-            }
-            finally
-            {
-                await UniTask.Yield();
+
+                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, false);
+                return _previewAudioTrack;
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, CancellationToken token = default)
+        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
-            try
+            ThrowIfDisposed();
+            if (!ignoreCache && _maidata is not null)
             {
-                using (await _maidataLock.LockAsync(token))
+                return _maidata;
+            }
+            await UniTask.SwitchToThreadPool();
+            using (await _maidataLock.LockAsync(token))
+            {
+                token.ThrowIfCancellationRequested();
+                if (!ignoreCache && _maidata is not null)
                 {
-                    token.ThrowIfCancellationRequested();
-                    if (!ignoreCache && _maidata is not null)
-                        return _maidata;
-
-                    _maidata = await SimaiParser.Shared.ParseAsync(_maidataPath);
                     return _maidata;
                 }
+
+                _maidata = await SimaiParser.Shared.ParseAsync(_maidataPath);
+                return _maidata;
             }
-            finally
+        }
+        public void Dispose()
+        {
+            if (_isDisposed)
             {
-                await UniTask.Yield();
+                return;
+            }
+            _isDisposed = true;
+            _audioTrack?.Dispose();
+            _previewAudioTrack?.Dispose();
+            GameObject.DestroyImmediate(_cover, true);
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _maidata = null;
+        }
+        void ThrowIfDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(SongDetail));
             }
         }
     }

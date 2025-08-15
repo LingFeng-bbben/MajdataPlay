@@ -2,7 +2,7 @@ using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class OutlineLoader : MonoBehaviour
     {

@@ -8,6 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -19,8 +21,8 @@ namespace MajdataPlay.IO
         {
             var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
             var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-            var includeHidDevice = buttonRingOptions.Type == ButtonRingDeviceType.HID || 
-                                   manufacturer == DeviceManufacturer.Dao;
+            var includeHidDevice = buttonRingOptions.Type == ButtonRingDeviceOption.HID || 
+                                   manufacturer == DeviceManufacturerOption.Dao;
             if (!includeHidDevice)
                 return;
             _hidDevices = DeviceList.Local.GetHidDevices();

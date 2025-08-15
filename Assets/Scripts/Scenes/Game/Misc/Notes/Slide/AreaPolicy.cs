@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game.Notes.Slide
+namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
     public enum AreaPolicy
     {

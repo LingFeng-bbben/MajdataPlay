@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes.Slide
+namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
     public interface IConnectableSlide : IStatefulNote
     {

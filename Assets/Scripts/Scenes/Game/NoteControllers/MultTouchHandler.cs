@@ -1,9 +1,9 @@
-using MajdataPlay.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     public class MultTouchHandler : MonoBehaviour
     {

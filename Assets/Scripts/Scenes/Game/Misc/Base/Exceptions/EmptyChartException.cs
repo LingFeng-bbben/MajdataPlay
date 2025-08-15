@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal class EmptyChartException : Exception
     {

@@ -1,6 +1,6 @@
 ﻿using MajdataPlay.IO;
 
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     internal sealed class TouchQueueInfo : NoteQueueInfo
     {

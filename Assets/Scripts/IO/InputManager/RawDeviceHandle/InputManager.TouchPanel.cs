@@ -11,6 +11,8 @@ using MychIO.Device;
 using System.IO;
 using UnityEngine;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
+
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -40,10 +42,11 @@ namespace MajdataPlay.IO
                     return;
                 switch (MajEnv.UserSettings.IO.Manufacturer)
                 {
-                    case DeviceManufacturer.General:
+                    case DeviceManufacturerOption.Yuan:
+                    case DeviceManufacturerOption.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
-                    case DeviceManufacturer.Dao:
+                    case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
@@ -57,23 +60,16 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var sensorStates = _sensorStates.AsSpan();
-                var isSensorHadOn = _isSensorHadOn.AsSpan();
-                var isSensorHadOff = _isSensorHadOff.AsSpan();
-                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-
                 lock (_touchPanelUpdateLoop)
                 {
                     for (var i = 0; i < 35; i++)
                     {
-                        isSensorHadOn[i] = isSensorHadOnInternal[i];
-                        isSensorHadOff[i] = isSensorHadOffInternal[i];
-                        sensorStates[i] = sensorRealTimeStates[i];
+                        _isSensorHadOn[i] = _isSensorHadOnInternal[i];
+                        _isSensorHadOff[i] = _isSensorHadOffInternal[i];
+                        _sensorStates[i] = _sensorRealTimeStates[i];
 
-                        isSensorHadOnInternal[i] = default;
-                        isSensorHadOffInternal[i] = default;
+                        _isSensorHadOnInternal[i] = default;
+                        _isSensorHadOffInternal[i] = default;
                     }
                 }
             }
@@ -93,7 +89,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOn[16] || _isSensorHadOn[17];
                 }
-                else if(area < SensorArea.Test)
+                else if(area <= SensorArea.E8)
                 {
                     return _isSensorHadOn[(int)area + 1];
                 }
@@ -115,7 +111,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorStates[16] || _sensorStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorStates[(int)area + 1];
                 }
@@ -137,7 +133,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOff[16] && _isSensorHadOff[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _isSensorHadOff[(int)area + 1];
                 }
@@ -169,7 +165,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorRealTimeStates[16] || _sensorRealTimeStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorRealTimeStates[(int)area + 1];
                 }
@@ -288,7 +284,7 @@ namespace MajdataPlay.IO
             {
                 return !IsCurrentlyOn(index);
             }
-            #endregion
+#endregion
 
             static void SerialPortUpdateLoop()
             {
@@ -303,7 +299,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
                 stopwatch.Start();
@@ -476,7 +472,7 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 try
                 {

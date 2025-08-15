@@ -62,6 +62,9 @@ TagManager:
   - name: SlideStars
     uniqueID: 3467038923
     locked: 0
+  - name: SlideOK
+    uniqueID: 910687335
+    locked: 0
   - name: TapLines
     uniqueID: 2323657797
     locked: 0

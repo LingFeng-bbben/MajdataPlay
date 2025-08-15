@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Result
+namespace MajdataPlay.Scenes.Result
 {
     public class OnlineInteractionSender : MonoBehaviour
     {
@@ -48,7 +48,7 @@ namespace MajdataPlay.Result
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && (e.Type == SensorArea.E3 || e.Type == SensorArea.B3))
+            if (e.IsDown && (e.SArea == SensorArea.E3 || e.SArea == SensorArea.B3))
             {
                 InputManager.UnbindAnyArea(OnAreaDown);
                 SendInteraction(_onlineDetail);
@@ -73,6 +73,8 @@ namespace MajdataPlay.Result
             {
                 await Online.SendLike(song);
                 infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
+                var list = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
+                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
             catch (Exception ex)
             {
@@ -85,11 +87,12 @@ namespace MajdataPlay.Result
 
         public async UniTask SendScore(MaiScore score)
         {
-            uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
             for(int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
                 try
                 {
+                    uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
+                    await UniTask.Yield();
                     await Online.SendScore(_onlineDetail, score);
                     uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
                     return;

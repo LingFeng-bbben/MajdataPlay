@@ -1,21 +1,18 @@
 using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
 using System;
 using System.IO;
-using System.Threading;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
+using MajdataPlay.Settings;
 using MajdataPlay.Timer;
 using MajdataPlay.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MajdataPlay.IO;
-using MajdataPlay.Test;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Test;
+using System.Collections.Generic;
 
 namespace MajdataPlay
 {
@@ -42,7 +39,6 @@ namespace MajdataPlay
             }
         }
         private ChartLevel _selectedDiff = ChartLevel.Easy;
-        public int LastSettingPage { get; set; } = 0;
 
 
         [SerializeField]
@@ -79,6 +75,11 @@ namespace MajdataPlay
             MajDebug.Log($"Version: {MajInstances.GameVersion}");
             MajEnv.Init();
             base.Awake();
+#if UNITY_STANDALONE_WIN
+            _timer = BuiltInTimeProvider.Winapi;
+#else
+            _timer = BuiltInTimeProvider.Stopwatch;
+#endif
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
@@ -92,7 +93,7 @@ namespace MajdataPlay
                 if (arg == "--view-mode")
                 {
                     MajEnv.Mode = RunningMode.View;
-                    Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                    Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
                     break;
                 }
             }
@@ -105,7 +106,7 @@ namespace MajdataPlay
             else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
-                Setting.Mod.AutoPlay = AutoplayMode.Enable;
+                Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
             }
 #endif
 
@@ -190,21 +191,28 @@ namespace MajdataPlay
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            #if UNITY_STANDALONE_WIN
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
+            #endif
             SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {
-            MajEnv.GameProcess.PriorityClass = MajEnv.UserSettings.Debug.ProcessPriority;
+            #if UNITY_STANDALONE_WIN
+            MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
+            #endif
             SceneManager.LoadScene("Title");
         }
         void EnterView()
         {
+            #if UNITY_STANDALONE_WIN
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.BelowNormal;
+            #endif
             SceneManager.LoadScene("View");
         }
         public void ApplyScreenConfig()
         {
+#if UNITY_STANDALONE_WIN
             if (MajEnv.Mode != RunningMode.View)
             {
                 var fullScreen = Setting.Debug.FullScreen;
@@ -224,6 +232,7 @@ namespace MajdataPlay
                     Screen.SetResolution(width, height, fullScreen);
                 }
             }
+#endif
             Application.targetFrameRate = Setting.Display.FPSLimit;
         }
         void Start()
@@ -270,7 +279,7 @@ namespace MajdataPlay
             Setting.Misc.SelectedDiff = SelectedDiff;
             Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
             Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
-            SongStorage.OrderBy.Keyword = string.Empty;
+            //SongStorage.OrderBy.Keyword = string.Empty;
             Setting.Misc.OrderBy = SongStorage.OrderBy;
 
             var json = Serializer.Json.Serialize(Setting, MajEnv.UserJsonReaderOption);
@@ -278,19 +287,17 @@ namespace MajdataPlay
         }
         public void EnableGC()
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
+            GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
             MajDebug.LogWarning("GC has been enabled");
 #endif
-            GC.Collect();
         }
         public void DisableGC() 
         {
-            if (!Setting.Debug.DisableGCInGame)
-                return;
             GC.Collect();
+            return;
 #if !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             MajDebug.LogWarning("GC has been disabled");

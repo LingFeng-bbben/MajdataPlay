@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.View.Types
+namespace MajdataPlay.Scenes.View.Types
 {
     internal enum ViewStatus
     {

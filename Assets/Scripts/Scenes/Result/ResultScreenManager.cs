@@ -9,13 +9,16 @@ using System.Linq;
 using System;
 using SkiaSharp;
 using System.Collections.Generic;
+using MajdataPlay.Drawing;
 using Random = UnityEngine.Random;
-using MajdataPlay.Game;
-using MajdataPlay.List;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.List;
 using MajdataPlay.Numerics;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Settings;
+
 #nullable enable
-namespace MajdataPlay.Result
+namespace MajdataPlay.Scenes.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
     {
@@ -65,19 +68,19 @@ namespace MajdataPlay.Result
             rank.text = "";
             var gameManager = MajInstances.GameManager;
             var result = _gameInfo.GetLastResult();
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeMode.Classic;
+            var isClassic = gameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
 
             LedRing.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
-            var historyResult = MajInstances.ScoreManager.GetScore(song, gameManager.SelectedDiff);
+            var historyResult = ScoreManager.GetScore(song, gameManager.SelectedDiff);
 
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
             favoriteAdder.SetSong(song);
 
-            if (result.Acc.DX < 70)
+            if (result.Acc.DX < 97)
             {
                 omg.text = "您输了";
                 xxlb.GetComponent<Animator>().SetTrigger("Bad");
@@ -93,15 +96,19 @@ namespace MajdataPlay.Result
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
             level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
 
-            accDX.text = isClassic ? $"{result.Acc.Classic:F2}%" : $"{result.Acc.DX:F4}%";
-            var nowacc = isClassic ? result.Acc.Classic : result.Acc.DX;
-            var historyacc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
-            accHistory.text = $"{nowacc - historyacc:+0.0000;-0.0000;0}%";
+            accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
+            var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
+            var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
+            accHistory.text = $"{nowAcc - historyAcc:+0.0000;-0.0000;0}%";
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
+            {
                 dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+            }
             else
+            {
                 dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
+            }
 
             perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";
@@ -114,36 +121,59 @@ namespace MajdataPlay.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            if(result.NoteJudgeDiffs.IsEmpty)
+            if(MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                avgJudgeTime.text = $"0.000s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.000s";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                }
             }
             else
             {
-                avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / 1000f:F3}s";
+                if (result.NoteJudgeDiffs.IsEmpty)
+                {
+                    avgJudgeTime.text = $"0.0f";
+                }
+                else
+                {
+                    avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / MajEnv.FRAME_LENGTH_MSEC:F1}f";
+                }
             }
+            
 
             LoadCover(song).Forget();
 
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 
             if (!totalJudgeRecord.IsFullCombo)
+            {
                 clearLogo.SetActive(false);
+            }
             else if (totalJudgeRecord.IsAllPerfect)
             {
                 if (breakJudgeInfo.IsTheoretical)
+                {
                     clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+                }
                 else
+                {
                     clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+                }
             }
             else if (totalJudgeRecord.IsFullComboPlus)
+            {
                 clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
+            }
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
-            PlayVoice(result.Acc.DX, song).Forget();
+            PlayVoice(result.Acc.DX, song,totalJudgeRecord.IsAllPerfect, totalJudgeRecord.IsFullCombo).Forget();
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
-                var localScoreSaveTask = MajInstances.ScoreManager.SaveScore(result, result.Level);
+                var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song is OnlineSongDetail)
                 {
@@ -160,63 +190,83 @@ namespace MajdataPlay.Result
 
         async UniTask LoadCover(ISongDetail song)
         {
-            coverImg.sprite = await song.GetCoverAsync(true);
+            var cover = await song.GetCoverAsync(true);
+            await UniTask.SwitchToMainThread();
+            coverImg.sprite = cover;
         }
 
-        async UniTask PlayVoice(double dxacc, ISongDetail song)
+        async UniTask PlayVoice(double dxacc, ISongDetail song, bool isAP, bool isFC)
         {
-            if (dxacc >= 97)
+            try
             {
-                MajInstances.AudioManager.PlaySFX("Rank.wav");
-                await UniTask.WaitForSeconds(1);
-            }
-            if (dxacc >= 100.5f)
-            {
-                MajInstances.AudioManager.PlaySFX("SSS+.wav");
-                rank.text = "SSS+";
-            }
-            else if (dxacc >= 100f)
-            {
-                MajInstances.AudioManager.PlaySFX("SSS.wav");
-                rank.text = "SSS";
-            }
-            else if (dxacc >= 99.5f)
-            {
-                MajInstances.AudioManager.PlaySFX("SS+.wav");
-                rank.text = "SS+";
-            }
-            else if (dxacc >= 99f)
-            {
-                MajInstances.AudioManager.PlaySFX("SS.wav");
-                rank.text = "SS";
-            }
-            else if (dxacc >= 98f)
-            {
-                MajInstances.AudioManager.PlaySFX("S+.wav");
-                rank.text = "S+";
-            }
-            else if (dxacc >= 97f)
-            {
-                MajInstances.AudioManager.PlaySFX("S.wav");
-                rank.text = "S";
-            }
-            if (dxacc > 97)
-            {
-                await UniTask.WaitForSeconds(2);
-                var list = new string[] { "good.wav", "good_2.wav", "good_3.wav", "good_4.wav", "good_5.wav", "good_6.wav" };
-                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
-                await UniTask.WaitForSeconds(3);
+                AudioSampleWrap? lastSample = null;
+                if (dxacc >= 97)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("clear.wav")!;
+                    while (lastSample.IsPlaying) await UniTask.Yield();
+                }
+                if (dxacc >= 100.5f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SSS+.wav")!;
+                    rank.text = "SSS+";
+                }
+                else if (dxacc >= 100f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SSS.wav")!;
+                    rank.text = "SSS";
+                }
+                else if (dxacc >= 99.5f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SS+.wav")!;
+                    rank.text = "SS+";
+                }
+                else if (dxacc >= 99f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("SS.wav")!;
+                    rank.text = "SS";
+                }
+                else if (dxacc >= 98f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("S+.wav")!;
+                    rank.text = "S+";
+                }
+                else if (dxacc >= 97f)
+                {
+                    lastSample = MajInstances.AudioManager.PlaySFX("S.wav")!;
+                    rank.text = "S";
+                }
+
+                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+
+                if (isAP)
+                {
+                    var list = new string[] { "ap_comment.wav", "ap_comment_2.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+                else if(isFC)
+                {
+                    var list = new string[] { "fc_comment.wav", "fc_comment_2.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }else if (dxacc >= 97f)
+                {
+                    var list = new string[] { "clear_comment.wav", "clear_comment_2.wav", "clear_comment_3.wav", "clear_comment_4.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+                else
+                {
+                    var list = new string[] { "fail_comment.wav", "fail_comment_2.wav", "fail_comment_3.wav", "fail_comment_4.wav", "fail_comment_5.wav" };
+                    lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
+                }
+
+                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+
                 if (song is OnlineSongDetail)
                 {
                     MajInstances.AudioManager.PlaySFX("dian_zan.wav");
                 }
             }
-            else
-            {
-                var list = new string[] { "wuyu.wav", "wuyu_2.wav", "wuyu_3.wav" };
-                MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
-                await UniTask.WaitForSeconds(2);
-            }
+            catch (Exception e){ MajDebug.LogException(e); }
+
             await _scoreSaveTask;
             await RecordHelper.StopRecordAsync();
             InputManager.BindAnyArea(OnAreaDown);
@@ -226,32 +276,32 @@ namespace MajdataPlay.Result
 
 
         string BuildSubDisplayText(JudgeDetail judgeRecord)
+        {
+            var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
+            var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
+            var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
+            var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
+            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            string[] nmsl = new string[]
             {
-                var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-                var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-                var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-                var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-                var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
-                string[] nmsl = new string[]
-                {
                 "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
                 $"Tap  \t\t\t{tapJudgeInfo.CriticalPerfect}\t\t{tapJudgeInfo.Perfect}\t\t{tapJudgeInfo.Great}\t\t{tapJudgeInfo.Good}\t\t{tapJudgeInfo.Miss}",
                 $"Hold\t\t\t{holdJudgeInfo.CriticalPerfect}\t\t{holdJudgeInfo.Perfect}\t\t{holdJudgeInfo.Great}\t\t{holdJudgeInfo.Good}\t\t{holdJudgeInfo.Miss}",
                 $"Slide\t\t\t{slideJudgeInfo.CriticalPerfect}\t\t{slideJudgeInfo.Perfect}\t\t{slideJudgeInfo.Great}\t\t{slideJudgeInfo.Good}\t\t{slideJudgeInfo.Miss}",
                 $"Touch\t\t\t{touchJudgeInfo.CriticalPerfect}\t\t{touchJudgeInfo.Perfect}\t\t{touchJudgeInfo.Great}\t\t{touchJudgeInfo.Good}\t\t{touchJudgeInfo.Miss}",
                 $"Break\t\t\t{breakJudgeInfo.CriticalPerfect}\t\t{breakJudgeInfo.Perfect}\t\t{breakJudgeInfo.Great}\t\t{breakJudgeInfo.Good}\t\t{breakJudgeInfo.Miss}"
-                };
-                return string.Join("\n", nmsl);
-            }
+            };
+            return string.Join("\n", nmsl);
+        }
 
 
         private void OnAreaDown(object sender, InputEventArgs e)
         {
-            if (e.IsDown && e.IsButton )
+            if (e.IsDown && e.IsButton)
             {
-                switch (e.Type)
+                switch (e.BZone)
                 {
-                    case SensorArea.A4:
+                    case ButtonZone.A4:
                         var canNextRound = _gameInfo.NextRound();
                         if (_gameInfo.IsDanMode)
                         {
@@ -279,7 +329,7 @@ namespace MajdataPlay.Result
                         MajInstances.AudioManager.StopSFX("bgm_result.mp3");
                         MajInstances.SceneSwitcher.SwitchScene("List", false);
                         return;
-                    case SensorArea.A5:
+                    case ButtonZone.A5:
                         favoriteAdder.FavoratePressed();
                         break;
                 }
@@ -322,7 +372,7 @@ namespace MajdataPlay.Result
             greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
-            goodPaint.Color = greatColor.ToSkColor();
+            goodPaint.Color = goodColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
             linePaint.Color = SKColors.White;
@@ -344,7 +394,9 @@ namespace MajdataPlay.Result
                 var y = sampleCount;
 
                 if (y > maxSampleCount)
+                {
                     maxSampleCount = y;
+                }
 
                 points[(int)i] = new Point()
                 {

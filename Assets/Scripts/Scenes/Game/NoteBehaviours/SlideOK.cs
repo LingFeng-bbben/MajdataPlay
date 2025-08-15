@@ -1,10 +1,10 @@
 ﻿using MajdataPlay.Buffers;
-using MajdataPlay.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {
@@ -25,6 +25,12 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly static int CLASSIC_ANIM_HASH = Animator.StringToHash("classic");
         readonly static int MODERN_ANIM_HASH = Animator.StringToHash("modern");
         readonly static int BREAK_ANIM_HASH = Animator.StringToHash("break");
+
+        const int SORTING_ORDER_CRITICAL = 0;
+        const int SORTING_ORDER_PERFECT = 1;
+        const int SORTING_ORDER_GREAT = 2;
+        const int SORTING_ORDER_GOOD = 3;
+        const int SORTING_ORDER_MISS = 4;
         protected override void Awake()
         {
             base.Awake();
@@ -41,38 +47,55 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var isBreak = false;
             switch (result.Grade)
             {
-                case JudgeGrade.LatePerfect3rd:
-                case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.Perfect:
+                    if (_displayCP)
+                    {
+                        SetJustCP();
+                    }
+                    else
+                    {
+                        SetJustP();
+                    }
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_CRITICAL;
+                    isBreak = result.IsBreak;
+                    break;
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.FastPerfect3rd:
-                    if (_displayCP)
-                        SetJustCP();
-                    else
-                        SetJustP();
-                    isBreak = result.IsBreak;
+                    SetFastP();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_PERFECT;
                     break;
                 case JudgeGrade.FastGreat3rd:
                 case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     SetFastGr();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_GREAT;
                     break;
                 case JudgeGrade.FastGood:
                     SetFastGd();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_GOOD;
                     break;
                 case JudgeGrade.LateGood:
                     SetLateGd();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_GOOD;
+                    break;
+                case JudgeGrade.LatePerfect3rd:
+                case JudgeGrade.LatePerfect2nd:
+                    SetLateP();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_PERFECT;
                     break;
                 case JudgeGrade.LateGreat2nd:
                 case JudgeGrade.LateGreat3rd:
                 case JudgeGrade.LateGreat:
                     SetLateGr();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_GREAT;
                     break;
                 case JudgeGrade.TooFast:
                     SetTooFast();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_MISS;
                     break;
                 default:
                     SetMiss();
+                    _spriteRenderer.sortingOrder = SORTING_ORDER_MISS;
                     break;
             }
             Play(isBreak);
@@ -82,11 +105,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void Play(bool isBreak)
         {
             if (IsClassic)
+            {
                 _animator.SetTrigger(CLASSIC_ANIM_HASH);
+            }
             else if (isBreak)
+            {
                 _animator.SetTrigger(BREAK_ANIM_HASH);
+            }
             else
+            {
                 _animator.SetTrigger(MODERN_ANIM_HASH);
+            }
+            _animator.Update(0.0000001f);
         }
         [OnUpdate]
         void OnUpdate()
@@ -114,57 +144,57 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RefreshSprite();
             return (int)Shape;
         }
-        public void SetJustCP()
+        void SetJustCP()
         {
             _judgeOffset = 0;
             RefreshSprite();
         }
-        public void SetJustP()
+        void SetJustP()
         {
             _judgeOffset = 6;
             RefreshSprite();
         }
-        public void SetFastP()
+         void SetFastP()
         {
             _judgeOffset = 12;
             RefreshSprite();
         }
-        public void SetFastGr()
+        void SetFastGr()
         {
             _judgeOffset = 18;
             RefreshSprite();
         }
-        public void SetFastGd()
+        void SetFastGd()
         {
             _judgeOffset = 24;
             RefreshSprite();
         }
-        public void SetLateP()
+        void SetLateP()
         {
             _judgeOffset = 30;
             RefreshSprite();
         }
-        public void SetLateGr()
+        void SetLateGr()
         {
             _judgeOffset = 36;
             RefreshSprite();
         }
-        public void SetLateGd()
+        void SetLateGd()
         {
             _judgeOffset = 42;
             RefreshSprite();
         }
-        public void SetMiss()
+        void SetMiss()
         {
             _judgeOffset = 48;
             RefreshSprite();
         }
-        public void SetTooFast()
+        void SetTooFast()
         {
             _judgeOffset = 54;
             RefreshSprite();
         }
-        private void RefreshSprite()
+        void RefreshSprite()
         {
             _spriteRenderer.sprite = _justSprites[(int)Shape + _indexOffset + _judgeOffset];
         }

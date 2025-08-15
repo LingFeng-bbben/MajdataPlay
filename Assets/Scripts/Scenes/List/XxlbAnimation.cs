@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class XxlbAnimation : MonoBehaviour
     {

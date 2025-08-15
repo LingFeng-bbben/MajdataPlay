@@ -8,9 +8,9 @@ using TMPro;
 using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
-using MajdataPlay.Game;
+using MajdataPlay.Scenes.Game;
 
-namespace MajdataPlay.TotalResult
+namespace MajdataPlay.Scenes.TotalResult
 {
     public class TotalResultManager : MonoBehaviour
     {
@@ -21,6 +21,8 @@ namespace MajdataPlay.TotalResult
         public TextMeshProUGUI Title;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
+        bool _isExited = false;
+        bool _isInited = false;
         // Start is called before the first frame update
         void Start()
         {
@@ -50,21 +52,38 @@ namespace MajdataPlay.TotalResult
             //SongStorage.WorkingCollection.Reset();
             //MajInstances.GameManager.isDanMode = false;
             DelayBind().Forget();
+            MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+            MajInstances.AudioManager.PlaySFX("bgm_dan.mp3", true);
+            if(_gameInfo.DanInfo.RestoreHP > 0)
+            {
+                MajInstances.AudioManager.PlaySFX("challenge_clear.wav");
+            }
+            else
+            {
+                MajInstances.AudioManager.PlaySFX("challenge_fail.wav");
+            }
         }
 
         async UniTaskVoid DelayBind()
         {
             await UniTask.Delay(1000);
-            InputManager.BindAnyArea(OnAreaDown);
             LedRing.SetButtonLight(Color.green, 3);
+            _isInited = true;
         }
-
-        private void OnAreaDown(object sender, InputEventArgs e)
+        void Update()
         {
-            InputManager.UnbindAnyArea(OnAreaDown);
-            MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-            MajInstances.SceneSwitcher.SwitchScene("List", false);
-            return;
+            if(_isExited || !_isInited)
+            {
+                return;
+            }
+
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+            {
+                MajInstances.AudioManager.StopSFX("bgm_dan.mp3");
+                _isExited = true;
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+                
+            }
         }
     }
 }

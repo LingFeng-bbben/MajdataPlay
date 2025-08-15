@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Profiling;
 
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal sealed class StarUpdater : NoteUpdater
     {

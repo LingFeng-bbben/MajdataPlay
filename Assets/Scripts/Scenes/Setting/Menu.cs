@@ -8,9 +8,8 @@ using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
-using static UnityEngine.UI.Image;
 #nullable enable
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class Menu : MonoBehaviour
     {
@@ -43,30 +42,28 @@ namespace MajdataPlay.Setting
                 option.Parent = this;
                 option.Index = i;
             }
-            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
+
+            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
             titleText.text = localizedText;
-            BindArea();
+            Localization.OnLanguageChanged += OnLangChanged;
             manager = FindObjectOfType<SettingManager>();
-        }
-        void OnEnable()
-        {
-            BindArea();
         }
         void OnDisable()
         {
             _selectedIndex = 0;
-            UnbindArea();
         }
         void OnDestroy()
         {
-            UnbindArea();
+            Localization.OnLanguageChanged -= OnLangChanged;
         }
         void Update()
         {
-            if(manager.IsPressed)
+            if(manager.IsPressed && manager.PressTime != 0)
             {
                 if (manager.PressTime < 0.7f)
+                {
                     return;
+                }
                 else if (_lastWaitTime < 0.2f)
                 {
                     _lastWaitTime += Time.deltaTime;
@@ -87,63 +84,50 @@ namespace MajdataPlay.Setting
             else
             {
                 _lastWaitTime = 0;
+                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
+                {
+                    PreviousOption();
+                }
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
+                {
+                    NextOption();
+                }
             }
         }
         void OnLangChanged(object? sender, Language newLanguage)
         {
-            var localizedText = Localization.GetLocalizedText($"{Name}_MAJSETTING_SCENE_TITLE");
+            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
             titleText.text = localizedText;
-        }
-        void OnAreaDown(object sender, InputEventArgs e)
-        {
-            if (!e.IsDown)
-                return;
-            switch(e.Type)
-            {
-                case SensorArea.A6:
-                    PreviousOption();
-                    break;
-                case SensorArea.A3:
-                    NextOption();
-                    break;
-                default:
-                    return;
-            }
         }
         void PreviousOption()
         {
             _selectedIndex--;
             if (_selectedIndex < 0)
+            {
                 manager.PreviousMenu();
+            }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
         }
         void NextOption()
         {
             _selectedIndex++;
             if (_selectedIndex > _options.Length - 1)
+            {
                 manager.NextMenu();
+            }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
         }
         public void ToLast() => _selectedIndex = _options.Length - 1;
         public void ToFirst() => _selectedIndex = 0;
-        void BindArea()
+
+        public void ToIndex(int index)
         {
-            if (_isBound)
-                return;
-            _isBound = true;
-            Localization.OnLanguageChanged += OnLangChanged;
-            InputManager.BindButton(OnAreaDown, SensorArea.A3);
-            InputManager.BindButton(OnAreaDown, SensorArea.A6);
+            _selectedIndex = index;
+            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
         }
-        void UnbindArea()
-        {
-            if (!_isBound)
-                return;
-            _isBound = false;
-            Localization.OnLanguageChanged -= OnLangChanged;
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
-        }
+
         [SerializeField]
         int _selectedIndex = 0;
         [SerializeField]

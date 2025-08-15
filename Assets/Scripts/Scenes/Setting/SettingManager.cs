@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Settings;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
@@ -7,9 +8,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-namespace MajdataPlay.Setting
+namespace MajdataPlay.Scenes.Setting
 {
     public class SettingManager : MonoBehaviour
     {
@@ -22,13 +22,42 @@ namespace MajdataPlay.Setting
         public GameObject menuPrefab;
 
         Menu[] menus = Array.Empty<Menu>();
+        bool _isExited = false;
+        bool _isInited = false;
+
+        const int NO_REQUEST = 0;
+        const int JMP_TO_MOD_PAGE = 1;
+        const int JMP_TO_DEFAULT_PAGE = 1 << 1;
+        const int IGNORE_CHART_SETTING_PAGE = 1 << 2;
+
+        static int _fromListRequest = NO_REQUEST;
         void Start()
         {
+            var fromListRequest = _fromListRequest;
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                             .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
-                             .ToArray();
-            menus = new Menu[properties.Length];
+                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
+                                 .ToArray();
+            var offset = 0;
+
+            if((fromListRequest & IGNORE_CHART_SETTING_PAGE) == 0)
+            {
+                menus = new Menu[properties.Length + 1];
+                offset = 0;
+                var selectedChart = SongStorage.WorkingCollection.Current;
+                var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
+                var chartSettingType = chartSetting.GetType();
+                var menuObj = Instantiate(menuPrefab, transform);
+                menuObj.name = chartSettingType.Name;
+                var menu = menuObj.GetComponent<Menu>();
+                menus[properties.Length] = menu;
+                menu.SubOptionObject = chartSetting;
+                menu.Name = chartSettingType.Name;
+            }
+            else
+            {
+                menus = new Menu[properties.Length];
+            }
             foreach (var (i, property) in properties.WithIndex())
             {
                 object root = Setting;
@@ -43,7 +72,7 @@ namespace MajdataPlay.Setting
                 var menuObj = Instantiate(menuPrefab, transform);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
-                menus[i] = menu;
+                menus[i + offset] = menu;
                 menu.SubOptionObject = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
@@ -60,14 +89,71 @@ namespace MajdataPlay.Setting
             LedRing.SetButtonLight(Color.blue, 0);
             LedRing.SetButtonLight(Color.blue, 7);
 
+            MajInstances.AudioManager.PlaySFX("settings.wav");
+
             InitializeAllMenu().Forget();
         }
-        private void Update()
+        void Update()
         {
+            if(_isExited || !_isInited)
+            {
+                return;
+            }
             if(IsPressed)
             {
                 if (PressTime < 0.7f)
+                {
                     PressTime += Time.deltaTime;
+                }
+                if (InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.Off) && Direction == -1)
+                {
+                    IsPressed = false;
+                    PressTime = 0;
+                }
+                else if (InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.Off) && Direction == 1)
+                {
+                    IsPressed = false;
+                    PressTime = 0;
+                }
+            }
+            else
+            {
+                var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
+                                      InputManager.IsButtonClickedInThisFrame(ButtonZone.A5);
+                if (isExitRequested)
+                {
+                    MajInstances.AudioManager.ReadVolumeFromSettings();
+                    _isExited = true;
+                    if (MajEnv.Mode == RunningMode.View)
+                    {
+                        MajInstances.SceneSwitcher.SwitchScene("View");
+                    }
+                    else
+                    {
+                        MajInstances.SceneSwitcher.SwitchScene("List", false);
+                    }
+                    return;
+                }
+                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
+                {
+                    Direction = 1;
+                    IsPressed = true;
+                    PressTime = 0;
+                }
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
+                {
+                    Direction = -1;
+                    IsPressed = true;
+                    PressTime = 0;
+                }
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A1))
+                {
+                    NextMenu();
+                }
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A8))
+                {
+                    PreviousMenu();
+                }
             }
         }
         async UniTaskVoid InitializeAllMenu()
@@ -76,81 +162,34 @@ namespace MajdataPlay.Setting
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)
+                {
                     menu.gameObject.SetActive(false);
+                }
             }
             await UniTask.DelayFrame(3);
-            SwitchToDesiredIndex().Forget();
-            BindArea();
+            await SwitchToDesiredIndex();
+            _fromListRequest = NO_REQUEST;
+            _isInited = true;
         }
 
-        async UniTaskVoid SwitchToDesiredIndex()
+        async UniTask SwitchToDesiredIndex()
         {
             await UniTask.Yield();
-            Index = MajInstances.GameManager.LastSettingPage;
+            var fromListRequest = _fromListRequest;
+            var index = 0;
+            if((fromListRequest & JMP_TO_MOD_PAGE) != 0)
+            {
+                index = menus.AsEnumerable().FindIndex(x => x.Name == "Mod");
+            }
+            else if ((fromListRequest & JMP_TO_DEFAULT_PAGE) != 0)
+            {
+                index = Setting.Misc.SelectedSettingPage;
+            }
+            Index = index;
             UpdateMenu(0, Index);
+            menus[Index].ToIndex(Setting.Misc.SelectedSettingMenuIndex);
         }
 
-        void OnAreaDown(object sender, InputEventArgs e)
-        {
-            if (!e.IsDown)
-            {
-                switch(e.Type)
-                {
-                    case SensorArea.A6:
-                        if (Direction != -1)
-                            return;
-                        IsPressed = false;
-                        PressTime = 0;
-                        break;
-                    case SensorArea.A3:
-                        if (Direction != 1)
-                            return;
-                        IsPressed = false;
-                        PressTime = 0;
-                        break;
-                }
-                return;
-            }
-            else if (e.Type is SensorArea.A5 or SensorArea.A4)
-            {
-                //refresh some setting here
-                MajInstances.AudioManager.ReadVolumeFromSettings();
-                if(MajEnv.Mode == RunningMode.View)
-                {
-                    MajInstances.SceneSwitcher.SwitchScene("View");
-                }
-                else
-                {
-                    MajInstances.SceneSwitcher.SwitchScene("List", false);
-                }
-                return;
-            }
-            
-
-            switch(e.Type)
-            {
-                case SensorArea.A6:
-                    if (IsPressed)
-                        return;
-                    Direction = -1;
-                    IsPressed = true;
-                    PressTime = 0;
-                    break;
-                case SensorArea.A3:
-                    if (IsPressed)
-                        return;
-                    Direction = 1;
-                    IsPressed = true;
-                    PressTime = 0;
-                    break;
-                case SensorArea.A1:
-                    NextMenu();
-                    break;
-                case SensorArea.A8:
-                    PreviousMenu();
-                    break;
-            }
-        }
         public void PreviousMenu()
         {
             var oldIndex = Index;
@@ -173,43 +212,47 @@ namespace MajdataPlay.Setting
             }
             UpdateMenu(oldIndex, Index);
         }
+        public static void JmpToModPage()
+        {
+            _fromListRequest |= JMP_TO_MOD_PAGE;
+        }
+        public static void IgnoreChartSettingPage()
+        {
+            _fromListRequest |= IGNORE_CHART_SETTING_PAGE;
+        }
+        public static void JmpToDefaultPage()
+        {
+            _fromListRequest |= JMP_TO_DEFAULT_PAGE;
+        }
         void UpdateMenu(int oldIndex,int newIndex)
         {
             if (oldIndex == newIndex)
+            {
                 return;
+            }
             
             if (newIndex > oldIndex)
+            {
                 menus[Index].ToFirst();
+            }
             else
+            {
                 menus[Index].ToLast();
+            }
             menus[Index].gameObject.SetActive(true);
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)
+                {
                     menu.gameObject.SetActive(false);
+                }
             }
-        }
-        void BindArea()
-        {
-            InputManager.BindButton(OnAreaDown, SensorArea.A1);
-            InputManager.BindButton(OnAreaDown, SensorArea.A8);
-            InputManager.BindButton(OnAreaDown, SensorArea.A5);
-            InputManager.BindButton(OnAreaDown, SensorArea.A4);
-            InputManager.BindButton(OnAreaDown, SensorArea.A3);
-            InputManager.BindButton(OnAreaDown, SensorArea.A6);
-        }
-        void UnbindArea()
-        {
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A1);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A8);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A5);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A4);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A3);
-            InputManager.UnbindButton(OnAreaDown, SensorArea.A6);
         }
         private void OnDestroy()
         {
-            UnbindArea();
+            Setting.Misc.SelectedSettingPage = Index;
+            _isExited = true;
+            MajInstances.GameManager.Save();
             GC.Collect();
         }
     }

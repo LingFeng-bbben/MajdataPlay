@@ -1,13 +1,13 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
 using MajdataPlay.Utils;
-using MajdataPlay.View.Types;
+using MajdataPlay.Scenes.View.Types;
 using MajSimai;
 using SkiaSharp;
 using System;
@@ -16,13 +16,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEditor;
+using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
 #nullable enable
-namespace MajdataPlay.View
+namespace MajdataPlay.Scenes.View
 {
     internal class ViewManager: MajComponent, INoteController
     {
@@ -52,10 +51,10 @@ namespace MajdataPlay.View
                 }
             }
         }
-        public bool IsAutoplay => AutoplayMode != AutoplayMode.Disable;
-        public AutoplayMode AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
+        public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
+        public GameModInfo ModInfo { get; private set; }
+        public AutoplayModeOption AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
-        public JudgeStyleType JudgeStyle => MajEnv.UserSettings.Mod.JudgeStyle;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
@@ -107,6 +106,7 @@ namespace MajdataPlay.View
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
+            ModInfo = MajEnv.UserSettings.Mod;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
@@ -123,7 +123,7 @@ namespace MajdataPlay.View
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
-                _bgManager.SetBackgroundMovie(_videoPath, _bgCover).AsTask().Wait();
+                _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover).AsTask().Wait();
             }
             else if (_bgCover is not null)
             {
@@ -387,6 +387,7 @@ namespace MajdataPlay.View
                 _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
                 await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
+                await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
@@ -400,7 +401,8 @@ namespace MajdataPlay.View
                 _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
 
                 await _noteLoader.LoadNotesIntoPoolAsync(_chart);
-                _noteManager.InitializeUpdater();
+                await _noteManager.InitAsync();
+                await UniTask.SwitchToMainThread();
                 if (_videoPath.IsNullOrEmpty())
                 {
                     _bgManager.DisableVideo();
@@ -408,7 +410,7 @@ namespace MajdataPlay.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovie(_videoPath, _bgCover);
+                    await _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);
