@@ -280,6 +280,7 @@ namespace MajdataPlay
                 Boader = SelectedSkin.TouchHold[4],
                 Boader_Break = SelectedSkin.TouchHold_Break[4],
                 Point = SelectedSkin.TouchPoint,
+                Point_Each = SelectedSkin.TouchPoint_Each,
                 Point_Break = SelectedSkin.TouchPoint_Break,
                 Off = SelectedSkin.TouchHold_Off,
             };
