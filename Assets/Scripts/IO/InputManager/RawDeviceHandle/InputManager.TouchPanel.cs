@@ -304,10 +304,10 @@ namespace MajdataPlay.IO
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 stopwatch.Start();
 
-            SERIAL_START:
                 var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
                 serial.ReadTimeout = 2000;
                 serial.WriteTimeout = 2000;
+            SERIAL_START:
                 try
                 {
                     if (!EnsureSerialStreamIsOpen(serial))
