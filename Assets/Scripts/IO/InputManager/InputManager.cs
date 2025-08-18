@@ -335,8 +335,8 @@ namespace MajdataPlay.IO
             var manufacturer = DeviceManufacturerOption.General;
             var buttonRingType = userButtonRingType ?? ButtonRingDeviceOption.Keyboard;
 
-            MajDebug.Log($"All available HID devices:\n{string.Join('\n', hidDevices)}");
-            MajDebug.Log($"All available serial ports:\n{string.Join('\n', serialPorts)}");
+            MajDebug.LogInfo($"All available HID devices:\n{string.Join('\n', hidDevices)}");
+            MajDebug.LogInfo($"All available serial ports:\n{string.Join('\n', serialPorts)}");
 
             try
             {
@@ -361,7 +361,7 @@ namespace MajdataPlay.IO
 
                 if (userManufacturer is not null)
                 {
-                    MajDebug.Log("User has set the IO manufacturer and button ring type, use the user-set values");
+                    MajDebug.LogInfo("User has set the IO manufacturer and button ring type, use the user-set values");
                     manufacturer = (DeviceManufacturerOption)userManufacturer;
                     switch (manufacturer)
                     {
@@ -451,7 +451,7 @@ namespace MajdataPlay.IO
                     }
 
 
-                    MajDebug.Log("User has not set the IO manufacturer and button ring type, will be detected automatically");
+                    MajDebug.LogInfo("User has not set the IO manufacturer and button ring type, will be detected automatically");
                     var filteredHidDevices = hidDevices.Where(x =>
                     {
                         var isYuan = x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID;
@@ -465,7 +465,7 @@ namespace MajdataPlay.IO
                     {
                         if (hidDevices.Any(x => x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID))
                         {
-                            MajDebug.Log("Manufacturer detect result: Yuan");
+                            MajDebug.LogInfo("Manufacturer detect result: Yuan");
                             manufacturer = DeviceManufacturerOption.Yuan;
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _buttonRingHidConnInfo = new()
@@ -489,7 +489,7 @@ namespace MajdataPlay.IO
                         }
                         else if (hidDevices.Any(x => x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID))
                         {
-                            MajDebug.Log("Manufacturer detect result: Dao");
+                            MajDebug.LogInfo("Manufacturer detect result: Dao");
                             manufacturer = DeviceManufacturerOption.Dao;
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _buttonRingHidConnInfo = new()
@@ -511,7 +511,7 @@ namespace MajdataPlay.IO
                         }
                         else if (hidDevices.Any(x => x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID))
                         {
-                            MajDebug.Log("Manufacturer detect result: General");
+                            MajDebug.LogInfo("Manufacturer detect result: General");
                             manufacturer = DeviceManufacturerOption.General;
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _touchPanelSerialConnInfo = new()
@@ -562,9 +562,9 @@ namespace MajdataPlay.IO
             }
             finally
             {
-                MajDebug.Log($"Player: {(playerIndex == 1 ? "1P" : "2P")}");
-                MajDebug.Log($"IO manufacturer: {manufacturer}");
-                MajDebug.Log($"Button ring device type: {buttonRingType}");
+                MajDebug.LogInfo($"Player: {(playerIndex == 1 ? "1P" : "2P")}");
+                MajDebug.LogInfo($"IO manufacturer: {manufacturer}");
+                MajDebug.LogInfo($"Button ring device type: {buttonRingType}");
                 _deviceManufacturer = manufacturer;
                 _buttonRingDevice = buttonRingType;
                 _playerIndex = playerIndex;
@@ -939,7 +939,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                MajDebug.Log($"[Debounce] Received sensor response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.LogInfo($"[Debounce] Received sensor response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
@@ -961,7 +961,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                MajDebug.Log($"[Debounce] Received button response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.LogInfo($"[Debounce] Received button response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;

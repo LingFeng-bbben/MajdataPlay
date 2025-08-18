@@ -129,7 +129,7 @@ namespace MajdataPlay.Utils
                 }
                 else
                 {
-                    MajDebug.Log("Local Cache Hit");
+                    MajDebug.LogInfo("Local Cache Hit");
                     bytes = await File.ReadAllBytesAsync(cachefile, ct);
                 }
                 ct.ThrowIfCancellationRequested();

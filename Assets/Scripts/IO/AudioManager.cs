@@ -116,16 +116,16 @@ namespace MajdataPlay.IO
             {
                 case SoundBackendOption.Asio:
                     {
-                        MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+                        MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
                         var asioCount = BassAsio.DeviceCount;
                         for (int i = 0; i < asioCount; i++) 
                         {
                             BassAsio.GetDeviceInfo(i, out var info);
-                            MajDebug.Log("ASIO Device " + i + ": " + info.Name);
+                            MajDebug.LogInfo("ASIO Device " + i + ": " + info.Name);
                         }
                         
-                        MajDebug.Log("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
-                        MajDebug.Log(BassAsio.LastError);
+                        MajDebug.LogInfo("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                        MajDebug.LogInfo(BassAsio.LastError);
                         BassAsio.Rate = sampleRate;
                         BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
@@ -152,7 +152,7 @@ namespace MajdataPlay.IO
                 case SoundBackendOption.Wasapi:
                     {
                         //Bass.Init(-1, sampleRate);
-                        MajDebug.Log("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
+                        MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
 
                         //wasapiProcedure = (buffer, length, user) => GlobalProcedure(buffer, length, user);
                         bool isExclusiveSuccess = false;
@@ -164,19 +164,19 @@ namespace MajdataPlay.IO
                                 0.02f, //buffer
                                 0.005f, //peried
                                 _wasapiProcedure);
-                            MajDebug.Log($"Wasapi Exclusive Init: {isExclusiveSuccess}");
+                            MajDebug.LogInfo($"Wasapi Exclusive Init: {isExclusiveSuccess}");
                         }
 
                         if(!isExclusiveRequest || !isExclusiveSuccess)
                         {
-                            MajDebug.Log("Wasapi Shared Init: " + BassWasapi.Init(
+                            MajDebug.LogInfo("Wasapi Shared Init: " + BassWasapi.Init(
                                 -1, 0, 0,
                                 WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
                                 0, //buffer
                                 0, //peried
                                 _wasapiProcedure));
                         }
-                        MajDebug.Log(Bass.LastError);
+                        MajDebug.LogInfo(Bass.LastError);
                         BassWasapi.GetInfo(out var wasapiInfo);
                         BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                         Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
@@ -184,8 +184,8 @@ namespace MajdataPlay.IO
                     }
                     break;
                 case SoundBackendOption.BassSimple:
-                    MajDebug.Log("Bass Init: " + Bass.Init());
-                    MajDebug.Log(Bass.LastError);
+                    MajDebug.LogInfo("Bass Init: " + Bass.Init());
+                    MajDebug.LogInfo(Bass.LastError);
                 break;
             }
 
@@ -193,7 +193,7 @@ namespace MajdataPlay.IO
             InitSFXSample(VoiceFileNames,VoiceFilePath);
 
             if(backend == SoundBackendOption.Wasapi ||  backend == SoundBackendOption.Asio || backend == SoundBackendOption.BassSimple)
-            MajDebug.Log(Bass.LastError);
+            MajDebug.LogInfo(Bass.LastError);
 
             if (PlayDebug)
                 InputManager.BindAnyArea(OnAnyAreaDown);

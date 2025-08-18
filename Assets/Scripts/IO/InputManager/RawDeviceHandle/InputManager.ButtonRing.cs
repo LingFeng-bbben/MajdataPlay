@@ -381,7 +381,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.Log($"ButtonRing: Connected\nDevice: {device}");
+                    MajDebug.LogInfo($"ButtonRing: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {

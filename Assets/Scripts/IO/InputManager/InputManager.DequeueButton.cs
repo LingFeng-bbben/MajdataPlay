@@ -56,7 +56,7 @@ namespace MajdataPlay.IO
                     _btnLastTriggerTimes[i] = now;
                 }
                 button.State = newState;
-                MajDebug.Log(ZString.Format("Key \"{0}\": {1}", button.BindingKey, newState));
+                MajDebug.LogInfo(ZString.Format("Key \"{0}\": {1}", button.BindingKey, newState));
                 var msg = new InputEventArgs()
                 {
                     BZone = button.Zone,

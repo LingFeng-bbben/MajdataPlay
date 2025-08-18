@@ -289,7 +289,7 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
-                    MajDebug.Log($"Led: Connected\nDevice: {device}");
+                    MajDebug.LogInfo($"Led: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {

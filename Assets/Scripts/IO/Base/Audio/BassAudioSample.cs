@@ -131,8 +131,8 @@ namespace MajdataPlay.IO
             BassMix.MixerAddChannel(_resampler, _decode, BassFlags.Default);
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             Bass.ChannelStop(_decode);
-            MajDebug.Log(Bass.LastError);
-            MajDebug.Log($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
+            MajDebug.LogInfo(Bass.LastError);
+            MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }
         ~BassAudioSample() => Dispose();
 
@@ -211,24 +211,24 @@ namespace MajdataPlay.IO
         }
         public static BassAudioSample Create(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.Log($"Create Channel From: {path}");
+            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = File.ReadAllBytes(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static async ValueTask<BassAudioSample> CreateAsync(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.Log($"Create Channel From: {path}");
+            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = await File.ReadAllBytesAsync(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static BassAudioSample CreateFromUri(Uri uri, int globalMixer)
         {
-            MajDebug.Log($"Create Channel From: {uri}");
+            MajDebug.LogInfo($"Create Channel From: {uri}");
             var decode = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
-            MajDebug.Log(decode);
-            MajDebug.Log(Bass.LastError);
+            MajDebug.LogInfo(decode);
+            MajDebug.LogInfo(Bass.LastError);
 
             var sample = new BassAudioSample(decode, globalMixer, 1, false);
             sample.Volume = 1;

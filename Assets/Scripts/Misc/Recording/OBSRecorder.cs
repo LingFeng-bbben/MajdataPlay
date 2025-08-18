@@ -121,7 +121,7 @@ namespace MajdataPlay.Recording
             try
             {
                 var message = Serializer.Json.Deserialize<ReceivedMessage>(e.Data);
-                MajDebug.Log("[OBS] Received: " + e.Data);
+                MajDebug.LogInfo("[OBS] Received: " + e.Data);
                 switch (message.op)
                 {
                     case 2: // Identified
@@ -139,7 +139,7 @@ namespace MajdataPlay.Recording
                                 }
                                 else
                                 {
-                                    MajDebug.Log("[OBS] Start Record Failed.");
+                                    MajDebug.LogInfo("[OBS] Start Record Failed.");
                                 }
                             }
 
@@ -149,11 +149,11 @@ namespace MajdataPlay.Recording
                                 {
                                     IsRecording = false;
                                     _obsOutPath = message.d.responseData.outputPath;
-                                    MajDebug.Log("[OBS] Record Saved To " + message.d.responseData.outputPath);
+                                    MajDebug.LogInfo("[OBS] Record Saved To " + message.d.responseData.outputPath);
                                 }
                                 else
                                 {
-                                    MajDebug.Log("[OBS] Stop Record Failed.");
+                                    MajDebug.LogInfo("[OBS] Stop Record Failed.");
                                 }
                             }
                             break;
@@ -163,7 +163,7 @@ namespace MajdataPlay.Recording
                             //we move the file after record finishs
                             if (message.d.eventType == "RecordStateChanged" && message.d.eventData.outputState == "OBS_WEBSOCKET_OUTPUT_STOPPED")
                             {
-                                MajDebug.Log("[OBS] Moving video to game dir");
+                                MajDebug.LogInfo("[OBS] Moving video to game dir");
                                 var timestamp = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
                                 var outputPath = Path.Combine(MajEnv.RecordOutputsPath, $"{_name}_{timestamp}.mp4");
                                 File.Move(_obsOutPath, outputPath);

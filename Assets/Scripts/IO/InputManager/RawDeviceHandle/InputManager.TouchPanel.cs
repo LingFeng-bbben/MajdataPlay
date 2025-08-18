@@ -352,7 +352,7 @@ namespace MajdataPlay.IO
                         {
                             IsConnected = false;
                             MajDebug.LogError($"TouchPanel: \n{e}");
-                            MajDebug.Log($"TouchPanel: Trying to reconnect to {comPort}");
+                            MajDebug.LogInfo($"TouchPanel: Trying to reconnect to {comPort}");
                             Thread.Sleep(RECONNECT_INTERVAL);
                             goto SERIAL_START;
                         }
@@ -504,7 +504,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.WaitNotify();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
-                    MajDebug.Log($"TouchPanel: TouchPanel slave thread has started");
+                    MajDebug.LogInfo($"TouchPanel: TouchPanel slave thread has started");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -564,7 +564,7 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.Log($"TouchPanel: TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                        MajDebug.LogInfo($"TouchPanel: TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
                         var serialStream = serialSession.BaseStream;
@@ -602,7 +602,7 @@ namespace MajdataPlay.IO
                         serialStream.Write(encoding.GetBytes("{STAT}"));
                         serialSession.DiscardInBuffer();
 
-                        MajDebug.Log("TouchPanel: Connected");
+                        MajDebug.LogInfo("TouchPanel: Connected");
                         return true;
                     }
                 }

@@ -771,7 +771,7 @@ namespace MajdataPlay.Scenes.Game
             _audioSample.CurrentSec = startSec;
 
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
-            MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            MajDebug.LogInfo($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
             if(IsPracticeMode)
             {
@@ -1237,7 +1237,7 @@ namespace MajdataPlay.Scenes.Game
         {
             try
             {
-                MajDebug.Log("GPManagerDestroy");
+                MajDebug.LogInfo("GPManagerDestroy");
                 //we dont StopRecordAsync at here because we want the result screen as well
                 DisposeAudioTrack();
                 ClearAllResources();

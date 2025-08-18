@@ -87,7 +87,7 @@ namespace MajdataPlay.IO
             Bass.ChannelStop(_stream);
             Bass.ChannelSetPosition(_stream, 0);
 
-            MajDebug.Log(Bass.LastError);
+            MajDebug.LogInfo(Bass.LastError);
         }
         ~BassSimpleAudioSample() => Dispose();
 
@@ -156,24 +156,24 @@ namespace MajdataPlay.IO
         }
         public static BassSimpleAudioSample Create(string path, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.Log($"Create Channel From: {path}");
+            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = File.ReadAllBytes(path);
 
             return Create(buf, normalize, speedChange);
         }
         public static async ValueTask<BassSimpleAudioSample> CreateAsync(string path, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.Log($"Create Channel From: {path}");
+            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = await File.ReadAllBytesAsync(path);
 
             return Create(buf, normalize, speedChange);
         }
         public static BassSimpleAudioSample CreateFromUri(Uri uri)
         {
-            MajDebug.Log($"Create Channel From: {uri}");
+            MajDebug.LogInfo($"Create Channel From: {uri}");
             var stream = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Prescan | BassFlags.AsyncFile, null);
-            MajDebug.Log(stream);
-            MajDebug.Log(Bass.LastError);
+            MajDebug.LogInfo(stream);
+            MajDebug.LogInfo(Bass.LastError);
 
             var sample = new BassSimpleAudioSample(stream, 1, false);
             sample.Volume = 1;
