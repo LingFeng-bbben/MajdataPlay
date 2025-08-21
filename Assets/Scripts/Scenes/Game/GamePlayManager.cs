@@ -687,7 +687,7 @@ namespace MajdataPlay.Scenes.Game
             var token = _cts.Token;
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
-            var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
+            var firstClockTiming = _noteAudioManager.FirstClockTiming;
             float extraTime = 5f;
             if (firstClockTiming < 0f)
             {

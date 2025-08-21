@@ -15,7 +15,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteAudioManager : MonoBehaviour
     {
-        public ReadOnlySpan<AnswerSoundPoint> AnswerSFXTimings => _answerTimingPoints.Span;
+        public float FirstClockTiming { get; private set; }
 
         XxlbAnimationController _xxlbController;
         INoteController _noteController;
@@ -224,14 +224,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             try
             {
                 if (_answerTimingPoints.IsEmpty)
+                {
                     return;
+                }
                 var timingPoints = _answerTimingPoints.Span;
+                var thisFrameSec = _noteController.ThisFrameSec;
+                var offset = _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC;
                 var i = 0;
                 for (; i < timingPoints.Length; i++)
                 {
                     ref var sfxInfo = ref _answerTimingPoints.Span[i];
                     var playTiming = sfxInfo.Timing;
-                    var delta = _noteController.ThisFrameSec - (playTiming + _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC);
+                    var delta = thisFrameSec - (playTiming + offset);
 
                     if (delta > 0)
                     {
@@ -352,10 +356,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         //if there is something in first measure, we add clock before the bgm
                         for (var i = 0; i < clockCount; i++)
                         {
-                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            var timing = -(i + 1) * interval;
+                            var isClock = true;
+                            answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
                             {
-                                Timing = -(i + 1) * interval,
-                                IsClock = true,
                                 IsPlayed = false
                             });
                         }
@@ -365,10 +369,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         //if nothing there, we can add it with bgm
                         for (var i = 0; i < clockCount; i++)
                         {
-                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            var timing = i * interval;
+                            var isClock = true;
+                            answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
                             {
-                                Timing = i * interval,
-                                IsClock = true,
                                 IsPlayed = false
                             });
                         }
@@ -379,27 +383,29 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
                 foreach (var timingPoint in chart.NoteTimings)
                 {
-                    if (timingPoint.Notes.All(o => o.IsSlideNoHead)) continue;
-
-                    answerTimingPoints.Add(new AnswerSoundPoint()
+                    if (timingPoint.Notes.All(o => o.IsSlideNoHead))
                     {
-                        Timing = timingPoint.Timing,
-                        IsClock = false,
+                        continue;
+                    }
+                    var timing = (float)timingPoint.Timing;
+                    var isClock = false;
+                    answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
+                    {
                         IsPlayed = false
                     });
                     var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
                     if (holds.Length == 0)
+                    {
                         continue;
+                    }
                     foreach (var hold in holds)
                     {
-                        var newtime = timingPoint.Timing + hold.HoldTime;
-                        if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newtime) < 0.001) &&
-                            !answerTimingPoints.Any(o => Math.Abs(o.Timing - newtime) < 0.001)
+                        var newTime = (float)(timingPoint.Timing + hold.HoldTime);
+                        if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newTime) < 0.001) &&
+                            !answerTimingPoints.Any(o => Math.Abs(o.Timing - newTime) < 0.001)
                             )
-                            answerTimingPoints.Add(new AnswerSoundPoint()
+                            answerTimingPoints.Add(new AnswerSoundPoint(newTime, isClock)
                             {
-                                Timing = newtime,
-                                IsClock = false,
                                 IsPlayed = false
                             });
                     }
@@ -410,6 +416,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     _rentedArrayForAnswerSoundPoints[i] = tp;
                 }
                 _answerTimingPoints = _rentedArrayForAnswerSoundPoints.AsMemory(0, answerTimingPoints.Capacity);
+                FirstClockTiming = _answerTimingPoints.Span[0].Timing;
             });
         }
         internal void Clear()
@@ -470,11 +477,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             //_audioManager.PlaySFX("slide_break_slide.wav");
             //_audioManager.PlaySFX("break_slide.wav");
         }
-        internal struct AnswerSoundPoint
+        struct AnswerSoundPoint
         {
-            public double Timing { get; init; }
-            public bool IsClock { get; init; }
-            public bool IsPlayed { get; set; }
+            public readonly float Timing;
+            public readonly bool IsClock;
+            public bool IsPlayed;
+
+            public AnswerSoundPoint(float timing, bool isClock)
+            {
+                Timing = timing;
+                IsClock = isClock;
+            }
         }
     }
 }
