@@ -363,11 +363,16 @@ namespace MajdataPlay.Scenes.Game
                         touchTasks.Add(AllocTouchGroup(members));
                     }
                     var eachNoteCount = 0;
-                    foreach (var note in eachNotes)
+                    for (var x = 0; x < eachNotes.Count; x++)
                     {
-                        if (note is not null)
+                        var note = eachNotes[x];
+                        if (note is null)
                         {
-                            eachNotes.Remove(note);
+                            eachNotes.RemoveAt(x);
+                            x--;
+                        }
+                        else
+                        {
                             eachNoteCount++;
                         }
                     }
@@ -774,7 +779,7 @@ namespace MajdataPlay.Scenes.Game
                 while (sensorTypes.Count > 0)
                 {
                     var sensorType = sensorTypes[0];
-                    using var groupMembers = new RentedList<SensorArea>();
+                    var groupMembers = new RentedList<SensorArea>();
                     groupMembers.Add(sensorType);
 
                     for (var i = 0; i < groupMembers.Count; i++)
@@ -868,7 +873,6 @@ namespace MajdataPlay.Scenes.Game
                             // 转折星星
                             var middlePos = noteContent[ptr++];
                             var endPos = noteContent[ptr++];
-                            sb.Clear();
                             sb.Append(latestStartIndex);
                             sb.Append(slideTypeChar);
                             sb.Append(middlePos);
@@ -916,14 +920,16 @@ namespace MajdataPlay.Scenes.Game
                             }
                             while (ptr < noteContent.Length)
                             {
-                                sb.Append(noteContent[ptr++]);
+                                sb.Append(noteContent[ptr]);
                                 //slidePart.RawContent += noteContent[ptr++];
                                 if (noteContent[ptr] == ']')
                                 {
                                     break;
                                 }
+                                ptr++;
                             }
                             slidePart.RawContent = sb.ToString();
+                            ptr++;
                         }
                         else // 没有指定速度
                         {
@@ -940,7 +946,7 @@ namespace MajdataPlay.Scenes.Game
                                                                           "组合星星有错误\nSLIDE CHAIN ERROR");
                             }
                         }
-
+                        slidePart.RawContent ??= sb.ToString();
                         string slideShape = NoteCreateHelper.DetectShapeFromText(slidePart.RawContent);
                         if (slideShape.StartsWith("-"))
                         {
