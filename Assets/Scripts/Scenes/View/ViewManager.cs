@@ -388,7 +388,7 @@ namespace MajdataPlay.Scenes.View
                 await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
                 await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
-                _chart.Clamp(range);
+                _chart = _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
 
                 var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
