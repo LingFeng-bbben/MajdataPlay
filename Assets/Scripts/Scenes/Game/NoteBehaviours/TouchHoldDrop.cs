@@ -340,7 +340,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     _fanRenderers[i].sprite = skin.Fans[i];
                 }
                 _borderRenderer.sprite = skin.Boader; // TouchHold Border
-                _pointRenderer.sprite = skin.Point;
+                if(IsEach)
+                {
+                    _pointRenderer.sprite = skin.Point_Each;
+                }
+                else
+                {
+                    _pointRenderer.sprite = skin.Point;
+                }
                 board_On = skin.Boader;
             }
             board_Off = skin.Off;

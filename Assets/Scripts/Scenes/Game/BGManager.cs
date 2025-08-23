@@ -279,26 +279,26 @@ namespace MajdataPlay.Scenes.Game
             try
             {
 
-                MajDebug.Log("[VLC] LoadMedia");
+                MajDebug.LogInfo("[VLC] LoadMedia");
                 if (_mediaPlayer.Media != null)
                     _mediaPlayer.Media.Dispose();
 
                 var trimmedPath = path.Trim(new char[] { '"' });//Windows likes to copy paths with quotes but Uri does not like to open them
                 var uri = new Uri(trimmedPath);
-                MajDebug.Log("[VLC] Uri: " + uri.ToString());
+                MajDebug.LogInfo("[VLC] Uri: " + uri.ToString());
                 var media = new Media(uri);
                 //media.AddOption(":start-paused");
                 _mediaPlayer.Media = media;
 
 
-                MajDebug.Log("[VLC] BeginParse");
+                MajDebug.LogInfo("[VLC] BeginParse");
                 var ret = await _mediaPlayer.Media.ParseAsync(MajEnv.VLCLibrary!);
                 if(ret != MediaParsedStatus.Done)
                 {
                     SetBackgroundPic(fallback);
                     return;
                 }
-                MajDebug.Log("[VLC] " + ret);
+                MajDebug.LogInfo("[VLC] " + ret);
                 _pictureRenderer.forceRenderingOff = true;
                 _usePictureAsBackground = false;
                 _mediaPlayer.Play();
@@ -317,7 +317,7 @@ namespace MajdataPlay.Scenes.Game
         void DestroyMediaPlayer()
         {
             if (_mediaPlayer is null) return;
-            MajDebug.Log("[VLC] DestroyMediaPlayer");
+            MajDebug.LogInfo("[VLC] DestroyMediaPlayer");
             _mediaPlayer.Stop();
             _mediaPlayer.Dispose();
         }

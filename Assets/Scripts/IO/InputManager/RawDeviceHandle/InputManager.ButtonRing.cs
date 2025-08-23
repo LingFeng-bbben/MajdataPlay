@@ -39,10 +39,10 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                var manufacturer = _deviceManufacturer;
                 if (manufacturer == DeviceManufacturerOption.General)
                 {
-                    switch (MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type)
+                    switch (_buttonRingDevice)
                     {
                         case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -51,7 +51,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type}");
+                            MajDebug.LogWarning($"ButtonRing: Not supported button ring device: {_buttonRingDevice}");
                             break;
                     }
                 }
@@ -61,7 +61,7 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    MajDebug.LogWarning($"Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");
                 }
             }
             /// <summary>
@@ -325,8 +325,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-                var hidOptions = buttonRingOptions.HidOptions;
+                var hidOptions = _buttonRingHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -336,8 +335,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-                var deviceType = MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type;
+                var manufacturer = _deviceManufacturer;
+                var deviceType = _buttonRingDevice;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
@@ -382,7 +381,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.Log($"ButtonRing connected\nDevice: {device}");
+                    MajDebug.LogInfo($"ButtonRing: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -424,11 +423,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"ButtonRing: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{e}");
+                            MajDebug.LogError($"ButtonRing: \n{e}");
                         }
                         finally
                         {
@@ -439,7 +438,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }

@@ -14,6 +14,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Boader { get; init; }
         public Sprite Boader_Break { get; init; }
         public Sprite Point { get; init; }
+        public Sprite Point_Each { get; init; }
         public Sprite Point_Break { get; init; }
         public Sprite Off { get; init; }
 

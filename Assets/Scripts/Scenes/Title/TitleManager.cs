@@ -143,14 +143,14 @@ namespace MajdataPlay.Scenes.Title
             List<string> filePathsList = new List<string>();
             TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
             string fs = paths.text;
-            MajDebug.Log(fs);
+            MajDebug.LogInfo(fs);
             string[] fLines = fs.Replace("\\","/").Split("\n");
             foreach (string line in fLines)
             {
                 if (line.Trim().Length <= 1) continue;
                 var path = Path.Combine( Application.streamingAssetsPath, line.Trim());
                 echoText.text = $"Extracting {path}...";
-                MajDebug.Log($"Extracting {path}");
+                MajDebug.LogInfo($"Extracting {path}");
                 yield return new WaitForEndOfFrame();
                 byte[] data = null;
                 int dataLen = 0;

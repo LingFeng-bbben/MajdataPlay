@@ -1,18 +1,21 @@
-﻿using UnityEngine;
-using System;
-using System.Linq;
+﻿using HidSharp;
+using HidSharp.Platform.Windows;
+using MajdataPlay.Collections;
+using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MychIO;
 using MychIO.Device;
-using System.Collections.Generic;
 using MychIO.Event;
-using System.Runtime.CompilerServices;
-using MajdataPlay.Collections;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Policy;
-using HidSharp.Platform.Windows;
 using System.Threading;
-using MajdataPlay.Numerics;
+using UnityEngine;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -267,6 +270,15 @@ namespace MajdataPlay.IO
         static IOManager? _ioManager = null;
 
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
+
+        static SerialPortConnInfo _touchPanelSerialConnInfo = default;
+        static SerialPortConnInfo _ledDeviceSerialConnInfo = default;
+        static HidConnInfo _ledDeviceHidConnInfo = default;
+        static HidConnInfo _buttonRingHidConnInfo = default;
+
+        static int _playerIndex = 1;
+        static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
+        static ButtonRingDeviceOption _buttonRingDevice = ButtonRingDeviceOption.Keyboard;
         static InputManager()
         {
             _isSensorRendererEnabled = MajEnv.UserSettings.Debug.DisplaySensor;
@@ -290,9 +302,273 @@ namespace MajdataPlay.IO
         {
             Input.multiTouchEnabled = true;
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
+            
+            IODeviceDetect();
             ButtonRing.Init();
             TouchPanel.Init();
             LedDevice.Init();
+        }
+        static void IODeviceDetect()
+        {
+            const int YUAN_HID_1P_PID = 22352;
+            const int YUAN_HID_1P_VID = 11836;
+            const int YUAN_HID_2P_PID = 22352;
+            const int YUAN_HID_2P_VID = 11852;
+            const int DAO_HID_PID = 4644;
+            const int DAO_HID_VID = 3727;
+            const int GENERAL_HID_1P_PID = 33;
+            const int GENERAL_HID_1P_VID = 3235;
+            const int GENERAL_HID_2P_PID = 34;
+            const int GENERAL_HID_2P_VID = 3235;
+
+            var hidDevices = HidManager.Devices;
+            var serialPorts = SerialPort.GetPortNames();
+            
+            var ioSettings = MajEnv.UserSettings.IO;
+            var playerIndex = ioSettings.InputDevice.Player;
+            var buttonRingSettings = ioSettings.InputDevice.ButtonRing;
+            var touchPanelSettings = ioSettings.InputDevice.TouchPanel;
+            var ledDeviceSettings = ioSettings.OutputDevice.Led;
+            var userManufacturer = ioSettings.Manufacturer;
+            var userButtonRingType = buttonRingSettings.Type;
+
+            var manufacturer = DeviceManufacturerOption.General;
+            var buttonRingType = userButtonRingType ?? ButtonRingDeviceOption.Keyboard;
+
+            MajDebug.LogInfo($"All available HID devices:\n{string.Join('\n', hidDevices)}");
+            MajDebug.LogInfo($"All available serial ports:\n{string.Join('\n', serialPorts)}");
+
+            try
+            {
+                if (userButtonRingType is not null && buttonRingType == ButtonRingDeviceOption.Keyboard)
+                {
+                    manufacturer = DeviceManufacturerOption.General;
+
+                    _deviceManufacturer = manufacturer;
+                    _buttonRingDevice = buttonRingType;
+                    _touchPanelSerialConnInfo = new()
+                    {
+                        Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                        BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                    };
+                    _ledDeviceSerialConnInfo = new()
+                    {
+                        Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                        BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                    };
+                    return;
+                }
+
+                if (userManufacturer is not null)
+                {
+                    MajDebug.LogInfo("User has set the IO manufacturer and button ring type, use the user-set values");
+                    manufacturer = (DeviceManufacturerOption)userManufacturer;
+                    switch (manufacturer)
+                    {
+                        case DeviceManufacturerOption.General:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? (playerIndex == 1 ? GENERAL_HID_1P_PID : GENERAL_HID_2P_PID),
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? (playerIndex == 1 ? GENERAL_HID_1P_VID : GENERAL_HID_2P_VID),
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
+                        case DeviceManufacturerOption.Yuan:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? (playerIndex == 1 ? YUAN_HID_1P_PID : YUAN_HID_2P_PID),
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? (playerIndex == 1 ? YUAN_HID_1P_VID : YUAN_HID_2P_VID),
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
+                        case DeviceManufacturerOption.Dao:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? DAO_HID_PID,
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? DAO_HID_VID,
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceHidConnInfo = new()
+                            {
+                                DeviceName = ledDeviceSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = ledDeviceSettings.HidOptions.ProductId ?? DAO_HID_PID,
+                                VendorId = ledDeviceSettings.HidOptions.VendorId ?? DAO_HID_VID,
+                                Exclusice = ledDeviceSettings.HidOptions.Exclusice,
+                                OpenPriority = ledDeviceSettings.HidOptions.OpenPriority
+                            };
+                            break;
+                    }
+                }
+                else
+                {
+                    var yuanDefaultHidPID = YUAN_HID_1P_PID;
+                    var yuanDefaultHidVID = YUAN_HID_1P_VID;
+                    var daoDefaultHidPID = DAO_HID_PID;
+                    var daoDefaultHidVID = DAO_HID_VID;
+                    var generalDefaultHidPID = GENERAL_HID_1P_PID;
+                    var generalDefaultHidVID = GENERAL_HID_1P_VID;
+
+                    var touchPanelDefaultSerialPort = 3;
+                    var ledDeviceDefaultSerialPort = 21;
+
+                    if(playerIndex != 1)
+                    {
+                        yuanDefaultHidPID = YUAN_HID_2P_PID;
+                        yuanDefaultHidVID = YUAN_HID_2P_VID;
+                        generalDefaultHidPID = GENERAL_HID_2P_PID;
+                        generalDefaultHidVID = GENERAL_HID_2P_VID;
+                        touchPanelDefaultSerialPort = 4;
+                        ledDeviceDefaultSerialPort = 22;
+                    }
+
+
+                    MajDebug.LogInfo("User has not set the IO manufacturer and button ring type, will be detected automatically");
+                    var filteredHidDevices = hidDevices.Where(x =>
+                    {
+                        var isYuan = x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID;
+                        var isDao = x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID;
+                        var isGeneral = x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID;
+                        var result = isYuan || isDao || isGeneral;
+
+                        return result;
+                    });
+                    if (filteredHidDevices.Count() != 0)
+                    {
+                        if (hidDevices.Any(x => x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Yuan");
+                            manufacturer = DeviceManufacturerOption.Yuan;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = yuanDefaultHidPID,
+                                VendorId = yuanDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelDefaultSerialPort,
+                                BaudRate = 9600,
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceDefaultSerialPort,
+                                BaudRate = 115200,
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Dao");
+                            manufacturer = DeviceManufacturerOption.Dao;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = daoDefaultHidPID,
+                                VendorId = daoDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _ledDeviceHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = daoDefaultHidPID,
+                                VendorId = daoDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: General");
+                            manufacturer = DeviceManufacturerOption.General;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelDefaultSerialPort,
+                                BaudRate = 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = generalDefaultHidPID,
+                                VendorId = generalDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceDefaultSerialPort,
+                                BaudRate = 115200,
+                            };
+                        }
+                        else
+                        {
+                            throw new ArgumentException("?");
+                        }
+                    }
+                    else
+                    {
+                        MajDebug.LogWarning("No HID device detected, fallback to keyboard");
+                        manufacturer = DeviceManufacturerOption.General;
+                        buttonRingType = ButtonRingDeviceOption.Keyboard;
+                        _touchPanelSerialConnInfo = new()
+                        {
+                            Port = touchPanelDefaultSerialPort,
+                            BaudRate = 9600,
+                        };
+                        _ledDeviceSerialConnInfo = new()
+                        {
+                            Port = ledDeviceDefaultSerialPort,
+                            BaudRate = 115200,
+                        };
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+            finally
+            {
+                MajDebug.LogInfo($"Player: {(playerIndex == 1 ? "1P" : "2P")}");
+                MajDebug.LogInfo($"IO manufacturer: {manufacturer}");
+                MajDebug.LogInfo($"Button ring device type: {buttonRingType}");
+                _deviceManufacturer = manufacturer;
+                _buttonRingDevice = buttonRingType;
+                _playerIndex = playerIndex;
+            }
         }
         internal static void OnFixedUpdate()
         {
@@ -663,7 +939,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                MajDebug.Log($"[Debounce] Received sensor response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.LogInfo($"[Debounce] Received sensor response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
@@ -685,7 +961,7 @@ namespace MajdataPlay.IO
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                MajDebug.Log($"[Debounce] Received button response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.LogInfo($"[Debounce] Received button response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
@@ -738,6 +1014,19 @@ namespace MajdataPlay.IO
             {
                 _eventWaitHandle.Set();
             }
+        }
+        readonly struct HidConnInfo
+        {
+            public string DeviceName { get; init; }
+            public int ProductId { get; init; }
+            public int VendorId { get; init; }
+            public bool Exclusice { get; init; }
+            public OpenPriority OpenPriority { get; init; }
+        }
+        readonly struct SerialPortConnInfo
+        {
+            public int Port { get; init; }
+            public int BaudRate { get; init; }
         }
     }
 }

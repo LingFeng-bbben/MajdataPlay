@@ -81,7 +81,7 @@ namespace MajdataPlay.IO
         }
         void Log<T>(T msg)
         {
-            _executionQueue.Enqueue(() => MajDebug.Log(msg));
+            _executionQueue.Enqueue(() => MajDebug.LogInfo(msg));
         }
         void Warning<T>(T msg)
         {

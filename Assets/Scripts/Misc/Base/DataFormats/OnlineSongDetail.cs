@@ -507,7 +507,7 @@ namespace MajdataPlay
                             throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
                         }
                         token.ThrowIfCancellationRequested();
-                        MajDebug.Log($"Received http response header from: {uri}");
+                        MajDebug.LogInfo($"Received http response header from: {uri}");
 
                         if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
 

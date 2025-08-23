@@ -70,9 +70,9 @@ namespace MajdataPlay
             s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
             s += $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
             s += $"################     Startup Check  End    ################";
-            MajDebug.Log(s);
-            MajDebug.Log($"PID: {MajEnv.GameProcess.Id}");
-            MajDebug.Log($"Version: {MajInstances.GameVersion}");
+            MajDebug.LogInfo(s);
+            MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
+            MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
             MajEnv.Init();
             base.Awake();
 #if UNITY_STANDALONE_WIN

@@ -204,7 +204,7 @@ namespace MajdataPlay.Settings
     }
     public class IOOptions
     {
-        public DeviceManufacturerOption Manufacturer { get; set; } = DeviceManufacturerOption.General;
+        public DeviceManufacturerOption? Manufacturer { get; set; } = null;
         public InputDeviceOptions InputDevice { get; set; } = new();
         public OutputDeviceOptions OutputDevice { get; set; } = new();
     }
@@ -223,20 +223,12 @@ namespace MajdataPlay.Settings
         public bool Enable { get; set; } = true;
         public int RefreshRateMs { get; set; } = 100;
         public bool Throttler { get; set; } = false;
-        public SerialPortOptions SerialPortOptions { get; set; } = new()
-        {
-            Port = 21,
-            BaudRate = 115200
-        };
-        public HidOptions HidOptions { get; set; } = new()
-        {
-            ProductId = 0x1224,
-            VendorId = 0x0E8F
-        };
+        public SerialPortOptions SerialPortOptions { get; set; } = new();
+        public HidOptions HidOptions { get; set; } = new();
     }
     public class ButtonRingOptions
     {
-        public ButtonRingDeviceOption Type { get; set; } = ButtonRingDeviceOption.Keyboard;
+        public ButtonRingDeviceOption? Type { get; set; } = null;
         public bool Debounce { get; set; } = false;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 0;
@@ -253,15 +245,15 @@ namespace MajdataPlay.Settings
     }
     public class HidOptions
     {
-        public string DeviceName { get; set; } = string.Empty;
-        public int ProductId { get; set; } = 0x0021;
-        public int VendorId { get; set; } = 0x0CA3;
+        public string? DeviceName { get; set; } = null;
+        public int? ProductId { get; set; } = null;
+        public int? VendorId { get; set; } = null;
         public bool Exclusice { get; set; } = false;
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
     }
     public class SerialPortOptions
     {
-        public int Port { get; set; } = 3;
-        public int BaudRate { get; set; } = 9600;
+        public int? Port { get; set; } = null;
+        public int? BaudRate { get; set; } = null;
     }
 }

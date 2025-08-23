@@ -123,7 +123,7 @@ namespace MajdataPlay
                     var songs = await GetCollections(rootPath, progressReporter);
 
                     Collections = songs;
-                    MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                    MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
                     _isInited = true;
                 });
             }
@@ -171,7 +171,7 @@ namespace MajdataPlay
                     }
                 }
                 Collections = collections;
-                MajDebug.Log($"Loaded chart count: {TotalChartCount}");
+                MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
                 GC.Collect();
 
                 CollectionIndex = selectedDir;
@@ -275,7 +275,7 @@ namespace MajdataPlay
                 }
             }
             collections.Add(new SongCollection("All", _allCharts.ToArray()));
-            MajDebug.Log("MyFavorite");
+            MajDebug.LogInfo("MyFavorite");
             if (_userFavorites is not null)
             {
                 foreach (var hash in _userFavorites.SongHashs)
@@ -290,11 +290,11 @@ namespace MajdataPlay
                                           .Where(x => x is not null)
                                           .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
                                           .ToList();
-            MajDebug.Log(favoriteSongs.Count);
+            MajDebug.LogInfo(favoriteSongs.Count);
             _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
             //The collections and _myFavorite share a same ref of original List<T>
             collections.Add(_myFavorite);
-            MajDebug.Log("Load Dans");
+            MajDebug.LogInfo("Load Dans");
             var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
             var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
             for (var i = 0; i < loadDanTasks.Length; i++)
@@ -337,7 +337,7 @@ namespace MajdataPlay
                         continue;
                     }
                     collections.Add(collection);
-                    MajDebug.Log("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
+                    MajDebug.LogInfo("Loaded Dan:" + collection.DanInfo?.Name ?? collection.Name);
                 }
             }
             return collections.ToArray();
@@ -400,7 +400,7 @@ namespace MajdataPlay
             }
 
             var listurl = apiroot + "/maichart/list";
-            MajDebug.Log("Loading Online Charts from:" + listurl);
+            MajDebug.LogInfo("Loading Online Charts from:" + listurl);
             try
             {
                 var client = MajEnv.SharedHttpClient;
@@ -443,7 +443,7 @@ namespace MajdataPlay
                     gameList[i] = songDetail;
                 });
 
-                MajDebug.Log("Loaded Online Charts List:" + gameList.Length);
+                MajDebug.LogInfo("Loaded Online Charts List:" + gameList.Length);
                 Interlocked.Add(ref _totalChartCount, list.Length);
                 var cacheFolder = Path.Combine(MajEnv.CachePath, $"Net/{name}");
                 if (!Directory.Exists(cacheFolder))
@@ -463,7 +463,7 @@ namespace MajdataPlay
                     return collection;
                 }
                 var c = await GetCollection(cachePath);
-                MajDebug.Log("Loaded Cached Online Charts List:" + c.Count);
+                MajDebug.LogInfo("Loaded Cached Online Charts List:" + c.Count);
                 return c;
             }
             catch (Exception e)

@@ -176,7 +176,7 @@ namespace MajdataPlay
         {
 
 #if UNITY_STANDALONE_WIN
-            MajDebug.Log("[VLC] init");
+            MajDebug.LogInfo("[VLC] init");
             if (VLCLibrary != null)
             {
                 VLCLibrary.Dispose();

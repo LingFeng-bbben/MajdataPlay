@@ -687,7 +687,7 @@ namespace MajdataPlay.Scenes.Game
             var token = _cts.Token;
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
-            var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
+            var firstClockTiming = _noteAudioManager.FirstClockTiming;
             float extraTime = 5f;
             if (firstClockTiming < 0f)
             {
@@ -771,7 +771,7 @@ namespace MajdataPlay.Scenes.Game
             _audioSample.CurrentSec = startSec;
 
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
-            MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            MajDebug.LogInfo($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
             if(IsPracticeMode)
             {
@@ -1237,7 +1237,7 @@ namespace MajdataPlay.Scenes.Game
         {
             try
             {
-                MajDebug.Log("GPManagerDestroy");
+                MajDebug.LogInfo("GPManagerDestroy");
                 //we dont StopRecordAsync at here because we want the result screen as well
                 DisposeAudioTrack();
                 ClearAllResources();
