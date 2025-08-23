@@ -221,7 +221,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (ConnectInfo.IsConnSlide)
             {
-                Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * SlideLength;
+                //Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * SlideLength;
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     if (Parent is null)

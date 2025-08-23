@@ -22,6 +22,7 @@ using System.Buffers;
 using System.Threading;
 using MajdataPlay.Settings;
 using MajdataPlay.Buffers;
+using Cysharp.Text;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -827,15 +828,25 @@ namespace MajdataPlay.Scenes.Game
                 var ptr = 1; // 指向目前处理的字符
 
                 var specTimeFlag = 0; // 表示此组合slide是指定总时长 还是指定每一段的时长
-                                      // 0-目前还没有读取 1-读取到了一个未指定时长的段落 2-读取到了一个指定时长的段落 3-（期望）读取到了最后一个时长指定
-
-                while (ptr < noteContent.Length)
+                                      // 0-目前还没有读取
+                                      // 1-读取到了一个未指定时长的段落
+                                      // 2-读取到了一个指定时长的段落
+                                      // 3-（期望）读取到了最后一个时长指定
+                using (var sb = ZString.CreateStringBuilder())
                 {
-                    if (!char.IsNumber(noteContent[ptr]))
+                    while (ptr < noteContent.Length)
                     {
+                        if (char.IsNumber(noteContent[ptr]))
+                        {
+                            // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
+                            throw new InvalidSimaiSyntaxException(timing.RawTextPositionY,
+                                                                  timing.RawTextPositionX,
+                                                                  noteContent,
+                                                                  "组合星星有错误\nSLIDE CHAIN ERROR");
+                        }
+                        sb.Clear();
                         // 读取到字符
                         var slideTypeChar = noteContent[ptr++].ToString();
-
                         var slidePart = new SubSlideNote();
                         slidePart.Type = SimaiNoteType.Slide;
                         slidePart.StartPosition = latestStartIndex;
@@ -844,47 +855,77 @@ namespace MajdataPlay.Scenes.Game
                             // 转折星星
                             var middlePos = noteContent[ptr++];
                             var endPos = noteContent[ptr++];
+                            sb.Clear();
+                            sb.Append(latestStartIndex);
+                            sb.Append(slideTypeChar);
+                            sb.Append(middlePos);
+                            sb.Append(endPos);
 
-                            slidePart.RawContent = latestStartIndex + slideTypeChar + middlePos + endPos;
+                            //slidePart.RawContent = sb.ToString();
                             latestStartIndex = charIntParse(endPos);
                         }
                         else
                         {
                             // 其他普通星星
                             // 额外检查pp和qq
-                            if (noteContent[ptr] == slideTypeChar[0]) slideTypeChar += noteContent[ptr++];
+                            if (noteContent[ptr] == slideTypeChar[0])
+                            {
+                                if (ptr + 1 < noteContent.Length)
+                                {
+                                    slideTypeChar += noteContent[ptr++];
+                                }
+                            }
                             var endPos = noteContent[ptr++];
+                            
+                            sb.Append(latestStartIndex);
+                            sb.Append(slideTypeChar);
+                            sb.Append(endPos);
 
-                            slidePart.RawContent = latestStartIndex + slideTypeChar + endPos;
+                            //slidePart.RawContent = sb.ToString();
                             latestStartIndex = charIntParse(endPos);
                         }
 
-                        if (noteContent[ptr] == '[')
+                        if (noteContent[ptr] == '[')// 如果指定了速度
                         {
-                            // 如果指定了速度
-                            if (specTimeFlag == 0)
-                                // 之前未读取过
-                                specTimeFlag = 2;
-                            else if (specTimeFlag == 1)
-                                // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
-                                specTimeFlag = 3;
-                            else if (specTimeFlag == 3)
-                                // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
-                                throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
-
-                            while (ptr < noteContent.Length && noteContent[ptr] != ']')
-                                slidePart.RawContent += noteContent[ptr++];
-                            slidePart.RawContent += noteContent[ptr++];
+                            switch (specTimeFlag)
+                            {
+                                case 0: // 之前未读取过
+                                    specTimeFlag = 2;
+                                    break;
+                                case 1: // 之前读取到的都是未指定时长的段落 那么将flag设为3 如果之后又读取到时长 则报错
+                                    specTimeFlag = 3;
+                                    break;
+                                case 3: // 之前读取到了指定时长 并期待那个时长就是最终时长 但是又读取到一个新的时长 则报错
+                                    throw new InvalidSimaiSyntaxException(timing.RawTextPositionY,
+                                                                          timing.RawTextPositionX,
+                                                                          noteContent,
+                                                                          "组合星星有错误\nSLIDE CHAIN ERROR");
+                            }
+                            while (ptr < noteContent.Length)
+                            {
+                                sb.Append(noteContent[ptr++]);
+                                //slidePart.RawContent += noteContent[ptr++];
+                                if (noteContent[ptr] == ']')
+                                {
+                                    break;
+                                }
+                            }
+                            slidePart.RawContent = sb.ToString();
                         }
-                        else
+                        else // 没有指定速度
                         {
-                            // 没有指定速度
-                            if (specTimeFlag == 0)
-                                // 之前未读取过
-                                specTimeFlag = 1;
-                            else if (specTimeFlag == 2 || specTimeFlag == 3)
-                                // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
-                                throw new Exception("组合星星有错误\nSLIDE CHAIN ERROR");
+                            switch (specTimeFlag)
+                            {
+                                case 0: // 之前未读取过
+                                    specTimeFlag = 1;
+                                    break;
+                                case 2:
+                                case 3: // 之前读取到指定时长的段落了 说明这一条组合星星有的指定时长 有的没指定 则需要报错
+                                    throw new InvalidSimaiSyntaxException(timing.RawTextPositionY,
+                                                                          timing.RawTextPositionX,
+                                                                          noteContent,
+                                                                          "组合星星有错误\nSLIDE CHAIN ERROR");
+                            }
                         }
 
                         string slideShape = NoteCreateHelper.DetectShapeFromText(slidePart.RawContent);
@@ -893,7 +934,10 @@ namespace MajdataPlay.Scenes.Game
                             slideShape = slideShape.Substring(1);
                         }
                         int slideIndex = SLIDE_PREFAB_MAP[slideShape];
-                        if (slideIndex < 0) slideIndex = -slideIndex;
+                        if (slideIndex < 0)
+                        {
+                            slideIndex = -slideIndex;
+                        }
 
                         var barCount = slidePrefab[slideIndex].transform.childCount;
                         subBarCount.Add(barCount);
@@ -901,11 +945,6 @@ namespace MajdataPlay.Scenes.Game
 
                         slidePart.Origin = note;
                         preprocessSubSlides.Add(slidePart);
-                    }
-                    else
-                    {
-                        // 理论上来说 不应该读取到数字 因此如果读取到了 说明有语法错误
-                        throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
                     }
                 }
                 foreach(var subSlide in preprocessSubSlides)
@@ -917,68 +956,22 @@ namespace MajdataPlay.Scenes.Game
                 }
                 preprocessSubSlides[0].IsSlideNoHead = note.IsSlideNoHead;
 
-                if (specTimeFlag == 1 || specTimeFlag == 0)
-                    // 如果到结束还是1 那说明没有一个指定了时长 报错
-                    throw new Exception("组合星星有错误\nwSLIDE CHAIN ERROR");
+                if (specTimeFlag == 1 || specTimeFlag == 0) // 如果到结束还是1 那说明没有一个指定了时长 报错
+                {
+                    throw new InvalidSimaiSyntaxException(timing.RawTextPositionY,
+                                                          timing.RawTextPositionX,
+                                                          noteContent,
+                                                          "组合星星有错误\nSLIDE CHAIN ERROR");
+                }
                 // 此时 flag为2表示每条指定语法 为3表示整体指定语法
 
-                if (specTimeFlag == 3)
+                // 整体指定语法 使用slideTime来计算
+                var tempBarCount = 0;
+                for (var i = 0; i < preprocessSubSlides.Count; i++)
                 {
-                    // 整体指定语法 使用slideTime来计算
-                    var tempBarCount = 0;
-                    for (var i = 0; i < preprocessSubSlides.Count; i++)
-                    {
-                        preprocessSubSlides[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
-                        preprocessSubSlides[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
-                        tempBarCount += subBarCount[i];
-                    }
-                }
-                else
-                {
-                    // 每条指定语法
-
-                    // 获取时长的子函数
-                    double getTimeFromBeats(string noteText, float currentBpm)
-                    {
-                        var startIndex = noteText.IndexOf('[');
-                        var overIndex = noteText.IndexOf(']');
-                        var innerString = noteText.Substring(startIndex + 1, overIndex - startIndex - 1);
-                        var timeOneBeat = 1d / (currentBpm / 60d);
-                        if (innerString.Count(o => o == '#') == 1)
-                        {
-                            var times = innerString.Split('#');
-                            if (times[1].Contains(':'))
-                            {
-                                innerString = times[1];
-                                timeOneBeat = 1d / (double.Parse(times[0]) / 60d);
-                            }
-                            else
-                            {
-                                return double.Parse(times[1]);
-                            }
-                        }
-
-                        if (innerString.Count(o => o == '#') == 2)
-                        {
-                            var times = innerString.Split('#');
-                            return double.Parse(times[2]);
-                        }
-
-                        var numbers = innerString.Split(':');
-                        var divide = int.Parse(numbers[0]);
-                        var count = int.Parse(numbers[1]);
-
-
-                        return timeOneBeat * 4d / divide * count;
-                    }
-
-                    double tempSlideTime = 0;
-                    for (var i = 0; i < preprocessSubSlides.Count; i++)
-                    {
-                        preprocessSubSlides[i].SlideStartTime = note.SlideStartTime + tempSlideTime;
-                        preprocessSubSlides[i].SlideTime = getTimeFromBeats(preprocessSubSlides[i].RawContent, timing.Bpm);
-                        tempSlideTime += preprocessSubSlides[i].SlideTime;
-                    }
+                    preprocessSubSlides[i].SlideStartTime = note.SlideStartTime + (double)tempBarCount / sumBarCount * note.SlideTime;
+                    preprocessSubSlides[i].SlideTime = (double)subBarCount[i] / sumBarCount * note.SlideTime;
+                    tempBarCount += subBarCount[i];
                 }
 
                 IConnectableSlide? parent = null;
@@ -1065,7 +1058,7 @@ namespace MajdataPlay.Scenes.Game
                 }
                 foreach(var subSlide in subSlides)
                 {
-                    subSlide.ConnectInfo.TotalSlideLen = totalSlideLen;
+                    //subSlide.ConnectInfo.TotalSlideLen = totalSlideLen;
                     subSlide.ConnectInfo.TotalJudgeQueueLen = judgeQueueLen;
                 }
                 foreach (var subSlide in subSlides)
