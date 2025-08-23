@@ -74,7 +74,6 @@ namespace MajdataPlay.Scenes.View
 
         float _playbackSpeed = 1f;
 
-        readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
 
         // Assets
@@ -384,7 +383,7 @@ namespace MajdataPlay.Scenes.View
             _state = ViewStatus.Busy;
             try
             {
-                _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
+                _chart = await SimaiParser.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
                 await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
                 await UniTask.SwitchToMainThread();

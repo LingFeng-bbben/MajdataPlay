@@ -281,14 +281,15 @@ namespace MajdataPlay.Scenes.Game
             if (maiChart.NoteTimings.Length != 0)
             {
 
-                var lastNoteTime = maiChart.NoteTimings.Last().Timing;
+                var lastNoteTime = maiChart.NoteTimings[^1].Timing;
 
-                foreach (var timing in maiChart.NoteTimings)
+                for (var i = 0; i < maiChart.NoteTimings.Length; i++)
                 {
-                    List<NotePoolingInfo?> eachNotes = new();
-                    List<ITouchGroupInfoProvider> members = new();
+                    var timing = maiChart.NoteTimings[i];
+                    RentedList<NotePoolingInfo?> eachNotes = new();
+                    RentedList<ITouchGroupInfoProvider> members = new();
                     var foldedNotes = NoteCreateHelper.NoteFolding(timing.Notes);
-                    foreach (var (i, note) in foldedNotes.WithIndex())
+                    foreach (var note in foldedNotes)
                     {
                         token.ThrowIfCancellationRequested();
                         try
@@ -361,8 +362,16 @@ namespace MajdataPlay.Scenes.Game
                     {
                         touchTasks.Add(AllocTouchGroup(members));
                     }
-                    eachNotes = eachNotes.FindAll(x => x is not null);
-                    if (eachNotes.Count > 1) //有多个非touchnote
+                    var eachNoteCount = 0;
+                    foreach (var note in eachNotes)
+                    {
+                        if (note is not null)
+                        {
+                            eachNotes.Remove(note);
+                            eachNoteCount++;
+                        }
+                    }
+                    if (eachNoteCount > 1) //有多个非touchnote
                     {
                         var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
                         if (eachLinePoolingInfo is not null)
@@ -626,7 +635,7 @@ namespace MajdataPlay.Scenes.Game
         }
         TouchPoolingInfo CreateTouch(in SimaiNote note,
                                      in SimaiTimingPoint timing,
-                                     in List<ITouchGroupInfoProvider> members)
+                                     in IList<ITouchGroupInfoProvider> members)
         {
             try
             {
@@ -674,7 +683,9 @@ namespace MajdataPlay.Scenes.Game
                     QueueInfo = queueInfo,
                 };
                 if (isEach)
+                {
                     members.Add(poolingInfo);
+                }
                 return poolingInfo;
             }
             catch (Exception e)
@@ -690,7 +701,7 @@ namespace MajdataPlay.Scenes.Game
         }
         TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note,
                                              in SimaiTimingPoint timing,
-                                             in List<ITouchGroupInfoProvider> members)
+                                             in IList<ITouchGroupInfoProvider> members)
         {
             try
             {
@@ -735,7 +746,9 @@ namespace MajdataPlay.Scenes.Game
                     QueueInfo = queueInfo,
                 };
                 if (isEach)
+                {
                     members.Add(poolingInfo);
+                }
                 return poolingInfo;
             }
             catch (Exception e)
@@ -749,19 +762,19 @@ namespace MajdataPlay.Scenes.Game
                                                       BuildSyntaxErrorMessage(line, column, note.RawContent));
             }
         }
-        async Task AllocTouchGroup(List<ITouchGroupInfoProvider> members, CancellationToken token = default)
+        Task AllocTouchGroup(IList<ITouchGroupInfoProvider> members, CancellationToken token = default)
         {
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 var sensorTypes = members.GroupBy(x => x.SensorPos)
                                          .Select(x => x.Key)
                                          .ToList();
-                List<List<SensorArea>> sensorGroups = new();
+                using var sensorGroups = new RentedList<RentedList<SensorArea>>();
 
                 while (sensorTypes.Count > 0)
                 {
                     var sensorType = sensorTypes[0];
-                    List<SensorArea> groupMembers = new();
+                    using var groupMembers = new RentedList<SensorArea>();
                     groupMembers.Add(sensorType);
 
                     for (var i = 0; i < groupMembers.Count; i++)
@@ -792,7 +805,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     sensorGroups.Add(groupMembers);
                 }
-                List<TouchGroup> touchGroups = new();
+                using var touchGroups = new RentedList<TouchGroup>();
                 var memberMapping = members.GroupBy(x => x.SensorPos).ToDictionary(x => x.Key);
                 token.ThrowIfCancellationRequested();
                 foreach (var group in sensorGroups)
@@ -810,7 +823,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             });
         }
-        private void CreateSlideGroup(SimaiTimingPoint timing, FoldedSimaiNote note, in List<NotePoolingInfo?> eachNotes)
+        private void CreateSlideGroup(SimaiTimingPoint timing, FoldedSimaiNote note, in IList<NotePoolingInfo?> eachNotes)
         {
             try
             {

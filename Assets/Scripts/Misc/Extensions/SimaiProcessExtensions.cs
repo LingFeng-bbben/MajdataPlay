@@ -7,7 +7,7 @@ namespace MajdataPlay.Extensions
 {
     public static class SimaiProcessExtensions
     {
-        public static void Scale(this SimaiChart source,float timeScale)
+        public static SimaiChart Scale(this SimaiChart source,float timeScale)
         {
             var timingPoints = source.NoteTimings;
             foreach(var timingPoint in timingPoints)
@@ -21,8 +21,9 @@ namespace MajdataPlay.Extensions
                     note.SlideTime /= timeScale;
                 }
             }
+            return source;
         }
-        public static void ConvertToBreak(this SimaiChart source)
+        public static SimaiChart ConvertToBreak(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -33,8 +34,9 @@ namespace MajdataPlay.Extensions
                     note.IsSlideBreak = true;
                 }
             }
+            return source;
         }
-        public static void ConvertToEx(this SimaiChart source)
+        public static SimaiChart ConvertToEx(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -42,8 +44,9 @@ namespace MajdataPlay.Extensions
                 foreach (var note in timingPoint.Notes)
                     note.IsEx = true;
             }
+            return source;
         }
-        public static void ConvertToTouch(this SimaiChart source)
+        public static SimaiChart ConvertToTouch(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -113,8 +116,9 @@ namespace MajdataPlay.Extensions
                     newNoteList.Add(touch);
                 timingPoint.Notes = newNoteList.ToArray();
             }
+            return source;
         }
-        public static void Clamp(this SimaiChart source,Range<long> noteIndexRange)
+        public static SimaiChart Clamp(this SimaiChart source,Range<long> noteIndexRange)
         {
             List<SimaiTimingPoint> newTimingList = new();
             var currentIndex = 0;
@@ -173,17 +177,18 @@ namespace MajdataPlay.Extensions
                 {
                     var newTimingPoint = new SimaiTimingPoint(noteTiming.Timing,
                                                               newNoteList.ToArray(),
-                                                              noteTiming.RawTextPositionX,
-                                                              noteTiming.RawTextPositionY ,
                                                               noteTiming.RawContent,
+                                                              noteTiming.RawTextPositionX,
+                                                              noteTiming.RawTextPositionY,
                                                               noteTiming.Bpm, 
                                                               noteTiming.HSpeed);
                     newTimingList.Add(newTimingPoint);
                 }
             }
-            source.NoteTimings = newTimingList.ToArray();
+            return new SimaiChart(source.Level, source.Designer, source.Fumen, newTimingList, null);
+            //source.NoteTimings = newTimingList.ToArray();
         }
-        public static void Clamp(this SimaiChart source, Range<double> timestampRange)
+        public static SimaiChart Clamp(this SimaiChart source, Range<double> timestampRange)
         {
             List<SimaiTimingPoint> newTimingList = new();
             foreach(var noteTiming in source.NoteTimings)
@@ -193,7 +198,8 @@ namespace MajdataPlay.Extensions
                     newTimingList.Add(noteTiming);
                 }
             }
-            source.NoteTimings = newTimingList.ToArray();
+            //source.NoteTimings = newTimingList.ToArray();
+            return new SimaiChart(source.Level, source.Designer, source.Fumen, newTimingList, null);
         }
     }
 }

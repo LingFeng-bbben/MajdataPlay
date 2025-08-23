@@ -345,7 +345,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     return;
                 }
                 //Generate ClockSounds
-                var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
+                var firstBpm = 0f;
+                if(!chart.NoteTimings.IsEmpty)
+                {
+                    firstBpm = chart.NoteTimings[0].Bpm;
+                }
                 var interval = 60 / firstBpm;
                 using RentedList<AnswerSoundPoint> answerTimingPoints = new();
 
