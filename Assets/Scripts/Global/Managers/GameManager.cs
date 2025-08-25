@@ -181,7 +181,7 @@ namespace MajdataPlay
                 }
                 return true;
             }, Process.GetCurrentProcess().Id);
-            MajDebug.Log($"Found window count: {handles.Count}");
+            MajDebug.LogDebug($"Found window count: {handles.Count}");
             foreach (var handle in handles)
             {
                 Win32API.SetWindowPos(handle, Win32API.HWND_TOPMOST, 0, 0, 0, 0, Win32API.SWP_NOMOVE | Win32API.SWP_NOSIZE);
