@@ -9,14 +9,14 @@ using MajdataPlay.Utils;
 using System.Threading;
 using WebSocketSharp;
 using WebSocketSharp.Server;
-using MajdataPlay.View.Types;
+using MajdataPlay.Scenes.View.Types;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Net.WebSockets;
 using System.Text;
 
 #nullable enable
-namespace MajdataPlay.View
+namespace MajdataPlay.Scenes.View
 {
     internal class WsServer: MajComponent
     {

@@ -9,7 +9,7 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
 #nullable enable
     public class PreviewSoundPlayer : MonoBehaviour
@@ -35,7 +35,7 @@ namespace MajdataPlay.List
             await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
             token.ThrowIfCancellationRequested();
 
-            var previewSample = await info.GetPreviewAudioTrackAsync(token);
+            var previewSample = await info.GetPreviewAudioTrackAsync(token: token);
 
             try
             {
@@ -45,6 +45,7 @@ namespace MajdataPlay.List
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
                 previewSample.CurrentSec = 0;
+                previewSample.Speed = 1.0f;
                 previewSample.Play();
                 token.ThrowIfCancellationRequested();
                 await UniTask.Delay(500, cancellationToken: token, cancelImmediately: true);
@@ -67,7 +68,10 @@ namespace MajdataPlay.List
             finally
             {
                 if (previewSample is not null && !previewSample.IsEmpty)
+                {
                     previewSample.Pause();
+                    previewSample.IsLoop = false;
+                }
             }
         }
 
@@ -77,6 +81,5 @@ namespace MajdataPlay.List
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             selectSound.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
         }
-
     }
 }

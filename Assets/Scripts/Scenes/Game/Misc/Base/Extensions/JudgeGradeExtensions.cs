@@ -1,7 +1,7 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Scenes.Game.Notes;
 using System.Runtime.CompilerServices;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public static class JudgeGradeExtensions
     {

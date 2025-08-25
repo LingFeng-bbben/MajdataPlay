@@ -18,6 +18,7 @@ namespace MajdataPlay
         TotalResult,
         Parctice,
         View,
-        Test
+        Test,
+        Empty
     }
 }

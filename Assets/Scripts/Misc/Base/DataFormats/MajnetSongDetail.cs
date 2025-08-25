@@ -16,12 +16,15 @@ namespace MajdataPlay
         public string Uploader { get; set; }
         public DateTime Timestamp { get; set; }
         public string Hash { get; set; }
+        public string[] Tags { get; set; } = new string[0];
+        public string[] PublicTags { get; set; } = new string[0];
     }
     public struct MajNetSongInteract
     {
         public bool IsLiked { get; init; }
         public int Plays { get; init; }
         public string[] Likes { get; init; }
+        public int DisLikeCount { get; init; }
         public ChartCommentSummary[] Comments { get; init; }
     }
     public readonly struct ChartCommentSummary

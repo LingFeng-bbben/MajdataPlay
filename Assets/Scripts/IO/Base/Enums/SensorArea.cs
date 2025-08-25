@@ -34,10 +34,6 @@
         E5,
         E6,
         E7,
-        E8,
-        Test,
-        P1,
-        Service,
-        P2
+        E8
     }
 }

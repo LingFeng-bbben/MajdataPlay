@@ -1,19 +1,21 @@
-﻿using UnityEngine;
-using System;
-using System.Linq;
+﻿using HidSharp;
+using HidSharp.Platform.Windows;
+using MajdataPlay.Collections;
+using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MychIO;
-using DeviceType = MajdataPlay.IO.ButtonRingDeviceType;
 using MychIO.Device;
-using System.Collections.Generic;
 using MychIO.Event;
-using System.Runtime.CompilerServices;
-using MajdataPlay.Collections;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Policy;
-using HidSharp.Platform.Windows;
 using System.Threading;
-using MajdataPlay.Numerics;
+using UnityEngine;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -44,22 +46,22 @@ namespace MajdataPlay.IO
                 return MajEnv.UserSettings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
             }
         }
-        public static ReadOnlySpan<SensorStatus> ButtonStatusInThisFrame
+        public static ReadOnlySpan<SwitchStatus> ButtonStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInThisFrame;
         }
-        public static ReadOnlySpan<SensorStatus> ButtonStatusInPreviousFrame
+        public static ReadOnlySpan<SwitchStatus> ButtonStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _btnStatusInPreviousFrame;
         }
-        public static ReadOnlySpan<SensorStatus> SensorStatusInThisFrame
+        public static ReadOnlySpan<SwitchStatus> SensorStatusInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInThisFrame;
         }
-        public static ReadOnlySpan<SensorStatus> SensorStatusInPreviousFrame
+        public static ReadOnlySpan<SwitchStatus> SensorStatusInPreviousFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInPreviousFrame;
@@ -100,22 +102,22 @@ namespace MajdataPlay.IO
         };
         readonly static ReadOnlyMemory<Button> _buttons = new Button[12]
         {
-            new Button(KeyCode.B1,SensorArea.A1),
-            new Button(KeyCode.B2,SensorArea.A2),
-            new Button(KeyCode.B3,SensorArea.A3),
-            new Button(KeyCode.B4,SensorArea.A4),
-            new Button(KeyCode.B5,SensorArea.A5),
-            new Button(KeyCode.B6,SensorArea.A6),
-            new Button(KeyCode.B7,SensorArea.A7),
-            new Button(KeyCode.B8,SensorArea.A8),
-            new Button(KeyCode.Test,SensorArea.Test),
-            new Button(KeyCode.SelectP1,SensorArea.P1),
-            new Button(KeyCode.Service,SensorArea.Service),
-            new Button(KeyCode.SelectP2,SensorArea.P2),
+            new Button(KeyCode.B1,ButtonZone.A1),
+            new Button(KeyCode.B2,ButtonZone.A2),
+            new Button(KeyCode.B3,ButtonZone.A3),
+            new Button(KeyCode.B4,ButtonZone.A4),
+            new Button(KeyCode.B5,ButtonZone.A5),
+            new Button(KeyCode.B6,ButtonZone.A6),
+            new Button(KeyCode.B7,ButtonZone.A7),
+            new Button(KeyCode.B8,ButtonZone.A8),
+            new Button(KeyCode.Test,ButtonZone.Test),
+            new Button(KeyCode.SelectP1,ButtonZone.P1),
+            new Button(KeyCode.Service,ButtonZone.Service),
+            new Button(KeyCode.SelectP2,ButtonZone.P2),
         };
-        readonly static TimeSpan[] _btnLastTriggerTimes = new TimeSpan[8];
-        readonly static SensorStatus[] _btnStatusInPreviousFrame = new SensorStatus[12];
-        readonly static SensorStatus[] _btnStatusInThisFrame = new SensorStatus[12];
+        readonly static TimeSpan[] _btnLastTriggerTimes = new TimeSpan[12];
+        readonly static SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[12];
+        readonly static SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[12];
 
         readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
         {
@@ -255,8 +257,8 @@ namespace MajdataPlay.IO
         readonly static TimeSpan[] _sensorLastTriggerTimes = new TimeSpan[33];
         //The serial port will report the status of 35 zones, but there are actually only 34 zones.
         readonly static Memory<bool> _sensorStates = new bool[35];
-        readonly static SensorStatus[] _sensorStatusInPreviousFrame = new SensorStatus[33];
-        readonly static SensorStatus[] _sensorStatusInThisFrame = new SensorStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
+        readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
 
         static bool _useDummy = false;
         readonly static bool _isBtnDebounceEnabled = false;
@@ -268,6 +270,15 @@ namespace MajdataPlay.IO
         static IOManager? _ioManager = null;
 
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
+
+        static SerialPortConnInfo _touchPanelSerialConnInfo = default;
+        static SerialPortConnInfo _ledDeviceSerialConnInfo = default;
+        static HidConnInfo _ledDeviceHidConnInfo = default;
+        static HidConnInfo _buttonRingHidConnInfo = default;
+
+        static int _playerIndex = 1;
+        static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
+        static ButtonRingDeviceOption _buttonRingDevice = ButtonRingDeviceOption.Keyboard;
         static InputManager()
         {
             _isSensorRendererEnabled = MajEnv.UserSettings.Debug.DisplaySensor;
@@ -291,9 +302,273 @@ namespace MajdataPlay.IO
         {
             Input.multiTouchEnabled = true;
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
+            
+            IODeviceDetect();
             ButtonRing.Init();
             TouchPanel.Init();
             LedDevice.Init();
+        }
+        static void IODeviceDetect()
+        {
+            const int YUAN_HID_1P_PID = 22352;
+            const int YUAN_HID_1P_VID = 11836;
+            const int YUAN_HID_2P_PID = 22352;
+            const int YUAN_HID_2P_VID = 11852;
+            const int DAO_HID_PID = 4644;
+            const int DAO_HID_VID = 3727;
+            const int GENERAL_HID_1P_PID = 33;
+            const int GENERAL_HID_1P_VID = 3235;
+            const int GENERAL_HID_2P_PID = 34;
+            const int GENERAL_HID_2P_VID = 3235;
+
+            var hidDevices = HidManager.Devices;
+            var serialPorts = SerialPort.GetPortNames();
+            
+            var ioSettings = MajEnv.UserSettings.IO;
+            var playerIndex = ioSettings.InputDevice.Player;
+            var buttonRingSettings = ioSettings.InputDevice.ButtonRing;
+            var touchPanelSettings = ioSettings.InputDevice.TouchPanel;
+            var ledDeviceSettings = ioSettings.OutputDevice.Led;
+            var userManufacturer = ioSettings.Manufacturer;
+            var userButtonRingType = buttonRingSettings.Type;
+
+            var manufacturer = DeviceManufacturerOption.General;
+            var buttonRingType = userButtonRingType ?? ButtonRingDeviceOption.Keyboard;
+
+            MajDebug.LogInfo($"All available HID devices:\n{string.Join('\n', hidDevices)}");
+            MajDebug.LogInfo($"All available serial ports:\n{string.Join('\n', serialPorts)}");
+
+            try
+            {
+                if (userButtonRingType is not null && buttonRingType == ButtonRingDeviceOption.Keyboard)
+                {
+                    manufacturer = DeviceManufacturerOption.General;
+
+                    _deviceManufacturer = manufacturer;
+                    _buttonRingDevice = buttonRingType;
+                    _touchPanelSerialConnInfo = new()
+                    {
+                        Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                        BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                    };
+                    _ledDeviceSerialConnInfo = new()
+                    {
+                        Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                        BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                    };
+                    return;
+                }
+
+                if (userManufacturer is not null)
+                {
+                    MajDebug.LogInfo("User has set the IO manufacturer and button ring type, use the user-set values");
+                    manufacturer = (DeviceManufacturerOption)userManufacturer;
+                    switch (manufacturer)
+                    {
+                        case DeviceManufacturerOption.General:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? (playerIndex == 1 ? GENERAL_HID_1P_PID : GENERAL_HID_2P_PID),
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? (playerIndex == 1 ? GENERAL_HID_1P_VID : GENERAL_HID_2P_VID),
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
+                        case DeviceManufacturerOption.Yuan:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? (playerIndex == 1 ? YUAN_HID_1P_PID : YUAN_HID_2P_PID),
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? (playerIndex == 1 ? YUAN_HID_1P_VID : YUAN_HID_2P_VID),
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
+                        case DeviceManufacturerOption.Dao:
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = buttonRingSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = buttonRingSettings.HidOptions.ProductId ?? DAO_HID_PID,
+                                VendorId = buttonRingSettings.HidOptions.VendorId ?? DAO_HID_VID,
+                                Exclusice = buttonRingSettings.HidOptions.Exclusice,
+                                OpenPriority = buttonRingSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceHidConnInfo = new()
+                            {
+                                DeviceName = ledDeviceSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = ledDeviceSettings.HidOptions.ProductId ?? DAO_HID_PID,
+                                VendorId = ledDeviceSettings.HidOptions.VendorId ?? DAO_HID_VID,
+                                Exclusice = ledDeviceSettings.HidOptions.Exclusice,
+                                OpenPriority = ledDeviceSettings.HidOptions.OpenPriority
+                            };
+                            break;
+                    }
+                }
+                else
+                {
+                    var yuanDefaultHidPID = YUAN_HID_1P_PID;
+                    var yuanDefaultHidVID = YUAN_HID_1P_VID;
+                    var daoDefaultHidPID = DAO_HID_PID;
+                    var daoDefaultHidVID = DAO_HID_VID;
+                    var generalDefaultHidPID = GENERAL_HID_1P_PID;
+                    var generalDefaultHidVID = GENERAL_HID_1P_VID;
+
+                    var touchPanelDefaultSerialPort = 3;
+                    var ledDeviceDefaultSerialPort = 21;
+
+                    if(playerIndex != 1)
+                    {
+                        yuanDefaultHidPID = YUAN_HID_2P_PID;
+                        yuanDefaultHidVID = YUAN_HID_2P_VID;
+                        generalDefaultHidPID = GENERAL_HID_2P_PID;
+                        generalDefaultHidVID = GENERAL_HID_2P_VID;
+                        touchPanelDefaultSerialPort = 4;
+                        ledDeviceDefaultSerialPort = 22;
+                    }
+
+
+                    MajDebug.LogInfo("User has not set the IO manufacturer and button ring type, will be detected automatically");
+                    var filteredHidDevices = hidDevices.Where(x =>
+                    {
+                        var isYuan = x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID;
+                        var isDao = x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID;
+                        var isGeneral = x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID;
+                        var result = isYuan || isDao || isGeneral;
+
+                        return result;
+                    });
+                    if (filteredHidDevices.Count() != 0)
+                    {
+                        if (hidDevices.Any(x => x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Yuan");
+                            manufacturer = DeviceManufacturerOption.Yuan;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = yuanDefaultHidPID,
+                                VendorId = yuanDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelDefaultSerialPort,
+                                BaudRate = 9600,
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceDefaultSerialPort,
+                                BaudRate = 115200,
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Dao");
+                            manufacturer = DeviceManufacturerOption.Dao;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = daoDefaultHidPID,
+                                VendorId = daoDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _ledDeviceHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = daoDefaultHidPID,
+                                VendorId = daoDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: General");
+                            manufacturer = DeviceManufacturerOption.General;
+                            buttonRingType = ButtonRingDeviceOption.HID;
+                            _touchPanelSerialConnInfo = new()
+                            {
+                                Port = touchPanelDefaultSerialPort,
+                                BaudRate = 9600,
+                            };
+                            _buttonRingHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = generalDefaultHidPID,
+                                VendorId = generalDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+                                Port = ledDeviceDefaultSerialPort,
+                                BaudRate = 115200,
+                            };
+                        }
+                        else
+                        {
+                            throw new ArgumentException("?");
+                        }
+                    }
+                    else
+                    {
+                        MajDebug.LogWarning("No HID device detected, fallback to keyboard");
+                        manufacturer = DeviceManufacturerOption.General;
+                        buttonRingType = ButtonRingDeviceOption.Keyboard;
+                        _touchPanelSerialConnInfo = new()
+                        {
+                            Port = touchPanelDefaultSerialPort,
+                            BaudRate = 9600,
+                        };
+                        _ledDeviceSerialConnInfo = new()
+                        {
+                            Port = ledDeviceDefaultSerialPort,
+                            BaudRate = 115200,
+                        };
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+            finally
+            {
+                MajDebug.LogInfo($"Player: {(playerIndex == 1 ? "1P" : "2P")}");
+                MajDebug.LogInfo($"IO manufacturer: {manufacturer}");
+                MajDebug.LogInfo($"Button ring device type: {buttonRingType}");
+                _deviceManufacturer = manufacturer;
+                _buttonRingDevice = buttonRingType;
+                _playerIndex = playerIndex;
+            }
         }
         internal static void OnFixedUpdate()
         {
@@ -303,24 +578,14 @@ namespace MajdataPlay.IO
         {
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
-            var executionQueue = MajEnv.ExecutionQueue;
             try
             {
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
-                if (_useDummy || MajEnv.IsEditor)
-                {
-                    UpdateMousePosition();
-                }
-                else
-                {
-                    UpdateSensorState();
-                }
+
+                UpdateMousePosition();
+                UpdateSensorState();
                 UpdateButtonState();
-                while (executionQueue.TryDequeue(out var eventAction))
-                {
-                    eventAction();
-                }
             }
             catch (Exception e)
             {
@@ -341,34 +606,38 @@ namespace MajdataPlay.IO
             }
         }
         public static void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
-        public static void BindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void BindArea(EventHandler<InputEventArgs> checker, ButtonZone sType)
         {
-            var sensor = GetSensor(sType);
+            var sensor = GetSensor(sType.ToSensorArea());
             var button = GetButton(sType);
             if (sensor == null || button is null)
+            {
                 throw new Exception($"{sType} Sensor or Button not found.");
+            }
 
             sensor.AddSubscriber(checker);
             button.AddSubscriber(checker);
         }
         public static void UnbindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger -= checker;
-        public static void UnbindArea(EventHandler<InputEventArgs> checker, SensorArea sType)
+        public static void UnbindArea(EventHandler<InputEventArgs> checker, ButtonZone sType)
         {
-            var sensor = GetSensor(sType);
+            var sensor = GetSensor(sType.ToSensorArea());
             var button = GetButton(sType);
             if (sensor is null || button is null)
+            {
                 throw new Exception($"{sType} Sensor or Button not found.");
+            }
 
             sensor.RemoveSubscriber(checker);
             button.RemoveSubscriber(checker);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckAreaStatus(SensorArea sType, SensorStatus targetStatus)
+        public static bool CheckAreaStatus(ButtonZone sType, SwitchStatus targetStatus)
         {
-            return CheckSensorStatus(sType,targetStatus) || CheckButtonStatus(sType, targetStatus);
+            return CheckSensorStatus(sType.ToSensorArea(),targetStatus) || CheckButtonStatus(sType, targetStatus);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatus(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
 
@@ -379,7 +648,7 @@ namespace MajdataPlay.IO
             return sensor.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatus(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatus(ButtonZone target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var button = GetButton(target);
@@ -390,7 +659,7 @@ namespace MajdataPlay.IO
             return button.State == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatusInThisFrame(ButtonZone target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -398,7 +667,7 @@ namespace MajdataPlay.IO
             return _btnStatusInThisFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckButtonStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckButtonStatusInPreviousFrame(ButtonZone target, SwitchStatus targetStatus)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -406,7 +675,7 @@ namespace MajdataPlay.IO
             return _btnStatusInPreviousFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetButtonStatusInThisFrame(SensorArea target)
+        public static SwitchStatus GetButtonStatusInThisFrame(ButtonZone target)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -414,7 +683,7 @@ namespace MajdataPlay.IO
             return _btnStatusInThisFrame[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetButtonStatusInPreviousFrame(SensorArea target)
+        public static SwitchStatus GetButtonStatusInPreviousFrame(ButtonZone target)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
@@ -422,16 +691,60 @@ namespace MajdataPlay.IO
             return _btnStatusInPreviousFrame[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsButtonClickedInThisFrame(SensorArea target)
+        public static bool IsButtonClickedInThisFrame(ButtonZone target)
         {
             ThrowIfButtonIndexOutOfRange(target);
             var index = GetButtonIndex(target);
 
-            return _btnStatusInPreviousFrame[index] == SensorStatus.Off &&
-                   _btnStatusInThisFrame[index] == SensorStatus.On;
+            return _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                   _btnStatusInThisFrame[index] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatusInThisFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool IsButtonClickedInThisFrame_OR(params ButtonZone[] targets)
+        {
+            return IsButtonClickedInThisFrame_OR(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_OR(ReadOnlySpan<ButtonZone> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfButtonIndexOutOfRange(target);
+                var index = GetButtonIndex(target);
+
+                var result = _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _btnStatusInThisFrame[index] == SwitchStatus.On;
+                if (result)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_AND(params ButtonZone[] targets)
+        {
+            return IsButtonClickedInThisFrame_AND(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsButtonClickedInThisFrame_AND(ReadOnlySpan<ButtonZone> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfButtonIndexOutOfRange(target);
+                var index = GetButtonIndex(target);
+
+                var result = _btnStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _btnStatusInThisFrame[index] == SwitchStatus.On;
+                if (!result)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckSensorStatusInThisFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -439,7 +752,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInThisFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CheckSensorStatusInPreviousFrame(SensorArea target, SensorStatus targetStatus)
+        public static bool CheckSensorStatusInPreviousFrame(SensorArea target, SwitchStatus targetStatus)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -447,7 +760,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInPreviousFrame[index] == targetStatus;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetSensorStatusInThisFrame(SensorArea target)
+        public static SwitchStatus GetSensorStatusInThisFrame(SensorArea target)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -455,7 +768,7 @@ namespace MajdataPlay.IO
             return _sensorStatusInThisFrame[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static SensorStatus GetSensorStatusInPreviousFrame(SensorArea target)
+        public static SwitchStatus GetSensorStatusInPreviousFrame(SensorArea target)
         {
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
@@ -517,23 +830,60 @@ namespace MajdataPlay.IO
             ThrowIfSensorIndexOutOfRange(target);
             var index = (int)target;
 
-            return _sensorStatusInPreviousFrame[index] == SensorStatus.Off &&
-                   _sensorStatusInThisFrame[index] == SensorStatus.On;
+            return _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                   _sensorStatusInThisFrame[index] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static Button? GetButton(SensorArea type)
+        public static bool IsSensorClickedInThisFrame_OR(params SensorArea[] targets)
+        {
+            return IsSensorClickedInThisFrame_OR(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_OR(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfSensorIndexOutOfRange(target);
+                var index = (int)target;
+
+                var result = _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SwitchStatus.On;
+                if (result)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_AND(params SensorArea[] targets)
+        {
+            return IsSensorClickedInThisFrame_AND(targets.AsSpan());
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedInThisFrame_AND(ReadOnlySpan<SensorArea> targets)
+        {
+            foreach (var target in targets)
+            {
+                ThrowIfSensorIndexOutOfRange(target);
+                var index = (int)target;
+
+                var result = _sensorStatusInPreviousFrame[index] == SwitchStatus.Off &&
+                             _sensorStatusInThisFrame[index] == SwitchStatus.On;
+                if (!result)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Button? GetButton(ButtonZone zone)
         {
             var buttons = _buttons.Span;
-            return type switch
-            {
-                _ when type < SensorArea.A1 => throw new ArgumentOutOfRangeException(),
-                _ when type < SensorArea.B1 => buttons[(int)type],
-                SensorArea.Test => buttons[8],
-                SensorArea.P1 => buttons[9],
-                SensorArea.Service => buttons[10],
-                SensorArea.P2 => buttons[11],
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            ThrowIfButtonIndexOutOfRange(zone);
+
+            return buttons[(int)zone];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ReadOnlyMemory<Button> GetButtons()
@@ -580,37 +930,50 @@ namespace MajdataPlay.IO
         /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool JitterDetect(SensorArea zone, TimeSpan now, bool isBtn = false)
+        static bool JitterDetect(SensorArea zone, TimeSpan now)
         {
             var index = (int)zone;
-            TimeSpan lastTriggerTime;
-            TimeSpan debounceTime;
-            if (isBtn)
-            {
-                lastTriggerTime = _btnLastTriggerTimes[index];
-                debounceTime = _btnDebounceThresholdMs;
-            }
-            else
-            {
-                lastTriggerTime = _sensorLastTriggerTimes[index];
-                debounceTime = _sensorDebounceThresholdMs;
-            }
+            TimeSpan lastTriggerTime = _sensorLastTriggerTimes[index];
+            TimeSpan debounceTime = _sensorDebounceThresholdMs;
+
             var diff = now - lastTriggerTime;
             if (diff < debounceTime)
             {
-                MajDebug.Log($"[Debounce] Received {(isBtn ? "button" : "sensor")} response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                MajDebug.LogInfo($"[Debounce] Received sensor response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// Used to check whether the device activation is caused by abnormal jitter
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <returns>
+        /// If the trigger interval is lower than the debounce threshold, returns <see cref="bool">true</see>, otherwise <see cref="bool">false</see>
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool JitterDetect(ButtonZone zone, TimeSpan now)
+        {
+            var index = (int)zone;
+            TimeSpan lastTriggerTime = _btnLastTriggerTimes[index];
+            TimeSpan debounceTime = _btnDebounceThresholdMs;
+
+            var diff = now - lastTriggerTime;
+            if (diff < debounceTime)
+            {
+                MajDebug.LogInfo($"[Debounce] Received button response\nZone: {zone}\nInterval: {diff.Milliseconds}ms");
                 return true;
             }
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void ThrowIfButtonIndexOutOfRange(SensorArea target)
+        static void ThrowIfButtonIndexOutOfRange(ButtonZone target)
         {
-            var keyRange = new Range<int>(0, 7, ContainsType.Closed);
-            var specialRange = new Range<int>(33, 36, ContainsType.Closed);
-            if (!(keyRange.InRange((int)target) || specialRange.InRange((int)target)))
+            if (target > ButtonZone.P2 || target < ButtonZone.A1)
+            {
                 throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void ThrowIfSensorIndexOutOfRange(SensorArea area)
@@ -618,53 +981,9 @@ namespace MajdataPlay.IO
             if (area < SensorArea.A1 || area > SensorArea.E8)
                 throw new ArgumentOutOfRangeException();
         }
-        static int GetButtonIndex(SensorArea area)
+        static int GetButtonIndex(ButtonZone area)
         {
-            switch(area)
-            {
-                case SensorArea.A1:
-                case SensorArea.A2:
-                case SensorArea.A3:
-                case SensorArea.A4:
-                case SensorArea.A5:
-                case SensorArea.A6:
-                case SensorArea.A7:
-                case SensorArea.A8:
-                    return (int)area;
-                case SensorArea.Test:
-                case SensorArea.P1:
-                case SensorArea.Service:
-                case SensorArea.P2:
-                    return (int)area - 25;
-                default:
-                    throw new ArgumentOutOfRangeException("Button index cannot greater than A8");
-            }
-        }
-
-        static void OnTouchPanelStateChanged(TouchPanelZone zone, InputState state)
-        {
-            var i = (int)zone;
-            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
-
-            _touchPanelInputBuffer.Enqueue(new()
-            {
-                Index = i,
-                State = majState,
-                Timestamp = MajTimeline.UnscaledTime
-            });
-        }
-        static void OnButtonRingStateChanged(ButtonRingZone zone, InputState state)
-        {
-            var majState = state == InputState.On ? SensorStatus.On : SensorStatus.Off;
-            var i = GetIndexByButtonRingZone(zone);
-
-            //ButtonRing.OnButtonRingStateChanged(i, majState);
-            _buttonRingInputBuffer.Enqueue(new()
-            {
-                Index = i,
-                State = majState,
-                Timestamp = MajTimeline.UnscaledTime
-            });
+            return (int)area;
         }
         class IOThreadSynchronization
         {
@@ -695,6 +1014,19 @@ namespace MajdataPlay.IO
             {
                 _eventWaitHandle.Set();
             }
+        }
+        readonly struct HidConnInfo
+        {
+            public string DeviceName { get; init; }
+            public int ProductId { get; init; }
+            public int VendorId { get; init; }
+            public bool Exclusice { get; init; }
+            public OpenPriority OpenPriority { get; init; }
+        }
+        readonly struct SerialPortConnInfo
+        {
+            public int Port { get; init; }
+            public int BaudRate { get; init; }
         }
     }
 }

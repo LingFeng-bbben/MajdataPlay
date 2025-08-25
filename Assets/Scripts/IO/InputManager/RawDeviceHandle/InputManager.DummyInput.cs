@@ -12,6 +12,7 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        public static bool UseOuterTouchAsSensor;
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -30,7 +31,7 @@ namespace MajdataPlay.IO
             var now = MajTimeline.UnscaledTime;
             foreach (var (i, state) in newStates.WithIndex())
             {
-                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                var _state = state ? SwitchStatus.On : SwitchStatus.Off;
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -38,9 +39,23 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
+            if (UseOuterTouchAsSensor) {
+                foreach (var (i, state) in extraButtonStates.WithIndex())
+                {
+                    var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+                    if (i >= 8) continue;
+                    _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
+                    {
+                        Index = i,
+                        State = _state,
+                        Timestamp = now
+                    });
+                }
+            }
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
-                var _state = state ? SensorStatus.On : SensorStatus.Off;
+                var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+                if (i < 8 && UseOuterTouchAsSensor) continue;
                 _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -48,7 +63,6 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
-            UpdateSensorState();
         }
         static void FromTouchPanel(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {

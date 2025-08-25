@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes.Skins
+namespace MajdataPlay.Scenes.Game.Notes.Skins
 {
     public readonly ref struct SlideSkin
     {

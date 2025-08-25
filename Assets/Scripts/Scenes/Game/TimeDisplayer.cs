@@ -6,7 +6,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class TimeDisplayer : MonoBehaviour
     {

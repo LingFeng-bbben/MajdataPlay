@@ -1,19 +1,20 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
-using MajdataPlay.Game.Buffers;
-using MajdataPlay.Game.Notes.Controllers;
-using MajdataPlay.Game.Notes.Touch;
-using MajdataPlay.Game.Utils;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Notes.Touch;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
@@ -57,6 +58,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
         readonly GameObject[] _fans = new GameObject[4];
         readonly Transform[] _fanTransforms = new Transform[4];
         readonly SpriteRenderer[] _fanRenderers = new SpriteRenderer[4];
+
+        ButtonZone? _buttonPos;
 
         float displayDuration;
         float moveDuration;
@@ -134,16 +137,20 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     if (_isJudged || !IsAutoplay)
                         return;
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
                     {
                         var autoplayGrade = AutoplayGrade;
                         if (((int)autoplayGrade).InRange(0, 14))
+                        {
                             _judgeResult = autoplayGrade;
+                        }
                         else
+                        {
                             _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        }
                         ConvertJudgeGrade(ref _judgeResult);
                         _isJudged = true;
                         _judgeDiff = _judgeResult switch
@@ -163,8 +170,8 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
@@ -194,7 +201,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            {
                 return;
+            }
 
             StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
@@ -212,6 +221,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
+            if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
+            {
+                _buttonPos = _sensorPos.ToButtonZone();
+            }
+            else
+            {
+                _buttonPos = null;
+            }
             _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
@@ -244,7 +261,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
 
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sortingOrder = SortOrder - (_fanSpriteSortOrder + i);
+            }
             _pointRenderer.sortingOrder = SortOrder - _pointBorderSortOrder;
             _borderRenderer.sortingOrder = SortOrder - _borderSortOrder;
             _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
@@ -276,9 +295,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             _objectCounter.ReportResult(this, result);
             if (!_isJudged)
+            {
                 _noteManager.NextTouch(QueueInfo);
+            }
             if (isFirework && !result.IsMissOrTooFast)
+            {
                 _effectManager.PlayFireworkEffect(transform.position);
+            }
 
             PlayJudgeSFX(new NoteJudgeResult()
             {
@@ -302,7 +325,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             if (IsBreak)
             {
                 for (var i = 0; i < 4; i++)
+                {
                     _fanRenderers[i].sprite = skin.Fans_Break[i];
+                }
                 _borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
                 _pointRenderer.sprite = skin.Point_Break;
                 board_On = skin.Boader_Break;
@@ -311,9 +336,18 @@ namespace MajdataPlay.Game.Notes.Behaviours
             else
             {
                 for (var i = 0; i < 4; i++)
+                {
                     _fanRenderers[i].sprite = skin.Fans[i];
+                }
                 _borderRenderer.sprite = skin.Boader; // TouchHold Border
-                _pointRenderer.sprite = skin.Point;
+                if(IsEach)
+                {
+                    _pointRenderer.sprite = skin.Point_Each;
+                }
+                else
+                {
+                    _pointRenderer.sprite = skin.Point;
+                }
                 board_On = skin.Boader;
             }
             board_Off = skin.Off;
@@ -321,7 +355,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         protected override void Judge(float currentSec)
         {
             if (_isJudged)
+            {
                 return;
+            }
 
             var diffSec = currentSec - JudgeTiming;
             var isFast = diffSec < 0;
@@ -329,7 +365,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             var diffMSec = MathF.Abs(diffSec * 1000);
 
             if (isFast && diffMSec > TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC)
+            {
                 return;
+            }
 
             var result = diffMSec switch
             {
@@ -430,7 +468,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             // Too late check
             if (IsEnded || _isJudged)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -454,12 +494,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _isJudged = true;
                 _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
                 _lastHoldState = -2;
+                _releaseTime = 114514;
                 _noteManager.NextTouch(QueueInfo);
             }
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
@@ -470,15 +511,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (IsUseButtonRingForTouch && ((int)_sensorPos).InRange(0, 7) &&
-                _noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
             }
             else
             {
@@ -495,7 +535,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)
@@ -509,7 +549,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void BodyCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             if (_lastHoldState is -1 or 1)
             {
@@ -520,7 +562,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
@@ -542,7 +584,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void ForceEndCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             var remainingTime = GetRemainingTime();
 
@@ -554,7 +598,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             base.SetActive(state);
             SetFanActive(state);
             SetBorderActive(state);
@@ -651,7 +697,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void SetFansMaterial(Material material)
         {
             for (var i = 0; i < 4; i++)
+            {
                 _fanRenderers[i].sharedMaterial = material;
+            }
         }
         protected override void PlaySFX()
         {

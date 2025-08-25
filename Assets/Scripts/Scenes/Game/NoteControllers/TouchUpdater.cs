@@ -1,7 +1,7 @@
 ﻿using MajdataPlay.Utils;
 using UnityEngine.Profiling;
 
-namespace MajdataPlay.Game.Notes.Controllers
+namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal sealed class TouchUpdater : NoteUpdater
     {
@@ -15,9 +15,10 @@ namespace MajdataPlay.Game.Notes.Controllers
         {
             Majdata<TouchUpdater>.Instance = this;
         }
-        void OnDestroy()
+        protected override void OnDestroy()
         {
             Majdata<TouchUpdater>.Free();
+            base.OnDestroy();
         }
         internal override void OnFixedUpdate()
         {

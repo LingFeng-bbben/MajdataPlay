@@ -1,11 +1,11 @@
-﻿using MajdataPlay.Game.Notes;
-using MajdataPlay.Game.Notes.Controllers;
+﻿using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public sealed class TapEffectDisplayer : MonoBehaviour
     {

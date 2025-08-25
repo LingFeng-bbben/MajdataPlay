@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Game.Notes.Skins
+namespace MajdataPlay.Scenes.Game.Notes.Skins
 {
     public readonly ref struct TouchHoldSkin
     {
@@ -14,6 +14,7 @@ namespace MajdataPlay.Game.Notes.Skins
         public Sprite Boader { get; init; }
         public Sprite Boader_Break { get; init; }
         public Sprite Point { get; init; }
+        public Sprite Point_Each { get; init; }
         public Sprite Point_Break { get; init; }
         public Sprite Off { get; init; }
 

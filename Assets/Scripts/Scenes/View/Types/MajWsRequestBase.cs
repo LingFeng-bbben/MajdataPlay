@@ -1,6 +1,6 @@
 using System;
 #nullable enable
-namespace MajdataPlay.View.Types
+namespace MajdataPlay.Scenes.View.Types
 {
     internal readonly struct MajWsRequestBase
     {

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
@@ -29,7 +30,12 @@ namespace MajdataPlay.IO
             readonly static bool _isEnabled = true;
             static LedDevice()
             {
+#if !UNITY_STANDALONE_WIN
+                _isEnabled = false;
+#else
                 _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
+#endif
+
                 _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
                 if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100)
@@ -39,24 +45,27 @@ namespace MajdataPlay.IO
             }
             public static void Init()
             {
+#if !UNITY_STANDALONE_WIN
+                return;
+#endif
                 try
                 {
                     if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
                     {
                         return;
                     }
-                    var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                    var manufacturer = _deviceManufacturer;
                     switch (manufacturer)
                     {
-                        case DeviceManufacturer.General:
-                        case DeviceManufacturer.Yuan:
+                        case DeviceManufacturerOption.General:
+                        case DeviceManufacturerOption.Yuan:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
-                        case DeviceManufacturer.Dao:
+                        case DeviceManufacturerOption.Dao:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported led device manufacturer: {manufacturer}");
+                            MajDebug.LogWarning($"Led: Not supported led device manufacturer: {manufacturer}");
                             break;
                     }
                 }
@@ -69,8 +78,7 @@ namespace MajdataPlay.IO
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var serialPortOptions = ledOptions.SerialPortOptions;
+                var serialPortOptions = _ledDeviceSerialConnInfo;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
@@ -83,7 +91,7 @@ namespace MajdataPlay.IO
                 serial.WriteBufferSize = 16;
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 Span<byte> buffer = stackalloc byte[10];
                 Span<LedReport> latestReports = stackalloc LedReport[8]
                 {
@@ -133,7 +141,7 @@ namespace MajdataPlay.IO
 
                 if (!EnsureSerialPortIsOpen(serial))
                 {
-                    MajDebug.LogWarning($"Cannot open COM{serialPortOptions.Port}, using dummy lights");
+                    MajDebug.LogWarning($"Led: Cannot open COM{serialPortOptions.Port}, using dummy lights");
                     return;
                 }
                 while (true)
@@ -167,7 +175,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        MajDebug.LogError($"From Led refresher: \n{e}");
+                        MajDebug.LogError($"Led: \n{e}");
                     }
                     finally
                     {
@@ -184,7 +192,7 @@ namespace MajdataPlay.IO
             static void HIDUpdateLoop()
             {
                 var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var hidOptions = ledOptions.HidOptions;
+                var hidOptions = _ledDeviceHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(ledOptions.RefreshRateMs);
@@ -249,7 +257,7 @@ namespace MajdataPlay.IO
                 hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;
@@ -281,7 +289,7 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
-                    MajDebug.Log($"Led device connected\nDevice: {device}");
+                    MajDebug.LogInfo($"Led: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -318,11 +326,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"Led: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"Led: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Led: from HID listener: \n{e}");
+                            MajDebug.LogError($"Led: \n{e}");
                         }
                         finally
                         {
@@ -334,7 +342,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < refreshRate)
+                                {
                                     Thread.Sleep(refreshRate - elapsed);
+                                }
                             }
                         }
                     }

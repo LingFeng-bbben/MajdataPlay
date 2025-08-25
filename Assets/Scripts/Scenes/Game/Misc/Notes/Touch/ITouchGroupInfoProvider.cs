@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Touch
+namespace MajdataPlay.Scenes.Game.Notes.Touch
 {
     public interface ITouchGroupInfoProvider
     {

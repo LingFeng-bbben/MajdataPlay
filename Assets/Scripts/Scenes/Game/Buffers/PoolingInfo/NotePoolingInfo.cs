@@ -1,7 +1,7 @@
-﻿using MajdataPlay.Game.Notes.Behaviours;
+﻿using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Buffers
+namespace MajdataPlay.Scenes.Game.Buffers
 {
     internal abstract class NotePoolingInfo
     {

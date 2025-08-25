@@ -10,7 +10,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     public class ChartInfoDisplayer: MonoBehaviour
     {
@@ -25,7 +25,9 @@ namespace MajdataPlay.Game
         private void Start()
         {
             if (_gameInfo is null)
+            {
                 return;
+            }
             var song = _gameInfo.Current;
             title.text = song.Title;
             artist.text = song.Artist;
@@ -36,7 +38,9 @@ namespace MajdataPlay.Game
 
         async UniTask LoadCover(ISongDetail song)
         {
-            coverImg.sprite = await song.GetCoverAsync(true);
+            var cover = await song.GetCoverAsync(true);
+            await UniTask.SwitchToMainThread();
+            coverImg.sprite = cover;
         }
     }
 }

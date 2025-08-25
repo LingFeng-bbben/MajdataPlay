@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -28,7 +30,7 @@ namespace MajdataPlay.Utils
         {
             get
             {
-                return MajEnv.UserSettings.Game.RecordMode == RecordMode.OBSTrigger;
+                return MajEnv.UserSettings.Game.RecordMode == RecordModeOption.OBSTrigger;
             }
         }
 

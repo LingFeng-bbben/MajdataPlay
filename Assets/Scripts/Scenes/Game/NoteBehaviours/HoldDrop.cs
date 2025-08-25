@@ -3,14 +3,16 @@ using MajdataPlay.Utils;
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
-using MajdataPlay.Game.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Game.Utils;
-using MajdataPlay.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
+using MajdataPlay.Settings;
+
 #nullable enable
-namespace MajdataPlay.Game.Notes.Behaviours
+namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent
@@ -74,6 +76,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         // 1  => Pressed
         int _lastHoldState = -2;
         float _releaseTime = 0;
+        ButtonZone? _buttonPos;
         Range<float> _bodyCheckRange;
 
         readonly float _noteAppearRate = MajInstances.Settings?.Debug.NoteAppearRate ?? 0.265f;
@@ -121,7 +124,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
         {
             switch (AutoplayMode)
             {
-                case AutoplayMode.Enable:
+                case AutoplayModeOption.Enable:
                     if (_isJudged || !IsAutoplay)
                         return;
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
@@ -145,15 +148,15 @@ namespace MajdataPlay.Game.Notes.Behaviours
                         _lastHoldState = -1;
                     }
                     break;
-                case AutoplayMode.DJAuto_TouchPanel_First:
-                case AutoplayMode.DJAuto_ButtonRing_First:
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
         }
         void DJAutoplay()
         {
-            var isBtnFirst = AutoplayMode == AutoplayMode.DJAuto_ButtonRing_First;
+            var isBtnFirst = AutoplayMode == AutoplayModeOption.DJAuto_ButtonRing_First;
             if (!IsAutoplay || IsEnded)
             {
                 return;
@@ -167,7 +170,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 }
                 if (isBtnFirst)
                 {
-                    _noteManager.SimulateButtonPress(_sensorPos);
+                    _noteManager.SimulateButtonPress(_buttonPos);
                 }
                 else
                 {
@@ -186,19 +189,21 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (isBtnFirst)
             {
-                _ = _noteManager.SimulateButtonClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
+                _ = _noteManager.SimulateButtonClick(_buttonPos) ||
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
             }
             else
             {
                 _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicy.Permissive &&  _noteManager.SimulateButtonClick(_sensorPos));
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive &&  _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            {
                 return;
+            }
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
             _judgeTiming = Timing;
@@ -214,6 +219,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             _sensorPos = (SensorArea)(StartPos - 1);
+            _buttonPos = _sensorPos.ToButtonZone();
             _playerReleaseTimeSec = 0;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
             _lastHoldState = -2;
@@ -229,7 +235,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + HOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(JudgeTiming + HOLD_HEAD_IGNORE_LENGTH_SEC, JudgeTiming + Length - HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
@@ -259,9 +265,13 @@ namespace MajdataPlay.Game.Notes.Behaviours
             State = NoteStatus.End;
 
             if (IsClassic)
+            {
                 _judgeResult = HoldClassicEndJudge(_judgeResult, endJudgeOffset);
+            }
             else
+            {
                 _judgeResult = HoldEndJudge(_judgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
+            }
             ConvertJudgeGrade(ref _judgeResult);
 
             var result = new NoteJudgeResult()
@@ -435,8 +445,10 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged || AutoplayMode == AutoplayMode.Enable)
+            if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TAP_JUDGE_GOOD_AREA_MSEC / 1000;
@@ -448,6 +460,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
                 _judgeDiff = 150;
                 _lastHoldState = -2;
                 _noteManager.NextNote(QueueInfo);
+                _releaseTime = 114514;
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {
                     _effectManager.PlayEffect(StartPos, new NoteJudgeResult()
@@ -473,14 +486,14 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_sensorPos))
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
                 isButton = true;
             }
             else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
             {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos).Target;
+                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
             }
             else
             {
@@ -497,7 +510,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
             }
             else
             {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET);
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
 
             if (_isJudged)
@@ -522,7 +535,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         void BodyCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             var remainingTime = GetRemainingTime();
 
@@ -536,11 +551,11 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 return;
             }
-            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_sensorPos, SensorStatus.On);
-            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SensorStatus.On);
+            var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_buttonPos, SwitchStatus.On);
+            var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
-            if (isPressed || AutoplayMode == AutoplayMode.Enable)
+            if (isPressed || AutoplayMode == AutoplayModeOption.Enable)
             {
                 if (remainingTime == 0)
                 {
@@ -557,9 +572,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
             {
                 if (IsClassic)
                 {
-                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SensorStatus.On) && 
+                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
                                            !isButtonPressed;
-                    var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET;
+                    var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET_SEC;
                     End(offset);
                     return;
                 }
@@ -584,7 +599,7 @@ namespace MajdataPlay.Game.Notes.Behaviours
 
             if (IsClassic)
             {
-                if (AutoplayMode == AutoplayMode.Enable && remainingTime == 0)
+                if (AutoplayMode == AutoplayModeOption.Enable && remainingTime == 0)
                 {
                     End();
                 }
@@ -619,7 +634,9 @@ namespace MajdataPlay.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             base.SetActive(state);
             switch (state)
             {

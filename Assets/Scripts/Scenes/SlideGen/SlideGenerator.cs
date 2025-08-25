@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace MajdataPlay.SlideGen
+namespace MajdataPlay.Scenes.SlideGen
 {
     public class SlideGenerator : MonoBehaviour
     {

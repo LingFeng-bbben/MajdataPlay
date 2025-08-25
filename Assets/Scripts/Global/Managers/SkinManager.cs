@@ -1,15 +1,19 @@
-﻿using MajdataPlay.Game.Notes.Skins;
+﻿using MajdataPlay.Collections;
+using MajdataPlay.Scenes.Game.Notes.Skins;
 using MajdataPlay.Utils;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay
 {
     internal sealed class SkinManager : MajSingleton
     {
+        public bool IsInited { get; private set; } = false;
         public CustomSkin SelectedSkin
         {
             get
@@ -42,25 +46,32 @@ namespace MajdataPlay
                 _selectedSkin = value;
             }
         }
-        public CustomSkin[] LoadedSkins => loadedSkins.ToArray();
-        List<CustomSkin> loadedSkins = new();
+        public CustomSkin[] LoadedSkins
+        {
+            get
+            {
+                return _loadedSkinArray;
+            }
+        }
+        List<CustomSkin> _loadedSkins = new();
+        CustomSkin[] _loadedSkinArray = Array.Empty<CustomSkin>();
 
         CustomSkin _selectedSkin;
         public Texture2D test;
 
-        readonly Sprite[] _tapLines = new Sprite[3];
-        readonly Sprite[] _starLines = new Sprite[3];
-        readonly Sprite[] _holdEnds = new Sprite[3];
-        readonly Sprite[] _touchHoldFans = new Sprite[4];
-        readonly Sprite[] _touchHoldBreakFans = new Sprite[4];
+        readonly static Sprite[] _tapLines = new Sprite[3];
+        readonly static Sprite[] _starLines = new Sprite[3];
+        readonly static Sprite[] _holdEnds = new Sprite[3];
+        readonly static Sprite[] _touchHoldFans = new Sprite[4];
+        readonly static Sprite[] _touchHoldBreakFans = new Sprite[4];
 
-        readonly ReadOnlyMemory<Color> _tapAndHoldExEffects = new Color[3]
+        readonly static ReadOnlyMemory<Color> _tapAndHoldExEffects = new Color[3]
         {
             new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
         };
-        readonly ReadOnlyMemory<Color> _starExEffects = new Color[3]
+        readonly static ReadOnlyMemory<Color> _starExEffects = new Color[3]
         {
             new Color(1f,1f,1f), // Pink
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
@@ -70,19 +81,40 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-
+        }
+        internal async Task InitAsync()
+        {
             var path = MajEnv.SkinPath;
             var selectedSkinName = MajInstances.Settings.Display.Skin;
             var dicts = Directory.GetDirectories(path);
-
-            foreach (var skinPath in dicts)
-                loadedSkins.Add(new CustomSkin(skinPath));
-
-            var targetSkin = loadedSkins.Find(x => x.Name == selectedSkinName);
+            var tasks = new Task<CustomSkin>[dicts.Length];
+            foreach (var (i, skinPath) in dicts.WithIndex())
+            {
+                tasks[i] = CustomSkin.LoadAsync(skinPath);
+            }
+            var waitAllTask = Task.WhenAll(tasks);
+            while(!waitAllTask.IsCompleted)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(MajEnv.FRAME_LENGTH_SEC));
+            }
+            foreach(var (i, task) in tasks.WithIndex())
+            {
+                if(task.IsFaulted)
+                {
+                    MajDebug.LogError($"Failed to load skin from {dicts[i]}");
+                    MajDebug.LogException(task.Exception);
+                    continue;
+                }
+                _loadedSkins.Add(task.Result);
+            }
+            var targetSkin = _loadedSkins.Find(x => x.Name == selectedSkinName);
             if (targetSkin is null)
+            {
                 targetSkin = new CustomSkin(Path.Combine(path, selectedSkinName));
-
+            }
+            _loadedSkinArray = _loadedSkins.ToArray();
             SelectedSkin = targetSkin;
+            IsInited = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JudgeTextSkin GetJudgeTextSkin()
@@ -248,6 +280,7 @@ namespace MajdataPlay
                 Boader = SelectedSkin.TouchHold[4],
                 Boader_Break = SelectedSkin.TouchHold_Break[4],
                 Point = SelectedSkin.TouchPoint,
+                Point_Each = SelectedSkin.TouchPoint_Each,
                 Point_Break = SelectedSkin.TouchPoint_Break,
                 Off = SelectedSkin.TouchHold_Off,
             };

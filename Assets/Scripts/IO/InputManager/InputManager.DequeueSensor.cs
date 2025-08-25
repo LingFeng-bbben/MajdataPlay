@@ -17,13 +17,15 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
-            Span<SensorStatus> newStates = stackalloc SensorStatus[34];
+            Span<SwitchStatus> newStates = stackalloc SwitchStatus[34];
 
             while (_touchPanelInputBuffer.TryDequeue(out var report))
             {
                 var index = report.Index;
                 if (!index.InRange(0, 33))
+                {
                     continue;
+                }
 
                 newStates[index] |= report.State;
             }
@@ -31,8 +33,8 @@ namespace MajdataPlay.IO
             {
                 var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
 
-                newStates[i] |= state ? SensorStatus.On : SensorStatus.Off;
-                sensorStates[i] = newStates[i] is SensorStatus.On;
+                newStates[i] |= state ? SwitchStatus.On : SwitchStatus.Off;
+                sensorStates[i] = newStates[i] is SwitchStatus.On;
             }
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
@@ -53,7 +55,9 @@ namespace MajdataPlay.IO
                 var newState = newStates[i];
 
                 if (oldState == newState)
-                    continue;              
+                {
+                    continue;
+                }              
                 if (_isSensorDebounceEnabled && i.InRange(0, 32))
                 {
                     if (JitterDetect(sensorArea, now))
@@ -63,11 +67,11 @@ namespace MajdataPlay.IO
                     _sensorLastTriggerTimes[i] = now;
                 }
 
-                MajDebug.Log(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
+                MajDebug.LogInfo(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Area,
+                    SArea = sensor.Area,
                     OldStatus = oldState,
                     Status = newState,
                     IsButton = false
@@ -76,7 +80,7 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-        static void SetSensorState(SensorArea type,SensorStatus nState)
+        static void SetSensorState(SensorArea type,SwitchStatus nState)
         {
             var sensors = _sensors.Span;
             var sensor = sensors[(int)type];
@@ -87,11 +91,11 @@ namespace MajdataPlay.IO
 
             if (oState != nState)
             {
-                MajDebug.Log($"Sensor \"{sensor.Area}\": {nState}");
+                MajDebug.LogInfo($"Sensor \"{sensor.Area}\": {nState}");
                 sensor.State = nState;
                 var msg = new InputEventArgs()
                 {
-                    Type = sensor.Area,
+                    SArea = sensor.Area,
                     OldStatus = oState,
                     Status = nState,
                     IsButton = false

@@ -1,8 +1,8 @@
-﻿using MajdataPlay.Game.Notes;
+﻿using MajdataPlay.Scenes.Game.Notes;
 using System;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.Game.Notes.Slide
+namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
     public class ConnSlideInfo
     {

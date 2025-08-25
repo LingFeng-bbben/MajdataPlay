@@ -10,7 +10,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     internal class SongCoverSmallDisplayer : CoverSmallDisplayer
     {
@@ -29,6 +29,7 @@ namespace MajdataPlay.List
         bool _isRefreshed = false;
         ISongDetail _boundSong;
         CancellationTokenSource _cts = new();
+        CoverListDisplayer? _listDisplayer;
 
         protected override void Awake()
         {
@@ -37,6 +38,10 @@ namespace MajdataPlay.List
             {
                 _loading.SetActive(false);
             }
+        }
+        void Start()
+        {
+            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
         }
         public void SetOpacity(float alpha)
         {
@@ -90,7 +95,8 @@ namespace MajdataPlay.List
         async UniTask SetCoverAsync(CancellationToken token = default)
         {
             _loading.SetActive(true);
-            var cover = await _boundSong.GetCoverAsync(true, token);
+            var cover = await _boundSong.GetCoverAsync(true,token: token);
+            await UniTask.SwitchToMainThread();
             token.ThrowIfCancellationRequested();
             _songCover.sprite = cover;
             _loading.SetActive(false);

@@ -11,6 +11,8 @@ using MychIO.Device;
 using System.IO;
 using UnityEngine;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
+
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -38,12 +40,13 @@ namespace MajdataPlay.IO
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
                     return;
-                switch (MajEnv.UserSettings.IO.Manufacturer)
+                switch (_deviceManufacturer)
                 {
-                    case DeviceManufacturer.General:
+                    case DeviceManufacturerOption.Yuan:
+                    case DeviceManufacturerOption.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
-                    case DeviceManufacturer.Dao:
+                    case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
@@ -57,23 +60,16 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                var sensorStates = _sensorStates.AsSpan();
-                var isSensorHadOn = _isSensorHadOn.AsSpan();
-                var isSensorHadOff = _isSensorHadOff.AsSpan();
-                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-
                 lock (_touchPanelUpdateLoop)
                 {
                     for (var i = 0; i < 35; i++)
                     {
-                        isSensorHadOn[i] = isSensorHadOnInternal[i];
-                        isSensorHadOff[i] = isSensorHadOffInternal[i];
-                        sensorStates[i] = sensorRealTimeStates[i];
+                        _isSensorHadOn[i] = _isSensorHadOnInternal[i];
+                        _isSensorHadOff[i] = _isSensorHadOffInternal[i];
+                        _sensorStates[i] = _sensorRealTimeStates[i];
 
-                        isSensorHadOnInternal[i] = default;
-                        isSensorHadOffInternal[i] = default;
+                        _isSensorHadOnInternal[i] = default;
+                        _isSensorHadOffInternal[i] = default;
                     }
                 }
             }
@@ -93,7 +89,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOn[16] || _isSensorHadOn[17];
                 }
-                else if(area < SensorArea.Test)
+                else if(area <= SensorArea.E8)
                 {
                     return _isSensorHadOn[(int)area + 1];
                 }
@@ -115,7 +111,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorStates[16] || _sensorStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorStates[(int)area + 1];
                 }
@@ -137,7 +133,7 @@ namespace MajdataPlay.IO
                 {
                     return _isSensorHadOff[16] && _isSensorHadOff[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _isSensorHadOff[(int)area + 1];
                 }
@@ -169,7 +165,7 @@ namespace MajdataPlay.IO
                 {
                     return _sensorRealTimeStates[16] || _sensorRealTimeStates[17];
                 }
-                else if (area < SensorArea.Test)
+                else if (area <= SensorArea.E8)
                 {
                     return _sensorRealTimeStates[(int)area + 1];
                 }
@@ -288,34 +284,48 @@ namespace MajdataPlay.IO
             {
                 return !IsCurrentlyOn(index);
             }
-            #endregion
+#endregion
 
             static void SerialPortUpdateLoop()
             {
-                var serialPortOptions = MajInstances.Settings.IO.InputDevice.TouchPanel.SerialPortOptions;
+                const int RECONNECT_INTERVAL = 1000;
+
+                var serialPortOptions = _touchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
                 var comPort = $"COM{serialPortOptions.Port}";
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                using var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
+                var isReconnecting = false;
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
-                serial.ReadTimeout = 2000;
-                serial.WriteTimeout = 2000;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 stopwatch.Start();
 
+                var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
+                serial.ReadTimeout = 2000;
+                serial.WriteTimeout = 2000;
+            SERIAL_START:
                 try
                 {
-                    if(!EnsureSerialStreamIsOpen(serial))
+                    if (!EnsureSerialStreamIsOpen(serial))
                     {
-                        MajDebug.LogWarning($"Cannot open {comPort}, using Mouse as fallback.");
-                        return;
+                        if (!isReconnecting)
+                        {
+                            MajDebug.LogWarning($"TouchPanel: Cannot open {comPort}, using Mouse as fallback.");
+                            return;
+                        }
+                        else
+                        {
+                            MajDebug.LogError($"TouchPanel: Cannot open {comPort}");
+                            Thread.Sleep(RECONNECT_INTERVAL);
+                            goto SERIAL_START;
+                        }
                     }
                     IsConnected = true;
+                    isReconnecting = true;
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -338,25 +348,35 @@ namespace MajdataPlay.IO
                                 }
                             }
                         }
+                        catch (IOException e)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"TouchPanel: \n{e}");
+                            MajDebug.LogInfo($"TouchPanel: Trying to reconnect to {comPort}");
+                            Thread.Sleep(RECONNECT_INTERVAL);
+                            goto SERIAL_START;
+                        }
                         catch (TimeoutException)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From SerialPort listener: Read timeout");
+                            MajDebug.LogError($"TouchPanel: Read timeout");
                         }
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From SerialPort listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: \n{e}");
                         }
                         finally
                         {
-                            if(pollingRate.TotalMilliseconds > 0)
+                            if (pollingRate.TotalMilliseconds > 0)
                             {
                                 var t2 = stopwatch.Elapsed;
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }
@@ -365,6 +385,7 @@ namespace MajdataPlay.IO
                 {
                     _useDummy = true;
                     IsConnected = false;
+                    serial.Dispose();
                 }
             }
             //static void HIDUpdateLoop()
@@ -476,14 +497,14 @@ namespace MajdataPlay.IO
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
-                currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
                 try
                 {
                     _ioThreadSync.WaitNotify();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
-                    MajDebug.Log($"TouchPanel slave thread has started");
+                    MajDebug.LogInfo($"TouchPanel: TouchPanel slave thread has started");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -509,11 +530,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"TouchPanel: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: \n{e}");
                         }
                     }
                 }
@@ -543,12 +564,12 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.Log($"TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                        MajDebug.LogInfo($"TouchPanel: TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
                         var serialStream = serialSession.BaseStream;
                         var sens = MajEnv.UserSettings.IO.InputDevice.TouchPanel.Sensitivity;
-                        var index = MajEnv.UserSettings.IO.InputDevice.Player == 1 ? 'L' : 'R';
+                        var index = _playerIndex == 1 ? 'L' : 'R';
                         //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialStream.Write(encoding.GetBytes("{RSET}"));
@@ -570,18 +591,18 @@ namespace MajdataPlay.IO
                         }
                         catch (TimeoutException)
                         {
-                            MajDebug.LogWarning($"TouchPanel does not support sensitivity override: Write timeout");
+                            MajDebug.LogWarning($"TouchPanel: TouchPanel does not support sensitivity override: Write timeout");
                             return false;
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Failed to override sensitivity: \n{e}");
+                            MajDebug.LogError($"TouchPanel: Failed to override sensitivity: \n{e}");
                             return false;
                         }
                         serialStream.Write(encoding.GetBytes("{STAT}"));
                         serialSession.DiscardInBuffer();
 
-                        MajDebug.Log("TouchPannel connected");
+                        MajDebug.LogInfo("TouchPanel: Connected");
                         return true;
                     }
                 }

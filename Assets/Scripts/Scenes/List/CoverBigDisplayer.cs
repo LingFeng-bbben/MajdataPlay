@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Game;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
@@ -8,11 +8,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     public class CoverBigDisplayer : MonoBehaviour
     {
@@ -45,6 +46,7 @@ namespace MajdataPlay.List
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
+        CoverListDisplayer? _listDisplayer;
         private void Awake()
         {
             /* Level = transform.Find("Level").GetComponent<TMP_Text>();
@@ -54,6 +56,10 @@ namespace MajdataPlay.List
              ArchieveRate = transform.Find("Rate").GetComponent<TMP_Text>();*/
             _chartAnalyzer = GameObject.FindObjectOfType<ChartAnalyzer>();
             _loadingObj.SetActive(false);
+        }
+        void Start()
+        {
+            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
         }
         public void SetDifficulty(int i)
         {
@@ -80,7 +86,9 @@ namespace MajdataPlay.List
         public void SetSongDetail(ISongDetail detail)
         {
             if(_cts is not null)
+            {
                 _cts.Cancel();
+            }
             _cts = new();
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
             _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: _cts.Token).Forget();
@@ -97,7 +105,8 @@ namespace MajdataPlay.List
         {
             _loadingObj.SetActive(true);
             _cover.sprite = SpriteLoader.EmptySprite;
-            var cover = await detail.GetCoverAsync(true, ct);
+            var cover = await detail.GetCoverAsync(true, token: ct);
+            await UniTask.SwitchToMainThread();
             ct.ThrowIfCancellationRequested();
             _cover.sprite = cover;
             _loadingObj.SetActive(false);
@@ -120,7 +129,7 @@ namespace MajdataPlay.List
             }
             else
             {
-                var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeMode.Classic;
+                var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
                 _archieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
                 _archieveRate.enabled = true;
                 _APbg.SetActive(false);

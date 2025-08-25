@@ -11,23 +11,31 @@
       "Content": "MSVC Library not found.\nClick OK to go to the download page"
     },
     {
-      "Origin": "Scanning Charts",
+      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
+      "Content": "Loading database"
+    },
+    {
+      "Origin": "MAJTEXT_LOADING_SKIN",
+      "Content": "Loading skin"
+    },
+    {
+      "Origin": "MAJTEXT_SCANNING_CHARTS",
       "Content": "Scanning charts"
     },
     {
-      "Origin": "Scanning Charts From {0}",
+      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
       "Content": "Scanning charts from {0}"
     },
     {
-      "Origin": "Scan Chart Failed",
+      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
       "Content": "Chart scanning Failed"
     },
     {
-      "Origin": "No Charts",
+      "Origin": "MAJTEXT_NO_CHART",
       "Content": "No charts"
     },
     {
-      "Origin": "Press Any Key",
+      "Origin": "MAJTEXT_PRESS_ANY_KEY",
       "Content": "TOUCH TO START"
     },
     {
@@ -55,326 +63,326 @@
       "Content": "Loading chart"
     },
     {
-      "Origin": "Game_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Game",
       "Content": "Game Settings"
     },
     {
-      "Origin": "Judge_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Judge",
       "Content": "Judgment Settings"
     },
     {
-      "Origin": "Display_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Display",
       "Content": "Display Settings"
     },
     {
-      "Origin": "Audio_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Audio",
       "Content": "Audio Settings"
     },
     {
-      "Origin": "Volume_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Volume",
       "Content": "Volume Settings"
     },
     {
-      "Origin": "Debug_MAJSETTING_SCENE_TITLE",
+      "Origin": "MAJSETTING_CATEGORY_Debug",
       "Content": "Debug"
     },
     {
-      "Origin": "TapSpeed_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TapSpeed",
       "Content": "Tap Speed"
     },
     {
-      "Origin": "TapSpeed_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TapSpeed_DESC",
       "Content": "Adjust how fast notes approach the ring"
     },
     {
-      "Origin": "TouchSpeed_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TouchSpeed",
       "Content": "Touch Speed"
     },
     {
-      "Origin": "TouchSpeed_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TouchSpeed_DESC",
       "Content": "Adjust how fast Touch notes appear and close in"
     },
     {
-      "Origin": "SlideFadeInOffset_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset",
       "Content": "Slide Timing"
     },
     {
-      "Origin": "SlideFadeInOffset_MAJSETTING_DESC",
-      "Content": "Adjust the appearance timing of slide paths\nPositive values are later (in seconds)"
+      "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset_DESC",
+      "Content": "Adjust the appearance timing of slide paths\nPositive values are later"
     },
     {
-      "Origin": "BackgroundDim_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_BackgroundDim",
       "Content": "Background Dim"
     },
     {
-      "Origin": "BackgroundDim_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_BackgroundDim_DESC",
       "Content": "Adjust the brightness of the background during the game\nHigher values are darker"
     },
     {
-      "Origin": "Language_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Language",
       "Content": "Language"
     },
     {
-      "Origin": "Language_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Language_DESC",
       "Content": "Change the game language"
     },
     {
-      "Origin": "StarRotation_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_StarRotation",
       "Content": "Star Rotation"
     },
     {
-      "Origin": "StarRotation_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_StarRotation_DESC",
       "Content": "Toggle rotating stars when approaching the ring"
     },
     {
-      "Origin": "BGInfo_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_BGInfo",
       "Content": "Display at Center"
     },
     {
-      "Origin": "BGInfo_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_BGInfo_DESC",
       "Content": "Switch the information display at the center during the game"
     },
     {
-      "Origin": "AudioOffset_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_AudioOffset",
       "Content": "Offset A (Audio)"
     },
     {
-      "Origin": "AudioOffset_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_AudioOffset_DESC",
       "Content": "Move the chart to align to the music\nFAST = Negative (-)\nLATE = Positive (+)\n(in seconds)"
     },
     {
-      "Origin": "JudgeOffset_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_JudgeOffset",
       "Content": "Offset B (Judgment)"
     },
     {
-      "Origin": "JudgeOffset_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_JudgeOffset_DESC",
       "Content": "Move the timing window\nFAST = Negative (-)\nLATE = Positive (+)\n(in seconds)"
     },
     {
-      "Origin": "Mode_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Mode",
       "Content": "Gameplay Mode"
     },
     {
-      "Origin": "Mode_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Mode_DESC",
       "Content": "Change how Holds and Slides behave"
     },
     {
-      "Origin": "Skin_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Skin",
       "Content": "Skin"
     },
     {
-      "Origin": "Skin_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Skin_DESC",
       "Content": "Change the noteskin used during the game"
     },
     {
-      "Origin": "DisplayCriticalPerfect_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_DisplayCriticalPerfect",
       "Content": "Display Critical Perfects"
     },
     {
-      "Origin": "DisplayCriticalPerfect_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_DisplayCriticalPerfect_DESC",
       "Content": "Display Critical Perfect during the game"
     },
     {
-      "Origin": "DisplayBreakScore_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_DisplayBreakScore",
       "Content": "Display Break Score"
     },
     {
-      "Origin": "DisplayBreakScore_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_DisplayBreakScore_DESC",
       "Content": "Display Break note score on judgment\n(BREAK 2550, instead of Perfect)"
     },
     {
-      "Origin": "FastLateType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_FastLateType",
       "Content": "Fast/Late Type"
     },
     {
-      "Origin": "FastLateType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_FastLateType_DESC",
       "Content": "Judgments that Fast/Late will appear\nHigher judgments are hidden"
     },
     {
-      "Origin": "NoteJudgeType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_NoteJudgeType",
       "Content": "Note Judgment Display"
     },
     {
-      "Origin": "NoteJudgeType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_NoteJudgeType_DESC",
       "Content": "Judgments for Tap/Hold\nthat will appear\nHigher judgments are hidden"
     },
     {
-      "Origin": "TouchJudgeType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TouchJudgeType",
       "Content": "Touch Judgment Display"
     },
     {
-      "Origin": "TouchJudgeType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TouchJudgeType_DESC",
       "Content": "Judgments for Touch notes\nthat will appear\nHigher judgments are hidden"
     },
     {
-      "Origin": "SlideJudgeType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_SlideJudgeType",
       "Content": "Slide Judgment Display"
     },
     {
-      "Origin": "SlideJudgeType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_SlideJudgeType_DESC",
       "Content": "Judgments for Slides\nthat will appear\nHigher judgments are hidden"
     },
     {
-      "Origin": "BreakJudgeType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_BreakJudgeType",
       "Content": "Break Judgment Display"
     },
     {
-      "Origin": "BreakJudgeType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_BreakJudgeType_DESC",
       "Content": "Judgments for Break notes\nthat will appear\nHigher judgments are hidden"
     },
     {
-      "Origin": "BreakFastLateType_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_BreakFastLateType",
       "Content": "Break Fast/Late Type"
     },
     {
-      "Origin": "BreakFastLateType_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_BreakFastLateType_DESC",
       "Content": "Judgments that Fast/Late will appear on Breaks\nHigher judgments are hidden"
     },
     {
-      "Origin": "SlideSortOrder_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_SlideSortOrder",
       "Content": "Slide Path Layering"
     },
     {
-      "Origin": "SlideSortOrder_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_SlideSortOrder_DESC",
       "Content": "Classic: New slides on top\nModern: Old slides on top"
     },
     {
-      "Origin": "InnerJudgeDistance_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_InnerJudgeDistance",
       "Content": "Touch Judgment Position"
     },
     {
-      "Origin": "InnerJudgeDistance_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_InnerJudgeDistance_DESC",
       "Content": "Adjust where judgments from Touch notes appear\nLower is towards the center"
     },
     {
-      "Origin": "OuterJudgeDistance_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_OuterJudgeDistance",
       "Content": "Ring Judgment Position"
     },
     {
-      "Origin": "OuterJudgeDistance_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_OuterJudgeDistance_DESC",
       "Content": "Adjust where judgments from the ring appear\nLower is towards the center"
     },
     {
-      "Origin": "TouchFeedback_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TouchFeedback",
       "Content": "Reaction Effect"
     },
     {
-      "Origin": "TouchFeedback_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TouchFeedback_DESC",
       "Content": "Change where the reaction effect is displayed when you touch the screen"
     },
     {
-      "Origin": "Resolution_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Resolution",
       "Content": "Resolution"
     },
     {
-      "Origin": "Resolution_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Resolution_DESC",
       "Content": "Change the game's resolution"
     },
     {
-      "Origin": "Answer_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Answer",
       "Content": "Guide"
     },
     {
-      "Origin": "Answer_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Answer_DESC",
       "Content": "Sounds of the chart's timing and intro metronome"
     },
     {
-      "Origin": "BGM_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_BGM",
       "Content": "BGM"
     },
     {
-      "Origin": "BGM_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_BGM_DESC",
       "Content": "The audio track"
     },
     {
-      "Origin": "Tap_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Tap",
       "Content": "Tap/Hold"
     },
     {
-      "Origin": "Tap_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Tap_DESC",
       "Content": "Sounds upon non-Miss judgment on a Tap/Hold"
     },
     {
-      "Origin": "Slide_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Slide",
       "Content": "Slide"
     },
     {
-      "Origin": "Slide_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Slide_DESC",
       "Content": "Sounds upon starting a slide"
     },
     {
-      "Origin": "Break_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Break",
       "Content": "Break"
     },
     {
-      "Origin": "Break_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Break_DESC",
       "Content": "Sounds upon non-Miss judgment on a Break note"
     },
     {
-      "Origin": "Touch_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Touch",
       "Content": "Touch"
     },
     {
-      "Origin": "Touch_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Touch_DESC",
       "Content": "Sounds upon non-Miss judgment on a Touch note"
     },
     {
-      "Origin": "Voice_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Voice",
       "Content": "System Voice"
     },
     {
-      "Origin": "Voice_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Voice_DESC",
       "Content": ""
     },
     {
-      "Origin": "DisplaySensor_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_DisplaySensor",
       "Content": "Display Sensor"
     },
     {
-      "Origin": "DisplaySensor_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_DisplaySensor_DESC",
       "Content": "Display Touch Sensor Status"
     },
     {
-      "Origin": "DisplayFPS_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_DisplayFPS",
       "Content": "Display FPS"
     },
     {
-      "Origin": "DisplayFPS_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_DisplayFPS_DESC",
       "Content": "Display FPS at the top-right of the subframe"
     },
     {
-      "Origin": "FullScreen_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_FullScreen",
       "Content": "Full Screen"
     },
     {
-      "Origin": "FullScreen_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_FullScreen_DESC",
       "Content": ""
     },
     {
-      "Origin": "TryFixAudioSync_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TryFixAudioSync",
       "Content": "Correct Audio Desync"
     },
     {
-      "Origin": "TryFixAudioSync_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TryFixAudioSync_DESC",
       "Content": ""
     },
     {
-      "Origin": "NoteAppearRate_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_NoteAppearRate",
       "Content": "Note Appearance Rate"
     },
     {
-      "Origin": "NoteAppearRate_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_NoteAppearRate_DESC",
       "Content": ""
     },
     {
-      "Origin": "DisableGCInGameing_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_DisableGCInGameing",
       "Content": "Disable GC in Gaming"
     },
     {
-      "Origin": "DisableGCInGameing_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_DisableGCInGameing_DESC",
       "Content": ""
     },
-	{
+    {
       "Origin": "Outer_Only",
       "Content": "Outer only"
     },
@@ -470,7 +478,7 @@
       "Origin": "SortbyDefault",
       "Content": "Default Sort"
     },
-	{
+    {
       "Origin": "Inner",
       "Content": "Inner"
     },
@@ -479,87 +487,83 @@
       "Content": "Outer"
     },
     {
-      "Origin": "Mirror_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Mirror",
       "Content": "Mirror"
     },
     {
-      "Origin": "Mirror_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Mirror_DESC",
       "Content": "Flip the chart by an axis."
     },
     {
-      "Origin": "Rotation_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Rotation",
       "Content": "Rotation"
     },
     {
-      "Origin": "Rotation_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Rotation_DESC",
       "Content": "Rotate the chart in 45 degree increments, or one button.\nPositive is clockwise and negative is counterclockwise."
     },
     {
-      "Origin": "PlaybackSpeed_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_PlaybackSpeed",
       "Content": "Playback Speed"
     },
     {
-      "Origin": "NoteMask_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_NoteMask",
       "Content": "Note Mask"
     },
     {
-      "Origin": "NoteMask_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_NoteMask_DESC",
       "Content": "Apply a mask that covers a portion of the gameplay screen."
     },
     {
-      "Origin": "PlaybackSpeed_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_PlaybackSpeed_DESC",
       "Content": "Adjust the playback speed of tracks played."
     },
     {
-      "Origin": "AllBreak_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_AllBreak",
       "Content": "All Break"
     },
     {
-      "Origin": "AllBreak_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_AllBreak_DESC",
       "Content": "All notes become Break notes"
     },
     {
-      "Origin": "AllEx_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_AllEx",
       "Content": "All EX"
     },
     {
-      "Origin": "AllEx_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_AllEx_DESC",
       "Content": "All notes become Ex notes"
     },
     {
-      "Origin": "AllTouch_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_AllTouch",
       "Content": "All Touch"
     },
     {
-      "Origin": "AllTouch_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_AllTouch_DESC",
       "Content": "All notes become Touch notes"
     },
     {
-      "Origin": "AutoPlay_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_AutoPlay",
       "Content": "Auto Play"
     },
     {
-      "Origin": "AutoPlay_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_AutoPlay_DESC",
       "Content": "XXLB will help you play the chart"
     },
     {
-      "Origin": "JudgeStyle_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_JudgeStyle",
       "Content": "Judge Style"
     },
     {
-      "Origin": "JudgeStyle_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_JudgeStyle_DESC",
       "Content": "How difficult judgment windows are"
     },
     {
-      "Origin": "PracticeCount",
-      "Content": "Count"
-    },
-    {
-      "Origin": "Global_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Global",
       "Content": "Master"
     },
     {
-      "Origin": "Global_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Global_DESC",
       "Content": "Master audio"
     },
     {
@@ -595,63 +599,63 @@
       "Content": "Score Uploaded"
     },
     {
-      "Origin": "Random_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Random",
       "Content": "Random"
     },
     {
-      "Origin": "Random_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Random_DESC",
       "Content": "Make notes appear randomly"
     },
     {
-      "Origin": "RenderQuality_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_RenderQuality",
       "Content": "Render Quality"
     },
     {
-      "Origin": "RenderQuality_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_RenderQuality_DESC",
       "Content": "Adjust Render Quality"
     },
     {
-      "Origin": "Topmost_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_Topmost",
       "Content": "Window Topmost"
     },
     {
-      "Origin": "Topmost_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_Topmost_DESC",
       "Content": ""
     },
     {
-      "Origin": "FPSLimit_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_FPSLimit",
       "Content": "FPS Limit"
     },
     {
-      "Origin": "FPSLimit_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_FPSLimit_DESC",
       "Content": ""
     },
     {
-      "Origin": "VSync_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_VSync",
       "Content": "VSync"
     },
     {
-      "Origin": "VSync_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_VSync_DESC",
       "Content": ""
     },
     {
-      "Origin": "TopInfo_MAJSETTING_TITLE",
+      "Origin": "MAJSETTING_PROPERTY_TopInfo",
       "Content": "Frame Display"
     },
     {
-      "Origin": "TopInfo_MAJSETTING_DESC",
+      "Origin": "MAJSETTING_PROPERTY_TopInfo_DESC",
       "Content": "The thing between button 1 and 8"
     },
     {
-      "Origin": "TopInfo_MAJSETTING_OPTIONS_Judge",
+      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_Judge",
       "Content": "Judge Result"
     },
     {
-      "Origin": "TopInfo_MAJSETTING_OPTIONS_Timing",
+      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_Timing",
       "Content": "Fast/Late"
     },
     {
-      "Origin": "TopInfo_MAJSETTING_OPTIONS_None",
+      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_None",
       "Content": "None"
     },
     {

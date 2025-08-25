@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Game
+namespace MajdataPlay.Scenes.Game
 {
     internal class GameInfo
     {
@@ -99,12 +99,14 @@ namespace MajdataPlay.Game
         {
 
         }
-        public void OnNoteJudged(in JudgeGrade grade)
+        public void OnNoteJudged(in JudgeGrade grade,int multiple = 1)
         {
             if (!IsDanMode || DanInfo is null)
+            {
                 return;
+            }
             var damage = DanInfo.Damages[grade];
-            CurrentHP += damage;
+            CurrentHP += damage * multiple;
             CurrentHP = CurrentHP.Clamp(0, MaxHP);
         }
         public void RecordResult(in GameResult result)
@@ -115,7 +117,7 @@ namespace MajdataPlay.Game
         {
             if (Results.Length == 0)
                 return default;
-            var index = (_index - 1).Clamp(0, Results.Length - 1);
+            var index = _index.Clamp(0, Results.Length - 1);
             return Results[index];
         }
         public bool NextRound()

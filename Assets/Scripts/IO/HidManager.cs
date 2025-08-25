@@ -8,23 +8,28 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
+
 #nullable enable
 namespace MajdataPlay.IO
 {
     internal static class HidManager
     {
+        public static IEnumerable<HidDevice> Devices
+        {
+            get
+            {
+                return _hidDevices;
+            }
+        }
         static IEnumerable<HidDevice> _hidDevices = Array.Empty<HidDevice>();
         readonly static List<HidDevice> _cacheList = new(); 
         static HidManager()
         {
             var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
             var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-            var includeHidDevice = buttonRingOptions.Type == ButtonRingDeviceType.HID || 
-                                   manufacturer == DeviceManufacturer.Dao;
-            if (!includeHidDevice)
-                return;
+
             _hidDevices = DeviceList.Local.GetHidDevices();
-            MajDebug.Log($"All available HID devices:\n{string.Join('\n', _hidDevices)}");
             DeviceList.Local.Changed += OnDeviceListChanged;
         }
         public static bool TryGetDevices(DeviceFilter filter, [NotNullWhen(true)] out IEnumerable<HidDevice> devices)

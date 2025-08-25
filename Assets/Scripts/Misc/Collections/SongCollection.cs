@@ -4,6 +4,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,7 +13,13 @@ namespace MajdataPlay.Collections
 {
     public class SongCollection : IEnumerable<ISongDetail>, IReadOnlyCollection<ISongDetail>
     {
-        public ISongDetail Current => _sorted[Index];
+        public ISongDetail Current
+        {
+            get
+            {
+                return _sorted[Index];
+            }
+        }
         public int Index
         {
             get => _index;
@@ -21,6 +28,13 @@ namespace MajdataPlay.Collections
                 if (IsEmpty)
                     throw new ArgumentOutOfRangeException("this collection is empty");
                 _index = value.Clamp(0, _origin.Length - 1);
+            }
+        }
+        public ISongDetail this[int index]
+        {
+            get
+            {
+                return _sorted[index];
             }
         }
         public ChartStorageLocation Location { get; init; } = ChartStorageLocation.Local;
@@ -34,8 +48,8 @@ namespace MajdataPlay.Collections
 
         protected ISongDetail[] _sorted;
         protected ISongDetail[] _origin;
-        public ISongDetail this[int index] => _sorted[index];
-        public SongCollection(string name, in ISongDetail[] pArray)
+
+        public SongCollection(string name, ISongDetail[] pArray)
         {
             _sorted = pArray;
             _origin = pArray;
@@ -43,7 +57,7 @@ namespace MajdataPlay.Collections
         }
         public SongCollection()
         {
-            _origin = new ISongDetail[0];
+            _origin = Array.Empty<ISongDetail>();
             _sorted = _origin;
             Name = string.Empty;
         }
@@ -57,7 +71,7 @@ namespace MajdataPlay.Collections
         public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
         public void SortAndFilter(SongOrder orderBy)
         {
-            if(Type == ChartStorageType.Dan)
+            if(Type == ChartStorageType.Dan || IsEmpty)
             {
                 return;
             }
@@ -65,9 +79,7 @@ namespace MajdataPlay.Collections
             var filtered = Filter(_origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
-            var newIndex = sorted.FindIndex(x => x == Current);
-            newIndex = newIndex is -1 ? 0 : newIndex;
-            _index = newIndex;
+            SetCursor(Current, sorted);
             this._sorted = sorted;
         }
         public async Task SortAndFilterAsync(SongOrder orderBy)
@@ -76,6 +88,10 @@ namespace MajdataPlay.Collections
         }
         public void Reset()
         {
+            if (!IsSorted)
+            {
+                return;
+            }
             IsSorted = false;
             if (_sorted.Length != 0)
             {
@@ -88,6 +104,20 @@ namespace MajdataPlay.Collections
                 _index = 0;
             }
             _sorted = _origin;
+        }
+        public void SetCursor(ISongDetail target)
+        {
+            SetCursor(target, _sorted);
+        }
+        void SetCursor(ISongDetail target, ISongDetail[] dataSet)
+        {
+            if(IsEmpty)
+            {
+                return;
+            }
+            var newIndex = dataSet.FindIndex(x => x.Hash == target.Hash);
+            newIndex = newIndex is -1 ? 0 : newIndex;
+            _index = newIndex;
         }
         public ISongDetail[] ToArray() => _origin;
         static ISongDetail[] Sort(ISongDetail[] origin, SortType sortType)
@@ -107,7 +137,9 @@ namespace MajdataPlay.Collections
         static ISongDetail[] Filter(ISongDetail[] origin, string keyword)
         {
             if (string.IsNullOrEmpty(keyword))
+            {
                 return origin;
+            }
             keyword = keyword.ToLower();
             var result = new Span<ISongDetail>(new ISongDetail[origin.Length]);
             var i = 0;
@@ -117,10 +149,13 @@ namespace MajdataPlay.Collections
                 var isArtistMatch = song.Artist.ToLower().Contains(keyword);
                 var isDesMatch = song.Designers.Any(p => p == null ? false : p.ToLower().Contains(keyword));
                 var isLevelMatch = song.Levels.Any(p => p == null ? false : p.ToLower() == keyword);
+                var isTagDesMatch = song.Description.ToLower().Contains(keyword);
 
-                var isMatch = isTitleMatch || isArtistMatch || isDesMatch || isLevelMatch;
+                var isMatch = isTitleMatch || isArtistMatch || isDesMatch || isLevelMatch || isTagDesMatch;
                 if (isMatch)
+                {
                     result[i++] = song;
+                }
             }
             return result.Slice(0, i).ToArray();
         }

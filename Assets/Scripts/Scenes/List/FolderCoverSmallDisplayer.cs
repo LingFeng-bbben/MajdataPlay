@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 #nullable enable
-namespace MajdataPlay.List
+namespace MajdataPlay.Scenes.List
 {
     internal class FolderCoverSmallDisplayer: CoverSmallDisplayer
     {
@@ -15,6 +15,8 @@ namespace MajdataPlay.List
         TextMeshProUGUI _folderText;
         [SerializeField]
         GameObject _icon;
+        [SerializeField]
+        GameObject _danIcon;
 
         SongCollection _boundCollection = SongCollection.Empty("Undefined");
 
@@ -33,6 +35,13 @@ namespace MajdataPlay.List
             else
             {
                 _icon.gameObject.SetActive(false);
+            }
+            if (collection.DanInfo != null) { 
+                _danIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                _danIcon.gameObject.SetActive(false);
             }
         }
     }
