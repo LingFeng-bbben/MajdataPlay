@@ -24,11 +24,11 @@ namespace MajdataPlay
         string Hash { get; }
         bool IsOnline => Location == ChartStorageLocation.Online;
 
-        UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default);
-        UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default);
-        UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default);
-        UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default);
-        UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default);
-        UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default);
+        ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default);
+        ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default);
+        ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default);
+        ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default);
+        ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default);
+        ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default);
     }
 }

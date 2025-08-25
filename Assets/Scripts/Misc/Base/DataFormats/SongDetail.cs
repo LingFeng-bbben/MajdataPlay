@@ -77,7 +77,7 @@ namespace MajdataPlay
 
             return new SongDetail(chartFolder, metadata);
         }
-        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_isPreloaded)
@@ -89,15 +89,15 @@ namespace MajdataPlay
             {
                 return;
             }
-            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token: token));
+            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
             _isPreloaded = true;
         }
-        public UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
+        public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             return UniTask.FromResult(_videoPath);
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_cover is not null)
@@ -117,7 +117,7 @@ namespace MajdataPlay
                 return _cover;
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_audioTrack is not null)
@@ -137,7 +137,7 @@ namespace MajdataPlay
                 return _audioTrack;
             }
         }
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_previewAudioTrack is not null)
@@ -157,7 +157,7 @@ namespace MajdataPlay
                 return _previewAudioTrack;
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (!ignoreCache && _maidata is not null)

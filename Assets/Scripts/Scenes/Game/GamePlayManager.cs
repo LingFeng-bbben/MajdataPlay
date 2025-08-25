@@ -373,7 +373,7 @@ namespace MajdataPlay.Scenes.Game
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
-                    while (!task1.Status.IsCompleted())
+                    while (!task1.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
@@ -382,7 +382,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
-                    while (!task2.Status.IsCompleted())
+                    while (!task2.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
@@ -391,7 +391,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                     var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
-                    while (!task3.Status.IsCompleted())
+                    while (!task3.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
@@ -400,7 +400,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
-                    while (!task4.Status.IsCompleted())
+                    while (!task4.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");

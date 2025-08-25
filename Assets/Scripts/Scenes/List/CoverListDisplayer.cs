@@ -657,9 +657,9 @@ namespace MajdataPlay.Scenes.List
                     }
                 }
                 var preloadTask = SongDetail.PreloadAsync();
-                if(!preloadTask.Status.IsCompleted())
+                if(!preloadTask.IsCompleted)
                 {
-                    ListManager.AllBackgroundTasks.Add(preloadTask);
+                    ListManager.AllBackgroundTasks.Add(preloadTask.AsTask());
                 }
                 PreloadTask = preloadTask;
             }

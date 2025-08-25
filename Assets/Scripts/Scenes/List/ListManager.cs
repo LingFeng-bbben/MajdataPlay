@@ -10,13 +10,14 @@ using System.Threading;
 using UnityEngine;
 using MajdataPlay.Scenes.Setting;
 using System.Threading.Tasks;
+using MajdataPlay.Buffers;
 
 namespace MajdataPlay.Scenes.List
 {
     public class ListManager : MonoBehaviour
     {
         public CancellationToken CancellationToken => _cts.Token;
-        public static List<UniTask> AllBackgroundTasks { get; } = new(8192);
+        public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
         int _delta = 0;
         float _pressTime = 0;
@@ -43,7 +44,45 @@ namespace MajdataPlay.Scenes.List
         void Awake()
         {
             Majdata<ListManager>.Instance = this;
-            AllBackgroundTasks.Clear();
+
+            if(AllBackgroundTasks.Count > 4096)
+            {
+                var indexs = Pool<int>.RentArray(AllBackgroundTasks.Count);
+                try
+                {
+                    var i2 = -1;
+                    var count = 0;
+                    Parallel.For(0, AllBackgroundTasks.Count, i =>
+                    {
+                        var task = AllBackgroundTasks[i];
+                        if (task is null || task.IsCompleted)
+                        {
+                            indexs[Interlocked.Increment(ref i2)] = i;
+                            Interlocked.Increment(ref count);
+                        }
+                    });
+                    for (var i = 0; i < count; i++)
+                    {
+                        AllBackgroundTasks.RemoveAt(indexs[i]);
+                    }
+                }
+                finally
+                {
+                    Pool<int>.ReturnArray(indexs);
+                }
+            }
+            else
+            {
+                for (var i = 0; i < AllBackgroundTasks.Count; i++)
+                {
+                    var task = AllBackgroundTasks[i];
+                    if (task is null || task.IsCompleted)
+                    {
+                        AllBackgroundTasks.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
         }
         void Start()
         {
@@ -518,11 +557,7 @@ namespace MajdataPlay.Scenes.List
             {
                 return Task.CompletedTask;
             }
-            return UniTask.WhenAll(AllBackgroundTasks)
-                          .ContinueWith(() => 
-            {
-                AllBackgroundTasks.Clear();
-            }).AsTask();
+            return Task.WhenAll(AllBackgroundTasks);
         }
     }
 }
