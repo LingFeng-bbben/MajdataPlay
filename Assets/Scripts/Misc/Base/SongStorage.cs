@@ -251,6 +251,11 @@ namespace MajdataPlay
 
             foreach (var task in tasks)
             {
+                if (task.IsFaulted)
+                {
+                    MajDebug.LogException(task.Exception);
+                    continue;
+                }
                 if (task.Result != null)
                 {
                     collections.Add(task.Result);
