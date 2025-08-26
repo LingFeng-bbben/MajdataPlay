@@ -195,6 +195,25 @@ namespace MajdataPlay
             _cover = null;
             _maidata = null;
         }
+        public async ValueTask DisposeAsync()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            _audioTrack?.Dispose();
+            _previewAudioTrack?.Dispose();
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                GameObject.DestroyImmediate(_cover, true);
+            }
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _maidata = null;
+        }
         void ThrowIfDisposed()
         {
             if (_isDisposed)

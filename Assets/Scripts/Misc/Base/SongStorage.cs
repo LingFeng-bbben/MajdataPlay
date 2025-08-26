@@ -155,21 +155,35 @@ namespace MajdataPlay
                 var selectedDir = SongStorage.CollectionIndex;
 
                 var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
-                await UniTask.Delay(100);
+                await Task.Delay(100);
                 progressReporter?.Report($"{"MAJTEXT_CLEANING_UP".i18n()}");
-                await UniTask.Delay(100);
-                foreach (var songDetail in chartListBackup)
+                await Task.Delay(100);
+
+                var tasks = new Task[chartListBackup.Count];
+                var tasksI = -1;
+                Parallel.For(0, chartListBackup.Count, i =>
                 {
-                    switch(songDetail)
+                    var songDetail = chartListBackup[i];
+                    switch (songDetail)
                     {
                         case OnlineSongDetail online:
-                            online.Dispose();
+                            tasks[Interlocked.Increment(ref tasksI)] = online.DisposeAsync().AsTask();
                             break;
                         case SongDetail local:
-                            local.Dispose();
+                            tasks[Interlocked.Increment(ref tasksI)] = local.DisposeAsync().AsTask();
                             break;
                     }
+                });
+                var waitAllTask = Task.WhenAll(tasks);
+                await using(UniTask.ReturnToCurrentSynchronizationContext())
+                {
+                    while(!waitAllTask.IsCompleted)
+                    {
+                        await UniTask.Yield();
+                    }
                 }
+                tasks = null;
+                waitAllTask = null;
                 Collections = collections;
                 MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
                 GC.Collect();
