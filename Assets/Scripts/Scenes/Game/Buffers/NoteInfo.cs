@@ -106,7 +106,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     MajCache<MethodInfo, ParameterInfo[]>.Add(method, paramInfos);
                 }
                 paramCount = paramInfos.Length;
-                if (paramCount != 0)
+                if (paramCount != 0 || method.ReturnType != typeof(void))
                 {
                     continue;
                 }
