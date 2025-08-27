@@ -1,18 +1,10 @@
 ﻿using MajdataPlay.Extensions;
 using System;
-using UnityEngine;
 using ManagedBass;
 using ManagedBass.Mix;
-using Live2D.Cubism.Framework.Json;
 using ManagedBass.Fx;
-using System.Threading;
-using System.Drawing.Text;
-using MajdataPlay.Net;
-using Cysharp.Threading.Tasks;
 using System.IO;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using MajdataPlay.Utils;
 using MajdataPlay.Numerics;
 #nullable enable
 namespace MajdataPlay.IO
@@ -28,10 +20,12 @@ namespace MajdataPlay.IO
         {
             get
             {
+                ThrowIfDisposed();
                 return Bass.ChannelHasFlag(_decode, BassFlags.Loop);
             }
             set
             {
+                ThrowIfDisposed();
                 if (value)
                 {
                     if (!Bass.ChannelHasFlag(_decode, BassFlags.Loop))
@@ -57,14 +51,31 @@ namespace MajdataPlay.IO
         }
         public override double CurrentSec
         {
-            get => Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
-            set => Bass.ChannelSetPosition(_decode,Bass.ChannelSeconds2Bytes(_decode, value));
+            get
+            {
+                ThrowIfDisposed();
+
+                return Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
+            }
+            set
+            {
+                ThrowIfDisposed();
+
+                Bass.ChannelSetPosition(_decode, Bass.ChannelSeconds2Bytes(_decode, value));
+            }
         }
         public override float Volume
         {
-            get => (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
+            get
+            {
+                ThrowIfDisposed();
+
+                return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
+            }
             set
             {
+                ThrowIfDisposed();
+
                 var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
                 Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
             }
@@ -74,6 +85,7 @@ namespace MajdataPlay.IO
             
             get
             {
+                ThrowIfDisposed();
                 if (_isSpeedChangeSupported)
                 {
                     return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Tempo) / 100f + 1f;
@@ -85,6 +97,7 @@ namespace MajdataPlay.IO
             }
             set
             {
+                ThrowIfDisposed();
                 if (_isSpeedChangeSupported)
                 {
                     Bass.ChannelSetAttribute(_decode, ChannelAttribute.Tempo, (value - 1) * 100f);
@@ -107,6 +120,7 @@ namespace MajdataPlay.IO
         {
             get
             {
+                ThrowIfDisposed();
                 var state = Bass.ChannelIsActive(_decode);
                 return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
             }
@@ -134,33 +148,50 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo(Bass.LastError);
             MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
         }
-        ~BassAudioSample() => Dispose();
+        ~BassAudioSample()
+        {
+            Dispose();
+        }
 
         public override void PlayOneShot()
         {
+            ThrowIfDisposed();
             BassMix.ChannelSetPosition(_decode, 0);
             //Bass.ChannelPlay(_decode);
             BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
         }
-        public override void SetVolume(float volume) => Volume = volume;
+        public override void SetVolume(float volume)
+        {
+            ThrowIfDisposed();
+            Volume = volume;
+        }
         public override void Play()
         {
+            ThrowIfDisposed();
             BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
             //Bass.ChannelPlay(_decode);
         }
         public override void Pause()
         {
+            ThrowIfDisposed();
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             //Bass.ChannelPause(_decode);
         }
         public override void Stop()
         {
+            ThrowIfDisposed();
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             Bass.ChannelSetPosition(_decode, 0);
             //Bass.ChannelStop(_decode);
         }
         public override void Dispose()
         {
+            if(_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             if (_resampler != -1)
             {
@@ -173,6 +204,12 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
+        }
+        public override ValueTask DisposeAsync()
+        {
+            Dispose();
+
+            return new ValueTask(Task.CompletedTask);
         }
         static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
         {

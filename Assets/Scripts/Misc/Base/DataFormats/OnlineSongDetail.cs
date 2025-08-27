@@ -485,8 +485,14 @@ namespace MajdataPlay
                 return;
             }
             _isDisposed = true;
-            _audioTrack?.Dispose();
-            _previewAudioTrack?.Dispose();
+            if (_audioTrack is not null)
+            {
+                await _audioTrack.DisposeAsync();
+            }
+            if (_previewAudioTrack is not null)
+            {
+                await _previewAudioTrack.DisposeAsync();
+            }
             await using(UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToMainThread();

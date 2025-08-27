@@ -29,27 +29,46 @@ namespace MajdataPlay.IO
         {
             get
             {
+                ThrowIfDisposed();
                 return Bass.ChannelHasFlag(_stream, BassFlags.Loop);
             }
             set
             {
-                if(value)
-                    Bass.ChannelAddFlag(_stream,BassFlags.Loop);
+                ThrowIfDisposed();
+                if (value)
+                {
+                    Bass.ChannelAddFlag(_stream, BassFlags.Loop);
+                }
                 else
+                {
                     Bass.ChannelRemoveFlag(_stream, BassFlags.Loop);
+                }
             }
         }
         public override bool IsEmpty => false;
         public override double CurrentSec
         {
-            get => Bass.ChannelBytes2Seconds(_stream, Bass.ChannelGetPosition(_stream));
-            set => Bass.ChannelSetPosition(_stream,Bass.ChannelSeconds2Bytes(_stream, value));
+            get
+            {
+                ThrowIfDisposed();
+                return Bass.ChannelBytes2Seconds(_stream, Bass.ChannelGetPosition(_stream));
+            }
+            set
+            {
+                ThrowIfDisposed();
+                Bass.ChannelSetPosition(_stream, Bass.ChannelSeconds2Bytes(_stream, value));
+            }
         }
         public override float Volume
         {
-            get => (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Volume);
+            get
+            {
+                ThrowIfDisposed();
+                return (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Volume);
+            }
             set
             {
+                ThrowIfDisposed();
                 var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
                 Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, volume);
             }
@@ -58,26 +77,51 @@ namespace MajdataPlay.IO
         {
             get
             {
+                ThrowIfDisposed();
                 if (_isSpeedChangeSupported)
+                {
                     return (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Tempo) / 100f + 1f;
+                }
                 else
+                {
                     return 1f;
+                }
             }
             set
             {
+                ThrowIfDisposed();
                 if (_isSpeedChangeSupported)
+                {
                     Bass.ChannelSetAttribute(_stream, ChannelAttribute.Tempo, (value - 1) * 100f);
+                }
                 else
+                {
                     return;
+                }
             }
         }
 
-        public override TimeSpan Length => TimeSpan.FromSeconds(_length);
-        public override bool IsPlaying => Bass.ChannelIsActive(_stream)== PlaybackState.Playing;
+        public override TimeSpan Length
+        {
+            get
+            {
+                return TimeSpan.FromSeconds(_length);
+            }
+        }
+        public override bool IsPlaying
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Bass.ChannelIsActive(_stream) == PlaybackState.Playing;
+            }
+        }
         public BassSimpleAudioSample(int stream, double gain, bool speedChange = false)
         {
             if(stream is 0)
+            {
                 throw new ArgumentException(nameof(stream));
+            }
 
             _stream = stream;
             _gain = gain;
@@ -89,31 +133,47 @@ namespace MajdataPlay.IO
 
             MajDebug.LogInfo(Bass.LastError);
         }
-        ~BassSimpleAudioSample() => Dispose();
+        ~BassSimpleAudioSample()
+        {
+            Dispose();
+        }
 
         public override void PlayOneShot()
         {
+            ThrowIfDisposed();
             Bass.ChannelSetPosition(_stream, 0);
             Bass.ChannelPlay(_stream);
         }
-        public override void SetVolume(float volume) => Volume = volume;
+        public override void SetVolume(float volume)
+        {
+            ThrowIfDisposed();
+            Volume = volume;
+        }
         public override void Play()
         {
+            ThrowIfDisposed();
             Bass.ChannelPlay(_stream);
         }
         public override void Pause()
         {
+            ThrowIfDisposed();
             Bass.ChannelPause(_stream);
         }
         public override void Stop()
         {
+            ThrowIfDisposed();
             Bass.ChannelStop(_stream);
             Bass.ChannelSetPosition(_stream, 0);
         }
         public override void Dispose()
         {
-            Stop();
-
+            if(_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            Bass.ChannelStop(_stream);
+            Bass.ChannelSetPosition(_stream, 0);
             if (_stream != -1)
             {
                 Bass.StreamFree(_stream);
@@ -122,6 +182,12 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
+        }
+        public override ValueTask DisposeAsync()
+        {
+            Dispose();
+
+            return new ValueTask(Task.CompletedTask);
         }
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {

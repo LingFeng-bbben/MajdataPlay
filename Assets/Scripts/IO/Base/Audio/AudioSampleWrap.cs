@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace MajdataPlay.IO
 {
@@ -15,13 +17,27 @@ namespace MajdataPlay.IO
         public abstract double CurrentSec { get; set; }
         public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }
+
+        protected bool _isDisposed = false;
+
         public abstract void Play();
         public abstract void Pause();
         public abstract void Stop();
         public abstract void PlayOneShot();
         public abstract void SetVolume(float volume);
         public abstract void Dispose();
-        class EmptyAudioSample : AudioSampleWrap
+        public abstract ValueTask DisposeAsync();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void ThrowIfDisposed()
+        {
+            if(_isDisposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+        }
+
+        sealed class EmptyAudioSample : AudioSampleWrap
         {
             public override bool IsEmpty => true;
 
@@ -63,6 +79,10 @@ namespace MajdataPlay.IO
                 }
             }
             public override void Dispose() { }
+            public override ValueTask DisposeAsync() 
+            {
+                return new ValueTask(Task.CompletedTask);
+            }
             public override void Pause() { }
             public override void Play() { }
             public override void PlayOneShot() { }
