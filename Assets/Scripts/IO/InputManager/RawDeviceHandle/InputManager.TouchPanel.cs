@@ -564,21 +564,20 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.LogInfo($"TouchPanel: TouchPannel was not connected,trying to connect to TouchPannel via {serialSession.PortName}...");
+                        MajDebug.LogInfo($"TouchPanel: Trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
-                        var serialStream = serialSession.BaseStream;
                         var sens = MajEnv.UserSettings.IO.InputDevice.TouchPanel.Sensitivity;
                         var index = _playerIndex == 1 ? 'L' : 'R';
                         //see https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
-                        serialStream.Write(encoding.GetBytes("{RSET}"));
-                        serialStream.Write(encoding.GetBytes("{HALT}"));
+                        serialSession.Write(encoding.GetBytes("{RSET}"));
+                        serialSession.Write(encoding.GetBytes("{HALT}"));
 
                         //send ratio
                         for (byte a = 0x41; a <= 0x62; a++)
                         {
-                            serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                            serialSession.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
                         }
                         try
                         {
@@ -586,7 +585,7 @@ namespace MajdataPlay.IO
                             {
                                 var value = GetSensitivityValue(a, sens);
 
-                                serialStream.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
+                                serialSession.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
                             }
                         }
                         catch (TimeoutException)
@@ -599,7 +598,7 @@ namespace MajdataPlay.IO
                             MajDebug.LogError($"TouchPanel: Failed to override sensitivity: \n{e}");
                             return false;
                         }
-                        serialStream.Write(encoding.GetBytes("{STAT}"));
+                        serialSession.Write(encoding.GetBytes("{STAT}"));
                         serialSession.DiscardInBuffer();
 
                         MajDebug.LogInfo("TouchPanel: Connected");
