@@ -237,7 +237,7 @@ namespace MajdataPlay.Settings
     public class TouchPanelOptions
     {
         public bool Debounce { get; set; } = false;
-        public int Sensitivity { get; set; } = 0;
+        public TouchPanelSensitivityConfig Sensitivities { get; set; } = default;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 0;
         public float TouchSimulationRadius { get; set; } = 0.5f;
@@ -255,5 +255,13 @@ namespace MajdataPlay.Settings
     {
         public int? Port { get; set; } = null;
         public int? BaudRate { get; set; } = null;
+    }
+    public struct TouchPanelSensitivityConfig
+    {
+        public short A { get; set; }
+        public short B { get; set; }
+        public short C { get; set; }
+        public short D { get; set; }
+        public short E { get; set; }
     }
 }
