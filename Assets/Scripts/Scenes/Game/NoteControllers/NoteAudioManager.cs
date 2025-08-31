@@ -61,8 +61,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         const int ANSWER = 12;
         const int ANSWER_CLOCK = 13;
 
-        float _answerOffsetSec = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
-        float _displayOffsetSec = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
+        float _answerOffsetSec = 0;
 
         void Awake()
         {
@@ -83,13 +82,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var settings = MajEnv.UserSettings;
             if (settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                _answerOffsetSec = settings.Judge.AudioOffset;
-                _displayOffsetSec = settings.Debug.DisplayOffset;
+                _answerOffsetSec = settings.Judge.AnswerOffset + settings.Debug.DisplayOffset;
             }
             else
             {
-                _answerOffsetSec = settings.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
-                _displayOffsetSec = settings.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+                _answerOffsetSec = (settings.Judge.AnswerOffset + settings.Debug.DisplayOffset) * MajEnv.FRAME_LENGTH_SEC;
             }
         }
         private void Start()
@@ -229,7 +226,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
                 var timingPoints = _answerTimingPoints.Span;
                 var thisFrameSec = _noteController.ThisFrameSec;
-                var offset = _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC;
+                var offset = _answerOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC;
                 var i = 0;
                 for (; i < timingPoints.Length; i++)
                 {
