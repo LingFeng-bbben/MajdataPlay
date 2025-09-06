@@ -65,6 +65,7 @@ namespace MajdataPlay.Scenes.List
         bool _isNeedPreload = false;
 
         ListManager _listManager;
+        PreviewSoundPlayer _previewSoundPlayer;
 
         Memory<SongDetailBinding> _songDetailBindings = Memory<SongDetailBinding>.Empty;
         Memory<SongCollectionBinding> _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
@@ -86,6 +87,7 @@ namespace MajdataPlay.Scenes.List
         private void Awake()
         {
             Majdata<CoverListDisplayer>.Instance = this;
+            _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
             var collections = SongStorage.Collections;
             var newCollections = new SongCollection[collections.Length];
 
@@ -442,7 +444,7 @@ namespace MajdataPlay.Scenes.List
                     CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContent(songinfo);
-                    GetComponent<PreviewSoundPlayer>().PlayPreviewSound(songinfo);
+                    _previewSoundPlayer.PlayPreviewSound(songinfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
                     FavoriteAdder.SetSong(songinfo);
                     _currentCollection.Index = desiredListPos;
