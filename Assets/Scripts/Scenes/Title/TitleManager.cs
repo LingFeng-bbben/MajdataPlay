@@ -188,19 +188,43 @@ namespace MajdataPlay.Scenes.Title
             {
                 var setting = MajInstances.Settings;
                 var listConfig = MajEnv.RuntimeConfig.List;
-                SongStorage.CollectionIndex = listConfig.SelectedDir;
-                var selectedCollection = SongStorage.WorkingCollection;
-                var selectedIndex = listConfig.SelectedIndex;
+                var dirId = listConfig.SelectedDirGuid;
+                var selectedSongHash = listConfig.SelectedSongHash;
+                var isDirMatched = false;
 
-                if(selectedCollection.IsEmpty)
+                if (dirId != Guid.Empty)
                 {
-                    listConfig.SelectedIndex = 0;
+                    var dirIndex = Array.FindIndex(SongStorage.Collections, x => x.Id == dirId);
+                    if(dirIndex != -1)
+                    {
+                        listConfig.SelectedDir = dirIndex;
+                        isDirMatched = true;
+                    }
+                }
+                SongStorage.CollectionIndex = listConfig.SelectedDir;
+                listConfig.SelectedDir = SongStorage.CollectionIndex;
+                var selectedCollection = SongStorage.WorkingCollection;
+                var selectedIndex = listConfig.SelectedSongIndex;
+                listConfig.SelectedDirGuid = selectedCollection.Id;
+
+                if (isDirMatched && !string.IsNullOrEmpty(selectedSongHash))
+                {
+                    selectedIndex = Array.FindIndex(selectedCollection.ToArray(), x => x.Hash == selectedSongHash);
+                    if(selectedIndex == -1)
+                    {
+                        selectedIndex = 0;
+                    }
+                }
+
+                if (selectedCollection.IsEmpty)
+                {
+                    listConfig.SelectedSongIndex = 0;
                     return;
                 }
-                else if(selectedIndex >= selectedCollection.Count)
+                else if (selectedIndex >= selectedCollection.Count)
                 {
                     selectedCollection.Index = 0;
-                    listConfig.SelectedIndex = 0;
+                    listConfig.SelectedSongIndex = 0;
                 }
                 else
                 {

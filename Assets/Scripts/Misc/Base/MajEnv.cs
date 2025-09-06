@@ -237,9 +237,9 @@ namespace MajdataPlay
         }
         public static void SaveConfig()
         {
-            var listConfig = RuntimeConfig.List;
-            listConfig.SelectedIndex = SongStorage.WorkingCollection.Index;
-            listConfig.SelectedDir = SongStorage.CollectionIndex;
+            //var listConfig = RuntimeConfig.List;
+            //listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
+            //listConfig.SelectedDir = SongStorage.CollectionIndex;
 
             var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
             var json2 = Serializer.Json.Serialize(RuntimeConfig, UserJsonReaderOption);

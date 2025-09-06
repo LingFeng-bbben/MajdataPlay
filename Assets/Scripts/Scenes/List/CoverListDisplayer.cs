@@ -358,6 +358,7 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.CollectionIndex += delta;
                     desiredListPos = SongStorage.CollectionIndex;
                     _listConfig.SelectedDir = SongStorage.CollectionIndex;
+                    _listConfig.SelectedDirGuid = SongStorage.WorkingCollection.Id;
                     break;
                 case CoverListMode.Chart:
                     var collection = _currentCollection;
@@ -370,7 +371,8 @@ namespace MajdataPlay.Scenes.List
                         _isNeedPreload = true;
                         _preloadCooldownTimer = 0.5f;
                     }
-                    _listConfig.SelectedIndex = collection.Index;
+                    _listConfig.SelectedSongIndex = collection.Index;
+                    _listConfig.SelectedSongHash = collection.Current.Hash;
                     break;
             }
             SlideListInternal(desiredListPos);

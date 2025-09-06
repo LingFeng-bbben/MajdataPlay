@@ -155,7 +155,7 @@ namespace MajdataPlay
                 _totalChartCount = 0;
                 var listConfig = MajEnv.RuntimeConfig.List;
                 var selectedDiff = listConfig.SelectedDiff;
-                var selectedIndex = listConfig.SelectedIndex;
+                var selectedIndex = listConfig.SelectedSongIndex;
                 var selectedDir = listConfig.SelectedDir;
 
                 var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
@@ -380,6 +380,10 @@ namespace MajdataPlay
             var tasks = new List<Task<SongDetail>>();
             foreach (var songDir in dirs)
             {
+                if((songDir.Attributes & FileAttributes.Hidden) != 0)
+                {
+                    continue;
+                }
                 var files = songDir.GetFiles();
                 var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
                 var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
@@ -410,13 +414,15 @@ namespace MajdataPlay
                 }
                 charts.Add(task.Result);
             }
-            return new SongCollection(thisDir.Name, charts.ToArray());
+            return new SongCollection(rootPath, thisDir.Name, charts.ToArray());
         }
         static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
         {
             var name = api.Name;
-            var collection = SongCollection.Empty(name);
+            var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
+            var collection = SongCollection.Empty(cachePath, name);
             var apiroot = api.Url;
+
             if (string.IsNullOrEmpty(apiroot))
             {
                 return collection;
@@ -473,14 +479,13 @@ namespace MajdataPlay
                 {
                     Directory.CreateDirectory(cacheFolder);
                 }
-                return new SongCollection(name, gameList.ToArray())
+                return new SongCollection(cachePath, name, gameList.ToArray())
                 {
                     Location = ChartStorageLocation.Online
                 };
             }
             catch (OperationCanceledException)
             {
-                var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
                 if (!Directory.Exists(cachePath))
                 {
                     return collection;
