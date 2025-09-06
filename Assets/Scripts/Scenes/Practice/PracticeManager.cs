@@ -64,7 +64,7 @@ namespace MajdataPlay.Scenes.Practice
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameInfo.PracticeCount = _practiceCount;
-            _playbackSpeed = MajEnv.UserSettings.Mod.PlaybackSpeed;
+            _playbackSpeed = MajEnv.Settings.Mod.PlaybackSpeed;
             _playbackSpeedTitle.text = "PlaybackSpeed_MAJSETTING_TITLE".i18n();
             _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             InitAsync().Forget();
@@ -235,7 +235,7 @@ namespace MajdataPlay.Scenes.Practice
                 btnA4Statistic.IsClickEventUsed = true;
                 _isExited = true;
                 _gameInfo.TimeRange = new Range<double>(_startTime, _endTime);
-                MajEnv.UserSettings.Mod.PlaybackSpeed = _playbackSpeed;
+                MajEnv.Settings.Mod.PlaybackSpeed = _playbackSpeed;
                 MajInstances.SceneSwitcher.SwitchScene("Game", false);
                 throw new OperationCanceledException();
             }
@@ -318,7 +318,7 @@ namespace MajdataPlay.Scenes.Practice
             
             if(playbackSpeedPressTime >= 0.4f)
             {
-                var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
+                var iterationSpeed = MajEnv.Settings.Debug.MenuOptionIterationSpeed;
                 if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
                 {
                     _iterationThrottle += MajTimeline.DeltaTime;

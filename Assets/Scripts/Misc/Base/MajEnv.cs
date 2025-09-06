@@ -17,10 +17,11 @@ using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Settings.Runtime;
 #nullable enable
 namespace MajdataPlay
 {
-    public static class MajEnv
+    internal static class MajEnv
     {
         public const int DEFAULT_LAYER = 0;
         public const int HIDDEN_LAYER = 3;
@@ -54,7 +55,7 @@ namespace MajdataPlay
 #endif
 
         public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
-        public static string SettingPath { get; } = Path.Combine(RootPath, "settings.json");
+        public static string SettingsPath { get; } = Path.Combine(RootPath, "settings.json");
         public static string SkinPath { get; } = Path.Combine(RootPath, "Skins");
         public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
         public static string LangPath { get; } = Path.Combine(AssetsPath, "Langs");
@@ -81,7 +82,8 @@ namespace MajdataPlay
                 UserAgent = { new ProductInfoHeaderValue("MajPlay", MajInstances.GameVersion.ToString()) },
             }
         };
-        public static GameSetting UserSettings { get; }
+        public static GameSetting Settings { get; }
+        public static RuntimeConfig RuntimeConfig { get; }
         public static CancellationToken GlobalCT
         {
             get
@@ -99,6 +101,7 @@ namespace MajdataPlay
             WriteIndented = true
         };
 
+        readonly static string _runtimeConfigPath = Path.Combine(CachePath, "Runtime", "config.json");
         readonly static CancellationTokenSource _globalCTS = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -116,48 +119,6 @@ namespace MajdataPlay
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
 
-            if (File.Exists(SettingPath))
-            {
-                var js = File.ReadAllText(SettingPath);
-                GameSetting? setting;
-
-                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
-                {
-                    UserSettings = new();
-                    MajDebug.LogError("Failed to read setting from file");
-                    var bakFileName = $"{SettingPath}.bak";
-                    while(File.Exists(bakFileName))
-                    {
-                        bakFileName = $"{bakFileName}.bak";
-                    }
-                    try
-                    {
-                        File.Copy(SettingPath, bakFileName, true);
-                    }
-                    catch { }
-                }
-                else
-                {
-                    UserSettings = setting;
-                    //Reset Mod option after reboot
-                    UserSettings.Mod = new ModOptions();
-                }
-            }
-            else
-            {
-                UserSettings = new GameSetting();
-
-                var json = Serializer.Json.Serialize(UserSettings, UserJsonReaderOption);
-                File.WriteAllText(SettingPath, json);
-            }
-
-            UserSettings.IO.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.PollingRateMs);
-            UserSettings.IO.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.PollingRateMs);
-            UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
-            UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, UserSettings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
-            UserSettings.Display.InnerJudgeDistance = UserSettings.Display.InnerJudgeDistance.Clamp(0, 1);
-            UserSettings.Display.OuterJudgeDistance = UserSettings.Display.OuterJudgeDistance.Clamp(0, 1);
-
             CreateDirectoryIfNotExists(CachePath);
             CreateDirectoryIfNotExists(runtimeCachePath);
             CreateDirectoryIfNotExists(netCachePath);
@@ -165,6 +126,71 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = THREAD_PRIORITY_MAIN;
+
+            if (File.Exists(SettingsPath))
+            {
+                var js = File.ReadAllText(SettingsPath);
+                GameSetting? setting;
+
+                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                {
+                    Settings = new();
+                    MajDebug.LogError("Failed to read setting from file");
+                    var bakFileName = $"{SettingsPath}.bak";
+                    while(File.Exists(bakFileName))
+                    {
+                        bakFileName = $"{bakFileName}.bak";
+                    }
+                    try
+                    {
+                        File.Copy(SettingsPath, bakFileName, true);
+                    }
+                    catch { }
+                }
+                else
+                {
+                    Settings = setting;
+                    //Reset Mod option after reboot
+                    //Settings.Mod = new ModOptions();
+                }
+            }
+            else
+            {
+                Settings = new GameSetting();
+
+                var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
+                File.WriteAllText(SettingsPath, json);
+            }
+
+            if (File.Exists(_runtimeConfigPath))
+            {
+                var js = File.ReadAllText(_runtimeConfigPath);
+                RuntimeConfig? setting;
+
+                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                {
+                    RuntimeConfig = new();
+                    MajDebug.LogError("Failed to read runtime config from file");
+                }
+                else
+                {
+                    RuntimeConfig = setting;
+                }
+            }
+            else
+            {
+                RuntimeConfig = new();
+
+                var json = Serializer.Json.Serialize(RuntimeConfig, UserJsonReaderOption);
+                File.WriteAllText(_runtimeConfigPath, json);
+            }
+
+            Settings.IO.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
+            Settings.IO.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, Settings.IO.InputDevice.TouchPanel.PollingRateMs);
+            Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+            Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
+            Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 #if !UNITY_EDITOR
             if(MainThread.Name is not null)
             {
@@ -196,11 +222,30 @@ namespace MajdataPlay
                 VLCLibrary.Dispose();
             }
             _globalCTS.Cancel();
-            if (OnApplicationQuit is not null)
+            try
             {
-                OnApplicationQuit();
+                if (OnApplicationQuit is not null)
+                {
+                    OnApplicationQuit();
+                }
             }
-            WinHidManager.QuitThisBs();
+            finally
+            {
+                WinHidManager.QuitThisBs();
+                SaveConfig();
+            }
+        }
+        public static void SaveConfig()
+        {
+            var listConfig = RuntimeConfig.List;
+            listConfig.SelectedIndex = SongStorage.WorkingCollection.Index;
+            listConfig.SelectedDir = SongStorage.CollectionIndex;
+
+            var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
+            var json2 = Serializer.Json.Serialize(RuntimeConfig, UserJsonReaderOption);
+
+            File.WriteAllText(SettingsPath, json);
+            File.WriteAllText(_runtimeConfigPath, json2);
         }
         static void CheckNoteSkinFolder()
         {

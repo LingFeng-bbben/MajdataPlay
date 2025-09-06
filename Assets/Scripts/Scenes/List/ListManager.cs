@@ -11,6 +11,7 @@ using UnityEngine;
 using MajdataPlay.Scenes.Setting;
 using System.Threading.Tasks;
 using MajdataPlay.Buffers;
+using MajdataPlay.Settings.Runtime;
 
 namespace MajdataPlay.Scenes.List
 {
@@ -37,6 +38,7 @@ namespace MajdataPlay.Scenes.List
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
 
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig.List ?? new();
         readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
 
@@ -108,7 +110,7 @@ namespace MajdataPlay.Scenes.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
+                _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 LedRing.SetButtonLight(Color.green, 3);
                 LedRing.SetButtonLight(Color.red, 4);
@@ -253,13 +255,13 @@ namespace MajdataPlay.Scenes.List
             {
                 _coverListDisplayer.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
                 _coverListDisplayer.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             
 
@@ -436,11 +438,11 @@ namespace MajdataPlay.Scenes.List
             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             var levels = new ChartLevel[]
             {
-                        MajInstances.GameManager.SelectedDiff
+                _listConfig.SelectedDiff
             };
             var charts = new ISongDetail[]
             {
-                        _coverListDisplayer.SelectedSong
+                _coverListDisplayer.SelectedSong
             };
             var info = new GameInfo(GameMode.Normal, charts, levels);
             Majdata<GameInfo>.Instance = info;
@@ -453,7 +455,7 @@ namespace MajdataPlay.Scenes.List
             _cts.Cancel();
             var levels = new ChartLevel[]
             {
-                MajInstances.GameManager.SelectedDiff
+                _listConfig.SelectedDiff
             };
             var charts = new ISongDetail[]
             {

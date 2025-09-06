@@ -79,7 +79,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     _noteSFXs[i] = sfx;
                 }
             }
-            var settings = MajEnv.UserSettings;
+            var settings = MajEnv.Settings;
             if (settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _answerOffsetSec = settings.Judge.AnswerOffset + settings.Debug.DisplayOffset;

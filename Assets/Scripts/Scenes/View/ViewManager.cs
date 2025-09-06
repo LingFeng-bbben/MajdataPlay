@@ -53,7 +53,7 @@ namespace MajdataPlay.Scenes.View
         }
         public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
         public GameModInfo ModInfo { get; private set; }
-        public AutoplayModeOption AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
+        public AutoplayModeOption AutoplayMode => MajEnv.Settings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
@@ -106,7 +106,7 @@ namespace MajdataPlay.Scenes.View
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
-            ModInfo = MajEnv.UserSettings.Mod;
+            ModInfo = MajEnv.Settings.Mod;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }

@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using MajdataPlay.Settings.Runtime;
 
 namespace MajdataPlay.Scenes.Setting
 {
@@ -31,6 +32,8 @@ namespace MajdataPlay.Scenes.Setting
         const int IGNORE_CHART_SETTING_PAGE = 1 << 2;
 
         static int _fromListRequest = NO_REQUEST;
+
+        readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         void Start()
         {
             var fromListRequest = _fromListRequest;
@@ -183,11 +186,11 @@ namespace MajdataPlay.Scenes.Setting
             }
             else if ((fromListRequest & JMP_TO_DEFAULT_PAGE) != 0)
             {
-                index = Setting.Misc.SelectedSettingPage;
+                index = _settingConfig.SelectedPage;
             }
             Index = index;
             UpdateMenu(0, Index);
-            menus[Index].ToIndex(Setting.Misc.SelectedSettingMenuIndex);
+            menus[Index].ToIndex(_settingConfig.SelectedMenuIndex);
         }
 
         public void PreviousMenu()
@@ -199,6 +202,7 @@ namespace MajdataPlay.Scenes.Setting
                 oldIndex = menus.Length;
                 Index = menus.Length - 1;
             }
+            _settingConfig.SelectedPage = Index;
             UpdateMenu(oldIndex,Index);
         }
         public void NextMenu()
@@ -210,6 +214,7 @@ namespace MajdataPlay.Scenes.Setting
                 oldIndex = -1;
                 Index = 0;
             }
+            _settingConfig.SelectedPage = Index;
             UpdateMenu(oldIndex, Index);
         }
         public static void JmpToModPage()
@@ -250,9 +255,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         private void OnDestroy()
         {
-            Setting.Misc.SelectedSettingPage = Index;
             _isExited = true;
-            MajInstances.GameManager.Save();
             GC.Collect();
         }
     }

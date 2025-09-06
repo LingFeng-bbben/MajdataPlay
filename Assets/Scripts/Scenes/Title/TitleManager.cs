@@ -187,19 +187,20 @@ namespace MajdataPlay.Scenes.Title
             if (!SongStorage.IsEmpty)
             {
                 var setting = MajInstances.Settings;
-                SongStorage.CollectionIndex = setting.Misc.SelectedDir;
+                var listConfig = MajEnv.RuntimeConfig.List;
+                SongStorage.CollectionIndex = listConfig.SelectedDir;
                 var selectedCollection = SongStorage.WorkingCollection;
-                var selectedIndex = setting.Misc.SelectedIndex;
+                var selectedIndex = listConfig.SelectedIndex;
 
                 if(selectedCollection.IsEmpty)
                 {
-                    setting.Misc.SelectedIndex = 0;
+                    listConfig.SelectedIndex = 0;
                     return;
                 }
                 else if(selectedIndex >= selectedCollection.Count)
                 {
                     selectedCollection.Index = 0;
-                    setting.Misc.SelectedIndex = 0;
+                    listConfig.SelectedIndex = 0;
                 }
                 else
                 {

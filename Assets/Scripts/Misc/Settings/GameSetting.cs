@@ -12,19 +12,17 @@ namespace MajdataPlay.Settings
 {
     public class GameSetting
     {
-        public GameOptions Game { get; set; } = new();
-        public JudgeOptions Judge { get; set; } = new();
-        public DisplayOptions Display { get; set; } = new();
-        public SoundOptions Audio { get; set; } = new();
+        public GameOptions Game { get; init; } = new();
+        public JudgeOptions Judge { get; init; } = new();
+        public DisplayOptions Display { get; init; } = new();
+        public SoundOptions Audio { get; init; } = new();
         [JsonIgnore]
-        public ModOptions Mod { get; set; } = new();
-        public DebugOptions Debug { get; set; } = new();
+        public ModOptions Mod { get; init; } = new();
+        public DebugOptions Debug { get; init; } = new();
         [SettingVisualizationIgnore]
-        public OnlineOptions Online { get; set; } = new();
+        public OnlineOptions Online { get; init; } = new();
         [SettingVisualizationIgnore]
-        public MiscOptions Misc { get; set; } = new();
-        [SettingVisualizationIgnore]
-        public IOOptions IO { get; set; } = new();
+        public IOOptions IO { get; init; } = new();
     }
     public class GameOptions
     {
@@ -190,17 +188,6 @@ namespace MajdataPlay.Settings
         public int TouchHoldPoolCapacity { get; set; } = 16;
         [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
-    }
-    public class MiscOptions
-    {
-        public int SelectedIndex { get; set; } = 0;
-        public int SelectedDir { get; set; } = 0;
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public SongOrder OrderBy { get; set; } = new();
-        [JsonIgnore]
-        public int SelectedSettingPage { get; set; } = 0;
-        [JsonIgnore]
-        public int SelectedSettingMenuIndex { get; set; } = 0;
     }
     public class IOOptions
     {

@@ -48,7 +48,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var touchParent = transform.GetChild(4);
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
-            var debugOptions = MajEnv.UserSettings.Debug;
+            var debugOptions = MajEnv.Settings.Debug;
             tapPool = new(tapPrefab, tapParent, _tapInfos.ToArray(), Math.Max(debugOptions.TapPoolCapacity, 1));
             holdPool = new(holdPrefab, holdParent, _holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
             touchPool = new(touchPrefab, touchParent, _touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));

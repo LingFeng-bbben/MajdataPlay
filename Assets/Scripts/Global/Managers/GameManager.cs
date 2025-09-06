@@ -24,22 +24,6 @@ namespace MajdataPlay
         {
             get => MajInstances.Settings;
         }
-        /// <summary>
-        /// Current difficult
-        /// </summary>
-        public ChartLevel SelectedDiff
-        {
-            get
-            {
-                return _selectedDiff;
-            }
-            set 
-            {
-                _selectedDiff = value;
-            }
-        }
-        private ChartLevel _selectedDiff = ChartLevel.Easy;
-
 
         [SerializeField]
         BuiltInTimeProvider _timer = BuiltInTimeProvider.Winapi;
@@ -237,8 +221,6 @@ namespace MajdataPlay
         }
         void Start()
         {
-            SelectedDiff = Setting.Misc.SelectedDiff;
-            SongStorage.OrderBy = Setting.Misc.OrderBy;
             InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
             if (MajEnv.Mode == RunningMode.Test)
             {
@@ -270,20 +252,8 @@ namespace MajdataPlay
         }
         void OnApplicationQuit()
         {
-            Save();
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajEnv.OnApplicationQuitRequested();
-        }
-        public void Save()
-        {
-            Setting.Misc.SelectedDiff = SelectedDiff;
-            Setting.Misc.SelectedIndex = SongStorage.WorkingCollection.Index;
-            Setting.Misc.SelectedDir = SongStorage.CollectionIndex;
-            //SongStorage.OrderBy.Keyword = string.Empty;
-            Setting.Misc.OrderBy = SongStorage.OrderBy;
-
-            var json = Serializer.Json.Serialize(Setting, MajEnv.UserJsonReaderOption);
-            File.WriteAllText(MajEnv.SettingPath, json);
         }
         public void EnableGC()
         {

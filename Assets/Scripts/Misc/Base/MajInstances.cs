@@ -27,7 +27,7 @@ namespace MajdataPlay
         public static GameSetting Settings
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajEnv.UserSettings;
+            get => MajEnv.Settings;
         }
         public static AudioManager AudioManager
         {

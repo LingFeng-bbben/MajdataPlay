@@ -47,7 +47,10 @@ namespace MajdataPlay
         /// Loaded song collections
         /// </summary>
         public static SongCollection[] Collections { get; private set; } = Array.Empty<SongCollection>();
-        public static SongOrder OrderBy { get; set; } = new();
+        public static SongOrder OrderBy 
+        {
+            get => MajEnv.RuntimeConfig.List.OrderBy;
+        }
         public static long TotalChartCount
         { 
             get
@@ -150,9 +153,10 @@ namespace MajdataPlay
                 _allCharts.Clear();
                 _parsedChartCount = 0;
                 _totalChartCount = 0;
-                var selectedDiff = MajInstances.GameManager.SelectedDiff;
-                var selectedIndex = SongStorage.WorkingCollection.Index;
-                var selectedDir = SongStorage.CollectionIndex;
+                var listConfig = MajEnv.RuntimeConfig.List;
+                var selectedDiff = listConfig.SelectedDiff;
+                var selectedIndex = listConfig.SelectedIndex;
+                var selectedDir = listConfig.SelectedDir;
 
                 var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
                 await Task.Delay(100);

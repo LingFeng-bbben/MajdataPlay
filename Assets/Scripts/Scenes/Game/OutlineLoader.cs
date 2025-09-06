@@ -43,7 +43,8 @@ namespace MajdataPlay.Scenes.Game
         void SetColor()
         {
             var outlineColor = Color.white;
-            switch(_gameManager.SelectedDiff)
+            var listConfig = MajEnv.RuntimeConfig.List;
+            switch(listConfig.SelectedDiff)
             {
                 case ChartLevel.Easy:
                     outlineColor = CreateColor(32, 63, 255);

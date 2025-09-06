@@ -21,6 +21,7 @@ using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Settings.Runtime;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -111,8 +112,8 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
-        bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
+        bool _isTrackSkipAvailable = MajEnv.Settings.Game.TrackSkip;
+        bool _isFastRetryAvailable = MajEnv.Settings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
@@ -125,8 +126,6 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         float _audioTimeOffsetSec = 0f;
         float _displayOffsetSec = 0f;
-
-        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
         Task _generateAnswerSFXTask = Task.CompletedTask;
         Text _errText;
@@ -152,6 +151,8 @@ namespace MajdataPlay.Scenes.Game
         RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
+        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
         #region GameLoading
 
@@ -166,7 +167,7 @@ namespace MajdataPlay.Scenes.Game
             }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
-            HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
+            HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
             var chartSetting = ChartSettingStorage.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
@@ -1077,7 +1078,7 @@ namespace MajdataPlay.Scenes.Game
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+            var result = _objectCounter.GetPlayRecord(_songDetail, _listConfig.SelectedDiff);
             _gameInfo.RecordResult(result);
 
             if (!playEffect)

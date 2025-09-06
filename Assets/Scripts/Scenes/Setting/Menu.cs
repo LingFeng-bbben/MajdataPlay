@@ -2,6 +2,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace MajdataPlay.Scenes.Setting
         bool _isBound = false;
         Option[] _options = Array.Empty<Option>();
         SettingManager manager;
+
+        readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         public void Init()
         {
             var type = SubOptionObject.GetType();
@@ -108,7 +111,7 @@ namespace MajdataPlay.Scenes.Setting
                 manager.PreviousMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
+            _settingConfig.SelectedMenuIndex = _selectedIndex;
         }
         void NextOption()
         {
@@ -118,7 +121,7 @@ namespace MajdataPlay.Scenes.Setting
                 manager.NextMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            MajInstances.Settings.Misc.SelectedSettingMenuIndex = _selectedIndex;
+            _settingConfig.SelectedMenuIndex = _selectedIndex;
         }
         public void ToLast() => _selectedIndex = _options.Length - 1;
         public void ToFirst() => _selectedIndex = 0;

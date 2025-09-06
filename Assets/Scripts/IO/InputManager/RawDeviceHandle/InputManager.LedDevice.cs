@@ -191,7 +191,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
+                var ledOptions = MajEnv.Settings.IO.OutputDevice.Led;
                 var hidOptions = _ledDeviceHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;

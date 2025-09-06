@@ -50,7 +50,7 @@ namespace MajdataPlay.IO
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
-                        MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.UserSettings.IO.Manufacturer}");
+                        MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.Settings.IO.Manufacturer}");
                         break;
                 }
             }
@@ -567,7 +567,7 @@ namespace MajdataPlay.IO
                         MajDebug.LogInfo($"TouchPanel: Trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
-                        var sensConfig = MajEnv.UserSettings.IO.InputDevice.TouchPanel.Sensitivities;
+                        var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
                         var index = _playerIndex == 1 ? 'L' : 'R';
                         //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
