@@ -123,6 +123,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "Answer":
                     case "BGM":
+                    case "Track":
                     case "Tap":
                     case "Judge":
                     case "Slide":
@@ -132,6 +133,11 @@ namespace MajdataPlay.Scenes.Setting
                         _maxValue = 2;
                         _step = 0.05m;
                         _minValue = 0;
+                        break;
+                    case "TrackVolumeOffset":
+                        _maxValue = 2;
+                        _step = 0.05m;
+                        _minValue = -2;
                         break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":

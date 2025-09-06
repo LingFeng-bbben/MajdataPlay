@@ -136,7 +136,10 @@ namespace MajdataPlay.Scenes.Game
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
+        ChartSetting _chartSetting;
         ISongDetail _songDetail;
+
+        float _trackVolume = 1f;
 
         AudioSampleWrap? _audioSample = null;
 
@@ -169,19 +172,20 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            var chartSetting = ChartSettingStorage.GetSetting(_songDetail);
+            _chartSetting = ChartSettingStorage.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
-                _audioTimeOffsetSec += chartSetting.AudioOffset;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset;
                 _displayOffsetSec = _setting.Debug.DisplayOffset;
             }
             else
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
-                _audioTimeOffsetSec += chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
+            _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -486,7 +490,7 @@ namespace MajdataPlay.Scenes.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
             }
             _audioSample = audioSample;
-            _audioSample.SetVolume(_setting.Audio.Volume.BGM);
+            _audioSample.SetVolume(_trackVolume);
             _audioSample.Speed = PlaybackSpeed;
             _audioSample.IsLoop = false;
             if(IsPracticeMode)
@@ -777,7 +781,7 @@ namespace MajdataPlay.Scenes.Game
             if(IsPracticeMode)
             {
                 var elapsedSeconds = 0f;
-                var originVol = _setting.Audio.Volume.BGM;
+                var originVol = _trackVolume;
                 
                 BgHeaderFadeOut();
                 try
@@ -802,7 +806,7 @@ namespace MajdataPlay.Scenes.Game
             else
             {
                 token.ThrowIfCancellationRequested();
-                _audioSample.Volume = _setting.Audio.Volume.BGM;
+                _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();
                 BgHeaderFadeOut();
@@ -1129,7 +1133,7 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.Delay(delayMiliseconds);
             ClearAllResources();
             var remainingSeconds = 1f;
-            var originVol = _setting.Audio.Volume.BGM;
+            var originVol = _trackVolume;
             _audioSample!.Volume = 0;
             while (remainingSeconds > 0)
             {

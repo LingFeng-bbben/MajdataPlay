@@ -355,6 +355,14 @@
       "Content": "Nothing"
     },
     {
+      "Origin": "MAJSETTING_PROPERTY_Track",
+      "Content": "谱面音乐"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_Track_DESC",
+      "Content": "Nothing"
+    },
+    {
       "Origin": "MAJSETTING_PROPERTY_Tap",
       "Content": "Tap/Hold判定音"
     },
@@ -913,6 +921,14 @@
     {
       "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Frame",
       "Content": "单位: 帧"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset",
+      "Content": "音乐音量偏移"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset_DESC",
+      "Content": "Nothing"
     }
   ]
 }

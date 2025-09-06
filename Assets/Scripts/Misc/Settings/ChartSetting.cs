@@ -12,7 +12,7 @@ namespace MajdataPlay.Settings
         public string Hash { get; init; }
         [SettingVisualizationIgnore]
         public OffsetUnitOption Unit { get; set; } = OffsetUnitOption.Second;
-        public float AudioOffset { get; set; }
-
+        public float AudioOffset { get; set; } = 0f;
+        public float TrackVolumeOffset { get; set; } = 0f;
     }
 }
