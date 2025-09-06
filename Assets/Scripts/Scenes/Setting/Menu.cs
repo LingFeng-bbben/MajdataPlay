@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.Setting
         bool _isBound = false;
         Option[] _options = Array.Empty<Option>();
         SettingManager manager;
-        void Start()
+        public void Init()
         {
             var type = SubOptionObject.GetType();
             var properties = type.GetProperties()
@@ -41,6 +41,7 @@ namespace MajdataPlay.Scenes.Setting
                 option.OptionObject = SubOptionObject;
                 option.Parent = this;
                 option.Index = i;
+                option.Init();
             }
 
             var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();

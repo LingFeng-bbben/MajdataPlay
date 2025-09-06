@@ -78,6 +78,7 @@ namespace MajdataPlay.Scenes.Setting
             }
             foreach (var (i, menu) in menus.WithIndex())
             {
+                menu.Init();
                 menu.gameObject.SetActive(true);
             }
 
@@ -158,7 +159,6 @@ namespace MajdataPlay.Scenes.Setting
         }
         async UniTaskVoid InitializeAllMenu()
         {
-            await UniTask.DelayFrame(1);
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)

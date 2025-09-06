@@ -50,7 +50,7 @@ namespace MajdataPlay.Scenes.Setting
         int _lastIndex = 0;
 
         AudioManager _audioManager = MajInstances.AudioManager;
-        void Start()
+        public void Init()
         {
             Localization.OnLanguageChanged += OnLangChanged;
             nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
