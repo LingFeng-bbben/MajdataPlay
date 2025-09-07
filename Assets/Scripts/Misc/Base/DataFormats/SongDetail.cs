@@ -32,11 +32,13 @@ namespace MajdataPlay
                 return _simaiMetadata.Levels;
             }
         }
-        public string Hash { get; init; } = string.Empty;
+        public string Hash 
+        { 
+            get => _simaiMetadata.Hash; 
+        }
         public DateTime Timestamp { get; init; }
         public ChartStorageLocation Location => ChartStorageLocation.Local;
 
-        readonly SimaiMetadata _simaiMetadata;
         readonly string _maidataPath = string.Empty;
         readonly string _trackPath = string.Empty;
         readonly string _videoPath = string.Empty;
@@ -50,6 +52,7 @@ namespace MajdataPlay
         AudioSampleWrap? _previewAudioTrack = null;
         Sprite? _cover = null;
         SimaiFile? _maidata = null;
+        SimaiMetadata _simaiMetadata;
 
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
@@ -78,7 +81,6 @@ namespace MajdataPlay
             _simaiMetadata = metadata;
             Title = metadata.Title;
             Artist = metadata.Artist;
-            Hash = metadata.Hash;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
         }
         public static async Task<SongDetail> ParseAsync(string chartFolder)
@@ -183,9 +185,19 @@ namespace MajdataPlay
                 {
                     return _maidata;
                 }
-
-                _maidata = await SimaiParser.ParseAsync(File.OpenRead(_maidataPath));
-                return _maidata;
+                using var fileStream = File.OpenRead(_maidataPath);
+                var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
+                fileStream.Position = 0;
+                if(metadata.Hash == _simaiMetadata.Hash)
+                {
+                    _maidata ??= await SimaiParser.ParseAsync(fileStream);
+                    return _maidata;
+                }
+                else
+                {
+                    _maidata = await SimaiParser.ParseAsync(fileStream);
+                    return _maidata;
+                }
             }
         }
         public void Dispose()
