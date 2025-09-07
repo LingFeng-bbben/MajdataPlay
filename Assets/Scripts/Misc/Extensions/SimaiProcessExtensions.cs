@@ -1,5 +1,7 @@
-﻿using MajdataPlay.Numerics;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Numerics;
 using MajSimai;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 #nullable enable
@@ -120,7 +122,7 @@ namespace MajdataPlay.Extensions
         }
         public static SimaiChart Clamp(this SimaiChart source,Range<long> noteIndexRange)
         {
-            List<SimaiTimingPoint> newTimingList = new();
+            using RentedList<SimaiTimingPoint> newTimingList = new();
             var currentIndex = 0;
             for (var i = 0; i < source.NoteTimings.Length; i++)
             {
@@ -185,12 +187,21 @@ namespace MajdataPlay.Extensions
                     newTimingList.Add(newTimingPoint);
                 }
             }
-            return new SimaiChart(source.Level, source.Designer, source.Fumen, newTimingList, null);
+            var buffer = Pool<SimaiTimingPoint>.RentArray(newTimingList.Count);
+            try
+            {
+                newTimingList.CopyTo(buffer);
+                return new SimaiChart(source.Level, source.Designer, source.Fumen, buffer.AsSpan(0, newTimingList.Count), null);
+            }
+            finally
+            {
+                Pool<SimaiTimingPoint>.ReturnArray(buffer);
+            }
             //source.NoteTimings = newTimingList.ToArray();
         }
         public static SimaiChart Clamp(this SimaiChart source, Range<double> timestampRange)
         {
-            List<SimaiTimingPoint> newTimingList = new();
+            using RentedList<SimaiTimingPoint> newTimingList = new();
             foreach(var noteTiming in source.NoteTimings)
             {
                 if(timestampRange.InRange(noteTiming.Timing))
@@ -199,7 +210,16 @@ namespace MajdataPlay.Extensions
                 }
             }
             //source.NoteTimings = newTimingList.ToArray();
-            return new SimaiChart(source.Level, source.Designer, source.Fumen, newTimingList, null);
+            var buffer = Pool<SimaiTimingPoint>.RentArray(newTimingList.Count);
+            try
+            {
+                newTimingList.CopyTo(buffer);
+                return new SimaiChart(source.Level, source.Designer, source.Fumen, buffer.AsSpan(0, newTimingList.Count), null);
+            }
+            finally
+            {
+                Pool<SimaiTimingPoint>.ReturnArray(buffer);
+            }
         }
     }
 }
