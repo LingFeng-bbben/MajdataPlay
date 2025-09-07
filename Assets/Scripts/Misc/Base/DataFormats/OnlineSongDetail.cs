@@ -144,7 +144,7 @@ namespace MajdataPlay
             }
         }
 
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             try
@@ -180,7 +180,7 @@ namespace MajdataPlay
                 throw;
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             try
@@ -221,7 +221,7 @@ namespace MajdataPlay
                 throw new Exception("Music track Load Failed");
             }
         }
-        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_isPreloaded)
@@ -233,10 +233,10 @@ namespace MajdataPlay
             {
                 return;
             }
-            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token: token));
+            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
             _isPreloaded = true;
         }
-        public async UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             try
@@ -303,7 +303,7 @@ namespace MajdataPlay
                 throw;
             }
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (isCompressed)
@@ -315,7 +315,7 @@ namespace MajdataPlay
                 return await GetFullSizeCoverAsync(progress, token);
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (!ignoreCache && _maidata is not null)
@@ -351,7 +351,7 @@ namespace MajdataPlay
                 throw new Exception("Maidata Load Failed");
             }
         }
-        async UniTask<Sprite> GetCompressedCoverAsync(INetProgress? progress = null, CancellationToken token = default)
+        async ValueTask<Sprite> GetCompressedCoverAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -416,7 +416,7 @@ namespace MajdataPlay
                 throw;
             }
         }
-        async UniTask<Sprite> GetFullSizeCoverAsync(INetProgress? progress = null, CancellationToken token = default)
+        async ValueTask<Sprite> GetFullSizeCoverAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
@@ -494,6 +494,34 @@ namespace MajdataPlay
                 GameObject.DestroyImmediate(_cover, true);
                 GameObject.DestroyImmediate(_fullSizeCover, true);
             });
+            _maidata = null;
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _fullSizeCover = null;
+            _videoPath = null;
+        }
+        public async ValueTask DisposeAsync()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            if (_audioTrack is not null)
+            {
+                await _audioTrack.DisposeAsync();
+            }
+            if (_previewAudioTrack is not null)
+            {
+                await _previewAudioTrack.DisposeAsync();
+            }
+            await using(UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(_fullSizeCover, true);
+            }
             _maidata = null;
             _audioTrack = null;
             _previewAudioTrack = null;

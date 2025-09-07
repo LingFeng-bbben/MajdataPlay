@@ -21,6 +21,7 @@ using MajdataPlay.Recording;
 using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Settings.Runtime;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -111,8 +112,8 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
-        bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
+        bool _isTrackSkipAvailable = MajEnv.Settings.Game.TrackSkip;
+        bool _isFastRetryAvailable = MajEnv.Settings.Game.FastRetry;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
@@ -126,8 +127,6 @@ namespace MajdataPlay.Scenes.Game
         float _audioTimeOffsetSec = 0f;
         float _displayOffsetSec = 0f;
 
-        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
-
         Task _generateAnswerSFXTask = Task.CompletedTask;
         Text _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
@@ -137,7 +136,10 @@ namespace MajdataPlay.Scenes.Game
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
+        ChartSetting _chartSetting;
         ISongDetail _songDetail;
+
+        float _trackVolume = 1f;
 
         AudioSampleWrap? _audioSample = null;
 
@@ -152,6 +154,8 @@ namespace MajdataPlay.Scenes.Game
         RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
+        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
         #region GameLoading
 
@@ -166,21 +170,22 @@ namespace MajdataPlay.Scenes.Game
             }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
-            HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
+            HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            var chartSetting = ChartSettingStorage.GetSetting(_songDetail);
+            _chartSetting = ChartSettingStorage.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
-                _audioTimeOffsetSec += chartSetting.AudioOffset;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset;
                 _displayOffsetSec = _setting.Debug.DisplayOffset;
             }
             else
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
-                _audioTimeOffsetSec += chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
+            _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -373,7 +378,7 @@ namespace MajdataPlay.Scenes.Game
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
-                    while (!task1.Status.IsCompleted())
+                    while (!task1.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
@@ -382,7 +387,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
-                    while (!task2.Status.IsCompleted())
+                    while (!task2.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
@@ -391,7 +396,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                     var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
-                    while (!task3.Status.IsCompleted())
+                    while (!task3.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
@@ -400,7 +405,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
-                    while (!task4.Status.IsCompleted())
+                    while (!task4.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");
@@ -485,7 +490,7 @@ namespace MajdataPlay.Scenes.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
             }
             _audioSample = audioSample;
-            _audioSample.SetVolume(_setting.Audio.Volume.BGM);
+            _audioSample.SetVolume(_trackVolume);
             _audioSample.Speed = PlaybackSpeed;
             _audioSample.IsLoop = false;
             if(IsPracticeMode)
@@ -775,7 +780,7 @@ namespace MajdataPlay.Scenes.Game
             if(IsPracticeMode)
             {
                 var elapsedSeconds = 0f;
-                var originVol = _setting.Audio.Volume.BGM;
+                var originVol = _trackVolume;
                 
                 BgHeaderFadeOut();
                 try
@@ -800,7 +805,7 @@ namespace MajdataPlay.Scenes.Game
             else
             {
                 token.ThrowIfCancellationRequested();
-                _audioSample.Volume = _setting.Audio.Volume.BGM;
+                _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();
                 BgHeaderFadeOut();
@@ -1076,7 +1081,7 @@ namespace MajdataPlay.Scenes.Game
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+            var result = _objectCounter.GetPlayRecord(_songDetail, _listConfig.SelectedDiff);
             _gameInfo.RecordResult(result);
 
             if (!playEffect)
@@ -1127,7 +1132,7 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.Delay(delayMiliseconds);
             ClearAllResources();
             var remainingSeconds = 1f;
-            var originVol = _setting.Audio.Volume.BGM;
+            var originVol = _trackVolume;
             _audioSample!.Volume = 0;
             while (remainingSeconds > 0)
             {

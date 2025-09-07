@@ -44,7 +44,7 @@ namespace MajdataPlay.Settings
                     for (var i = 0; i < data.Length; i++)
                     {
                         var setting = data[i];
-                        if (setting.Unit != MajEnv.UserSettings.Debug.OffsetUnit)
+                        if (setting.Unit != MajEnv.Settings.Debug.OffsetUnit)
                         {
                             if(setting.Unit == OffsetUnitOption.Second) // Second => Frame
                             {
@@ -54,7 +54,7 @@ namespace MajdataPlay.Settings
                             {
                                 setting.AudioOffset *= MajEnv.FRAME_LENGTH_SEC;
                             }
-                            setting.Unit = MajEnv.UserSettings.Debug.OffsetUnit;
+                            setting.Unit = MajEnv.Settings.Debug.OffsetUnit;
                         }
                     }
                     _storage.AddRange(data);
@@ -78,7 +78,7 @@ namespace MajdataPlay.Settings
                 setting = new()
                 {
                     Hash = hash,
-                    Unit = MajEnv.UserSettings.Debug.OffsetUnit
+                    Unit = MajEnv.Settings.Debug.OffsetUnit
                 };
                 _storage.Add(setting);
             }

@@ -29,7 +29,8 @@ namespace MajdataPlay
 
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
-        const int SWITCH_ELAPSED = 400;
+        const int SWITCH_ELAPSED_MS = 400;
+        const int AUTO_FADE_OUT_DELAY_MS = 50;
         protected override void Awake()
         {
             base.Awake();
@@ -72,7 +73,7 @@ namespace MajdataPlay
         public async UniTask FadeOutAsync()
         {
             animator.SetBool("In", false);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             loadingText.gameObject.SetActive(false);
             LedRing.SetAllLight(Color.white);
         }
@@ -86,7 +87,7 @@ namespace MajdataPlay
         public async UniTask FadeInAsync()
         {
             animator.SetBool("In", true);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             loadingText.text = string.Empty;
             loadingText.gameObject.SetActive(true);
             LedRing.SetAllLight(LoadingLightColor);
@@ -110,10 +111,11 @@ namespace MajdataPlay
             loadingText.text = "";
             loadingText.gameObject.SetActive(true);
             animator.SetBool("In", true);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             if(autoFadeOut)
             { 
                 animator.SetBool("In", false);
@@ -131,14 +133,19 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (!taskToRun.IsCompleted)
+            {
                 await UniTask.Yield();
+            }
             if (taskToRun.IsFaulted)
-                MajDebug.LogException(taskToRun.Exception);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            {
+                throw taskToRun.Exception;
+            }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -153,14 +160,19 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (!taskToRun.IsCompleted)
+            {
                 await UniTask.Yield();
+            }
             if(taskToRun.IsFaulted)
-                MajDebug.LogException(taskToRun.AsTask().Exception);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            {
+                throw taskToRun.AsTask().Exception;
+            }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -175,14 +187,21 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
+            {
                 await UniTask.Yield();
-            if (taskToRun.Status is UniTaskStatus.Faulted)
-                MajDebug.LogException(taskToRun.AsTask().Exception);
-            await UniTask.Delay(SWITCH_ELAPSED);
+            }
+            switch (taskToRun.Status)
+            {
+                case UniTaskStatus.Canceled:
+                case UniTaskStatus.Faulted:
+                    throw taskToRun.AsTask().Exception;
+            }            
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -199,14 +218,19 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (!taskToRun.IsCompleted)
+            {
                 await UniTask.Yield();
+            }
             if (taskToRun.IsFaulted)
+            {
                 throw taskToRun.Exception;
-            await UniTask.Delay(SWITCH_ELAPSED);
+            }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
@@ -220,14 +244,19 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (!taskToRun.IsCompleted)
+            {
                 await UniTask.Yield();
+            }
             if (taskToRun.IsFaulted)
+            {
                 throw taskToRun.AsTask().Exception;
-            await UniTask.Delay(SWITCH_ELAPSED);
+            }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
             return taskToRun.Result;
@@ -243,23 +272,25 @@ namespace MajdataPlay
             SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
+            await UniTask.Delay(SWITCH_ELAPSED_MS);
             while (taskToRun.Status is not (UniTaskStatus.Succeeded or UniTaskStatus.Faulted or UniTaskStatus.Canceled))
+            {
                 await UniTask.Yield();
-            await UniTask.Delay(SWITCH_ELAPSED);
-            LedRing.SetAllLight(LoadingLightColor);
-            await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(2);
-            animator.SetBool("In", false);
-            LedRing.SetAllLight(Color.white);
+            }
             switch (taskToRun.Status)
             {
-                case UniTaskStatus.Succeeded:
-                    return taskToRun.AsValueTask().Result;
+                case UniTaskStatus.Canceled:
                 case UniTaskStatus.Faulted:
                     throw taskToRun.AsTask().Exception;
-                default:
-                    throw new TaskCanceledException();
             }
+            LedRing.SetAllLight(LoadingLightColor);
+            await SceneManager.LoadSceneAsync(sceneName);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
+            animator.SetBool("In", false);
+            LedRing.SetAllLight(Color.white);
+
+            return taskToRun.AsValueTask().Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, UniTask<T> taskToRun)
         {

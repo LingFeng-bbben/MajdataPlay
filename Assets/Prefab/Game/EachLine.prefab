@@ -101,8 +101,3 @@ MonoBehaviour:
   startPosition: 1
   curvLength: 1
   speed: 1
-  curvSprites:
-  - {fileID: 21300000, guid: 20414cf64970db14b9881d4b08a0d0fa, type: 3}
-  - {fileID: 21300000, guid: 9cad3999ab944ec41b26210eaa772b47, type: 3}
-  - {fileID: 21300000, guid: c6b5696e4e8894c4f8c701f3d04c75c1, type: 3}
-  - {fileID: 21300000, guid: 8c3d3405aa20c6b49ad26915e984e442, type: 3}

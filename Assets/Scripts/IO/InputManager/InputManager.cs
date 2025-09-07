@@ -43,7 +43,7 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return MajEnv.UserSettings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
+                return MajEnv.Settings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
             }
         }
         public static ReadOnlySpan<SwitchStatus> ButtonStatusInThisFrame
@@ -281,7 +281,7 @@ namespace MajdataPlay.IO
         static ButtonRingDeviceOption _buttonRingDevice = ButtonRingDeviceOption.Keyboard;
         static InputManager()
         {
-            _isSensorRendererEnabled = MajEnv.UserSettings.Debug.DisplaySensor;
+            _isSensorRendererEnabled = MajEnv.Settings.Debug.DisplaySensor;
             _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
             _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.PollingRateMs);
             _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
@@ -324,7 +324,7 @@ namespace MajdataPlay.IO
             var hidDevices = HidManager.Devices;
             var serialPorts = SerialPort.GetPortNames();
             
-            var ioSettings = MajEnv.UserSettings.IO;
+            var ioSettings = MajEnv.Settings.IO;
             var playerIndex = ioSettings.InputDevice.Player;
             var buttonRingSettings = ioSettings.InputDevice.ButtonRing;
             var touchPanelSettings = ioSettings.InputDevice.TouchPanel;

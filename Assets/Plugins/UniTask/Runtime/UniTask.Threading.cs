@@ -358,6 +358,7 @@ namespace Cysharp.Threading.Tasks
         public struct Awaiter : ICriticalNotifyCompletion
         {
             static readonly SendOrPostCallback switchToCallback = Callback;
+            static readonly WaitCallback switchToThreadPoolCallback = Callback;
 
             readonly SynchronizationContext synchronizationContext;
             readonly bool dontPostWhenSameContext;
@@ -394,12 +395,30 @@ namespace Cysharp.Threading.Tasks
 
             public void OnCompleted(Action continuation)
             {
-                synchronizationContext.Post(switchToCallback, continuation);
+                if(synchronizationContext is not null)
+                {
+                    synchronizationContext.Post(switchToCallback, continuation);
+                }
+                else
+                {
+                    ThreadPool.QueueUserWorkItem(switchToThreadPoolCallback, continuation);
+                }
             }
 
             public void UnsafeOnCompleted(Action continuation)
             {
-                synchronizationContext.Post(switchToCallback, continuation);
+                if (synchronizationContext is not null)
+                {
+                    synchronizationContext.Post(switchToCallback, continuation);
+                }
+                else
+                {
+#if NETCOREAPP3_1
+                    ThreadPool.UnsafeQueueUserWorkItem(ThreadPoolWorkItem.Create(continuation), false);
+#else
+                    ThreadPool.UnsafeQueueUserWorkItem(switchToThreadPoolCallback, continuation);
+#endif
+                }
             }
 
             static void Callback(object state)

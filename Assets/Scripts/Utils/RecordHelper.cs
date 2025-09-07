@@ -30,7 +30,7 @@ namespace MajdataPlay.Utils
         {
             get
             {
-                return MajEnv.UserSettings.Game.RecordMode == RecordModeOption.OBSTrigger;
+                return MajEnv.Settings.Game.RecordMode == RecordModeOption.OBSTrigger;
             }
         }
 

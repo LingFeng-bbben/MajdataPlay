@@ -12,19 +12,17 @@ namespace MajdataPlay.Settings
 {
     public class GameSetting
     {
-        public GameOptions Game { get; set; } = new();
-        public JudgeOptions Judge { get; set; } = new();
-        public DisplayOptions Display { get; set; } = new();
-        public SoundOptions Audio { get; set; } = new();
+        public GameOptions Game { get; init; } = new();
+        public JudgeOptions Judge { get; init; } = new();
+        public DisplayOptions Display { get; init; } = new();
+        public SoundOptions Audio { get; init; } = new();
         [JsonIgnore]
-        public ModOptions Mod { get; set; } = new();
-        public DebugOptions Debug { get; set; } = new();
+        public ModOptions Mod { get; init; } = new();
+        public DebugOptions Debug { get; init; } = new();
         [SettingVisualizationIgnore]
-        public OnlineOptions Online { get; set; } = new();
+        public OnlineOptions Online { get; init; } = new();
         [SettingVisualizationIgnore]
-        public MiscOptions Misc { get; set; } = new();
-        [SettingVisualizationIgnore]
-        public IOOptions IO { get; set; } = new();
+        public IOOptions IO { get; init; } = new();
     }
     public class GameOptions
     {
@@ -99,9 +97,10 @@ namespace MajdataPlay.Settings
     }
     public class SFXVolume
     {
-        public float Global { get; set; } = 0.8f;
+        public float Global { get; set; } = 0.3f;
         public float Answer { get; set; } = 0.8f;
         public float BGM { get; set; } = 1f;
+        public float Track { get; set; } = 1f;
         public float Tap { get; set; } = 0.3f;
         public float Slide { get; set; } = 0.3f;
         public float Break { get; set; } = 0.3f;
@@ -191,17 +190,6 @@ namespace MajdataPlay.Settings
         [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
     }
-    public class MiscOptions
-    {
-        public int SelectedIndex { get; set; } = 0;
-        public int SelectedDir { get; set; } = 0;
-        public ChartLevel SelectedDiff { get; set; } = ChartLevel.Easy;
-        public SongOrder OrderBy { get; set; } = new();
-        [JsonIgnore]
-        public int SelectedSettingPage { get; set; } = 0;
-        [JsonIgnore]
-        public int SelectedSettingMenuIndex { get; set; } = 0;
-    }
     public class IOOptions
     {
         public DeviceManufacturerOption? Manufacturer { get; set; } = null;
@@ -237,7 +225,7 @@ namespace MajdataPlay.Settings
     public class TouchPanelOptions
     {
         public bool Debounce { get; set; } = false;
-        public int Sensitivity { get; set; } = 0;
+        public TouchPanelSensitivityConfig Sensitivities { get; set; } = default;
         public int PollingRateMs { get; set; } = 0;
         public int DebounceThresholdMs { get; set; } = 0;
         public float TouchSimulationRadius { get; set; } = 0.5f;
@@ -255,5 +243,13 @@ namespace MajdataPlay.Settings
     {
         public int? Port { get; set; } = null;
         public int? BaudRate { get; set; } = null;
+    }
+    public struct TouchPanelSensitivityConfig
+    {
+        public short A { get; set; }
+        public short B { get; set; }
+        public short C { get; set; }
+        public short D { get; set; }
+        public short E { get; set; }
     }
 }

@@ -66,15 +66,15 @@ namespace MajdataPlay.Scenes.Result
         void Start()
         {
             rank.text = "";
-            var gameManager = MajInstances.GameManager;
+            var listConfig = MajEnv.RuntimeConfig.List;
             var result = _gameInfo.GetLastResult();
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
+            var isClassic = MajEnv.Settings.Judge.Mode == JudgeModeOption.Classic;
 
             LedRing.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
-            var historyResult = ScoreManager.GetScore(song, gameManager.SelectedDiff);
+            var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
 
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
@@ -121,7 +121,7 @@ namespace MajdataPlay.Scenes.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            if(MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 if (result.NoteJudgeDiffs.IsEmpty)
                 {

@@ -92,7 +92,7 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
-        async UniTask SetCoverAsync(CancellationToken token = default)
+        async Task SetCoverAsync(CancellationToken token = default)
         {
             _loading.SetActive(true);
             var cover = await _boundSong.GetCoverAsync(true,token: token);

@@ -75,7 +75,7 @@ namespace MajdataPlay.Scenes.Game
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
 
-        static readonly bool USERSETTING_NOTE_FOLDING = MajEnv.UserSettings?.Debug.NoteFolding ?? true;
+        static readonly bool USERSETTING_NOTE_FOLDING = MajEnv.Settings?.Debug.NoteFolding ?? true;
 
         public static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
@@ -1824,7 +1824,7 @@ namespace MajdataPlay.Scenes.Game
             public static void SetNewPositionIfRequested(ref int originPos, 
                                                          IReadOnlyDictionary<int, int> mappingTable)
             {
-                switch(MajEnv.UserSettings.Game.Random)
+                switch(MajEnv.Settings.Game.Random)
                 {
                     case RandomModeOption.Disabled:
                         return;
@@ -1839,7 +1839,7 @@ namespace MajdataPlay.Scenes.Game
             public static void SetNewPositionIfRequested(ref SensorArea originPos, 
                                                          IReadOnlyDictionary<SensorArea, SensorArea> mappingTable)
             {
-                switch (MajEnv.UserSettings.Game.Random)
+                switch (MajEnv.Settings.Game.Random)
                 {
                     case RandomModeOption.Disabled:
                         return;
@@ -1855,7 +1855,7 @@ namespace MajdataPlay.Scenes.Game
                                                               ref int originEndPos,
                                                               IReadOnlyDictionary<int, int> mappingTable)
             {
-                switch (MajEnv.UserSettings.Game.Random)
+                switch (MajEnv.Settings.Game.Random)
                 {
                     case RandomModeOption.Disabled:
                         return;

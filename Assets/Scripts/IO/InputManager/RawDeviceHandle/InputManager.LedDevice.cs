@@ -38,9 +38,9 @@ namespace MajdataPlay.IO
 
                 _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
-                if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100)
+                if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
                 {
-                    MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 100;
+                    MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 16;
                 }
             }
             public static void Init()
@@ -191,7 +191,7 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
+                var ledOptions = MajEnv.Settings.IO.OutputDevice.Led;
                 var hidOptions = _ledDeviceHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
