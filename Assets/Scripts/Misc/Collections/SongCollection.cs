@@ -96,7 +96,7 @@ namespace MajdataPlay.Collections
                     case "All":
                         Id = COLLECTION_ALL_GUID;
                         break;
-                    case "My Favorite":
+                    case "MyFavorites":
                         Id = COLLECTION_MY_FAVORITE_GUID;
                         break;
                     default:
@@ -114,11 +114,6 @@ namespace MajdataPlay.Collections
                 IsVirtual = false;
                 Path = dirPath!;
                 var flagDirPath = System.IO.Path.Combine(dirPath!, ".MajdataPlay");
-                if (!Directory.Exists(flagDirPath))
-                {
-                    var info = Directory.CreateDirectory(flagDirPath);
-                    info.Attributes |= FileAttributes.Hidden;
-                }
                 var flagFilePath = System.IO.Path.Combine(flagDirPath, "id");
                 if(File.Exists(flagFilePath))
                 {
@@ -213,7 +208,17 @@ namespace MajdataPlay.Collections
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
         }
-        public ISongDetail[] ToArray() => _origin;
+        public ISongDetail[] ToArray()
+        {
+            if(_origin.Length == 0)
+            {
+                return Array.Empty<ISongDetail>();
+            }
+            var array = new ISongDetail[_origin.Length];
+            Array.Copy(_origin, array, _origin.Length);
+
+            return array;
+        }
         static ISongDetail[] Sort(ISongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())
