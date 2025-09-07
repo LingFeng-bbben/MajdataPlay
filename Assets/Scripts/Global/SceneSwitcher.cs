@@ -114,7 +114,8 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED_MS);
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             if(autoFadeOut)
             { 
                 animator.SetBool("In", false);
@@ -143,7 +144,8 @@ namespace MajdataPlay
             }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -169,7 +171,8 @@ namespace MajdataPlay
             }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -197,7 +200,8 @@ namespace MajdataPlay
             }            
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
         }
@@ -225,7 +229,8 @@ namespace MajdataPlay
             }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             return taskToRun.Result;
         }
         public async UniTask<T> SwitchSceneAfterTaskAsync<T>(string sceneName, Task<T> taskToRun)
@@ -250,7 +255,8 @@ namespace MajdataPlay
             }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
             return taskToRun.Result;
@@ -279,7 +285,8 @@ namespace MajdataPlay
             }
             LedRing.SetAllLight(LoadingLightColor);
             await SceneManager.LoadSceneAsync(sceneName);
-            await UniTask.DelayFrame(AUTO_FADE_OUT_DELAY_MS);
+            await UniTask.DelayFrame(1);
+            await UniTask.Delay(AUTO_FADE_OUT_DELAY_MS);
             animator.SetBool("In", false);
             LedRing.SetAllLight(Color.white);
 
