@@ -1,3 +1,4 @@
+using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.IO;
@@ -47,11 +48,13 @@ namespace MajdataPlay
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
         }
-        void OnUnitySceneChanged(Scene scene1, Scene scene2)
+        void OnUnitySceneChanged(Scene current, Scene next)
         {
+            //MajDebug.LogDebug(ZString.Format("Scene unloaded: {0}", current.name));
+            MajDebug.LogDebug(ZString.Format("Scene loaded: {0}", next.name));
             MainCamera = Camera.main;
-            var currentScene = SceneManager.GetActiveScene();
-            var index = Array.FindIndex(SCENE_NAMES, x => x == currentScene.name);
+            //var currentScene = SceneManager.GetActiveScene();
+            var index = Array.FindIndex(SCENE_NAMES, x => x == next.name);
             if (index != -1)
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
