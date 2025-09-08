@@ -115,7 +115,13 @@ namespace MajdataPlay.Collections
                 Path = dirPath!;
                 var flagDirPath = System.IO.Path.Combine(dirPath!, ".MajdataPlay");
                 var flagFilePath = System.IO.Path.Combine(flagDirPath, "id");
-                if(File.Exists(flagFilePath))
+
+                if (!Directory.Exists(flagDirPath))
+                {
+                    var info = Directory.CreateDirectory(flagDirPath);
+                    info.Attributes |= FileAttributes.Hidden;
+                }
+                if (File.Exists(flagFilePath))
                 {
                     var guidStr = File.ReadAllText(flagFilePath);
                     if(Guid.TryParse(guidStr, out var guid))
