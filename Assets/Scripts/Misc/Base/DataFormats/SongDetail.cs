@@ -186,20 +186,17 @@ namespace MajdataPlay
                     return _maidata;
                 }
                 using var fileStream = File.OpenRead(_maidataPath);
-                //var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
-                //fileStream.Position = 0;
-                //if(metadata.Hash == _simaiMetadata.Hash)
-                //{
-                //    _maidata ??= await SimaiParser.ParseAsync(fileStream);
-                //    return _maidata;
-                //}
-                //else
-                //{
-                //    _maidata = await SimaiParser.ParseAsync(fileStream);
-                //    return _maidata;
-                //}
-                _maidata = await SimaiParser.ParseAsync(fileStream);
-                return _maidata;
+                var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
+                if (metadata.Hash == _simaiMetadata.Hash)
+                {
+                    _maidata ??= await SimaiParser.ParseAsync(metadata);
+                    return _maidata;
+                }
+                else
+                {
+                    _maidata = await SimaiParser.ParseAsync(metadata);
+                    return _maidata;
+                }
             }
         }
         public void Dispose()
