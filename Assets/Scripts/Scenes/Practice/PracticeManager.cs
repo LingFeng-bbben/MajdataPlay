@@ -81,7 +81,7 @@ namespace MajdataPlay.Scenes.Practice
                 _totalTime = (float)_audioTrack.Length.TotalSeconds;
                 _simaiFile = await songinfo.GetMaidataAsync(true);
                 var levelIndex = (int)_gameInfo.CurrentLevel;
-                var maidata = _simaiFile.RawCharts[levelIndex];
+                var maidata = _simaiFile.Charts[levelIndex].Fumen;
 
                 if (string.IsNullOrEmpty(maidata))
                 {
@@ -90,8 +90,7 @@ namespace MajdataPlay.Scenes.Practice
                     return;
                 }
 
-                var simaiParser = SimaiParser.Shared;
-                var chart = await simaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
+                var chart = await SimaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
 
                 await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, _totalTime);
                 if (_gameInfo.TimeRange is not null)

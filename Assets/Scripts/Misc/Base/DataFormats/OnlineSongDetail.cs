@@ -28,8 +28,20 @@ namespace MajdataPlay
         public string Title { get; init; }
         public string Artist { get; init; }
         public string Description { get; init; } = string.Empty;
-        public string[] Designers { get; init; } = new string[7];
-        public string[] Levels { get; init; }
+        public ReadOnlySpan<string> Designers 
+        { 
+            get
+            {
+                return _designers;
+            }
+        }
+        public ReadOnlySpan<string> Levels
+        {
+            get
+            {
+                return _levels;
+            }
+        }
         public ChartStorageLocation Location { get; } = ChartStorageLocation.Online;
         public DateTime Timestamp { get; init; }
         public string Hash { get; init; }
@@ -45,6 +57,8 @@ namespace MajdataPlay
         readonly Uri _fullSizeCoverUri;
         readonly Uri _coverUri;
 
+        readonly string[] _designers = new string[7];
+        readonly string[] _levels = new string[7];
 
         static readonly Action _emptyCallback = () => { };
 
@@ -76,7 +90,14 @@ namespace MajdataPlay
 
             Title = songDetail.Title;
             Artist = songDetail.Artist;
-            Levels = songDetail.Levels;
+            for (var i = 0; i < 7; i++)
+            {
+                if(i >= songDetail.Levels.Length)
+                {
+                    break;
+                }
+                _levels[i] = songDetail.Levels[i];
+            }
             var maidataUriStr = $"{apiroot}/{songDetail.Id}/chart";
             var trackUriStr = $"{apiroot}/{songDetail.Id}/track";
             var fullSizeCoverUriStr = $"{apiroot}/{songDetail.Id}/image?fullimage=true";
@@ -105,14 +126,16 @@ namespace MajdataPlay
                 }
                 Description = sb.ToString();
                 sb.Clear();
-                for (var i = 0; i < Designers.Length; i++)
+                sb.Append(songDetail.Uploader);
+                sb.Append('@');
+                sb.Append(songDetail.Designer);
+                var designer = sb.ToString();
+                for (var i = 0; i < _designers.Length; i++)
                 {
-                    sb.Append(songDetail.Uploader);
-                    sb.Append('@');
-                    sb.Append(songDetail.Designer);
-                    Designers[i] = sb.ToString();
-                    sb.Clear();
+                    _designers[i] = designer;
+                    
                 }
+                sb.Clear();
             }
 
             if (!Directory.Exists(_cachePath))
@@ -316,7 +339,7 @@ namespace MajdataPlay
 
                     await DownloadFile(_maidataUri, savePath, progress, token);
 
-                    _maidata = await SimaiParser.Shared.ParseAsync(savePath);
+                    _maidata = await SimaiParser.ParseAsync(File.OpenRead(savePath));
 
                     return _maidata;
                 }

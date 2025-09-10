@@ -372,12 +372,20 @@ namespace MajdataPlay
             var dirs = thisDir.GetDirectories()
                               .OrderBy(o => o.CreationTime)
                               .ToList();
+            var flagDirPath = System.IO.Path.Combine(rootPath, ".MajdataPlay");
+
+            if (!Directory.Exists(flagDirPath))
+            {
+                var info = Directory.CreateDirectory(flagDirPath);
+                info.Attributes |= FileAttributes.Hidden;
+            }
             if (dirs.Count == 0)
             {
-                return SongCollection.Empty(thisDir.Name);
+                return SongCollection.Empty(rootPath, thisDir.Name);
             }
-            var charts = new List<SongDetail>();
-            var tasks = new List<Task<SongDetail>>();
+            using var charts = new RentedList<SongDetail>();
+            using var tasks = new RentedList<Task<SongDetail>>();
+            
             foreach (var songDir in dirs)
             {
                 if((songDir.Attributes & FileAttributes.Hidden) != 0)

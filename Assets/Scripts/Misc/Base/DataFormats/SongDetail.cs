@@ -17,10 +17,25 @@ namespace MajdataPlay
     {
         public string Title { get; init; } = string.Empty;
         public string Artist { get; init; } = string.Empty;
-        public string[] Designers { get; init; } = new string[7];
         public string Description { get; init; } = string.Empty;
-        public string[] Levels { get; init; } = new string[7];
-        public string Hash { get; init; } = string.Empty;
+        public ReadOnlySpan<string> Designers
+        {
+            get
+            {
+                return _simaiMetadata.Designers;
+            }
+        }
+        public ReadOnlySpan<string> Levels
+        {
+            get
+            {
+                return _simaiMetadata.Levels;
+            }
+        }
+        public string Hash 
+        { 
+            get => _simaiMetadata.Hash; 
+        }
         public DateTime Timestamp { get; init; }
         public ChartStorageLocation Location => ChartStorageLocation.Local;
 
@@ -37,6 +52,7 @@ namespace MajdataPlay
         AudioSampleWrap? _previewAudioTrack = null;
         Sprite? _cover = null;
         SimaiFile? _maidata = null;
+        SimaiMetadata _simaiMetadata;
 
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
@@ -62,18 +78,15 @@ namespace MajdataPlay
             {
                 _cover = MajEnv.EmptySongCover;
             }
-
+            _simaiMetadata = metadata;
             Title = metadata.Title;
             Artist = metadata.Artist;
-            Designers = metadata.Designers;
-            Levels = metadata.Levels;
-            Hash = metadata.Hash;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
         }
         public static async Task<SongDetail> ParseAsync(string chartFolder)
         {
             var maidataPath = Path.Combine(chartFolder, "maidata.txt");
-            var metadata = await SimaiParser.Shared.ParseMetadataAsync(maidataPath);
+            var metadata = await SimaiParser.ParseMetadataAsync(File.OpenRead(maidataPath));
 
             return new SongDetail(chartFolder, metadata);
         }
@@ -172,9 +185,18 @@ namespace MajdataPlay
                 {
                     return _maidata;
                 }
-
-                _maidata = await SimaiParser.Shared.ParseAsync(_maidataPath);
-                return _maidata;
+                using var fileStream = File.OpenRead(_maidataPath);
+                var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
+                if (metadata.Hash == _simaiMetadata.Hash)
+                {
+                    _maidata ??= await SimaiParser.ParseAsync(metadata);
+                    return _maidata;
+                }
+                else
+                {
+                    _maidata = await SimaiParser.ParseAsync(metadata);
+                    return _maidata;
+                }
             }
         }
         public void Dispose()

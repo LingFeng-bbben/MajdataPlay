@@ -532,7 +532,7 @@ namespace MajdataPlay.Scenes.Game
             _simaiFile = await _songDetail.GetMaidataAsync(true);
             _chartOffset = _simaiFile.Offset;
             var levelIndex = (int)_gameInfo.CurrentLevel;
-            var maidata = _simaiFile.RawCharts[levelIndex];
+            var maidata = _simaiFile.Charts[levelIndex].Fumen;
 
             if (string.IsNullOrEmpty(maidata))
             {
@@ -540,19 +540,18 @@ namespace MajdataPlay.Scenes.Game
             }
 
             ChartMirror(ref maidata);
-            var simaiParser = SimaiParser.Shared;
-            _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
+            _chart = await SimaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
 
             if (IsPracticeMode)
             {
                 if (_gameInfo.TimeRange is Range<double> timeRange)
                 {
                     var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
-                    _chart.Clamp(range);
+                    _chart = _chart.Clamp(range);
                 }
                 else if (_gameInfo.ComboRange is Range<long> comboRange)
                 {
-                    _chart.Clamp(comboRange);
+                    _chart = _chart.Clamp(comboRange);
                     if (_chart.NoteTimings.Length != 0)
                     {
                         var startAt = _chart.NoteTimings[0].Timing;
@@ -564,19 +563,19 @@ namespace MajdataPlay.Scenes.Game
             }
             if (ModInfo.PlaybackSpeed != 1)
             {
-                _chart.Scale(PlaybackSpeed);
+                _chart = _chart.Scale(PlaybackSpeed);
             }
             if (ModInfo.AllBreak)
             {
-                _chart.ConvertToBreak();
+                _chart = _chart.ConvertToBreak();
             }
             if (ModInfo.AllEx)
             {
-                _chart.ConvertToEx();
+                _chart = _chart.ConvertToEx();
             }
             if (ModInfo.AllTouch)
             {
-                _chart.ConvertToTouch();
+                _chart = _chart.ConvertToTouch();
             }
             if (_chart.IsEmpty)
             {
@@ -587,7 +586,7 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.SwitchToThreadPool();
             var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
             var countnum = 4;
-            if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
+            if (!int.TryParse(simaiCmd.Value, out countnum))
             {
                 countnum = 4;
             }

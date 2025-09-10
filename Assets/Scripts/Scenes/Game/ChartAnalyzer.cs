@@ -16,6 +16,7 @@ using MajdataPlay.Drawing;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
@@ -61,7 +62,12 @@ namespace MajdataPlay.Scenes.Game
                     {
                         return;
                     }
-                    var lastnoteTiming = length == -1 ? maiChart.NoteTimings.LastOrDefault()?.Timing ?? length : length;
+                    double lastnoteTiming;
+                    using (var noteTimings = new RentedList<SimaiTimingPoint>())
+                    {
+                        noteTimings.AddRange(maiChart.NoteTimings);
+                        lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
+                    }
                     var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
                     await UniTask.SwitchToMainThread();
                     token.ThrowIfCancellationRequested();
@@ -145,10 +151,11 @@ namespace MajdataPlay.Scenes.Game
             var minBPM = 0f;
             var length = TimeSpan.Zero;
             var esti = 0f;
-
+            using var noteTimings = new RentedList<SimaiTimingPoint>();
+            noteTimings.AddRange(data.NoteTimings);
             for (float time = 0; time < totalLength; time += 0.5f)
             {
-                var timingPoints = data.NoteTimings.ToList().FindAll(o => o.Timing > time - 0.75f && o.Timing <= time + 0.75f);
+                var timingPoints = noteTimings.Where(o => o.Timing > time - 0.75f && o.Timing <= time + 0.75f);
                 float y0 = 0, y1 = 0, y2 = 0;
                 foreach (var timingPoint in timingPoints)
                 {
@@ -177,8 +184,8 @@ namespace MajdataPlay.Scenes.Game
                 tapPoints.Add(new Vector2(x, y0));
                 slidePoints.Add(new Vector2(x, y1));
                 touchPoints.Add(new Vector2(x, y2));
-                maxBPM = data.NoteTimings.Max(o => o.Bpm);
-                minBPM = data.NoteTimings.Min(o => o.Bpm);
+                maxBPM = noteTimings.Max(o => o.Bpm);
+                minBPM = noteTimings.Min(o => o.Bpm);
             }
 
 

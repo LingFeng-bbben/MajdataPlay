@@ -17,8 +17,8 @@ namespace MajdataPlay
         string Title { get; }
         string Artist { get; }
         string Description { get; }
-        string[] Designers { get; }
-        string[] Levels { get; }
+        ReadOnlySpan<string> Designers { get; }
+        ReadOnlySpan<string> Levels { get; }
         ChartStorageLocation Location { get; }
         DateTime Timestamp { get; }
         string Hash { get; }
