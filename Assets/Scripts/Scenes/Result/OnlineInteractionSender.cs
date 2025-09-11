@@ -24,6 +24,9 @@ namespace MajdataPlay.Scenes.Result
 
         OnlineSongDetail _onlineDetail;
 
+        bool _isInited = false;
+        bool _isThumbUpRequested = false;
+
         public bool Init(ISongDetail song)
         {
             if (song is not OnlineSongDetail onlineDetail)
@@ -40,44 +43,43 @@ namespace MajdataPlay.Scenes.Result
                 thumb.gameObject.SetActive(false);
                 return false;
             }
+            _isInited = true;
             _onlineDetail = onlineDetail;
-            InputManager.BindAnyArea(OnAreaDown); 
-            infotext.text = Localization.GetLocalizedText("THUMBUP_INFO");
+            infotext.text = "THUMBUP_INFO".i18n();
             return true;
         }
-
-        private void OnAreaDown(object sender, InputEventArgs e)
+        void Update()
         {
-            if (e.IsDown && (e.SArea == SensorArea.E3 || e.SArea == SensorArea.B3))
+            if(!_isInited || _isThumbUpRequested)
             {
-                InputManager.UnbindAnyArea(OnAreaDown);
+                return;
+            }
+            if(InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || InputManager.IsSensorClickedInThisFrame(SensorArea.B3))
+            {
                 SendInteraction(_onlineDetail);
             }
         }
-
-        private void OnDestroy()
+        void SendInteraction(OnlineSongDetail song)
         {
-            InputManager.UnbindAnyArea(OnAreaDown);
+            _ = SendLikeAsync(song);
         }
 
-        internal void SendInteraction(OnlineSongDetail song)
+        async Task SendLikeAsync(OnlineSongDetail song)
         {
-            SendLike(song).Forget();
-        }
-
-        async UniTask SendLike(OnlineSongDetail song)
-        {
-            infotext.text = Localization.GetLocalizedText("THUMBUP_SENDING");
+            await UniTask.Yield();
+            infotext.text = "THUMBUP_SENDING".i18n();
             //LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await Online.SendLike(song);
-                infotext.text = Localization.GetLocalizedText("THUMBUP_SENDED");
+                await UniTask.Yield();
+                infotext.text = "THUMBUP_SENDED".i18n();
                 var list = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
             catch (Exception ex)
             {
+                await UniTask.Yield();
                 infotext.text = ex.Message;
                 MajDebug.LogError(ex);
                 //LightManager.SetButtonLight(Color.red, 4);
@@ -85,27 +87,31 @@ namespace MajdataPlay.Scenes.Result
             }
         }
 
-        public async UniTask SendScore(MaiScore score)
+        public async Task SendScoreAsync(MaiScore score)
         {
             for(int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
                 try
                 {
-                    uploadtext.text = Localization.GetLocalizedText("SCORE_SENDING");
                     await UniTask.Yield();
+                    uploadtext.text = "SCORE_SENDING".i18n();
                     await Online.SendScore(_onlineDetail, score);
-                    uploadtext.text = Localization.GetLocalizedText("SCORE_SENDED");
+                    await UniTask.Yield();
+                    uploadtext.text = "SCORE_SENDED".i18n();
                     return;
                 }
                 catch (Exception ex)
                 {
                     if(ex is TaskCanceledException)
                     {
+                        await UniTask.Yield();
                         uploadtext.text = "Retry in 1s..." + ex.Message;
                         MajDebug.LogError(ex);
                         await UniTask.Delay(1000);
                     }
-                    else{
+                    else
+                    {
+                        await UniTask.Yield();
                         uploadtext.text = ex.Message;
                         MajDebug.LogError(ex);
                         return;
