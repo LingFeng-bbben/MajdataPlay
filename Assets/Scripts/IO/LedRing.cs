@@ -1,4 +1,4 @@
-using MajdataPlay.Utils;
+﻿using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -74,7 +74,6 @@ namespace MajdataPlay.IO
                 var device = ledDevices[i];
                 var func = device.UpdateFunction;
 
-                func.Update(deltaMs);
                 ledColors[i] = device.Color;
             }
         }
@@ -92,6 +91,64 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        public static void SetAllLightLinearTo(Color from, Color to, long durationMs)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            SetAllLightLinearTo(from, to, TimeSpan.FromMilliseconds(durationMs));
+        }
+        public static void SetAllLightLinearTo(Color from, Color to, TimeSpan duration)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                var func = _ledLinearFuncs[i];
+                func.LinearTo(from, to, duration);
+                _ledDevices[i].UpdateFunction = func;
+            }
+        }
+        public static void SetAllLightSineFunc(Color color, long T_Ms, float phi = 0.5f)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            SetAllLightSineFunc(color, TimeSpan.FromMilliseconds(T_Ms), phi);
+        }
+        public static void SetAllLightSineFunc(Color color, TimeSpan T, float phi = 0.5f)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                var func = _ledSineFuncs[i];
+                func.SetSineFunc(color, T, phi);
+                _ledDevices[i].UpdateFunction = func;
+            }
+        }
+        public static void SetAllLightUpdateFunc(ReadOnlySpan<ILedUpdateFunction> funcs)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            if(funcs.Length <= 8)
+            {
+                throw new ArgumentException("funcs length must be 8", nameof(funcs));
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                _ledDevices[i].UpdateFunction = funcs[i];
+            }
+        }
+
         public static void SetButtonLight(Color lightColor, int button)
         {
             if (!_isEnabled)
@@ -142,22 +199,22 @@ namespace MajdataPlay.IO
             _ledDevices[button].UpdateFunction = func;
         }
 
-        public static void SetSineFunc(int button, Color color, long T_Ms)
+        public static void SetSineFunc(int button, Color color, long T_Ms, float phi = 0.5f)
         {
             if (!_isEnabled)
             {
                 return;
             }
-            SetSineFunc(button, color, TimeSpan.FromMilliseconds(T_Ms));
+            SetSineFunc(button, color, TimeSpan.FromMilliseconds(T_Ms), phi);
         }
-        public static void SetSineFunc(int button, Color color, TimeSpan T)
+        public static void SetSineFunc(int button, Color color, TimeSpan T, float phi = 0.5f)
         {
             if (!_isEnabled)
             {
                 return;
             }
             var func = _ledSineFuncs[button];
-            func.SetSineFunc(color, T);
+            func.SetSineFunc(color, T, phi);
             _ledDevices[button].UpdateFunction = func;
         }
 
@@ -332,16 +389,24 @@ namespace MajdataPlay.IO
                 _elapsedMs = 0f;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void SetSineFunc(Color color, long T_Ms)
+            public void SetSineFunc(Color color, long T_Ms, float phi = 0.5f)
             {
-                SetSineFunc(color, TimeSpan.FromMilliseconds(T_Ms));
+                SetSineFunc(color, TimeSpan.FromMilliseconds(T_Ms), phi);
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void SetSineFunc(Color color, TimeSpan T)
+            public void SetSineFunc(Color color, TimeSpan T, float phi = 0.5f)
             {
+                if(phi > 1f || phi < 0f)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(phi), "phi must be in [0, 1]");
+                }
+                if(T.TotalMilliseconds <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(T), "T must be greater than 0");
+                }
                 _defaultColor = color;
-                _elapsedMs = 0;
                 _T_Ms = (float)T.TotalMilliseconds;
+                _elapsedMs = _T_Ms * phi;
             }
         }
     }
