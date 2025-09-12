@@ -8,7 +8,7 @@ using UnityEngine;
 namespace MajdataPlay.IO;
 public interface ILedUpdateFunction
 {
-    Color CurrentColor { get; }
+    Color Current { get; }
 
     void Update(float deltaMs);
     void Reset();
