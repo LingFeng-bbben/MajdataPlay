@@ -565,14 +565,24 @@ namespace MajdataPlay.IO
                 const int IO4_SERVICE_OFFSET = 0b00000001;
                 const int IO4_SELECT_P2_OFFSET = 0b01000000;
 
-                const int IO4_BA1_INDEX = 28;
-                const int IO4_BA2_INDEX = 28;
-                const int IO4_BA3_INDEX = 28;
-                const int IO4_BA4_INDEX = 29;
-                const int IO4_BA5_INDEX = 29;
-                const int IO4_BA6_INDEX = 29;
-                const int IO4_BA7_INDEX = 29;
-                const int IO4_BA8_INDEX = 29;
+                const int IO4_BA1_1P_INDEX = 28;
+                const int IO4_BA2_1P_INDEX = 28;
+                const int IO4_BA3_1P_INDEX = 28;
+                const int IO4_BA4_1P_INDEX = 29;
+                const int IO4_BA5_1P_INDEX = 29;
+                const int IO4_BA6_1P_INDEX = 29;
+                const int IO4_BA7_1P_INDEX = 29;
+                const int IO4_BA8_1P_INDEX = 29;
+
+                const int IO4_BA1_2P_INDEX = 30;
+                const int IO4_BA2_2P_INDEX = 30;
+                const int IO4_BA3_2P_INDEX = 30;
+                const int IO4_BA4_2P_INDEX = 31;
+                const int IO4_BA5_2P_INDEX = 31;
+                const int IO4_BA6_2P_INDEX = 31;
+                const int IO4_BA7_2P_INDEX = 31;
+                const int IO4_BA8_2P_INDEX = 31;
+
                 const int IO4_TEST_INDEX = 29;
                 const int IO4_SELECT_P1_INDEX = 28;
                 const int IO4_SERVICE_INDEX = 25;
@@ -580,14 +590,29 @@ namespace MajdataPlay.IO
                 public static void Parse(ReadOnlySpan<byte> reportData,Span<bool> buffer)
                 {
                     reportData = reportData.Slice(1); // skip report id
-                    buffer[0] = (~reportData[IO4_BA1_INDEX] & IO4_BA1_OFFSET) != 0;
-                    buffer[1] = (~reportData[IO4_BA2_INDEX] & IO4_BA2_OFFSET) != 0;
-                    buffer[2] = (~reportData[IO4_BA3_INDEX] & IO4_BA3_OFFSET) != 0;
-                    buffer[3] = (~reportData[IO4_BA4_INDEX] & IO4_BA4_OFFSET) != 0;
-                    buffer[4] = (~reportData[IO4_BA5_INDEX] & IO4_BA5_OFFSET) != 0;
-                    buffer[5] = (~reportData[IO4_BA6_INDEX] & IO4_BA6_OFFSET) != 0;
-                    buffer[6] = (~reportData[IO4_BA7_INDEX] & IO4_BA7_OFFSET) != 0;
-                    buffer[7] = (~reportData[IO4_BA8_INDEX] & IO4_BA8_OFFSET) != 0;
+                    switch (_playerIndex)
+                    {
+                        case 1:
+                            buffer[0] = (~reportData[IO4_BA1_1P_INDEX] & IO4_BA1_OFFSET) != 0;
+                            buffer[1] = (~reportData[IO4_BA2_1P_INDEX] & IO4_BA2_OFFSET) != 0;
+                            buffer[2] = (~reportData[IO4_BA3_1P_INDEX] & IO4_BA3_OFFSET) != 0;
+                            buffer[3] = (~reportData[IO4_BA4_1P_INDEX] & IO4_BA4_OFFSET) != 0;
+                            buffer[4] = (~reportData[IO4_BA5_1P_INDEX] & IO4_BA5_OFFSET) != 0;
+                            buffer[5] = (~reportData[IO4_BA6_1P_INDEX] & IO4_BA6_OFFSET) != 0;
+                            buffer[6] = (~reportData[IO4_BA7_1P_INDEX] & IO4_BA7_OFFSET) != 0;
+                            buffer[7] = (~reportData[IO4_BA8_1P_INDEX] & IO4_BA8_OFFSET) != 0;
+                            break;
+                        case 2:
+                            buffer[0] = (~reportData[IO4_BA1_2P_INDEX] & IO4_BA1_OFFSET) != 0;
+                            buffer[1] = (~reportData[IO4_BA2_2P_INDEX] & IO4_BA2_OFFSET) != 0;
+                            buffer[2] = (~reportData[IO4_BA3_2P_INDEX] & IO4_BA3_OFFSET) != 0;
+                            buffer[3] = (~reportData[IO4_BA4_2P_INDEX] & IO4_BA4_OFFSET) != 0;
+                            buffer[4] = (~reportData[IO4_BA5_2P_INDEX] & IO4_BA5_OFFSET) != 0;
+                            buffer[5] = (~reportData[IO4_BA6_2P_INDEX] & IO4_BA6_OFFSET) != 0;
+                            buffer[6] = (~reportData[IO4_BA7_2P_INDEX] & IO4_BA7_OFFSET) != 0;
+                            buffer[7] = (~reportData[IO4_BA8_2P_INDEX] & IO4_BA8_OFFSET) != 0;
+                            break;
+                    }
                     buffer[8] = (reportData[IO4_TEST_INDEX] & IO4_TEST_OFFSET) != 0;
                     buffer[9] = (reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
                     buffer[10] = (reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;
