@@ -74,6 +74,7 @@ namespace MajdataPlay.IO
                 var device = ledDevices[i];
                 var func = device.UpdateFunction;
 
+                func.Update(deltaMs);
                 ledColors[i] = device.Color;
             }
         }
