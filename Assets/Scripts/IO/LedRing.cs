@@ -25,21 +25,31 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return _ledColors.Span;
+                return _ledColors;
             }
         }
         
-        readonly static Memory<Color> _ledColors = new Color[8];
-        readonly static ReadOnlyMemory<Led> _ledDevices = Array.Empty<Led>();
+        readonly static Color[] _ledColors = new Color[8];
+        readonly static Led[] _ledDevices = new Led[8];
+        readonly static LedCommonUpdateFunction[] _ledCommFuncs = new LedCommonUpdateFunction[8];
+        readonly static LedLinearUpdateFunction[] _ledLinearFuncs = new LedLinearUpdateFunction[8];
+        readonly static LedSineUpdateFunction[] _ledSineFuncs = new LedSineUpdateFunction[8];
         readonly static bool _isEnabled = true;
 
         static LedRing()
         {
             _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
-            var ledDevices = new Led[8];
+            var ledDevices = _ledDevices;
+            var ledCommFuncs = _ledCommFuncs;
+            var ledLinearFuncs = _ledLinearFuncs;
+            var ledSineFuncs = _ledSineFuncs;
+
             for (var i = 0; i < 8; i++)
             {
-                ledDevices[i] = new()
+                ledCommFuncs[i] = new();
+                ledLinearFuncs[i] = new();
+                ledSineFuncs[i] = new();
+                ledDevices[i] = new(ledCommFuncs[i])
                 {
                     Index = i,
                 };
@@ -48,50 +58,120 @@ namespace MajdataPlay.IO
             {
                 for (var i = 0; i < 8; i++)
                 {
-                    ledDevices[i].SetColor(Color.black);
+                    ledCommFuncs[i].SetColor(Color.black);
                 }
             }
-
-            _ledDevices = ledDevices;
         }
 
         internal static void OnPreUpdate()
         {
-            var ledDevices = _ledDevices.Span;
-            var ledColors = _ledColors.Span;
+            var ledDevices = _ledDevices;
+            var ledColors = _ledColors;
+            var ledCommFuncs = _ledCommFuncs;
+            var ledLinearFuncs = _ledLinearFuncs;
+            var ledSineFuncs = _ledSineFuncs;
+            var deltaMs = MajTimeline.DeltaTime * 1000f;
+
             for (var i = 0; i < 8; i++)
             {
+                ledCommFuncs[i].Update(deltaMs);
+                ledLinearFuncs[i].Update(deltaMs);
+                ledSineFuncs[i].Update(deltaMs);
                 ledColors[i] = ledDevices[i].Color;
             }
         }
+
         public static void SetAllLight(Color lightColor)
         {
             if (!_isEnabled)
-                return;
-            foreach (var device in _ledDevices.Span)
             {
-                device!.SetColor(lightColor);
+                return;
+            }
+            for (var i = 0; i < 8; i++)
+            {
+                var func = _ledCommFuncs[i];
+                func.SetColor(lightColor);
+                _ledDevices[i].UpdateFunction = func;
             }
         }
         public static void SetButtonLight(Color lightColor, int button)
         {
             if (!_isEnabled)
+            {
                 return;
-            _ledDevices.Span[button].SetColor(lightColor);
+            }
+            var func = _ledCommFuncs[button];
+            func.SetColor(lightColor);
+            _ledDevices[button].UpdateFunction = func;
         }
         public static void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
             if (!_isEnabled)
+            {
                 return;
-            _ledDevices.Span[button].SetColor(lightColor, durationMs);
+            }
+            var func = _ledCommFuncs[button];
+            func.SetColor(lightColor, durationMs);
+            _ledDevices[button].UpdateFunction = func;
         }
         public static void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
             if (!_isEnabled)
+            {
                 return;
-            _ledDevices.Span[button].SetColor(lightColor, duration);
+            }
+            var func = _ledCommFuncs[button];
+            func.SetColor(lightColor, duration);
+            _ledDevices[button].UpdateFunction = func;
         }
-        
+
+        public static void SetLinearTo(int button, Color from, Color to, long durationMs)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            SetLinearTo(button, from, to, TimeSpan.FromMilliseconds(durationMs));
+        }
+        public static void SetLinearTo(int button, Color from, Color to, TimeSpan duration)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            var func = _ledLinearFuncs[button];
+            func.LinearTo(from, to, duration);
+            _ledDevices[button].UpdateFunction = func;
+        }
+
+        public static void SetSineFunc(int button, Color color, long T_Ms)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            SetSineFunc(button, color, TimeSpan.FromMilliseconds(T_Ms));
+        }
+        public static void SetSineFunc(int button, Color color, TimeSpan T)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            var func = _ledSineFuncs[button];
+            func.SetSineFunc(color, T);
+            _ledDevices[button].UpdateFunction = func;
+        }
+
+        public static void SetUpdateFunc(int button, ILedUpdateFunction func)
+        {
+            if (!_isEnabled)
+            {
+                return;
+            }
+            _ledDevices[button].UpdateFunction = func;
+        }
+
         class Led
         {
             public int Index { get; init; } = 0;
@@ -99,37 +179,171 @@ namespace MajdataPlay.IO
             {
                 get
                 {
-                    if (_expTime is null)
-                        return _color;
-
-                    var now = DateTime.Now;
-                    var expTime = (DateTime)_expTime;
-                    if (now > expTime)
-                        return _color;
-                    else
-                        return _immediateColor;
+                    return _updateFunction.Current;
+                }
+            }
+            public ILedUpdateFunction UpdateFunction
+            {
+                get
+                {
+                    return _updateFunction;
+                }
+                set
+                {
+                    _updateFunction = value;
                 }
             }
 
-            DateTime? _expTime = null;
-            Color _color = Color.white;
-            Color _immediateColor = Color.white;
+            ILedUpdateFunction _updateFunction;
 
+            public Led(ILedUpdateFunction updateFunction)
+            {
+                if(updateFunction is null)
+                {
+                    throw new ArgumentNullException(nameof(updateFunction));
+                }
+                _updateFunction = updateFunction;
+            }
+        }
+        class LedCommonUpdateFunction: ILedUpdateFunction
+        {
+            public Color Current
+            {
+                get
+                {
+                    return _currentColor;
+                }
+            }
+            Color _defaultColor = Color.white;
+            Color _targetColor = Color.white;
+
+            Color _currentColor = Color.white;
+
+            float _durationMs = 0f;
+            float _elapsedMs = 0f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Update(float deltaMs)
+            {
+                if (_elapsedMs >= _durationMs)
+                {
+                    _currentColor = _defaultColor;
+                    return;
+                }
+                _elapsedMs += deltaMs;
+                _currentColor = _targetColor;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _elapsedMs = 0f;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetColor(Color newColor)
             {
-                _color = newColor;
-                _expTime = null;
+                _defaultColor = newColor;
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetColor(Color newColor, long durationMs)
             {
                 SetColor(newColor, TimeSpan.FromMilliseconds(durationMs));
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void SetColor(Color newColor, TimeSpan duration)
             {
-                var now = DateTime.Now;
-                var exp = now + duration;
-                _immediateColor = newColor;
-                _expTime = exp;
+                _targetColor = newColor;
+                _durationMs = (float)duration.TotalMilliseconds;
+            }
+        }
+        class LedLinearUpdateFunction : ILedUpdateFunction
+        {
+            public Color Current
+            {
+                get
+                {
+                    return _currentColor;
+                }
+            }
+            Color _from = Color.white;
+            Color _to = Color.white;
+
+            Color _currentColor = Color.white;
+
+            float _durationMs = 0f;
+            float _elapsedMs = 0f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Update(float deltaMs)
+            {
+                if (_elapsedMs >= _durationMs)
+                {
+                    _currentColor = _to;
+                    return;
+                }
+                var t = _elapsedMs / _durationMs;
+                _currentColor = Color.Lerp(_from, _to, t);
+                _elapsedMs += deltaMs;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _elapsedMs = 0f;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void LinearTo(Color from, Color to, long durationMs)
+            {
+                LinearTo(from, to, TimeSpan.FromMilliseconds(durationMs));
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void LinearTo(Color from, Color to, TimeSpan duration)
+            {
+                _from = from;
+                _to = to;
+                _durationMs = (float)duration.TotalMilliseconds;
+            }
+        }
+        class LedSineUpdateFunction : ILedUpdateFunction
+        {
+            public Color Current
+            {
+                get
+                {
+                    return _currentColor;
+                }
+            }
+            Color _defaultColor = Color.white;
+            Color _currentColor = Color.white;
+
+            float _T_Ms = 0f;
+            float _elapsedMs = 0f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Update(float deltaMs)
+            {
+                if (_elapsedMs >= _T_Ms)
+                {
+                    _elapsedMs = _elapsedMs % _T_Ms;
+                    return;
+                }
+                var a = Mathf.Abs(Mathf.Sin((_elapsedMs / _T_Ms) * Mathf.PI));
+                _currentColor = Color.Lerp(Color.black, _defaultColor, a);
+                _elapsedMs += deltaMs;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _elapsedMs = 0f;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetSineFunc(Color color, long T_Ms)
+            {
+                SetSineFunc(color, TimeSpan.FromMilliseconds(T_Ms));
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SetSineFunc(Color color, TimeSpan T)
+            {
+                _defaultColor = color;
+                _T_Ms = (float)T.TotalMilliseconds;
             }
         }
     }
