@@ -318,7 +318,7 @@ namespace MajdataPlay.IO
             const int DAO_HID_VID = 3727;
             const int GENERAL_HID_1P_PID = 33;
             const int GENERAL_HID_1P_VID = 3235;
-            const int GENERAL_HID_2P_PID = 34;
+            const int GENERAL_HID_2P_PID = 33;
             const int GENERAL_HID_2P_VID = 3235;
 
             var hidDevices = HidManager.Devices;
