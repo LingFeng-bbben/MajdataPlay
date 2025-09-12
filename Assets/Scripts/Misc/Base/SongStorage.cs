@@ -428,6 +428,10 @@ namespace MajdataPlay
         {
             var name = api.Name;
             var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
+            if(!Directory.Exists(cachePath))
+            {
+                Directory.CreateDirectory(cachePath);
+            }
             var collection = SongCollection.Empty(cachePath, name);
             var apiroot = api.Url;
 
