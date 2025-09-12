@@ -67,17 +67,15 @@ namespace MajdataPlay.IO
         {
             var ledDevices = _ledDevices;
             var ledColors = _ledColors;
-            var ledCommFuncs = _ledCommFuncs;
-            var ledLinearFuncs = _ledLinearFuncs;
-            var ledSineFuncs = _ledSineFuncs;
             var deltaMs = MajTimeline.DeltaTime * 1000f;
 
             for (var i = 0; i < 8; i++)
             {
-                ledCommFuncs[i].Update(deltaMs);
-                ledLinearFuncs[i].Update(deltaMs);
-                ledSineFuncs[i].Update(deltaMs);
-                ledColors[i] = ledDevices[i].Color;
+                var device = ledDevices[i];
+                var func = device.UpdateFunction;
+
+                func.Update(deltaMs);
+                ledColors[i] = device.Color;
             }
         }
 
@@ -125,15 +123,15 @@ namespace MajdataPlay.IO
             _ledDevices[button].UpdateFunction = func;
         }
 
-        public static void SetLinearTo(int button, Color from, Color to, long durationMs)
+        public static void LinearTo(int button, Color from, Color to, long durationMs)
         {
             if (!_isEnabled)
             {
                 return;
             }
-            SetLinearTo(button, from, to, TimeSpan.FromMilliseconds(durationMs));
+            LinearTo(button, from, to, TimeSpan.FromMilliseconds(durationMs));
         }
-        public static void SetLinearTo(int button, Color from, Color to, TimeSpan duration)
+        public static void LinearTo(int button, Color from, Color to, TimeSpan duration)
         {
             if (!_isEnabled)
             {
@@ -323,7 +321,6 @@ namespace MajdataPlay.IO
                 if (_elapsedMs >= _T_Ms)
                 {
                     _elapsedMs = _elapsedMs % _T_Ms;
-                    return;
                 }
                 var a = Mathf.Abs(Mathf.Sin((_elapsedMs / _T_Ms) * Mathf.PI));
                 _currentColor = Color.Lerp(Color.black, _defaultColor, a);
@@ -343,6 +340,7 @@ namespace MajdataPlay.IO
             public void SetSineFunc(Color color, TimeSpan T)
             {
                 _defaultColor = color;
+                _elapsedMs = 0;
                 _T_Ms = (float)T.TotalMilliseconds;
             }
         }
