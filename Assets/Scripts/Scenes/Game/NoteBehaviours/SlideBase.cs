@@ -271,22 +271,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-
-            var stayTimeMSec = _lastWaitTimeSec * 1000; // 停留时间
             var diffSec = currentSec - JudgeTiming;
             var isFast = diffSec < 0;
             _judgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec) * 1000;
-            var ext = MathF.Min(stayTimeMSec / 4, SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC);
-            var JUDGE_SEG_3RD_PERFECT_MSEC = SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC + ext;
-            var JUDGE_SEG_1ST_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.333333f;
-            var JUDGE_SEG_2ND_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.666666f;
+            const float JUDGE_SEG_3RD_PERFECT_MSEC = SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC;
+            const float JUDGE_SEG_1ST_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.333333f;
+            const float JUDGE_SEG_2ND_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.666666f;
 
             var judge = diffMSec switch
             {
-                _ when diffMSec <= JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
-                _ when diffMSec <= JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                _ when diffMSec <= JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
+                <= JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                <= JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
+                <= JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
                 <= SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
                 <= SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
                 <= SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,

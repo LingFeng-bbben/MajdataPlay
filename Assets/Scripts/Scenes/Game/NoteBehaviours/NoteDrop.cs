@@ -204,10 +204,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
 
         protected const float SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 15 * FRAME_LENGTH_MSEC;  // 15f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;  // 21f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 27 * FRAME_LENGTH_MSEC;  // 27f
-        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;              // 36f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;       // 13f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;       // 27f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;       // 21f
+        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;                   // 36f
 
         protected const float HOLD_HEAD_IGNORE_LENGTH_SEC = 6 * FRAME_LENGTH_SEC;
         protected const float HOLD_TAIL_IGNORE_LENGTH_SEC = 12 * FRAME_LENGTH_SEC;
