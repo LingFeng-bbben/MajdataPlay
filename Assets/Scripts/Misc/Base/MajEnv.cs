@@ -35,6 +35,7 @@ namespace MajdataPlay
         public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN = System.Threading.ThreadPriority.Normal;
 
         public static event Action? OnApplicationQuit;
+        public static event Action? OnSave;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR
@@ -216,7 +217,7 @@ namespace MajdataPlay
                 MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
-
+            OnSave += SaveConfig;
 #if UNITY_STANDALONE_WIN
             MajDebug.LogInfo("[VLC] init");
             if (VLCLibrary != null)
@@ -247,11 +248,26 @@ namespace MajdataPlay
             }
             finally
             {
+#if UNITY_STANDALONE_WIN
                 WinHidManager.QuitThisBs();
-                SaveConfig();
+#endif
             }
         }
-        public static void SaveConfig()
+        internal static void RequestSave()
+        {
+            try
+            {
+                if (OnSave is not null)
+                {
+                    OnSave();
+                }
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+            }
+        }
+        static void SaveConfig()
         {
             //var listConfig = RuntimeConfig.List;
             //listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;

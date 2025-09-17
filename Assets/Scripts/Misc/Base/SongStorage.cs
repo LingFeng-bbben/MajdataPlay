@@ -145,7 +145,7 @@ namespace MajdataPlay
             }
             finally
             {
-                MajEnv.OnApplicationQuit += OnApplicationQuit;
+                MajEnv.OnSave += OnSave;
             }
         }
         internal static async Task RefreshAsync(IProgress<string>? progressReporter = null)
@@ -544,7 +544,7 @@ namespace MajdataPlay
                 };
             });
         }
-        static void OnApplicationQuit()
+        static void OnSave()
         {
             try
             {
@@ -563,9 +563,9 @@ namespace MajdataPlay
                                   }
                     ));
             }
-            finally
+            catch (Exception e)
             {
-                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+                MajDebug.LogException(e);
             }
         }
         public static void AddToMyFavorites(ISongDetail songDetail)

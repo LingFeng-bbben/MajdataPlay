@@ -30,7 +30,7 @@ namespace MajdataPlay.Settings
                     STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
                 }
                 await UniTask.SwitchToThreadPool();
-                MajEnv.OnApplicationQuit += OnApplicationQuit;
+                MajEnv.OnSave += OnSave;
                 if (!File.Exists(STORAGE_PATH))
                 {
                     return;
@@ -113,7 +113,7 @@ namespace MajdataPlay.Settings
                 }
             }
         }
-        static void OnApplicationQuit()
+        static void OnSave()
         {
             try
             {
@@ -124,9 +124,9 @@ namespace MajdataPlay.Settings
                 var json = Serializer.Json.Serialize(_storage);
                 File.WriteAllText(STORAGE_PATH, json);
             }
-            finally
+            catch(Exception e)
             {
-                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+                MajDebug.LogException(e);
             }
         }
     }

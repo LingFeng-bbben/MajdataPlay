@@ -259,6 +259,23 @@ namespace MajdataPlay
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajEnv.OnApplicationQuitRequested();
         }
+#if UNITY_ANDROID
+        void OnApplicationFocus(bool focus)
+        {
+            if (!focus)
+            {
+                MajEnv.RequestSave();
+            }
+        }
+        void OnApplicationPause(bool pause)
+        {
+            if (pause)
+            {
+                MajEnv.RequestSave();
+            }
+        }
+#endif
+
         public void EnableGC()
         {
             GC.Collect();
