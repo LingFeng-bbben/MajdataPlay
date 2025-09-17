@@ -195,6 +195,7 @@ namespace MajdataPlay
                 else
                 {
                     _maidata = await SimaiParser.ParseAsync(metadata);
+                    _simaiMetadata = metadata;
                     return _maidata;
                 }
             }
