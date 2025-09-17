@@ -32,6 +32,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         SpriteRenderer _starRenderer;
         SlideTable _table;
         float _djAutoplayRatio = 1;
+
+//#if UNITY_EDITOR
+//        Transform _judgeFramePoint;
+//        [SerializeField]
+//        float _runtimeSlideConst;
+//#endif
         protected override void Awake()
         {
             base.Awake();
@@ -190,22 +196,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.Initialized;
             _djAutoplayRatio = SlideLength / 14;
-#if UNITY_EDITOR
-            var obj = Instantiate(_slideBars[0]);
-            Destroy(obj.GetComponent<SpriteRenderer>());
-            var transform = obj.transform;
-            var @const = IsClassic ? _table.ClassicConst : _table.Const;
-            var indexProcess = (_starPositions.Count - 1) * (1 - @const);
-            var index = (int)indexProcess;
-            var pos = indexProcess - index;
+//#if UNITY_EDITOR
+//            var obj = Instantiate(_slideBars[0]);
+//            Destroy(obj.GetComponent<SpriteRenderer>());
+//            _judgeFramePoint = obj.transform;
+//            _runtimeSlideConst = IsClassic ? _table.ClassicConst : _table.Const;
+//            var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
+//            var index = (int)indexProcess;
+//            var pos = indexProcess - index;
 
-            var a = _starPositions[index + 1];
-            var b = _starPositions[index];
-            var ba = a - b;
-            var newPos = ba * pos + b;
+//            var a = _starPositions[index + 1];
+//            var b = _starPositions[index];
+//            var ba = a - b;
+//            var newPos = ba * pos + b;
 
-            transform.position = newPos;
-#endif
+//            _judgeFramePoint.position = newPos;
+//#endif
         }
         void InitializeSlideGroup()
         {
@@ -275,6 +281,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
+//#if UNITY_EDITOR
+//            {
+//                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
+//                var index = (int)indexProcess;
+//                var pos = indexProcess - index;
+
+//                var a = _starPositions[index + 1];
+//                var b = _starPositions[index];
+//                var ba = a - b;
+//                var newPos = ba * pos + b;
+//                _judgeFramePoint.position = newPos;
+//            }
+//#endif
             // ConnSlide
             //var star = _stars[0];
             var starTransform = _starTransforms.Span[0];
