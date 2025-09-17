@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 using HidSharp;
-using MychIO.Device;
 using System.IO;
 using UnityEngine;
 using MajdataPlay.Numerics;

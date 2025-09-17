@@ -603,7 +603,7 @@ namespace MajdataPlay.Scenes.Game
                 {
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
-                    await _bgManager.SetBackgroundMovieAsync(videoPath, cover);
+                    await _bgManager.SetMovieAsync(videoPath, cover);
                 }
                 else
                 {

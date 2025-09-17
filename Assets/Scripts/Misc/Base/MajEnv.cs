@@ -6,7 +6,6 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
-using MychIO;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -36,8 +35,6 @@ namespace MajdataPlay
         public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN = System.Threading.ThreadPriority.Normal;
 
         public static event Action? OnApplicationQuit;
-        public static LibVLC? VLCLibrary { get; private set; }
-        public static ConcurrentQueue<Action> ExecutionQueue { get; } = IOManager.ExecutionQueue;
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR
@@ -46,6 +43,7 @@ namespace MajdataPlay
         public static bool IsEditor { get; } = false;
 #endif
 #if UNITY_STANDALONE_WIN
+        public static LibVLC VLCLibrary { get; private set; }
         public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
         public static string AssetsPath { get; } = Application.streamingAssetsPath;
         public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
@@ -214,18 +212,18 @@ namespace MajdataPlay
             }
             Core.Initialize(Path.Combine(Application.dataPath, "Plugins")); //Load VLC dlls
             VLCLibrary = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
-#else
-            VLCLibrary = null;
 #endif
         }
         internal static void OnApplicationQuitRequested()
         {
             SharedHttpClient.CancelPendingRequests();
             SharedHttpClient.Dispose();
+#if UNITY_STANDALONE_WIN
             if( VLCLibrary != null )
             {
                 VLCLibrary.Dispose();
             }
+#endif
             _globalCTS.Cancel();
             try
             {

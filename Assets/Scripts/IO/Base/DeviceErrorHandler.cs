@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿#if UNITY_STANDALONE_WIN
+using MajdataPlay.Utils;
 using MychIO;
 using MychIO.Device;
 using MychIO.Event;
@@ -93,3 +94,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

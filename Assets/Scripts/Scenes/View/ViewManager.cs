@@ -122,7 +122,7 @@ namespace MajdataPlay.Scenes.View
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
-                _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover).AsTask().Wait();
+                _bgManager.SetMovieAsync(_videoPath, _bgCover).AsTask().Wait();
             }
             else if (_bgCover is not null)
             {
@@ -409,7 +409,7 @@ namespace MajdataPlay.Scenes.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover);
+                    await _bgManager.SetMovieAsync(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);

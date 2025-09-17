@@ -4,9 +4,6 @@ using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
-using MychIO;
-using MychIO.Device;
-using MychIO.Event;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -266,8 +263,6 @@ namespace MajdataPlay.IO
         readonly static bool _isSensorRendererEnabled = false;
 
         readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();
-
-        static IOManager? _ioManager = null;
 
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
 
@@ -911,7 +906,6 @@ namespace MajdataPlay.IO
         }
         static void OnApplicationQuit()
         {
-            _ioManager?.Dispose();
             MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
