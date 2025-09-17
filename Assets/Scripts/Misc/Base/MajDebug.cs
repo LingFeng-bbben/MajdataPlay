@@ -87,9 +87,10 @@ namespace MajdataPlay
                 StackTrace = string.Empty,
                 Level = level
             };
-
-#if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR
             _unityLogger.Log(ToUnityLogLevel(level), sb.ToString());
+#endif
+#if UNITY_EDITOR || DEBUG
             if (obj is not Exception)
             {
                 log.StackTrace = GetStackTrack();
