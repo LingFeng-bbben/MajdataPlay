@@ -190,21 +190,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.Initialized;
             _djAutoplayRatio = SlideLength / 14;
-//#if UNITY_EDITOR
-//            var obj = Instantiate(_slideBars[0]);
-//            Destroy(obj.GetComponent<SpriteRenderer>());
-//            var transform = obj.transform;
-//            var indexProcess = (_starPositions.Count - 1) * (1- _table.Const);
-//            var index = (int)indexProcess;
-//            var pos = indexProcess - index;
+#if UNITY_EDITOR
+            var obj = Instantiate(_slideBars[0]);
+            Destroy(obj.GetComponent<SpriteRenderer>());
+            var transform = obj.transform;
+            var @const = IsClassic ? _table.ClassicConst : _table.Const;
+            var indexProcess = (_starPositions.Count - 1) * (1 - @const);
+            var index = (int)indexProcess;
+            var pos = indexProcess - index;
 
-//            var a = _starPositions[index + 1];
-//            var b = _starPositions[index];
-//            var ba = a - b;
-//            var newPos = ba * pos + b;
+            var a = _starPositions[index + 1];
+            var b = _starPositions[index];
+            var ba = a - b;
+            var newPos = ba * pos + b;
 
-//            transform.position = newPos;
-//#endif
+            transform.position = newPos;
+#endif
         }
         void InitializeSlideGroup()
         {

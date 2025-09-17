@@ -16,6 +16,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             }
         }
         public float Const { get; init; }
+        public float ClassicConst { get; init; }
 
         bool _isDisposed = false;
         readonly Memory<SlideArea> _judgeQueue;
