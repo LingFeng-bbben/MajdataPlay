@@ -13,6 +13,10 @@ namespace MajdataPlay
         void Start()
         {
             rt = GetComponent<RectTransform>();
+            Refresh();
+        }
+        internal void Refresh()
+        {
             var pos = MajInstances.Settings.Display.MainScreenPosition;
             rt.anchoredPosition = new Vector2(0, 810f - 270f * pos);
             if (pos != 1f)
@@ -23,13 +27,6 @@ namespace MajdataPlay
                     sub.gameObject.SetActive(false);
                 }
             }
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-        
         }
     }
 }

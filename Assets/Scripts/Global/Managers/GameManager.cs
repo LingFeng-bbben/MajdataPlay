@@ -64,6 +64,7 @@ namespace MajdataPlay
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();
+            MajInstances.SceneSwitcher.RefreshPos();
 #if UNITY_STANDALONE_WIN
             _timer = BuiltInTimeProvider.Winapi;
 #else

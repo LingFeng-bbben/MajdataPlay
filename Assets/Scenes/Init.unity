@@ -3123,6 +3123,17 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1066008518 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2116093767782935674, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+  m_PrefabInstance: {fileID: 1066008512}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b176ff446f80b488686f76d54d6e09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1066008524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3139,6 +3150,7 @@ MonoBehaviour:
   MainImage: {fileID: 1930814263}
   loadingText: {fileID: 1342664136}
   LoadingLightColor: {r: 0.3647059, g: 0.3137255, b: 0.2901961, a: 1}
+  _canvasMover: {fileID: 1066008518}
 --- !u!224 &1066008528 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
