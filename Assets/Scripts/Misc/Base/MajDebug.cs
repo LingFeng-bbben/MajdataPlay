@@ -24,17 +24,36 @@ namespace MajdataPlay
         static StreamWriter? _fileStream;
 
         readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] ");
+
+        static bool _isInited = false;
+        readonly static object _initLock = new();
+
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
-            TaskScheduler.UnobservedTaskException += (sender,args) =>
+        }
+        internal static void Init()
+        {
+            if (_isInited)
+            {
+                return;
+            }
+            lock(_initLock)
+            {
+                if (_isInited)
+                {
+                    return;
+                }
+                _isInited = true;
+            }
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
                 args.SetObserved();
             };
             StartLogWritebackTask();
             MajEnv.OnApplicationQuit += OnApplicationQuit;
-#if !(UNITY_EDITOR || DEBUG)
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 var sb = ZString.CreateStringBuilder();
@@ -48,8 +67,9 @@ namespace MajdataPlay
                 };
                 _logQueue.Enqueue(log);
             };
-#endif
         }
+
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Log<T>(T obj, LogLevel level)

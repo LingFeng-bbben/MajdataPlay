@@ -43,8 +43,10 @@ namespace MajdataPlay
 
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
-        protected override void Awake()
+        void Start()
         {
+            MajEnv.InitPath();
+            MajDebug.Init();
             //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
@@ -57,8 +59,11 @@ namespace MajdataPlay
             MajDebug.LogInfo(s);
             MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
+            
             MajEnv.Init();
-            base.Awake();
+            MajInstances.FPSDisplayer.Init();
+            MajInstances.AudioManager.Init();
+            Localization.Init();
 #if UNITY_STANDALONE_WIN
             _timer = BuiltInTimeProvider.Winapi;
 #else
@@ -97,15 +102,16 @@ namespace MajdataPlay
             ApplyScreenConfig();
 
             var availableLangs = Localization.Available;
-            if (availableLangs.IsEmpty())
-                return;
-            var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
-            if (lang is null)
+            if (!availableLangs.IsEmpty())
             {
-                lang = availableLangs.First();
-                Setting.Display.Language = lang.ToString();
+                var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
+                if (lang is null)
+                {
+                    lang = availableLangs.First();
+                    Setting.Display.Language = lang.ToString();
+                }
+                Localization.Current = lang;
             }
-            Localization.Current = lang;
 
             var envType = typeof(MajEnv);
 
@@ -125,6 +131,20 @@ namespace MajdataPlay
             {
                 SetWindowTopmost();
             }
+
+            InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
+            if (MajEnv.Mode == RunningMode.Test)
+            {
+                EnterTestMode();
+                return;
+            }
+            if (MajEnv.Mode == RunningMode.View)
+            {
+                EnterView();
+                return;
+            }
+
+            EnterTitle();
         }
         void DetectHWEncoder()
         {
@@ -218,22 +238,6 @@ namespace MajdataPlay
             }
 #endif
             Application.targetFrameRate = Setting.Display.FPSLimit;
-        }
-        void Start()
-        {
-            InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
-            if (MajEnv.Mode == RunningMode.Test)
-            {
-                EnterTestMode();
-                return;
-            }
-            if (MajEnv.Mode == RunningMode.View)
-            {
-                EnterView();
-                return;
-            }
-
-            EnterTitle();
         }
         void Update()
         {

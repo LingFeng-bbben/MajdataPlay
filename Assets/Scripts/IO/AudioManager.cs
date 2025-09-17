@@ -19,6 +19,7 @@ using MajdataPlay.Collections;
 using System.Text;
 using MajdataPlay.Settings;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 
 #nullable enable
@@ -38,6 +39,9 @@ namespace MajdataPlay.IO
 
         public bool PlayDebug;
 
+        static bool _isInited = false;
+        readonly static object _initLock = new();
+
         unsafe static AudioManager()
         {
             delegate*<IntPtr, int, IntPtr, int> ptr1 = &WasapiProcedure;
@@ -46,22 +50,161 @@ namespace MajdataPlay.IO
             _wasapiProcedure = Marshal.GetDelegateForFunctionPointer<WasapiProcedure>((IntPtr)ptr1);
             _asioProcedure = Marshal.GetDelegateForFunctionPointer<AsioProcedure>((IntPtr)ptr2);
         }
-        private void Awake()
+        void Awake()
         {
-            SFXFilePath = Path.Combine( MajEnv.AssetsPath, "SFX/");
-            VoiceFilePath = Path.Combine(MajEnv.AssetsPath, "Voice/");
-            MajInstances.AudioManager = this;
-            DontDestroyOnLoad(this);
-            SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
-                                                         .AsEnumerable()
-                                                         .FindAll(o => !o.Name.EndsWith(".meta"))
-                                                         .Select(x => x.Name)
-                                                         .ToArray();
-            VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles()
+            if (_isInited)
+            {
+                return;
+            }
+            lock (_initLock)
+            {
+                if (_isInited)
+                {
+                    return;
+                }
+                MajInstances.AudioManager = this;
+            }
+        }
+        internal void Init()
+        {
+            if (_isInited)
+            {
+                return;
+            }
+            lock (_initLock)
+            {
+                if (_isInited)
+                {
+                    return;
+                }
+                _isInited = true;
+            }
+            try
+            {
+                SFXFilePath = Path.Combine(MajEnv.AssetsPath, "SFX/");
+                VoiceFilePath = Path.Combine(MajEnv.AssetsPath, "Voice/");
+
+                DontDestroyOnLoad(this);
+                SFXFileNames = new DirectoryInfo(SFXFilePath).GetFiles()
                                                              .AsEnumerable()
                                                              .FindAll(o => !o.Name.EndsWith(".meta"))
                                                              .Select(x => x.Name)
                                                              .ToArray();
+                VoiceFileNames = new DirectoryInfo(VoiceFilePath).GetFiles()
+                                                                 .AsEnumerable()
+                                                                 .FindAll(o => !o.Name.EndsWith(".meta"))
+                                                                 .Select(x => x.Name)
+                                                                 .ToArray();
+
+                var isExclusiveRequest = MajInstances.Settings.Audio.WasapiExclusive;
+                var backend = MajInstances.Settings.Audio.Backend;
+                var sampleRate = MajInstances.Settings.Audio.Samplerate;
+                var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
+#if !UNITY_EDITOR
+            if (MajEnv.Mode == RunningMode.View)
+            {
+                backend = SoundBackendOption.Wasapi;
+                isExclusiveRequest = false;
+            }
+#endif
+#if UNITY_ANDROID
+                MajDebug.LogDebug("Android: Using BassSimple");
+                MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
+                backend = SoundBackendOption.BassSimple;
+#endif
+                switch (backend)
+                {
+                    case SoundBackendOption.Asio:
+                        {
+                            MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+                            var asioCount = BassAsio.DeviceCount;
+                            for (int i = 0; i < asioCount; i++)
+                            {
+                                BassAsio.GetDeviceInfo(i, out var info);
+                                MajDebug.LogInfo("ASIO Device " + i + ": " + info.Name);
+                            }
+
+                            MajDebug.LogInfo("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
+                            MajDebug.LogInfo(BassAsio.LastError);
+                            BassAsio.Rate = sampleRate;
+                            BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                            Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
+                            //BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
+                            BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
+                            BassAsio.GetInfo(out var asioInfo);
+                            BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
+                            //we dont use Asio.Inputs because we only use stero channels
+                            for (int i = 1; i < 2; i++)
+                            {
+                                if (!BassAsio.ChannelJoin(false, i, 0)) // let channel i follow channel 0
+                                {
+                                    MajDebug.LogError($"ASIO Channel {i} Join to 0 Failed: " + BassAsio.LastError);
+                                }
+                                else
+                                {
+                                    BassAsio.ChannelSetFormat(false, i, AsioSampleFormat.Float);
+                                }
+                            }
+
+                            BassAsio.Start();
+                        }
+                        break;
+                    case SoundBackendOption.Wasapi:
+                        {
+                            //Bass.Init(-1, sampleRate);
+                            MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
+
+                            //wasapiProcedure = (buffer, length, user) => GlobalProcedure(buffer, length, user);
+                            bool isExclusiveSuccess = false;
+                            if (isExclusiveRequest)
+                            {
+                                isExclusiveSuccess = BassWasapi.Init(
+                                    -1, 0, 0,
+                                    WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
+                                    0.02f, //buffer
+                                    0.005f, //peried
+                                    _wasapiProcedure);
+                                MajDebug.LogInfo($"Wasapi Exclusive Init: {isExclusiveSuccess}");
+                            }
+
+                            if (!isExclusiveRequest || !isExclusiveSuccess)
+                            {
+                                MajDebug.LogInfo("Wasapi Shared Init: " + BassWasapi.Init(
+                                    -1, 0, 0,
+                                    WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
+                                    0, //buffer
+                                    0, //peried
+                                    _wasapiProcedure));
+                            }
+                            MajDebug.LogInfo(Bass.LastError);
+                            BassWasapi.GetInfo(out var wasapiInfo);
+                            BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
+                            Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
+                            BassWasapi.Start();
+                        }
+                        break;
+                    case SoundBackendOption.BassSimple:
+                        MajDebug.LogInfo("Bass Init: " + Bass.Init());
+                        MajDebug.LogInfo(Bass.LastError);
+                        break;
+                }
+
+                InitSFXSample(SFXFileNames, SFXFilePath);
+                InitSFXSample(VoiceFileNames, VoiceFilePath);
+
+                if (backend == SoundBackendOption.Wasapi || backend == SoundBackendOption.Asio || backend == SoundBackendOption.BassSimple)
+                    MajDebug.LogInfo(Bass.LastError);
+
+                if (PlayDebug)
+                {
+                    InputManager.BindAnyArea(OnAnyAreaDown);
+                }
+                ReadVolumeFromSettings();
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
 
         static int WasapiProcedure(IntPtr buffer, int length, IntPtr user)
@@ -92,112 +235,6 @@ namespace MajdataPlay.IO
             var bytesRead = Bass.ChannelGetData(BassGlobalMixer, buffer, length);
 
             return bytesRead;
-        }
-
-        void Start()
-        {
-            var isExclusiveRequest = MajInstances.Settings.Audio.WasapiExclusive;
-            var backend = MajInstances.Settings.Audio.Backend;
-            var sampleRate = MajInstances.Settings.Audio.Samplerate;
-            var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
-#if !UNITY_EDITOR
-            if (MajEnv.Mode == RunningMode.View)
-            {
-                backend = SoundBackendOption.Wasapi;
-                isExclusiveRequest = false;
-            }
-#endif
-#if UNITY_ANDROID
-            MajDebug.LogDebug("Android: Using BassSimple");
-            MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
-            backend = SoundBackendOption.BassSimple;
-#endif
-            switch (backend)
-            {
-                case SoundBackendOption.Asio:
-                    {
-                        MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate, Bass.NoSoundDevice));
-                        var asioCount = BassAsio.DeviceCount;
-                        for (int i = 0; i < asioCount; i++) 
-                        {
-                            BassAsio.GetDeviceInfo(i, out var info);
-                            MajDebug.LogInfo("ASIO Device " + i + ": " + info.Name);
-                        }
-                        
-                        MajDebug.LogInfo("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
-                        MajDebug.LogInfo(BassAsio.LastError);
-                        BassAsio.Rate = sampleRate;
-                        BassGlobalMixer = BassMix.CreateMixerStream(sampleRate, 2, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
-                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        //BassAsio.ChannelEnable(false, 0, asioProcedure, IntPtr.Zero);
-                        BassAsio.ChannelEnableBass(false, 0, BassGlobalMixer, true);
-                        BassAsio.GetInfo(out var asioInfo);
-                        BassAsio.ChannelSetFormat(false, 0, AsioSampleFormat.Float);
-                        //we dont use Asio.Inputs because we only use stero channels
-                        for (int i = 1; i < 2; i++)
-                        {
-                            if (!BassAsio.ChannelJoin(false, i, 0)) // let channel i follow channel 0
-                            {
-                                MajDebug.LogError($"ASIO Channel {i} Join to 0 Failed: " + BassAsio.LastError);
-                            }
-                            else
-                            {
-                                BassAsio.ChannelSetFormat(false, i, AsioSampleFormat.Float);
-                            }
-                        }
-
-                        BassAsio.Start();
-                    }
-                    break;
-                case SoundBackendOption.Wasapi:
-                    {
-                        //Bass.Init(-1, sampleRate);
-                        MajDebug.LogInfo("Bass Init: " + Bass.Init(0, sampleRate,Bass.NoSoundDevice));
-
-                        //wasapiProcedure = (buffer, length, user) => GlobalProcedure(buffer, length, user);
-                        bool isExclusiveSuccess = false;
-                        if (isExclusiveRequest)
-                        {
-                            isExclusiveSuccess = BassWasapi.Init(
-                                -1, 0, 0,
-                                WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | WasapiInitFlags.Raw,
-                                0.02f, //buffer
-                                0.005f, //peried
-                                _wasapiProcedure);
-                            MajDebug.LogInfo($"Wasapi Exclusive Init: {isExclusiveSuccess}");
-                        }
-
-                        if(!isExclusiveRequest || !isExclusiveSuccess)
-                        {
-                            MajDebug.LogInfo("Wasapi Shared Init: " + BassWasapi.Init(
-                                -1, 0, 0,
-                                WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | WasapiInitFlags.Raw,
-                                0, //buffer
-                                0, //peried
-                                _wasapiProcedure));
-                        }
-                        MajDebug.LogInfo(Bass.LastError);
-                        BassWasapi.GetInfo(out var wasapiInfo);
-                        BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
-                        Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
-                        BassWasapi.Start();
-                    }
-                    break;
-                case SoundBackendOption.BassSimple:
-                    MajDebug.LogInfo("Bass Init: " + Bass.Init());
-                    MajDebug.LogInfo(Bass.LastError);
-                break;
-            }
-
-            InitSFXSample(SFXFileNames,SFXFilePath);
-            InitSFXSample(VoiceFileNames,VoiceFilePath);
-
-            if(backend == SoundBackendOption.Wasapi ||  backend == SoundBackendOption.Asio || backend == SoundBackendOption.BassSimple)
-            MajDebug.LogInfo(Bass.LastError);
-
-            if (PlayDebug)
-                InputManager.BindAnyArea(OnAnyAreaDown);
-            ReadVolumeFromSettings();
         }
         void InitSFXSample(string[] fileNameList,string rootPath)
         {

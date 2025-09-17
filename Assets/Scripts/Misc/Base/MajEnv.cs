@@ -44,23 +44,18 @@ namespace MajdataPlay
 #endif
 #if UNITY_STANDALONE_WIN
         public static LibVLC VLCLibrary { get; private set; }
-        public static string RootPath { get; } = Path.Combine(Application.dataPath, "../");
-        public static string AssetsPath { get; } = Application.streamingAssetsPath;
-        public static string CachePath { get; } = Path.Combine(RootPath, "Cache");
-#else
-        public static string RootPath { get; } = Application.persistentDataPath;
-        public static string AssetsPath { get; } = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
-        public static string CachePath { get; } = Application.temporaryCachePath;
 #endif
-
-        public static string ChartPath { get; } = Path.Combine(RootPath, "MaiCharts");
-        public static string SettingsPath { get; } = Path.Combine(RootPath, "settings.json");
-        public static string SkinPath { get; } = Path.Combine(RootPath, "Skins");
-        public static string LogsPath { get; } = Path.Combine(RootPath, $"Logs");
-        public static string LangPath { get; } = Path.Combine(AssetsPath, "Langs");
-        public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
-        public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime.log");
-        public static string RecordOutputsPath { get; } = Path.Combine(RootPath, "RecordOutputs");
+        public static string RootPath { get; private set; } = string.Empty;
+        public static string AssetsPath { get; private set; } = string.Empty;
+        public static string CachePath { get; private set; } = string.Empty;
+        public static string ChartPath { get; private set; } = string.Empty;
+        public static string SettingsPath { get; private set; } = string.Empty;
+        public static string SkinPath { get; private set; } = string.Empty;
+        public static string LogsPath { get; private set; } = string.Empty;
+        public static string LangPath { get; private set; } = string.Empty;
+        public static string ScoreDBPath { get; private set; } = string.Empty;
+        public static string LogPath { get; private set; } = string.Empty;
+        public static string RecordOutputsPath { get; private set; } = string.Empty;
         [Preserve]
         public static Sprite EmptySongCover { get; }
         [Preserve]
@@ -85,8 +80,8 @@ namespace MajdataPlay
                 UserAgent = { new ProductInfoHeaderValue("MajPlay", MajInstances.GameVersion.ToString()) },
             }
         };
-        public static GameSetting Settings { get; }
-        public static RuntimeConfig RuntimeConfig { get; }
+        public static GameSetting Settings { get; private set; }
+        public static RuntimeConfig RuntimeConfig { get; private set; }
         public static CancellationToken GlobalCT
         {
             get
@@ -104,7 +99,7 @@ namespace MajdataPlay
             WriteIndented = true
         };
 
-        readonly static string _runtimeConfigPath = Path.Combine(CachePath, "Runtime", "config.json");
+        static string _runtimeConfigPath = string.Empty;
         readonly static CancellationTokenSource _globalCTS = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -114,7 +109,28 @@ namespace MajdataPlay
             SynchronizationContext.SetSynchronizationContext(new UniTaskSynchronizationContext());
 #endif
         }
-        static MajEnv()
+        internal static void InitPath()
+        {
+#if UNITY_STANDALONE_WIN
+            RootPath = Path.Combine(Application.dataPath, "../");
+            AssetsPath = Application.streamingAssetsPath;
+            CachePath = Path.Combine(RootPath, "Cache");
+#else
+            RootPath = Application.persistentDataPath;
+            AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
+            CachePath = Application.temporaryCachePath;
+#endif
+            _runtimeConfigPath = Path.Combine(CachePath, "Runtime", "config.json");
+            ChartPath = Path.Combine(RootPath, "MaiCharts");
+            SettingsPath = Path.Combine(RootPath, "settings.json");
+            SkinPath = Path.Combine(RootPath, "Skins");
+            LogsPath = Path.Combine(RootPath, $"Logs");
+            LangPath = Path.Combine(AssetsPath, "Langs");
+            ScoreDBPath = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
+            LogPath = Path.Combine(LogsPath, $"MajPlayRuntime.log");
+            RecordOutputsPath = Path.Combine(RootPath, "RecordOutputs");
+}
+        internal static void Init()
         {
             ChangedSynchronizationContext();
             CheckNoteSkinFolder();
@@ -140,7 +156,7 @@ namespace MajdataPlay
                     Settings = new();
                     MajDebug.LogError("Failed to read setting from file");
                     var bakFileName = $"{SettingsPath}.bak";
-                    while(File.Exists(bakFileName))
+                    while (File.Exists(bakFileName))
                     {
                         bakFileName = $"{bakFileName}.bak";
                     }
@@ -200,9 +216,6 @@ namespace MajdataPlay
                 MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
-        }
-        internal static void Init()
-        {
 
 #if UNITY_STANDALONE_WIN
             MajDebug.LogInfo("[VLC] init");

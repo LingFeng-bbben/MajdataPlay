@@ -73,11 +73,19 @@ namespace MajdataPlay
 
         readonly static SongCollection EMPTY_SONG_COLLECTION = SongCollection.Empty("default");
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
-        readonly static string MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
-        readonly static string MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
+        static string MY_FAVORITE_EXPORT_PATH = string.Empty;
+        static string MY_FAVORITE_STORAGE_PATH = string.Empty;
 
         internal static async Task InitAsync(IProgress<string>? progressReporter = null)
         {
+            if (string.IsNullOrEmpty(MY_FAVORITE_EXPORT_PATH))
+            {
+                MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
+            }
+            if(string.IsNullOrEmpty(MY_FAVORITE_STORAGE_PATH))
+            {
+                MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
+            }
             try
             {
                 await Task.Run(async () =>

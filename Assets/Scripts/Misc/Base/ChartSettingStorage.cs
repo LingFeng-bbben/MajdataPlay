@@ -15,7 +15,7 @@ namespace MajdataPlay.Settings
         static bool _isInited = false;
 
         readonly static List<ChartSetting> _storage = new(1024);
-        readonly static string STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
+        static string STORAGE_PATH = string.Empty;
         
         public static async ValueTask InitAsync()
         {
@@ -25,6 +25,10 @@ namespace MajdataPlay.Settings
             }
             try
             {
+                if(string.IsNullOrEmpty(STORAGE_PATH))
+                {
+                    STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
+                }
                 await UniTask.SwitchToThreadPool();
                 MajEnv.OnApplicationQuit += OnApplicationQuit;
                 if (!File.Exists(STORAGE_PATH))

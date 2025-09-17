@@ -22,9 +22,14 @@ namespace MajdataPlay
         {
             base.Awake();
             for (var i = 0; i < _data.Length; i++)
+            {
                 _data[i] = null;
-
+            }
+            MajInstances.FPSDisplayer = this;
             _textDisplayer = GetComponent<TextMeshPro>();
+        }
+        internal void Init()
+        {
             _setting = MajInstances.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
         }
@@ -45,7 +50,9 @@ namespace MajdataPlay
                 _frameTimer = 1;
             }
             else
+            {
                 _frameTimer -= delta;
+            }
         }
         void AddSample(float data)
         {
