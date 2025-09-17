@@ -49,10 +49,6 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         public float AudioLength { get; private set; } = 0f;
         /// <summary>
-        /// Current audio playback time without offset correction
-        /// </summary>
-        public float AudioTimeNoOffset => _audioTimeNoOffset;
-        /// <summary>
         /// The timing of audio starting to play
         /// </summary>
         public float AudioStartTime => _audioStartTime;
@@ -104,9 +100,6 @@ namespace MajdataPlay.Scenes.Game
         [ReadOnlyField]
         [SerializeField]
         float _firstNoteAppearTiming = 0f;
-        [ReadOnlyField]
-        [SerializeField]
-        float _audioTimeNoOffset = -114514;
         [ReadOnlyField]
         [SerializeField]
         float _audioStartTime = -114514;
@@ -493,6 +486,7 @@ namespace MajdataPlay.Scenes.Game
             _audioSample.SetVolume(_trackVolume);
             _audioSample.Speed = PlaybackSpeed;
             _audioSample.IsLoop = false;
+            _audioSample.CurrentSec = 0;
             if(IsPracticeMode)
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
@@ -549,17 +543,17 @@ namespace MajdataPlay.Scenes.Game
                     var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
                     _chart = _chart.Clamp(range);
                 }
-                else if (_gameInfo.ComboRange is Range<long> comboRange)
-                {
-                    _chart = _chart.Clamp(comboRange);
-                    if (_chart.NoteTimings.Length != 0)
-                    {
-                        var startAt = _chart.NoteTimings[0].Timing;
-                        startAt = Math.Max(startAt - 3, 0);
+                //else if (_gameInfo.ComboRange is Range<long> comboRange)
+                //{
+                //    _chart = _chart.Clamp(comboRange);
+                //    if (_chart.NoteTimings.Length != 0)
+                //    {
+                //        var startAt = _chart.NoteTimings[0].Timing;
+                //        startAt = Math.Max(startAt - 3, 0);
 
-                        _audioTrackStartAt = (float)startAt;
-                    }
-                }
+                //        _audioTrackStartAt = (float)startAt;
+                //    }
+                //}
             }
             if (ModInfo.PlaybackSpeed != 1)
             {
@@ -748,9 +742,9 @@ namespace MajdataPlay.Scenes.Game
                 var userSettingBGDim = _setting.Game.BackgroundDim;
                 var dimDiff = 1 - userSettingBGDim;
                 var isVideoStarted = false;
-                while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
+                while (_timer.ElapsedSecondsAsFloat - _audioStartTime < 0)
                 {
-                    var timeDiff = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    var timeDiff = _timer.ElapsedSecondsAsFloat - _audioStartTime;
                     if (timeDiff > -0.1f && !isVideoStarted) 
                     {
                         _bgManager.PlayVideo(startSec, PlaybackSpeed);
@@ -1061,13 +1055,14 @@ namespace MajdataPlay.Scenes.Game
                 case GamePlayStatus.WaitForEnd:
                     //Do not use this!!!! This have connection with sample batch size
                     //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / PlaybackSpeed) - _displayOffsetSec;
-                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
-                    var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
+                    var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
+                    var playbackSpeed = PlaybackSpeed;
+                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / playbackSpeed) - _displayOffsetSec;
+                    var timeOffset = elapsedSeconds - _audioStartTime;
+                    var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                    var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
-                    _audioTimeNoOffset = (float)_audioSample.CurrentSec;
                     _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
                     break;
             }
