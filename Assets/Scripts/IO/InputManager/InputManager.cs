@@ -300,10 +300,10 @@ namespace MajdataPlay.IO
 
 #if UNITY_STANDALONE
             IODeviceDetect();
-#endif
             ButtonRing.Init();
             TouchPanel.Init();
             LedDevice.Init();
+#endif
         }
         static void IODeviceDetect()
         {
@@ -577,8 +577,10 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             try
             {
+#if UNITY_STANDALONE
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
+#endif
 
                 UpdateMousePosition();
                 UpdateSensorState();
