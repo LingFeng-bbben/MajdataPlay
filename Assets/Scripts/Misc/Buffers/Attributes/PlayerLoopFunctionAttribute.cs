@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Scripting;
 
 namespace MajdataPlay.Buffers
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class PlayerLoopFunctionAttribute : Attribute
+    internal class PlayerLoopFunctionAttribute : PreserveAttribute
     {
         public LoopTiming Timing
         {

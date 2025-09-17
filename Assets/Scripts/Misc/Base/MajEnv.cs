@@ -1,7 +1,11 @@
-﻿using HidSharp.Platform.Windows;
+﻿using Cysharp.Threading.Tasks;
+using HidSharp.Platform.Windows;
 using LibVLCSharp;
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
+using MajdataPlay.Settings.Runtime;
+using MajdataPlay.Utils;
 using MychIO;
 using System;
 using System.Collections.Concurrent;
@@ -13,11 +17,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using MajdataPlay.Settings;
-using MajdataPlay.Utils;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
-using MajdataPlay.Settings.Runtime;
+using UnityEngine.Scripting;
 #nullable enable
 namespace MajdataPlay
 {
@@ -62,9 +63,13 @@ namespace MajdataPlay
         public static string ScoreDBPath { get; } = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
         public static string LogPath { get; } = Path.Combine(LogsPath, $"MajPlayRuntime.log");
         public static string RecordOutputsPath { get; } = Path.Combine(RootPath, "RecordOutputs");
+        [Preserve]
         public static Sprite EmptySongCover { get; }
+        [Preserve]
         public static Material BreakMaterial { get; }
+        [Preserve]
         public static Material DefaultMaterial { get; }
+        [Preserve]
         public static Material HoldShineMaterial { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
