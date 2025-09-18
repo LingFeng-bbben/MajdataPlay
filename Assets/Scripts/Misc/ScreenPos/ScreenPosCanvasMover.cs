@@ -10,7 +10,7 @@ namespace MajdataPlay
     {
         RectTransform rt;
         // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             rt = GetComponent<RectTransform>();
             Refresh();
