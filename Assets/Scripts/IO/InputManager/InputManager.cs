@@ -7,6 +7,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -305,6 +306,83 @@ namespace MajdataPlay.IO
             LedDevice.Init();
 #endif
         }
+        //static ScreenInfo GenerateScreenInfo(int width, int height)
+        //{
+        //    var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
+
+        //    var positionMappingTable = new ulong[width][];
+        //    var screenToWorldPoints = new Point[width][];
+        //    for (var x = 0; x < width; x++)
+        //    {
+        //        positionMappingTable[x] = new ulong[height];
+        //        screenToWorldPoints[x] = new Point[height];
+        //        for (var y = 0; y < height; y++)
+        //        {
+        //            ref var value = ref positionMappingTable[x][y];
+        //            ref var worldPoint = ref screenToWorldPoints[x][y];
+
+        //            var pos = new Vector3(x, y);
+        //            Vector3 cubeRay = mainCamera.ScreenToWorldPoint(pos);
+        //            var rayToCenter = cubeRay - new Vector3(0, 0, -10);
+        //            worldPoint = new()
+        //            {
+        //                X = rayToCenter.x,
+        //                Y = rayToCenter.y,
+        //                Z = rayToCenter.z
+        //            };
+        //            var radToCenter = (rayToCenter).magnitude;
+
+        //            if (radToCenter > 9.28)
+        //            {
+        //                value |= 1UL << (9 + 34);
+        //                continue;
+        //            }
+        //            else if (radToCenter > 5.4f)
+        //            {
+        //                // out of the screen area to the button area
+        //                var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
+        //                var btnPos = (int)(degree / 45f);
+        //                switch (btnPos)
+        //                {
+        //                    case 0:
+        //                        value |= 1UL << (6 + 34);
+        //                        continue;
+        //                    case 1:
+        //                        value |= 1UL << (7 + 34);
+        //                        continue;
+        //                    default:
+        //                        value |= 1UL << (btnPos - 2 + 34);
+        //                        continue;
+        //                }
+        //            }
+        //            for (int i = 0; i < 9; i++)
+        //            {
+        //                var rad = FingerRadius;
+        //                var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
+        //                if (i == 8) circular = Vector3.zero;
+        //                var ray = new Ray(cubeRay + circular, Vector3.forward);
+        //                var ishit = Physics.Raycast(ray, out var hitInfom);
+        //                if (ishit)
+        //                {
+        //                    var id = hitInfom.colliderInstanceID;
+        //                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+        //                    {
+        //                        value |= 1UL << index;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return new ScreenInfo()
+        //    {
+        //        Width = width,
+        //        Height = height,
+        //        ScreenToWorldPoints = screenToWorldPoints,
+        //        TouchPanelMappingTable = positionMappingTable,
+        //        FingerRadius = FingerRadius
+        //    };
+        //}
         static void IODeviceDetect()
         {
             const int YUAN_HID_1P_PID = 22352;
