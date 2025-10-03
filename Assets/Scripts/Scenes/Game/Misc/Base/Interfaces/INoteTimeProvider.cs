@@ -10,6 +10,6 @@ namespace MajdataPlay.Scenes.Game
     {
         float ThisFrameSec { get; }
         float FakeThisFrameSec { get; }
-        Dictionary<float, float> SVList { get; }
+        List<Tuple<float, float>> SVList { get; } //time, sveloc
     }
 }

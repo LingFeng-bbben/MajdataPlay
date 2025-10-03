@@ -311,8 +311,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             
             var fakeTiming = GetFakeTimeSpanToArriveTiming();
             var fakesTiming = FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming);
-            var fakeRemaining = GetFakeRemainingTimeWithoutOffset();
-            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
+            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming);
+            var fakeRemaining = Math.Max(fakeLength - fakeTiming, 0);
 
             if (!UsingSV)
             {
@@ -371,7 +371,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
                     break;
                 case NoteStatus.Running:
-                    if (fakeRemaining == 0)
+                    if (remaining == 0)
                     {
                         starTransform.position = _starPositions[_starPositions.Count - 1];
                         ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
@@ -384,7 +384,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
 
 
-                    var process = ((Length - fakeRemaining) / Length).Clamp(0, 1);
+                    var process = (fakeLength - fakesTiming) / Length;
+                    process = 1f - process;
                     var indexProcess = (_starPositions.Count - 1) * process;
                     var index = (int)indexProcess;
                     var pos = indexProcess - index;

@@ -288,9 +288,9 @@ namespace MajdataPlay.Scenes.Game
                 {
                     var timing = maiChart.NoteTimings[i];
                     var svList = Majdata<GamePlayManager>.Instance!.SVList;
-                    if (svList.Count == 0 || svList.ElementAt(svList.Count - 1).Value != timing.SVeloc)
+                    if (svList.Count == 0 || svList[svList.Count - 1].Item2 != timing.SVeloc)
                     {
-                        svList.Add((float)timing.Timing, timing.SVeloc);
+                        svList.Add(new Tuple<float, float>((float)timing.Timing, timing.SVeloc));
                         MajDebug.LogInfo(timing.SVeloc);
                     }
                     RentedList<NotePoolingInfo?> eachNotes = new();

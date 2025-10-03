@@ -38,7 +38,7 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
         public float FakeThisFrameSec => _fakeThisFrameSec;
-        public Dictionary<float, float> SVList => _svList;
+        public List<Tuple<float, float>> SVList => _svList;
         /// <summary>
         ///  The first Note appear timing
         /// </summary>
@@ -102,7 +102,7 @@ namespace MajdataPlay.Scenes.Game
         float _fakeThisFrameSec = 0f;
         [ReadOnlyField]
         [SerializeField]
-        Dictionary<float, float> _svList = new();
+        List<Tuple<float, float>> _svList = new();
         [ReadOnlyField]
         [SerializeField]
         float _thisFixedUpdateSec = 0f;
@@ -830,27 +830,27 @@ namespace MajdataPlay.Scenes.Game
             //_segmentStarts.Clear();
             if (SVList.Count == 1)
             {
-                if (SVList.ElementAt(0).Key > 0)
+                if (SVList[0].Item1 > 0)
                 {
                     _positionFunctions.Add((t) => t);
                     //_segmentStarts.Add(0);
-                    lastPosition = SVList.ElementAt(0).Key;
-                    lastTime = SVList.ElementAt(0).Key;
+                    lastPosition = SVList[0].Item1;
+                    lastTime = SVList[0].Item1;
                 }
-                _positionFunctions.Add((t) => lastPosition + SVList.ElementAt(0).Value * (t - lastTime));
+                _positionFunctions.Add((t) => lastPosition + SVList[0].Item2 * (t - lastTime));
                 //_segmentStarts.Add(lastPosition);
-                MajDebug.LogInfo($"Single Segment Case: Start = {lastPosition}, Speed = {SVList.ElementAt(0).Value}");
+                MajDebug.LogInfo($"Single Segment Case: Start = {lastPosition}, Speed = {SVList[0].Item2}");
                 return;
             }
             _positionFunctions.Add((t) => t);
             //_segmentStarts.Add(0);
             for (int i = 0; i < SVList.Count - 1; i++)
             {
-                float segmentDuration = SVList.ElementAt(i).Key - lastTime; // 上一个区间的持续时间
+                float segmentDuration = SVList[i].Item1 - lastTime; // 上一个区间的持续时间
                 lastPosition += lastSpeed * segmentDuration; // 计算上一个区间结束时的累积位置
-                float speed = SVList.ElementAt(i).Value; // 当前区间的速度
+                float speed = SVList[i].Item2; // 当前区间的速度
                 lastSpeed = speed; // 更新速度
-                lastTime = SVList.ElementAt(i).Key; // 更新上一个时间点
+                lastTime = SVList[i].Item1; // 更新上一个时间点
                                       // 创建分段函数：Position(t) = Position_i + Speed_i * (t - SVTime[i])
                 MajDebug.LogInfo($"Segment Case {i}: startTime = {lastTime}, Start = {lastPosition}, Speed = {lastSpeed}");
                 float lP = lastPosition;
@@ -864,9 +864,9 @@ namespace MajdataPlay.Scenes.Game
                 //_segmentStarts.Add(lastPosition);
 
             }
-            lastPosition += lastSpeed * (SVList.ElementAt(SVList.Count - 1).Key - lastTime);
-            lastTime = SVList.ElementAt(SVList.Count - 1).Key;
-            lastSpeed = SVList.ElementAt(SVList.Count - 1).Value;
+            lastPosition += lastSpeed * (SVList[SVList.Count - 1].Item1 - lastTime);
+            lastTime = SVList[SVList.Count - 1].Item1;
+            lastSpeed = SVList[SVList.Count - 1].Item2;
             float llP = lastPosition;
             float llS = lastSpeed;
             float llT = lastTime;
@@ -878,13 +878,13 @@ namespace MajdataPlay.Scenes.Game
         {
             if (SVList.Count == 0) //无SV修改
                 return AudioT;
-            if (AudioT < SVList.ElementAt(0).Key) //在第一个SV修改之前
+            if (AudioT < SVList[0].Item1) //在第一个SV修改之前
                 return AudioT;
-            if (AudioT >= SVList.ElementAt(SVList.Count - 1).Key) //在最后一个SV修改之后
+            if (AudioT >= SVList[SVList.Count - 1].Item1) //在最后一个SV修改之后
                 return _positionFunctions[SVList.Count](AudioT);
             for (int i = 0; i < SVList.Count; i++) //在两个SV修改之间
             {
-                if (AudioT < SVList.ElementAt(i).Key)
+                if (AudioT < SVList[i].Item1)
                     return _positionFunctions[i](AudioT);
             }
             return _positionFunctions[SVList.Count](AudioT); //理论上不会到这里
