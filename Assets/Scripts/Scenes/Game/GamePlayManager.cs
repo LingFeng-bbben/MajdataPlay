@@ -22,6 +22,7 @@ using UnityEngine.Profiling;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings.Runtime;
+using System.Collections.Generic;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -36,6 +37,8 @@ namespace MajdataPlay.Scenes.Game
         /// The timing of the current Update<para>Unit: Second</para>
         /// </summary>
         public float ThisFrameSec => _thisFrameSec;
+        public float FakeThisFrameSec => _fakeThisFrameSec;
+        public Dictionary<float, float> SVList => _svList;
         /// <summary>
         ///  The first Note appear timing
         /// </summary>
@@ -96,6 +99,12 @@ namespace MajdataPlay.Scenes.Game
         float _thisFrameSec = 0f;
         [ReadOnlyField]
         [SerializeField]
+        float _fakeThisFrameSec = 0f;
+        [ReadOnlyField]
+        [SerializeField]
+        Dictionary<float, float> _svList = new();
+        [ReadOnlyField]
+        [SerializeField]
         float _thisFixedUpdateSec = 0f;
         [ReadOnlyField]
         [SerializeField]
@@ -104,6 +113,9 @@ namespace MajdataPlay.Scenes.Game
         [SerializeField]
         float _audioStartTime = -114514;
         int _chartRotation = 0;
+        //SV
+        List<Func<float, float>> _positionFunctions = new();
+        //List<float> _segmentStarts = [];
 
         bool _isTrackSkipAvailable = MajEnv.Settings.Game.TrackSkip;
         bool _isFastRetryAvailable = MajEnv.Settings.Game.FastRetry;
@@ -698,6 +710,7 @@ namespace MajdataPlay.Scenes.Game
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
             _thisFrameSec = -extraTime;
             _thisFixedUpdateSec = _thisFrameSec;
+            CalcSVPos();
 
             await _noteManager.InitAsync();
             while (!_generateAnswerSFXTask.IsCompleted)
@@ -804,6 +817,77 @@ namespace MajdataPlay.Scenes.Game
                 token.ThrowIfCancellationRequested();
                 BgHeaderFadeOut();
             }
+        }
+        //计算SV函数
+        void CalcSVPos()
+        {
+            // 初始化变量
+            float lastPosition = 0f;
+            float lastTime = 0f;
+            float lastSpeed = 1f;
+
+            _positionFunctions.Clear();
+            //_segmentStarts.Clear();
+            if (SVList.Count == 1)
+            {
+                if (SVList.ElementAt(0).Key > 0)
+                {
+                    _positionFunctions.Add((t) => t);
+                    //_segmentStarts.Add(0);
+                    lastPosition = SVList.ElementAt(0).Key;
+                    lastTime = SVList.ElementAt(0).Key;
+                }
+                _positionFunctions.Add((t) => lastPosition + SVList.ElementAt(0).Value * (t - lastTime));
+                //_segmentStarts.Add(lastPosition);
+                MajDebug.LogInfo($"Single Segment Case: Start = {lastPosition}, Speed = {SVList.ElementAt(0).Value}");
+                return;
+            }
+            _positionFunctions.Add((t) => t);
+            //_segmentStarts.Add(0);
+            for (int i = 0; i < SVList.Count - 1; i++)
+            {
+                float segmentDuration = SVList.ElementAt(i).Key - lastTime; // 上一个区间的持续时间
+                lastPosition += lastSpeed * segmentDuration; // 计算上一个区间结束时的累积位置
+                float speed = SVList.ElementAt(i).Value; // 当前区间的速度
+                lastSpeed = speed; // 更新速度
+                lastTime = SVList.ElementAt(i).Key; // 更新上一个时间点
+                                      // 创建分段函数：Position(t) = Position_i + Speed_i * (t - SVTime[i])
+                MajDebug.LogInfo($"Segment Case {i}: startTime = {lastTime}, Start = {lastPosition}, Speed = {lastSpeed}");
+                float lP = lastPosition;
+                float lS = lastSpeed;
+                float lT = lastTime;
+                Func<float, float> segmentFunction = (t) =>
+                {
+                    return lP + lS * (t - lT);
+                };
+                _positionFunctions.Add(segmentFunction);
+                //_segmentStarts.Add(lastPosition);
+
+            }
+            lastPosition += lastSpeed * (SVList.ElementAt(SVList.Count - 1).Key - lastTime);
+            lastTime = SVList.ElementAt(SVList.Count - 1).Key;
+            lastSpeed = SVList.ElementAt(SVList.Count - 1).Value;
+            float llP = lastPosition;
+            float llS = lastSpeed;
+            float llT = lastTime;
+            _positionFunctions.Add((t) => llP + llS * (t - llT));
+            //_segmentStarts.Add(lastPosition);
+            MajDebug.LogInfo($"Segment Case Last: StartTime = {lastTime}, Start = {lastPosition}, Speed = {lastSpeed}");
+        }
+        public float GetPositionAtTime(float AudioT)
+        {
+            if (SVList.Count == 0) //无SV修改
+                return AudioT;
+            if (AudioT < SVList.ElementAt(0).Key) //在第一个SV修改之前
+                return AudioT;
+            if (AudioT >= SVList.ElementAt(SVList.Count - 1).Key) //在最后一个SV修改之后
+                return _positionFunctions[SVList.Count](AudioT);
+            for (int i = 0; i < SVList.Count; i++) //在两个SV修改之间
+            {
+                if (AudioT < SVList.ElementAt(i).Key)
+                    return _positionFunctions[i](AudioT);
+            }
+            return _positionFunctions[SVList.Count](AudioT); //理论上不会到这里
         }
         void BgHeaderFadeOut()
         {
@@ -1063,12 +1147,13 @@ namespace MajdataPlay.Scenes.Game
                     var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
                     _thisFrameSec = timeOffset - chartOffset;
+                    _fakeThisFrameSec = GetPositionAtTime(_thisFrameSec);
                     _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
                     break;
             }
         }
 
-#endregion
+        #endregion
 
         #region GameEnding
 

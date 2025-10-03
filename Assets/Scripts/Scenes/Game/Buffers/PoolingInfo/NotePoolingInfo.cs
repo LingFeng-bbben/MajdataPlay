@@ -16,6 +16,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         public bool IsEach { get; init; }
         public bool IsBreak { get; init; }
         public bool IsEX { get; init; }
+        public bool UsingSV { get; init; }
         /// <summary>
         /// 该Info绑定的实例
         /// </summary>

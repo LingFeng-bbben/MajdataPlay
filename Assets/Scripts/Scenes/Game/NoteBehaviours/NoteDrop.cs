@@ -70,6 +70,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEX = value;
         }
+        public bool UsingSV
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _usingSV;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _usingSV = value;
+        }
         public bool IsInitialized
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,6 +108,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _noteController.ThisFrameSec;
+        }
+        public float FakeThisFrameSec
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _noteController.FakeThisFrameSec;
         }
 
         protected bool IsUseButtonRingForTouch
@@ -302,6 +314,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual float GetTimeSpanToArriveTiming() => ThisFrameSec - Timing;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual float GetFakeTimeSpanToArriveTiming() => FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
         /// <summary>
         /// Gets the time offset from the current moment to the answer frame.
         /// </summary>
@@ -432,6 +446,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         bool _isBreak = false;
         [ReadOnlyField, SerializeField]
         bool _isEX = false;
+        [ReadOnlyField, SerializeField]
+        bool _usingSV = false;
         [ReadOnlyField, SerializeField]
         bool _isAutoplay = false;
         [ReadOnlyField, SerializeField]

@@ -59,9 +59,11 @@ namespace MajdataPlay.Scenes.View
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
         public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
         public float ThisFrameSec => _thisFrameSec;
+        public float FakeThisFrameSec => _fakeThisFrameSec;
         public float ThisFixedUpdateSec => _thisFrameSec;
         public float AudioTimeNoOffset => _audioTimeNoOffset;
         public float Offset { get; set; } = 0f;
+        public Dictionary<float, float> SVList => _svList;
 
         public GameObject LoadingIndicator;
 
@@ -70,7 +72,10 @@ namespace MajdataPlay.Scenes.View
         static ViewStatus _state = ViewStatus.Idle;
         static string _errMsg = string.Empty;
         static float _thisFrameSec = 0f;
+        static float _fakeThisFrameSec = 0f;
         static float _audioTimeNoOffset = 0f;
+
+        static Dictionary<float, float> _svList = new();
 
         float _playbackSpeed = 1f;
 

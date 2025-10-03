@@ -30,6 +30,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual float GetRemainingTimeWithoutOffset() => MathF.Max(Length - GetTimeSpanToArriveTiming(), 0);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual float GetFakeRemainingTimeWithoutOffset() => MathF.Max(Length - GetFakeTimeSpanToArriveTiming(), 0);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected JudgeGrade HoldEndJudge(in JudgeGrade headGrade, in float ingoreTimeSec)
         {
             if (!_isJudged)

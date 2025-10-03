@@ -398,11 +398,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void OnUpdate()
         {
             var timing = GetTimeSpanToArriveTiming();
+            var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
+            var distance = Mathf.Clamp(pow, 0f, 0.4f);
+
+            var fakeTiming = GetFakeTimeSpanToArriveTiming();
+            var fakePow = -Mathf.Exp(8 * (fakeTiming * 0.43f / moveDuration) - 0.85f) + 0.42f;
+            var fakeDistance = Mathf.Clamp(fakePow, 0f, 0.4f);
+
+            if (!UsingSV)
+            {
+                fakeTiming = timing;
+                fakePow = pow;
+                fakeDistance = distance;
+            }
 
             switch (State)
             {
                 case NoteStatus.Initialized:
-                    if (-timing < wholeDuration)
+                    if (-fakeTiming < wholeDuration)
                     {
                         _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
                         SetPointActive(true);
@@ -415,24 +428,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Scaling:
                     {
                         var newColor = Color.white;
-                        if (-timing < moveDuration)
+                        if (-fakeTiming < moveDuration)
                         {
                             SetFansColor(Color.white);
                             State = NoteStatus.Running;
                             goto case NoteStatus.Running;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
+                        var alpha = ((wholeDuration + fakeTiming) / displayDuration).Clamp(0, 1);
                         newColor.a = alpha;
                         SetFansColor(newColor);
                     }
                     return;
                 case NoteStatus.Running:
                     {
-                        var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
-                        var distance = Mathf.Clamp(pow, 0f, 0.4f);
-                        if (float.IsNaN(distance))
-                            distance = 0f;
-                        if (timing >= 0)
+                        if (float.IsNaN(fakeDistance))
+                            fakeDistance = 0f;
+                        if (fakeTiming >= 0)
                         {
                             var _pow = -Mathf.Exp(-0.85f) + 0.42f;
                             var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
@@ -443,12 +454,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             goto case NoteStatus.Arrived;
                         }
                         else
-                            SetFansPosition(distance);
+                            SetFansPosition(fakeDistance);
                     }
                     return;
                 case NoteStatus.Arrived:
                     {
-                        var value = 0.91f * (1 - (Length - timing) / Length);
+                        var value = 0.91f * (1 - (Length - fakeTiming) / Length);
                         var alpha = value.Clamp(0, 1f);
                         _borderMask.alphaCutoff = alpha;
                     }

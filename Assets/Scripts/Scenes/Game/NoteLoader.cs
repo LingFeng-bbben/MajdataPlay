@@ -1,28 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using MajSimai;
+﻿using Cysharp.Text;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using MajdataPlay.Utils;
-using System.Runtime.CompilerServices;
-using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.Scenes.Game.Notes.Touch;
-using MajdataPlay.Scenes.Game.Notes.Behaviours;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
-using MajdataPlay.Scenes.Game.Notes;
-using System.Buffers;
-using System.Threading;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Settings;
-using MajdataPlay.Buffers;
-using Cysharp.Text;
+using MajdataPlay.Timer;
+using MajdataPlay.Utils;
+using MajSimai;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -286,6 +287,12 @@ namespace MajdataPlay.Scenes.Game
                 for (var i = 0; i < maiChart.NoteTimings.Length; i++)
                 {
                     var timing = maiChart.NoteTimings[i];
+                    var svList = Majdata<GamePlayManager>.Instance!.SVList;
+                    if (svList.Count == 0 || svList.ElementAt(svList.Count - 1).Value != timing.SVeloc)
+                    {
+                        svList.Add((float)timing.Timing, timing.SVeloc);
+                        MajDebug.LogInfo(timing.SVeloc);
+                    }
                     RentedList<NotePoolingInfo?> eachNotes = new();
                     RentedList<ITouchGroupInfoProvider> members = new();
                     var foldedNotes = NoteCreateHelper.NoteFolding(timing.Notes);
@@ -483,6 +490,7 @@ namespace MajdataPlay.Scenes.Game
                     NoteSortOrder = sortOrder,
                     Speed = speed,
                     IsEach = isEach,
+                    UsingSV = note.UsingSV,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
                     IsStar = note.IsForceStar,
@@ -540,6 +548,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
+                    UsingSV = note.UsingSV,
                     QueueInfo = new TapQueueInfo()
                     {
                         Index = _noteIndex[startPos]++,
@@ -621,6 +630,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
+                    UsingSV = note.UsingSV,
                     IsStar = true,
                     IsDouble = isDouble,
                     RotateSpeed = -180 / (float)note.SlideTime,
@@ -684,6 +694,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = isBreak,
                     IsEX = false,
+                    UsingSV = note.UsingSV,
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
@@ -746,6 +757,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = isBreak,
                     IsEX = false,
+                    UsingSV = note.UsingSV,
                     LastFor = lastFor,
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
@@ -1211,6 +1223,7 @@ namespace MajdataPlay.Scenes.Game
             SliCompo.ConnectInfo = info;
             SliCompo.IsBreak = note.IsSlideBreak;
             SliCompo.IsEach = isEach || multiple > 1;
+            SliCompo.UsingSV = note.UsingSV;
             SliCompo.IsMirror = isMirror;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
@@ -1294,6 +1307,7 @@ namespace MajdataPlay.Scenes.Game
 
             WifiCompo.IsBreak = note.IsSlideBreak;
             WifiCompo.IsEach = isEach || multiple > 1;
+            WifiCompo.UsingSV = note.UsingSV;
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);

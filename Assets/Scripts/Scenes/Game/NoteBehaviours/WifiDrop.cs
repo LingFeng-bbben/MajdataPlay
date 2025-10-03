@@ -362,11 +362,29 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SensorCheck();
             var stars = _stars.Span;
             var starTransforms = _starTransforms.Span;
+
+            var timing = ThisFrameSec - Timing;
+            var stiming = ThisFrameSec - StartTiming;
+            var remaining = GetRemainingTimeWithoutOffset();
+
+            var fakeTiming = FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
+            var fakesTiming = FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming);
+            var fakeRemaining = GetFakeRemainingTimeWithoutOffset();
+            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
+
+            if (!UsingSV)
+            {
+                fakeTiming = timing;
+                fakesTiming = stiming;
+                fakeRemaining = remaining;
+                fakeLength = Length;
+            }
+
             switch (State)
             {
                 case NoteStatus.Initialized:
                     SetStarActive(false);
-                    if (ThisFrameSec - Timing > 0)
+                    if (timing > 0)
                     {
                         SetStarActive(true);
                         for (var i = 0; i < stars.Length; i++)
@@ -380,8 +398,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     break;
                 case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - StartTiming;
-                    if (timing > 0f)
+                    if (stiming > 0f)
                     {
                         for (var i = 0; i < stars.Length; i++)
                         {
@@ -400,7 +417,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     {
                         return;
                     }
-                    var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
+                    var alpha = (1f - -fakeTiming / (StartTiming - Timing)).Clamp(0, 1);
 
                     for (var i = 0; i < stars.Length; i++)
                     {
@@ -411,7 +428,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     break;
                 case NoteStatus.Running:
-                    if (GetRemainingTimeWithoutOffset() == 0)
+                    if (fakeRemaining == 0)
                     {
                         for (var i = 0; i < stars.Length; i++)
                         {
@@ -421,7 +438,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         State = NoteStatus.Arrived;
                         goto case NoteStatus.Arrived;
                     }
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                    var process = ((fakeLength - fakeRemaining) / Length).Clamp(0, 1);
 
                     for (var i = 0; i < stars.Length; i++)
                     {

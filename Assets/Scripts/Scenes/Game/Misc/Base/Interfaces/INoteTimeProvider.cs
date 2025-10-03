@@ -9,5 +9,7 @@ namespace MajdataPlay.Scenes.Game
     public interface INoteTimeProvider
     {
         float ThisFrameSec { get; }
+        float FakeThisFrameSec { get; }
+        Dictionary<float, float> SVList { get; }
     }
 }
