@@ -58,7 +58,7 @@ namespace MajdataPlay.Scenes.List
             try
             {
                 await UniTask.SwitchToThreadPool();
-                var client = HttpTransporter.ShareClient;
+                var client = MajEnv.SharedHttpClient;
                 var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
                 using var rsp = await client.GetAsync(interactUrl, token);
                 using var intjson = await rsp.Content.ReadAsStreamAsync();

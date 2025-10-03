@@ -8,16 +8,18 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net
 {
-    internal class HttpTransmitException : Exception
+    internal class HttpException : HttpRequestException
     {
-        public HttpResponseMessage ResponseMessage { get; init; }
-        public HttpStatusCode StatusCode { get; init; }
-        public HttpRequestError RequestError { get; init; }
-        public HttpTransmitException(string message):base(message)
+        public HttpErrorCode ErrorCode { get; init; }
+        public HttpException()
+        {
+
+        }
+        public HttpException(string message) : base(message)
         {
             
         }
-        public HttpTransmitException(HttpRequestException e): this(e.Message)
+        public HttpException(string message, Exception inner) : base(message, inner)
         {
 
         }

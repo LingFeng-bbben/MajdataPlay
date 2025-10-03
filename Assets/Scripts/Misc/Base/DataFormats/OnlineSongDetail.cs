@@ -176,7 +176,7 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
                 throw;
             }
         }
@@ -199,7 +199,7 @@ namespace MajdataPlay
                     var savePath = Path.Combine(_cachePath, "track.mp3");
                     var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
 
-                    await DownloadFile(_trackUri, savePath, progress, token);
+                    await DownloadFile(_trackUri, savePath, false, progress, token);
                     var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
                     if (sampleWarp.IsEmpty)
                     {
@@ -207,7 +207,7 @@ namespace MajdataPlay
                         {
                             File.Delete(cacheFlagPath);
                         }
-                        await DownloadFile(_trackUri, savePath, progress, token);
+                        await DownloadFile(_trackUri, savePath, false, progress, token);
                     }
                     _audioTrack = sampleWarp;
 
@@ -216,7 +216,7 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
                 _audioTrack = null;
                 throw new Exception("Music track Load Failed");
             }
@@ -292,14 +292,14 @@ namespace MajdataPlay
                             }
                         }
                     }
-                    await DownloadFile(_videoUri, savePath, progress, token);
+                    await DownloadFile(_videoUri, savePath, false, progress, token);
                     _videoPath = savePath;
                     return _videoPath;
                 }
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
                 throw;
             }
         }
@@ -336,17 +336,44 @@ namespace MajdataPlay
                 {
                     token.ThrowIfCancellationRequested();
                     var savePath = Path.Combine(_cachePath, "maidata.txt");
+                    var metadata = default(SimaiMetadata);
+                    var forceReDl = false;
 
-                    await DownloadFile(_maidataUri, savePath, progress, token);
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        await DownloadFile(_maidataUri, savePath, forceReDl, progress, token);
 
+                        using var fileStream = File.OpenRead(savePath);
+                        metadata = await SimaiParser.ParseMetadataAsync(fileStream);
+
+                        if (metadata.Hash != Hash)
+                        {
+                            MajDebug.LogWarning($"Hash mismatch for maidata of {Id}, re-download");
+                            forceReDl = true;
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (metadata.Hash != Hash)
+                    {
+                        throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, null);
+                    }
                     _maidata = await SimaiParser.ParseAsync(File.OpenRead(savePath));
 
                     return _maidata;
                 }
             }
-            catch(Exception e)
+            catch (InternalHttpRequestException ex)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(ex);
+                throw;
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
                 _maidata = null;
                 throw new Exception("Maidata Load Failed");
             }
@@ -387,7 +414,7 @@ namespace MajdataPlay
                     }
                     try
                     {
-                        await DownloadFile(_coverUri, savePath, progress, token);
+                        await DownloadFile(_coverUri, savePath, false, progress, token);
                     }
                     catch (InternalHttpRequestException e)
                     {
@@ -410,9 +437,9 @@ namespace MajdataPlay
                     return _cover;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
                 throw;
             }
         }
@@ -452,7 +479,7 @@ namespace MajdataPlay
                     }
                     try
                     {
-                        await DownloadFile(_fullSizeCoverUri, savePath, progress, token);
+                        await DownloadFile(_fullSizeCoverUri, savePath, false, progress, token);
                     }
                     catch (InternalHttpRequestException e)
                     {
@@ -476,7 +503,7 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                MajDebug.LogException(e);
                 throw;
             }
         }
@@ -536,7 +563,7 @@ namespace MajdataPlay
                 throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
-        async Task DownloadFile(Uri uri, string savePath, INetProgress? progress = null, CancellationToken token = default)
+        async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
             var fileInfo = new FileInfo(savePath);
@@ -553,7 +580,14 @@ namespace MajdataPlay
                     {
                         if (File.Exists(cacheFlagPath))
                         {
-                            return;
+                            if(!forceReDl)
+                            {
+                                return;
+                            }
+                            else
+                            {
+                                File.Delete(cacheFlagPath);
+                            }
                         }
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
                         if (!rsp.IsSuccessStatusCode)
@@ -636,23 +670,14 @@ namespace MajdataPlay
                 Pool<byte>.ReturnArray(rentBuffer, true);
             }
         }
-        class InternalHttpRequestException : Exception
+        class InternalHttpRequestException : HttpException
         {
-            public HttpErrorCode ErrorCode { get; init; }
             public HttpStatusCode? StatusCode { get; init; }
             public InternalHttpRequestException(HttpErrorCode errorCode, HttpStatusCode? statusCode) : base()
             {
                 ErrorCode = errorCode;
                 StatusCode = statusCode;
             }
-        }
-        enum HttpErrorCode
-        {
-            Unreachable,
-            InvalidRequest,
-            Unsuccessful,
-            Timeout,
-            Canceled
         }
     }
 }
