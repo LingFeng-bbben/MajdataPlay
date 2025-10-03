@@ -332,6 +332,7 @@ namespace MajdataPlay.Scenes.Game
                                         HoldTime = note.HoldTime,
                                         IsBreak = note.IsBreak,
                                         IsEx = note.IsEx,
+                                        UsingSV = note.UsingSV,
                                         IsFakeRotate = note.IsFakeRotate,
                                         IsForceStar = note.IsForceStar,
                                         IsHanabi = note.IsHanabi,
@@ -984,6 +985,7 @@ namespace MajdataPlay.Scenes.Game
                     subSlide.IsEx = note.IsEx;
                     subSlide.IsSlideBreak = note.IsSlideBreak;
                     subSlide.IsSlideNoHead = true;
+                    subSlide.UsingSV = note.UsingSV;
                 }
                 preprocessSubSlides[0].IsSlideNoHead = note.IsSlideNoHead;
 
@@ -1932,6 +1934,7 @@ namespace MajdataPlay.Scenes.Game
                             HoldTime = key.HoldTime,
                             IsBreak = key.IsBreak,
                             IsEx = key.IsEx,
+                            UsingSV = key.UsingSV,
                             IsFakeRotate = key.IsFakeRotate,
                             IsForceStar = key.IsForceStar,
                             IsHanabi = key.IsHanabi,
@@ -1987,6 +1990,10 @@ namespace MajdataPlay.Scenes.Game
             public bool IsEx
             {
                 get => _origin.IsEx;
+            }
+            public bool UsingSV
+            {
+                get => _origin.UsingSV;
             }
             public bool IsFakeRotate
             {

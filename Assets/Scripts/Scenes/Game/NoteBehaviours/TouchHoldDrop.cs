@@ -214,6 +214,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEach = poolingInfo.IsEach;
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
+            UsingSV = poolingInfo.UsingSV;
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
