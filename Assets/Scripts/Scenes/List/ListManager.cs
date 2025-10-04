@@ -38,7 +38,7 @@ namespace MajdataPlay.Scenes.List
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
 
-        readonly ListConfig _listConfig = MajEnv.RuntimeConfig.List ?? new();
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
 

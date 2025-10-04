@@ -30,7 +30,13 @@ namespace MajdataPlay.Scenes.Game
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
-        public bool IsClassicMode => _setting.Judge.Mode == JudgeModeOption.Classic;
+        public bool IsClassicMode
+        {
+            get
+            {
+                return (_setting?.Judge.Mode ?? JudgeModeOption.Modern) == JudgeModeOption.Classic;
+            }
+        }
         // Timeline
         /// <summary>
         /// The timing of the current Update<para>Unit: Second</para>
@@ -105,8 +111,8 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTrackSkipAvailable = MajEnv.Settings.Game.TrackSkip;
-        bool _isFastRetryAvailable = MajEnv.Settings.Game.FastRetry;
+        bool _isTrackSkipAvailable = MajEnv.Settings?.Game.TrackSkip ?? false;
+        bool _isFastRetryAvailable = MajEnv.Settings?.Game.FastRetry ?? false;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
