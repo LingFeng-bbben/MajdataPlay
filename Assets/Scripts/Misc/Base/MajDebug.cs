@@ -1,16 +1,12 @@
 ﻿using Cysharp.Text;
-using MajdataPlay.Utils;
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 #nullable enable
@@ -54,6 +50,7 @@ namespace MajdataPlay
             };
             StartLogWritebackTask();
             MajEnv.OnApplicationQuit += OnApplicationQuit;
+            MajEnv.OnSave += OnSave;
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 var sb = ZString.CreateStringBuilder();
@@ -129,7 +126,7 @@ namespace MajdataPlay
             Log(obj, LogLevel.Error);
         }
         
-        public static void OnApplicationQuit()
+        static void OnApplicationQuit()
         {
             try
             {
@@ -152,6 +149,15 @@ namespace MajdataPlay
             {
                 MajEnv.OnApplicationQuit -= OnApplicationQuit;
             }
+        }
+        static void OnSave()
+        {
+            if (_fileStream is null)
+            {
+                return;
+            }
+            var sb = ZString.CreateStringBuilder();
+            WriteLog(ref sb);
         }
         static string GetStackTrack()
         {
