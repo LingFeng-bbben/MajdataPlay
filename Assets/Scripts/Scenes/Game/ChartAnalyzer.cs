@@ -41,7 +41,15 @@ namespace MajdataPlay.Scenes.Game
         GameObject? _helpIcon;
 
         RawImage _rawImage;
-        Texture2D _emptyTexture;
+        static Texture2D? _emptyTexture;
+
+#if UNITY_ANDROID
+        const int MAX_CACHE_COUNT = 16;
+#else
+        const int MAX_CACHE_COUNT = 32;
+#endif
+
+        readonly RentedList<KeyValuePair<SimaiChart, MaidataAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
 
         private void Awake()
         {
@@ -55,7 +63,10 @@ namespace MajdataPlay.Scenes.Game
                 _errorIcon = iconTransform.GetChild(2).gameObject;
             }
             _rawImage = GetComponent<RawImage>();
-            _emptyTexture = new Texture2D(0, 0);
+            if(_emptyTexture is null)
+            {
+                _emptyTexture = new Texture2D(0, 0);
+            }
         }
 
         void Start()
@@ -67,6 +78,12 @@ namespace MajdataPlay.Scenes.Game
         void OnDestroy()
         {
             Majdata<ChartAnalyzer>.Free();
+            for (var i = 0; i < _cachedTextures.Count; i++)
+            {
+                var tex = _cachedTextures[i].Value.LineGraph;
+                UnityEngine.Object.DestroyImmediate(tex, true);
+            } 
+            _cachedTextures.Clear();
         }
         public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, bool noCache = false, CancellationToken token = default)
         {
@@ -92,6 +109,13 @@ namespace MajdataPlay.Scenes.Game
                 var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
                 await UniTask.SwitchToMainThread();
                 token.ThrowIfCancellationRequested();
+                if(_cachedTextures.Count == MAX_CACHE_COUNT)
+                {
+                    var tex = _cachedTextures[0].Value.LineGraph;
+                    _cachedTextures.RemoveAt(0);
+                    UnityEngine.Object.DestroyImmediate(tex, true);
+                }
+                _cachedTextures.Add(new(maiChart, result));
                 SetTexture(result.LineGraph);
                 if (anaText is not null)
                 {
@@ -191,7 +215,7 @@ namespace MajdataPlay.Scenes.Game
                 MajDebug.LogException(ex);
                 await UniTask.SwitchToMainThread();
                 SetError();
-                _rawImage.texture = _emptyTexture;
+                _rawImage.texture = _emptyTexture!;
                 if (anaText is not null)
                 {
                     anaText.text = "";
@@ -204,21 +228,21 @@ namespace MajdataPlay.Scenes.Game
             _errorIcon?.SetActive(false);
             _helpIcon?.SetActive(false);
             _loadingPrefab?.SetActive(true);
-            _rawImage.texture = _emptyTexture;
+            _rawImage.texture = _emptyTexture!;
         }
         void SetHelp()
         {
             _errorIcon?.SetActive(false);
             _helpIcon?.SetActive(true);
             _loadingPrefab?.SetActive(false);
-            _rawImage.texture = _emptyTexture;
+            _rawImage.texture = _emptyTexture!;
         }
         void SetError()
         {
             _errorIcon?.SetActive(true);
             _helpIcon?.SetActive(false);
             _loadingPrefab?.SetActive(false);
-            _rawImage.texture = _emptyTexture;
+            _rawImage.texture = _emptyTexture!;
         }
         void SetTexture(Texture texture)
         {
@@ -227,12 +251,19 @@ namespace MajdataPlay.Scenes.Game
             _loadingPrefab?.SetActive(false);
             _rawImage.texture = texture;
         }
-        internal static async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false)
+        async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false)
         {
             await UniTask.SwitchToThreadPool();
-            if ((!noCache) && MajCache<SimaiChart, MaidataAnalyzeResult>.TryGetValue(data, out var cachedResult))
+            if (!noCache)
             {
-                return cachedResult;
+                for (var i = 0; i < _cachedTextures.Count; i++)
+                {
+                    var kv = _cachedTextures[i];
+                    if(kv.Key == data)
+                    {
+                        return kv.Value;
+                    }
+                }
             }
 
             var tapPoints = new List<Vector2>();
@@ -306,7 +337,6 @@ namespace MajdataPlay.Scenes.Game
                 PeakDensity = max,
                 LineGraph = tex
             };
-            MajCache<SimaiChart, MaidataAnalyzeResult>.Replace(data, result);
             return result;
         }
         static async ValueTask<Texture> DrawGraphAsync(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
