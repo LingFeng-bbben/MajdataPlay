@@ -279,20 +279,20 @@ namespace MajdataPlay
 
         public void EnableGC()
         {
-            GC.Collect();
-            return;
-#if !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
             MajDebug.LogWarning("GC has been enabled");
+#else
+            GC.Collect();
 #endif
         }
         public void DisableGC() 
         {
-            GC.Collect();
-            return;
-#if !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             MajDebug.LogWarning("GC has been disabled");
+#else
+            GC.Collect();
 #endif
         }
     }
