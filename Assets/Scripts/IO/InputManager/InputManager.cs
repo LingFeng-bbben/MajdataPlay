@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -297,6 +298,7 @@ namespace MajdataPlay.IO
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
             Input.multiTouchEnabled = true;
+            EnhancedTouchSupport.Enable();
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
 
 #if UNITY_STANDALONE

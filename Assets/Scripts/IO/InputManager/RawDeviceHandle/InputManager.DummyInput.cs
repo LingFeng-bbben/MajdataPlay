@@ -7,12 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Utilities;
+using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
+using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
-        public static bool UseOuterTouchAsSensor;
+        //public static bool UseOuterTouchAsSensor;
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -20,14 +24,18 @@ namespace MajdataPlay.IO
             Span<bool> newStates = stackalloc bool[34];
             Span<bool> extraButtonStates = stackalloc bool[12];
 
-            if (Input.touchCount > 0)
+            var touches = Touch.activeTouches;
+
+            if (touches.Count > 0)
             {
-                FromTouchPanel(newStates, extraButtonStates, mainCamera);
+                FromTouchPanel(touches, newStates, extraButtonStates, mainCamera);
             }
-            else if (Input.GetMouseButton(0))
+#if UNITY_STANDALONE
+            else if (Mouse.current != null)
             {
-                FromMouse(newStates, extraButtonStates, mainCamera);
+                FromMouse(Mouse.current, newStates, extraButtonStates, mainCamera);
             }
+#endif
             var now = MajTimeline.UnscaledTime;
             foreach (var (i, state) in newStates.WithIndex())
             {
@@ -39,23 +47,24 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
-            if (UseOuterTouchAsSensor) {
-                foreach (var (i, state) in extraButtonStates.WithIndex())
-                {
-                    var _state = state ? SwitchStatus.On : SwitchStatus.Off;
-                    if (i >= 8) continue;
-                    _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
-                    {
-                        Index = i,
-                        State = _state,
-                        Timestamp = now
-                    });
-                }
-            }
+            //if (UseOuterTouchAsSensor) 
+            //{
+            //    foreach (var (i, state) in extraButtonStates.WithIndex())
+            //    {
+            //        var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+            //        if (i >= 8) continue;
+            //        _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
+            //        {
+            //            Index = i,
+            //            State = _state,
+            //            Timestamp = now
+            //        });
+            //    }
+            //}
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
-                if (i < 8 && UseOuterTouchAsSensor) continue;
+                //if (i < 8 && UseOuterTouchAsSensor) continue;
                 _buttonRingInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -64,16 +73,22 @@ namespace MajdataPlay.IO
                 });
             }
         }
-        static void FromTouchPanel(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
+        static void FromTouchPanel(in ReadOnlyArray<Touch> touches, Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
-            for (var j = 0; j < Input.touchCount; j++)
+            for (var j = 0; j < touches.Count; j++)
             {
-                var touch = Input.GetTouch(j);
-                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                var touch = touches[j];
+                if(!touch.valid)
                 {
                     continue;
                 }
-                var button = PositionToSensorState(newStates, mainCamera, touch.position);
+                switch(touch.phase)
+                {
+                    case TouchPhase.Ended:
+                    case TouchPhase.Canceled:
+                        continue;
+                }
+                var button = PositionToSensorState(newStates, mainCamera, touch.screenPosition);
                 if (button != -1)
                 {
                     extraButton[button] = true;
@@ -82,9 +97,14 @@ namespace MajdataPlay.IO
         }
 
 
-        static void FromMouse(Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
+        static void FromMouse(Mouse mouse, Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
         {
-            var button = PositionToSensorState(newStates, mainCamera, Input.mousePosition);
+            var leftButton = mouse.leftButton;
+            if(!leftButton.isPressed)
+            {
+                return;
+            }
+            var button = PositionToSensorState(newStates, mainCamera, mouse.position.value);
             if (button != -1)
             {
                 extraButton[button] = true;
