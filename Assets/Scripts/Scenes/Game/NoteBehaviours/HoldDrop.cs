@@ -351,9 +351,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var fakeDistance = fakeTiming * Speed + 4.8f;
             //var fakeScaleRate = _noteAppearRate;
             var fakeDestScale = fakeDistance * scaleRate + (1 - scaleRate * 1.225f);
-
-            var fakeRemaining = GetFakeRemainingTimeWithoutOffset();
-            var fakeHoldTime = fakeTiming - (Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing));
+            
+            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
+            var fakeHoldTime = fakeTiming - fakeLength;
             var fakeHoldDistance = fakeHoldTime * Speed + 4.8f;
 
             if (!UsingSV)
@@ -361,7 +361,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 fakeTiming = timing;
                 fakeDistance = distance;
                 fakeDestScale = destScale;
-                fakeRemaining = remaining;
                 fakeHoldTime = holdTime;
                 fakeHoldDistance = holdDistance;
             }
@@ -391,7 +390,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Scaling:
                     if (fakeDestScale > 0.3f)
                         SetTapLineActive(true);
-                    if (fakeDestScale < 1.225f)
+                    if (fakeDistance < 1.225f)
                     {
                         Distance = fakeDistance;
                         Transform.localScale = new Vector3(fakeDestScale, fakeDestScale) * USERSETTING_HOLD_SCALE;
