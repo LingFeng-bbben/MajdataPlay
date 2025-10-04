@@ -193,8 +193,10 @@ namespace MajdataPlay.Settings
         public bool SlideNoHead { get; set; } = false;
         [Preserve]
         public bool SlideNoTrack { get; set; } = false;
+#if !UNITY_ANDROID
         [Preserve]
         public bool ButtonRingForTouch { get; set; } = false;
+#endif
         [Preserve]
         public string NoteMask { get; set; } = "Disable";
 

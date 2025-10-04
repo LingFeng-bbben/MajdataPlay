@@ -56,7 +56,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         static bool _defaultButtonStatusUsage = false;
         static bool _defaultSensorStatusUsage = false;
 
+#if UNITY_ANDROID
+        static bool _isUseButtonRingForTouch = true;
+#else
         static bool _isUseButtonRingForTouch = false;
+#endif
+
 
         const string SENSOR_IS_NULL = "Sensor index requested by Note is null";
         const string SENSOR_OUT_OF_RANGE = "Sensor index requested by Note is out of range";
@@ -88,7 +93,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
             _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
+#if !UNITY_ANDROID
             _isUseButtonRingForTouch = Majdata<INoteController>.Instance?.ModInfo.ButtonRingForTouch ?? false;
+#endif
         }
         void OnDestroy()
         {

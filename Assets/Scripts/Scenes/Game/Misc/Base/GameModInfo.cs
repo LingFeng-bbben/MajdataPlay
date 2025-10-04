@@ -33,7 +33,9 @@ namespace MajdataPlay.Scenes.Game
             AllTouch = options.AllTouch;
             SlideNoHead = options.SlideNoHead;
             SlideNoTrack = options.SlideNoTrack;
+#if !UNITY_ANDROID
             ButtonRingForTouch = options.ButtonRingForTouch;
+#endif
             NoteMask = options.NoteMask;
         }
         public GameModInfo(GameModInfo options)

@@ -227,8 +227,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _isAutoplay = _noteController.IsAutoplay;
             _autoplayMode = ModInfo.AutoPlay;
             _autoplayGrade = _noteController.AutoplayGrade;
-            
+#if UNITY_ANDROID
+            IsUseButtonRingForTouch = true;
+#else
             IsUseButtonRingForTouch = ModInfo.ButtonRingForTouch;
+#endif
         }
         void OnDestroy()
         {
