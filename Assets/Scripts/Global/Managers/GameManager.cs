@@ -125,7 +125,11 @@ namespace MajdataPlay
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Display.RenderQuality, true);
+#if UNITY_ANDROID
+            QualitySettings.vSyncCount = 0;
+#else
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
+#endif
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
             DetectHWEncoder();
             if (Setting.Display.Topmost)

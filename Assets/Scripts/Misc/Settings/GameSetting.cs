@@ -133,8 +133,10 @@ namespace MajdataPlay.Settings
         public bool Topmost { get; set; } = false;
         [Preserve]
         public int FPSLimit { get; set; } = 120;
+#if !UNITY_ANDROID
         [Preserve]
         public bool VSync { get; set; } = true;
+#endif
     }
     [Preserve]
     public class SoundOptions
