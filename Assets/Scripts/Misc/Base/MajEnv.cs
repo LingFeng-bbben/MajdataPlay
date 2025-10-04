@@ -239,6 +239,7 @@ namespace MajdataPlay
             }
 #endif
             _globalCTS.Cancel();
+            RequestSave();
             try
             {
                 if (OnApplicationQuit is not null)
