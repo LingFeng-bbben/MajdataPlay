@@ -233,7 +233,7 @@ namespace MajdataPlay.Scenes.Game
             }
             catch(Exception e)
             {
-                UnityEngine.Debug.LogException(e);
+                MajDebug.LogException(e);
                 SetBackgroundPic(fallback);
             }
 #else // Unity VideoPlayer
