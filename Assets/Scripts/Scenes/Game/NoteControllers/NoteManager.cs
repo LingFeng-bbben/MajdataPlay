@@ -50,17 +50,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
         readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         
+        readonly static bool[] _isBtnClickedInThisFrame = new bool[8];
+        readonly static bool[] _isSensorClickedInThisFrame = new bool[33];
+        
         readonly static bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly static bool[] _isSensorUsedInThisFrame = new bool[33];
 
         static bool _defaultButtonStatusUsage = false;
         static bool _defaultSensorStatusUsage = false;
 
-#if UNITY_ANDROID
-        static bool _isUseButtonRingForTouch = true;
-#else
         static bool _isUseButtonRingForTouch = false;
-#endif
 
 
         const string SENSOR_IS_NULL = "Sensor index requested by Note is null";
@@ -79,6 +78,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Array.Fill(_sensorStatusInNextFrame, SwitchStatus.Off);
             Array.Fill(_sensorStatusInThisFrame, SwitchStatus.Off);
             Array.Fill(_sensorStatusInPreviousFrame, SwitchStatus.Off);
+            Array.Fill(_isBtnClickedInThisFrame, false);
+            Array.Fill(_isSensorClickedInThisFrame, false);
             Array.Fill(_isBtnUsedInThisFrame, false);
             Array.Fill(_isSensorUsedInThisFrame, false);
             Array.Fill(_noteCurrentIndex, 0);
@@ -106,10 +107,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             for (var i = 0; i < 8; i++)
             {
                 _isBtnUsedInThisFrame[i] = false;
+                _isBtnClickedInThisFrame[i] = false;
             }
             for (var i = 0; i < 33; i++)
             {
                 _isSensorUsedInThisFrame[i] = false;
+                _isSensorClickedInThisFrame[i] = false;
             }
 
             if(USERSETTING_IS_AUTOPLAY)
@@ -240,10 +243,27 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var previousSensorStatus = InputManager.SensorStatusInPreviousFrame;
             var currentSensorStatus = InputManager.SensorStatusInThisFrame;
 
+#if UNITY_ANDROID
+            for (var i = 0; i < 33; i++)
+            {
+                _sensorStatusInPreviousFrame[i] = previousSensorStatus[i];
+                _sensorStatusInThisFrame[i] = currentSensorStatus[i];
+                if (i < 8)
+                {
+                    _sensorStatusInThisFrame[i] |= currentButtonStatus[i];
+                    _isSensorClickedInThisFrame[i] = previousButtonStatus[i] == SwitchStatus.Off &&
+                                                     currentButtonStatus[i] == SwitchStatus.On;
+                }
+                _isSensorClickedInThisFrame[i] |= previousSensorStatus[i] == SwitchStatus.Off &&
+                                                  currentSensorStatus[i] == SwitchStatus.On;
+            }
+#else
             for (var i = 0; i < 8; i++)
             {
                 _btnStatusInPreviousFrame[i] = previousButtonStatus[i];
                 _btnStatusInThisFrame[i] = currentButtonStatus[i];
+                _isBtnClickedInThisFrame[i] = _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                                              _btnStatusInThisFrame[i] == SwitchStatus.On;
             }
             for (var i = 0; i < 33; i++)
             {
@@ -253,7 +273,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     _sensorStatusInThisFrame[i] |= _btnStatusInThisFrame[i];
                 }
+                _isSensorClickedInThisFrame[i] = _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                                                 _sensorStatusInThisFrame[i] == SwitchStatus.On;
             }
+#endif
         }
         void AutoplayIOUpdate()
         {
@@ -512,9 +535,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             var i = (int)zone;
 
-            //return _isBtnClickedInThisFrame[i] == SensorStatus.On;
-            return _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
-                   _btnStatusInThisFrame[i] == SwitchStatus.On;
+            return _isBtnClickedInThisFrame[i];
+            //return _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+            //       _btnStatusInThisFrame[i] == SwitchStatus.On;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSensorClickedInThisFrame(SensorArea? area)
@@ -531,9 +554,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             var i = (int)area;
 
-            //return _isSensorClickedInThisFrame[i] == SensorStatus.On;
-            return _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
-                   _sensorStatusInThisFrame[i] == SwitchStatus.On;
+            return _isSensorClickedInThisFrame[i];
+            //return _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
+            //       _sensorStatusInThisFrame[i] == SwitchStatus.On;
         }
 
         public bool SimulateSensorPress(SensorArea? area)

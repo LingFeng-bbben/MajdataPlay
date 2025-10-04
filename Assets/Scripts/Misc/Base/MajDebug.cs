@@ -84,7 +84,7 @@ namespace MajdataPlay
                 StackTrace = string.Empty,
                 Level = level
             };
-#if UNITY_EDITOR
+#if UNITY_EDITOR || (UNITY_ANDROID && DEBUG)
             _unityLogger.Log(ToUnityLogLevel(level), sb.ToString());
 #endif
 #if UNITY_EDITOR || DEBUG

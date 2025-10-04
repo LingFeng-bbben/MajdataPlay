@@ -228,7 +228,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _autoplayMode = ModInfo.AutoPlay;
             _autoplayGrade = _noteController.AutoplayGrade;
 #if UNITY_ANDROID
-            IsUseButtonRingForTouch = true;
+            IsUseButtonRingForTouch = false;
 #else
             IsUseButtonRingForTouch = ModInfo.ButtonRingForTouch;
 #endif
