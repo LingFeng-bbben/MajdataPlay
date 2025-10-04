@@ -16,6 +16,7 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         //public static bool UseOuterTouchAsSensor;
         static void UpdateMousePosition()
         {

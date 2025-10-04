@@ -251,11 +251,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 if (i < 8)
                 {
                     _sensorStatusInThisFrame[i] |= currentButtonStatus[i];
+                    if (currentButtonStatus[i] == previousSensorStatus[i] &&
+                        currentSensorStatus[i] == previousButtonStatus[i]) // Switching: Button <-> Sensor
+                    {
+                        continue;
+                    }
                     _isSensorClickedInThisFrame[i] = previousButtonStatus[i] == SwitchStatus.Off &&
                                                      currentButtonStatus[i] == SwitchStatus.On;
+                    _isSensorClickedInThisFrame[i] |= previousSensorStatus[i] == SwitchStatus.Off &&
+                                                      currentSensorStatus[i] == SwitchStatus.On;
                 }
-                _isSensorClickedInThisFrame[i] |= previousSensorStatus[i] == SwitchStatus.Off &&
-                                                  currentSensorStatus[i] == SwitchStatus.On;
+                else
+                {
+                    _isSensorClickedInThisFrame[i] = previousSensorStatus[i] == SwitchStatus.Off &&
+                                                     currentSensorStatus[i] == SwitchStatus.On;
+                }
+                
             }
 #else
             for (var i = 0; i < 8; i++)

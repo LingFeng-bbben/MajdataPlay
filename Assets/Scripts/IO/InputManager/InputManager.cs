@@ -293,6 +293,10 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    _touchRecords.Add((SensorArea)i, new(10));
+            //}
             MajEnv.OnApplicationQuit += OnApplicationQuit;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
