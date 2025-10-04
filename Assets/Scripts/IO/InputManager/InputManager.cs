@@ -293,9 +293,10 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
-            for (var i = 0; i < 16384; i++)
+            var len = _cachedPositions.Length;
+            for (var i = 0; i < len; i++)
             {
-                _cachedPositions[i] = new ulong?[16384];
+                _cachedPositions[i] = new ulong?[len];
             }
             //for (var i = 0; i < 8; i++)
             //{
@@ -305,7 +306,7 @@ namespace MajdataPlay.IO
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
-            //Input.multiTouchEnabled = true;
+            Input.multiTouchEnabled = true;
             EnhancedTouchSupport.Enable();
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
             _lastScreenHeight = Screen.height;

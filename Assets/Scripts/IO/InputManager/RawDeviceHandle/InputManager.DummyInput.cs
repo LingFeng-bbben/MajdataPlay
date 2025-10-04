@@ -24,12 +24,17 @@ namespace MajdataPlay.IO
         // 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
         // Version bit (16bit)
         // uint16
-        readonly static ulong?[][] _cachedPositions = new ulong?[16384][];
+#if UNITY_ANDROID
+        readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
+#else
+        readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
+#endif
+
         static ushort _version = 0;
         static int _lastScreenWidth = -1;
         static int _lastScreenHeight = -1;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
-        //public static bool UseOuterTouchAsSensor;
+        public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
         {
             var sensors = _sensors.Span;
@@ -142,31 +147,46 @@ namespace MajdataPlay.IO
                 if(version == _version)
                 {
                     //MajDebug.LogDebug("Cached position");
+                    var eB = -1;
                     for (var i = 0; i < 12; i++)
                     {
                         if ((p & (1UL << i)) != 0)
                         {
-                            return i;
+                            if (UseOuterTouchAsSensor)
+                            {
+                                if(i < 8)
+                                {
+                                    newStates[i] = true;
+                                }
+                                else
+                                {
+                                    eB = i;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                return i;
+                            }
                         }
                     }
                     for (var i = 0; i < 34; i++)
                     {
-                        newStates[i] = (p & (1UL << (i + 12))) != 0;
+                        newStates[i] |= (p & (1UL << (i + 12))) != 0;
                     }
-                    return -1;
+                    return eB;
                 }
             }
             var newP = ((ulong)_version) << (12 + 34);
             Vector3 cubeRay = mainCamera.ScreenToWorldPoint(position);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = (rayToCenter).magnitude;
+            var extraButton = -1;
             if(radToCenter > 9.28)
             {
-                newP |= 1UL << 9;
-                cachedPosition = newP;
-                return 9;
+                extraButton = 9;
             }
-            if(radToCenter > 5.4f)
+            else if(radToCenter > 5.4f)
             {
                 // out of the screen area to the button area
                 var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
@@ -174,17 +194,14 @@ namespace MajdataPlay.IO
                 switch (pos)
                 {
                     case 0:
-                        newP |= 1UL << 6;
-                        cachedPosition = newP;
-                        return 6;
+                        extraButton = 6;
+                        break;
                     case 1:
-                        newP |= 1UL << 7;
-                        cachedPosition = newP;
-                        return 7;
+                        extraButton = 7;
+                        break;
                     default:
-                        newP |= 1UL << (pos - 2);
-                        cachedPosition = newP;
-                        return pos - 2;
+                        extraButton = (pos - 2);
+                        break;
                 }
             }
             for (int i = 0; i < 9; i++)
@@ -207,8 +224,31 @@ namespace MajdataPlay.IO
                     }
                 }
             }
+            if(extraButton != -1)
+            {
+                newP |= 1UL << extraButton;
+            }
             cachedPosition = newP;
-            return -1;
+            if (UseOuterTouchAsSensor)
+            {
+                if(extraButton < 8 && extraButton != -1)
+                {
+                    newStates[extraButton] = true;
+                }    
+                return -1;
+            }
+            else
+            {
+                if(extraButton != -1)
+                {
+                    newStates.Clear();
+                    return extraButton;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
         }
     }
 }
