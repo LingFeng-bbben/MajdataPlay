@@ -293,6 +293,10 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
+            for (var i = 0; i < 16384; i++)
+            {
+                _cachedPositions[i] = new ulong?[16384];
+            }
             //for (var i = 0; i < 8; i++)
             //{
             //    _touchRecords.Add((SensorArea)i, new(10));
@@ -301,10 +305,11 @@ namespace MajdataPlay.IO
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
-            Input.multiTouchEnabled = true;
+            //Input.multiTouchEnabled = true;
             EnhancedTouchSupport.Enable();
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
-
+            _lastScreenHeight = Screen.height;
+            _lastScreenWidth = Screen.width;
 #if UNITY_STANDALONE
             IODeviceDetect();
             ButtonRing.Init();
@@ -665,6 +670,15 @@ namespace MajdataPlay.IO
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
 #endif
+                var height = Screen.height;
+                var width = Screen.width;
+
+                if(height != _lastScreenHeight || width != _lastScreenWidth)
+                {
+                    _lastScreenWidth = width;
+                    _lastScreenHeight = height;
+                    _version++;
+                }
 
                 UpdateMousePosition();
                 UpdateSensorState();

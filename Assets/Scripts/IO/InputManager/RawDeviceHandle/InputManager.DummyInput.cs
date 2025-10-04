@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
+using static UnityEditor.PlayerSettings;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
@@ -16,6 +17,18 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        // Button bit (12bit)
+        // 1 2 3 4 5 6 7 8 9 10 11 12
+        // 0 0 0 0 0 0 0 0 0 0  0  0
+        // Sensor bit (34bit)
+        // A1 A2 A3 A4 A5 A6 A7 A8 B1 B2 B3 B4 B5 B6 B7 B8 C1 C2 D1 D2 D3 D4 D5 D6 D7 D8 E1 E2 E3 E4 E5 E6 E7 E8
+        // 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+        // Version bit (16bit)
+        // uint16
+        readonly static ulong?[][] _cachedPositions = new ulong?[16384][];
+        static ushort _version = 0;
+        static int _lastScreenWidth = -1;
+        static int _lastScreenHeight = -1;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         //public static bool UseOuterTouchAsSensor;
         static void UpdateMousePosition()
@@ -115,25 +128,63 @@ namespace MajdataPlay.IO
         //return extra button pos 0-7, if none return -1
         private static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position)
         {
+            var x = (int)position.x;
+            var y = (int)position.y;
+            if(x < 0 || y < 0)
+            {
+                return -1;
+            }
+            ref var cachedPosition = ref _cachedPositions[x][y];
+
+            if(cachedPosition is not null)
+            {
+                var p = (ulong)cachedPosition;
+                var version = p >> (12 + 34);
+                if(version == _version)
+                {
+                    //MajDebug.LogDebug("Cached position");
+                    for (var i = 0; i < 12; i++)
+                    {
+                        if ((p & (1UL << i)) != 0)
+                        {
+                            return i;
+                        }
+                    }
+                    for (var i = 0; i < 34; i++)
+                    {
+                        newStates[i] = (p & (1UL << (i + 12))) != 0;
+                    }
+                    return -1;
+                }
+            }
+            var newP = ((ulong)_version) << (12 + 34);
             Vector3 cubeRay = mainCamera.ScreenToWorldPoint(position);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = (rayToCenter).magnitude;
             if(radToCenter > 9.28)
             {
+                newP |= 1UL << 9;
+                cachedPosition = newP;
                 return 9;
             }
             if(radToCenter > 5.4f)
             {
                 // out of the screen area to the button area
                 var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
-                var pos = (int)(degree/45f);
+                var pos = (int)(degree / 45f);
                 switch (pos)
                 {
                     case 0:
+                        newP |= 1UL << 6;
+                        cachedPosition = newP;
                         return 6;
                     case 1:
+                        newP |= 1UL << 7;
+                        cachedPosition = newP;
                         return 7;
                     default:
+                        newP |= 1UL << (pos - 2);
+                        cachedPosition = newP;
                         return pos - 2;
                 }
             }
@@ -141,7 +192,10 @@ namespace MajdataPlay.IO
             {
                 var rad = FingerRadius;
                 var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                if (i == 8) circular = Vector3.zero;
+                if (i == 8)
+                {
+                    circular = Vector3.zero;
+                }
                 var ray = new Ray(cubeRay + circular, Vector3.forward);
                 var ishit = Physics.Raycast(ray, out var hitInfom);
                 if (ishit)
@@ -149,10 +203,12 @@ namespace MajdataPlay.IO
                     var id = hitInfom.colliderInstanceID;
                     if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                     {
+                        newP |= 1UL << (index + 12);
                         newStates[index] = true;
                     }
                 }
             }
+            cachedPosition = newP;
             return -1;
         }
     }
