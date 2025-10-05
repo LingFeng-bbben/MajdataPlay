@@ -10,7 +10,17 @@ namespace MajdataPlay.Utils
     {
         public static class Json
         {
-            readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.CreateDefault();
+            readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(new()
+            {
+                //DefaultValueHandling = DefaultValueHandling.Populate
+            });
+            static Json()
+            {
+                //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+                //{
+                //    DefaultValueHandling = DefaultValueHandling.Populate
+                //};
+            }
             public static string Serialize<T>(in T obj, JsonSerializerSettings? settings = null)
             {
                 return JsonConvert.SerializeObject(obj, settings);
