@@ -36,6 +36,8 @@ namespace MajdataPlay
 
         public static event Action? OnApplicationQuit;
         public static event Action? OnSave;
+
+        public static string HTTP_USER_AGENT { get; } = $"MajdataPlay/{MajInstances.GameVersion.ToString()}";
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR
@@ -78,7 +80,7 @@ namespace MajdataPlay
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
             DefaultRequestHeaders = 
             {
-                UserAgent = { new ProductInfoHeaderValue("MajPlay", MajInstances.GameVersion.ToString()) },
+                UserAgent = { new ProductInfoHeaderValue("MajdataPlay", MajInstances.GameVersion.ToString()) },
             }
         };
         public static GameSetting Settings { get; private set; }
