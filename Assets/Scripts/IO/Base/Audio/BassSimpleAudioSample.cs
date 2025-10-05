@@ -206,7 +206,7 @@ namespace MajdataPlay.IO
             var handle = (GCHandle?)null;
 #if ENABLE_IL2CPP
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var decode = Bass.CreateStream(handle.AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #else
             var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #endif
