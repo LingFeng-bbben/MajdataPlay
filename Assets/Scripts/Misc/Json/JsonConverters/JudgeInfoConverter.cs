@@ -62,7 +62,7 @@ namespace MajdataPlay.Json
 
         public override void Write(Utf8JsonWriter writer, JudgeInfo value, JsonSerializerOptions options)
         {
-            return System.Text.Json.JsonSerializer.Serialize(writer, value, options);
+            System.Text.Json.JsonSerializer.Serialize(writer, value, options);
         }
     }
 }
