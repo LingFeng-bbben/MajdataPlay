@@ -93,6 +93,7 @@ namespace MajdataPlay
         public static JsonSerializerSettings UserJsonReaderOption { get; } = new()
         {
             Formatting = Formatting.Indented,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
             Converters =
             {
                 new StringEnumConverter()

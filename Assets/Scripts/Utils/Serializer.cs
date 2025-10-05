@@ -13,13 +13,15 @@ namespace MajdataPlay.Utils
             readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(new()
             {
                 //DefaultValueHandling = DefaultValueHandling.Populate
+                ObjectCreationHandling = ObjectCreationHandling.Replace
             });
             static Json()
             {
-                //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-                //{
-                //    DefaultValueHandling = DefaultValueHandling.Populate
-                //};
+                JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+                {
+                    //DefaultValueHandling = DefaultValueHandling.Populate
+                    ObjectCreationHandling = ObjectCreationHandling.Replace
+                };
             }
             public static string Serialize<T>(in T obj, JsonSerializerSettings? settings = null)
             {
