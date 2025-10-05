@@ -64,7 +64,15 @@ namespace MajdataPlay.Json
 
         public override void WriteJson(JsonWriter writer, JudgeInfo value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value);
+            writer.WriteStartObject();
+
+            foreach (var kvp in value)
+            {
+                writer.WritePropertyName(kvp.Key.ToString());
+                serializer.Serialize(writer, kvp.Value);
+            }
+
+            writer.WriteEndObject();
         }
     }
 }

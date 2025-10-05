@@ -18,7 +18,13 @@ namespace MajdataPlay.Json
 
         public override void WriteJson(JsonWriter writer, JudgeDetail value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value);
+            writer.WriteStartObject();
+            foreach (var kv in value)
+            {
+                writer.WritePropertyName(Enum.GetName(typeof(ScoreNoteType), kv.Key));
+                serializer.Serialize(writer, kv.Value);
+            }
+            writer.WriteEndObject();
         }
     }
 }
