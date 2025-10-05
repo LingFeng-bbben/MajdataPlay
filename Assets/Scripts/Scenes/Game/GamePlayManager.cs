@@ -1,27 +1,27 @@
-﻿using MajdataPlay.Settings;
+﻿using Cysharp.Text;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Editor;
+using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Numerics;
+using MajdataPlay.Recording;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.List;
+using MajdataPlay.Settings;
+using MajdataPlay.Settings.Runtime;
+using MajdataPlay.Timer;
 using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
 using MajSimai;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
-using MajdataPlay.Timer;
-using Cysharp.Text;
-using MajdataPlay.Scenes.List;
-using System.Text.Json;
-using MajdataPlay.Editor;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.Recording;
 using UnityEngine.Profiling;
-using MajdataPlay.Numerics;
-using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.Settings.Runtime;
+using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -236,107 +236,83 @@ namespace MajdataPlay.Scenes.Game
             var noteMask = ModInfo.NoteMask;
             foreach (var (k,v) in danInfo!.Mods)
             {
-                switch(k)
+                switch (k)
                 {
                     case "PlaybackSpeed":
-                        if (v.ValueKind is JsonValueKind.Number && 
-                            v.TryGetSingle(out var playbackSpeed1) || (float.TryParse(v.ToString(), out playbackSpeed1)))
                         {
-                            playbackSpeed = playbackSpeed1;
+                            if (v.Type == JTokenType.Float || v.Type == JTokenType.Integer)
+                            {
+                                playbackSpeed = v.ToObject<float>();
+                            }
+                            else if (float.TryParse(v.ToString(), out var playbackSpeed1))
+                            {
+                                playbackSpeed = playbackSpeed1;
+                            }
                         }
                         break;
                     case "AllBreak":
-                        if(v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllBreak = v.GetBoolean();
-                        }
-                        else if(bool.TryParse(v.ToString(), out var allBreak))
-                        {
-                            isAllBreak = allBreak;
-                        }
-                        break;
                     case "AllEx":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllEx = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var allEx))
-                        {
-                            isAllEx = allEx;
-                        }
-                        break;
                     case "AllTouch":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllTouch = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var allTouch))
-                        {
-                            isAllEx = allTouch;
-                        }
-                        break;
                     case "ButtonRingForTouch":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isUseButtonRingForTouch = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
-                        {
-                            isUseButtonRingForTouch = buttonRingSlide;
-                        }
-                        break;
                     case "IsSlideNoHead":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isSlideNoHead = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var slideNoHead))
-                        {
-                            isSlideNoHead = slideNoHead;
-                        }
-                        break;
                     case "IsSlideNoTrack":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                    case "SubdivideSlideJudgeGrade":
                         {
-                            isSlideNoTrack = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var slideNoTrack))
-                        {
-                            isSlideNoTrack = slideNoTrack;
+                            if (v.Type == JTokenType.Boolean)
+                            {
+                                bool value = v.ToObject<bool>();
+                                switch (k)
+                                {
+                                    case "AllBreak": isAllBreak = value; break;
+                                    case "AllEx": isAllEx = value; break;
+                                    case "AllTouch": isAllTouch = value; break;
+                                    case "ButtonRingForTouch": isUseButtonRingForTouch = value; break;
+                                    case "IsSlideNoHead": isSlideNoHead = value; break;
+                                    case "IsSlideNoTrack": isSlideNoTrack = value; break;
+                                    case "SubdivideSlideJudgeGrade": subdivideSlideJudgeGrade = value; break;
+                                }
+                            }
+                            else if (bool.TryParse(v.ToString(), out var boolValue))
+                            {
+                                switch (k)
+                                {
+                                    case "AllBreak": isAllBreak = boolValue; break;
+                                    case "AllEx": isAllEx = boolValue; break;
+                                    case "AllTouch": isAllTouch = boolValue; break;
+                                    case "ButtonRingForTouch": isUseButtonRingForTouch = boolValue; break;
+                                    case "IsSlideNoHead": isSlideNoHead = boolValue; break;
+                                    case "IsSlideNoTrack": isSlideNoTrack = boolValue; break;
+                                    case "SubdivideSlideJudgeGrade": subdivideSlideJudgeGrade = boolValue; break;
+                                }
+                            }
                         }
                         break;
                     case "AutoPlay":
-                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
-                            autoplayMode = (AutoplayModeOption)modeIndex;
-                        }
-                        else if(Enum.TryParse<AutoplayModeOption>(v.ToString(), false, out var mode))
-                        {
-                            autoplayMode = mode;
+                            if (v.Type == JTokenType.Integer)
+                            {
+                                autoplayMode = (AutoplayModeOption)v.ToObject<int>();
+                            }
+                            else if (Enum.TryParse<AutoplayModeOption>(v.ToString(), out var autoplayMode1))
+                            {
+                                autoplayMode = autoplayMode1;
+                            }
                         }
                         break;
                     case "JudgeStyle":
-                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
                         {
-                            judgeStyle = (JudgeStyleOption)styleIndex;
-                        }
-                        else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), false, out var style))
-                        {
-                            judgeStyle = style;
+                            if (v.Type == JTokenType.Integer)
+                            {
+                                judgeStyle = (JudgeStyleOption)v.ToObject<int>();
+                            }
+                            else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), out var judgeStyle1))
+                            {
+                                judgeStyle = judgeStyle1;
+                            }
                         }
                         break;
                     case "NoteMask":
                         noteMask = v.ToString();
-                        break;
-                    case "SubdivideSlideJudgeGrade":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            subdivideSlideJudgeGrade = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var ssjg))
-                        {
-                            subdivideSlideJudgeGrade = ssjg;
-                        }
                         break;
                 }
             }

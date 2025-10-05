@@ -4,7 +4,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
@@ -28,9 +27,6 @@ namespace MajdataPlay
             try
             {
                 var path = MajEnv.ScoreDBPath;
-                var option = new JsonSerializerOptions();
-                option.Converters.Add(new JudgeDetailConverter());
-                option.Converters.Add(new JudgeInfoConverter());
 
                 if (!File.Exists(path))
                 {
@@ -39,7 +35,7 @@ namespace MajdataPlay
                     return;
                 }
                 using var storageStream = File.OpenRead(path);
-                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, option);
+                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream);
                 //shoud do some warning here, or all score will be lost and overwirtten
                 if (result != null)
                 {

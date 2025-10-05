@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Buffers;
@@ -342,10 +341,7 @@ namespace MajdataPlay
                     continue;
                 }
                 var jsonStream = File.OpenRead(file.FullName);
-                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
-                {
-                    PropertyNameCaseInsensitive = false
-                });
+                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
                 if (result && dan is not null)
                 {
                     loadDanTasks[i] = GetDanCollection(_allCharts, dan);
@@ -475,10 +471,7 @@ namespace MajdataPlay
                         }
                     }
                 }
-                var list = await JsonSerializer.DeserializeAsync<MajnetSongDetail[]>(rspStream, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var list = await Serializer.Json.DeserializeAsync<MajnetSongDetail[]>(rspStream);
                 if (list is null || list.IsEmpty())
                 {
                     return collection;

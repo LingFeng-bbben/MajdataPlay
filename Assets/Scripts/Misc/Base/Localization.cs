@@ -1,12 +1,13 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 
 #nullable enable
@@ -25,15 +26,13 @@ namespace MajdataPlay
                     OnLanguageChanged(null, value);
             }
         }
-        readonly static JsonSerializerOptions jsonReaderOption = new()
+        readonly static JsonSerializerSettings jsonReaderSettings = new()
         {
-
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
+            Formatting = Formatting.Indented,
+            Converters = 
+            { 
+                new StringEnumConverter() 
+            }
         };
         public static Language[] Available { get; private set; } = Array.Empty<Language>();
 
@@ -70,7 +69,7 @@ namespace MajdataPlay
                     var filePath = fileInfo.FullName;
                     var json = File.ReadAllText(filePath);
                     Language? lang = null;
-                    if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderOption) && lang is not null)
+                    if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderSettings) && lang is not null)
                     {
                         loadedLangs.Add(lang);
                     }

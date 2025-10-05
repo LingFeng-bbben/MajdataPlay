@@ -1,10 +1,13 @@
-﻿using MajdataPlay.Scenes.Game;
+﻿using MajdataPlay.Json;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace MajdataPlay.Collections
 {
+    [JsonConverter(typeof(JudgeDetailConverter))]
     public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType, JudgeInfo>
     {
         public static JudgeDetail Empty => new JudgeDetail(new Dictionary<ScoreNoteType, JudgeInfo>()

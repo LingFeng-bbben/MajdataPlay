@@ -6,6 +6,8 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -13,8 +15,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -90,14 +90,13 @@ namespace MajdataPlay
                 return _globalCTS.Token;
             }
         }
-        public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
+        public static JsonSerializerSettings UserJsonReaderOption { get; } = new()
         {
+            Formatting = Formatting.Indented,
             Converters =
             {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
+                new StringEnumConverter()
+            }
         };
 
         static string _runtimeConfigPath = string.Empty;

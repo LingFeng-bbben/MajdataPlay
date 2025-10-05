@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace MajdataPlay.Json.Migrating
+namespace MajdataPlay.Json
 {
     public class JudgeDetailConverter : JsonConverter<JudgeDetail>
     {

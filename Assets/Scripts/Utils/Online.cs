@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using UnityEngine;
@@ -98,10 +97,7 @@ namespace MajdataPlay.Utils
                     var interactUrl = serverInfo.Url + "/maichart/" + song.Id + "/interact";
                     var intStream = await _client.GetStreamAsync(interactUrl);
 
-                    var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream);
 
                     if (intlist.IsLiked)
                     {

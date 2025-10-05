@@ -5,7 +5,6 @@ using TMPro;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
-using System.Text.Json;
 using System.Threading;
 using MajdataPlay.Utils;
 using System.Threading.Tasks;
@@ -62,10 +61,7 @@ namespace MajdataPlay.Scenes.List
                 var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
                 using var rsp = await client.GetAsync(interactUrl, token);
                 using var intjson = await rsp.Content.ReadAsStreamAsync();
-                var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson);
                 await UniTask.Yield(cancellationToken: token);
                 token.ThrowIfCancellationRequested();
                 good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length-list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
