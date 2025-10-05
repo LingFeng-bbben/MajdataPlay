@@ -384,8 +384,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
 
 
-                    var process = (fakeLength - fakesTiming) / Length;
-                    process = 1f - process;
+                    var process = (fakeLength - fakesTiming) / fakeLength;
+                    process = Math.Max(1f - process, 0);
                     var indexProcess = (_starPositions.Count - 1) * process;
                     var index = (int)indexProcess;
                     var pos = indexProcess - index;
