@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using MajdataPlay.Utils;
 using MajdataPlay.Numerics;
+using System.Runtime.InteropServices;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -116,9 +117,10 @@ namespace MajdataPlay.IO
                 return Bass.ChannelIsActive(_stream) == PlaybackState.Playing;
             }
         }
-        public BassSimpleAudioSample(int stream, double gain, bool speedChange = false)
+        readonly GCHandle? _dataHandle = null;
+        BassSimpleAudioSample(int stream, double gain, bool speedChange = false, GCHandle? dataHandle = null)
         {
-            if(stream is 0)
+            if (stream is 0)
             {
                 throw new ArgumentException(nameof(stream));
             }
@@ -132,6 +134,11 @@ namespace MajdataPlay.IO
             Bass.ChannelSetPosition(_stream, 0);
 
             MajDebug.LogInfo(Bass.LastError);
+            _dataHandle = dataHandle;
+        }
+        public BassSimpleAudioSample(int stream, double gain, bool speedChange = false): this(stream, gain, speedChange, null)
+        {
+
         }
         ~BassSimpleAudioSample()
         {
@@ -182,6 +189,11 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
+            if(_dataHandle is not null)
+            {
+                var handle = (GCHandle)_dataHandle;
+                handle.Free();
+            }
         }
         public override ValueTask DisposeAsync()
         {
@@ -191,8 +203,14 @@ namespace MajdataPlay.IO
         }
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {
+            var handle = (GCHandle?)null;
+#if ENABLE_IL2CPP
+            handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var decode = Bass.CreateStream(handle.AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+#else
             var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-            if(decode == 0)
+#endif
+            if (decode == 0)
             {
                 throw new NotSupportedException();
             }
@@ -215,7 +233,7 @@ namespace MajdataPlay.IO
                 gain = 1 / channelmax;
             }
 
-            var sample = new BassSimpleAudioSample(stream, gain, speedChange);
+            var sample = new BassSimpleAudioSample(stream, gain, speedChange, handle);
             sample.Volume = 1;
             sample._decode = decode;
             return sample;
