@@ -353,6 +353,10 @@ namespace MajdataPlay.Scenes.Result
                 MajInstances.SceneSwitcher.SwitchScene("List", false);
             }
         }
+        void OnDestroy()
+        {
+            DestroyImmediate(_noteJudgeDiffGraph.texture, true);
+        }
         Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
         {
             ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
