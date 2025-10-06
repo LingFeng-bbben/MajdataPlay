@@ -721,7 +721,7 @@ PlayerSettings:
     PS5: dUI_TextMeshPro
     QNX: dUI_TextMeshPro
     Stadia: dUI_TextMeshPro
-    Standalone: dUI_TextMeshPro;MAJDATA_IL2CPP_DEBUG
+    Standalone: dUI_TextMeshPro
     VisionOS: dUI_TextMeshPro
     WebGL: dUI_TextMeshPro
     Windows Store Apps: dUI_TextMeshPro
