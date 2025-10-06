@@ -26,6 +26,8 @@ namespace MajdataPlay.Scenes.Result
         bool _isInited = false;
         bool _isThumbUpRequested = false;
 
+        readonly static string[] SFX_LIST = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
+
         public bool Init(ISongDetail song)
         {
             if (song is not OnlineSongDetail onlineDetail)
@@ -65,20 +67,19 @@ namespace MajdataPlay.Scenes.Result
 
         async Task SendLikeAsync(OnlineSongDetail song)
         {
-            await UniTask.Yield();
+            await UniTask.SwitchToMainThread();
             infotext.text = "THUMBUP_SENDING".i18n();
             //LightManager.SetButtonLight(Color.blue, 4);
             try
             {
                 await Online.SendLike(song);
-                await UniTask.Yield();
+                await UniTask.SwitchToMainThread();
                 infotext.text = "THUMBUP_SENDED".i18n();
-                var list = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
-                MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
+                MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
             }
             catch (Exception ex)
             {
-                await UniTask.Yield();
+                await UniTask.SwitchToMainThread();
                 infotext.text = ex.Message;
                 MajDebug.LogError(ex);
                 //LightManager.SetButtonLight(Color.red, 4);
@@ -92,10 +93,10 @@ namespace MajdataPlay.Scenes.Result
             {
                 try
                 {
-                    await UniTask.Yield();
+                    await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDING".i18n();
                     await Online.SendScore(_onlineDetail, score);
-                    await UniTask.Yield();
+                    await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDED".i18n();
                     return;
                 }
@@ -103,14 +104,14 @@ namespace MajdataPlay.Scenes.Result
                 {
                     if(ex is TaskCanceledException)
                     {
-                        await UniTask.Yield();
+                        await UniTask.SwitchToMainThread();
                         uploadtext.text = "Retry in 1s..." + ex.Message;
                         MajDebug.LogError(ex);
                         await UniTask.Delay(1000);
                     }
                     else
                     {
-                        await UniTask.Yield();
+                        await UniTask.SwitchToMainThread();
                         uploadtext.text = ex.Message;
                         MajDebug.LogError(ex);
                         return;

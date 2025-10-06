@@ -204,7 +204,7 @@ namespace MajdataPlay.IO
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {
             var handle = (GCHandle?)null;
-#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #else

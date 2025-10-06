@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MajSimai;
@@ -361,14 +362,14 @@ namespace MajdataPlay
                     }
                     if (metadata.Hash != Hash)
                     {
-                        throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, null);
+                        throw new HttpException(HttpErrorCode.Unsuccessful, null);
                     }
                     _maidata = await SimaiParser.ParseAsync(File.OpenRead(savePath));
 
                     return _maidata;
                 }
             }
-            catch (InternalHttpRequestException ex)
+            catch (HttpException ex)
             {
                 MajDebug.LogException(ex);
                 throw;
@@ -418,7 +419,7 @@ namespace MajdataPlay
                     {
                         await DownloadFile(_coverUri, savePath, false, progress, token);
                     }
-                    catch (InternalHttpRequestException e)
+                    catch (HttpException e)
                     {
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
@@ -483,7 +484,7 @@ namespace MajdataPlay
                     {
                         await DownloadFile(_fullSizeCoverUri, savePath, false, progress, token);
                     }
-                    catch (InternalHttpRequestException e)
+                    catch (HttpException e)
                     {
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
@@ -565,7 +566,7 @@ namespace MajdataPlay
                 throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
-#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
         async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {
             var fileInfo = new FileInfo(savePath);
@@ -601,44 +602,47 @@ namespace MajdataPlay
                         if (token.IsCancellationRequested)
                         {
                             request.Abort();
-                            throw new InternalHttpRequestException(HttpErrorCode.Canceled, null);
+                            throw new HttpException(HttpErrorCode.Canceled, null);
                         }
                         progress?.Report(asyncOperation.progress);
-                        await Task.Delay(frameLen);
+                        await Task.Delay(frameLen).ConfigureAwait(false);
                     }
-                    var rspCode = request.responseCode is -1 ? null : (HttpStatusCode?)request.responseCode;
-                    switch (request.result)
-                    {
-                        case UnityWebRequest.Result.ConnectionError:
-                            if (request.error == "Request timeout")
-                            {
-                                throw new InternalHttpRequestException(HttpErrorCode.Timeout, rspCode);
-                            }
-                            else
-                            {
-                                throw new InternalHttpRequestException(HttpErrorCode.Unreachable, rspCode);
-                            }
-                        case UnityWebRequest.Result.DataProcessingError:
-                        case UnityWebRequest.Result.ProtocolError:
-                            throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rspCode);
-                        case UnityWebRequest.Result.Success:
-                            break;
-                        default:
-                            if (request.error == "Request timeout")
-                            {
-                                throw new InternalHttpRequestException(HttpErrorCode.Timeout, rspCode);
-                            }
-                            else
-                            {
-                                throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rspCode);
-                            }
-                    }
-                    if (rspCode is not HttpStatusCode.OK)
-                    {
-                        throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rspCode);
-                    }
+                    request.EnsureSuccessStatusCode();
                     using var fileStream = File.Create(savePath);
-                    await fileStream.WriteAsync(request.downloadHandler.data);
+                    var nativeData = request.downloadHandler.nativeData.AsReadOnlySpan();
+                    var fileLen = nativeData.Length;
+                    var buffer = Pool<byte>.RentArray(fileLen.Clamp(0, 512 * 1024)); // 512KB
+                    try
+                    {
+                        var totalRead = 0;
+
+                        while(true)
+                        {
+                            var remaining = fileLen - totalRead;
+                            var read = 0;
+                            if (remaining == 0)
+                            {
+                                break;
+                            }
+
+                            if (remaining > buffer.Length)
+                            {
+                                nativeData.Slice(totalRead, buffer.Length).CopyTo(buffer);
+                                read = buffer.Length;
+                            }
+                            else
+                            {
+                                nativeData.Slice(totalRead, remaining).CopyTo(buffer);
+                                read = remaining;
+                            }
+                            await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                            totalRead += read;
+                        }
+                    }
+                    finally
+                    {
+                        Pool<byte>.ReturnArray(buffer);
+                    }
                     File.Create(cacheFlagPath).Dispose();
                     break;
                 }
@@ -647,7 +651,7 @@ namespace MajdataPlay
                     if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                     {
                         MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                        throw new InternalHttpRequestException(HttpErrorCode.Unreachable, null);
+                        throw new HttpException(HttpErrorCode.Unreachable, null);
                     }
                 }
             }
@@ -686,7 +690,7 @@ namespace MajdataPlay
                         using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
                         if (!rsp.IsSuccessStatusCode)
                         {
-                            throw new InternalHttpRequestException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
+                            throw new HttpException(HttpErrorCode.Unsuccessful, rsp.StatusCode);
                         }
                         token.ThrowIfCancellationRequested();
                         MajDebug.LogInfo($"Received http response header from: {uri}");
@@ -728,25 +732,25 @@ namespace MajdataPlay
                         File.Create(cacheFlagPath).Dispose();
                         break;
                     }
-                    catch (InternalHttpRequestException)
+                    catch (HttpException)
                     {
                         throw;
                     }
                     catch (InvalidOperationException)
                     {
-                        throw new InternalHttpRequestException(HttpErrorCode.InvalidRequest, null);
+                        throw new HttpException(HttpErrorCode.InvalidRequest, null);
                     }
                     catch (OperationCanceledException)
                     {
                         if (token.IsCancellationRequested)
                         {
                             MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
-                            throw new InternalHttpRequestException(HttpErrorCode.Canceled, null);
+                            throw new HttpException(HttpErrorCode.Canceled, null);
                         }
                         else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
-                            throw new InternalHttpRequestException(HttpErrorCode.Timeout, null);
+                            throw new HttpException(HttpErrorCode.Timeout, null);
                         }
                     }
                     catch (Exception e)
@@ -754,7 +758,7 @@ namespace MajdataPlay
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                            throw new InternalHttpRequestException(HttpErrorCode.Unreachable, null);
+                            throw new HttpException(HttpErrorCode.Unreachable, null);
                         }
                     }
                 }
@@ -765,14 +769,5 @@ namespace MajdataPlay
             }
         }
 #endif
-        class InternalHttpRequestException : HttpException
-        {
-            public HttpStatusCode? StatusCode { get; init; }
-            public InternalHttpRequestException(HttpErrorCode errorCode, HttpStatusCode? statusCode) : base()
-            {
-                ErrorCode = errorCode;
-                StatusCode = statusCode;
-            }
-        }
     }
 }
