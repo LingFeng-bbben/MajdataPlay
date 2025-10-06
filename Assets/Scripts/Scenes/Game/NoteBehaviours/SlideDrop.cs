@@ -541,6 +541,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     if (IsFinished)
                     {
+                        if (UsingSV)
+                        {
+                            var gpm = Majdata<GamePlayManager>.Instance!;
+                            _judgeTiming = gpm.GetPositionAtTime(_judgeTiming);
+                            _lastWaitTimeSec = gpm.GetPositionAtTime(_lastWaitTimeSec);
+                        }
                         HideAllBar();
                         if (IsClassic)
                         {

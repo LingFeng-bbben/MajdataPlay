@@ -828,6 +828,9 @@ namespace MajdataPlay.Scenes.Game
 
             _positionFunctions.Clear();
             //_segmentStarts.Clear();
+            //第一个预留为SV*1
+            _positionFunctions.Add((t) => t);
+            //_segmentStarts.Add(0);
             if (SVList.Count == 1)
             {
                 if (SVList[0].Item1 > 0)
@@ -842,8 +845,6 @@ namespace MajdataPlay.Scenes.Game
                 MajDebug.LogInfo($"Single Segment Case: Start = {lastPosition}, Speed = {SVList[0].Item2}");
                 return;
             }
-            _positionFunctions.Add((t) => t);
-            //_segmentStarts.Add(0);
             for (int i = 0; i < SVList.Count - 1; i++)
             {
                 float segmentDuration = SVList[i].Item1 - lastTime; // 上一个区间的持续时间
