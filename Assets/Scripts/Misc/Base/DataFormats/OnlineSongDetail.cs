@@ -19,6 +19,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -275,6 +276,37 @@ namespace MajdataPlay
                     {
                         try
                         {
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                            await using(UniTask.ReturnToCurrentSynchronizationContext())
+                            {
+                                await UniTask.SwitchToMainThread();
+                                using var getReq = UnityWebRequest.Head(_videoUri);
+                                var asyncOperation = getReq.SendWebRequest();
+
+                                while (!asyncOperation.isDone)
+                                {
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        getReq.Abort();
+                                        throw new HttpException(HttpErrorCode.Canceled, null);
+                                    }
+                                    await UniTask.Yield();
+                                }
+                                if(getReq.result == UnityWebRequest.Result.Success)
+                                {
+                                    if(getReq.responseCode != (long)HttpStatusCode.OK)
+                                    {
+                                        using var _ = File.Create(cacheFlagPath);
+                                        _videoPath = string.Empty;
+                                        return _videoPath;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+#else
                             var httpClient = MajEnv.SharedHttpClient;
                             using var rsp = await httpClient.GetAsync(_videoUri, HttpCompletionOption.ResponseHeadersRead, token);
 
@@ -288,6 +320,7 @@ namespace MajdataPlay
                             {
                                 break;
                             }
+#endif
                         }
                         catch (Exception e)
                         {
