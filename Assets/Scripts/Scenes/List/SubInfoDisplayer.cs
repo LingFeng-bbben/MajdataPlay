@@ -54,37 +54,43 @@ namespace MajdataPlay.Scenes.List
         }
         async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                await UniTask.SwitchToThreadPool();
-                var client = MajEnv.SharedHttpClient;
-                var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
-                using var rsp = await client.GetAsync(interactUrl, token);
-                using var intjson = await rsp.Content.ReadAsStreamAsync();
-                var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson);
-                await UniTask.Yield(cancellationToken: token);
-                token.ThrowIfCancellationRequested();
-                good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length-list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
-
-                CommentBox.SetActive(true);
-                foreach (var comment in list.Comments)
+                try
                 {
-                    var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
-                    CommentText.text = text;
-                    await UniTask.Delay(5000, cancellationToken: token);
+                    await UniTask.SwitchToThreadPool();
+                    var client = MajEnv.SharedHttpClient;
+                    var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
+                    using var rsp = await client.GetAsync(interactUrl, token);
+                    using var intjson = await rsp.Content.ReadAsStreamAsync();
+                    var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson);
+                    await UniTask.Yield(cancellationToken: token);
                     token.ThrowIfCancellationRequested();
+                    good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length - list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
+
+                    CommentBox.SetActive(true);
+                    foreach (var comment in list.Comments)
+                    {
+                        var text = comment.Sender.Username + "Ëµ£º\n" + comment.Content + "\n";
+                        CommentText.text = text;
+                        await UniTask.Delay(5000, cancellationToken: token);
+                        token.ThrowIfCancellationRequested();
+                    }
+                    CommentBox.SetActive(false);
                 }
-                CommentBox.SetActive(false);
-            }
-            catch (Exception ex)
-            {
-                MajDebug.LogException(ex);
-                await UniTask.SwitchToMainThread();
-                if(!token.IsCancellationRequested)
+                catch (Exception ex)
                 {
-                    HideInteraction();
+                    if(ex is not OperationCanceledException)
+                    {
+                        MajDebug.LogException(ex);
+                    }
+                    await UniTask.SwitchToMainThread();
+                    if (!token.IsCancellationRequested)
+                    {
+                        HideInteraction();
+                    }
                 }
-            }
+            } 
         }
     }
 }

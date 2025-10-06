@@ -219,7 +219,10 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                MajDebug.LogException(e);
+                if (e is not OperationCanceledException)
+                {
+                    MajDebug.LogException(e);
+                }
                 _audioTrack = null;
                 throw new Exception("Music track Load Failed");
             }
@@ -302,7 +305,10 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                MajDebug.LogException(e);
+                if (e is not OperationCanceledException)
+                {
+                    MajDebug.LogException(e);
+                }
                 throw;
             }
         }
@@ -376,7 +382,10 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                MajDebug.LogException(e);
+                if (e is not OperationCanceledException)
+                {
+                    MajDebug.LogException(e);
+                }
                 _maidata = null;
                 throw new Exception("Maidata Load Failed");
             }
@@ -442,7 +451,10 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                MajDebug.LogException(e);
+                if (e is not OperationCanceledException)
+                {
+                    MajDebug.LogException(e);
+                }
                 throw;
             }
         }
@@ -506,7 +518,10 @@ namespace MajdataPlay
             }
             catch (Exception e)
             {
-                MajDebug.LogException(e);
+                if (e is not OperationCanceledException)
+                {
+                    MajDebug.LogException(e);
+                }
                 throw;
             }
         }
@@ -592,6 +607,7 @@ namespace MajdataPlay
             {
                 try
                 {
+                    await UniTask.SwitchToMainThread();
                     using var request = UnityWebRequest.Get(uri);
                     request.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
                     request.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
@@ -605,11 +621,12 @@ namespace MajdataPlay
                             throw new HttpException(HttpErrorCode.Canceled, null);
                         }
                         progress?.Report(asyncOperation.progress);
-                        await Task.Delay(frameLen).ConfigureAwait(false);
+                        await UniTask.Yield();
                     }
                     request.EnsureSuccessStatusCode();
                     using var fileStream = File.Create(savePath);
-                    var nativeData = request.downloadHandler.nativeData.AsReadOnlySpan();
+                    var nativeData = request.downloadHandler.nativeData;
+                    await UniTask.SwitchToThreadPool();
                     var fileLen = nativeData.Length;
                     var buffer = Pool<byte>.RentArray(fileLen.Clamp(0, 512 * 1024)); // 512KB
                     try
@@ -627,12 +644,12 @@ namespace MajdataPlay
 
                             if (remaining > buffer.Length)
                             {
-                                nativeData.Slice(totalRead, buffer.Length).CopyTo(buffer);
+                                nativeData.AsReadOnlySpan().Slice(totalRead, buffer.Length).CopyTo(buffer);
                                 read = buffer.Length;
                             }
                             else
                             {
-                                nativeData.Slice(totalRead, remaining).CopyTo(buffer);
+                                nativeData.AsReadOnlySpan().Slice(totalRead, remaining).CopyTo(buffer);
                                 read = remaining;
                             }
                             await fileStream.WriteAsync(buffer.AsMemory(0, read));

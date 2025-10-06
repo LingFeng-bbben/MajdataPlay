@@ -456,19 +456,23 @@ namespace MajdataPlay
                 {
                     try
                     {
-                        if(i != 0)
+                        if (i != 0)
                         {
-                            progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
+                            progressReporter?.Report(
+                                ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name) +
+                                $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
                         }
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                        await UniTask.SwitchToMainThread();
                         var getReq = UnityWebRequest.Get(listurl);
                         getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
                         getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                         var asyncOperation = getReq.SendWebRequest();
                         while (!asyncOperation.isDone)
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(MajEnv.FRAME_LENGTH_SEC)).ConfigureAwait(false);
+                            await UniTask.Yield();
                         }
+
                         getReq.EnsureSuccessStatusCode();
                         rspText = getReq.downloadHandler.text;
 #else
@@ -476,14 +480,19 @@ namespace MajdataPlay
 #endif
                         break;
                     }
-                    catch
+                    catch (Exception e)
                     {
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                            MajDebug.LogException(e);
                             await Task.Delay(2000);
                             throw new OperationCanceledException();
                         }
+                    }
+                    finally
+                    {
+                        await UniTask.SwitchToThreadPool();
                     }
                 }
                 var list = await Serializer.Json.DeserializeAsync<MajnetSongDetail[]>(rspText);

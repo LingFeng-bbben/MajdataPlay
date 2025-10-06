@@ -37,7 +37,11 @@ namespace MajdataPlay
         public static event Action? OnApplicationQuit;
         public static event Action? OnSave;
 
+#if UNITY_ANDROID
+        public static string HTTP_USER_AGENT { get; } = $"MajdataPlay Android/{MajInstances.GameVersion.ToString()}";
+#else
         public static string HTTP_USER_AGENT { get; } = $"MajdataPlay/{MajInstances.GameVersion.ToString()}";
+#endif
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR

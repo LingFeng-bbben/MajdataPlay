@@ -22,257 +22,220 @@ namespace MajdataPlay.Utils
     internal static class Online
     {
         readonly static HttpClient _client = MajEnv.SharedHttpClient;
-        readonly static TimeSpan FRAME_LEN = TimeSpan.FromSeconds(MajEnv.FRAME_LENGTH_SEC);
         public static async UniTask<bool> CheckLogin(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                return await Task.Run(async () =>
-                {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                    using var req = UnityWebRequest.Get(apiEndpoint.Url + "/account/Info");
-                    req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                    var asyncOperation = req.SendWebRequest();
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            req.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
-                        }
-                        await Task.Delay(FRAME_LEN).ConfigureAwait(false);
-                    }
-                    if(req.IsSuccessStatusCode())
-                    {
-                        return true;
-                    }
-                    return false;
-#else
-                    var rsp = await _client.GetAsync(apiEndpoint.Url + "/account/Info", token);
-                    if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-#endif
-                });
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
                 await UniTask.SwitchToMainThread();
+                using var req = UnityWebRequest.Get(apiEndpoint.Url + "/account/Info");
+                req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var asyncOperation = req.SendWebRequest();
+                while (!asyncOperation.isDone)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        req.Abort();
+                        throw new HttpException(HttpErrorCode.Canceled, null);
+                    }
+                    await UniTask.Yield();
+                }
+                if(req.IsSuccessStatusCode())
+                {
+                    return true;
+                }
+                return false;
+#else
+                await UniTask.SwitchToThreadPool();
+                var rsp = await _client.GetAsync(apiEndpoint.Url + "/account/Info", token);
+                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+#endif
             }
         }
         public static async UniTask Login(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                await Task.Run(async () =>
+                await UniTask.SwitchToThreadPool();
+                if (apiEndpoint == null)
                 {
-                    if (apiEndpoint == null)
-                    {
-                        throw new ArgumentNullException(nameof(apiEndpoint));
-                    }
-                    if (apiEndpoint.Username == "YourUsername" || apiEndpoint.Password == "YourUsername")
-                    {
-                        throw new Exception("Username or Password is unset");
-                    }
-                    if (string.IsNullOrEmpty(apiEndpoint.Username) || string.IsNullOrEmpty(apiEndpoint.Password))
-                    {
-                        throw new Exception("Username or Password is null");
-                    }
-                    if (await CheckLogin(apiEndpoint))
-                    {
-                        return;
-                    }
-                    var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(apiEndpoint.Password)));
+                    throw new ArgumentNullException(nameof(apiEndpoint));
+                }
+                if (apiEndpoint.Username == "YourUsername" || apiEndpoint.Password == "YourUsername")
+                {
+                    throw new Exception("Username or Password is unset");
+                }
+                if (string.IsNullOrEmpty(apiEndpoint.Username) || string.IsNullOrEmpty(apiEndpoint.Password))
+                {
+                    throw new Exception("Username or Password is null");
+                }
+                if (await CheckLogin(apiEndpoint))
+                {
+                    return;
+                }
+                var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(apiEndpoint.Password)));
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                    var form = new WWWForm();
-                    form.AddField("username", apiEndpoint.Username);
-                    form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
-                    using var req = UnityWebRequest.Post(apiEndpoint.Url + "/account/Login", form);
-                    req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                    var asyncOperation = req.SendWebRequest();
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            req.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
-                        }
-                        await Task.Delay(FRAME_LEN).ConfigureAwait(false);
-                    }
-                    if(!req.IsSuccessStatusCode())
-                    {
-                        throw new Exception("Login failed");
-                    }
-#else
-                    var formData = new MultipartFormDataContent
-                    {
-                        { new StringContent(apiEndpoint.Username), "username" },
-                        { new StringContent(pwdHashStr.Replace("-", "").ToLower()), "password" }
-                    };
-
-                    var rsp = await _client.PostAsync(apiEndpoint.Url + "/account/Login", formData, token);
-                    if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        throw new Exception("Login failed");
-                    }
-#endif
-                });
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
                 await UniTask.SwitchToMainThread();
+                var form = new WWWForm();
+                form.AddField("username", apiEndpoint.Username);
+                form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
+                using var req = UnityWebRequest.Post(apiEndpoint.Url + "/account/Login", form);
+                req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var asyncOperation = req.SendWebRequest();
+                while (!asyncOperation.isDone)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        req.Abort();
+                        throw new HttpException(HttpErrorCode.Canceled, null);
+                    }
+                    await UniTask.Yield();
+                }
+                if(!req.IsSuccessStatusCode())
+                {
+                    throw new Exception("Login failed");
+                }
+#else
+                var formData = new MultipartFormDataContent
+                {
+                    { new StringContent(apiEndpoint.Username), "username" },
+                    { new StringContent(pwdHashStr.Replace("-", "").ToLower()), "password" }
+                };
+
+                var rsp = await _client.PostAsync(apiEndpoint.Url + "/account/Login", formData, token);
+                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    throw new Exception("Login failed");
+                }
+#endif
             }
         }
         public static async UniTask SendLike(OnlineSongDetail song, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                await Task.Run(async () =>
-                {
-                    var serverInfo = song.ServerInfo;
-                    await Login(song.ServerInfo, token);
-                    var interactUrl = serverInfo.Url + "/maichart/" + song.Id + "/interact";
+                await UniTask.SwitchToThreadPool();
+                var serverInfo = song.ServerInfo;
+                await Login(song.ServerInfo, token);
+                var interactUrl = serverInfo.Url + "/maichart/" + song.Id + "/interact";
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                    var getReq = UnityWebRequest.Get(interactUrl);
-                    getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                    var asyncOperation = getReq.SendWebRequest();
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            getReq.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
-                        }
-                        await Task.Delay(FRAME_LEN).ConfigureAwait(false);
-                    }
-                    if(!getReq.IsSuccessStatusCode())
-                    {
-                        throw new Exception("THUMBUP_FAILED".i18n());
-                    }
-                    var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text);
-                    if (intlist.IsLiked)
-                    {
-                        throw new Exception("THUMBUP_ALREADY".i18n());
-                    }
-
-                    var form = new WWWForm();
-                    form.AddField("type", "like");
-                    form.AddField("content", "...");
-
-                    var postReq = UnityWebRequest.Post(interactUrl, form);
-                    postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                    var postAsyncOperation = postReq.SendWebRequest();
-
-                    while (!postAsyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            postReq.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
-                        }
-                        await Task.Delay(FRAME_LEN).ConfigureAwait(false);
-                    }
-                    if(!postReq.IsSuccessStatusCode())
-                    {
-                        throw new Exception("THUMBUP_FAILED".i18n());
-                    }
-#else
-                    var intStream = await _client.GetStreamAsync(interactUrl);
-                    var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream);
-
-                    if (intlist.IsLiked)
-                    {
-                        throw new Exception("THUMBUP_ALREADY".i18n());
-                    }
-
-                    var formData = new MultipartFormDataContent
-                    {
-                        { new StringContent("like"), "type" },
-                        { new StringContent("..."), "content" },
-                    };
-                    var rsp = await _client.PostAsync(interactUrl, formData, token);
-
-                    if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        throw new Exception("THUMBUP_FAILED".i18n());
-                    }
-#endif
-                });
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
                 await UniTask.SwitchToMainThread();
+                var getReq = UnityWebRequest.Get(interactUrl);
+                getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var asyncOperation = getReq.SendWebRequest();
+                while (!asyncOperation.isDone)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        getReq.Abort();
+                        throw new HttpException(HttpErrorCode.Canceled, null);
+                    }
+                    await UniTask.Yield();
+                }
+                if(!getReq.IsSuccessStatusCode())
+                {
+                    throw new Exception("THUMBUP_FAILED".i18n());
+                }
+                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text);
+                if (intlist.IsLiked)
+                {
+                    throw new Exception("THUMBUP_ALREADY".i18n());
+                }
+
+                var form = new WWWForm();
+                form.AddField("type", "like");
+                form.AddField("content", "...");
+
+                var postReq = UnityWebRequest.Post(interactUrl, form);
+                postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var postAsyncOperation = postReq.SendWebRequest();
+
+                while (!postAsyncOperation.isDone)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        postReq.Abort();
+                        throw new HttpException(HttpErrorCode.Canceled, null);
+                    }
+                    await UniTask.Yield();
+                }
+                if(!postReq.IsSuccessStatusCode())
+                {
+                    throw new Exception("THUMBUP_FAILED".i18n());
+                }
+#else
+                var intStream = await _client.GetStreamAsync(interactUrl);
+                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream);
+
+                if (intlist.IsLiked)
+                {
+                    throw new Exception("THUMBUP_ALREADY".i18n());
+                }
+
+                var formData = new MultipartFormDataContent
+                {
+                    { new StringContent("like"), "type" },
+                    { new StringContent("..."), "content" },
+                };
+                var rsp = await _client.PostAsync(interactUrl, formData, token);
+
+                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    throw new Exception("THUMBUP_FAILED".i18n());
+                }
+#endif
             }
         }
         public static async UniTask SendScore(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                await Task.Run(async () =>
-                {
-                    var serverInfo = song.ServerInfo;
-                    await Login(serverInfo);
-                    var scoreUrl = serverInfo.Url + "/maichart/" + song.Id + "/score";
-                    var json = await Serializer.Json.SerializeAsync(score);
+                await UniTask.SwitchToThreadPool();
+                var serverInfo = song.ServerInfo;
+                await Login(serverInfo);
+                var scoreUrl = serverInfo.Url + "/maichart/" + song.Id + "/score";
+                var json = await Serializer.Json.SerializeAsync(score);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                    var postReq = UnityWebRequest.Post(scoreUrl, json, "application/json");
-                    postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                    var postAsyncOperation = postReq.SendWebRequest();
-                    while (!postAsyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            postReq.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
-                        }
-                        await Task.Delay(FRAME_LEN).ConfigureAwait(false);
-                    }
-                    if (!postReq.IsSuccessStatusCode())
-                    {
-                        throw new Exception(postReq.downloadHandler.text);
-                    }
-#else
-                    var rsp = await _client.PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
-                    var rspContent = await rsp.Content.ReadAsStringAsync();
-
-                    if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                    {
-                        throw new Exception(rspContent);
-                    }
-#endif
-                });
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
                 await UniTask.SwitchToMainThread();
+                var postReq = UnityWebRequest.Post(scoreUrl, json, "application/json");
+                postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var postAsyncOperation = postReq.SendWebRequest();
+                while (!postAsyncOperation.isDone)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        postReq.Abort();
+                        throw new HttpException(HttpErrorCode.Canceled, null);
+                    }
+                    await UniTask.Yield();
+                }
+                if (!postReq.IsSuccessStatusCode())
+                {
+                    throw new Exception(postReq.downloadHandler.text);
+                }
+#else
+                var rsp = await _client.PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
+                var rspContent = await rsp.Content.ReadAsStringAsync();
+
+                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    throw new Exception(rspContent);
+                }
+#endif
             }
         }
     }
