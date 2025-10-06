@@ -177,7 +177,6 @@ namespace MajdataPlay
                     token.ThrowIfCancellationRequested();
                     if (_audioTrack is not null)
                     {
-                        _previewAudioTrack?.Dispose();
                         _previewAudioTrack = _audioTrack;
                         return _previewAudioTrack;
                     }
