@@ -210,33 +210,44 @@ namespace MajdataPlay.IO
 #else
             var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #endif
-            if (decode == 0)
+            try
             {
-                throw new NotSupportedException();
-            }
-            Bass.LastError.EnsureSuccessStatusCode();
-            var stream = 0;
-            stream = BassFx.TempoCreate(decode,BassFlags.Default);
-            Bass.LastError.EnsureSuccessStatusCode();
-            Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
-            //scan the peak here
-            var bytelength = Bass.ChannelGetLength(decode);
-            var gain = 1d;
-            if (normalize)
-            {
-                double channelmax = 0;
-                while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                if (decode == 0)
                 {
-                    var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
-                    if (level > channelmax) channelmax = level;
+                    throw new NotSupportedException();
                 }
-                gain = 1 / channelmax;
-            }
+                Bass.LastError.EnsureSuccessStatusCode();
+                var stream = 0;
+                stream = BassFx.TempoCreate(decode, BassFlags.Default);
+                Bass.LastError.EnsureSuccessStatusCode();
+                Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
+                //scan the peak here
+                var bytelength = Bass.ChannelGetLength(decode);
+                var gain = 1d;
+                if (normalize)
+                {
+                    double channelmax = 0;
+                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    {
+                        var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
+                        if (level > channelmax) channelmax = level;
+                    }
+                    gain = 1 / channelmax;
+                }
 
-            var sample = new BassSimpleAudioSample(stream, gain, speedChange, handle);
-            sample.Volume = 1;
-            sample._decode = decode;
-            return sample;
+                var sample = new BassSimpleAudioSample(stream, gain, speedChange, handle);
+                sample.Volume = 1;
+                sample._decode = decode;
+                return sample;
+            }
+            catch
+            {
+                if (handle is not null)
+                {
+                    ((GCHandle)handle).Free();
+                }
+                throw;
+            }
         }
         public static BassSimpleAudioSample Create(string path, bool normalize = true, bool speedChange = false)
         {
