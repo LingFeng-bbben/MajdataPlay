@@ -211,7 +211,9 @@ namespace MajdataPlay
             _previewAudioTrack?.Dispose();
             UniTask.Post(() =>
             {
+                var tex = _cover?.texture;
                 GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(tex, true);
             });
             _audioTrack = null;
             _previewAudioTrack = null;
@@ -236,7 +238,9 @@ namespace MajdataPlay
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToMainThread();
+                var tex = _cover?.texture;
                 GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(tex, true);
             }
             _audioTrack = null;
             _previewAudioTrack = null;

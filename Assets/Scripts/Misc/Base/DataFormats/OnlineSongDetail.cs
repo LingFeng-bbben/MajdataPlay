@@ -19,6 +19,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -148,6 +149,22 @@ namespace MajdataPlay
             }
         }
 
+        #region Public
+        public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
+        {
+            ThrowIfDisposed();
+            if (_isPreloaded)
+            {
+                return;
+            }
+            await UniTask.SwitchToThreadPool();
+            if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
+            {
+                return;
+            }
+            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCompressedCoverAsync(false, progress, token).AsTask());
+            _isPreloaded = true;
+        }
         public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
@@ -160,8 +177,9 @@ namespace MajdataPlay
                 using (@lock)
                 {
                     token.ThrowIfCancellationRequested();
-                    if(_audioTrack is not null)
+                    if (_audioTrack is not null)
                     {
+                        _previewAudioTrack?.Dispose();
                         _previewAudioTrack = _audioTrack;
                         return _previewAudioTrack;
                     }
@@ -184,64 +202,9 @@ namespace MajdataPlay
                 throw;
             }
         }
-        public async ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            ThrowIfDisposed();
-            try
-            {
-                await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _audioTrackLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                var @lock = waiting4LockTask.Result;
-                using (@lock)
-                {
-                    token.ThrowIfCancellationRequested();
-                    if (_audioTrack is not null)
-                    {
-                        return _audioTrack;
-                    }
-                    var savePath = Path.Combine(_cachePath, "track.mp3");
-                    var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
-
-                    await DownloadFile(_trackUri, savePath, false, progress, token);
-                    var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
-                    if (sampleWarp.IsEmpty)
-                    {
-                        if (File.Exists(cacheFlagPath))
-                        {
-                            File.Delete(cacheFlagPath);
-                        }
-                        await DownloadFile(_trackUri, savePath, false, progress, token);
-                    }
-                    _audioTrack = sampleWarp;
-
-                    return sampleWarp;
-                }
-            }
-            catch (Exception e)
-            {
-                if (e is not OperationCanceledException)
-                {
-                    MajDebug.LogException(e);
-                }
-                _audioTrack = null;
-                throw new Exception("Music track Load Failed");
-            }
-        }
-        public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
-        {
-            ThrowIfDisposed();
-            if (_isPreloaded)
-            {
-                return;
-            }
-            await UniTask.SwitchToThreadPool();
-            if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
-            {
-                return;
-            }
-            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
-            _isPreloaded = true;
+            return GetAudioTrackAsync(true, progress, token);
         }
         public async ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
@@ -345,16 +308,16 @@ namespace MajdataPlay
                 throw;
             }
         }
-        public async ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
+        public ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (isCompressed)
             {
-                return await GetCompressedCoverAsync(progress, token);
+                return GetCompressedCoverAsync(true, progress, token);
             }
             else
             {
-                return await GetFullSizeCoverAsync(progress, token);
+                return GetFullSizeCoverAsync(true, progress, token);
             }
         }
         public async ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
@@ -423,82 +386,234 @@ namespace MajdataPlay
                 throw new Exception("Maidata Load Failed");
             }
         }
-        async ValueTask<Sprite> GetCompressedCoverAsync(INetProgress? progress = null, CancellationToken token = default)
+        public void Dispose()
         {
-            try
+            if (_isDisposed)
             {
-                if (_cover is not null)
-                {
-                    return _cover;
-                }
-                await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _coverLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                var @lock = waiting4LockTask.Result;
-                using (@lock)
-                {
-                    token.ThrowIfCancellationRequested();
-                    if (_cover is not null)
-                    {
-                        return _cover;
-                    }
-                    var savePath = Path.Combine(_cachePath, "bg.jpg");
-                    var cacheFlagPath = Path.Combine(_cachePath, $"bg.jpg.cache");
-
-                    if (File.Exists(cacheFlagPath))
-                    {
-                        if (!File.Exists(savePath))
-                        {
-                            _cover = MajEnv.EmptySongCover;
-                        }
-                        else
-                        {
-                            _cover = await SpriteLoader.LoadAsync(savePath, token);
-                        }
-                        return _cover;
-                    }
-                    try
-                    {
-                        await DownloadFile(_coverUri, savePath, false, progress, token);
-                    }
-                    catch (HttpException e)
-                    {
-                        if (e.ErrorCode is HttpErrorCode.Unsuccessful)
-                        {
-                            using var _ = File.Create(cacheFlagPath);
-                            _cover = MajEnv.EmptySongCover;
-                            return _cover;
-                        }
-                        else
-                        {
-                            _cover = MajEnv.EmptySongCover;
-                            return _cover;
-                        }
-                    }
-
-                    token.ThrowIfCancellationRequested();
-                    _cover = await SpriteLoader.LoadAsync(savePath, token);
-
-                    return _cover;
-                }
+                return;
             }
-            catch (Exception e)
+            _isDisposed = true;
+            _audioTrack?.Dispose();
+            _previewAudioTrack?.Dispose();
+            UniTask.Post(() =>
             {
-                if (e is not OperationCanceledException)
+                var tex1 = _cover?.texture;
+                var tex2 = _fullSizeCover?.texture;
+                GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(_fullSizeCover, true);
+
+                GameObject.DestroyImmediate(tex1, true);
+                GameObject.DestroyImmediate(tex2, true);
+            });
+            _maidata = null;
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _fullSizeCover = null;
+            _videoPath = null;
+        }
+        public async ValueTask DisposeAsync()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            if (_audioTrack is not null)
+            {
+                await _audioTrack.DisposeAsync();
+            }
+            if (_previewAudioTrack is not null)
+            {
+                await _previewAudioTrack.DisposeAsync();
+            }
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                var tex1 = _cover?.texture;
+                var tex2 = _fullSizeCover?.texture;
+                GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(_fullSizeCover, true);
+
+                GameObject.DestroyImmediate(tex1, true);
+                GameObject.DestroyImmediate(tex2, true);
+            }
+            _maidata = null;
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _fullSizeCover = null;
+            _videoPath = null;
+        }
+        //public async ValueTask UnloadUnityAssetsAsync(CancellationToken token = default)
+        //{
+        //    await using (UniTask.ReturnToCurrentSynchronizationContext())
+        //    {
+        //        var waiting4LockTask = _coverLock.LockAsync(token);
+        //        await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
+        //        var @lock = waiting4LockTask.Result;
+        //        using (@lock)
+        //        {
+        //            if(_cover is not null)
+        //            {
+        //                var texture = _cover.texture;
+        //                UnityEngine.Object.DestroyImmediate(_cover, true);
+        //                UnityEngine.Object.DestroyImmediate(texture, true);
+        //                _cover = null;
+        //            }
+        //        }
+        //        token.ThrowIfCancellationRequested();
+        //        var waiting4LockTask2 = _fullSizeCoverLock.LockAsync(token);
+        //        await Task.WhenAny(waiting4LockTask2, Task.Delay(Timeout.Infinite, token));
+        //        var @lock2 = waiting4LockTask2.Result;
+        //        using (@lock2)
+        //        {
+        //            if (_fullSizeCover is not null)
+        //            {
+        //                var texture = _fullSizeCover.texture;
+        //                UnityEngine.Object.DestroyImmediate(_fullSizeCover, true);
+        //                UnityEngine.Object.DestroyImmediate(texture, true);
+        //                _fullSizeCover = null;
+        //            }
+        //        }
+        //    }
+        //}
+        #endregion
+
+        async ValueTask<AudioSampleWrap> GetAudioTrackAsync(bool loadIntoMemory, INetProgress? progress = null, CancellationToken token = default)
+        {
+            ThrowIfDisposed();
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                try
                 {
-                    MajDebug.LogException(e);
+                    await UniTask.SwitchToThreadPool();
+                    var waiting4LockTask = _audioTrackLock.LockAsync(token);
+                    await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
+                    var @lock = waiting4LockTask.Result;
+                    using (@lock)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (_audioTrack is not null)
+                        {
+                            return _audioTrack;
+                        }
+                        var savePath = Path.Combine(_cachePath, "track.mp3");
+                        var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
+
+                        if (!File.Exists(cacheFlagPath))
+                        {
+                            await DownloadFile(_trackUri, savePath, false, progress, token);
+                        }
+                            
+                        if (!loadIntoMemory)
+                        {
+                            return AudioSampleWrap.Empty;
+                        }
+                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                        if (sampleWarp.IsEmpty)
+                        {
+                            if (File.Exists(cacheFlagPath))
+                            {
+                                File.Delete(cacheFlagPath);
+                            }
+                            await DownloadFile(_trackUri, savePath, false, progress, token);
+                        }
+                        _audioTrack = sampleWarp;
+
+                        return sampleWarp;
+                    }
                 }
-                throw;
+                catch (Exception e)
+                {
+                    if (e is not OperationCanceledException)
+                    {
+                        MajDebug.LogException(e);
+                    }
+                    _audioTrack = null;
+                    throw new Exception("Music track Load Failed");
+                }
             }
         }
-        async ValueTask<Sprite> GetFullSizeCoverAsync(INetProgress? progress = null, CancellationToken token = default)
+        async ValueTask<Sprite> GetCompressedCoverAsync(bool loadIntoMemory, INetProgress? progress = null, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                try
+                {
+                    await UniTask.SwitchToThreadPool();
+                    var waiting4LockTask = _coverLock.LockAsync(token);
+                    await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
+                    var @lock = waiting4LockTask.Result;
+                    using (@lock)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (_cover is not null)
+                        {
+                            return _cover;
+                        }
+                        var savePath = Path.Combine(_cachePath, "bg.jpg");
+                        var cacheFlagPath = Path.Combine(_cachePath, $"bg.jpg.cache");
+
+                        if (File.Exists(cacheFlagPath))
+                        {
+                            if (!File.Exists(savePath))
+                            {
+                                _cover = MajEnv.EmptySongCover;
+                            }
+                            else if(!loadIntoMemory)
+                            {
+                                return MajEnv.EmptySongCover;
+                            }
+                            else
+                            {
+                                _cover = await SpriteLoader.LoadAsync(savePath, token);
+                            }
+                            return _cover;
+                        }
+                        try
+                        {
+                            await DownloadFile(_coverUri, savePath, false, progress, token);
+                            if (!loadIntoMemory)
+                            {
+                                return MajEnv.EmptySongCover;
+                            }
+                        }
+                        catch (HttpException e)
+                        {
+                            if (e.ErrorCode is HttpErrorCode.Unsuccessful)
+                            {
+                                using var _ = File.Create(cacheFlagPath);
+                                _cover = MajEnv.EmptySongCover;
+                                return _cover;
+                            }
+                            else
+                            {
+                                _cover = MajEnv.EmptySongCover;
+                                return _cover;
+                            }
+                        }
+
+                        token.ThrowIfCancellationRequested();
+                        _cover = await SpriteLoader.LoadAsync(savePath, token);
+
+                        return _cover;
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (e is not OperationCanceledException)
+                    {
+                        MajDebug.LogException(e);
+                    }
+                    throw;
+                }
+            }  
+        }
+        async ValueTask<Sprite> GetFullSizeCoverAsync(bool loadIntoMemory, INetProgress? progress = null, CancellationToken token = default)
         {
             try
             {
-                if (_fullSizeCover is not null)
-                {
-                    return _fullSizeCover;
-                }
                 await UniTask.SwitchToThreadPool();
                 var waiting4LockTask = _fullSizeCoverLock.LockAsync(token);
                 await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
@@ -519,6 +634,10 @@ namespace MajdataPlay
                         {
                             _fullSizeCover = MajEnv.EmptySongCover;
                         }
+                        else if (!loadIntoMemory)
+                        {
+                            return MajEnv.EmptySongCover;
+                        }
                         else
                         {
                             _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
@@ -528,6 +647,10 @@ namespace MajdataPlay
                     try
                     {
                         await DownloadFile(_fullSizeCoverUri, savePath, false, progress, token);
+                        if (!loadIntoMemory)
+                        {
+                            return MajEnv.EmptySongCover;
+                        }
                     }
                     catch (HttpException e)
                     {
@@ -558,55 +681,7 @@ namespace MajdataPlay
                 throw;
             }
         }
-        public void Dispose()
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-            _isDisposed = true;
-            _audioTrack?.Dispose();
-            _previewAudioTrack?.Dispose();
-            UniTask.Post(() =>
-            {
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(_fullSizeCover, true);
-            });
-            _maidata = null;
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
-            _fullSizeCover = null;
-            _videoPath = null;
-        }
-        public async ValueTask DisposeAsync()
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-            _isDisposed = true;
-            if (_audioTrack is not null)
-            {
-                await _audioTrack.DisposeAsync();
-            }
-            if (_previewAudioTrack is not null)
-            {
-                await _previewAudioTrack.DisposeAsync();
-            }
-            await using(UniTask.ReturnToCurrentSynchronizationContext())
-            {
-                await UniTask.SwitchToMainThread();
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(_fullSizeCover, true);
-            }
-            _maidata = null;
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
-            _fullSizeCover = null;
-            _videoPath = null;
-        }
+        
         void ThrowIfDisposed()
         {
             if (_isDisposed)
@@ -614,6 +689,7 @@ namespace MajdataPlay
                 throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
+
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
         async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {

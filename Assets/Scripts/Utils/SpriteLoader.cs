@@ -21,7 +21,7 @@ namespace MajdataPlay.Utils
         {
             get
             {
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f)); ;
+                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
 

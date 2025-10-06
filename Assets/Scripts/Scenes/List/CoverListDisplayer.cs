@@ -429,7 +429,7 @@ namespace MajdataPlay.Scenes.List
                             CoverBigDisplayer.SetMeta(_currentCollection.Name, "Count:" + _currentCollection.Count, "", "");
                             break;
                         case ChartStorageType.Dan:
-                            CoverBigDisplayer.SetMeta(_currentCollection.DanInfo.Name, _currentCollection.DanInfo.Description, "", ""); ;
+                            CoverBigDisplayer.SetMeta(_currentCollection.DanInfo!.Name, _currentCollection.DanInfo.Description, "", ""); ;
                             break;
                     }
                     CoverBigDisplayer.SetScore(new MaiScore());
