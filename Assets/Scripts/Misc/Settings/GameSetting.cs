@@ -5,9 +5,9 @@ using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 using System.Threading;
 using UnityEngine.Scripting;
+using Newtonsoft.Json;
 #nullable enable
 namespace MajdataPlay.Settings
 {

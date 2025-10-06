@@ -1,10 +1,10 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Json;
 using MajdataPlay.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
@@ -18,6 +18,17 @@ namespace MajdataPlay
 
         static bool _isInited = false;
 
+        readonly static JsonSerializer _serializer = JsonSerializer.Create(new()
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Populate,
+            Converters = new List<JsonConverter>
+            {
+                new JudgeDetailConverter(),
+                new JudgeInfoConverter(),
+            }
+        });
+
         internal static async UniTask InitAsync()
         {
             if (_isInited)
@@ -28,9 +39,6 @@ namespace MajdataPlay
             try
             {
                 var path = MajEnv.ScoreDBPath;
-                var option = new JsonSerializerOptions();
-                option.Converters.Add(new JudgeDetailConverter());
-                option.Converters.Add(new JudgeInfoConverter());
 
                 if (!File.Exists(path))
                 {
@@ -39,7 +47,7 @@ namespace MajdataPlay
                     return;
                 }
                 using var storageStream = File.OpenRead(path);
-                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, option);
+                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, _serializer);
                 //shoud do some warning here, or all score will be lost and overwirtten
                 if (result != null)
                 {
@@ -96,7 +104,7 @@ namespace MajdataPlay
                 record.PlayCount++;
 
                 using var stream = File.Create(MajEnv.ScoreDBPath);
-                await Serializer.Json.SerializeAsync(stream, _scores);
+                await Serializer.Json.SerializeAsync(stream, _scores, _serializer);
 
                 return true;
             }

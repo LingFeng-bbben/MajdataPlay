@@ -149,7 +149,10 @@ namespace MajdataPlay.Scenes.Game
             }
             catch (Exception ex)
             {
-                MajDebug.LogException(ex);
+                if (ex is not OperationCanceledException)
+                {
+                    MajDebug.LogException(ex);
+                }
                 await UniTask.SwitchToMainThread();
                 SetError();
                 //_rawImage.texture = new Texture2D(0, 0);

@@ -108,9 +108,17 @@ namespace MajdataPlay.IO
             }
 #endif
 #if UNITY_ANDROID
-                MajDebug.LogDebug("Android: Using BassSimple");
-                MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
-                backend = SoundBackendOption.BassSimple;
+                switch(backend)
+                {
+                    case SoundBackendOption.BassSimple:
+                    case SoundBackendOption.Unity:
+                        break;
+                    default:
+                        MajDebug.LogDebug("Android: Fallback to BassSimple");
+                        MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
+                        backend = SoundBackendOption.BassSimple;
+                        break;
+                }
 #endif
                 switch (backend)
                 {

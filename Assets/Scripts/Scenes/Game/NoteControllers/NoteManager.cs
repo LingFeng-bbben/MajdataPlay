@@ -282,6 +282,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                 _btnStatusInThisFrame[i] = btnState;
                 _btnStatusInNextFrame[i] = SwitchStatus.Off;
+                _isBtnClickedInThisFrame[i] = _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                                              _btnStatusInThisFrame[i] == SwitchStatus.On;
             }
             for (var i = 0; i < 33; i++)
             {
@@ -293,6 +295,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = senState;
                 _sensorStatusInNextFrame[i] = SwitchStatus.Off;
+                _isSensorClickedInThisFrame[i] = _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                                                 _sensorStatusInThisFrame[i] == SwitchStatus.On;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

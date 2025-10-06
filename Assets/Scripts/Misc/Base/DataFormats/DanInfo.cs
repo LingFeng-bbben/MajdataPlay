@@ -1,10 +1,6 @@
 ﻿using MajdataPlay.Scenes.Game.Notes;
-using System;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace MajdataPlay
 {
@@ -13,7 +9,7 @@ namespace MajdataPlay
         public string Name { get; init; }
         public string Description { get; init; }
         public string[] SongHashs { get; init; }
-        public Dictionary<string, JsonElement> Mods { get; init; } = new();
+        public Dictionary<string, JToken> Mods { get; init; } = new();
         public int[] SongLevels { get; init; }
         public int StartHP { get; init; } = 50;
         public int RestoreHP { get; init; } = 10;

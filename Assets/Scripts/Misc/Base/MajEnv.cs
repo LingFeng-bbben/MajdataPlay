@@ -6,6 +6,8 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -13,8 +15,6 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -36,6 +36,12 @@ namespace MajdataPlay
 
         public static event Action? OnApplicationQuit;
         public static event Action? OnSave;
+
+#if UNITY_ANDROID
+        public static string HTTP_USER_AGENT { get; } = $"MajdataPlay Android/{MajInstances.GameVersion.ToString()}";
+#else
+        public static string HTTP_USER_AGENT { get; } = $"MajdataPlay/{MajInstances.GameVersion.ToString()}";
+#endif
         internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR
@@ -78,7 +84,7 @@ namespace MajdataPlay
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
             DefaultRequestHeaders = 
             {
-                UserAgent = { new ProductInfoHeaderValue("MajPlay", MajInstances.GameVersion.ToString()) },
+                UserAgent = { new ProductInfoHeaderValue("MajdataPlay", MajInstances.GameVersion.ToString()) },
             }
         };
         public static GameSetting Settings { get; private set; }
@@ -90,14 +96,14 @@ namespace MajdataPlay
                 return _globalCTS.Token;
             }
         }
-        public static JsonSerializerOptions UserJsonReaderOption { get; } = new()
+        public static JsonSerializerSettings UserJsonReaderOption { get; } = new()
         {
+            Formatting = Formatting.Indented,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
             Converters =
             {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
+                new StringEnumConverter()
+            }
         };
 
         static string _runtimeConfigPath = string.Empty;

@@ -1,20 +1,21 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
-using MajdataPlay.Settings;
+using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MajdataPlay.Buffers;
+using Unity.VisualScripting.Antlr3.Runtime;
+using UnityEngine.Networking;
 #nullable enable
 namespace MajdataPlay
 {
@@ -342,10 +343,7 @@ namespace MajdataPlay
                     continue;
                 }
                 var jsonStream = File.OpenRead(file.FullName);
-                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream, new JsonSerializerOptions()
-                {
-                    PropertyNameCaseInsensitive = false
-                });
+                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
                 if (result && dan is not null)
                 {
                     loadDanTasks[i] = GetDanCollection(_allCharts, dan);
@@ -453,32 +451,51 @@ namespace MajdataPlay
             try
             {
                 var client = MajEnv.SharedHttpClient;
-                var rspStream = Stream.Null;
+                var rspText = string.Empty;
                 for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
                     {
-                        if(i != 0)
+                        if (i != 0)
                         {
-                            progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name)+ $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
+                            progressReporter?.Report(
+                                ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name) +
+                                $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
                         }
-                        rspStream = await client.GetStreamAsync(listurl);
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                        await UniTask.SwitchToMainThread();
+                        var getReq = UnityWebRequest.Get(listurl);
+                        getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
+                        getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                        var asyncOperation = getReq.SendWebRequest();
+                        while (!asyncOperation.isDone)
+                        {
+                            await UniTask.Yield();
+                        }
+
+                        getReq.EnsureSuccessStatusCode();
+                        rspText = getReq.downloadHandler.text;
+#else
+                        rspText = await client.GetStringAsync(listurl);
+#endif
                         break;
                     }
-                    catch
+                    catch (Exception e)
                     {
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                            MajDebug.LogException(e);
                             await Task.Delay(2000);
                             throw new OperationCanceledException();
                         }
                     }
+                    finally
+                    {
+                        await UniTask.SwitchToThreadPool();
+                    }
                 }
-                var list = await JsonSerializer.DeserializeAsync<MajnetSongDetail[]>(rspStream, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var list = await Serializer.Json.DeserializeAsync<MajnetSongDetail[]>(rspText);
                 if (list is null || list.IsEmpty())
                 {
                     return collection;
