@@ -65,11 +65,13 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInPreviousFrame;
         }
+#if UNITY_ANDROID
         public static ReadOnlySpan<int> SensorClickedCountInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorClickedCountInThisFrame;
         }
+#endif
         public static ReadOnlySpan<bool> TouchPanelRawData
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -263,7 +265,9 @@ namespace MajdataPlay.IO
         readonly static Memory<bool> _sensorStates = new bool[35];
         readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+#if UNITY_ANDROID
         readonly static int[] _sensorClickedCountInThisFrame = new int[33];
+#endif
 
         static bool _useDummy = false;
         readonly static bool _isBtnDebounceEnabled = false;
@@ -671,12 +675,14 @@ namespace MajdataPlay.IO
         {
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
-            _sensorClickedCountInThisFrame.AsSpan().Fill(0);
+            
             try
             {
 #if UNITY_STANDALONE
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
+#elif UNITY_ANDROID
+                Array.Fill(_sensorClickedCountInThisFrame, 0);
 #endif
                 var height = Screen.height;
                 var width = Screen.width;

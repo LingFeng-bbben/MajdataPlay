@@ -117,6 +117,7 @@ namespace MajdataPlay.IO
                 {
                     extraButton[button] = true;
                 }
+#if UNITY_ANDROID
                 _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
 
                 for (var i = 0; i < 34; i++)
@@ -149,6 +150,8 @@ namespace MajdataPlay.IO
                 {
                     _touchRecorder[touch.touchId] = touchPosData;
                 }
+#endif
+
             }
         }
 

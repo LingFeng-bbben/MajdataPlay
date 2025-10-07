@@ -62,9 +62,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #else
         readonly static bool[] _isBtnUsedInThisFrame = new bool[8];
         readonly static bool[] _isSensorUsedInThisFrame = new bool[33];
-
-        static bool _defaultButtonStatusUsage = false;
-        static bool _defaultSensorStatusUsage = false;
 #endif
 
         static bool _isUseButtonRingForTouch = false;
@@ -269,9 +266,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             var previousSensorStatus = InputManager.SensorStatusInPreviousFrame;
             var currentSensorStatus = InputManager.SensorStatusInThisFrame;
-            var sensorClickedCount = InputManager.SensorClickedCountInThisFrame;
 
 #if UNITY_ANDROID
+            var sensorClickedCount = InputManager.SensorClickedCountInThisFrame;
             for (var i = 0; i < 33; i++)
             {
                 _sensorStatusInPreviousFrame[i] = previousSensorStatus[i];
@@ -413,36 +410,46 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
 #else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref bool GetButtonUsageInThisFrame(ButtonZone? zone)
+        public bool TryUseButtonClickEvent(ButtonZone? zone)
         {
             if (zone is null)
             {
                 MajDebug.LogWarning(BUTTON_IS_NULL);
-                return ref _defaultButtonStatusUsage;
+                return default;
             }
             else if (zone < ButtonZone.A1 || zone > ButtonZone.A8)
             {
                 MajDebug.LogWarning(BUTTON_OUT_OF_RANGE);
-                return ref _defaultButtonStatusUsage;
+                return default;
             }
-
-            return ref _isBtnUsedInThisFrame[(int)zone];
+            ref var isUsed = ref _isBtnUsedInThisFrame[(int)zone];
+            if (isUsed)
+            {
+                return false;
+            }
+            isUsed = true;
+            return true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref bool GetSensorUsageInThisFrame(SensorArea? area)
+        public bool TryUseSensorClickEvent(SensorArea? area)
         {
             if (area is null)
             {
                 MajDebug.LogWarning(SENSOR_IS_NULL);
-                return ref _defaultSensorStatusUsage;
+                return false;
             }
             else if (area < SensorArea.A1 || area > SensorArea.E8)
             {
                 MajDebug.LogWarning(SENSOR_OUT_OF_RANGE);
-                return ref _defaultSensorStatusUsage;
+                return false;
             }
-
-            return ref _isSensorUsedInThisFrame[(int)area];
+            ref var isUsed = ref _isSensorUsedInThisFrame[(int)area];
+            if (isUsed)
+            {
+                return false;
+            }
+            isUsed = true;
+            return true;
         }
 #endif
 

@@ -310,41 +310,26 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-#else
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
             else
             {
                 return;
             }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
+#else
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos) && _noteManager.TryUseButtonClickEvent(_buttonPos))
             {
                 Judge(ThisFrameSec);
             }
-            else
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-#endif
-                if (_isJudged)
+            else
             {
-#if !UNITY_ANDROID
-                isDeviceUsedInThisFrame = true;
+                return;
+            }
 #endif
+            if (_isJudged)
+            {
                 _noteManager.NextNote(QueueInfo);
             }
         }
