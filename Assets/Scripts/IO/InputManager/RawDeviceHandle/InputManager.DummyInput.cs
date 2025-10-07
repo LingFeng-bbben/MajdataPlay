@@ -119,24 +119,21 @@ namespace MajdataPlay.IO
                 }
                 _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
 
-                if(UseOuterTouchAsSensor)
-                {
-                    for (var i = 0; i < 8; i++)
-                    {
-                        var lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
-                        var currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
-                        
-                        if (!lastState && currentState)
-                        {
-                            sensorClickedCount[i]++;
-                        }
-                    }
-                }
-
                 for (var i = 0; i < 34; i++)
                 {
-                    var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
-                    var currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                    var lastState = false;
+                    var currentState = false;
+
+                    if (UseOuterTouchAsSensor && i < 8)
+                    {
+                        lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
+                        currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
+                    }
+                    else
+                    {
+                        lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                        currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                    }
 
                     if (!lastState && currentState)
                     {
