@@ -277,7 +277,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+#else
             ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
             var isButton = false;
             if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
@@ -306,10 +311,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+#endif
             if (_isJudged)
             {
+#if !UNITY_ANDROID
                 isDeviceUsedInThisFrame = true;
+#endif
                 _noteManager.NextTouch(QueueInfo);
                 RegisterGrade();
             }

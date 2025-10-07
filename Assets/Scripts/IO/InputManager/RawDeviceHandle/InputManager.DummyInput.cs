@@ -30,6 +30,7 @@ namespace MajdataPlay.IO
 #else
         readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
 #endif
+        readonly static Dictionary<int, ulong> _touchRecorder = new(32);
 
         static ushort _version = 0;
         static int _lastScreenWidth = -1;
@@ -40,6 +41,8 @@ namespace MajdataPlay.IO
         {
             var sensors = _sensors.Span;
             var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
+
+            Span<int> sensorClickedCount = stackalloc int[34];
             Span<bool> newStates = stackalloc bool[34];
             Span<bool> extraButtonStates = stackalloc bool[12];
 
@@ -47,7 +50,7 @@ namespace MajdataPlay.IO
 
             if (touches.Count > 0)
             {
-                FromTouchPanel(touches, newStates, extraButtonStates, mainCamera);
+                FromTouchPanel(touches, sensorClickedCount, newStates, extraButtonStates, mainCamera);
             }
 #if UNITY_STANDALONE
             else if (Mouse.current != null)
@@ -59,12 +62,30 @@ namespace MajdataPlay.IO
             foreach (var (i, state) in newStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
+                ref readonly var clickedCount = ref sensorClickedCount[i];
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
                     State = _state,
                     Timestamp = now
                 });
+            }
+            for (var i = 0; i < sensorClickedCount.Length; i++) 
+            {
+                var clickedCount = sensorClickedCount[i];
+                if (i == 16)
+                {
+                    clickedCount = Mathf.Max(clickedCount, sensorClickedCount[17]);
+                    i++;
+                }
+                if(i >= 16)
+                {
+                    _sensorClickedCountInThisFrame[i - 1] = clickedCount;
+                }
+                else
+                {
+                    _sensorClickedCountInThisFrame[i] = clickedCount;
+                }
             }
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
@@ -78,7 +99,10 @@ namespace MajdataPlay.IO
                 });
             }
         }
-        static void FromTouchPanel(in ReadOnlyArray<Touch> touches, Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
+        static void FromTouchPanel(in ReadOnlyArray<Touch> touches,
+                                   Span<int> sensorClickedCount,
+                                   Span<bool> sensorStates, 
+                                   Span<bool> extraButton, Camera mainCamera)
         {
             for (var j = 0; j < touches.Count; j++)
             {
@@ -87,31 +111,80 @@ namespace MajdataPlay.IO
                 {
                     continue;
                 }
-                var button = PositionToSensorState(newStates, mainCamera, touch.screenPosition);
+                var touchPosData = 0UL;
+                var button = PositionToSensorState(sensorStates, mainCamera, touch.screenPosition, ref touchPosData);
                 if (button != -1)
                 {
                     extraButton[button] = true;
+                }
+                _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
+
+                if(UseOuterTouchAsSensor)
+                {
+                    for (var i = 0; i < 8; i++)
+                    {
+                        var lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
+                        var currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
+                        
+                        if (!lastState && currentState)
+                        {
+                            sensorClickedCount[i]++;
+                        }
+                    }
+                }
+
+                for (var i = 0; i < 34; i++)
+                {
+                    var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                    var currentState = (touchPosData & (1UL << (i + 12))) != 0;
+
+                    if (!lastState && currentState)
+                    {
+                        sensorClickedCount[i]++;
+                    }
+                }
+
+                if (touch.ended)
+                {
+                    _touchRecorder.Remove(touch.touchId);
+                }
+                else
+                {
+                    _touchRecorder[touch.touchId] = touchPosData;
                 }
             }
         }
 
 
-        static void FromMouse(Mouse mouse, Span<bool> newStates, Span<bool> extraButton, Camera mainCamera)
+        static void FromMouse(Mouse mouse, Span<bool> sensorStates, Span<bool> extraButton, Camera mainCamera)
         {
             var leftButton = mouse.leftButton;
             if(!leftButton.isPressed)
             {
                 return;
             }
-            var button = PositionToSensorState(newStates, mainCamera, mouse.position.value);
+            var button = PositionToSensorState(sensorStates, mainCamera, mouse.position.value);
             if (button != -1)
             {
                 extraButton[button] = true;
             }
         }
 
-        //return extra button pos 0-7, if none return -1
-        private static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position)
+        {
+            var _ = 0UL;
+            return PositionToSensorState(newStates, mainCamera, position,ref _);
+        }
+        /// <summary>
+        /// return extra button pos 0-7, if none return -1
+        /// </summary>
+        /// <param name="newStates"></param>
+        /// <param name="mainCamera"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position, ref ulong rawPositionData)
         {
             var x = (int)position.x;
             var y = (int)position.y;
@@ -128,6 +201,7 @@ namespace MajdataPlay.IO
                 if (version == _version)
                 {
                     //MajDebug.LogDebug("Cached position");
+                    rawPositionData = p;
                     var eB = -1;
                     for (var i = 0; i < 12; i++)
                     {
@@ -213,6 +287,7 @@ namespace MajdataPlay.IO
                 newP |= 1UL << extraButton;
             }
             cachedPosition = newP;
+            rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {
                 if(extraButton < 8 && extraButton != -1)
