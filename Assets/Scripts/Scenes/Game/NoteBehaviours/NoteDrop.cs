@@ -187,8 +187,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float TAP_JUDGE_SEG_3RD_GREAT_MSEC = 6 * FRAME_LENGTH_MSEC;
         protected const float TAP_JUDGE_GOOD_AREA_MSEC = 9 * FRAME_LENGTH_MSEC;
 
-        protected const float HOLD_CLASSIC_END_JUDGE_PERFECT_AREA_MSEC = 12 * FRAME_LENGTH_MSEC;
-
+        protected const float HOLD_CLASSIC_END_JUDGE_PERFECT_FAST_AREA_MSEC = 9 * FRAME_LENGTH_MSEC;
+        protected const float HOLD_CLASSIC_END_JUDGE_PERFECT_LATE_AREA_MSEC = 12 * FRAME_LENGTH_MSEC;
+        
         protected const float TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC;
         protected const float TOUCH_JUDGE_SEG_2ND_PERFECT_MSEC = 10.5f * FRAME_LENGTH_MSEC;
         protected const float TOUCH_JUDGE_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC;

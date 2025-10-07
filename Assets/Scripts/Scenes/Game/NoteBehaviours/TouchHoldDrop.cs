@@ -509,38 +509,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
-            else
-            {
-                return;
-            }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+            else
+            {
+                return;
+            }
+#else
+            if (IsUseButtonRingForTouch &&
+                _noteManager.IsButtonClickedInThisFrame(_buttonPos) &&
+                _noteManager.TryUseButtonClickEvent(_buttonPos))
+            {
+                Judge(ThisFrameSec);
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+            else
+            {
+                return;
+            }
+#endif
             if (_isJudged)
             {
-                isDeviceUsedInThisFrame = true;
                 _noteManager.NextTouch(QueueInfo);
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 RegisterGrade();

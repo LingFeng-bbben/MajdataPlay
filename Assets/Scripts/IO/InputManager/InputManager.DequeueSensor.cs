@@ -67,7 +67,7 @@ namespace MajdataPlay.IO
                     _sensorLastTriggerTimes[i] = now;
                 }
 
-                MajDebug.LogInfo(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
+                MajDebug.LogDebug(ZString.Format("Sensor \"{0}\": {1}", sensor.Area, newState));
                 sensor.State = newState;
                 var msg = new InputEventArgs()
                 {
@@ -91,7 +91,7 @@ namespace MajdataPlay.IO
 
             if (oState != nState)
             {
-                MajDebug.LogInfo($"Sensor \"{sensor.Area}\": {nState}");
+                MajDebug.LogDebug($"Sensor \"{sensor.Area}\": {nState}");
                 sensor.State = nState;
                 var msg = new InputEventArgs()
                 {
