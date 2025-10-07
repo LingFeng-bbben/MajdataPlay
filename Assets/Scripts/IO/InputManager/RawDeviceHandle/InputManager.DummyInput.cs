@@ -62,7 +62,6 @@ namespace MajdataPlay.IO
             foreach (var (i, state) in newStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
-                ref readonly var clickedCount = ref sensorClickedCount[i];
                 _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
                 {
                     Index = i,
@@ -70,6 +69,7 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
+#if UNITY_ANDROID
             for (var i = 0; i < sensorClickedCount.Length; i++) 
             {
                 var clickedCount = sensorClickedCount[i];
@@ -87,7 +87,8 @@ namespace MajdataPlay.IO
                     _sensorClickedCountInThisFrame[i] = clickedCount;
                 }
             }
-            foreach(var (i, state) in extraButtonStates.WithIndex())
+#endif
+            foreach (var (i, state) in extraButtonStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
                 //if (i < 8 && UseOuterTouchAsSensor) continue;
