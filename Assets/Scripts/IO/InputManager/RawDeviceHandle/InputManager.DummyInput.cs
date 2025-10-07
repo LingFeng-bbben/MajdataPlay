@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -65,20 +66,6 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
-            //if (UseOuterTouchAsSensor) 
-            //{
-            //    foreach (var (i, state) in extraButtonStates.WithIndex())
-            //    {
-            //        var _state = state ? SwitchStatus.On : SwitchStatus.Off;
-            //        if (i >= 8) continue;
-            //        _touchPanelInputBuffer.Enqueue(new InputDeviceReport()
-            //        {
-            //            Index = i,
-            //            State = _state,
-            //            Timestamp = now
-            //        });
-            //    }
-            //}
             foreach(var (i, state) in extraButtonStates.WithIndex())
             {
                 var _state = state ? SwitchStatus.On : SwitchStatus.Off;
@@ -139,12 +126,12 @@ namespace MajdataPlay.IO
                 return -1;
             }
             ref var cachedPosition = ref _cachedPositions[x][y];
-
-            if(cachedPosition is not null)
+            var cubeRay = mainCamera.ScreenToWorldPoint(position);
+            if (cachedPosition is not null)
             {
                 var p = (ulong)cachedPosition;
                 var version = p >> (12 + 34);
-                if(version == _version)
+                if (version == _version)
                 {
                     //MajDebug.LogDebug("Cached position");
                     var eB = -1;
@@ -154,7 +141,7 @@ namespace MajdataPlay.IO
                         {
                             if (UseOuterTouchAsSensor)
                             {
-                                if(i < 8)
+                                if (i < 8)
                                 {
                                     newStates[i] = true;
                                 }
@@ -178,7 +165,6 @@ namespace MajdataPlay.IO
                 }
             }
             var newP = ((ulong)_version) << (12 + 34);
-            Vector3 cubeRay = mainCamera.ScreenToWorldPoint(position);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = (rayToCenter).magnitude;
             var extraButton = -1;
@@ -204,24 +190,28 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
-            for (int i = 0; i < 9; i++)
+            var userRad = FingerRadius;
+            var lastCircular = cubeRay + new Vector3(0, userRad);
+            const int SMAPLE_COUNT = 128;
+            const int HORIZONTAL_SMAPLE_COUNT = 16;
+            const float DEG_STEP = 360f / SMAPLE_COUNT;
+            var radStep = userRad / HORIZONTAL_SMAPLE_COUNT;
+
+            for (var rad = userRad; ; rad -= radStep) 
             {
-                var rad = FingerRadius;
-                var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                if (i == 8)
+                if(rad <= 0)
                 {
-                    circular = Vector3.zero;
+                    RaycastNow(cubeRay, newStates, ref newP);
+                    break;
                 }
-                var ray = new Ray(cubeRay + circular, Vector3.forward);
-                var ishit = Physics.Raycast(ray, out var hitInfom);
-                if (ishit)
+                for (int i = 0; i < SMAPLE_COUNT; i++)
                 {
-                    var id = hitInfom.colliderInstanceID;
-                    if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
-                    {
-                        newP |= 1UL << (index + 12);
-                        newStates[index] = true;
-                    }
+                    var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * i), rad * Mathf.Cos(DEG_STEP * i));
+                    var pos = cubeRay + circular;
+                    Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
+                    lastCircular = pos;
+
+                    RaycastNow(pos, newStates, ref newP);
                 }
             }
             if(extraButton != -1)
@@ -247,6 +237,21 @@ namespace MajdataPlay.IO
                 else
                 {
                     return -1;
+                }
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void RaycastNow(in Vector3 pos, in Span<bool> newStates, ref ulong newP)
+        {
+            var ray = new Ray(pos, Vector3.forward);
+            var ishit = Physics.Raycast(ray, out var hitInfom);
+            if (ishit)
+            {
+                var id = hitInfom.colliderInstanceID;
+                if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                {
+                    newP |= 1UL << (index + 12);
+                    newStates[index] = true;
                 }
             }
         }
