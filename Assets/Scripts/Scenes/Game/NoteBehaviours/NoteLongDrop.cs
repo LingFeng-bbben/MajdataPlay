@@ -224,27 +224,53 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected JudgeGrade HoldClassicEndJudge(in JudgeGrade headGrade,float offset)
         {
             if (!_isJudged)
+            {
                 return headGrade;
+            }
             else if (headGrade.IsMissOrTooFast())
+            {
                 return headGrade;
+            }
 
             var releaseTiming = ThisFrameSec - USERSETTING_JUDGE_OFFSET_SEC - offset;
             var diffSec = Timing + Length - releaseTiming;
             var isFast = diffSec > 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;
+            var endGrade = JudgeGrade.Miss;
 
-            var endGrade = diffMSec switch
+            if (isFast)
             {
-                <= HOLD_CLASSIC_END_JUDGE_PERFECT_AREA_MSEC => JudgeGrade.Perfect,
-                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
-            };
+                if(diffMSec < HOLD_CLASSIC_END_JUDGE_PERFECT_FAST_AREA_MSEC)
+                {
+                    endGrade = JudgeGrade.Perfect;
+                }
+                else
+                {
+                    endGrade = JudgeGrade.FastGood;
+                }
+            }
+            else
+            {
+                if (diffMSec < HOLD_CLASSIC_END_JUDGE_PERFECT_LATE_AREA_MSEC)
+                {
+                    endGrade = JudgeGrade.Perfect;
+                }
+                else
+                {
+                    endGrade = JudgeGrade.LateGood;
+                }
+            }
 
             var num = Math.Abs(7 - (int)headGrade);
             var endNum = Math.Abs(7 - (int)endGrade);
             if (endNum > num) // 取最差判定
+            {
                 return endGrade;
+            }
             else
+            {
                 return headGrade;
+            }
         }
     }
 }

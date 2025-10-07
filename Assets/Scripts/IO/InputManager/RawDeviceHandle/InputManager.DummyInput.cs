@@ -87,12 +87,6 @@ namespace MajdataPlay.IO
                 {
                     continue;
                 }
-                switch(touch.phase)
-                {
-                    case TouchPhase.Ended:
-                    case TouchPhase.Canceled:
-                        continue;
-                }
                 var button = PositionToSensorState(newStates, mainCamera, touch.screenPosition);
                 if (button != -1)
                 {
@@ -191,7 +185,7 @@ namespace MajdataPlay.IO
                 }
             }
             var userRad = FingerRadius;
-            var lastCircular = cubeRay + new Vector3(0, userRad);
+            //var lastCircular = cubeRay + new Vector3(0, userRad);
             const int SMAPLE_COUNT = 128;
             const int HORIZONTAL_SMAPLE_COUNT = 16;
             const float DEG_STEP = 360f / SMAPLE_COUNT;
@@ -208,8 +202,8 @@ namespace MajdataPlay.IO
                 {
                     var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * i), rad * Mathf.Cos(DEG_STEP * i));
                     var pos = cubeRay + circular;
-                    Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
-                    lastCircular = pos;
+                    //Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
+                    //lastCircular = pos;
 
                     RaycastNow(pos, newStates, ref newP);
                 }
