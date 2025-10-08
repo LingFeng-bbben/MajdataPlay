@@ -207,8 +207,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
-            Timing = poolingInfo.Timing;
-            _judgeTiming = Timing;
+            Timing = poolingInfo.Timing - TOUCH_HOLD_DISPLAY_OFFSET_SEC;
+            _judgeTiming = poolingInfo.Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
@@ -233,13 +233,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
-            if (Length < TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC)
+            if (Length < TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(Timing + TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
@@ -280,7 +280,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.End;
             _multTouchHandler.Unregister(_sensorPos);
-            _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
+            _judgeResult = HoldEndJudge(_judgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new NoteJudgeResult()
             {

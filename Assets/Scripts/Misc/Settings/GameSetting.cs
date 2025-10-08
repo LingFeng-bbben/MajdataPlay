@@ -214,6 +214,10 @@ namespace MajdataPlay.Settings
     {
         [Preserve]
         public bool Enable { get; set; } = false;
+#if UNITY_STANDALONE && ENABLE_MONO
+        public bool UseProxy { get; init; } = true;
+        public string Proxy { get; init; } = string.Empty;
+#endif
         [Preserve]
         public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
         {

@@ -73,13 +73,15 @@ namespace MajdataPlay
         public static Material HoldShineMaterial { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
-        public static HttpClient SharedHttpClient { get; } = new HttpClient(new HttpClientHandler()
+        readonly static HttpClientHandler _httpClientHandler = new HttpClientHandler()
         {
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             Proxy = WebRequest.GetSystemWebProxy(),
             UseProxy = true,
             UseCookies = true,
             CookieContainer = new CookieContainer(),
-        })
+        };
+        public static HttpClient SharedHttpClient { get; } = new HttpClient(_httpClientHandler)
         {
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
             DefaultRequestHeaders = 
@@ -217,6 +219,52 @@ namespace MajdataPlay
             Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
             Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
+
+#if UNITY_STANDALONE && ENABLE_MONO
+            if(Settings.Online.UseProxy)
+            {
+                if(!string.IsNullOrEmpty(Settings.Online.Proxy))
+                {
+                    if(!Uri.TryCreate(Settings.Online.Proxy, UriKind.Absolute, out var proxyUri))
+                    {
+                        MajDebug.LogError($"Invalid proxy URL: {Settings.Online.Proxy}");
+                        goto PROXY_CONFIG_EXIT;
+                    }
+                    switch (proxyUri.Scheme)
+                    {
+                        case "http":
+                        case "https":
+                            break;
+                        default:
+                            MajDebug.LogError($"Unsupported proxy scheme: {proxyUri.Scheme}");
+                            goto PROXY_CONFIG_EXIT;
+                    }
+                    var proxy = new WebProxy(proxyUri);
+                    if(!string.IsNullOrEmpty(proxyUri.UserInfo))
+                    {
+                        var parts = proxyUri.UserInfo.Split(":", 2);
+                        var username = parts[0];
+                        var password = parts.Length > 1 ? parts[1] : string.Empty;
+
+                        if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                        {
+                            proxy.Credentials = new NetworkCredential(username, password);
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning($"Invalid proxy credentials: {proxyUri.UserInfo}");
+                        }
+                    }
+                    _httpClientHandler.Proxy = proxy;
+                }
+            }
+            else
+            {
+                _httpClientHandler.UseProxy = false;
+                _httpClientHandler.Proxy = null;
+            }
+        PROXY_CONFIG_EXIT:
+#endif
 #if !UNITY_EDITOR
             if(MainThread.Name is not null)
             {
