@@ -282,6 +282,10 @@ namespace MajdataPlay.Settings
         public int TouchHoldPoolCapacity { get; set; } = 16;
         [SettingVisualizationIgnore]
         public int EachLinePoolCapacity { get; set; } = 64;
+        [Preserve]
+        [SettingVisualizationIgnore]
+        [JsonProperty]
+        internal MajDebug.LogLevel DebugLevel { get; set; } = MajDebug.LogLevel.Info;
     }
     [Preserve]
     public class IOOptions

@@ -1,4 +1,5 @@
 ﻿using Cysharp.Text;
+using MajdataPlay.Settings;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -42,7 +43,6 @@ namespace MajdataPlay
                 }
                 _isInited = true;
             }
-
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
@@ -217,10 +217,13 @@ namespace MajdataPlay
             {
                 while (_logQueue.TryDequeue(out var log))
                 {
-                    var condition = log.Condition;
+                    using var condition = log.Condition;
+                    if(log.Level < (MajEnv.Settings?.Debug.DebugLevel ?? LogLevel.Debug))
+                    {
+                        continue;
+                    }
                     LOG_OUTPUT_FORMAT.FormatTo(ref sb, log.Date, log.Level);
                     sb.Append(condition.AsSpan());
-                    condition.Dispose();
                     if (!string.IsNullOrEmpty(log.StackTrace))
                     {
                         sb.AppendLine();
@@ -262,7 +265,7 @@ namespace MajdataPlay
             public string? StackTrace { get; set; }
             public LogLevel Level { get; init; }
         }
-        enum LogLevel
+        internal enum LogLevel
         {
             Debug,
             Info,
