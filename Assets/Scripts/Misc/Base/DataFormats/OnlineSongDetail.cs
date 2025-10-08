@@ -252,7 +252,7 @@ namespace MajdataPlay
                                     }
                                     await UniTask.Yield();
                                 }
-                                if(getReq.result == UnityWebRequest.Result.Success)
+                                if(getReq.result is (UnityWebRequest.Result.Success or UnityWebRequest.Result.ProtocolError))
                                 {
                                     if(getReq.responseCode != (long)HttpStatusCode.OK)
                                     {
@@ -260,7 +260,7 @@ namespace MajdataPlay
                                         _videoPath = string.Empty;
                                         return _videoPath;
                                     }
-                                    else
+                                    else if(getReq.responseCode == (long)HttpStatusCode.NotFound)
                                     {
                                         break;
                                     }
