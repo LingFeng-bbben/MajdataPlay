@@ -77,7 +77,7 @@ namespace MajdataPlay.Scenes.Game
 
         static readonly bool USERSETTING_NOTE_FOLDING = MajEnv.Settings?.Debug.NoteFolding ?? true;
 
-        public static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
+        static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
             {SimaiNoteType.Tap, 2 },
             {SimaiNoteType.Hold, 3 },
@@ -85,7 +85,7 @@ namespace MajdataPlay.Scenes.Game
             {SimaiNoteType.Touch, 6 },
             {SimaiNoteType.TouchHold, 6 },
         };
-        public static readonly IReadOnlyDictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
+        static readonly IReadOnlyDictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
         {
             {"line3", 0 },
             {"line4", 1 },
@@ -131,7 +131,7 @@ namespace MajdataPlay.Scenes.Game
             {"L5", 40 },
         };
 
-        public static readonly IReadOnlyDictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new Dictionary<SensorArea, SensorArea[]>()
+        static readonly IReadOnlyDictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new Dictionary<SensorArea, SensorArea[]>()
         {
             { SensorArea.A1, new SensorArea[]{ SensorArea.D1, SensorArea.D2, SensorArea.E1, SensorArea.E2, SensorArea.B1 } },
             { SensorArea.A2, new SensorArea[]{ SensorArea.D2, SensorArea.D3, SensorArea.E2, SensorArea.E3, SensorArea.B2 } },
@@ -172,51 +172,6 @@ namespace MajdataPlay.Scenes.Game
             { SensorArea.C, new SensorArea[]{ SensorArea.B1, SensorArea.B2, SensorArea.B3, SensorArea.B4, SensorArea.B5, SensorArea.B6, SensorArea.B7, SensorArea.B8} },
         };
 
-        public static readonly IReadOnlyDictionary<string, List<int>> SLIDE_AREA_STEP_MAP = new Dictionary<string, List<int>>()
-        {
-            {"line3", new List<int>(){ 0, 2, 8, 13 } },
-            {"line4", new List<int>(){ 0, 3, 8, 12, 18 } },
-            {"line5", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"line6", new List<int>(){ 0, 3, 8, 12, 18 } },
-            {"line7", new List<int>(){ 0, 2, 8, 13 } },
-            {"circle1", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 58, 63 } },
-            {"circle2", new List<int>(){ 0, 3, 7 } },
-            {"circle3", new List<int>(){ 0, 3, 11, 15 } },
-            {"circle4", new List<int>(){ 0, 3, 11, 19, 23 } },
-            {"circle5", new List<int>(){ 0, 3, 11, 19, 27, 31 } },
-            {"circle6", new List<int>(){ 0, 3, 11, 19, 27, 35, 39 } },
-            {"circle7", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 47 } },
-            {"circle8", new List<int>(){ 0, 3, 11, 19, 27, 35, 43, 50, 55 } },
-            {"v1", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v2", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v3", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v4", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v6", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v7", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"v8", new List<int>(){ 0, 3, 6, 11, 15, 19 } },
-            {"ppqq1", new List<int>(){ 0, 3, 7, 13, 17, 26, 32, 35 } },
-            {"ppqq2", new List<int>(){ 0, 3, 7, 12, 16, 25, 28 } },
-            {"ppqq3", new List<int>(){ 0, 3, 6, 12, 15, 22 } },
-            {"ppqq4", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
-            {"ppqq5", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 40, 44, 49 } },
-            {"ppqq6", new List<int>(){ 0, 3, 7, 12, 16, 25, 28, 34, 38, 41, 48 } },
-            {"ppqq7", new List<int>(){ 0, 3, 7, 13, 17, 27, 31, 37, 41, 46 } },
-            {"ppqq8", new List<int>(){ 0, 3, 7, 12, 16, 25, 29, 35, 41 } },
-            {"pq1", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 33 } },
-            {"pq2", new List<int>(){ 0, 3, 8, 11, 14, 18, 21, 24, 30 } },
-            {"pq3", new List<int>(){ 0, 3, 9, 12, 16, 19, 23, 27 } },
-            {"pq4", new List<int>(){ 0, 3, 9, 13, 16, 20, 24 } },
-            {"pq5", new List<int>(){ 0, 3, 9, 13, 17, 21 } },
-            {"pq6", new List<int>(){ 0, 3, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 42 } },
-            {"pq7", new List<int>(){ 0, 3, 8, 12, 15, 18, 22, 25, 28, 32, 35, 39 } },
-            {"pq8", new List<int>(){ 0, 3, 8, 11, 14, 17, 21, 24, 27, 30, 36 } },
-            {"s", new List<int>(){ 0, 3, 8, 11, 17, 21, 24, 30 } },
-            {"wifi", new List<int>(){ 0, 1, 4, 6, 9} },
-            {"L2", new List<int>(){ 0, 2, 7, 15, 21, 26, 32 } },
-            {"L3", new List<int>(){ 0, 2, 8, 17, 20, 26, 29, 34 } },
-            {"L4", new List<int>(){ 0, 2, 8, 17, 22, 26, 32 } },
-            {"L5", new List<int>(){ 0, 2, 8, 16, 22, 28 } },
-        };
         readonly IReadOnlyDictionary<int, int> _buttonRingMappingTable;
         readonly IReadOnlyDictionary<SensorArea, SensorArea> _touchPanelMappingTable;
         NoteLoader()
@@ -1224,15 +1179,16 @@ namespace MajdataPlay.Scenes.Game
             SliCompo.IsSlideNoTrack = _isSlideNoTrack;
             SliCompo.Multiple = multiple;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
+            var slideBarCount = slide.transform.childCount - 1;
             if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
-                _slideLayer += SLIDE_AREA_STEP_MAP[slideShape].Last();
+                _slideLayer += slideBarCount;
                 SliCompo.SortOrder = _slideLayer;
             }
             else
             {
                 SliCompo.SortOrder = _slideLayer;
-                _slideLayer -= SLIDE_AREA_STEP_MAP[slideShape].Last();
+                _slideLayer -= slideBarCount;
             }
             //slideLayer += 5;
 
@@ -1313,15 +1269,16 @@ namespace MajdataPlay.Scenes.Game
             //    centerStar,
             //    leftStar
             //};
+            var slideBarCount = slideWifi.transform.childCount - 1;
             if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
-                _slideLayer += SLIDE_AREA_STEP_MAP["wifi"].Last();
+                _slideLayer += slideBarCount;
                 WifiCompo.SortOrder = _slideLayer;
             }
             else
             {
                 WifiCompo.SortOrder = _slideLayer;
-                _slideLayer -= SLIDE_AREA_STEP_MAP["wifi"].Last();
+                _slideLayer -= slideBarCount;
             }
             //slideLayer += 5;
 
