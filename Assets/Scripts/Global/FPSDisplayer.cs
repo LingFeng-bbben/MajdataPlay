@@ -5,6 +5,9 @@ using System.Linq;
 using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
+using System.Text;
+using System.Runtime.CompilerServices;
+using System;
 #nullable enable
 namespace MajdataPlay
 {
@@ -12,19 +15,23 @@ namespace MajdataPlay
     {
         public static Color BgColor { get; set; } = new Color(0, 0, 0);
 
+        uint _avgFPSIndex = 0;
+        uint _avgFPSSampleCount = 0;
+        uint _1_lowFrameSampleCount = 0;
+
         float _frameTimer = 1;
-        float?[] _data = new float?[150];
-        int _index = 0;
+        float _totalFrameTimeSec = 0;
+
+        readonly float[] _avgFPSData = new float[150];
+        readonly (float FrameTimeSec, ulong FrameIndex)[] _1_lowFrameData = new (float FrameTimeSec, ulong FrameIndex)[1500];
+        readonly char[] _charBuffer = new char[256];
+
         TextMeshPro _textDisplayer;
         GameSetting _setting;
 
         protected override void Awake()
         {
             base.Awake();
-            for (var i = 0; i < _data.Length; i++)
-            {
-                _data[i] = null;
-            }
             MajInstances.FPSDisplayer = this;
             _textDisplayer = GetComponent<TextMeshPro>();
         }
@@ -36,17 +43,32 @@ namespace MajdataPlay
 
         void LateUpdate()
         {
-            var delta = Time.deltaTime;
+            var delta = MajTimeline.DeltaTime;
             AddSample(delta);
-            var count = Count();
             if (_frameTimer <= 0)
             {
                 _textDisplayer.enabled = _setting.Debug.DisplayFPS;
-                //var newColor = new Color(1.0f - BgColor.r, 1.0f - BgColor.g, 1.0f - BgColor.b);
-                var fpsDelta = Sum() / count;
-
-                _textDisplayer.text = ZString.Format("FPS {0:F2}", 1 / fpsDelta);
-                //_textDisplayer.color = newColor;
+                var avgFPS = _totalFrameTimeSec / _avgFPSSampleCount;
+                using var sb = ZString.CreateStringBuilder();
+                if (_1_lowFrameSampleCount != 1500)
+                {
+                    sb.AppendFormat("FPS {0:F2}  1% --.--", 1 / avgFPS);
+                    sb.TryCopyTo(_charBuffer, out var copied);
+                    _textDisplayer.SetCharArray(_charBuffer, 0, copied);
+                }
+                else
+                {
+                    var totalLowFrameTime = 0f;
+                    for (var i = 0U; i < 150; i++)
+                    {
+                        ref var data = ref _1_lowFrameData[i];
+                        totalLowFrameTime += data.FrameTimeSec;
+                    }
+                    var avgLowFrameTime = totalLowFrameTime / 150; 
+                    sb.AppendFormat("FPS {0:F2}  1% {1:F2}", 1 / avgFPS, 1 / avgLowFrameTime);
+                    sb.TryCopyTo(_charBuffer, out var copied);
+                    _textDisplayer.SetCharArray(_charBuffer, 0, copied);
+                }
                 _frameTimer = 1;
             }
             else
@@ -54,33 +76,88 @@ namespace MajdataPlay
                 _frameTimer -= delta;
             }
         }
-        void AddSample(float data)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void AddSample(in float data)
         {
-            if (_index >= 150)
-                _index = 0;
-            _data[_index++] = data;
-        }
-        int Count()
-        {
-            var count = 0;
-            for(var i = 0;i < _data.Length; i++)
+            if (_avgFPSIndex >= 150)
             {
+                _avgFPSIndex = 0;
+            }
+            if (_avgFPSSampleCount != 150)
+            {
+                _avgFPSSampleCount++;
+            }
+            ref var lastSample = ref _avgFPSData[_avgFPSIndex++];
+            _totalFrameTimeSec -= lastSample;
+            _totalFrameTimeSec += data;
+            lastSample = data;
+            
+            fixed((float FrameTime, ulong FrameIndex)* lowFrameDataPtr = _1_lowFrameData)
+            {
+                const int BYTES_SIZE = 16;
+                if (_1_lowFrameSampleCount < 1500)
+                {
+                    _1_lowFrameSampleCount++;
+                }
 
-                if (_data[i] is not null)
-                    count++;
+                var flag = 0;
+                var thisFrameIndex = MajTimeline.FrameCount;
+                var oldestFrameIndex = ulong.MaxValue;
+                var oldestRecordIndex = -1;
+                for (var i = 0; i < 1500; i++)
+                {
+                    ref var data2 = ref *(lowFrameDataPtr + i);
+                    
+                    switch(flag)
+                    {
+                        case 0:
+                            {
+                                if (data2.FrameTime == 0)
+                                {
+                                    data2.FrameTime = data;
+                                    data2.FrameIndex = thisFrameIndex;
+                                    return;
+                                }
+                                else if (data2.FrameTime < data)
+                                {
+                                    //Array.Copy(_1_lowFrameData, i, _1_lowFrameData, i + 1, 1500 - i - 1);
+                                    var bytes2Copy = (1500 - i - 1) * BYTES_SIZE;
+                                    Buffer.MemoryCopy(lowFrameDataPtr + i, lowFrameDataPtr + i + 1, bytes2Copy, bytes2Copy);
+                                    data2.FrameTime = data;
+                                    data2.FrameIndex = thisFrameIndex;
+                                    flag = 1;
+                                    continue;
+                                }
+
+                                goto case 2;
+                            }
+                        case 1:
+                            {
+                                if (data2.FrameTime == 0)
+                                {
+                                    return;
+                                }
+
+                                goto case 2;
+                            }
+                        case 2:
+                            {
+                                if (data2.FrameIndex < oldestFrameIndex)
+                                {
+                                    oldestRecordIndex = i;
+                                    oldestFrameIndex = data2.FrameIndex;
+                                }
+                            }
+                            break;
+                    }
+                }
+                if(oldestRecordIndex != -1)
+                {
+                    var bytes2Copy = (1500 - oldestRecordIndex - 1) * BYTES_SIZE;
+                    Buffer.MemoryCopy(lowFrameDataPtr + oldestRecordIndex + 1, lowFrameDataPtr + oldestRecordIndex, bytes2Copy, bytes2Copy);
+                    *(lowFrameDataPtr + 1499) = (0 , 0);
+                }
             }
-            return count;
-        }
-        float Sum()
-        {
-            var total = 0f;
-            for (var i = 0; i < _data.Length; i++)
-            {
-                var sample = _data[i];
-                if (sample is not null)
-                    total += (float)sample;
-            }
-            return total;
         }
     }
 }

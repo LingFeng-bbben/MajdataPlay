@@ -8,6 +8,14 @@ namespace MajdataPlay
 {
     public static class MajTimeline
     {
+        public static ulong FrameCount
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _frameCount;
+            }
+        }
         /// <summary>
         /// The time in seconds since the start of the game.
         /// </summary>
@@ -78,6 +86,7 @@ namespace MajdataPlay
             get => _builtInTimeProviders;
         }
 
+        static ulong _frameCount = 0;
         static ITimeProvider _currentTimer;
         static TimeSpan _lastUpdateTime = TimeSpan.Zero;
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = new ITimeProvider[3]
@@ -103,6 +112,7 @@ namespace MajdataPlay
             var deltaTime = current - _lastUpdateTime;
             UnscaledDeltaTime = (float)deltaTime.TotalSeconds;
             _lastUpdateTime = current;
+            _frameCount++;
         }
     }
 }
