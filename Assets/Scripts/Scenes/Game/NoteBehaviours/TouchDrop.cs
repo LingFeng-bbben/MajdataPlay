@@ -131,8 +131,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
 
             StartPos = poolingInfo.StartPos;
-            Timing = poolingInfo.Timing;
-            _judgeTiming = Timing;
+            Timing = poolingInfo.Timing - TOUCH_DISPLAY_OFFSET_SEC;
+            _judgeTiming = poolingInfo.Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
