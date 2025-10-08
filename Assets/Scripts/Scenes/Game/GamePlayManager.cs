@@ -641,6 +641,8 @@ namespace MajdataPlay.Scenes.Game
                 throw e;
             }
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
+
+            _noteEffectPool.Init();
             await UniTask.Yield();
         }
         async UniTask PrepareToPlay()

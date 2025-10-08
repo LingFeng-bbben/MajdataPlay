@@ -2,6 +2,7 @@
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using UnityEngine;
+using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -26,6 +27,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         HoldEffectDisplayer[] _touchHoldEffects = new HoldEffectDisplayer[33];
 
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
+
+        RentedList<TapEffectDisplayer> _generatedTapEffectDisplayers = new RentedList<TapEffectDisplayer>(16);
+        RentedList<TouchEffectDisplayer> _generatedTouchEffectDisplayers = new RentedList<TouchEffectDisplayer>(16);
 
         GamePlayManager _gpManager;
         internal void Reset()
@@ -59,8 +63,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         void OnDestroy()
         {
             Majdata<NoteEffectPool>.Free();
+            _generatedTapEffectDisplayers.Dispose();
+            _generatedTouchEffectDisplayers.Dispose();
         }
-        void Start()
+        internal void Init()
         {
             var tapParent = transform.GetChild(0);
             var touchParent = transform.GetChild(1);
@@ -68,9 +74,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var touchFeedbackParent = transform.GetChild(3);
 
             _gpManager = Majdata<GamePlayManager>.Instance!;
+            var noteLoader = Majdata<NoteLoader>.Instance!;
+            var isHasTap = noteLoader.IsHasTap;
+            var isHasHold = noteLoader.IsHasHold;
+            var isHasTouch = noteLoader.IsHasTouch;
+            var isHasTouchHold = noteLoader.IsHasTouchHold;
             // Judge Effect
             for (var i = 0; i < 8; i++)
             {
+                if (!isHasTap[i])
+                {
+                    continue;
+                }
                 var rotation = Quaternion.Euler(0, 0, -22.5f + -45f * i);
                 var obj = Instantiate(tapEffectPrefab, tapParent);
                 obj.name = $"TapEffect_{i + 1}";
@@ -81,9 +96,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.DistanceRatio = MajInstances.Settings.Display.OuterJudgeDistance;
                 displayer.ResetAll();
                 _tapJudgeEffects[i] = displayer;
+                _generatedTapEffectDisplayers.Add(displayer);
             }
             for (var i = 0; i < 33; i++)
             {
+                if (!isHasTouch[i])
+                {
+                    continue;
+                }
                 var sensorPos = (SensorArea)i;
                 var obj = Instantiate(touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
@@ -91,24 +111,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 obj.name = $"TouchEffect_{sensorPos}";
                 displayer.SensorPos = sensorPos;
                 displayer.ResetAll();
-                _touchJudgeEffects[i] = displayer;
-
-                var obj4Hold = Instantiate(tapEffectPrefab, touchHoldParent);
-                var distance = NoteHelper.GetTouchAreaDistance(sensorPos.GetGroup());
-                var position = Vector3.zero;
-                position.y += distance;
-                var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
-                var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
-                obj4Hold.transform.rotation = rotation;
-                displayer4Hold.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
-                displayer4Hold.LocalPosition = position;
-                obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
-                displayer4Hold.ResetAll();
-                _touchHoldJudgeEffects[i] = displayer4Hold;
+                _touchJudgeEffects[i] = displayer;    
+                _generatedTouchEffectDisplayers.Add(displayer);
             }
             // Hold Effect
             for (var i = 0; i < 8; i++)
             {
+                if (!isHasHold[i])
+                {
+                    continue;
+                }
                 var obj = Instantiate(holdEffectPrefab, tapParent);
                 obj.name = $"HoldEffect_{i + 1}";
                 var position = NoteHelper.GetTapPosition(i + 1, 4.8f);
@@ -119,6 +131,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             for (var i = 0; i < 33; i++)
             {
+                if (!isHasTouchHold[i])
+                {
+                    continue;
+                }
                 var sensorPos = (SensorArea)i;
                 var obj = Instantiate(holdEffectPrefab, touchHoldParent);
                 obj.name = $"TouchHold_HoldingEffect_{sensorPos}";
@@ -127,6 +143,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.Position = position;
                 displayer.Reset();
                 _touchHoldEffects[i] = displayer;
+
+                var obj4Hold = Instantiate(tapEffectPrefab, touchHoldParent);
+                var distance = NoteHelper.GetTouchAreaDistance(sensorPos.GetGroup());
+                var position2 = Vector3.zero;
+                position2.y += distance;
+                var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
+                var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
+                obj4Hold.transform.rotation = rotation;
+                displayer4Hold.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
+                displayer4Hold.LocalPosition = position2;
+                obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
+                displayer4Hold.ResetAll();
+                _touchHoldJudgeEffects[i] = displayer4Hold;
+                _generatedTapEffectDisplayers.Add(displayer4Hold);
             }
             // Touch Feedback Effect
             for (var i = 0; i < 33; i++)
@@ -157,15 +187,26 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             {
                 return;
             }
-            for (var i = 0; i < 33; i++)
+            var count1 = _generatedTapEffectDisplayers.Count;
+            var count2 = _generatedTouchEffectDisplayers.Count;
+            for (var i = 0; i < count1; i++)
             {
-                _touchJudgeEffects[i].OnLateUpdate();
-                _touchHoldJudgeEffects[i].OnLateUpdate();
+                _generatedTapEffectDisplayers[i].OnLateUpdate();
             }
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < count2; i++)
             {
-                _tapJudgeEffects[i].OnLateUpdate();
+                _generatedTouchEffectDisplayers[i].OnLateUpdate();
             }
+
+            //for (var i = 0; i < 33; i++)
+            //{
+            //    _touchJudgeEffects[i].OnLateUpdate();
+            //    _touchHoldJudgeEffects[i].OnLateUpdate();
+            //}
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    _tapJudgeEffects[i].OnLateUpdate();
+            //}
         }
         /// <summary>
         /// Tap、Hold、Star

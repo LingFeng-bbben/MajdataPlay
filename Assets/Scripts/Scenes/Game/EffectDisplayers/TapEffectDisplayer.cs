@@ -1,8 +1,9 @@
-﻿using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Utils;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
@@ -87,6 +88,7 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerB.LocalPosition = textPosition;
             _isEnabled = MajInstances.Settings.Display.OuterJudgeDistance != 0 && DistanceRatio != 0;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             _perfectDisplayer.OnLateUpdate();
@@ -96,6 +98,7 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerA.OnLateUpdate();
             _fastLateDisplayerB.OnLateUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             _perfectDisplayer.Reset();
@@ -105,6 +108,7 @@ namespace MajdataPlay.Scenes.Game
         /// <summary>
         /// 将Effect、Text和FastLate设置为非活动状态
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetAll()
         {
             Reset();
@@ -112,6 +116,7 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult)
         {
             _judgeTextDisplayer.Reset();
@@ -136,6 +141,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayEffect(in NoteJudgeResult judgeResult)
         {
             var isBreak = judgeResult.IsBreak;
@@ -181,6 +187,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
@@ -196,6 +203,7 @@ namespace MajdataPlay.Scenes.Game
             _judgeTextDisplayer.Play(judgeResult);
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;

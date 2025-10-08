@@ -39,6 +39,36 @@ namespace MajdataPlay.Scenes.Game
         }
         public long NoteCount { get; private set; } = 0;
 
+        public ReadOnlySpan<bool> IsHasTap
+        {
+            get
+            {
+                return _isHasTap;
+            }
+        }
+        public ReadOnlySpan<bool> IsHasHold
+        {
+            get
+            {
+                return _isHasHold;
+            }
+        }
+        public ReadOnlySpan<bool> IsHasTouch
+        {
+            get
+            {
+                return _isHasTouch;
+            }
+        }
+        public ReadOnlySpan<bool> IsHasTouchHold
+        {
+            get
+            {
+                return _isHasTouchHold;
+            }
+        }
+
+
         public GameObject tapPrefab;
         public GameObject holdPrefab;
         public GameObject starPrefab;
@@ -66,18 +96,23 @@ namespace MajdataPlay.Scenes.Game
 
         NoteManager _noteManager;
 
-        static readonly List<SlideQueueInfo> _slideQueueInfos = new();
-        static readonly Dictionary<int, int> _noteIndex = new();
-        static readonly Dictionary<SensorArea, int> _touchIndex = new();
+        readonly static bool[] _isHasTap = new bool[8];
+        readonly static bool[] _isHasHold = new bool[8];
+        readonly static bool[] _isHasTouch = new bool[33];
+        readonly static bool[] _isHasTouchHold = new bool[33];
+
+        readonly static List<SlideQueueInfo> _slideQueueInfos = new();
+        readonly static Dictionary<int, int> _noteIndex = new();
+        readonly static Dictionary<SensorArea, int> _touchIndex = new();
 
         SlideUpdater _slideUpdater;
         GamePlayManager? _gpManager;
         ObjectCounter _objectCounter;
         NotePoolManager _poolManager;
 
-        static readonly bool USERSETTING_NOTE_FOLDING = MajEnv.Settings?.Debug.NoteFolding ?? true;
+        readonly static bool USERSETTING_NOTE_FOLDING = MajEnv.Settings?.Debug.NoteFolding ?? true;
 
-        static readonly IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
+        readonly static IReadOnlyDictionary<SimaiNoteType, int> NOTE_LAYER_COUNT = new Dictionary<SimaiNoteType, int>()
         {
             {SimaiNoteType.Tap, 2 },
             {SimaiNoteType.Hold, 3 },
@@ -85,7 +120,7 @@ namespace MajdataPlay.Scenes.Game
             {SimaiNoteType.Touch, 6 },
             {SimaiNoteType.TouchHold, 6 },
         };
-        static readonly IReadOnlyDictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
+        readonly static IReadOnlyDictionary<string, int> SLIDE_PREFAB_MAP = new Dictionary<string, int>()
         {
             {"line3", 0 },
             {"line4", 1 },
@@ -131,7 +166,7 @@ namespace MajdataPlay.Scenes.Game
             {"L5", 40 },
         };
 
-        static readonly IReadOnlyDictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new Dictionary<SensorArea, SensorArea[]>()
+        readonly static IReadOnlyDictionary<SensorArea, SensorArea[]> TOUCH_GROUPS = new Dictionary<SensorArea, SensorArea[]>()
         {
             { SensorArea.A1, new SensorArea[]{ SensorArea.D1, SensorArea.D2, SensorArea.E1, SensorArea.E2, SensorArea.B1 } },
             { SensorArea.A2, new SensorArea[]{ SensorArea.D2, SensorArea.D3, SensorArea.E2, SensorArea.E3, SensorArea.B2 } },
@@ -182,6 +217,11 @@ namespace MajdataPlay.Scenes.Game
         void Awake()
         {
             Majdata<NoteLoader>.Instance = this;
+
+            Array.Clear(_isHasTap, 0, _isHasTap.Length);
+            Array.Clear(_isHasHold, 0, _isHasHold.Length);
+            Array.Clear(_isHasTouch, 0, _isHasTouch.Length);
+            Array.Clear(_isHasTouchHold, 0, _isHasTouchHold.Length);
         }
         void OnDestroy()
         {
@@ -206,6 +246,11 @@ namespace MajdataPlay.Scenes.Game
             _noteIndex.Clear();
             _touchIndex.Clear();
             _slideQueueInfos.Clear();
+
+            Array.Clear(_isHasTap, 0, _isHasTap.Length);
+            Array.Clear(_isHasHold, 0, _isHasHold.Length);
+            Array.Clear(_isHasTouch, 0, _isHasTouch.Length);
+            Array.Clear(_isHasTouchHold, 0, _isHasTouchHold.Length);
         }
         internal async UniTask LoadNotesIntoPoolAsync(SimaiChart maiChart, CancellationToken token = default)
         {
@@ -426,7 +471,7 @@ namespace MajdataPlay.Scenes.Game
                     if (noteCount - noHeadSlideCount == 1)
                         isEach = false;
                 }
-
+                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
@@ -481,6 +526,8 @@ namespace MajdataPlay.Scenes.Game
                     if (noteCount - noHeadSlideCount == 1)
                         isEach = false;
                 }
+                _isHasHold[startPos - 1] = true;
+                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
@@ -533,7 +580,7 @@ namespace MajdataPlay.Scenes.Game
                 if (appearTiming < -5f && _gpManager is not null)
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
-
+                _isHasTap[startPos - 1] = true;
                 if (isEach)
                 {
                     var count = timing.Notes.FindAll(
@@ -619,6 +666,7 @@ namespace MajdataPlay.Scenes.Game
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 if (appearTiming < -5f && _gpManager is not null)
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                _isHasTouch[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 if (isEach)
                 {
@@ -687,6 +735,7 @@ namespace MajdataPlay.Scenes.Game
                 if (appearTiming < -5f && _gpManager is not null)
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
 
+                _isHasTouchHold[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 sensorPos = NoteCreateHelper.Rotation(sensorPos, ChartRotation);
                 var poolingInfo = new TouchHoldPoolingInfo()

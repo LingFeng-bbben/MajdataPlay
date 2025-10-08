@@ -1,10 +1,11 @@
 ﻿using MajdataPlay.Extensions;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Skins;
-using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
@@ -79,6 +80,7 @@ namespace MajdataPlay.Scenes.Game
                                  .ToArray();
             SetActiveInternal(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             if (!Active || _animRemainingTime < 0)
@@ -89,10 +91,12 @@ namespace MajdataPlay.Scenes.Game
             _animator.Update(deltaTime);
             _animRemainingTime -= deltaTime;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             SetActive(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult, bool isClassC = false)
         {
             SetActive(true);
@@ -248,12 +252,14 @@ namespace MajdataPlay.Scenes.Game
                     break;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void SetActive(bool state)
         {
             if (Active == state)
                 return;
             SetActiveInternal(state);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetActiveInternal(bool state)
         {
             Active = state;
