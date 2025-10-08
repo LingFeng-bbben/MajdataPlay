@@ -52,7 +52,7 @@ namespace MajdataPlay
                 using var sb = ZString.CreateStringBuilder();
                 if (_1_lowFrameSampleCount != 1500)
                 {
-                    sb.AppendFormat("FPS {0:F2}  1% --.--", 1 / avgFPS);
+                    sb.AppendFormat("FPS  {0:F2}   1%  --.--", 1 / avgFPS);
                     sb.TryCopyTo(_charBuffer, out var copied);
                     _textDisplayer.SetCharArray(_charBuffer, 0, copied);
                 }
@@ -65,7 +65,7 @@ namespace MajdataPlay
                         totalLowFrameTime += data.FrameTimeSec;
                     }
                     var avgLowFrameTime = totalLowFrameTime / 150; 
-                    sb.AppendFormat("FPS {0:F2}  1% {1:F2}", 1 / avgFPS, 1 / avgLowFrameTime);
+                    sb.AppendFormat("FPS  {0:F2}   1%  {1:F2}", 1 / avgFPS, 1 / avgLowFrameTime);
                     sb.TryCopyTo(_charBuffer, out var copied);
                     _textDisplayer.SetCharArray(_charBuffer, 0, copied);
                 }
