@@ -824,7 +824,9 @@ namespace MajdataPlay.Scenes.Game
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("GamePlayManager.OnPreUpdate");
+            Profiler.BeginSample("GamePlayManager.AudioTimeUpdate");
             AudioTimeUpdate();
+            Profiler.EndSample();
             ComponentPreUpdate();
             Profiler.EndSample();
         }
@@ -832,8 +834,12 @@ namespace MajdataPlay.Scenes.Game
         {
             Profiler.BeginSample("GamePlayManager.OnUpdate");
             NoteManagerUpdate();
+            Profiler.BeginSample("GamePlayManager.GameControlUpdate");
             GameControlUpdate();
+            Profiler.EndSample();
+            Profiler.BeginSample("GamePlayManager.FnKeyStateUpdate");
             FnKeyStateUpdate();
+            Profiler.EndSample();
             Profiler.EndSample();
         }
         internal void OnLateUpdate()
@@ -945,7 +951,9 @@ namespace MajdataPlay.Scenes.Game
                     _notePoolManager.OnPreUpdate();
                     break;
             }
+            Profiler.BeginSample("TimeDisplayer.OnPreUpdate");
             _timeDisplayer.OnPreUpdate();
+            Profiler.EndSample();
         }
         void NoteManagerUpdate()
         {

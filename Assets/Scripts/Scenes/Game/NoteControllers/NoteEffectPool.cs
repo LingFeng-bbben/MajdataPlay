@@ -1,8 +1,9 @@
-﻿using MajdataPlay.Scenes.Game.Utils;
+﻿using MajdataPlay.Buffers;
 using MajdataPlay.IO;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Utils;
 using UnityEngine;
-using MajdataPlay.Buffers;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -183,6 +184,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("NoteEffectPool.OnLateUpdate");
             if (!_isInitialized)
             {
                 return;
@@ -207,6 +209,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             //{
             //    _tapJudgeEffects[i].OnLateUpdate();
             //}
+            Profiler.EndSample();
         }
         /// <summary>
         /// Tap、Hold、Star
