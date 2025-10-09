@@ -1,16 +1,17 @@
-using MajdataPlay.Scenes.Game.Buffers;
-using MajdataPlay.Utils;
-using System.Collections.Generic;
-using UnityEngine;
-using MajdataPlay.IO;
-using System.Runtime.CompilerServices;
-using System;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Editor;
+using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Settings;
 using MajdataPlay.Unsafe;
+using MajdataPlay.Utils;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
-using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
@@ -116,6 +117,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("NoteManager.OnPreUpdate");
             for (var i = 0; i < 8; i++)
             {
 #if !UNITY_ANDROID
@@ -157,9 +159,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _preUpdateElapsedMs += _touchHoldUpdater.PreUpdateElapsedMs;
             _preUpdateElapsedMs += _eachLineUpdater.PreUpdateElapsedMs;
 #endif
+            Profiler.EndSample();
         }
         internal void OnUpdate()
         {
+            Profiler.BeginSample("NoteManager.OnUpdate");
             _tapUpdater.OnUpdate();
             _holdUpdater.OnUpdate();
             _slideUpdater.OnUpdate();
@@ -175,9 +179,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
             _updateElapsedMs += _eachLineUpdater.UpdateElapsedMs;
 #endif
+            Profiler.EndSample();
         }
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("NoteManager.OnLateUpdate");
             _tapUpdater.OnLateUpdate();
             _holdUpdater.OnLateUpdate();
             _slideUpdater.OnLateUpdate();
@@ -193,9 +199,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
             _lateUpdateElapsedMs += _eachLineUpdater.LateUpdateElapsedMs;
 #endif
+            Profiler.EndSample();
         }
         internal void OnFixedUpdate()
         {
+            Profiler.BeginSample("NoteManager.OnFixedUpdate");
             _tapUpdater.OnFixedUpdate();
             _holdUpdater.OnFixedUpdate();
             _slideUpdater.OnFixedUpdate();
@@ -211,6 +219,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _fixedUpdateElapsedMs += _touchHoldUpdater.FixedUpdateElapsedMs;
             _fixedUpdateElapsedMs += _eachLineUpdater.FixedUpdateElapsedMs;
 #endif
+            Profiler.EndSample();
         }
         public async UniTask InitAsync()
         {

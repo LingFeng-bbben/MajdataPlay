@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
@@ -127,7 +128,7 @@ namespace MajdataPlay.Scenes.Game
         float _displayOffsetSec = 0f;
 
         Task _generateAnswerSFXTask = Task.CompletedTask;
-        Text _errText;
+        TextMeshProUGUI _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
 
@@ -155,6 +156,8 @@ namespace MajdataPlay.Scenes.Game
         readonly CancellationTokenSource _cts = new();
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
+
+        readonly static Utf16PreparedFormat<float, float> ERROR_TEXT_FORMAT = ZString.PrepareUtf16<float, float>("Delta\nAudio {0:F4}\nVideo {1:F4}");
 
         #region GameLoading
 
@@ -214,7 +217,7 @@ namespace MajdataPlay.Scenes.Game
             _noteLoader = Majdata<NoteLoader>.Instance!;
             _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
 
-            _errText = GameObject.Find("ErrText").GetComponent<Text>();
+            _errText = GameObject.Find("ErrText").GetComponent<TextMeshProUGUI>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             
             InitGame().Forget();
@@ -824,7 +827,9 @@ namespace MajdataPlay.Scenes.Game
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("GamePlayManager.OnPreUpdate");
+            Profiler.BeginSample("GamePlayManager.AudioTimeUpdate");
             AudioTimeUpdate();
+            Profiler.EndSample();
             ComponentPreUpdate();
             Profiler.EndSample();
         }
@@ -832,8 +837,12 @@ namespace MajdataPlay.Scenes.Game
         {
             Profiler.BeginSample("GamePlayManager.OnUpdate");
             NoteManagerUpdate();
+            Profiler.BeginSample("GamePlayManager.GameControlUpdate");
             GameControlUpdate();
+            Profiler.EndSample();
+            Profiler.BeginSample("GamePlayManager.FnKeyStateUpdate");
             FnKeyStateUpdate();
+            Profiler.EndSample();
             Profiler.EndSample();
         }
         internal void OnLateUpdate()
@@ -945,7 +954,9 @@ namespace MajdataPlay.Scenes.Game
                     _notePoolManager.OnPreUpdate();
                     break;
             }
+            Profiler.BeginSample("TimeDisplayer.OnPreUpdate");
             _timeDisplayer.OnPreUpdate();
+            Profiler.EndSample();
         }
         void NoteManagerUpdate()
         {
@@ -1037,17 +1048,29 @@ namespace MajdataPlay.Scenes.Game
                 case GamePlayStatus.Running:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.WaitForEnd:
-                    //Do not use this!!!! This have connection with sample batch size
-                    //AudioTime = (float)audioSample.GetCurrentTime();
-                    var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
-                    var playbackSpeed = PlaybackSpeed;
-                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / playbackSpeed) - _displayOffsetSec;
-                    var timeOffset = elapsedSeconds - _audioStartTime;
-                    var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
-                    var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                    {
+                        //Do not use this!!!! This have connection with sample batch size
+                        //AudioTime = (float)audioSample.GetCurrentTime();
+                        var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
+                        var playbackSpeed = PlaybackSpeed;
+                        var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / playbackSpeed) - _displayOffsetSec;
+                        var timeOffset = elapsedSeconds - _audioStartTime;
+                        var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                        var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
-                    _thisFrameSec = timeOffset - chartOffset;
-                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
+                        _thisFrameSec = timeOffset - chartOffset;
+                        var sb = ZString.CreateStringBuilder(true);
+                        try
+                        {
+                            ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
+                            var a = sb.AsArraySegment();
+                            _errText.SetCharArray(a.Array, a.Offset, a.Count);
+                        }
+                        finally
+                        {
+                            sb.Dispose();
+                        }
+                    }           
                     break;
             }
         }

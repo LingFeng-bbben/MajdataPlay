@@ -1,15 +1,16 @@
-using UnityEngine;
-using MajdataPlay.IO;
-using MajdataPlay.Utils;
+using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using System;
-using System.Threading.Tasks;
+using MajdataPlay.IO;
+using MajdataPlay.Settings;
+using MajdataPlay.Utils;
 using MajSimai;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Collections;
-using MajdataPlay.Settings;
-using MajdataPlay.Buffers;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -105,13 +106,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("NoteAudioManager.OnPreUpdate");
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {
                 _noteSFXPlaybackRequests[i] = false;
             }
+            Profiler.EndSample();
         }
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("NoteAudioManager.OnLateUpdate");
             AnswerSFXUpdate();
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {
@@ -215,6 +219,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         break;
                 }
             }
+            Profiler.EndSample();
         }
         void AnswerSFXUpdate()
         {
