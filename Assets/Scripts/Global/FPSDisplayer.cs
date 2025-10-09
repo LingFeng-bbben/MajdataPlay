@@ -24,7 +24,6 @@ namespace MajdataPlay
 
         readonly float[] _avgFPSData = new float[150];
         readonly (float FrameTimeSec, ulong FrameIndex)[] _1_lowFrameData = new (float FrameTimeSec, ulong FrameIndex)[1500];
-        readonly char[] _charBuffer = new char[256];
 
         TextMeshPro _textDisplayer;
         GameSetting _setting;
@@ -49,12 +48,12 @@ namespace MajdataPlay
             {
                 _textDisplayer.enabled = _setting.Debug.DisplayFPS;
                 var avgFPS = _totalFrameTimeSec / _avgFPSSampleCount;
-                using var sb = ZString.CreateStringBuilder();
+                using var sb = ZString.CreateStringBuilder(true);
                 if (_1_lowFrameSampleCount != 1500)
                 {
                     sb.AppendFormat("FPS  {0:F2}   1%  --.--", 1 / avgFPS);
-                    sb.TryCopyTo(_charBuffer, out var copied);
-                    _textDisplayer.SetCharArray(_charBuffer, 0, copied);
+                    var a = sb.AsArraySegment();
+                    _textDisplayer.SetCharArray(a.Array, a.Offset, a.Count);
                 }
                 else
                 {
@@ -66,8 +65,8 @@ namespace MajdataPlay
                     }
                     var avgLowFrameTime = totalLowFrameTime / 150; 
                     sb.AppendFormat("FPS  {0:F2}   1%  {1:F2}", 1 / avgFPS, 1 / avgLowFrameTime);
-                    sb.TryCopyTo(_charBuffer, out var copied);
-                    _textDisplayer.SetCharArray(_charBuffer, 0, copied);
+                    var a = sb.AsArraySegment();
+                    _textDisplayer.SetCharArray(a.Array, a.Offset, a.Count);
                 }
                 _frameTimer = 1;
             }
