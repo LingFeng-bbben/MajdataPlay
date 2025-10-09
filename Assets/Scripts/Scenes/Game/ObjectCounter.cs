@@ -166,20 +166,20 @@ namespace MajdataPlay.Scenes.Game
         [SerializeField]
         GameObject _topInfoJudgeParent;
         [SerializeField]
-        Text _topInfoPerfect;
+        TextMeshProUGUI _topInfoPerfect;
         [SerializeField]
-        Text _topInfoGreat;
+        TextMeshProUGUI _topInfoGreat;
         [SerializeField]
-        Text _topInfoGood;
+        TextMeshProUGUI _topInfoGood;
         [SerializeField]
-        Text _topInfoMiss;
+        TextMeshProUGUI _topInfoMiss;
 
         [SerializeField]
         GameObject _topInfoTimingParent;
         [SerializeField]
-        Text _topInfoFast;
+        TextMeshProUGUI _topInfoFast;
         [SerializeField]
-        Text _topInfoLate;
+        TextMeshProUGUI _topInfoLate;
 
         #endregion
 
@@ -883,15 +883,59 @@ namespace MajdataPlay.Scenes.Game
             switch (MajInstances.Settings.Game.TopInfo)
             {
                 case TopInfoDisplayOption.Judge:
-                    var p = _cPerfectCount + _perfectCount;
-                    _topInfoPerfect.text = p == 0 ? "" : p.ToString();
-                    _topInfoGreat.text = _greatCount == 0 ? "" : _greatCount.ToString();
-                    _topInfoGood.text = _goodCount == 0 ? "" : _goodCount.ToString();
-                    _topInfoMiss.text = _missCount == 0 ? "" : _missCount.ToString();
+                    {
+                        var p = _cPerfectCount + _perfectCount;
+                        _sb.Clear();
+                        if(p != 0)
+                        {
+                            _sb.Append(p);
+                        }
+                        var a = _sb.AsArraySegment();
+                        _topInfoPerfect.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        _sb.Clear();
+                        if (_greatCount != 0)
+                        {
+                            _sb.Append(_greatCount);
+                        }
+                        var b = _sb.AsArraySegment();
+                        _topInfoGreat.SetCharArray(b.Array, b.Offset, b.Count);
+
+                        _sb.Clear();
+                        if (_goodCount != 0)
+                        {
+                            _sb.Append(_goodCount);
+                        }
+                        var c = _sb.AsArraySegment();
+                        _topInfoGood.SetCharArray(c.Array, c.Offset, c.Count);
+
+                        _sb.Clear();
+                        if (_missCount != 0)
+                        {
+                            _sb.Append(_missCount);
+                        }
+                        var d = _sb.AsArraySegment();
+                        _topInfoMiss.SetCharArray(d.Array, d.Offset, d.Count);
+                    }
                     break;
                 case TopInfoDisplayOption.Timing:
-                    _topInfoFast.text = _fastCount == 0 ? "" : _fastCount.ToString();
-                    _topInfoLate.text = _lateCount == 0 ? "" : _lateCount.ToString();
+                    {
+                        _sb.Clear();
+                        if (_fastCount != 0)
+                        {
+                            _sb.Append(_fastCount);
+                        }
+                        var a = _sb.AsArraySegment();
+                        _topInfoFast.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        _sb.Clear();
+                        if (_lateCount != 0)
+                        {
+                            _sb.Append(_lateCount);
+                        }
+                        var b = _sb.AsArraySegment();
+                        _topInfoLate.SetCharArray(b.Array, b.Offset, b.Count);
+                    }
                     break;
                 case TopInfoDisplayOption.None:
                 default:
