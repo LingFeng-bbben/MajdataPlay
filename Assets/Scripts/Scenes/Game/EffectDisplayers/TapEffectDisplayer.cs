@@ -4,10 +4,13 @@ using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public sealed class TapEffectDisplayer : MonoBehaviour
     {
         public Vector3 Position => effectParent.transform.position;

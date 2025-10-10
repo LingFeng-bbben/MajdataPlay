@@ -8,10 +8,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal sealed class TouchJudgeEffectDisplayer: MajComponent
     {
         Animator _animator;

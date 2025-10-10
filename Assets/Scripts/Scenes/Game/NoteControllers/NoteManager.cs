@@ -9,6 +9,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -16,6 +17,8 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal class NoteManager : MonoBehaviour
     {
 
@@ -26,8 +29,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         TouchHoldUpdater _touchHoldUpdater;
         EachLineUpdater _eachLineUpdater;
 
-        readonly static int[] _noteCurrentIndex = new int[8];
-        readonly static int[] _touchCurrentIndex = new int[33];
+        readonly int[] _noteCurrentIndex = new int[8];
+        readonly int[] _touchCurrentIndex = new int[33];
 
         [ReadOnlyField]
         [SerializeField]
@@ -43,26 +46,26 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         double _lateUpdateElapsedMs = 0;
 
         //DJAuto
-        readonly static SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
-        readonly static SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
-        readonly static SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInNextFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[8];
+        readonly SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[8];
         //DJAuto
-        readonly static SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
-        readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
-        readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInNextFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+        readonly SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         
-        readonly static bool[] _isBtnClickedInThisFrame = new bool[8];
-        readonly static bool[] _isSensorClickedInThisFrame = new bool[33];
+        readonly bool[] _isBtnClickedInThisFrame = new bool[8];
+        readonly bool[] _isSensorClickedInThisFrame = new bool[33];
 
 #if UNITY_ANDROID
-        readonly static int[] _sensorClickedCountInThisFrame = new int[33];
-        readonly static int[] _sensorUsedCountInThisFrame = new int[33];
+        readonly int[] _sensorClickedCountInThisFrame = new int[33];
+        readonly int[] _sensorUsedCountInThisFrame = new int[33];
 
         static int _defaultButtonStatusUsage = 0;
         static int _defaultSensorStatusUsage = 0;
 #else
-        readonly static bool[] _isBtnUsedInThisFrame = new bool[8];
-        readonly static bool[] _isSensorUsedInThisFrame = new bool[33];
+        readonly bool[] _isBtnUsedInThisFrame = new bool[8];
+        readonly bool[] _isSensorUsedInThisFrame = new bool[33];
 #endif
 
         static bool _isUseButtonRingForTouch = false;
@@ -115,6 +118,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #if UNITY_ANDROID
 #else
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("NoteManager.OnPreUpdate");
@@ -161,6 +165,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             Profiler.EndSample();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnUpdate()
         {
             Profiler.BeginSample("NoteManager.OnUpdate");
@@ -181,6 +186,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             Profiler.EndSample();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             Profiler.BeginSample("NoteManager.OnLateUpdate");
@@ -201,6 +207,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             Profiler.EndSample();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnFixedUpdate()
         {
             Profiler.BeginSample("NoteManager.OnFixedUpdate");

@@ -2,10 +2,14 @@
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
 using System;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {
         public NoteStatus State { get; private set; } = NoteStatus.Start;
@@ -42,6 +46,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             SetActiveInternal(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayResult(in NoteJudgeResult result)
         {
             var isBreak = false;
@@ -102,6 +107,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             State = NoteStatus.Running;
             SetActive(true);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void Play(bool isBreak)
         {
             if (IsClassic)
@@ -119,6 +125,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _animator.Update(0.0000001f);
         }
         [OnUpdate]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
         {
             if (_elapsedTime > 0.5f)
@@ -132,68 +139,81 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _elapsedTime += MajTimeline.DeltaTime;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SetR()
         {
             _indexOffset = 0;
             RefreshSprite();
             return (int)Shape;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SetL()
         {
             _indexOffset = 3;
             RefreshSprite();
             return (int)Shape;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetJustCP()
         {
             _judgeOffset = 0;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetJustP()
         {
             _judgeOffset = 6;
             RefreshSprite();
         }
-         void SetFastP()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void SetFastP()
         {
             _judgeOffset = 12;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetFastGr()
         {
             _judgeOffset = 18;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetFastGd()
         {
             _judgeOffset = 24;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetLateP()
         {
             _judgeOffset = 30;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetLateGr()
         {
             _judgeOffset = 36;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetLateGd()
         {
             _judgeOffset = 42;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetMiss()
         {
             _judgeOffset = 48;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetTooFast()
         {
             _judgeOffset = 54;
             RefreshSprite();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void RefreshSprite()
         {
             _spriteRenderer.sprite = _justSprites[(int)Shape + _indexOffset + _judgeOffset];

@@ -9,10 +9,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public sealed class NoteInfo: IDisposable
     {
         public IStateful<NoteStatus>? Component
