@@ -7,8 +7,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Buffers;
+
+[Il2CppSetOption(Option.NullChecks, false)]
+[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisposable
 {
     
@@ -326,6 +330,8 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         _size++;
         _version++;
     }
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public void Clear()
     {
         ThrowIfDisposed();

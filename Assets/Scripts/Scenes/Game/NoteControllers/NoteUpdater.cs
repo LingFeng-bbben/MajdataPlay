@@ -1,11 +1,13 @@
-﻿using MajdataPlay.Utils;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Buffers;
+using MajdataPlay.Editor;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using MajdataPlay.Editor;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
-using MajdataPlay.Scenes.Game.Buffers;
-using MajdataPlay.Buffers;
-using Cysharp.Threading.Tasks;
 
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -143,6 +145,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
             _rentedArrayForLateUpdatebleComponents = Array.Empty<NoteInfo>();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual void OnPreUpdate()
         {
             var start = MajTimeline.UnscaledTime;
@@ -165,6 +170,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var timeSpan = end - start;
             _preUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
@@ -187,6 +195,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var timeSpan = end - start;
             _updateElapsedMs = timeSpan.TotalMilliseconds;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
@@ -208,6 +219,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var timeSpan = end - start;
             _fixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual void OnLateUpdate()
         {
             var start = MajTimeline.UnscaledTime;

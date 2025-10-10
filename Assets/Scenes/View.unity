@@ -8799,30 +8799,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1687933181}
-  - component: {fileID: 1687933180}
   m_Layer: 0
-  m_Name: StarPool
+  m_Name: SlideArrowPool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1687933180
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687933179}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 255da11392b4bdf4982093a797a0ca6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
 --- !u!4 &1687933181
 Transform:
   m_ObjectHideFlags: 0
@@ -9102,7 +9085,6 @@ MonoBehaviour:
   DXScoreColor: {r: 0.24705884, g: 0.6901961, b: 0.24705884, a: 1}
   EarlyDiffColor: {r: 0.19787577, g: 0.4161803, b: 0.72327036, a: 1}
   LateDiffColor: {r: 0.66666657, g: 0.20335416, b: 0.23115267, a: 1}
-  _totalDXScore: 0
   _topInfoJudgeParent: {fileID: 0}
   _topInfoPerfect: {fileID: 0}
   _topInfoGreat: {fileID: 0}

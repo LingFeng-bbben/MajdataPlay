@@ -8390,9 +8390,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1241949066}
-  - component: {fileID: 1241949067}
   m_Layer: 0
-  m_Name: StarPool
+  m_Name: SlideArrowPool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8413,22 +8412,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844328529}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1241949067
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1241949065}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 255da11392b4bdf4982093a797a0ca6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
 --- !u!1 &1242223256
 GameObject:
   m_ObjectHideFlags: 0

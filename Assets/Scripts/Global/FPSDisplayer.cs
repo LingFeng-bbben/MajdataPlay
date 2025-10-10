@@ -1,13 +1,14 @@
 using Cysharp.Text;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Settings;
-using TMPro;
-using UnityEngine;
-using System.Text;
 using System.Runtime.CompilerServices;
-using System;
+using System.Text;
+using TMPro;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
@@ -39,7 +40,8 @@ namespace MajdataPlay
             _setting = MajInstances.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
         }
-
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         void LateUpdate()
         {
             var delta = MajTimeline.DeltaTime;
@@ -75,6 +77,8 @@ namespace MajdataPlay
                 _frameTimer -= delta;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void AddSample(in float data)
         {

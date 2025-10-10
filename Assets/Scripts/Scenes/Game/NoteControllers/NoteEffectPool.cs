@@ -2,6 +2,9 @@
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Utils;
+using System;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
 #nullable enable
@@ -9,7 +12,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     public sealed class NoteEffectPool : MonoBehaviour
     {
-        bool _isInitialized = false;
+        bool _isInited = false;
 
         [SerializeField]
         GameObject tapEffectPrefab;
@@ -29,10 +32,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
-        RentedList<TapEffectDisplayer> _generatedTapEffectDisplayers = new RentedList<TapEffectDisplayer>(16);
-        RentedList<TouchEffectDisplayer> _generatedTouchEffectDisplayers = new RentedList<TouchEffectDisplayer>(16);
+        TapEffectDisplayer[] _rentedArrayForGeneratedTapEffectDisplayers = Array.Empty<TapEffectDisplayer>();
+        TouchEffectDisplayer[] _rentedArrayForGeneratedTouchEffectDisplayers = Array.Empty<TouchEffectDisplayer>();
+
+        ReadOnlyMemory<TapEffectDisplayer> _generatedTapEffectDisplayers = Array.Empty<TapEffectDisplayer>();
+        ReadOnlyMemory<TouchEffectDisplayer> _generatedTouchEffectDisplayers = Array.Empty<TouchEffectDisplayer>();
 
         GamePlayManager _gpManager;
+
+        void Awake()
+        {
+            Majdata<NoteEffectPool>.Instance = this;
+        }
         internal void Reset()
         {
             foreach (var effect in _tapJudgeEffects)
@@ -56,19 +67,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 effect.Reset();
             }
         }
-        void Awake()
-        {
-            Majdata<NoteEffectPool>.Instance = this;
-        }
 
         void OnDestroy()
         {
             Majdata<NoteEffectPool>.Free();
-            _generatedTapEffectDisplayers.Dispose();
-            _generatedTouchEffectDisplayers.Dispose();
+            Pool<TapEffectDisplayer>.ReturnArray(_rentedArrayForGeneratedTapEffectDisplayers);
+            Pool<TouchEffectDisplayer>.ReturnArray(_rentedArrayForGeneratedTouchEffectDisplayers);
         }
         internal void Init()
         {
+            using var generatedTapEffectDisplayers = new RentedList<TapEffectDisplayer>();
+            using var generatedTouchEffectDisplayers = new RentedList<TouchEffectDisplayer>();
             var tapParent = transform.GetChild(0);
             var touchParent = transform.GetChild(1);
             var touchHoldParent = transform.GetChild(2);
@@ -97,7 +106,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.DistanceRatio = MajInstances.Settings.Display.OuterJudgeDistance;
                 displayer.ResetAll();
                 _tapJudgeEffects[i] = displayer;
-                _generatedTapEffectDisplayers.Add(displayer);
+                generatedTapEffectDisplayers.Add(displayer);
             }
             for (var i = 0; i < 33; i++)
             {
@@ -113,7 +122,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.SensorPos = sensorPos;
                 displayer.ResetAll();
                 _touchJudgeEffects[i] = displayer;    
-                _generatedTouchEffectDisplayers.Add(displayer);
+                generatedTouchEffectDisplayers.Add(displayer);
             }
             // Hold Effect
             for (var i = 0; i < 8; i++)
@@ -157,7 +166,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
                 displayer4Hold.ResetAll();
                 _touchHoldJudgeEffects[i] = displayer4Hold;
-                _generatedTapEffectDisplayers.Add(displayer4Hold);
+                generatedTapEffectDisplayers.Add(displayer4Hold);
             }
             // Touch Feedback Effect
             for (var i = 0; i < 33; i++)
@@ -180,24 +189,37 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 obj.transform.localScale = new Vector3(0.5f, 0.5f, 1);
                 _touchFeedbackEffects[i] = displayer;
             }
-            _isInitialized = true;
+            _rentedArrayForGeneratedTapEffectDisplayers = Pool<TapEffectDisplayer>.RentArray(generatedTapEffectDisplayers.Count);
+            _rentedArrayForGeneratedTouchEffectDisplayers = Pool<TouchEffectDisplayer>.RentArray(generatedTouchEffectDisplayers.Count);
+            generatedTapEffectDisplayers.CopyTo(_rentedArrayForGeneratedTapEffectDisplayers);
+            generatedTouchEffectDisplayers.CopyTo(_rentedArrayForGeneratedTouchEffectDisplayers);
+            _generatedTapEffectDisplayers = _rentedArrayForGeneratedTapEffectDisplayers;
+            _generatedTouchEffectDisplayers = _rentedArrayForGeneratedTouchEffectDisplayers;
+
+            _isInited = true;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             Profiler.BeginSample("NoteEffectPool.OnLateUpdate");
-            if (!_isInitialized)
+            if (!_isInited)
             {
                 return;
             }
-            var count1 = _generatedTapEffectDisplayers.Count;
-            var count2 = _generatedTouchEffectDisplayers.Count;
+            var s1 = _generatedTapEffectDisplayers.Span;
+            var s2 = _generatedTouchEffectDisplayers.Span;
+            var count1 = _generatedTapEffectDisplayers.Length;
+            var count2 = _generatedTouchEffectDisplayers.Length;
+
             for (var i = 0; i < count1; i++)
             {
-                _generatedTapEffectDisplayers[i].OnLateUpdate();
+                s1[i].OnLateUpdate();
             }
             for (var i = 0; i < count2; i++)
             {
-                _generatedTouchEffectDisplayers[i].OnLateUpdate();
+                s2[i].OnLateUpdate();
             }
 
             //for (var i = 0; i < 33; i++)
@@ -216,6 +238,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="keyIndex"></param>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult, int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
@@ -226,6 +251,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
@@ -236,26 +264,41 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// </summary>
         /// <param name="judgeResult"></param>
         /// <param name="sensorPos"></param>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTouchHoldEffect(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(in JudgeGrade judgeType, int keyIndex)
         {
             var displayer = _holdEffects[keyIndex - 1];
             displayer.Play(judgeType);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(in JudgeGrade judgeType, SensorArea sensorPos)
         {
             var displayer = _touchHoldEffects[(int)sensorPos];
             displayer.Play(judgeType);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetHoldEffect(int keyIndex)
         {
             var displayer = _holdEffects[keyIndex - 1];
             displayer.Reset();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetHoldEffect(SensorArea sensorPos)
         {
             var displayer = _touchHoldEffects[(int)sensorPos];
@@ -265,16 +308,25 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// Tap、Hold、Star
         /// </summary>
         /// <param name="keyIndex"></param>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset(int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Reset();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayFeedbackEffect(SensorArea sensorPos)
         {
             var effect = _touchFeedbackEffects[(int)sensorPos];
             effect.Play();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetFeedbackEffect(SensorArea sensorPos)
         {
             var effect = _touchFeedbackEffects[(int)sensorPos];
