@@ -419,8 +419,12 @@ namespace MajdataPlay.IO
             const int GENERAL_HID_2P_VID = 3235;
 
             var hidDevices = HidManager.Devices;
+#if ENABLE_IL2CPP
+            var serialPorts = "NotSupported";
+#else
             var serialPorts = SerialPort.GetPortNames();
-            
+#endif
+
             var ioSettings = MajEnv.Settings.IO;
             var playerIndex = ioSettings.InputDevice.Player;
             var buttonRingSettings = ioSettings.InputDevice.ButtonRing;

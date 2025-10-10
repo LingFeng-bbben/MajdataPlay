@@ -76,6 +76,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         internal void Init()
         {
+            if(_isInited)
+            {
+                return;
+            }
+            _isInited = false;
             using var generatedTapEffectDisplayers = new RentedList<TapEffectDisplayer>();
             using var generatedTouchEffectDisplayers = new RentedList<TouchEffectDisplayer>();
             var tapParent = transform.GetChild(0);
@@ -193,8 +198,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _rentedArrayForGeneratedTouchEffectDisplayers = Pool<TouchEffectDisplayer>.RentArray(generatedTouchEffectDisplayers.Count);
             generatedTapEffectDisplayers.CopyTo(_rentedArrayForGeneratedTapEffectDisplayers);
             generatedTouchEffectDisplayers.CopyTo(_rentedArrayForGeneratedTouchEffectDisplayers);
-            _generatedTapEffectDisplayers = _rentedArrayForGeneratedTapEffectDisplayers;
-            _generatedTouchEffectDisplayers = _rentedArrayForGeneratedTouchEffectDisplayers;
+            _generatedTapEffectDisplayers = _rentedArrayForGeneratedTapEffectDisplayers.AsMemory(0, generatedTapEffectDisplayers.Count);
+            _generatedTouchEffectDisplayers = _rentedArrayForGeneratedTouchEffectDisplayers.AsMemory(0, generatedTouchEffectDisplayers.Count);
 
             _isInited = true;
         }
@@ -321,6 +326,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayFeedbackEffect(SensorArea sensorPos)
         {
+            if (!_isInited)
+            {
+                return;
+            }
             var effect = _touchFeedbackEffects[(int)sensorPos];
             effect.Play();
         }
@@ -329,6 +338,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetFeedbackEffect(SensorArea sensorPos)
         {
+            if (!_isInited)
+            {
+                return;
+            }
             var effect = _touchFeedbackEffects[(int)sensorPos];
             effect.Reset();
         }

@@ -200,23 +200,23 @@ namespace MajdataPlay
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";
-            #if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN && ENABLE_MONO
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
-            #endif
+#endif
             SceneManager.LoadScene("Test");
         }
         void EnterTitle()
         {
-            #if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN && ENABLE_MONO
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.AboveNormal;
-            #endif
+#endif
             SceneManager.LoadScene("Title");
         }
         void EnterView()
         {
-            #if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN && ENABLE_MONO
             MajEnv.GameProcess.PriorityClass = ProcessPriorityClass.BelowNormal;
-            #endif
+#endif
             SceneManager.LoadScene("View");
         }
         public void ApplyScreenConfig()

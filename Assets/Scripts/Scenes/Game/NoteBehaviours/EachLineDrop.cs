@@ -50,8 +50,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         GameSetting _gameSetting = new();
         INoteController _noteController;
         NotePoolManager _poolManager;
-
-        static Sprite[] _curvSprites = new Sprite[4];
+        
+        static Sprite[] _curvSprites = Array.Empty<Sprite>();
         static bool _isCurvSpritesInited = false;
 
         protected override void Awake()
@@ -68,6 +68,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             Active = true;
             if (!_isCurvSpritesInited)
             {
+                _curvSprites = new Sprite[4];
                 var skin = MajInstances.SkinManager.GetEachLineSkin();
                 skin.EachGuideLines.CopyTo(_curvSprites);
                 _isCurvSpritesInited = true;
