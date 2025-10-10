@@ -62,7 +62,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _gameSetting = MajInstances.Settings;
             _noteAppearRate = _gameSetting.Debug.NoteAppearRate;
             _sr = gameObject.GetComponent<SpriteRenderer>();
-            _sr.sprite = _curvSprites[curvLength - 1];
+            _sr.sprite = null!;
             RendererState = RendererStatus.Off;
             _sr.forceRenderingOff = true;
             Active = true;
