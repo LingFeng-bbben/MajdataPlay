@@ -216,7 +216,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void Judge(float currentSec)
         {
-            if (ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
+            if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
             {
                 return;
             }
@@ -268,7 +268,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ClassicJudge(float currentSec)
         {
-            if (ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
+            if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
             {
                 return;
             }
@@ -438,8 +438,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected virtual void End()
         {
-            if (Parent is not null && Parent.IsEnded)
+            if (Parent is not null && !Parent.IsEnded)
+            {
                 Parent.End();
+            }
 
             SetActive(false);
         }
@@ -452,7 +454,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ForceFinish()
         {
-            if (ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
+            if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
             { 
                 return; 
             }

@@ -1,18 +1,20 @@
-using MajdataPlay.Utils;
-using System;
-using System.IO;
-using System.Diagnostics;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
-using MajdataPlay.Settings;
-using MajdataPlay.Timer;
+using AOT;
 using MajdataPlay.Collections;
-using System.Reflection;
-using UnityEngine.SceneManagement;
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Test;
+using MajdataPlay.Settings;
+using MajdataPlay.Timer;
+using MajdataPlay.Utils;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.Scripting;// DO NOT REMOVE IT !!!
 
 namespace MajdataPlay
 {
@@ -41,6 +43,7 @@ namespace MajdataPlay
         [SerializeField]
         bool _isEnterTest = false;
 
+        readonly static List<IntPtr> _windowHandles = new ();
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
         void Start()
@@ -178,24 +181,26 @@ namespace MajdataPlay
         }
         void SetWindowTopmost()
         {
-#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
-            var handles = new List<IntPtr>();
-            Win32API.EnumWindows((hWnd, lParam) =>
-            {
-                Win32API.GetWindowThreadProcessId(hWnd, out int processId);
-
-                if (processId == lParam && Win32API.IsWindowVisible(hWnd))
-                {
-                    handles.Add(hWnd);
-                }
-                return true;
-            }, Process.GetCurrentProcess().Id);
-            MajDebug.LogDebug($"Found window count: {handles.Count}");
-            foreach (var handle in handles)
+#if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
+            Win32API.EnumWindows(EnumWindowsCallback, Process.GetCurrentProcess().Id);
+            MajDebug.LogDebug($"Found window count: {_windowHandles.Count}");
+            foreach (var handle in _windowHandles)
             {
                 Win32API.SetWindowPos(handle, Win32API.HWND_TOPMOST, 0, 0, 0, 0, Win32API.SWP_NOMOVE | Win32API.SWP_NOSIZE);
             }
 #endif
+        }
+        [MonoPInvokeCallback(typeof(Win32API.EnumWindowsProc))]
+        static bool EnumWindowsCallback(IntPtr hWnd, int lParam)
+        {
+            _windowHandles.Clear();
+            Win32API.GetWindowThreadProcessId(hWnd, out int processId);
+
+            if (processId == lParam && Win32API.IsWindowVisible(hWnd))
+            {
+                _windowHandles.Add(hWnd);
+            }
+            return true;
         }
         void EnterTestMode()
         {
