@@ -352,7 +352,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             //var fakeScaleRate = _noteAppearRate;
             var fakeDestScale = fakeDistance * scaleRate + (1 - scaleRate * 1.225f);
             
-            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(Timing);
+            var fakeLength = Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(Timing + Length) - Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(Timing);
             var fakeHoldTime = fakeTiming - fakeLength;
             var fakeHoldDistance = fakeHoldTime * Speed + 4.8f;
 

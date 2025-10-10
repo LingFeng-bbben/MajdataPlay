@@ -100,7 +100,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
             var lineScale = Mathf.Abs(distance / 4.8f);
 
-            var fakeTiming = _noteController.FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(this.timing);
+            var fakeTiming = _noteController.FakeThisFrameSec - Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(this.timing);
             var fakeDistance = DistanceProvider is not null ? DistanceProvider.Distance : fakeTiming * speed + 4.8f;
             //var fakeScaleRate = _noteAppearRate;
             var fakeDestScale = fakeDistance * scaleRate + (1 - scaleRate * 1.225f);

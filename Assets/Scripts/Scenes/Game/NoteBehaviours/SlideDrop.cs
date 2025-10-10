@@ -310,8 +310,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var remaining = GetRemainingTimeWithoutOffset();
             
             var fakeTiming = GetFakeTimeSpanToArriveTiming();
-            var fakesTiming = FakeThisFrameSec - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming);
-            var fakeLength = Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming + Length) - Majdata<GamePlayManager>.Instance!.GetPositionAtTime(StartTiming);
+            var fakesTiming = FakeThisFrameSec - Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(StartTiming);
+            var fakeLength = Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(StartTiming + Length) - Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(StartTiming);
             var fakeRemaining = Math.Max(fakeLength - fakeTiming, 0);
 
             if (!UsingSV)
@@ -543,9 +543,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     {
                         if (UsingSV)
                         {
-                            var gpm = Majdata<GamePlayManager>.Instance!;
-                            _judgeTiming = gpm.GetPositionAtTime(_judgeTiming);
-                            _lastWaitTimeSec = gpm.GetPositionAtTime(_lastWaitTimeSec);
+                            _judgeTiming = Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(_judgeTiming);
+                            _lastWaitTimeSec = Majdata<INoteTimeProvider>.Instance!.GetPositionAtTime(_lastWaitTimeSec);
                         }
                         HideAllBar();
                         if (IsClassic)
