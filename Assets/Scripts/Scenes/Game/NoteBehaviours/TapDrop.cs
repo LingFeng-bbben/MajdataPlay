@@ -151,6 +151,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(result);
+            //MajDebug.LogDebug($"Note index: {QueueInfo.Index}");
+            _noteManager.NextNote(QueueInfo);
+            
             _effectManager.PlayEffect(StartPos, result);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
@@ -277,27 +280,25 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             // Too late check
             if (_isJudged || IsEnded || AutoplayMode == AutoplayModeOption.Enable)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TAP_JUDGE_GOOD_AREA_MSEC / 1000;
 
             if (isTooLate)
             {
+                //MajDebug.LogWarning("Note too late");
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _noteManager.NextNote(QueueInfo);
+                End();
             }
         }
         void Check()
         {
             if (IsEnded || !IsInitialized)
             {
-                return;
-            }
-            else if (_isJudged)
-            {
-                End();
                 return;
             }
             else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
@@ -330,7 +331,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 #endif
             if (_isJudged)
             {
-                _noteManager.NextNote(QueueInfo);
+                //MajDebug.LogError("Note is judged");
+                End();
             }
         }
         protected override void LoadSkin()

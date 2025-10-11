@@ -376,12 +376,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             {
                 return;
             }
-            var currentIndex = _noteCurrentIndex[keyIndex];
-            if (currentIndex > queueInfo.Index)
-            {
-                return;
-            }
-            _noteCurrentIndex[keyIndex]++;
+            ref var currentIndex = ref _noteCurrentIndex[keyIndex];
+
+            currentIndex++;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void NextTouch(in TouchQueueInfo queueInfo)
@@ -392,13 +389,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 return;
             }
             var pos = (int)sensorPos;
-            var currentIndex = _touchCurrentIndex[pos];
-            if (currentIndex > queueInfo.Index)
-            {
-                return;
-            }
+            ref var currentIndex = ref _touchCurrentIndex[pos];
 
-            _touchCurrentIndex[pos]++;
+            currentIndex++;
         }
 #if UNITY_ANDROID
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

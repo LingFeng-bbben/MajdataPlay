@@ -203,9 +203,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetActive(false);
 
             if (_isFirework && !result.IsMissOrTooFast)
-                _effectManager.PlayFireworkEffect(transform.position);
+            {
+                _effectManager.PlayFireworkEffect(Transform.position);
+            }
 
             PlayJudgeSFX(result);
+            _noteManager.NextTouch(QueueInfo);
             _effectManager.PlayTouchEffect(_sensorPos, result);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
@@ -238,7 +241,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             // Too late check
             if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
+            {
                 return;
+            }
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
 
@@ -251,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         _isJudged = true;
                         _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
-                        _noteManager.NextTouch(QueueInfo);
+                        End();
                     }
                 }
             }
@@ -259,18 +264,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _noteManager.NextTouch(QueueInfo);
+                End();
             }
         }
         void Check()
         {
             if (IsEnded || !IsInitialized)
             {
-                return;
-            }
-            else if (_isJudged)
-            {
-                End();
                 return;
             }
             else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
@@ -304,8 +304,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 #endif
             if (_isJudged)
             {
-                _noteManager.NextTouch(QueueInfo);
                 RegisterGrade();
+                End();
             }
         }
         protected override void Autoplay()
