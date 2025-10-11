@@ -858,19 +858,19 @@ namespace MajdataPlay
                     }
                     catch (InvalidOperationException)
                     {
-                        throw new HttpException(HttpErrorCode.InvalidRequest, null);
+                        throw new HttpException(HttpErrorCode.InvalidRequest);
                     }
                     catch (OperationCanceledException)
                     {
                         if (token.IsCancellationRequested)
                         {
                             MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
-                            throw new HttpException(HttpErrorCode.Canceled, null);
+                            throw new HttpException(HttpErrorCode.Canceled);
                         }
                         else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
-                            throw new HttpException(HttpErrorCode.Timeout, null);
+                            throw new HttpException(HttpErrorCode.Timeout);
                         }
                     }
                     catch (Exception e)
@@ -878,7 +878,7 @@ namespace MajdataPlay
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                            throw new HttpException(HttpErrorCode.Unreachable, null);
+                            throw new HttpException(HttpErrorCode.Unreachable);
                         }
                     }
                 }
