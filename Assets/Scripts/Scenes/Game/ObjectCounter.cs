@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
 using Unity.Burst.Intrinsics;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
@@ -21,6 +22,8 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class ObjectCounter : MonoBehaviour
     {
         #region UIconsts
