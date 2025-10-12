@@ -1,12 +1,14 @@
-﻿using MajdataPlay.Scenes.Game.Buffers;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
-using MajdataPlay.Utils;
 using MajdataPlay.Scenes.View;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
-using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -43,6 +45,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         public void Initialize()
         {
+
             var tapParent = transform.GetChild(0);
             var holdParent = transform.GetChild(1);
             var touchParent = transform.GetChild(4);
@@ -60,11 +63,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             _noteTimeProvider = Majdata<INoteController>.Instance!;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("NotePoolManager.PreUpdate");
-            if (State < ComponentState.Running)
-                return;
+            switch(State)
+            {
+                case ComponentState.Idle:
+                case ComponentState.Scanning:
+                case ComponentState.Loading:
+                case ComponentState.Parsing:
+                    return;
+            }
             var currentSec = _noteTimeProvider.ThisFrameSec;
             tapPool.OnPreUpdate(currentSec);
             holdPool.OnPreUpdate(currentSec);
@@ -93,6 +104,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             _eachLineInfos.Add(eachLineInfo);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Collect<TNote>(TNote endNote)
         {
             switch (endNote)

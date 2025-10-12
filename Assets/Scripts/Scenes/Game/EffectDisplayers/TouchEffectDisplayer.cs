@@ -4,10 +4,13 @@ using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public sealed class TouchEffectDisplayer: MonoBehaviour
     {
         public float DistanceRatio { get; set; } = 1f;

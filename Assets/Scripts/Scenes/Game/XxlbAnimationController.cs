@@ -2,12 +2,14 @@ using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.Scenes.Game
 {
-#nullable enable
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class XxlbAnimationController : MonoBehaviour
     {
         Image image;
@@ -16,21 +18,18 @@ namespace MajdataPlay.Scenes.Game
 
         short dir = 0;
 
+        readonly int ANIMATOR_DANCE_HASH = Animator.StringToHash("dance");
+
         private void Awake()
         {
             Majdata<XxlbAnimationController>.Instance = this;
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
             image = GetComponent<Image>();
             animator = GetComponent<Animator>();
         }
 
         public void Stepping()
         {
-            animator.SetTrigger("dance");
+            animator.SetTrigger(ANIMATOR_DANCE_HASH);
             image.sprite = sprites[1];
         }
 
@@ -43,7 +42,7 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.FastPerfect3rd:
                 case JudgeGrade.LatePerfect2nd:
                 case JudgeGrade.LatePerfect3rd:
-                    animator.SetTrigger("dance");
+                    animator.SetTrigger(ANIMATOR_DANCE_HASH);
                     if (dir == 0)//left
                     {
                         image.sprite = sprites[0];
@@ -64,7 +63,7 @@ namespace MajdataPlay.Scenes.Game
                     if (dir > 3) dir = 0;
                     break;
                 default:
-                    animator.SetTrigger("dance");
+                    animator.SetTrigger(ANIMATOR_DANCE_HASH);
                     if (dir == 0)//left
                     {
                         image.sprite = sprites[3];

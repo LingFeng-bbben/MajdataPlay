@@ -27,7 +27,7 @@ namespace MajdataPlay.Scenes.List
             if (detail is OnlineSongDetail onlineDetail)
             {
                 id_text.text = "ID: " + onlineDetail.Id;
-                _cts.Cancel();
+                HideInteraction();
                 _cts = new();
                 GetOnlineInteraction(onlineDetail, _cts.Token).Forget();
             }
@@ -59,12 +59,33 @@ namespace MajdataPlay.Scenes.List
                 try
                 {
                     await UniTask.SwitchToThreadPool();
-                    var client = MajEnv.SharedHttpClient;
                     var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                    await UniTask.SwitchToMainThread();
+                    using var req = UnityWebRequestFactory.Get(interactUrl);
+                    var asyncOp = req.SendWebRequest();
+                    while (!asyncOp.isDone)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            req.Abort();
+                            throw new HttpException(HttpErrorCode.Canceled);
+                        }
+                        await UniTask.Yield();
+                    }
+                    if (!req.IsSuccessStatusCode())
+                    {
+                        HideInteraction();
+                        return;
+                    }
+                    var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(req.downloadHandler.text);
+#else
+                    var client = MajEnv.SharedHttpClient;
                     using var rsp = await client.GetAsync(interactUrl, token);
                     using var intjson = await rsp.Content.ReadAsStreamAsync();
                     var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson);
-                    await UniTask.Yield(cancellationToken: token);
+#endif
+                    await UniTask.SwitchToMainThread(cancellationToken: token);
                     token.ThrowIfCancellationRequested();
                     good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length - list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
 
@@ -80,7 +101,14 @@ namespace MajdataPlay.Scenes.List
                 }
                 catch (Exception ex)
                 {
-                    if(ex is not OperationCanceledException)
+                    if(ex is HttpException e)
+                    {
+                        if(e.ErrorCode != HttpErrorCode.Canceled)
+                        {
+                            MajDebug.LogException(ex);
+                        }
+                    }
+                    else if(ex is not OperationCanceledException)
                     {
                         MajDebug.LogException(ex);
                     }

@@ -25,16 +25,14 @@ namespace MajdataPlay.Utils
             {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
-                using var req = UnityWebRequest.Get(apiEndpoint.Url + "/account/Info");
-                req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                using var req = UnityWebRequestFactory.Get(apiEndpoint.Url + "/account/Info");
                 var asyncOperation = req.SendWebRequest();
                 while (!asyncOperation.isDone)
                 {
                     if (token.IsCancellationRequested)
                     {
                         req.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled, null);
+                        throw new HttpException(HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -84,16 +82,14 @@ namespace MajdataPlay.Utils
                 var form = new WWWForm();
                 form.AddField("username", apiEndpoint.Username);
                 form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
-                using var req = UnityWebRequest.Post(apiEndpoint.Url + "/account/Login", form);
-                req.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                req.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                using var req = UnityWebRequestFactory.Post(apiEndpoint.Url + "/account/Login", form);
                 var asyncOperation = req.SendWebRequest();
                 while (!asyncOperation.isDone)
                 {
                     if (token.IsCancellationRequested)
                     {
                         req.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled, null);
+                        throw new HttpException(HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -127,16 +123,14 @@ namespace MajdataPlay.Utils
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
-                var getReq = UnityWebRequest.Get(interactUrl);
-                getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var getReq = UnityWebRequestFactory.Get(interactUrl);
                 var asyncOperation = getReq.SendWebRequest();
                 while (!asyncOperation.isDone)
                 {
                     if (token.IsCancellationRequested)
                     {
                         getReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled, null);
+                        throw new HttpException(HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -154,9 +148,7 @@ namespace MajdataPlay.Utils
                 form.AddField("type", "like");
                 form.AddField("content", "...");
 
-                var postReq = UnityWebRequest.Post(interactUrl, form);
-                postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var postReq = UnityWebRequestFactory.Post(interactUrl, form);
                 var postAsyncOperation = postReq.SendWebRequest();
 
                 while (!postAsyncOperation.isDone)
@@ -164,7 +156,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         postReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled, null);
+                        throw new HttpException(HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -207,16 +199,14 @@ namespace MajdataPlay.Utils
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
-                var postReq = UnityWebRequest.Post(scoreUrl, json, "application/json");
-                postReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                postReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                var postReq = UnityWebRequestFactory.Post(scoreUrl, json, "application/json");
                 var postAsyncOperation = postReq.SendWebRequest();
                 while (!postAsyncOperation.isDone)
                 {
                     if (token.IsCancellationRequested)
                     {
                         postReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled, null);
+                        throw new HttpException(HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }

@@ -1,10 +1,13 @@
 ﻿using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.IO
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal static class LedRing
     {
         public static bool IsEnabled
@@ -63,6 +66,7 @@ namespace MajdataPlay.IO
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void OnPreUpdate()
         {
             var ledDevices = _ledDevices;
@@ -78,7 +82,7 @@ namespace MajdataPlay.IO
                 ledColors[i] = device.Color;
             }
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLight(Color lightColor)
         {
             if (!_isEnabled)
@@ -92,6 +96,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, long durationMs)
         {
             if (!_isEnabled)
@@ -100,6 +105,7 @@ namespace MajdataPlay.IO
             }
             SetAllLightLinearTo(from, to, TimeSpan.FromMilliseconds(durationMs));
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, TimeSpan duration)
         {
             if (!_isEnabled)
@@ -113,6 +119,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, long T_Ms, float phi = 0.5f)
         {
             if (!_isEnabled)
@@ -121,6 +128,7 @@ namespace MajdataPlay.IO
             }
             SetAllLightSineFunc(color, TimeSpan.FromMilliseconds(T_Ms), phi);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, TimeSpan T, float phi = 0.5f)
         {
             if (!_isEnabled)
@@ -134,6 +142,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightUpdateFunc(ReadOnlySpan<ILedUpdateFunction> funcs)
         {
             if (!_isEnabled)
@@ -225,9 +234,15 @@ namespace MajdataPlay.IO
             {
                 return;
             }
+            if(func is null)
+            {
+                throw new ArgumentNullException(nameof(func));
+            }
             _ledDevices[button].UpdateFunction = func;
         }
 
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         class Led
         {
             public int Index { get; init; } = 0;

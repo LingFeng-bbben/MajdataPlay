@@ -1879,9 +1879,9 @@ namespace MajdataPlay.Scenes.Game
                 {
                     return simaiNotes;
                 }
-                var buffer = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
-                var buffer2 = ArrayPool<FoldingSimaiNote>.Shared.Rent(4);
-                var buffer3 = ArrayPool<FoldedSimaiNote>.Shared.Rent(4);
+                var buffer = Pool<FoldingSimaiNote>.RentArray(4);
+                var buffer2 = Pool<FoldingSimaiNote>.RentArray(4);
+                var buffer3 = Pool<FoldedSimaiNote>.RentArray(4);
                 try
                 {
                     Array.Clear(buffer, 0, buffer.Length);
@@ -1951,9 +1951,9 @@ namespace MajdataPlay.Scenes.Game
                 }
                 finally
                 {
-                    ArrayPool<FoldingSimaiNote>.Shared.Return(buffer);
-                    ArrayPool<FoldingSimaiNote>.Shared.Return(buffer2);
-                    ArrayPool<FoldedSimaiNote>.Shared.Return(buffer3);
+                    Pool<FoldingSimaiNote>.ReturnArray(buffer);
+                    Pool<FoldingSimaiNote>.ReturnArray(buffer2);
+                    Pool<FoldedSimaiNote>.ReturnArray(buffer3);
                 }
             }
         }

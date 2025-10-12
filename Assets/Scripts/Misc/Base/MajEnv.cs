@@ -17,6 +17,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Scripting;
 #nullable enable
 namespace MajdataPlay
@@ -52,6 +53,22 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
         public static LibVLC VLCLibrary { get; private set; }
 #endif
+        public static int AndroidSdkVersion 
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            get; 
+            private set;
+#else
+            get
+            {
+                throw new NotSupportedException();
+            }
+            private set
+            {
+                throw new NotSupportedException();
+            }
+#endif
+        }
         public static string RootPath { get; private set; } = string.Empty;
         public static string AssetsPath { get; private set; } = string.Empty;
         public static string CachePath { get; private set; } = string.Empty;
@@ -124,10 +141,65 @@ namespace MajdataPlay
             RootPath = Path.Combine(Application.dataPath, "../");
             AssetsPath = Application.streamingAssetsPath;
             CachePath = Path.Combine(RootPath, "Cache");
-#else
-            RootPath = Application.persistentDataPath;
-            AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
+#elif UNITY_ANDROID
+            var versionClass = AndroidJNI.FindClass("android/os/Build$VERSION");
+            var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
+            AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
+
+            //if(AndroidSdkVersion >= 30)
+            //{
+            //    RootPath = Application.persistentDataPath;
+            //    AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
+            //}
+            //else
+            //{
+
+            //}
+            var androidStoragePermissions = new string[]
+                {
+                Permission.ExternalStorageRead,
+                Permission.ExternalStorageWrite,
+                };
+            var isGranted = true;
+            for (var i = 0; i < androidStoragePermissions.Length; i++)
+            {
+                var flag = 0;
+                var permission = androidStoragePermissions[i];
+            RECHECK_PERMISSION:
+                if (!Permission.HasUserAuthorizedPermission(permission))
+                {
+                    switch (flag)
+                    {
+                        case 0:
+                            Permission.RequestUserPermission(permission);
+                            flag = 1;
+                            goto RECHECK_PERMISSION;
+                        case 1:
+                            isGranted = false;
+                            goto BREAK_LOOP;
+                    }
+                    continue;
+                BREAK_LOOP:
+                    break;
+                }
+            }
+            if (isGranted)
+            {
+                RootPath = "/sdcard/Documents/MajdataPlay";
+                if (!Directory.Exists(RootPath))
+                {
+                    Directory.CreateDirectory(RootPath);
+                }
+                AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
+            }
+            else
+            {
+                RootPath = Application.persistentDataPath;
+                AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
+            }
             CachePath = Application.temporaryCachePath;
+#else
+            throw new NotImplementedException();
 #endif
             _runtimeConfigPath = Path.Combine(CachePath, "Runtime", "config.json");
             ChartPath = Path.Combine(RootPath, "MaiCharts");

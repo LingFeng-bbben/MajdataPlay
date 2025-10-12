@@ -1,15 +1,18 @@
-﻿using MajdataPlay.Settings;
-using MajdataPlay.IO;
+﻿using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.UIElements;
-
+#nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
-#nullable enable
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class NoteEffectManager : MonoBehaviour
     {
         NoteEffectPool _effectPool;
@@ -60,6 +63,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Majdata<NoteEffectManager>.Free();
             InputManager.UnbindAnyArea(OnAnyAreaClick);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
             var pos = args.IsButton?(SensorArea)args.BZone: args.SArea;
@@ -88,6 +92,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _fireworkEffectAnimator = _fireworkEffect.GetComponent<Animator>();
             _effectPool = Majdata<NoteEffectPool>.Instance!;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayFireworkEffect(in Vector3 position)
         {
             _fireworkEffectAnimator.SetTrigger(FIREWORK_ANIM_HASH);
@@ -99,6 +104,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// <param name="position"></param>
         /// <param name="isBreak"></param>
         /// <param name="judge"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayEffect(int position, in NoteJudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
@@ -111,24 +117,29 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             _effectPool.Play(judgeResult, position);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
             LedRing.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(SensorArea sensorPos, in JudgeGrade judgeType)
         {
             _effectPool.PlayHoldEffect(judgeType, sensorPos);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetHoldEffect(int keyIndex)
         {
             LedRing.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetHoldEffect(SensorArea sensorPos)
         {
             _effectPool.ResetHoldEffect(sensorPos);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTouchEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
@@ -138,10 +149,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             _effectPool.Play(judgeResult, sensorPos);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTouchHoldEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CheckJudgeDisplaySetting(in JudgeDisplayOption setting, in NoteJudgeResult judgeResult)
         {
             var result = judgeResult.Grade;
@@ -158,10 +171,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _ => false
             };
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetEffect(int position)
         {
             _effectPool.Reset(position);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Color GetColor(JudgeGrade judgeType)
         {
             switch (judgeType)

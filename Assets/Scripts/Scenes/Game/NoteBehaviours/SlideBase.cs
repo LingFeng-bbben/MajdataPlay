@@ -13,6 +13,8 @@ using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
+using Unity.IL2CPP.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -194,7 +196,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         // Flags
         protected bool _isCheckable = false;
         protected bool _isSoundPlayed = false;
-        protected bool _isChecking = false;
 
         GameObject?[] _rentedArrayForStars;
         Transform[] _rentedArrayForStarTransforms;
@@ -211,6 +212,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             Dispose();
         }
         public abstract void Initialize();
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void Judge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
@@ -261,6 +264,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _lastWaitTimeSec = 0.05f;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ClassicJudge(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
@@ -304,6 +309,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _lastWaitTimeSec = 0.05f;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void HideBar(int endIndex)
         {
             endIndex = endIndex - 1;
@@ -314,6 +322,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _slideBars[i].layer = 3;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MemberNotNullWhen(true, "_slideOK")]
         protected bool PlaySlideOK(in NoteJudgeResult result)
         {
             if (_slideOK is null)
@@ -324,15 +335,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             return canPlay;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void HideAllBar() => HideBar(int.MaxValue);
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetSlideBarAlpha(float alpha)
         {
-            foreach (var sr in _slideBarRenderers)
+            for (var i = 0; i < _slideBarRenderers.Count; i++)
             {
-                if (IsEnded)
-                {
-                    return;
-                }
+                var sr = _slideBarRenderers[i];
+
                 if (alpha <= 0f)
                 {
                     sr.forceRenderingOff = true;
@@ -344,26 +357,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override void SetActive(bool state)
         {
             base.SetActive(state);
             if (state)
             {
-                foreach (var slideBar in _slideBars)
+                for (var i = 0; i < _slideBars.Count; i++)
                 {
+                    var slideBar = _slideBars[i];
                     slideBar.layer = MajEnv.DEFAULT_LAYER;
                 }
             }
             else
             {
-
-                foreach (var slideBar in _slideBars)
+                for (var i = 0; i < _slideBars.Count; i++)
                 {
+                    var slideBar = _slideBars[i];
                     slideBar.layer = MajEnv.HIDDEN_LAYER;
                 }
             }
             SetStarActive(state);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetStarActive(bool state)
         {
             switch (state)
@@ -390,6 +410,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     break;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void PlaySFX()
         {
             if (!_isSoundPlayed)
@@ -398,6 +420,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _isSoundPlayed = true;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsBreak && !judgeResult.IsMissOrTooFast)
@@ -415,7 +439,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected virtual void End()
         {
             if (Parent is not null && !Parent.IsEnded)
+            {
                 Parent.End();
+            }
 
             SetActive(false);
         }
@@ -423,15 +449,25 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// Connection Slide
         /// <para>强制完成该Slide</para>
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ForceFinish()
         {
             if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
-                return;
+            { 
+                return; 
+            }
             HideAllBar();
             var emptyQueue = Memory<SlideArea>.Empty;
-            for (var i = 0; i < 2; i++)
-                _judgeQueues[i] = emptyQueue;
+            for (var i = 0; i < 3; i++)
+            { 
+                _judgeQueues[i] = emptyQueue; 
+            }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void DestroyStars()
         {
             if (_stars.IsEmpty)

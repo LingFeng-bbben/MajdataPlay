@@ -240,7 +240,7 @@ namespace MajdataPlay
                             await using(UniTask.ReturnToCurrentSynchronizationContext())
                             {
                                 await UniTask.SwitchToMainThread();
-                                using var getReq = UnityWebRequest.Head(_videoUri);
+                                using var getReq = UnityWebRequestFactory.Head(_videoUri);
                                 var asyncOperation = getReq.SendWebRequest();
 
                                 while (!asyncOperation.isDone)
@@ -248,7 +248,7 @@ namespace MajdataPlay
                                     if (token.IsCancellationRequested)
                                     {
                                         getReq.Abort();
-                                        throw new HttpException(HttpErrorCode.Canceled, null);
+                                        throw new HttpException(HttpErrorCode.Canceled);
                                     }
                                     await UniTask.Yield();
                                 }
@@ -361,7 +361,7 @@ namespace MajdataPlay
                     }
                     if (metadata.Hash != Hash)
                     {
-                        throw new HttpException(HttpErrorCode.Unsuccessful, null);
+                        throw new HttpException(HttpErrorCode.Unsuccessful);
                     }
                     _maidata = await SimaiParser.ParseAsync(File.OpenRead(savePath));
 
@@ -708,15 +708,12 @@ namespace MajdataPlay
                 }
             }
 
-            var frameLen = TimeSpan.FromSeconds(MajEnv.FRAME_LENGTH_SEC);
             for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
                 try
                 {
                     await UniTask.SwitchToMainThread();
-                    using var request = UnityWebRequest.Get(uri);
-                    request.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                    request.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+                    using var request = UnityWebRequestFactory.Get(uri);
                     var asyncOperation = request.SendWebRequest();
 
                     while (!asyncOperation.isDone)
@@ -724,7 +721,7 @@ namespace MajdataPlay
                         if (token.IsCancellationRequested)
                         {
                             request.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled, null);
+                            throw new HttpException(HttpErrorCode.Canceled);
                         }
                         progress?.Report(asyncOperation.progress);
                         await UniTask.Yield();
@@ -774,7 +771,7 @@ namespace MajdataPlay
                     if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                     {
                         MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                        throw new HttpException(HttpErrorCode.Unreachable, null);
+                        throw new HttpException(HttpErrorCode.Unreachable);
                     }
                 }
             }
@@ -861,19 +858,19 @@ namespace MajdataPlay
                     }
                     catch (InvalidOperationException)
                     {
-                        throw new HttpException(HttpErrorCode.InvalidRequest, null);
+                        throw new HttpException(HttpErrorCode.InvalidRequest);
                     }
                     catch (OperationCanceledException)
                     {
                         if (token.IsCancellationRequested)
                         {
                             MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
-                            throw new HttpException(HttpErrorCode.Canceled, null);
+                            throw new HttpException(HttpErrorCode.Canceled);
                         }
                         else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
-                            throw new HttpException(HttpErrorCode.Timeout, null);
+                            throw new HttpException(HttpErrorCode.Timeout);
                         }
                     }
                     catch (Exception e)
@@ -881,7 +878,7 @@ namespace MajdataPlay
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
                             MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                            throw new HttpException(HttpErrorCode.Unreachable, null);
+                            throw new HttpException(HttpErrorCode.Unreachable);
                         }
                     }
                 }

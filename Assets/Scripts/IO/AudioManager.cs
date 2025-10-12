@@ -20,6 +20,7 @@ using System.Text;
 using MajdataPlay.Settings;
 using System.Runtime.InteropServices;
 using System.Threading;
+using AOT;
 
 
 #nullable enable
@@ -44,11 +45,18 @@ namespace MajdataPlay.IO
 
         unsafe static AudioManager()
         {
+#if ENABLE_IL2CPP
+            _wasapiProcedure = WasapiProcedure;
+            _asioProcedure = AsioProcedure;
+            //GCHandle.Alloc(_wasapiProcedure, GCHandleType.Pinned);
+            //GCHandle.Alloc(_asioProcedure, GCHandleType.Pinned);
+#else
             delegate*<IntPtr, int, IntPtr, int> ptr1 = &WasapiProcedure;
             delegate*<bool, int, IntPtr, int, IntPtr, int> ptr2 = &AsioProcedure;
 
             _wasapiProcedure = Marshal.GetDelegateForFunctionPointer<WasapiProcedure>((IntPtr)ptr1);
             _asioProcedure = Marshal.GetDelegateForFunctionPointer<AsioProcedure>((IntPtr)ptr2);
+#endif
         }
         void Awake()
         {
@@ -214,7 +222,7 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
-
+        [MonoPInvokeCallback(typeof(WasapiProcedure))]
         static int WasapiProcedure(IntPtr buffer, int length, IntPtr user)
         {
             if (BassGlobalMixer == -114514)
@@ -230,6 +238,7 @@ namespace MajdataPlay.IO
 
             return bytesRead;
         }
+        [MonoPInvokeCallback(typeof(AsioProcedure))]
         static int AsioProcedure(bool input, int channel, IntPtr buffer, int length, IntPtr user)
         {
             if (BassGlobalMixer == -114514)

@@ -5,11 +5,14 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using TMPro;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class TimeDisplayer : MonoBehaviour
     {
         const string NEGATIVE_TIME_STRING = "-{0}:{1:00}:{2:0000}";
