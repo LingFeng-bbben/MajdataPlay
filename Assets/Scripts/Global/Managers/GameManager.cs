@@ -50,7 +50,6 @@ namespace MajdataPlay
         {
             MajEnv.InitPath();
             MajDebug.Init();
-            //HttpTransporter.Timeout = TimeSpan.FromMilliseconds(10000);
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
             s += $"     OS       : {SystemInfo.operatingSystem}\n";
@@ -62,7 +61,9 @@ namespace MajdataPlay
             MajDebug.LogInfo(s);
             MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
-            
+#if UNITY_ANDROID
+            MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
+#endif
             MajEnv.Init();
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
