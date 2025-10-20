@@ -324,6 +324,7 @@ namespace MajdataPlay.IO
             {
                 _targetColor = newColor;
                 _durationMs = (float)duration.TotalMilliseconds;
+                _elapsedMs = 0f;
             }
         }
         class LedLinearUpdateFunction : ILedUpdateFunction
