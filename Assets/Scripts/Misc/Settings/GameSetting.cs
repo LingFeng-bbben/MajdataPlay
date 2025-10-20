@@ -142,13 +142,16 @@ namespace MajdataPlay.Settings
     public class SoundOptions
     {
         [Preserve]
-        public int Samplerate { get; set; } = 44100;
+        public bool ForceMono { get; set; } = false;
         [Preserve]
         public int AsioDeviceIndex { get; set; } = 0;
         [Preserve]
         public bool WasapiExclusive { get; set; } = true;
         [Preserve]
         public SFXVolume Volume { get; set; } = new();
+        [Preserve]
+        public ChannelOptions Channel { get; set; } = new();
+        public bool RawMode { get; set; } = true;
         [Preserve]
         public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
     }
@@ -396,5 +399,14 @@ namespace MajdataPlay.Settings
         public short D { get; set; }
         [Preserve]
         public short E { get; set; }
+    }
+    [Preserve]
+    public class ChannelOptions
+    {
+        // Front (LF / RF)
+        // Rear (LR / RR)
+        // Side (LS / RS) (rear center)
+        // CenterAndLFE (LFE / Center)
+        public string Main { get; set; } = "Front";
     }
 }

@@ -208,7 +208,7 @@ namespace MajdataPlay.IO
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #else
-            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile | AudioManager.Speaker);
 #endif
             try
             {

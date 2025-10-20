@@ -1,12 +1,14 @@
 ﻿using MajdataPlay.Extensions;
-using System;
-using ManagedBass;
-using ManagedBass.Mix;
-using ManagedBass.Fx;
-using System.IO;
-using System.Threading.Tasks;
 using MajdataPlay.Numerics;
+using ManagedBass;
+using ManagedBass.Fx;
+using ManagedBass.Mix;
+using System;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using static UnityEngine.Rendering.VirtualTexturing.Debugging;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -149,7 +151,8 @@ namespace MajdataPlay.IO
             BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
             Bass.ChannelStop(_decode);
             MajDebug.LogInfo(Bass.LastError);
-            MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.Default)}");
+            MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.MixerChanMatrix)}");
+            BassMix.ChannelSetMatrix(_resampler, AudioManager.MixingMatrix);
         }
         public BassAudioSample(int decode, int globalMixer, double gain, bool speedChange = false) : this(decode, globalMixer, gain, speedChange, null)
         {

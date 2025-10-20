@@ -696,7 +696,8 @@ namespace MajdataPlay.Scenes.Game
             while (!allBackgroundTasks.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
-                _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
+                await UniTask.SwitchToMainThread();
+                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
                 await UniTask.Yield();
             }
             token.ThrowIfCancellationRequested();
@@ -706,6 +707,7 @@ namespace MajdataPlay.Scenes.Game
             while (!wait4Recorder.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
+                await UniTask.SwitchToMainThread();
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
@@ -714,7 +716,8 @@ namespace MajdataPlay.Scenes.Game
             {
                 throw wait4Recorder.Exception.GetBaseException();
             }
-            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.SwitchToMainThread();
+            _sceneSwitcher.SetLoadingText($"{"Loading".i18n()}...");
             MajInstances.GameManager.DisableGC();
 
             await UniTask.Delay(1000, cancellationToken: token);
