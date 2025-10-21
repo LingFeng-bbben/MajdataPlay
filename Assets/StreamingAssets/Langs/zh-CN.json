@@ -216,7 +216,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_FastLateType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Note的Fast/Late显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_NoteJudgeType",
@@ -224,7 +224,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_NoteJudgeType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Note的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_TouchJudgeType",
@@ -232,7 +232,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_TouchJudgeType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Touch的判定显示级别\n不符合条件的判定结果将不会显示\n影响Touch、TouchHold"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SlideJudgeType",
@@ -240,7 +240,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SlideJudgeType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Slide的判定显示级别\n不符合条件的判定结果将不会显示\n影响Slide、Wifi"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BreakJudgeType",
@@ -248,7 +248,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BreakJudgeType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Break的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BreakFastLateType",
@@ -256,7 +256,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BreakFastLateType_DESC",
-      "Content": "控制判定的显示级别\n高于设置级别的判定结果将不会显示"
+      "Content": "控制Break的FAST/LATE显示级别\n不符合条件的判定结果将不会显示\n影响Break Tap、Hold"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SlideSortOrder",
