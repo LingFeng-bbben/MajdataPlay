@@ -208,7 +208,7 @@ namespace MajdataPlay.IO
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #else
-            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile | AudioManager.Speaker);
+            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
 #endif
             try
             {
@@ -218,7 +218,7 @@ namespace MajdataPlay.IO
                 }
                 Bass.LastError.EnsureSuccessStatusCode();
                 var stream = 0;
-                stream = BassFx.TempoCreate(decode, BassFlags.Default);
+                stream = BassFx.TempoCreate(decode, BassFlags.Default | AudioManager.Speaker);
                 Bass.LastError.EnsureSuccessStatusCode();
                 Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
                 //scan the peak here
@@ -240,7 +240,7 @@ namespace MajdataPlay.IO
                 sample._decode = decode;
                 return sample;
             }
-            catch
+            catch(Exception e)
             {
                 if (handle is not null)
                 {
