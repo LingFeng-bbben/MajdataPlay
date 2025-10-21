@@ -107,12 +107,14 @@ namespace MajdataPlay.IO
                                                                  .Select(x => x.Name)
                                                                  .ToArray();
 
-                var isExclusiveRequest = MajInstances.Settings.Audio.WasapiExclusive;
+                var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
+                var asioOptions = MajInstances.Settings.Audio.Asio;
+                var isExclusiveRequest = wasapiOptions.Exclusive;
                 var backend = MajInstances.Settings.Audio.Backend;
-                var deviceIndex = MajInstances.Settings.Audio.AsioDeviceIndex;
+                var deviceIndex = asioOptions.DeviceIndex;
                 var mainChannel = MajInstances.Settings.Audio.Channel.Main;
                 var isValidCh = mainChannel is ("Front" or "Rear" or "Side" or "CenterAndLFE");
-                var isRawMode = MajInstances.Settings.Audio.RawMode;
+                var isRawMode = wasapiOptions.RawMode;
                 if (!isValidCh)
                 {
                     MajDebug.LogWarning($"Invalid sound card channel: \"{mainChannel}\"");
@@ -155,6 +157,7 @@ namespace MajdataPlay.IO
                             MajDebug.LogInfo(BassAsio.LastError);
                             var asioInfo = BassAsio.Info;
                             var deviceInfo = BassAsio.GetDeviceInfo(BassAsio.CurrentDevice);
+                            BassAsio.Rate = asioOptions.SampleRate;
                             BassGlobalMixer = BassMix.CreateMixerStream((int)BassAsio.Rate, asioInfo.Outputs, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                             Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
                             Bass.ChannelSetAttribute(BassGlobalMixer, (ChannelAttribute)86017, 8);
@@ -194,8 +197,8 @@ namespace MajdataPlay.IO
                                 isExclusiveSuccess = BassWasapi.Init(
                                     -1, 0, 0,
                                     WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | rawFlag,
-                                    0.02f, //buffer
-                                    0.005f, //peried
+                                    wasapiOptions.BufferSize, //buffer
+                                    wasapiOptions.Period, //peried
                                     _wasapiProcedure);
                                 MajDebug.LogInfo($"Wasapi Exclusive Init: {isExclusiveSuccess}");
                             }
