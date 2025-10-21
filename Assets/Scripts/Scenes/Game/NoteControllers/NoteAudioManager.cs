@@ -242,7 +242,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
                 var timingPoints = _answerTimingPoints.Span;
                 var thisFrameSec = _noteController.ThisFrameSec;
-                var offset = _answerOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC;
+                var offset = ANSWER_PLAYBACK_OFFSET_SEC;
                 var i = 0;
                 for (; i < timingPoints.Length; i++)
                 {
@@ -410,7 +410,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     {
                         continue;
                     }
-                    var timing = (float)timingPoint.Timing;
+                    var timing = (float)timingPoint.Timing + _answerOffsetSec;
                     var isClock = false;
                     answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
                     {
@@ -423,7 +423,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     }
                     foreach (var hold in holds)
                     {
-                        var newTime = (float)(timingPoint.Timing + hold.HoldTime);
+                        var newTime = (float)(timingPoint.Timing + hold.HoldTime) + _answerOffsetSec;
                         if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newTime) < 0.001) &&
                             !answerTimingPoints.Any(o => Math.Abs(o.Timing - newTime) < 0.001)
                             )

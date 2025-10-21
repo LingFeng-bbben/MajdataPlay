@@ -4,6 +4,7 @@ using MajSimai;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
@@ -220,6 +221,34 @@ namespace MajdataPlay.Extensions
             {
                 Pool<SimaiTimingPoint>.ReturnArray(buffer);
             }
+        }
+        public static SimaiChart AddOffset(this SimaiChart source, float timingOffsetMSec)
+        {
+            var noteTimingCount = source.NoteTimings.Length;
+            var commaTimingCount = source.CommaTimings.Length;
+
+            Parallel.For(0, noteTimingCount, i =>
+            {
+                ref readonly var tp = ref source.NoteTimings[i];
+                tp.Timing += timingOffsetMSec;
+                for (var k = 0; k < tp.Notes.Length; k++)
+                {
+                    ref var note = ref tp.Notes[k];
+                    switch(note.Type)
+                    {
+                        case SimaiNoteType.Slide:
+                            note.SlideStartTime += timingOffsetMSec;
+                            break;
+                    }
+                }
+            });
+            Parallel.For(0, commaTimingCount, i =>
+            {
+                ref readonly var tp = ref source.CommaTimings[i];
+                tp.Timing += timingOffsetMSec;
+            });
+
+            return source;
         }
     }
 }

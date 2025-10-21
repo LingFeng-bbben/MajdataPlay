@@ -540,6 +540,7 @@ namespace MajdataPlay.Scenes.Game
                 //    }
                 //}
             }
+            _chart = _chart.AddOffset(_chartOffset + _audioTimeOffsetSec);
             if (ModInfo.PlaybackSpeed != 1)
             {
                 _chart = _chart.Scale(PlaybackSpeed);
@@ -560,6 +561,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 throw new EmptyChartException();
             }
+            _chart = _chart.AddOffset(-_displayOffsetSec);
             await UniTask.SwitchToMainThread();
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
             await UniTask.SwitchToThreadPool();
@@ -1056,12 +1058,11 @@ namespace MajdataPlay.Scenes.Game
                         //AudioTime = (float)audioSample.GetCurrentTime();
                         var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
                         var playbackSpeed = PlaybackSpeed;
-                        var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / playbackSpeed) - _displayOffsetSec;
                         var timeOffset = elapsedSeconds - _audioStartTime;
                         var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
                         var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
-                        _thisFrameSec = timeOffset - chartOffset;
+                        _thisFrameSec = timeOffset;
                         var sb = ZString.CreateStringBuilder(true);
                         try
                         {
