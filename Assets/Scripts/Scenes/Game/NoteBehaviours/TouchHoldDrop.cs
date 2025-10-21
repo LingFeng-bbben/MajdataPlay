@@ -168,6 +168,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         });
                         _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                         _lastHoldState = -1;
+                        End();
                     }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:

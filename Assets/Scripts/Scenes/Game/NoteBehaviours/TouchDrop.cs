@@ -314,6 +314,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 case AutoplayModeOption.Enable:
                     base.Autoplay();
+                    if (_isJudged)
+                    {
+                        End();
+                    }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                 case AutoplayModeOption.DJAuto_ButtonRing_First:
