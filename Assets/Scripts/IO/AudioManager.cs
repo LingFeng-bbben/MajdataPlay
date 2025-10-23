@@ -21,6 +21,7 @@ using MajdataPlay.Settings;
 using System.Runtime.InteropServices;
 using System.Threading;
 using AOT;
+using MajdataPlay.Numerics;
 
 
 #nullable enable
@@ -107,10 +108,11 @@ namespace MajdataPlay.IO
                                                                  .Select(x => x.Name)
                                                                  .ToArray();
 
+                var backend = MajInstances.Settings.Audio.Backend;
+#if !UNITY_ANDROID
                 var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
                 var asioOptions = MajInstances.Settings.Audio.Asio;
                 var isExclusiveRequest = wasapiOptions.Exclusive;
-                var backend = MajInstances.Settings.Audio.Backend;
                 var deviceIndex = asioOptions.DeviceIndex;
                 var mainChannel = MajInstances.Settings.Audio.Channel.Main;
                 var isValidCh = mainChannel is ("Front" or "Rear" or "Side" or "CenterAndLFE");
@@ -121,7 +123,8 @@ namespace MajdataPlay.IO
                     mainChannel = "Front";
                     MajInstances.Settings.Audio.Channel.Main = mainChannel;
                 }
-#if !UNITY_EDITOR
+#endif
+#if !UNITY_EDITOR && !UNITY_ANDROID
             if (MajEnv.Mode == RunningMode.View)
             {
                 backend = SoundBackendOption.Wasapi;
@@ -143,6 +146,7 @@ namespace MajdataPlay.IO
 #endif
                 switch (backend)
                 {
+#if !UNITY_ANDROID
                     case SoundBackendOption.Asio:
                         {
                             MajDebug.LogInfo("Bass Init: " + Bass.Init(Bass.NoSoundDevice));
@@ -221,10 +225,28 @@ namespace MajdataPlay.IO
                             BassWasapi.Start();
                         }
                         break;
+#endif
                     case SoundBackendOption.BassSimple:
-                        MajDebug.LogInfo("Bass Init: " + Bass.Init());
-                        MajDebug.LogInfo(Bass.LastError);
+                        {
+#if UNITY_ANDROID
+                            var androidOptions = MajInstances.Settings.Audio.Android;
+                            androidOptions.UpdatePeriodMs = androidOptions.UpdatePeriodMs.Clamp(5, 100);
+                            androidOptions.BufferLengthMs = androidOptions.BufferLengthMs.Clamp(androidOptions.UpdatePeriodMs + 1, 5000);
+                            var @return = Bass.Configure(Configuration.AndroidAAudio, androidOptions.EnableAAudio);
+                            MajDebug.LogInfo($"[Bass] Set AndroidAAudio: {@return}");
+                            @return = Bass.Configure(Configuration.UpdatePeriod, androidOptions.UpdatePeriodMs);
+                            MajDebug.LogInfo($"[Bass] Set UpdatePeriod: {@return}");
+                            @return = Bass.Configure(Configuration.PlaybackBufferLength, androidOptions.BufferLengthMs);
+                            MajDebug.LogInfo($"[Bass] Set PlaybackBufferLength: {@return}");
+#endif
+                            MajDebug.LogInfo("Bass Init: " + Bass.Init());
+                            MajDebug.LogInfo(Bass.LastError);
+#if !UNITY_ANDROID
                         GenerateMixingMatrix(Bass.Info.SpeakerCount, mainChannel);
+#else
+                            GenerateMixingMatrix(Bass.Info.SpeakerCount, "Front");
+#endif
+                        }
                         break;
                 }
 

@@ -145,12 +145,16 @@ namespace MajdataPlay.Settings
         public bool ForceMono { get; set; } = false;
         [Preserve]
         public SFXVolume Volume { get; set; } = new();
+#if !UNITY_ANDROID
         [Preserve]
         public WasapiOptions Wasapi { get; set; } = new();
         [Preserve]
         public AsioOptions Asio { get; set; } = new();
         [Preserve]
         public ChannelOptions Channel { get; set; } = new();
+#else
+        public AndroidAudioOptions Android { get; set; } = new();
+#endif
         [Preserve]
         public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
     }
@@ -419,5 +423,11 @@ namespace MajdataPlay.Settings
         public bool RawMode { get; set; } = true;
         public float BufferSize { get; set; } = 0.02f;
         public float Period { get; set; } = 0.005f;
+    }
+    public class AndroidAudioOptions
+    {
+        public bool EnableAAudio { get; set; } = true;
+        public int BufferLengthMs { get; set; } = 500;
+        public int UpdatePeriodMs { get; set; } = 100;
     }
 }
