@@ -129,7 +129,6 @@ namespace MajdataPlay.IO
             _gain = gain;
             _isSpeedChangeSupported = speedChange;
             _length = Bass.ChannelBytes2Seconds(_stream, Bass.ChannelGetLength(_stream));
-
             Bass.ChannelStop(_stream);
             Bass.ChannelSetPosition(_stream, 0);
 

@@ -232,17 +232,27 @@ namespace MajdataPlay.IO
                             var androidOptions = MajInstances.Settings.Audio.Android;
                             androidOptions.UpdatePeriodMs = androidOptions.UpdatePeriodMs.Clamp(5, 100);
                             androidOptions.BufferLengthMs = androidOptions.BufferLengthMs.Clamp(androidOptions.UpdatePeriodMs + 1, 5000);
+                            androidOptions.DeviceUpdatePeriodMs = androidOptions.DeviceUpdatePeriodMs.Clamp(1, int.MaxValue);
+                            androidOptions.DeviceBufferLengthMs = androidOptions.DeviceBufferLengthMs.Clamp(androidOptions.DeviceUpdatePeriodMs * 2, int.MaxValue);
                             var @return = Bass.Configure(Configuration.AndroidAAudio, androidOptions.EnableAAudio);
                             MajDebug.LogInfo($"[Bass] Set AndroidAAudio: {@return}");
                             @return = Bass.Configure(Configuration.UpdatePeriod, androidOptions.UpdatePeriodMs);
                             MajDebug.LogInfo($"[Bass] Set UpdatePeriod: {@return}");
                             @return = Bass.Configure(Configuration.PlaybackBufferLength, androidOptions.BufferLengthMs);
                             MajDebug.LogInfo($"[Bass] Set PlaybackBufferLength: {@return}");
+                            @return = Bass.Configure(Configuration.DevicePeriod, androidOptions.DeviceUpdatePeriodMs);
+                            MajDebug.LogInfo($"[Bass] Set DevicePeriod: {@return}");
+                            @return = Bass.Configure(Configuration.DeviceBufferLength, androidOptions.DeviceBufferLengthMs);
+                            MajDebug.LogInfo($"[Bass] Set DeviceBufferLength: {@return}");
 #endif
                             MajDebug.LogInfo("Bass Init: " + Bass.Init());
                             MajDebug.LogInfo(Bass.LastError);
+                            var info = Bass.Info;
+                            MajDebug.LogInfo($"[Bass] Min playback buffer length: {info.MinBufferLength}");
+                            MajDebug.LogInfo($"[Bass] Current device buffer length: {Bass.GetConfig(Configuration.DeviceBufferLength)}");
+                            MajDebug.LogInfo($"[Bass] Current device period: {Bass.GetConfig(Configuration.DevicePeriod)}");
 #if !UNITY_ANDROID
-                        GenerateMixingMatrix(Bass.Info.SpeakerCount, mainChannel);
+                            GenerateMixingMatrix(Bass.Info.SpeakerCount, mainChannel);
 #else
                             GenerateMixingMatrix(Bass.Info.SpeakerCount, "Front");
 #endif

@@ -427,7 +427,9 @@ namespace MajdataPlay.Settings
     public class AndroidAudioOptions
     {
         public bool EnableAAudio { get; set; } = true;
-        public int BufferLengthMs { get; set; } = 500;
-        public int UpdatePeriodMs { get; set; } = 100;
+        public int BufferLengthMs { get; set; } = 64;
+        public int UpdatePeriodMs { get; set; } = 16;
+        public int DeviceBufferLengthMs { get; set; } = 8;
+        public int DeviceUpdatePeriodMs { get; set; } = 4;
     }
 }
