@@ -230,7 +230,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _bodyCheckRange = CLASSIC_HOLD_BODY_CHECK_RANGE;
             }
-            else if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            else if (Length <= HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }

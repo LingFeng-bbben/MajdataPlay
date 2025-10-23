@@ -234,7 +234,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
-            if (Length < TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
+            if (Length <= TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
