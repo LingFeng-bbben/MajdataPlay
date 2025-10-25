@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -785,6 +786,8 @@ namespace MajdataPlay
             var rentBuffer = Pool<byte>.RentArray(bufferSize, true);
             var buffer = rentBuffer.AsMemory();
             var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
+            var hashFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.sha256");
+            var fileSHA256 = (string?)null;
 
             try
             {
@@ -821,6 +824,22 @@ namespace MajdataPlay
                         {
                             progress.TotalBytes = rsp.Content.Headers.ContentLength ?? 0;
                         }
+                        if(File.Exists(hashFlagPath))
+                        {
+                            fileSHA256 = await File.ReadAllTextAsync(hashFlagPath);
+                        }
+                        else
+                        {
+                            if (rsp.Headers.TryGetValues("hash", out var values))
+                            {
+                                var hash = values.FirstOrDefault();
+                                if (!string.IsNullOrEmpty(hash))
+                                {
+                                    fileSHA256 = hash;
+                                    await File.WriteAllTextAsync(hashFlagPath, fileSHA256);
+                                }
+                            }
+                        }
                         using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
                         var read = 0;
@@ -845,10 +864,23 @@ namespace MajdataPlay
                             }
                         }
                         while (read > 0);
-                        if (totalRead < 10)
+                        if(string.IsNullOrEmpty(fileSHA256))
                         {
-                            continue;
+                            if (totalRead < 10)
+                            {
+                                continue;
+                            }
                         }
+                        else
+                        {
+                            fileStream.Position = 0;
+                            var currentHash = SHA256.Create().ComputeHash(fileStream);
+                            if(fileSHA256 != Convert.ToBase64String(currentHash))
+                            {
+                                continue;
+                            }
+                        }
+                        
                         File.Create(cacheFlagPath).Dispose();
                         break;
                     }
