@@ -92,7 +92,7 @@ namespace MajdataPlay.Scenes.List
                     CommentBox.SetActive(true);
                     foreach (var comment in list.Comments)
                     {
-                        var text = comment.Sender.Username + "หตฃบ\n" + comment.Content + "\n";
+                        var text = comment.Sender + "หตฃบ\n" + comment.Content + "\n";
                         CommentText.text = text;
                         await UniTask.Delay(5000, cancellationToken: token);
                         token.ThrowIfCancellationRequested();

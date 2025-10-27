@@ -2,6 +2,8 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.Unsafe;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,6 +21,14 @@ namespace MajdataPlay.Utils
     internal static class Online
     {
         readonly static HttpClient _client = MajEnv.SharedHttpClient;
+        readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(new()
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            },
+            ObjectCreationHandling = ObjectCreationHandling.Replace
+        });
         public static async UniTask<bool> CheckLogin(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -138,7 +148,7 @@ namespace MajdataPlay.Utils
                 {
                     throw new Exception("THUMBUP_FAILED".i18n());
                 }
-                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text);
+                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text, DEFAULT_JSON_SERIALIZER);
                 if (intlist.IsLiked)
                 {
                     throw new Exception("THUMBUP_ALREADY".i18n());
@@ -166,7 +176,7 @@ namespace MajdataPlay.Utils
                 }
 #else
                 var intStream = await _client.GetStreamAsync(interactUrl);
-                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream);
+                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream, DEFAULT_JSON_SERIALIZER);
 
                 if (intlist.IsLiked)
                 {
@@ -195,7 +205,7 @@ namespace MajdataPlay.Utils
                 var serverInfo = song.ServerInfo;
                 await Login(serverInfo);
                 var scoreUrl = serverInfo.Url + "/maichart/" + song.Id + "/score";
-                var json = await Serializer.Json.SerializeAsync(score);
+                var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();

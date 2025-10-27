@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +8,7 @@ using UnityEngine.Scripting;
 namespace MajdataPlay
 {
     [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class MajnetSongDetail
     {
         [Preserve]
@@ -32,6 +35,7 @@ namespace MajdataPlay
         public string[] PublicTags { get; set; } = Array.Empty<string>();
     }
     [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public struct MajNetSongInteract
     {
         [Preserve]
@@ -46,18 +50,20 @@ namespace MajdataPlay
         public ChartCommentSummary[] Comments { get; init; }
     }
     [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public readonly struct ChartCommentSummary
     {
         [Preserve]
-        public UserSummary Sender { get; init; }
+        public string Sender { get; init; }
         [Preserve]
         public string Content { get; init; }
         [Preserve]
         public DateTime Timestamp { get; init; }
         [Preserve]
-        public ChartCommentSummary[] Layers { get; init; }
+        public ChartCommentSummary[] Replies { get; init; }
     }
     [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public readonly struct UserSummary
     {
         [Preserve]
