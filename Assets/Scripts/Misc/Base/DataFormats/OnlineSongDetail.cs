@@ -693,6 +693,8 @@ namespace MajdataPlay
         {
             var fileInfo = new FileInfo(savePath);
             var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
+            var hashFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.sha256");
+            var fileSHA256 = (string?)null;
             if (File.Exists(cacheFlagPath))
             {
                 if (!forceReDl)
@@ -728,15 +730,28 @@ namespace MajdataPlay
                         await UniTask.Yield();
                     }
                     request.EnsureSuccessStatusCode();
+                    if (File.Exists(hashFlagPath))
+                    {
+                        fileSHA256 = await File.ReadAllTextAsync(hashFlagPath);
+                    }
+                    else
+                    {
+                        var header = request.GetResponseHeader("hash");
+                        if (!string.IsNullOrEmpty(header))
+                        {
+                            var hash = header;
+                            fileSHA256 = hash;
+                            await File.WriteAllTextAsync(hashFlagPath, fileSHA256);
+                        }
+                    }
                     using var fileStream = File.Create(savePath);
                     var nativeData = request.downloadHandler.nativeData;
                     await UniTask.SwitchToThreadPool();
                     var fileLen = nativeData.Length;
                     var buffer = Pool<byte>.RentArray(fileLen.Clamp(0, 512 * 1024)); // 512KB
+                    var totalRead = 0;
                     try
                     {
-                        var totalRead = 0;
-
                         while(true)
                         {
                             var remaining = fileLen - totalRead;
@@ -763,6 +778,22 @@ namespace MajdataPlay
                     finally
                     {
                         Pool<byte>.ReturnArray(buffer);
+                    }
+                    if (string.IsNullOrEmpty(fileSHA256))
+                    {
+                        if (totalRead < 10)
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        fileStream.Position = 0;
+                        var currentHash = SHA256.Create().ComputeHash(fileStream);
+                        if (fileSHA256 != Convert.ToBase64String(currentHash))
+                        {
+                            continue;
+                        }
                     }
                     File.Create(cacheFlagPath).Dispose();
                     break;
