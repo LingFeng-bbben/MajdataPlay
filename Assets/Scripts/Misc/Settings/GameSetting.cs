@@ -329,6 +329,8 @@ namespace MajdataPlay.Settings
         [Preserve]
         public bool Enable { get; set; } = true;
         [Preserve]
+        public float Brightness { get; set; } = 1.0f;
+        [Preserve]
         public int RefreshRateMs { get; set; } = 100;
         [Preserve]
         public bool Throttler { get; set; } = false;

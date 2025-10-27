@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using UnityEngine;
+using MajdataPlay.Numerics;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -28,6 +29,8 @@ namespace MajdataPlay.IO
 
             readonly static bool _isThrottlerEnabled = false;
             readonly static bool _isEnabled = true;
+
+            static float _brightness = 1.0f;
             static LedDevice()
             {
 #if !UNITY_STANDALONE_WIN
@@ -48,6 +51,7 @@ namespace MajdataPlay.IO
 #if !UNITY_STANDALONE_WIN
                 return;
 #endif
+                _brightness = MajInstances.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
                 try
                 {
                     if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
@@ -392,9 +396,9 @@ namespace MajdataPlay.IO
                 {
                     _templateSingle.Span.CopyTo(packet);
                     packet[5] = (byte)index;
-                    packet[6] = (byte)(newColor.r * 255);
-                    packet[7] = (byte)(newColor.g * 255);
-                    packet[8] = (byte)(newColor.b * 255);
+                    packet[6] = (byte)(newColor.r * 255 * _brightness);
+                    packet[7] = (byte)(newColor.g * 255 * _brightness);
+                    packet[8] = (byte)(newColor.b * 255 * _brightness);
                     packet[9] = CalculateCheckSum(packet.Slice(0, 9));
 
                     return packet.Slice(0, 10);
@@ -423,9 +427,9 @@ namespace MajdataPlay.IO
                     for (int i = 0,li = 0; li < ledColors.Length;)
                     {
                         var color = ledColors[li++];
-                        var r = (byte)(color.r * 255);
-                        var g = (byte)(color.g * 255);
-                        var b = (byte)(color.b * 255);
+                        var r = (byte)(color.r * 255 * _brightness);
+                        var g = (byte)(color.g * 255 * _brightness);
+                        var b = (byte)(color.b * 255 * _brightness);
 
                         buffer[i++] = r;
                         buffer[i++] = g;
