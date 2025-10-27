@@ -21,14 +21,15 @@ namespace MajdataPlay.Utils
     internal static class Online
     {
         readonly static HttpClient _client = MajEnv.SharedHttpClient;
-        readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(new()
+        readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(DEFAULT_JSON_SERIALIZER_SETTINGS);
+        readonly static JsonSerializerSettings DEFAULT_JSON_SERIALIZER_SETTINGS = new()
         {
             ContractResolver = new DefaultContractResolver
             {
                 NamingStrategy = new CamelCaseNamingStrategy()
             },
             ObjectCreationHandling = ObjectCreationHandling.Replace
-        });
+        };
         public static async UniTask<bool> CheckLogin(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -148,7 +149,7 @@ namespace MajdataPlay.Utils
                 {
                     throw new Exception("THUMBUP_FAILED".i18n());
                 }
-                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text, DEFAULT_JSON_SERIALIZER);
+                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text, DEFAULT_JSON_SERIALIZER_SETTINGS);
                 if (intlist.IsLiked)
                 {
                     throw new Exception("THUMBUP_ALREADY".i18n());
