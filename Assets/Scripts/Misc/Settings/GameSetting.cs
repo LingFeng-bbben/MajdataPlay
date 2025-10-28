@@ -235,13 +235,6 @@ namespace MajdataPlay.Settings
                     Username = "YourUsername",
                     Password = "YourPassword"
                 }
-            },
-            {
-                new ApiEndpoint()
-                {
-                    Name = "Contest",
-                    Url = "https://majdata.net/api1/api"
-                }
             }
         };
     }
