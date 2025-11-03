@@ -69,7 +69,7 @@ namespace MajdataPlay.Scenes.List
                         if (token.IsCancellationRequested)
                         {
                             req.Abort();
-                            throw new HttpException(HttpErrorCode.Canceled);
+                            throw new HttpException(interactUrl, HttpErrorCode.Canceled);
                         }
                         await UniTask.Yield();
                     }

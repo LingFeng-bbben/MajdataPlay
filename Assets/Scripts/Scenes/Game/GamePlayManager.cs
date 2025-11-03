@@ -1085,7 +1085,7 @@ namespace MajdataPlay.Scenes.Game
 
                         _thisFrameSec = timeOffset;
 #if UNITY_ANDROID
-                        if(realTimeDifference < 0 && !_objectCounter.AllFinished)
+                        if(realTimeDifference < 0 && !_objectCounter.AllFinished && _audioSample.IsPlaying)
                         {
                             _thisFrameSec += realTimeDifference;
                         }

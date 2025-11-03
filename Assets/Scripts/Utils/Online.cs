@@ -43,7 +43,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         req.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled);
+                        throw new HttpException(req.url, HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -100,7 +100,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         req.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled);
+                        throw new HttpException(req.url, HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -141,7 +141,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         getReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled);
+                        throw new HttpException(getReq.url, HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -167,7 +167,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         postReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled);
+                        throw new HttpException(postReq.url, HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }
@@ -217,7 +217,7 @@ namespace MajdataPlay.Utils
                     if (token.IsCancellationRequested)
                     {
                         postReq.Abort();
-                        throw new HttpException(HttpErrorCode.Canceled);
+                        throw new HttpException(postReq.url, HttpErrorCode.Canceled);
                     }
                     await UniTask.Yield();
                 }

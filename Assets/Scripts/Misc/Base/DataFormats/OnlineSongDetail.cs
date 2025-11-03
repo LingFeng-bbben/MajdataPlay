@@ -237,7 +237,7 @@ namespace MajdataPlay
                     {
                         try
                         {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+#if (ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG)
                             await using(UniTask.ReturnToCurrentSynchronizationContext())
                             {
                                 await UniTask.SwitchToMainThread();
@@ -249,7 +249,7 @@ namespace MajdataPlay
                                     if (token.IsCancellationRequested)
                                     {
                                         getReq.Abort();
-                                        throw new HttpException(HttpErrorCode.Canceled);
+                                        throw new HttpException(_coverUri.OriginalString, HttpErrorCode.Canceled);
                                     }
                                     await UniTask.Yield();
                                 }
