@@ -65,7 +65,7 @@ namespace MajdataPlay.Scenes.Practice
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameInfo.PracticeCount = _practiceCount;
             _playbackSpeed = MajEnv.Settings.Mod.PlaybackSpeed;
-            _playbackSpeedTitle.text = "PlaybackSpeed_MAJSETTING_TITLE".i18n();
+            _playbackSpeedTitle.text = "MAJSETTING_PROPERTY_PlaybackSpeed".i18n();
             _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             InitAsync().Forget();
         }
