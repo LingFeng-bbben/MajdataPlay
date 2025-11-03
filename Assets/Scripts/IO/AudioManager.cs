@@ -30,7 +30,6 @@ namespace MajdataPlay.IO
     public class AudioManager : MonoBehaviour
     {
         public static float[,] MixingMatrix { get; private set; } = new float[0, 0];
-        public static BassFlags Speaker { get; private set; } = BassFlags.SpeakerFront;
 
         string SFXFilePath;
         string VoiceFilePath;
@@ -180,6 +179,7 @@ namespace MajdataPlay.IO
                                     BassAsio.ChannelSetFormat(false, i, AsioSampleFormat.Float);
                                 }
                             }
+                            MajDebug.LogInfo($"[BassAsio] Channel count: {asioInfo.Outputs}");
                             GenerateMixingMatrix(asioInfo.Outputs, mainChannel);
 
                             BassAsio.Start();
@@ -221,6 +221,7 @@ namespace MajdataPlay.IO
                             BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                             Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
                             Bass.ChannelSetAttribute(BassGlobalMixer, (ChannelAttribute)86017, 8);
+                            MajDebug.LogInfo($"[BassWasapi] Channel count: {wasapiInfo.Channels}");
                             GenerateMixingMatrix(wasapiInfo.Channels, mainChannel);
                             BassWasapi.Start();
                         }
@@ -251,6 +252,7 @@ namespace MajdataPlay.IO
                             MajDebug.LogInfo($"[Bass] Min playback buffer length: {info.MinBufferLength}");
                             MajDebug.LogInfo($"[Bass] Current device buffer length: {Bass.GetConfig(Configuration.DeviceBufferLength)}");
                             MajDebug.LogInfo($"[Bass] Current device period: {Bass.GetConfig(Configuration.DevicePeriod)}");
+                            MajDebug.LogInfo($"[Bass] Channel count: {Bass.Info.SpeakerCount}");
 #if !UNITY_ANDROID
                             GenerateMixingMatrix(Bass.Info.SpeakerCount, mainChannel);
 #else
@@ -593,7 +595,7 @@ namespace MajdataPlay.IO
                         { 0f, 0f },
                     };
                     break;
-                case 5: // 5.1
+                case 6: // 5.1
                     matrix = new float[5, 2]
                     {
                         { 0f, 0f },
@@ -623,7 +625,6 @@ namespace MajdataPlay.IO
             switch(main)
             {
                 case "Rear":
-                    Speaker = BassFlags.SpeakerRear;
                     if(chCount < 4)
                     {
                         goto default;
@@ -680,7 +681,6 @@ namespace MajdataPlay.IO
                     }
                     break;
                 case "Side":
-                    Speaker = BassFlags.SpeakerRearCenter;
                     if (chCount < 8)
                     {
                         goto default;
@@ -699,14 +699,12 @@ namespace MajdataPlay.IO
                     }
                     break;
                 case "CenterAndLFE":
-                    Speaker = BassFlags.SpeakerCenterLFE;
                     if (chCount is not (3 or 6 or 8))
                     {
                         goto default;
                     }
                     if (chCount == 3)
                     {
-                        Speaker = BassFlags.SpeakerCenter;
                         matrix[2, 0] = 0.5f;
                         matrix[2, 1] = 0.5f;
                     }
@@ -733,7 +731,6 @@ namespace MajdataPlay.IO
                     break;
                 case "Front":
                 default:
-                    Speaker = BassFlags.SpeakerFront;
                     if (isForceMono)
                     {
                         matrix[0, 0] = .5f;

@@ -217,7 +217,7 @@ namespace MajdataPlay.IO
                 }
                 Bass.LastError.EnsureSuccessStatusCode();
                 var stream = 0;
-                stream = BassFx.TempoCreate(decode, BassFlags.Default | AudioManager.Speaker);
+                stream = BassFx.TempoCreate(decode, BassFlags.Default);
                 Bass.LastError.EnsureSuccessStatusCode();
                 Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
                 //scan the peak here
