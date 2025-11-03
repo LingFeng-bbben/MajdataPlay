@@ -21,30 +21,30 @@ internal static class UnityWebRequestExtensions
             case UnityWebRequest.Result.ConnectionError:
                 if (request.error == "Request timeout")
                 {
-                    throw new HttpException(HttpErrorCode.Timeout, rspCode);
+                    throw new HttpException(request.url, HttpErrorCode.Timeout, rspCode);
                 }
                 else
                 {
-                    throw new HttpException(HttpErrorCode.Unreachable, rspCode);
+                    throw new HttpException(request.url, HttpErrorCode.Unreachable, rspCode);
                 }
             case UnityWebRequest.Result.DataProcessingError:
             case UnityWebRequest.Result.ProtocolError:
-                throw new HttpException(HttpErrorCode.Unsuccessful, rspCode);
+                throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
             case UnityWebRequest.Result.Success:
                 break;
             default:
                 if (request.error == "Request timeout")
                 {
-                    throw new HttpException(HttpErrorCode.Timeout, rspCode);
+                    throw new HttpException(request.url, HttpErrorCode.Timeout, rspCode);
                 }
                 else
                 {
-                    throw new HttpException(HttpErrorCode.Unsuccessful, rspCode);
+                    throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
                 }
         }
         if (rspCode is not HttpStatusCode.OK)
         {
-            throw new HttpException(HttpErrorCode.Unsuccessful, rspCode);
+            throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
         }
 
         return request;

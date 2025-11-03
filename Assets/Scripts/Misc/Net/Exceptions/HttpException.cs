@@ -12,64 +12,68 @@ namespace MajdataPlay.Net
     {
         public HttpErrorCode ErrorCode { get; }
         public HttpStatusCode? StatusCode { get; }
+        public string OriginalUrl { get; }
 
         readonly string _errMsg;
 
-        public HttpException(HttpErrorCode errorCode, string message) : base(message)
+        public HttpException(string uri, HttpErrorCode errorCode, string message) : base(message)
         {
             ErrorCode = errorCode;
             _errMsg = message;
+            OriginalUrl = uri;
         }
-        public HttpException(HttpErrorCode errorCode, string message, Exception inner) : base(message, inner)
+        public HttpException(string uri, HttpErrorCode errorCode, string message, Exception inner) : base(message, inner)
         {
             ErrorCode = errorCode;
             _errMsg = message;
+            OriginalUrl = uri;
         }
-        public HttpException(HttpErrorCode errorCode)
+        public HttpException(string uri, HttpErrorCode errorCode)
         {
             ErrorCode = errorCode;
-            _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}";
+            OriginalUrl = uri;
+            _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nUri: {OriginalUrl}";
         }
-        public HttpException(HttpErrorCode errorCode, HttpStatusCode? statusCode) : base()
-        {
-            ErrorCode = errorCode;
-            StatusCode = statusCode;
-
-            if (statusCode is not null)
-            {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}";
-            }
-            else
-            {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}";
-            }
-        }
-        public HttpException(HttpErrorCode errorCode, HttpStatusCode? statusCode, string message) : base(message)
+        public HttpException(string uri, HttpErrorCode errorCode, HttpStatusCode? statusCode) : base()
         {
             ErrorCode = errorCode;
             StatusCode = statusCode;
-
+            OriginalUrl = uri;
             if (statusCode is not null)
             {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}";
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}\nUri: {OriginalUrl}";
             }
             else
             {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}";
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nUri: {OriginalUrl}";
             }
         }
-        public HttpException(HttpErrorCode errorCode, HttpStatusCode? statusCode, string message, Exception inner) : base(message, inner)
+        public HttpException(string uri, HttpErrorCode errorCode, HttpStatusCode? statusCode, string message) : base(message)
         {
             ErrorCode = errorCode;
             StatusCode = statusCode;
-
+            OriginalUrl = uri;
             if (statusCode is not null)
             {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}";
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}\nUri: {OriginalUrl}";
             }
             else
             {
-                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}";
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nUri: {OriginalUrl}";
+            }
+        }
+        public HttpException(string uri, HttpErrorCode errorCode, HttpStatusCode? statusCode, string message, Exception inner) : base(message, inner)
+        {
+            ErrorCode = errorCode;
+            StatusCode = statusCode;
+            OriginalUrl = uri;
+            if (statusCode is not null)
+            {
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nStatusCode: {statusCode}\nUri: {OriginalUrl}";
+            }
+            else
+            {
+                _errMsg = $"An error occurred while sending the HTTP request:\nErrorCode: {errorCode}\nUri: {OriginalUrl}";
             }
         }
         public override string ToString()
