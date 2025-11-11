@@ -293,6 +293,7 @@ namespace MajdataPlay
                         }
                     }
                     await DownloadFile(_videoUri, savePath, false, progress, token);
+                    progress?.Report(1);
                     _videoPath = savePath;
                     return _videoPath;
                 }
@@ -345,7 +346,7 @@ namespace MajdataPlay
                     for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                     {
                         await DownloadFile(_maidataUri, savePath, forceReDl, progress, token);
-
+                        progress?.Report(1);
                         using var fileStream = File.OpenRead(savePath);
                         metadata = await SimaiParser.ParseMetadataAsync(fileStream);
 
@@ -503,7 +504,7 @@ namespace MajdataPlay
                         {
                             await DownloadFile(_trackUri, savePath, false, progress, token);
                         }
-                            
+                        progress?.Report(1);
                         if (!loadIntoMemory)
                         {
                             return AudioSampleWrap.Empty;
@@ -524,12 +525,14 @@ namespace MajdataPlay
                 }
                 catch (Exception e)
                 {
+                    _audioTrack = null;
                     if (e is not OperationCanceledException)
                     {
                         MajDebug.LogException(e);
+                        throw e;
                     }
-                    _audioTrack = null;
-                    throw new Exception("Music track Load Failed");
+                    
+                    throw new InvalidAudioTrackException("Music track Load Failed", Path.Combine(_cachePath, "track.mp3"));
                 }
             }
         }
@@ -561,10 +564,12 @@ namespace MajdataPlay
                             }
                             else if(!loadIntoMemory)
                             {
+                                progress?.Report(1);
                                 return MajEnv.EmptySongCover;
                             }
                             else
                             {
+                                progress?.Report(1);
                                 _cover = await SpriteLoader.LoadAsync(savePath, token);
                             }
                             return _cover;
@@ -590,6 +595,10 @@ namespace MajdataPlay
                                 _cover = MajEnv.EmptySongCover;
                                 return _cover;
                             }
+                        }
+                        finally
+                        {
+                            progress?.Report(1);
                         }
 
                         token.ThrowIfCancellationRequested();
@@ -634,10 +643,12 @@ namespace MajdataPlay
                         }
                         else if (!loadIntoMemory)
                         {
+                            progress?.Report(1);
                             return MajEnv.EmptySongCover;
                         }
                         else
                         {
+                            progress?.Report(1);
                             _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
                         }
                         return _fullSizeCover;
@@ -663,6 +674,10 @@ namespace MajdataPlay
                             _fullSizeCover = MajEnv.EmptySongCover;
                             return _fullSizeCover;
                         }
+                    }
+                    finally
+                    {
+                        progress?.Report(1);
                     }
                     token.ThrowIfCancellationRequested();
                     _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);

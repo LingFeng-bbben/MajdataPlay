@@ -125,7 +125,7 @@ namespace MajdataPlay
                 {
                     return _cover;
                 }
-
+                progress?.Report(1);
                 _cover = await SpriteLoader.LoadAsync(_coverPath, token);
                 return _cover;
             }
@@ -145,7 +145,7 @@ namespace MajdataPlay
                 {
                     return _audioTrack;
                 }
-
+                progress?.Report(1);
                 _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
                 return _audioTrack;
             }
@@ -165,7 +165,7 @@ namespace MajdataPlay
                 {
                     return _previewAudioTrack;
                 }
-
+                progress?.Report(1);
                 _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, false);
                 return _previewAudioTrack;
             }
@@ -186,6 +186,7 @@ namespace MajdataPlay
                     return _maidata;
                 }
                 using var fileStream = File.OpenRead(_maidataPath);
+                progress?.Report(1);
                 var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
                 if (metadata.Hash == _simaiMetadata.Hash)
                 {
