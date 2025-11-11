@@ -108,6 +108,7 @@ namespace MajdataPlay.IO
                                                                  .ToArray();
 
                 var backend = MajInstances.Settings.Audio.Backend;
+                var isBass = backend is (SoundBackendOption.BassSimple or SoundBackendOption.Asio or SoundBackendOption.Wasapi);
 #if !UNITY_ANDROID
                 var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
                 var asioOptions = MajInstances.Settings.Audio.Asio;
@@ -261,7 +262,18 @@ namespace MajdataPlay.IO
                         }
                         break;
                 }
-
+                if(isBass)
+                {
+                    unsafe
+                    {
+                        var ua = MajEnv.HTTP_USER_AGENT;
+                        fixed (char* ptr = &MemoryMarshal.GetReference(ua.AsSpan()))
+                        {
+                            var isSuucess = Bass.Configure(Configuration.NetAgent, (IntPtr)ptr);
+                            MajDebug.LogInfo($"[Bass] Set user-agent: {isSuucess}");
+                        }
+                    }
+                }
                 InitSFXSample(SFXFileNames, SFXFilePath);
                 InitSFXSample(VoiceFileNames, VoiceFilePath);
 
