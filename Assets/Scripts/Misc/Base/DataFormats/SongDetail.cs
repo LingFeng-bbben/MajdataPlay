@@ -146,7 +146,7 @@ namespace MajdataPlay
                     return _audioTrack;
                 }
 
-                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true);
+                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
                 return _audioTrack;
             }
         }
@@ -166,7 +166,7 @@ namespace MajdataPlay
                     return _previewAudioTrack;
                 }
 
-                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, false);
+                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, false);
                 return _previewAudioTrack;
             }
         }

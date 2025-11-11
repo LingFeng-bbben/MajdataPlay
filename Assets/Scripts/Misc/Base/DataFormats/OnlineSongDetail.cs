@@ -508,7 +508,7 @@ namespace MajdataPlay
                         {
                             return AudioSampleWrap.Empty;
                         }
-                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true);
+                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true, true);
                         if (sampleWarp.IsEmpty)
                         {
                             if (File.Exists(cacheFlagPath))

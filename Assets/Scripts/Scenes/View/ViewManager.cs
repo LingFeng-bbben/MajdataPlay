@@ -319,7 +319,7 @@ namespace MajdataPlay.Scenes.View
             try
             {
                 if(_audioSample is not null) _audioSample.Dispose();
-                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true);
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true, true);
                 if (File.Exists(bgPath))
                 {
                     var cover = await SpriteLoader.LoadAsync(bgPath);
