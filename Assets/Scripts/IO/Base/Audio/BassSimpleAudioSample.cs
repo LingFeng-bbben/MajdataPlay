@@ -1,18 +1,9 @@
 ﻿using MajdataPlay.Extensions;
 using System;
-using UnityEngine;
 using ManagedBass;
-using ManagedBass.Mix;
-using Live2D.Cubism.Framework.Json;
 using ManagedBass.Fx;
-using System.Threading;
-using System.Drawing.Text;
-using MajdataPlay.Net;
-using Cysharp.Threading.Tasks;
 using System.IO;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
-using MajdataPlay.Utils;
 using MajdataPlay.Numerics;
 using System.Runtime.InteropServices;
 #nullable enable
@@ -250,21 +241,18 @@ namespace MajdataPlay.IO
         }
         public static BassSimpleAudioSample Create(string path, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = File.ReadAllBytes(path);
 
             return Create(buf, normalize, speedChange);
         }
         public static async ValueTask<BassSimpleAudioSample> CreateAsync(string path, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = await File.ReadAllBytesAsync(path);
 
             return Create(buf, normalize, speedChange);
         }
         public static BassSimpleAudioSample CreateFromUri(Uri uri)
         {
-            MajDebug.LogInfo($"Create Channel From: {uri}");
             var stream = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Prescan | BassFlags.AsyncFile, null);
             MajDebug.LogInfo(stream);
             MajDebug.LogInfo(Bass.LastError);

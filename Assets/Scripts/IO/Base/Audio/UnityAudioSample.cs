@@ -169,6 +169,7 @@ namespace MajdataPlay.IO
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
             {
+                www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 www.SendWebRequest();
                 while (!www.isDone) ;
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
@@ -179,6 +180,7 @@ namespace MajdataPlay.IO
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
             {
+                www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 await www.SendWebRequest();
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
                 return new UnityAudioSample(myClip, gameObject);

@@ -278,21 +278,18 @@ namespace MajdataPlay.IO
         }
         public static BassAudioSample Create(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = File.ReadAllBytes(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static async ValueTask<BassAudioSample> CreateAsync(string path, int globalMixer, bool normalize = true, bool speedChange = false)
         {
-            MajDebug.LogInfo($"Create Channel From: {path}");
             var buf = await File.ReadAllBytesAsync(path);
 
             return Create(buf, globalMixer, normalize, speedChange);
         }
         public static BassAudioSample CreateFromUri(Uri uri, int globalMixer)
         {
-            MajDebug.LogInfo($"Create Channel From: {uri}");
             var decode = Bass.CreateStream(uri.OriginalString, 0, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile, null);
             MajDebug.LogInfo(decode);
             MajDebug.LogInfo(Bass.LastError);

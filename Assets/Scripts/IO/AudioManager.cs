@@ -422,21 +422,29 @@ namespace MajdataPlay.IO
 
         public AudioSampleWrap LoadMusic(string path, bool speedChange = false)
         {
+            MajDebug.LogInfo($"Try creating channel from file: {path}");
             var backend = MajInstances.Settings.Audio.Backend;
             if (File.Exists(path))
             {
+                var sample = default(AudioSampleWrap);
                 switch (backend)
                 {
                     case SoundBackendOption.Unity:
-                        return UnityAudioSample.Create($"file://{path}", gameObject);
+                        sample = UnityAudioSample.Create($"file://{path}", gameObject);
+                        break;
                     case SoundBackendOption.Asio:
                     case SoundBackendOption.Wasapi:
-                        return BassAudioSample.Create(path, BassGlobalMixer, true, speedChange);
+                        sample = BassAudioSample.Create(path, BassGlobalMixer, true, speedChange);
+                        break;
                     case SoundBackendOption.BassSimple:
-                        return BassSimpleAudioSample.Create(path, true, speedChange);
+                        sample = BassSimpleAudioSample.Create(path, true, speedChange);
+                        break;
                     default:
-                        throw new NotImplementedException("Backend not supported");
+                        MajDebug.LogError("Backend not supported");
+                        return AudioSampleWrap.Empty;
                 }
+                MajDebug.LogInfo("Channel created");
+                return sample;
             }
             else
             {
@@ -446,39 +454,55 @@ namespace MajdataPlay.IO
         }
         public AudioSampleWrap LoadMusicFromUri(Uri uri)
         {
+            MajDebug.LogInfo($"Try creating channel from uri: {uri}");
             var backend = MajInstances.Settings.Audio.Backend;
+            var sample = default(AudioSampleWrap);
             switch (backend)
             {
                 case SoundBackendOption.Unity:
-                    return UnityAudioSample.Create(uri.OriginalString, gameObject);
+                    sample = UnityAudioSample.Create(uri.OriginalString, gameObject);
+                    break;
                 case SoundBackendOption.Asio:
                 case SoundBackendOption.Wasapi:
-                    return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                    sample = BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                    break;
                 case SoundBackendOption.BassSimple:
-                    return BassSimpleAudioSample.CreateFromUri(uri);
+                    sample = BassSimpleAudioSample.CreateFromUri(uri);
+                    break;
                 default:
-                    throw new NotImplementedException("Backend not supported");
+                    MajDebug.LogError("Backend not supported");
+                    return AudioSampleWrap.Empty;
             }
+            MajDebug.LogInfo("Channel created");
+            return sample;
         }
         public async UniTask<AudioSampleWrap> LoadMusicAsync(string path, bool speedChange = false)
         {
+            MajDebug.LogInfo($"Try creating channel from file: {path}");
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Settings.Audio.Backend;
             if (File.Exists(path))
             {
+                var sample = default(AudioSampleWrap);
                 switch (backend)
                 {
                     case SoundBackendOption.Unity:
                         await UniTask.SwitchToMainThread();
-                        return await UnityAudioSample.CreateAsync($"file://{path}", gameObject);
+                        sample = await UnityAudioSample.CreateAsync($"file://{path}", gameObject);
+                        break;
                     case SoundBackendOption.Asio:
                     case SoundBackendOption.Wasapi:
-                        return await BassAudioSample.CreateAsync(path, BassGlobalMixer, true, speedChange);
+                        sample = await BassAudioSample.CreateAsync(path, BassGlobalMixer, true, speedChange);
+                        break;
                     case SoundBackendOption.BassSimple:
-                        return await BassSimpleAudioSample.CreateAsync(path, true, speedChange);
+                        sample = await BassSimpleAudioSample.CreateAsync(path, true, speedChange);
+                        break;
                     default:
-                        throw new NotImplementedException("Backend not supported");
+                        MajDebug.LogError("Backend not supported");
+                        return AudioSampleWrap.Empty;
                 }
+                MajDebug.LogInfo("Channel created");
+                return sample;
             }
             else
             {
@@ -488,21 +512,29 @@ namespace MajdataPlay.IO
         }
         public async UniTask<AudioSampleWrap> LoadMusicFromUriAsync(Uri uri)
         {
+            MajDebug.LogInfo($"Try creating channel from uri: {uri}");
             await UniTask.SwitchToThreadPool();
             var backend = MajInstances.Settings.Audio.Backend;
+            var sample = default(AudioSampleWrap);
             switch (backend)
             {
                 case SoundBackendOption.Unity:
                     await UniTask.SwitchToMainThread();
-                    return await UnityAudioSample.CreateAsync(uri.OriginalString, gameObject);
+                    sample = await UnityAudioSample.CreateAsync(uri.OriginalString, gameObject);
+                    break;
                 case SoundBackendOption.Asio:
                 case SoundBackendOption.Wasapi:
-                    return BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                    sample = BassAudioSample.CreateFromUri(uri, BassGlobalMixer);
+                    break;
                 case SoundBackendOption.BassSimple:
-                    return BassSimpleAudioSample.CreateFromUri(uri);
+                    sample = BassSimpleAudioSample.CreateFromUri(uri);
+                    break;
                 default:
-                    throw new NotImplementedException("Backend not supported");
+                    MajDebug.LogError("Backend not supported");
+                    return AudioSampleWrap.Empty;
             }
+            MajDebug.LogInfo("Channel created");
+            return sample;
         }
         public AudioSampleWrap? PlaySFX(string name, bool isLoop = false)
         {
