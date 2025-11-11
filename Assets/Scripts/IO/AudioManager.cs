@@ -269,8 +269,8 @@ namespace MajdataPlay.IO
                         var ua = MajEnv.HTTP_USER_AGENT;
                         fixed (char* ptr = &MemoryMarshal.GetReference(ua.AsSpan()))
                         {
-                            var isSuucess = Bass.Configure(Configuration.NetAgent, (IntPtr)ptr);
-                            MajDebug.LogInfo($"[Bass] Set user-agent: {isSuucess}");
+                            var isSuccess = Bass.Configure(Configuration.NetAgent, (IntPtr)ptr);
+                            MajDebug.LogInfo($"[Bass] Set user-agent: {isSuccess}");
                         }
                     }
                 }
