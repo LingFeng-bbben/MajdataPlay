@@ -1,6 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
 using HidSharp.Platform.Windows;
+#if UNITY_STANDALONE_WIN
 using LibVLCSharp;
+#endif
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
