@@ -24,6 +24,8 @@ namespace MajdataPlay.IO
         static class TouchPanel
         {
             public static bool IsConnected { get; private set; } = false;
+
+            static SpinLock _syncLock = new();
             static Task _touchPanelUpdateLoop = Task.CompletedTask;
 
             readonly static bool[] _sensorStates = new bool[35];
@@ -59,16 +61,30 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
-                lock (_touchPanelUpdateLoop)
+                ref var @lock = ref _syncLock;
+                var isLocked = false;
+                try
                 {
-                    for (var i = 0; i < 35; i++)
-                    {
-                        _isSensorHadOn[i] = _isSensorHadOnInternal[i];
-                        _isSensorHadOff[i] = _isSensorHadOffInternal[i];
-                        _sensorStates[i] = _sensorRealTimeStates[i];
+                    @lock.Enter(ref isLocked);
+                    var hadOn = _isSensorHadOn.AsSpan();
+                    var hadOff = _isSensorHadOff.AsSpan();
+                    var states = _sensorStates.AsSpan();
+                    var hadOnInternal = _isSensorHadOnInternal.AsSpan();
+                    var hadOffInternal = _isSensorHadOffInternal.AsSpan();
+                    var realTimeStates = _sensorRealTimeStates.AsSpan();
 
-                        _isSensorHadOnInternal[i] = default;
-                        _isSensorHadOffInternal[i] = default;
+                    hadOnInternal.CopyTo(hadOn);
+                    hadOffInternal.CopyTo(hadOff);
+                    realTimeStates.CopyTo(states);
+
+                    hadOnInternal.Clear();
+                    hadOffInternal.Clear();
+                }
+                finally
+                {
+                    if(isLocked)
+                    {
+                        @lock.Exit();
                     }
                 }
             }
@@ -289,6 +305,7 @@ namespace MajdataPlay.IO
             {
                 const int RECONNECT_INTERVAL = 1000;
 
+                ref var @lock = ref _syncLock;
                 var serialPortOptions = _touchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
@@ -337,13 +354,26 @@ namespace MajdataPlay.IO
                             }
                             ReadFromSerialPort(serial, _sensorRealTimeStates);
                             IsConnected = true;
-                            lock (_touchPanelUpdateLoop)
+                            var isLocked = false;
+                            try
                             {
+                                @lock.Enter(ref isLocked);
+                                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+                                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
                                 for (var i = 0; i < 35; i++)
                                 {
-                                    var state = _sensorRealTimeStates[i];
-                                    _isSensorHadOnInternal[i] |= state;
-                                    _isSensorHadOffInternal[i] |= !state;
+                                    var state = sensorRealTimeStates[i];
+                                    isSensorHadOnInternal[i] |= state;
+                                    isSensorHadOffInternal[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
                                 }
                             }
                         }
@@ -491,6 +521,7 @@ namespace MajdataPlay.IO
             //}
             static void SlaveThreadUpdateLoop()
             {
+                ref var @lock = ref _syncLock;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
 
@@ -512,13 +543,26 @@ namespace MajdataPlay.IO
                             _ioThreadSync.WaitNotify();
                             DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
                             _ioThreadSync.Notify();
-                            lock (_touchPanelUpdateLoop)
+                            var isLocked = false;
+                            try
                             {
+                                @lock.Enter(ref isLocked);
+                                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+                                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
                                 for (var i = 0; i < 35; i++)
                                 {
-                                    var state = _sensorRealTimeStates[i];
-                                    _isSensorHadOnInternal[i] |= state;
-                                    _isSensorHadOffInternal[i] |= !state;
+                                    var state = sensorRealTimeStates[i];
+                                    isSensorHadOnInternal[i] |= state;
+                                    isSensorHadOffInternal[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
                                 }
                             }
                         }
